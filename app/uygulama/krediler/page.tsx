@@ -316,19 +316,10 @@ export default function KredilerPage() {
               </p>
             </div>
             <div className="flex flex-col sm:flex-row gap-3">
-              <Button variant="outline-white" size="lg" onClick={() => router.push("/uygulama/ayarlar")}>
-                <Settings className="h-5 w-5" />
-                Kredi Ayarları
-              </Button>
-              <Button
-                variant="outline"
-                size="lg"
-                className="bg-white text-blue-600 hover:bg-blue-50 border-white"
-                onClick={() => router.push("/uygulama/krediler/kredi-ekle")}
-              >
-                <Plus className="h-5 w-5" />
-                Yeni Kredi Ekle
-              </Button>
+              <Button variant="outline-white" size="lg" onClick={() => router.push("/uygulama/krediler/pdf-odeme-plani")}>
+                <Plus className="h-5 w-5 mr-2" />
+                PDF Ödeme Planı Ekle
+              </Button>    
             </div>
           </div>
         </CardContent>

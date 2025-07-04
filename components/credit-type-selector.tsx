@@ -1,329 +1,418 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
 import { Badge } from "@/components/ui/badge"
+import { ScrollArea } from "@/components/ui/scroll-area"
+import { Input } from "@/components/ui/input"
+import { supabase } from "@/lib/supabase"
 import {
-  Loader2,
-  Search,
   Check,
-  X,
   CreditCard,
+  Target,
+  Heart,
+  GraduationCap,
   Home,
   Car,
   Briefcase,
-  GraduationCap,
-  Heart,
   ShoppingBag,
   Banknote,
   Building,
   Zap,
+  Search,
+  X,
+  Loader2,
 } from "lucide-react"
-import { cn } from "@/lib/utils"
+
+interface CreditTypeSelectorProps {
+  open: boolean
+  onOpenChange: (open: boolean) => void
+  onSelect: (creditType: any) => void
+  selectedCreditType?: CreditType | null
+  creditTypes?: CreditType[]
+}
 
 interface CreditType {
   id: string
   name: string
   category: string
-  description?: string
+  description: string
 }
 
-interface CreditTypeSelectorProps {
-  open: boolean
-  onOpenChange: (open: boolean) => void
-  onSelect: (creditType: CreditType) => void
-  selectedCreditType?: CreditType | null
+const categoryIcons: Record<string, any> = {
+  konut: Home,
+  tasit: Car,
+  ticari: Briefcase,
+  egitim: GraduationCap,
+  saglik: Heart,
+  tuketici: ShoppingBag,
+  nakit: Banknote,
+  yatirim: Building,
+  enerji: Zap,
+  diger: CreditCard,
 }
 
-// Kredi türü kategorileri
-const creditTypeCategories = [
-  { id: "all", name: "Tümü", icon: CreditCard },
-  { id: "konut", name: "Konut", icon: Home },
-  { id: "tasit", name: "Taşıt", icon: Car },
-  { id: "ticari", name: "Ticari", icon: Briefcase },
-  { id: "egitim", name: "Eğitim", icon: GraduationCap },
-  { id: "saglik", name: "Sağlık", icon: Heart },
-  { id: "tuketici", name: "Tüketici", icon: ShoppingBag },
-  { id: "nakit", name: "Nakit", icon: Banknote },
-  { id: "yatirim", name: "Yatırım", icon: Building },
-  { id: "enerji", name: "Enerji", icon: Zap },
+const categoryColors: Record<string, string> = {
+  konut: "bg-blue-50 border-blue-200 text-blue-700 hover:bg-blue-100",
+  tasit: "bg-green-50 border-green-200 text-green-700 hover:bg-green-100",
+  ticari: "bg-purple-50 border-purple-200 text-purple-700 hover:bg-purple-100",
+  egitim: "bg-yellow-50 border-yellow-200 text-yellow-700 hover:bg-yellow-100",
+  saglik: "bg-pink-50 border-pink-200 text-pink-700 hover:bg-pink-100",
+  tuketici: "bg-emerald-50 border-emerald-200 text-emerald-700 hover:bg-emerald-100",
+  nakit: "bg-indigo-50 border-indigo-200 text-indigo-700 hover:bg-indigo-100",
+  yatirim: "bg-orange-50 border-orange-200 text-orange-700 hover:bg-orange-100",
+  enerji: "bg-cyan-50 border-cyan-200 text-cyan-700 hover:bg-cyan-100",
+  diger: "bg-gray-50 border-gray-200 text-gray-700 hover:bg-gray-100",
+}
+
+const categoryNames: Record<string, string> = {
+  konut: "Konut Kredileri",
+  tasit: "Taşıt Kredileri",
+  ticari: "Ticari Krediler",
+  egitim: "Eğitim Kredileri",
+  saglik: "Sağlık Kredileri",
+  tuketici: "Tüketici Kredileri",
+  nakit: "Nakit Krediler",
+  yatirim: "Yatırım Kredileri",
+  enerji: "Enerji Kredileri",
+  diger: "Diğer Krediler",
+}
+
+// Yedek kredi türleri
+const fallbackCreditTypes: CreditType[] = [
+  {
+    id: "fb-1",
+    name: "Konut Kredisi",
+    category: "konut",
+    description: "Ev satın alma, inşaat veya tadilat için kullanılabilen uzun vadeli kredi türü.",
+  },
+  {
+    id: "fb-2",
+    name: "Taşıt Kredisi",
+    category: "tasit",
+    description: "Sıfır veya ikinci el araç satın almak için kullanılan teminatlı kredi türü.",
+  },
+  {
+    id: "fb-3",
+    name: "İhtiyaç Kredisi",
+    category: "tuketici",
+    description: "Kişisel ihtiyaçlar için kullanılabilen genel amaçlı tüketici kredisi.",
+  },
+  {
+    id: "fb-4",
+    name: "Ticari Kredi",
+    category: "ticari",
+    description: "İşletmelerin finansman ihtiyaçları için tasarlanmış kredi türü.",
+  },
+  {
+    id: "fb-5",
+    name: "Eğitim Kredisi",
+    category: "egitim",
+    description: "Eğitim masrafları için özel olarak tasarlanmış avantajlı kredi türü.",
+  },
+  {
+    id: "fb-6",
+    name: "Sağlık Kredisi",
+    category: "saglik",
+    description: "Sağlık harcamaları ve tedavi masrafları için özel kredi türü.",
+  },
 ]
 
-// Örnek kredi türleri verisi
-const sampleCreditTypes: CreditType[] = [
-  { id: "1", name: "Konut Kredisi", category: "konut", description: "Ev satın alma kredisi" },
-  { id: "2", name: "Taşıt Kredisi", category: "tasit", description: "Araç satın alma kredisi" },
-  { id: "3", name: "İhtiyaç Kredisi", category: "tuketici", description: "Genel ihtiyaçlar için kredi" },
-  { id: "4", name: "Ticari Kredi", category: "ticari", description: "İşletme kredisi" },
-  { id: "5", name: "Eğitim Kredisi", category: "egitim", description: "Eğitim masrafları kredisi" },
-  { id: "6", name: "Sağlık Kredisi", category: "saglik", description: "Sağlık harcamaları kredisi" },
-  { id: "7", name: "Nakit Kredi", category: "nakit", description: "Nakit avans kredisi" },
-  { id: "8", name: "Yatırım Kredisi", category: "yatirim", description: "Yatırım amaçlı kredi" },
-  { id: "9", name: "Enerji Kredisi", category: "enerji", description: "Enerji verimliliği kredisi" },
-  { id: "10", name: "Tüketici Kredisi", category: "tuketici", description: "Tüketim malları kredisi" },
-]
-
-export function CreditTypeSelector({ open, onOpenChange, onSelect, selectedCreditType }: CreditTypeSelectorProps) {
-  const [creditTypes, setCreditTypes] = useState<CreditType[]>([])
-  const [filteredCreditTypes, setFilteredCreditTypes] = useState<CreditType[]>([])
-  const [loading, setLoading] = useState(false)
-  const [error, setError] = useState<string | null>(null)
+export function CreditTypeSelector({
+  open,
+  onOpenChange,
+  onSelect,
+  selectedCreditType,
+  creditTypes: propCreditTypes,
+}: CreditTypeSelectorProps) {
+  const [selectedCreditTypeState, setSelectedCreditTypeState] = useState<CreditType | null>(selectedCreditType || null)
+  const [selectedCategory, setSelectedCategory] = useState<string>("konut")
   const [searchTerm, setSearchTerm] = useState("")
-  const [selectedCategory, setSelectedCategory] = useState("all")
+  const [creditTypes, setCreditTypes] = useState<CreditType[]>([])
+  const [loading, setLoading] = useState(true)
+  const [errorLoading, setErrorLoading] = useState<string | null>(null)
 
-  // Kredi türlerini yükle
   useEffect(() => {
     if (open) {
-      setLoading(true)
-      setError(null)
-
-      // Simüle edilmiş API çağrısı
-      setTimeout(() => {
-        setCreditTypes(sampleCreditTypes)
-        setFilteredCreditTypes(sampleCreditTypes)
+      if (propCreditTypes && propCreditTypes.length > 0) {
+        setCreditTypes(propCreditTypes)
         setLoading(false)
-      }, 500)
+      } else {
+        fetchCreditTypes()
+      }
     }
-  }, [open])
+  }, [open, propCreditTypes])
 
-  // Filtreleme
+  async function fetchCreditTypes() {
+    try {
+      setLoading(true)
+      setErrorLoading(null)
+
+      const { data, error } = await supabase
+        .from("credit_types")
+        .select("id, name, category, description")
+        .order("category, name")
+
+      if (error) {
+        console.error("Supabase error fetching credit types:", error)
+        setErrorLoading("Kredi türleri yüklenirken bir sorun oluştu.")
+        setCreditTypes(fallbackCreditTypes)
+      } else {
+        setCreditTypes(data || fallbackCreditTypes)
+        if (data && data.length === 0) {
+          setErrorLoading("Veritabanında kayıtlı kredi türü bulunamadı.")
+          setCreditTypes(fallbackCreditTypes)
+        }
+      }
+    } catch (error) {
+      console.error("Error fetching credit types:", error)
+      setErrorLoading("Kredi türleri yüklenemedi.")
+      setCreditTypes(fallbackCreditTypes)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  // Arama yapıldığında tüm kategorilerde ara ve eşleşme varsa o kategoriye geç
   useEffect(() => {
-    let filtered = creditTypes
-
-    // Kategori filtresi
-    if (selectedCategory !== "all") {
-      filtered = filtered.filter((type) => type.category === selectedCategory)
-    }
-
-    // Arama filtresi
-    if (searchTerm) {
-      filtered = filtered.filter(
-        (type) =>
-          type.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-          type.description?.toLowerCase().includes(searchTerm.toLowerCase()),
+    if (searchTerm.trim()) {
+      const matchingCreditType = creditTypes.find(
+        (ct) =>
+          ct.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          (ct.description && ct.description.toLowerCase().includes(searchTerm.toLowerCase())),
       )
+      if (matchingCreditType && matchingCreditType.category !== selectedCategory) {
+        setSelectedCategory(matchingCreditType.category)
+      }
     }
+  }, [searchTerm, creditTypes, selectedCategory])
 
-    setFilteredCreditTypes(filtered)
-  }, [creditTypes, selectedCategory, searchTerm])
-
-  const handleSelect = (creditType: CreditType) => {
-    onSelect(creditType)
-    onOpenChange(false)
+  const handleConfirm = () => {
+    if (selectedCreditTypeState) {
+      console.log(`🎯 Kredi türü seçildi:`, selectedCreditTypeState)
+      onSelect(selectedCreditTypeState)
+      onOpenChange(false)
+    }
   }
 
   const handleClose = () => {
     onOpenChange(false)
     setSearchTerm("")
-    setSelectedCategory("all")
+    setSelectedCategory("konut")
+  }
+
+  const categories = Array.from(new Set(creditTypes.map((ct) => ct.category))).sort()
+  if (!categories.includes(selectedCategory) && categories.length > 0) {
+    setSelectedCategory(categories[0])
+  }
+
+  const filteredCreditTypes = creditTypes.filter((creditType) => {
+    if (searchTerm.trim()) {
+      const matchesSearch =
+        creditType.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        (creditType.description && creditType.description.toLowerCase().includes(searchTerm.toLowerCase()))
+      return matchesSearch
+    } else {
+      return creditType.category === selectedCategory
+    }
+  })
+
+  if (!open) return null
+
+  if (loading) {
+    return (
+      <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4 z-50">
+        <Card className="w-full max-w-md shadow-2xl">
+          <CardContent className="flex items-center justify-center p-8">
+            <Loader2 className="animate-spin h-8 w-8 text-emerald-600 mr-3" />
+            <span className="text-gray-700">Kredi türleri yükleniyor...</span>
+          </CardContent>
+        </Card>
+      </div>
+    )
   }
 
   return (
-    <Dialog open={open} onOpenChange={handleClose}>
-      <DialogContent className="max-w-6xl max-h-[85vh] p-0 gap-0 bg-white dark:bg-gray-900 border-gray-200 dark:border-gray-700 shadow-2xl">
+    <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4 z-50">
+      <Card className="w-full max-w-5xl max-h-[85vh] flex flex-col shadow-2xl border-0 bg-white/95 backdrop-blur-sm">
         {/* Header */}
-        <div className="bg-gradient-to-r from-emerald-600 to-teal-700 text-white p-6 rounded-t-lg">
-          <DialogHeader className="space-y-3">
-            <div className="flex items-center justify-between">
-              <DialogTitle className="text-2xl font-bold flex items-center gap-3">
-                <CreditCard className="h-7 w-7" />
-                Kredi Türü Seçin
-              </DialogTitle>
-              <Button
-                variant="ghost"
-                size="icon"
-                onClick={handleClose}
-                className="text-white hover:bg-white/20 h-8 w-8"
-              >
-                <X className="h-5 w-5" />
-              </Button>
+        <CardHeader className="flex-shrink-0 border-b bg-gradient-to-r from-emerald-600 to-teal-700 text-white rounded-t-lg">
+          <div className="flex items-center justify-between">
+            <div>
+              <CardTitle className="text-2xl font-bold">Kredi Türü Seçin</CardTitle>
+              <CardDescription className="text-emerald-100 mt-1">Kredi türünüzü seçerek devam edin</CardDescription>
             </div>
-            <p className="text-emerald-100 text-base">
-              Kredi türünüzü seçerek devam edin. Arama yapabilir veya kategorilere göre filtreleyebilirsiniz.
-            </p>
-          </DialogHeader>
-        </div>
-
-        {/* Search */}
-        <div className="p-6 border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800">
-          <div className="relative">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
+            <Button variant="ghost" size="sm" onClick={handleClose} className="text-white hover:bg-white/20">
+              <X className="h-5 w-5" />
+            </Button>
+          </div>
+          {errorLoading && (
+            <div className="bg-yellow-500/20 border border-yellow-300/30 rounded-lg p-3 text-sm text-yellow-100 mt-4">
+              {errorLoading} Varsayılan kredi türleri gösteriliyor.
+            </div>
+          )}
+          <div className="relative mt-4">
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-white/60 h-4 w-4" />
             <Input
               placeholder="Kredi türü ara..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="pl-10 h-12 text-base bg-white dark:bg-gray-900 border-gray-300 dark:border-gray-600 focus:border-emerald-500 focus:ring-emerald-500"
+              className="pl-10 bg-white/10 border-white/20 text-white placeholder:text-white/60 focus:bg-white/20"
             />
           </div>
-        </div>
+        </CardHeader>
 
-        {/* Categories */}
-        <div className="p-6 border-b border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900">
-          <div className="flex flex-wrap gap-2">
-            {creditTypeCategories.map((category) => {
-              const Icon = category.icon
-              const isSelected = selectedCategory === category.id
-              return (
-                <Button
-                  key={category.id}
-                  variant={isSelected ? "default" : "outline"}
-                  size="sm"
-                  onClick={() => setSelectedCategory(category.id)}
-                  className={cn(
-                    "flex items-center gap-2 h-10 px-4 transition-all duration-200",
-                    isSelected
-                      ? "bg-gradient-to-r from-emerald-600 to-teal-700 text-white border-transparent shadow-md hover:from-emerald-700 hover:to-teal-800"
-                      : "border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-emerald-50 dark:hover:bg-emerald-900/20 hover:border-emerald-300 dark:hover:border-emerald-600",
-                  )}
-                >
-                  <Icon className="h-4 w-4" />
-                  <span className="font-medium">{category.name}</span>
-                </Button>
-              )
-            })}
-          </div>
-        </div>
-
-        {/* Content */}
-        <div className="flex-1 overflow-hidden">
-          {loading ? (
-            <div className="flex flex-col items-center justify-center h-64 space-y-4">
-              <Loader2 className="h-8 w-8 animate-spin text-emerald-600" />
-              <p className="text-gray-600 dark:text-gray-400">Kredi türleri yükleniyor...</p>
-            </div>
-          ) : error ? (
-            <div className="flex flex-col items-center justify-center h-64 space-y-4">
-              <div className="text-red-500 text-center">
-                <p className="font-medium">Hata oluştu</p>
-                <p className="text-sm text-gray-600 dark:text-gray-400">{error}</p>
+        <div className="flex flex-1 min-h-0">
+          {/* Kategori Listesi */}
+          {!searchTerm.trim() && (
+            <div className="w-72 border-r bg-gray-50/80 backdrop-blur-sm flex-shrink-0">
+              <div className="p-4 border-b bg-white/50">
+                <h3 className="font-semibold text-gray-900 flex items-center gap-2">
+                  <Target className="h-4 w-4" />
+                  Kategoriler
+                </h3>
               </div>
-              <Button onClick={() => window.location.reload()} variant="outline" size="sm">
-                Tekrar Dene
-              </Button>
-            </div>
-          ) : (
-            <div className="h-[400px] overflow-y-auto p-6">
-              {filteredCreditTypes.length === 0 ? (
-                <div className="flex flex-col items-center justify-center h-full space-y-4 text-gray-500 dark:text-gray-400">
-                  <CreditCard className="h-12 w-12" />
-                  <div className="text-center">
-                    <p className="font-medium">Kredi türü bulunamadı</p>
-                    <p className="text-sm">Arama kriterlerinizi değiştirmeyi deneyin</p>
-                  </div>
-                </div>
-              ) : (
-                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
-                  {filteredCreditTypes.map((creditType) => {
-                    const isSelected = selectedCreditType?.id === creditType.id
-                    const categoryInfo = creditTypeCategories.find((cat) => cat.id === creditType.category)
-                    const Icon = categoryInfo?.icon || CreditCard
-
+              <ScrollArea className="h-full">
+                <div className="p-2 space-y-1">
+                  {categories.map((category) => {
+                    const Icon = categoryIcons[category] || CreditCard
+                    const count = creditTypes.filter((ct) => ct.category === category).length
+                    const categoryName = categoryNames[category] || category
                     return (
-                      <div
-                        key={creditType.id}
-                        onClick={() => handleSelect(creditType)}
-                        className={cn(
-                          "relative p-4 rounded-xl border-2 cursor-pointer transition-all duration-200 hover:shadow-lg group",
-                          isSelected
-                            ? "border-emerald-500 bg-emerald-50 dark:bg-emerald-900/20 shadow-md ring-2 ring-emerald-200 dark:ring-emerald-800"
-                            : "border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 hover:border-emerald-300 dark:hover:border-emerald-600 hover:bg-emerald-50 dark:hover:bg-emerald-900/10",
-                        )}
+                      <Button
+                        key={category}
+                        variant={selectedCategory === category ? "default" : "ghost"}
+                        className={`w-full justify-start text-left h-auto p-3 ${
+                          selectedCategory === category
+                            ? "bg-emerald-600 text-white hover:bg-emerald-700"
+                            : "hover:bg-white/60"
+                        }`}
+                        onClick={() => setSelectedCategory(category)}
                       >
-                        {/* Selection indicator */}
-                        {isSelected && (
-                          <div className="absolute -top-2 -right-2 w-6 h-6 bg-emerald-500 rounded-full flex items-center justify-center shadow-lg">
-                            <Check className="h-4 w-4 text-white" />
-                          </div>
-                        )}
-
-                        <div className="flex flex-col items-center text-center space-y-3">
-                          {/* Icon */}
-                          <div
-                            className={cn(
-                              "w-12 h-12 rounded-lg flex items-center justify-center transition-colors duration-200",
-                              isSelected
-                                ? "bg-emerald-500 text-white"
-                                : "bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 group-hover:bg-emerald-100 dark:group-hover:bg-emerald-900/30 group-hover:text-emerald-600 dark:group-hover:text-emerald-400",
-                            )}
-                          >
-                            <Icon className="h-6 w-6" />
-                          </div>
-
-                          {/* Content */}
-                          <div className="space-y-1">
-                            <h3
-                              className={cn(
-                                "font-semibold text-sm leading-tight",
-                                isSelected
-                                  ? "text-emerald-900 dark:text-emerald-100"
-                                  : "text-gray-900 dark:text-gray-100",
-                              )}
+                        <div className="flex items-center gap-3 w-full">
+                          <Icon className="h-4 w-4 flex-shrink-0" />
+                          <div className="flex-1 min-w-0">
+                            <div className="font-medium text-sm truncate">{categoryName}</div>
+                            <div
+                              className={`text-xs ${
+                                selectedCategory === category ? "text-emerald-100" : "text-gray-500"
+                              }`}
                             >
-                              {creditType.name}
-                            </h3>
-                            {creditType.description && (
-                              <p className="text-xs text-gray-600 dark:text-gray-400 line-clamp-2">
-                                {creditType.description}
-                              </p>
-                            )}
+                              {count} kredi türü
+                            </div>
                           </div>
-
-                          {/* Category badge */}
-                          <Badge
-                            variant="secondary"
-                            className={cn(
-                              "text-xs px-2 py-1",
-                              isSelected
-                                ? "bg-emerald-200 dark:bg-emerald-800 text-emerald-800 dark:text-emerald-200"
-                                : "bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300",
-                            )}
-                          >
-                            {categoryInfo?.name || creditType.category}
-                          </Badge>
                         </div>
-                      </div>
+                      </Button>
                     )
                   })}
                 </div>
-              )}
+              </ScrollArea>
             </div>
           )}
+
+          {/* Kredi Türleri Listesi */}
+          <div className="flex-1 flex flex-col min-w-0">
+            <div className="p-4 border-b bg-white/50 flex-shrink-0">
+              <h3 className="font-semibold text-gray-900 flex items-center gap-2">
+                <CreditCard className="h-4 w-4" />
+                {searchTerm.trim()
+                  ? `Arama Sonuçları (${filteredCreditTypes.length})`
+                  : categoryNames[selectedCategory] || selectedCategory}
+              </h3>
+            </div>
+            <ScrollArea className="flex-1">
+              <div className="p-4 space-y-3">
+                {filteredCreditTypes.length === 0 ? (
+                  <div className="text-center py-12">
+                    <CreditCard className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+                    <p className="text-gray-500 text-lg font-medium">
+                      {searchTerm.trim()
+                        ? "Arama kriterinize uygun kredi türü bulunamadı"
+                        : "Bu kategoride kredi türü bulunamadı"}
+                    </p>
+                    <p className="text-gray-400 text-sm mt-2">
+                      {searchTerm.trim() ? "Farklı anahtar kelimeler deneyin" : "Başka bir kategori seçin"}
+                    </p>
+                  </div>
+                ) : (
+                  filteredCreditTypes.map((creditType) => {
+                    const isSelected = selectedCreditTypeState?.id === creditType.id
+                    const Icon = categoryIcons[creditType.category] || CreditCard
+                    const categoryName = categoryNames[creditType.category] || creditType.category
+
+                    return (
+                      <Card
+                        key={creditType.id}
+                        className={`cursor-pointer transition-all duration-200 hover:shadow-md border-2 ${
+                          isSelected
+                            ? "border-emerald-500 bg-emerald-50/50 shadow-md"
+                            : "border-gray-200 hover:border-emerald-300 bg-white/60"
+                        }`}
+                        onClick={() => setSelectedCreditTypeState(creditType)}
+                      >
+                        <CardContent className="p-4">
+                          <div className="flex items-start justify-between gap-4">
+                            <div className="flex-1 min-w-0">
+                              <div className="flex items-center gap-3 mb-2">
+                                <Icon className="h-5 w-5 text-gray-500" />
+                                <Badge
+                                  variant="secondary"
+                                  className={categoryColors[creditType.category] || "bg-gray-100"}
+                                >
+                                  {categoryName}
+                                </Badge>
+                              </div>
+
+                              <h4 className="font-bold text-lg text-gray-900 mb-2">{creditType.name}</h4>
+                              <p className="text-gray-600 text-sm leading-relaxed">{creditType.description}</p>
+                            </div>
+                            <div className="flex-shrink-0">
+                              {isSelected && (
+                                <div className="w-6 h-6 bg-emerald-600 rounded-full flex items-center justify-center">
+                                  <Check className="h-4 w-4 text-white" />
+                                </div>
+                              )}
+                            </div>
+                          </div>
+                        </CardContent>
+                      </Card>
+                    )
+                  })
+                )}
+              </div>
+            </ScrollArea>
+          </div>
         </div>
 
         {/* Footer */}
-        <div className="p-6 border-t border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 rounded-b-lg">
+        <div className="flex-shrink-0 border-t bg-white/80 backdrop-blur-sm p-4">
           <div className="flex items-center justify-between">
-            <div className="text-sm text-gray-600 dark:text-gray-400">
-              {filteredCreditTypes.length} kredi türü listeleniyor
-              {selectedCreditType && (
-                <span className="ml-2 font-medium text-emerald-600 dark:text-emerald-400">
-                  • {selectedCreditType.name} seçili
+            <div className="text-sm text-gray-600">
+              {selectedCreditTypeState ? (
+                <span className="flex items-center gap-2">
+                  <Check className="h-4 w-4 text-green-600" />
+                  <strong>{selectedCreditTypeState.name}</strong> seçildi
                 </span>
+              ) : (
+                "Bir kredi türü seçin"
               )}
             </div>
             <div className="flex gap-3">
-              <Button
-                variant="outline"
-                onClick={handleClose}
-                className="border-gray-300 dark:border-gray-600 bg-transparent"
-              >
+              <Button variant="outline" onClick={handleClose} className="px-6 bg-transparent">
                 İptal
               </Button>
-              {selectedCreditType && (
-                <Button
-                  onClick={() => handleSelect(selectedCreditType)}
-                  className="bg-gradient-to-r from-emerald-600 to-teal-700 hover:from-emerald-700 hover:to-teal-800 text-white shadow-md"
-                >
-                  <Check className="h-4 w-4 mr-2" />
-                  Seç
-                </Button>
-              )}
+              <Button
+                onClick={handleConfirm}
+                disabled={!selectedCreditTypeState}
+                className="px-6 bg-gradient-to-r from-emerald-600 to-teal-700 hover:from-emerald-700 hover:to-teal-800"
+              >
+                Seç ve Devam Et
+              </Button>
             </div>
           </div>
         </div>
-      </DialogContent>
-    </Dialog>
+      </Card>
+    </div>
   )
 }

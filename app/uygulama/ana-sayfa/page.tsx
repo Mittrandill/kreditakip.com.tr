@@ -10,7 +10,7 @@ import { MetricCard } from "@/components/metric-card"
 import BankLogo from "@/components/bank-logo"
 import type { Credit, Bank, CreditType, PaymentPlan, Account } from "@/lib/types"
 import { formatCurrency, formatPercent } from "@/lib/format"
-import { SimpleLineChart, SimpleBarChart, SimpleDonutChart } from "@/components/simple-charts"
+import { SimpleLineChart, SimpleBarChart } from "@/components/simple-charts"
 import Link from "next/link"
 import { useAuth } from "@/hooks/use-auth"
 import { getCredits } from "@/lib/api/credits"
@@ -262,7 +262,7 @@ export default function DashboardPage() {
             if (activeCards.length > 0) {
               activeCards.forEach((card) => {
                 allInterestRates.push({
-                  bank: card.banks?.name || "Bilinmeyen Banka",
+                  bank: card.bank?.name || card.banks?.name || "Bilinmeyen Banka",
                   rate: card.interest_rate,
                   amount: card.current_debt,
                   type: "Kredi Kartı",
@@ -507,36 +507,138 @@ export default function DashboardPage() {
         </Card>
       </div>
 
-      {/* Varlık ve Borç Dağılımı */}
+      {/* Varlık ve Borç Dağılımı - Financial Health Style */}
       <div className="grid gap-4 md:grid-cols-2">
-        <Card className="shadow-lg hover:shadow-xl transition-shadow duration-300 rounded-xl border-gray-200">
-          <CardHeader>
-            <CardTitle className="text-gray-900 flex items-center gap-2">
+        <Card className="shadow-lg hover:shadow-xl transition-shadow duration-300 rounded-xl border-gray-200 dark:border-gray-700 dark:bg-gray-800">
+          <CardHeader className="pb-4">
+            <CardTitle className="text-base text-gray-900 dark:text-white flex items-center gap-2">
               <PiggyBank className="h-5 w-5 text-emerald-600" />
               Varlık Dağılımı
             </CardTitle>
-            <CardDescription>Hesap türlerine göre varlık dağılımınız.</CardDescription>
+            <CardDescription className="text-sm text-gray-600 dark:text-gray-400">
+              Hesap türlerine göre varlık dağılımınız.
+            </CardDescription>
           </CardHeader>
-          <CardContent>
+          <CardContent className="flex flex-col items-center justify-center space-y-4">
             {assetDistributionData.length > 0 ? (
-              <SimpleDonutChart data={assetDistributionData} />
+              <>
+                {/* Progress Circle */}
+                <div className="relative w-56 h-56">
+                  <svg className="w-full h-full transform -rotate-90" viewBox="0 0 100 100">
+                    <circle
+                      cx="50"
+                      cy="50"
+                      r="40"
+                      stroke="currentColor"
+                      strokeWidth="8"
+                      fill="transparent"
+                      className="text-gray-200 dark:text-gray-700"
+                    />
+                    <circle
+                      cx="50"
+                      cy="50"
+                      r="40"
+                      stroke="currentColor"
+                      strokeWidth="8"
+                      fill="transparent"
+                      strokeDasharray={`${2 * Math.PI * 40}`}
+                      strokeDashoffset={`${2 * Math.PI * 40 * (1 - 0.75)}`}
+                      className="text-emerald-600 transition-all duration-1000 ease-out"
+                      strokeLinecap="round"
+                    />
+                  </svg>
+                  <div className="absolute inset-0 flex items-center justify-center">
+                    <span className="text-xl font-bold text-emerald-600">{formatCurrency(totalBalance)}</span>
+                  </div>
+                </div>
+
+                {/* Progress Info */}
+                <div className="text-center space-y-1">
+                  <p className="text-xs text-gray-600 dark:text-gray-400">Toplam Varlık</p>
+                  <p className="text-base font-semibold text-emerald-600">Güçlü Portföy</p>
+                </div>
+
+                {/* Action Button */}
+                <div className="pt-2">
+                  <Link
+                    href="/uygulama/hesaplar"
+                    className="inline-flex items-center justify-center gap-2 px-4 py-2 bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-white font-medium rounded-lg shadow-sm hover:shadow-md transition-all duration-200 text-sm"
+                  >
+                    <PiggyBank className="h-4 w-4" />
+                    <span>Detayları Gör</span>
+                  </Link>
+                </div>
+              </>
             ) : (
               <div className="flex items-center justify-center h-[300px] text-gray-500">Varlık verisi bulunamadı</div>
             )}
           </CardContent>
         </Card>
 
-        <Card className="shadow-lg hover:shadow-xl transition-shadow duration-300 rounded-xl border-gray-200">
-          <CardHeader>
-            <CardTitle className="text-gray-900 flex items-center gap-2">
+        <Card className="shadow-lg hover:shadow-xl transition-shadow duration-300 rounded-xl border-gray-200 dark:border-gray-700 dark:bg-gray-800">
+          <CardHeader className="pb-4">
+            <CardTitle className="text-base text-gray-900 dark:text-white flex items-center gap-2">
               <Receipt className="h-5 w-5 text-red-600" />
               Borç Dağılımı
             </CardTitle>
-            <CardDescription>Kredi türlerine göre borç dağılımınız.</CardDescription>
+            <CardDescription className="text-sm text-gray-600 dark:text-gray-400">
+              Kredi türlerine göre borç dağılımınız.
+            </CardDescription>
           </CardHeader>
-          <CardContent>
+          <CardContent className="flex flex-col items-center justify-center space-y-4">
             {debtDistributionData.length > 0 ? (
-              <SimpleDonutChart data={debtDistributionData} />
+              <>
+                {/* Progress Circle */}
+                <div className="relative w-56 h-56">
+                  <svg className="w-full h-full transform -rotate-90" viewBox="0 0 100 100">
+                    <circle
+                      cx="50"
+                      cy="50"
+                      r="40"
+                      stroke="currentColor"
+                      strokeWidth="8"
+                      fill="transparent"
+                      className="text-gray-200 dark:text-gray-700"
+                    />
+                    <circle
+                      cx="50"
+                      cy="50"
+                      r="40"
+                      stroke="currentColor"
+                      strokeWidth="8"
+                      fill="transparent"
+                      strokeDasharray={`${2 * Math.PI * 40}`}
+                      strokeDashoffset={`${2 * Math.PI * 40 * (1 - Math.min(0.8, (totalDebt + totalCreditCardDebt) / Math.max(totalBalance, 1)))}`}
+                      className="text-red-600 transition-all duration-1000 ease-out"
+                      strokeLinecap="round"
+                    />
+                  </svg>
+                  <div className="absolute inset-0 flex items-center justify-center">
+                    <span className="text-xl font-bold text-red-600">
+                      {formatCurrency(totalDebt + totalCreditCardDebt)}
+                    </span>
+                  </div>
+                </div>
+
+                {/* Progress Info */}
+                <div className="text-center space-y-1">
+                  <p className="text-xs text-gray-600 dark:text-gray-400">Toplam Borç</p>
+                  <p className="text-base font-semibold text-red-600">
+                    {totalDebt + totalCreditCardDebt > totalBalance * 0.5 ? "Yüksek Borç" : "Kontrollü Borç"}
+                  </p>
+                </div>
+
+                {/* Action Button */}
+                <div className="pt-2">
+                  <Link
+                    href="/uygulama/krediler"
+                    className="inline-flex items-center justify-center gap-2 px-4 py-2 bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white font-medium rounded-lg shadow-sm hover:shadow-md transition-all duration-200 text-sm"
+                  >
+                    <Receipt className="h-4 w-4" />
+                    <span>Detayları Gör</span>
+                  </Link>
+                </div>
+              </>
             ) : (
               <div className="flex items-center justify-center h-[300px] text-gray-500">Borç verisi bulunamadı</div>
             )}
@@ -794,32 +896,38 @@ export default function DashboardPage() {
         </Card>
       </div>
 
-      {/* Veri Tabloları */}
-      <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 overflow-hidden">
-        <div className="p-6">
-          <div className="flex flex-row items-center justify-between mb-4">
-            <div>
-              <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Finansal Hesaplar</h3>
-              <p className="text-sm text-gray-600 dark:text-gray-400">Tüm finansal hesaplarınızın detaylı listesi</p>
-            </div>
-          </div>
-
-          <Tabs defaultValue="credits" className="w-full">
-            <TabsList className="grid w-full grid-cols-3">
-              <TabsTrigger value="credits" className="flex items-center gap-2">
+      {/* Modern Tabs */}
+      <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+        <Tabs defaultValue="credits" className="w-full">
+          <div className="border-b border-gray-100 bg-gray-50">
+            <TabsList className="grid grid-cols-3 bg-transparent h-auto p-2 gap-2">
+              <TabsTrigger
+                value="credits"
+                className="flex items-center gap-2 py-3 px-4 data-[state=active]:text-emerald-600 rounded-xl transition-all duration-200 hover:bg-gray-100"
+              >
                 <Banknote className="h-4 w-4" />
-                Krediler ({totalCredits})
+                <span className="hidden sm:inline font-medium">Krediler</span>
+                <span className="sm:hidden font-medium">Kredi</span>
               </TabsTrigger>
-              <TabsTrigger value="cards" className="flex items-center gap-2">
+              <TabsTrigger
+                value="cards"
+                className="flex items-center gap-2 py-3 px-4 data-[state=active]:text-emerald-600 rounded-xl transition-all duration-200 hover:bg-gray-100"
+              >
                 <Wallet className="h-4 w-4" />
-                Kredi Kartları ({totalCreditCards})
+                <span className="hidden sm:inline font-medium">Kredi Kartları</span>
+                <span className="sm:hidden font-medium">Kartlar</span>
               </TabsTrigger>
-              <TabsTrigger value="accounts" className="flex items-center gap-2">
+              <TabsTrigger
+                value="accounts"
+                className="flex items-center gap-2 py-3 px-4 data-[state=active]:text-emerald-600 rounded-xl transition-all duration-200 hover:bg-gray-100"
+              >
                 <Building2 className="h-4 w-4" />
-                Hesaplar ({totalAccounts})
+                <span className="hidden sm:inline font-medium">Hesaplar</span>
+                <span className="sm:hidden font-medium">Hesap</span>
               </TabsTrigger>
             </TabsList>
-
+          </div>
+          <div className="p-6">
             <TabsContent value="credits" className="mt-6">
               <div className="overflow-x-auto">
                 <Table>
@@ -967,15 +1075,18 @@ export default function DashboardPage() {
                             <TableCell>
                               <div className="flex items-center gap-3">
                                 <BankLogo
-                                  bankName={card.banks?.name || "Bilinmeyen Banka"}
-                                  logoUrl={card.banks?.logo_url || undefined}
+                                  bankName={card.bank_name || card.banks?.name || card.bank?.name || "Bilinmeyen Banka"}
+                                  logoUrl={
+                                    card.bank_logo_url || card.banks?.logo_url || card.bank?.logo_url || undefined
+                                  }
                                   size="sm"
                                   className="flex-shrink-0"
                                 />
                                 <div className="flex flex-col">
                                   <span className="font-medium text-gray-900 dark:text-white text-sm">
-                                    {card.banks?.name || "N/A"}
+                                    {card.bank_name || card.banks?.name || card.bank?.name || "Bilinmeyen Banka"}
                                   </span>
+                                  <span className="text-xs text-gray-500 dark:text-gray-400">{card.card_name}</span>
                                 </div>
                               </div>
                             </TableCell>
@@ -1092,6 +1203,7 @@ export default function DashboardPage() {
                                 <span className="font-medium text-gray-900 dark:text-white text-sm">
                                   {account.banks?.name || "N/A"}
                                 </span>
+                                <span className="text-xs text-gray-500 dark:text-gray-400">{account.account_name}</span>
                               </div>
                             </div>
                           </TableCell>
@@ -1154,8 +1266,8 @@ export default function DashboardPage() {
                 )}
               </div>
             </TabsContent>
-          </Tabs>
-        </div>
+          </div>
+        </Tabs>
       </div>
     </div>
   )

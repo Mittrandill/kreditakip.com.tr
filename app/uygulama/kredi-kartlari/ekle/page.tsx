@@ -1,7 +1,7 @@
 "use client"
 
 import type React from "react"
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
@@ -14,7 +14,8 @@ import { useAuth } from "@/hooks/use-auth"
 import { createCreditCard } from "@/lib/api/credit-cards"
 import { toast } from "sonner"
 import BankSelector from "@/components/bank-selector"
-import CreditCardTypeSelector from "@/components/credit-card-type-selector"
+import { CreditCardTypeSelector } from "@/components/credit-card-type-selector"
+import { supabase } from "@/lib/supabase"
 import Link from "next/link"
 
 export default function KrediKartiEklePage() {
@@ -24,6 +25,7 @@ export default function KrediKartiEklePage() {
   const [showBankSelector, setShowBankSelector] = useState(false)
   const [showCreditCardTypeSelector, setShowCreditCardTypeSelector] = useState(false)
   const [selectedCreditCardType, setSelectedCreditCardType] = useState<any>(null)
+  const [registeredBanks, setRegisteredBanks] = useState<Array<{ id: string; name: string; logo_url?: string }>>([])
 
   const [formData, setFormData] = useState({
     card_name: "",
@@ -39,6 +41,30 @@ export default function KrediKartiEklePage() {
   })
 
   const [errors, setErrors] = useState<Record<string, string>>({})
+
+  // Kayıtlı bankaları yükle
+  useEffect(() => {
+    async function fetchRegisteredBanks() {
+      try {
+        const { data, error } = await supabase
+          .from("banks")
+          .select("id, name, logo_url")
+          .eq("is_active", true)
+          .order("name")
+
+        if (error) {
+          console.error("Error fetching registered banks:", error)
+        } else {
+          setRegisteredBanks(data || [])
+          console.log(`📋 ${data?.length || 0} kayıtlı banka yüklendi`)
+        }
+      } catch (error) {
+        console.error("Error fetching registered banks:", error)
+      }
+    }
+
+    fetchRegisteredBanks()
+  }, [])
 
   const validateForm = () => {
     const newErrors: Record<string, string> = {}
@@ -125,12 +151,30 @@ export default function KrediKartiEklePage() {
 
   const handleCreditCardTypeSelect = (creditCardType: any) => {
     setSelectedCreditCardType(creditCardType)
+    // Eşleştirilmiş banka adını kullan
+    const bankNameToUse = creditCardType.matched_bank_name || creditCardType.bank_name
+
     setFormData({
       ...formData,
+      card_name: creditCardType.name, // Kart adını da güncelle
       card_type: creditCardType.segment || "Classic",
-      bank_name: creditCardType.bank_name || formData.bank_name,
+      bank_name: bankNameToUse, // Eşleştirilmiş banka adını kullan
     })
     setShowCreditCardTypeSelector(false)
+
+    // Banka adı hatası varsa temizle
+    if (errors.bank_name) {
+      setErrors({ ...errors, bank_name: "" })
+    }
+    if (errors.card_name) {
+      setErrors({ ...errors, card_name: "" })
+    }
+
+    console.log(`✅ Kart türü seçildi ve banka güncellendi:`, {
+      cardName: creditCardType.name,
+      originalBank: creditCardType.original_bank_name || creditCardType.bank_name,
+      matchedBank: bankNameToUse,
+    })
   }
 
   const handleInputChange = (field: string, value: string) => {
@@ -173,7 +217,6 @@ export default function KrediKartiEklePage() {
                 </p>
               </div>
             </div>
-
             <div className="flex flex-wrap gap-4">
               <div className="bg-white/10 backdrop-blur-sm p-3 rounded-xl">
                 <div className="flex items-center gap-2 text-purple-100">
@@ -213,7 +256,7 @@ export default function KrediKartiEklePage() {
               <CardContent className="space-y-4">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div className="space-y-2">
-                    <Label>Banka *</Label>
+                    <Label>Banka</Label>
                     <Button
                       type="button"
                       variant="outline"
@@ -229,6 +272,21 @@ export default function KrediKartiEklePage() {
                   </div>
 
                   <div className="space-y-2">
+                    <Label>Kart Türü</Label>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      onClick={() => setShowCreditCardTypeSelector(true)}
+                      className="w-full justify-between h-10 bg-transparent"
+                    >
+                      <div className="flex items-center gap-2">
+                        <CreditCard className="h-4 w-4" />
+                        <span>{selectedCreditCardType ? selectedCreditCardType.name : "Kart Türü Seçiniz"}</span>
+                      </div>
+                    </Button>
+                  </div>
+
+                  <div className="space-y-2">
                     <Label htmlFor="card_name">Kart Adı *</Label>
                     <Input
                       id="card_name"
@@ -238,35 +296,6 @@ export default function KrediKartiEklePage() {
                       className={errors.card_name ? "border-red-500" : ""}
                     />
                     {errors.card_name && <p className="text-sm text-red-600">{errors.card_name}</p>}
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label>Kart Türü (İsteğe Bağlı)</Label>
-                    <Button
-                      type="button"
-                      variant="outline"
-                      onClick={() => setShowCreditCardTypeSelector(true)}
-                      className="w-full justify-start h-auto p-3 bg-transparent"
-                    >
-                      <div className="flex items-center gap-3 w-full">
-                        <CreditCard className="h-5 w-5 text-gray-400" />
-                        <div className="text-left flex-1">
-                          {selectedCreditCardType ? (
-                            <div>
-                              <div className="font-medium text-sm">{selectedCreditCardType.name}</div>
-                              <div className="text-xs text-gray-500">{selectedCreditCardType.bank_name}</div>
-                            </div>
-                          ) : (
-                            <div>
-                              <div className="font-medium text-sm">Kredi kartı türünü seçin</div>
-                            </div>
-                          )}
-                        </div>
-                      </div>
-                    </Button>
-                    {selectedCreditCardType && (
-                      <div className="text-xs text-gray-500 px-2">{selectedCreditCardType.description}</div>
-                    )}
                   </div>
 
                   <div className="space-y-2">
@@ -430,77 +459,42 @@ export default function KrediKartiEklePage() {
                     <span className="text-gray-600">Durum:</span>
                     <span className="font-medium capitalize">{formData.status}</span>
                   </div>
-
                   <div className="border-t pt-3">
                     <div className="flex justify-between text-sm font-semibold">
                       <span>Kredi Limiti:</span>
                       <span className="text-blue-600">{Number(formData.credit_limit) || 0} ₺</span>
                     </div>
                   </div>
-
                   <div className="flex justify-between text-sm">
                     <span className="text-gray-600">Mevcut Borç:</span>
                     <span className="font-medium text-red-600">{Number(formData.current_balance) || 0} ₺</span>
                   </div>
-
                   <div className="flex justify-between text-sm">
                     <span className="text-gray-600">Kullanılabilir Limit:</span>
                     <span className="font-medium text-green-600">{availableCredit} ₺</span>
                   </div>
-
                   {Number(formData.credit_limit) > 0 && (
                     <div className="flex justify-between text-sm">
                       <span className="text-gray-600">Kullanım Oranı:</span>
                       <span className="font-medium">{utilizationRate.toFixed(1)}%</span>
                     </div>
                   )}
-
                   {Number(formData.interest_rate) > 0 && (
                     <div className="flex justify-between text-sm">
                       <span className="text-gray-600">Faiz Oranı:</span>
                       <span className="font-medium">%{formData.interest_rate}</span>
                     </div>
                   )}
-
                   {Number(formData.annual_fee) > 0 && (
                     <div className="flex justify-between text-sm">
                       <span className="text-gray-600">Yıllık Aidat:</span>
                       <span className="font-medium">{Number(formData.annual_fee)} ₺</span>
                     </div>
                   )}
-
                   {formData.due_date && (
                     <div className="flex justify-between text-sm">
                       <span className="text-gray-600">Son Ödeme Günü:</span>
                       <span className="font-medium">Her ayın {formData.due_date}. günü</span>
-                    </div>
-                  )}
-
-                  {/* Seçilen Kart Türü Detayları */}
-                  {selectedCreditCardType && (
-                    <div className="border-t pt-3">
-                      <h4 className="font-medium text-gray-900 mb-2 text-sm">Seçilen Kart Türü</h4>
-                      <div className="space-y-1">
-                        <div className="text-xs text-gray-600">
-                          <span className="font-medium">{selectedCreditCardType.name}</span>
-                        </div>
-                        <div className="text-xs text-gray-500">{selectedCreditCardType.bank_name}</div>
-                        {selectedCreditCardType.annual_fee_info && (
-                          <div className="text-xs text-gray-500">{selectedCreditCardType.annual_fee_info}</div>
-                        )}
-                        {selectedCreditCardType.special_features &&
-                          selectedCreditCardType.special_features.length > 0 && (
-                            <div className="flex flex-wrap gap-1 mt-2">
-                              {selectedCreditCardType.special_features
-                                .slice(0, 2)
-                                .map((feature: string, index: number) => (
-                                  <span key={index} className="text-xs bg-blue-50 text-blue-700 px-2 py-1 rounded">
-                                    {feature}
-                                  </span>
-                                ))}
-                            </div>
-                          )}
-                      </div>
                     </div>
                   )}
                 </div>
@@ -519,6 +513,7 @@ export default function KrediKartiEklePage() {
                       </>
                     )}
                   </Button>
+
                   <Link href="/uygulama/kredi-kartlari" className="block">
                     <Button type="button" variant="outline" className="w-full bg-transparent">
                       İptal
@@ -539,6 +534,7 @@ export default function KrediKartiEklePage() {
         <CreditCardTypeSelector
           onCreditCardTypeSelect={handleCreditCardTypeSelect}
           onSkip={() => setShowCreditCardTypeSelector(false)}
+          registeredBanks={registeredBanks}
         />
       )}
     </div>

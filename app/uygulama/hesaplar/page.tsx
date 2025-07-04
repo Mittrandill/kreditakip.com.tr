@@ -309,9 +309,10 @@ export default function HesaplarPage() {
               <p className="opacity-90 text-lg">Banka hesaplarınızı takip edin ve yönetin.</p>
             </div>
             <Button
+              variant="outline-white"
               onClick={openCreateDialog}
               size="lg"
-              className="bg-white text-White-700 hover:bg-gray-100 border-white shrink-0"
+             
             >
               <Plus className="h-5 w-5 mr-2" />
               Yeni Hesap Ekle

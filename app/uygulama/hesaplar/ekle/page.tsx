@@ -1,7 +1,6 @@
 "use client"
 
 import type React from "react"
-
 import { useState } from "react"
 import { useRouter } from "next/navigation"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
@@ -10,11 +9,12 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Textarea } from "@/components/ui/textarea"
-import { ArrowLeft, Plus, Wallet, Building2, Loader2, CheckCircle, Shield, Zap, Clock, CreditCard } from "lucide-react"
+import { ArrowLeft, Plus, Wallet, Building2, Loader2, Shield, Zap, Clock } from "lucide-react"
 import { useAuth } from "@/hooks/use-auth"
 import { createAccount, getBankIdByName } from "@/lib/api/accounts"
 import { toast } from "sonner"
 import BankSelector from "@/components/bank-selector"
+import { AccountTypeSelector } from "@/components/account-type-selector"
 import Link from "next/link"
 
 export default function HesapEklePage() {
@@ -22,6 +22,8 @@ export default function HesapEklePage() {
   const router = useRouter()
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [showBankSelector, setShowBankSelector] = useState(false)
+  const [showAccountTypeSelector, setShowAccountTypeSelector] = useState(false)
+  const [selectedAccountType, setSelectedAccountType] = useState<any>(null)
 
   const [formData, setFormData] = useState({
     account_name: "",
@@ -94,9 +96,11 @@ export default function HesapEklePage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
+
     if (!user?.id || !validateForm()) return
 
     setIsSubmitting(true)
+
     try {
       // Banka ID'sini bul
       const bankId = await getBankIdByName(formData.bank_name)
@@ -140,6 +144,19 @@ export default function HesapEklePage() {
     if (errors.bank_name) {
       setErrors({ ...errors, bank_name: "" })
     }
+  }
+
+  const handleAccountTypeSelect = (accountType: any) => {
+    setSelectedAccountType(accountType)
+    setFormData({
+      ...formData,
+      account_type: accountType.name,
+    })
+    setShowAccountTypeSelector(false)
+    if (errors.account_type) {
+      setErrors({ ...errors, account_type: "" })
+    }
+    console.log(`✅ Hesap türü seçildi:`, accountType)
   }
 
   const handleInputChange = (field: string, value: string) => {
@@ -244,17 +261,7 @@ export default function HesapEklePage() {
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="account_name">Hesap Adı *</Label>
-                    <Input
-                      id="account_name"
-                      value={formData.account_name}
-                      onChange={(e) => handleInputChange("account_name", e.target.value)}
-                      placeholder="Ana Hesabım"
-                      className={errors.account_name ? "border-red-500" : ""}
-                    />
-                    {errors.account_name && <p className="text-sm text-red-600">{errors.account_name}</p>}
-                  </div>
+
 
                   <div className="space-y-2">
                     <Label>Banka *</Label>
@@ -273,48 +280,31 @@ export default function HesapEklePage() {
                   </div>
 
                   <div className="space-y-2">
-                    <Label htmlFor="account_type">Hesap Türü *</Label>
-                    <Select
-                      value={formData.account_type}
-                      onValueChange={(value) => handleInputChange("account_type", value)}
+                    <Label>Hesap Türü *</Label>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      className="w-full justify-between h-10 bg-transparent"
+                      onClick={() => setShowAccountTypeSelector(true)}
                     >
-                      <SelectTrigger className={errors.account_type ? "border-red-500" : ""}>
-                        <SelectValue placeholder="Hesap türü seçiniz" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="vadesiz">
-                          <div className="flex items-center gap-2">
-                            <Wallet className="h-4 w-4" />
-                            Vadesiz Hesap
-                          </div>
-                        </SelectItem>
-                        <SelectItem value="vadeli">
-                          <div className="flex items-center gap-2">
-                            <CheckCircle className="h-4 w-4" />
-                            Vadeli Hesap
-                          </div>
-                        </SelectItem>
-                        <SelectItem value="yatirim">
-                          <div className="flex items-center gap-2">
-                            <Plus className="h-4 w-4" />
-                            Yatırım Hesabı
-                          </div>
-                        </SelectItem>
-                        <SelectItem value="tasarruf">
-                          <div className="flex items-center gap-2">
-                            <Building2 className="h-4 w-4" />
-                            Tasarruf Hesabı
-                          </div>
-                        </SelectItem>
-                        <SelectItem value="diger">
-                          <div className="flex items-center gap-2">
-                            <CreditCard className="h-4 w-4" />
-                            Diğer
-                          </div>
-                        </SelectItem>
-                      </SelectContent>
-                    </Select>
+                      <div className="flex items-center gap-2">
+                        <Wallet className="h-4 w-4" />
+                        <span>{selectedAccountType ? selectedAccountType.name : "Hesap türü seçiniz"}</span>
+                      </div>
+                    </Button>
                     {errors.account_type && <p className="text-sm text-red-600">{errors.account_type}</p>}
+                  </div>
+
+                                    <div className="space-y-2">
+                    <Label htmlFor="account_name">Hesap Adı *</Label>
+                    <Input
+                      id="account_name"
+                      value={formData.account_name}
+                      onChange={(e) => handleInputChange("account_name", e.target.value)}
+                      placeholder="Ana Hesabım"
+                      className={errors.account_name ? "border-red-500" : ""}
+                    />
+                    {errors.account_name && <p className="text-sm text-red-600">{errors.account_name}</p>}
                   </div>
 
                   <div className="space-y-2">
@@ -487,7 +477,7 @@ export default function HesapEklePage() {
                   </div>
                   <div className="flex justify-between text-sm">
                     <span className="text-gray-600">Hesap Türü:</span>
-                    <span className="font-medium capitalize">{formData.account_type || "-"}</span>
+                    <span className="font-medium">{selectedAccountType?.name || "-"}</span>
                   </div>
                   <div className="flex justify-between text-sm">
                     <span className="text-gray-600">Para Birimi:</span>
@@ -555,6 +545,16 @@ export default function HesapEklePage() {
 
       {/* Bank Selector Modal */}
       {showBankSelector && <BankSelector onBankSelect={handleBankSelect} onSkip={() => setShowBankSelector(false)} />}
+
+      {/* Account Type Selector Modal */}
+      {showAccountTypeSelector && (
+        <AccountTypeSelector
+          open={showAccountTypeSelector}
+          onOpenChange={setShowAccountTypeSelector}
+          onSelect={handleAccountTypeSelect}
+          selectedAccountType={selectedAccountType}
+        />
+      )}
     </div>
   )
 }

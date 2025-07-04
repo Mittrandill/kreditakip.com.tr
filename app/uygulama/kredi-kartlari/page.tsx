@@ -322,9 +322,9 @@ export default function KrediKartlariPage() {
               <p className="opacity-90 text-lg">Kredi kartlarınızı takip edin ve yönetin.</p>
             </div>
             <Button
+              variant="outline-white"
               onClick={openCreateDialog}
-              size="lg"
-              className="bg-white text-white-700 hover:bg-gray-100 border-white shrink-0"
+              size="lg"      
             >
               <Plus className="h-5 w-5 mr-2" />
               Yeni Kart Ekle

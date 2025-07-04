@@ -15,7 +15,7 @@ import { useToast } from "@/hooks/use-toast"
 import { useAuth } from "@/hooks/use-auth"
 import { createCredit } from "@/lib/api/credits"
 import { BankSelector } from "@/components/bank-selector"
-import CreditTypeSelector from "@/components/credit-type-selector"
+import { CreditTypeSelector } from "@/components/credit-type-selector" // Changed to named import
 import { CalendarModal } from "@/components/calendar-modal"
 import { formatCurrency } from "@/lib/format"
 import { supabase } from "@/lib/supabase"
@@ -404,7 +404,7 @@ export default function KrediEklePage() {
                     <Button
                       type="button"
                       variant="outline"
-                      className="w-full justify-between h-10"
+                      className="w-full justify-between h-10 bg-transparent"
                       onClick={() => setShowBankModal(true)}
                     >
                       <div className="flex items-center gap-2">
@@ -420,7 +420,7 @@ export default function KrediEklePage() {
                     <Button
                       type="button"
                       variant="outline"
-                      className="w-full justify-between h-10"
+                      className="w-full justify-between h-10 bg-transparent"
                       onClick={() => setShowCreditTypeModal(true)}
                     >
                       <div className="flex items-center gap-2">
@@ -535,7 +535,7 @@ export default function KrediEklePage() {
                     <Button
                       type="button"
                       variant="outline"
-                      className="w-full justify-between h-10"
+                      className="w-full justify-between h-10 bg-transparent"
                       onClick={() => setShowCalendarModal(true)}
                     >
                       <div className="flex items-center gap-2">
@@ -684,7 +684,7 @@ export default function KrediEklePage() {
                   </Button>
 
                   <Link href="/uygulama/krediler" className="block">
-                    <Button type="button" variant="outline" className="w-full">
+                    <Button type="button" variant="outline" className="w-full bg-transparent">
                       İptal
                     </Button>
                   </Link>
@@ -701,7 +701,13 @@ export default function KrediEklePage() {
       )}
 
       {showCreditTypeModal && (
-        <CreditTypeSelector onCreditTypeSelect={handleCreditTypeSelect} onSkip={() => setShowCreditTypeModal(false)} />
+        <CreditTypeSelector
+          open={showCreditTypeModal}
+          onOpenChange={setShowCreditTypeModal}
+          onSelect={handleCreditTypeSelect}
+          selectedCreditType={null}
+          creditTypes={creditTypes}
+        />
       )}
 
       {showCalendarModal && (
