@@ -6,8 +6,14 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Progress } from "@/components/ui/progress"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+  DropdownMenuSeparator,
+} from "@/components/ui/dropdown-menu"
 import {
   Dialog,
   DialogContent,
@@ -22,7 +28,7 @@ import { Textarea } from "@/components/ui/textarea"
 import {
   Wallet,
   ArrowLeft,
-  MoreHorizontal,
+  MoreVertical,
   Edit,
   Trash2,
   DollarSign,
@@ -44,6 +50,15 @@ import {
   Loader2,
   Eye,
   EyeOff,
+  FileText,
+  History,
+  BarChart3,
+  Target,
+  ChevronDown,
+  Download,
+  Phone,
+  Mail,
+  MapPin,
 } from "lucide-react"
 
 import { useAuth } from "@/hooks/use-auth"
@@ -135,6 +150,7 @@ export default function HesapDetayPage() {
 
   const [notificationsEnabled, setNotificationsEnabled] = useState(true)
   const [showAccountNumber, setShowAccountNumber] = useState(false)
+  const [activeTab, setActiveTab] = useState("genel")
 
   useEffect(() => {
     if (accountId) {
@@ -194,8 +210,9 @@ export default function HesapDetayPage() {
 
   if (authLoading || loading) {
     return (
-      <div className="flex items-center justify-center min-h-[200px]">
-        <Loader2 className="h-8 w-8 animate-spin text-blue-600" />
+      <div className="flex flex-col gap-4 md:gap-6 items-center justify-center min-h-[calc(100vh-150px)]">
+        <Loader2 className="h-12 w-12 animate-spin text-emerald-600" />
+        <p className="text-lg text-gray-600">Hesap detayları yükleniyor...</p>
       </div>
     )
   }
@@ -220,12 +237,8 @@ export default function HesapDetayPage() {
       <div className="flex flex-col items-center justify-center min-h-[calc(100vh-150px)]">
         <AlertCircle className="h-12 w-12 text-red-500 mb-4" />
         <p className="text-lg text-red-600">{error || "Hesap bulunamadı."}</p>
-        <Button
-          onClick={() => router.push("/uygulama/hesaplar")}
-          className="mt-4 bg-gradient-to-r from-blue-600 to-indigo-700 hover:from-blue-700 hover:to-indigo-800 text-white"
-        >
-          <ArrowLeft className="h-4 w-4 mr-2" />
-          Hesaplara Dön
+        <Button onClick={() => router.back()} className="mt-4">
+          Geri Dön
         </Button>
       </div>
     )
@@ -236,61 +249,62 @@ export default function HesapDetayPage() {
 
   return (
     <div className="flex flex-col gap-4 md:gap-6">
-      {/* Back Button */}
-      <Button
-        variant="ghost"
-        onClick={() => router.push("/uygulama/hesaplar")}
-        className="self-start hover:bg-gray-100"
-      >
-        <ArrowLeft className="h-4 w-4 mr-2" />
-        Hesaplara Dön
-      </Button>
-
       {/* Hero Section */}
-      <Card
-        className={`bg-gradient-to-r ${getAccountTypeColor(account.account_type)} text-white border-transparent shadow-xl rounded-xl`}
-      >
-        <CardContent className="p-6 md:p-8">
-          <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-6">
-            <div className="flex items-start gap-4">
-              <div className="flex items-center gap-3">
-                <BankLogo bankName={account.banks?.name || ""} size="lg" className="bg-white/20 p-2 rounded-lg" />
-                <div className="bg-white/20 p-3 rounded-lg">{getAccountTypeIcon(account.account_type)}</div>
-              </div>
-              <div>
-                <h1 className="text-3xl font-bold mb-2">{account.account_name}</h1>
-                <p className="opacity-90 text-lg mb-4">{account.banks?.name}</p>
-                <div className="flex items-center gap-4 text-sm opacity-90">
-                  <span className="flex items-center gap-1">
-                    <Calendar className="h-4 w-4" />
-                    {format(new Date(account.created_at), "dd MMMM yyyy", { locale: tr })}
-                  </span>
-                  <Badge className="bg-white/20 text-white border-white/30">
-                    {getStatusIcon(account.is_active)}
-                    <span className="ml-1">{account.is_active ? "Aktif" : "Pasif"}</span>
-                  </Badge>
+      <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-teal-600 via-emerald-600 to-teal-700 p-8 text-white shadow-2xl">
+        <div className="absolute inset-0 bg-black/10"></div>
+        <div className="relative z-10">
+          <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6 mb-8">
+            <div className="flex items-center gap-4">
+              <Button
+                variant="outline"
+                size="icon"
+                onClick={() => router.back()}
+                className="bg-white/20 border-white/30 text-white hover:bg-white/30"
+              >
+                <ArrowLeft className="h-4 w-4" />
+              </Button>
+              <div className="flex items-center gap-4">
+                <BankLogo
+                  bankName={account.banks?.name || "Bilinmeyen Banka"}
+                  size="lg"
+                  className="bg-white/20 border-2 border-white"
+                />
+                <div>
+                  <h1 className="text-3xl md:text-4xl font-bold mb-2">Hesap Detayı</h1>
+                  <p className="text-teal-100 text-lg">
+                    {account.account_name} - {account.banks?.name || "N/A"}
+                  </p>
+                  <p className="text-teal-200 text-sm capitalize">{account.account_type}</p>
                 </div>
               </div>
             </div>
-            <div className="flex flex-col sm:flex-row gap-3">
+            <div className="flex flex-wrap gap-3">
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <Button size="lg" className="bg-white/20 text-white hover:bg-white/30 border-white/30">
-                    <MoreHorizontal className="h-5 w-5 mr-2" />
+                  <Button
+                    size="sm"
+                    className="bg-white text-gray-800 hover:bg-gray-100 hover:text-gray-900 font-semibold shadow-lg border border-white/20 backdrop-blur-sm gap-2"
+                  >
+                    <MoreVertical className="h-4 w-4" />
                     İşlemler
+                    <ChevronDown className="h-4 w-4" />
                   </Button>
                 </DropdownMenuTrigger>
-                <DropdownMenuContent align="end">
-                  <DropdownMenuItem onClick={() => setBalanceUpdateDialogOpen(true)}>
-                    <DollarSign className="mr-2 h-4 w-4" />
+                <DropdownMenuContent align="end" className="w-48">
+                  <DropdownMenuItem onClick={() => setBalanceUpdateDialogOpen(true)} className="gap-2">
+                    <DollarSign className="h-4 w-4 text-emerald-600" />
                     Bakiye Güncelle
                   </DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => router.push(`/uygulama/hesaplar/${account.id}/duzenle`)}>
-                    <Edit className="mr-2 h-4 w-4" />
+                  <DropdownMenuItem
+                    onClick={() => router.push(`/uygulama/hesaplar/${account.id}/duzenle`)}
+                    className="gap-2"
+                  >
+                    <Edit className="h-4 w-4 text-blue-600" />
                     Düzenle
                   </DropdownMenuItem>
-                  <DropdownMenuItem className="text-red-600" onClick={handleDeleteAccount}>
-                    <Trash2 className="mr-2 h-4 w-4" />
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem className="text-red-600 gap-2" onClick={handleDeleteAccount}>
+                    <Trash2 className="h-4 w-4" />
                     Sil
                   </DropdownMenuItem>
                 </DropdownMenuContent>
@@ -298,27 +312,27 @@ export default function HesapDetayPage() {
             </div>
           </div>
 
-          {/* Key Metrics */}
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-8">
-            <div className="bg-white/10 rounded-lg p-4">
-              <p className="text-sm opacity-80">Mevcut Bakiye</p>
-              <p className="text-2xl font-bold">
+          {/* Hesap Bilgileri Grid */}
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-6 mb-6">
+            <div className="text-center">
+              <p className="text-teal-100 text-sm mb-1">Mevcut Bakiye</p>
+              <p className="text-2xl md:text-3xl font-bold">
                 {formatCurrency(account.current_balance)} {account.currency}
               </p>
             </div>
-            <div className="bg-white/10 rounded-lg p-4">
-              <p className="text-sm opacity-80">Faiz Oranı</p>
-              <p className="text-2xl font-bold">%{formatNumber(account.interest_rate)}</p>
+            <div className="text-center">
+              <p className="text-teal-100 text-sm mb-1">Faiz Oranı</p>
+              <p className="text-2xl md:text-3xl font-bold">%{formatNumber(account.interest_rate)}</p>
             </div>
-            <div className="bg-white/10 rounded-lg p-4">
-              <p className="text-sm opacity-80">Kredili Mevduat</p>
-              <p className="text-2xl font-bold">
+            <div className="text-center">
+              <p className="text-teal-100 text-sm mb-1">Kredili Mevduat</p>
+              <p className="text-2xl md:text-3xl font-bold">
                 {formatCurrency(account.overdraft_limit)} {account.currency}
               </p>
             </div>
-            <div className="bg-white/10 rounded-lg p-4">
-              <p className="text-sm opacity-80">Kullanılabilir</p>
-              <p className="text-2xl font-bold">
+            <div className="text-center">
+              <p className="text-teal-100 text-sm mb-1">Kullanılabilir</p>
+              <p className="text-2xl md:text-3xl font-bold">
                 {formatCurrency(account.current_balance + account.overdraft_limit)} {account.currency}
               </p>
             </div>
@@ -326,249 +340,424 @@ export default function HesapDetayPage() {
 
           {/* Overdraft Usage Progress */}
           {account.overdraft_limit > 0 && (
-            <div className="mt-6">
+            <div className="mb-6">
               <div className="flex justify-between items-center mb-2">
-                <span className="text-sm opacity-80">Kredili Mevduat Kullanımı</span>
-                <span className="text-sm font-medium">
+                <span className="text-sm font-medium">Kredili Mevduat Kullanımı</span>
+                <span className="text-sm font-bold">
                   {formatCurrency(overdraftUsage)} / {formatCurrency(account.overdraft_limit)} {account.currency}
                 </span>
               </div>
-              <Progress value={overdraftUsagePercentage} className="h-2 bg-white/20" />
+              <Progress value={overdraftUsagePercentage} className="h-3 bg-white/20" />
+              <p className="text-xs text-teal-100 mt-1">{overdraftUsagePercentage.toFixed(1)}% kullanıldı</p>
             </div>
           )}
-        </CardContent>
-      </Card>
 
-      {/* Main Content Tabs */}
-      <Tabs defaultValue="genel" className="w-full">
-        <TabsList className="grid w-full grid-cols-5 bg-white border border-gray-200 rounded-xl p-1">
-          <TabsTrigger value="genel" className="rounded-lg">
-            Genel
-          </TabsTrigger>
-          <TabsTrigger value="hareketler" className="rounded-lg">
-            Hareketler
-          </TabsTrigger>
-          <TabsTrigger value="gecmis" className="rounded-lg">
-            Geçmiş
-          </TabsTrigger>
-          <TabsTrigger value="grafikler" className="rounded-lg">
-            Grafikler
-          </TabsTrigger>
-          <TabsTrigger value="ayarlar" className="rounded-lg">
-            Ayarlar
-          </TabsTrigger>
-        </TabsList>
+          {/* Status Badge */}
+          <div className="flex items-center justify-between">
+            <Badge className="bg-gradient-to-r from-emerald-600 to-teal-700 text-white border-transparent hover:from-emerald-700 hover:to-teal-800 px-4 py-2 text-sm font-semibold shadow-lg">
+              <CheckCircle className="mr-2 h-4 w-4" />
+              {account.is_active ? "Aktif" : "Pasif"}
+            </Badge>
+            <div className="text-right">
+              <p className="text-teal-100 text-sm">
+                Açılış: {format(new Date(account.created_at), "dd MMMM yyyy", { locale: tr })}
+              </p>
+              <p className="text-teal-100 text-sm">
+                Son Güncelleme:{" "}
+                {account.last_balance_update
+                  ? format(new Date(account.last_balance_update), "dd MMMM yyyy", { locale: tr })
+                  : "Henüz güncellenmedi"}
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
 
-        <TabsContent value="genel" className="space-y-6">
-          <div className="grid gap-6 md:grid-cols-2">
-            {/* Account Details */}
-            <Card className="shadow-lg rounded-xl">
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Building2 className="h-5 w-5 text-blue-600" />
-                  Hesap Bilgileri
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="grid grid-cols-2 gap-4">
+      {/* Modern Tabs */}
+      <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+          <div className="border-b border-gray-100 bg-gray-100">
+            <TabsList className="grid grid-cols-5 bg-transparent h-auto p-2 gap-2">
+              <TabsTrigger
+                value="genel"
+                className="flex items-center gap-2 py-3 px-4 data-[state=active]:text-emerald-600 rounded-xl transition-all duration-200 hover:bg-gray-100"
+              >
+                <FileText className="h-4 w-4" />
+                <span className="hidden sm:inline font-medium">Genel Bilgiler</span>
+                <span className="sm:hidden font-medium">Genel</span>
+              </TabsTrigger>
+              <TabsTrigger
+                value="hareketler"
+                className="flex items-center gap-2 py-3 px-4 data-[state=active]:text-emerald-600 rounded-xl transition-all duration-200 hover:bg-gray-100"
+              >
+                <Calendar className="h-4 w-4" />
+                <span className="hidden sm:inline font-medium">Hareketler</span>
+                <span className="sm:hidden font-medium">Hareket</span>
+              </TabsTrigger>
+              <TabsTrigger
+                value="gecmis"
+                className="flex items-center gap-2 py-3 px-4 data-[state=active]:text-emerald-600 rounded-xl transition-all duration-200 hover:bg-gray-100"
+              >
+                <History className="h-4 w-4" />
+                <span className="hidden sm:inline font-medium">İşlem Geçmişi</span>
+                <span className="sm:hidden font-medium">Geçmiş</span>
+              </TabsTrigger>
+              <TabsTrigger
+                value="grafikler"
+                className="flex items-center gap-2 py-3 px-4 data-[state=active]:text-emerald-600 rounded-xl transition-all duration-200 hover:bg-gray-100"
+              >
+                <BarChart3 className="h-4 w-4" />
+                <span className="hidden sm:inline font-medium">Grafikler</span>
+                <span className="sm:hidden font-medium">Grafik</span>
+              </TabsTrigger>
+              <TabsTrigger
+                value="ayarlar"
+                className="flex items-center gap-2 py-3 px-4 data-[state=active]:text-emerald-600 rounded-xl transition-all duration-200 hover:bg-gray-100"
+              >
+                <Settings className="h-4 w-4" />
+                <span className="hidden sm:inline font-medium">Ayarlar</span>
+                <span className="sm:hidden font-medium">Ayar</span>
+              </TabsTrigger>
+            </TabsList>
+          </div>
+          <div className="p-6">
+            {/* Genel Bilgiler Tab */}
+            {activeTab === "genel" && (
+              <div className="space-y-6">
+                <div className="grid md:grid-cols-2 gap-6">
+                  <Card className="shadow-sm border-gray-200">
+                    <CardHeader>
+                      <CardTitle className="flex items-center gap-2 text-gray-900">
+                        <Building2 className="h-5 w-5 text-teal-600" />
+                        Hesap Bilgileri
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                      <div className="grid grid-cols-2 gap-4">
+                        <div>
+                          <p className="text-sm text-gray-500">Hesap Adı</p>
+                          <p className="font-medium text-gray-900">{account.account_name}</p>
+                        </div>
+                        <div>
+                          <p className="text-sm text-gray-500">Hesap Türü</p>
+                          <p className="font-medium text-gray-900 capitalize">{account.account_type}</p>
+                        </div>
+                        <div>
+                          <p className="text-sm text-gray-500">Para Birimi</p>
+                          <p className="font-medium text-gray-900">{account.currency}</p>
+                        </div>
+                        <div>
+                          <p className="text-sm text-gray-500">Durum</p>
+                          <Badge className="bg-gradient-to-r from-emerald-600 to-teal-700 text-white border-transparent hover:from-emerald-700 hover:to-teal-800">
+                            {account.is_active ? "Aktif" : "Pasif"}
+                          </Badge>
+                        </div>
+                        <div>
+                          <p className="text-sm text-gray-500">Hesap No</p>
+                          <div className="flex items-center gap-2">
+                            <p className="font-medium">
+                              {showAccountNumber ? account.account_number || "Belirtilmemiş" : "••••••••••••"}
+                            </p>
+                            <Button variant="ghost" size="sm" onClick={() => setShowAccountNumber(!showAccountNumber)}>
+                              {showAccountNumber ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                            </Button>
+                          </div>
+                        </div>
+                        <div>
+                          <p className="text-sm text-gray-500">IBAN</p>
+                          <p className="font-medium text-gray-900">{account.iban || "Belirtilmemiş"}</p>
+                        </div>
+                      </div>
+                      {account.notes && (
+                        <div>
+                          <p className="text-sm text-gray-500">Notlar</p>
+                          <p className="text-sm bg-gray-50 p-3 rounded-lg">{account.notes}</p>
+                        </div>
+                      )}
+                    </CardContent>
+                  </Card>
+
+                  <Card className="shadow-sm border-gray-200">
+                    <CardHeader>
+                      <CardTitle className="flex items-center gap-2 text-gray-900">
+                        <Building2 className="h-5 w-5 text-teal-600" />
+                        Banka Bilgileri
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                      <div className="flex items-center gap-4 mb-4">
+                        <BankLogo bankName={account.banks?.name || "Bilinmeyen Banka"} size="md" />
+                        <div>
+                          <p className="font-semibold text-gray-900">{account.banks?.name || "N/A"}</p>
+                          <p className="text-sm text-gray-500">Banka</p>
+                        </div>
+                      </div>
+                      <div className="space-y-3">
+                        <div className="flex items-center gap-2 text-sm">
+                          <Phone className="h-4 w-4 text-gray-400" />
+                          <span className="text-gray-600">{account.banks?.contact_phone || "N/A"}</span>
+                        </div>
+                        <div className="flex items-center gap-2 text-sm">
+                          <Mail className="h-4 w-4 text-gray-400" />
+                          <span className="text-gray-600">{account.banks?.contact_email || "N/A"}</span>
+                        </div>
+                        <div className="flex items-center gap-2 text-sm">
+                          <MapPin className="h-4 w-4 text-gray-400" />
+                          <span className="text-gray-600">{account.banks?.website || "N/A"}</span>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                </div>
+
+                {/* Özet İstatistikler */}
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                  <Card className="bg-blue-500 border-blue-500">
+                    <CardContent className="p-4">
+                      <div className="flex items-center gap-3">
+                        <div className="bg-white p-2 rounded-lg">
+                          <Wallet className="h-5 w-5 text-blue-500" />
+                        </div>
+                        <div>
+                          <p className="text-sm text-blue-100">Mevcut Bakiye</p>
+                          <p className="text-xl font-bold text-white">{formatCurrency(account.current_balance)}</p>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                  <Card className="bg-emerald-500 border-emerald-500">
+                    <CardContent className="p-4">
+                      <div className="flex items-center gap-3">
+                        <div className="bg-white p-2 rounded-lg">
+                          <TrendingUp className="h-5 w-5 text-emerald-500" />
+                        </div>
+                        <div>
+                          <p className="text-sm text-emerald-100">Faiz Oranı</p>
+                          <p className="text-xl font-bold text-white">%{formatNumber(account.interest_rate)}</p>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                  <Card className="bg-orange-500 border-orange-500">
+                    <CardContent className="p-4">
+                      <div className="flex items-center gap-3">
+                        <div className="bg-white p-2 rounded-lg">
+                          <CreditCard className="h-5 w-5 text-orange-500" />
+                        </div>
+                        <div>
+                          <p className="text-sm text-orange-100">Kredili Mevduat</p>
+                          <p className="text-xl font-bold text-white">{formatCurrency(account.overdraft_limit)}</p>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                  <Card className="bg-purple-500 border-purple-500">
+                    <CardContent className="p-4">
+                      <div className="flex items-center gap-3">
+                        <div className="bg-white p-2 rounded-lg">
+                          <Target className="h-5 w-5 text-purple-500" />
+                        </div>
+                        <div>
+                          <p className="text-sm text-purple-100">Kullanılabilir</p>
+                          <p className="text-xl font-bold text-white">
+                            {formatCurrency(account.current_balance + account.overdraft_limit)}
+                          </p>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                </div>
+              </div>
+            )}
+
+            {/* Hareketler Tab */}
+            {activeTab === "hareketler" && (
+              <div className="space-y-6">
+                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                   <div>
-                    <p className="text-sm text-gray-500">Hesap Türü</p>
-                    <p className="font-medium capitalize">{account.account_type}</p>
+                    <h3 className="text-lg font-semibold text-gray-900">Hesap Hareketleri</h3>
+                    <p className="text-sm text-gray-600">Son işlemlerinizi buradan takip edebilirsiniz.</p>
                   </div>
+                  <Button variant="outline" size="sm" className="gap-2 w-fit bg-transparent">
+                    <Download className="h-4 w-4" />
+                    Hareketleri İndir
+                  </Button>
+                </div>
+
+                <div className="text-center py-12 text-gray-500">
+                  <Wallet className="h-16 w-16 mx-auto mb-4 text-gray-400" />
+                  <h3 className="font-medium text-gray-900 mb-2">Henüz Hareket Yok</h3>
+                  <p className="text-sm">Hesap hareketleriniz burada görünecek</p>
+                </div>
+              </div>
+            )}
+
+            {/* Geçmiş Tab */}
+            {activeTab === "gecmis" && (
+              <div className="space-y-6">
+                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                   <div>
-                    <p className="text-sm text-gray-500">Para Birimi</p>
-                    <p className="font-medium">{account.currency}</p>
+                    <h3 className="text-lg font-semibold text-gray-900">İşlem Geçmişi</h3>
+                    <p className="text-sm text-gray-600">Tüm işlem geçmişinizi buradan inceleyebilirsiniz.</p>
                   </div>
-                  <div>
-                    <p className="text-sm text-gray-500">Hesap No</p>
-                    <div className="flex items-center gap-2">
-                      <p className="font-medium">
-                        {showAccountNumber ? account.account_number || "Belirtilmemiş" : "••••••••••••"}
-                      </p>
-                      <Button variant="ghost" size="sm" onClick={() => setShowAccountNumber(!showAccountNumber)}>
-                        {showAccountNumber ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                  <Button variant="outline" size="sm" className="gap-2 w-fit bg-transparent">
+                    <Download className="h-4 w-4" />
+                    Geçmişi İndir
+                  </Button>
+                </div>
+
+                <div className="text-center py-12 text-gray-500">
+                  <History className="h-16 w-16 mx-auto mb-4 text-gray-400" />
+                  <h3 className="font-medium text-gray-900 mb-2">İşlem Geçmişi Bulunamadı</h3>
+                  <p className="text-sm">İşlem geçmişiniz burada görünecek</p>
+                </div>
+              </div>
+            )}
+
+            {/* Grafikler Tab */}
+            {activeTab === "grafikler" && (
+              <div className="space-y-6">
+                <div className="grid md:grid-cols-2 gap-6">
+                  <Card className="shadow-sm border-gray-200">
+                    <CardHeader>
+                      <CardTitle className="flex items-center gap-2 text-gray-900">
+                        <TrendingUp className="h-5 w-5 text-teal-600" />
+                        Bakiye Trendi
+                      </CardTitle>
+                      <CardDescription>Son 6 ayın bakiye değişimi</CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                      <ResponsiveContainer width="100%" height={300}>
+                        <LineChart data={balanceHistory}>
+                          <CartesianGrid strokeDasharray="3 3" />
+                          <XAxis dataKey="date" />
+                          <YAxis />
+                          <Tooltip formatter={(value) => [formatCurrency(value as number), "Bakiye"]} />
+                          <Line type="monotone" dataKey="balance" stroke="#3b82f6" strokeWidth={2} />
+                        </LineChart>
+                      </ResponsiveContainer>
+                    </CardContent>
+                  </Card>
+
+                  <Card className="shadow-sm border-gray-200">
+                    <CardHeader>
+                      <CardTitle className="flex items-center gap-2 text-gray-900">
+                        <BarChart3 className="h-5 w-5 text-teal-600" />
+                        İşlem Dağılımı
+                      </CardTitle>
+                      <CardDescription>İşlem türlerine göre dağılım</CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                      <ResponsiveContainer width="100%" height={300}>
+                        <PieChart>
+                          <Pie
+                            data={transactionCategories}
+                            cx="50%"
+                            cy="50%"
+                            outerRadius={80}
+                            fill="#8884d8"
+                            dataKey="value"
+                            label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
+                          >
+                            {transactionCategories.map((entry, index) => (
+                              <Cell key={`cell-${index}`} fill={entry.color} />
+                            ))}
+                          </Pie>
+                          <Tooltip />
+                        </PieChart>
+                      </ResponsiveContainer>
+                    </CardContent>
+                  </Card>
+                </div>
+              </div>
+            )}
+
+            {/* Ayarlar Tab */}
+            {activeTab === "ayarlar" && (
+              <div className="space-y-6">
+                <div className="grid md:grid-cols-2 gap-6">
+                  <Card className="shadow-sm border-gray-200">
+                    <CardHeader>
+                      <CardTitle className="text-gray-900">Bildirim Ayarları</CardTitle>
+                      <CardDescription>Bu hesap için bildirim tercihleriniz</CardDescription>
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <p className="font-medium text-gray-900">Hesap Hareketleri</p>
+                          <p className="text-sm text-gray-500">Hesap hareketleri için bildirim al</p>
+                        </div>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => setNotificationsEnabled(!notificationsEnabled)}
+                          className={notificationsEnabled ? "text-green-600 border-green-600" : "text-gray-600"}
+                        >
+                          {notificationsEnabled ? <Bell className="h-4 w-4" /> : <BellOff className="h-4 w-4" />}
+                        </Button>
+                      </div>
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <p className="font-medium text-gray-900">Bakiye Değişiklikleri</p>
+                          <p className="text-sm text-gray-500">Bakiye değiştiğinde bildirim al</p>
+                        </div>
+                        <Button variant="outline" size="sm" className="text-blue-600 border-blue-600 bg-transparent">
+                          <Bell className="h-4 w-4" />
+                        </Button>
+                      </div>
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <p className="font-medium text-gray-900">Aylık Rapor</p>
+                          <p className="text-sm text-gray-500">Aylık hesap raporu gönder</p>
+                        </div>
+                        <Button variant="outline" size="sm" className="text-gray-600 bg-transparent">
+                          <BellOff className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    </CardContent>
+                  </Card>
+
+                  <Card className="shadow-sm border-gray-200">
+                    <CardHeader>
+                      <CardTitle className="text-gray-900">Hızlı İşlemler</CardTitle>
+                      <CardDescription>Bu hesap için yapabileceğiniz işlemler</CardDescription>
+                    </CardHeader>
+                    <CardContent className="space-y-3">
+                      <Button
+                        className="w-full justify-start bg-teal-500 hover:bg-teal-600"
+                        onClick={() => setBalanceUpdateDialogOpen(true)}
+                      >
+                        <Plus className="mr-2 h-4 w-4" />
+                        Bakiye Güncelle
                       </Button>
-                    </div>
-                  </div>
-                  <div>
-                    <p className="text-sm text-gray-500">IBAN</p>
-                    <p className="font-medium">{account.iban || "Belirtilmemiş"}</p>
-                  </div>
+                      <Button
+                        variant="outline"
+                        className="w-full justify-start bg-transparent"
+                        onClick={() => router.push(`/uygulama/hesaplar/${account.id}/duzenle`)}
+                      >
+                        <Edit className="mr-2 h-4 w-4" />
+                        Hesap Bilgilerini Düzenle
+                      </Button>
+                      <Button variant="outline" className="w-full justify-start bg-transparent">
+                        <ArrowUpRight className="mr-2 h-4 w-4" />
+                        Havale/EFT Yap
+                      </Button>
+                      <Button variant="outline" className="w-full justify-start bg-transparent">
+                        <ArrowDownRight className="mr-2 h-4 w-4" />
+                        Para Yatır
+                      </Button>
+                      <Button variant="outline" className="w-full justify-start bg-transparent">
+                        <Download className="mr-2 h-4 w-4" />
+                        Hesap Ekstresini İndir
+                      </Button>
+                    </CardContent>
+                  </Card>
                 </div>
-                {account.notes && (
-                  <div>
-                    <p className="text-sm text-gray-500">Notlar</p>
-                    <p className="text-sm bg-gray-50 p-3 rounded-lg">{account.notes}</p>
-                  </div>
-                )}
-              </CardContent>
-            </Card>
-
-            {/* Quick Actions */}
-            <Card className="shadow-lg rounded-xl">
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <CreditCard className="h-5 w-5 text-green-600" />
-                  Hızlı İşlemler
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-3">
-                <Button
-                  className="w-full justify-start bg-gradient-to-r from-green-600 to-emerald-700 hover:from-green-700 hover:to-emerald-800 text-white"
-                  onClick={() => setBalanceUpdateDialogOpen(true)}
-                >
-                  <Plus className="mr-2 h-4 w-4" />
-                  Bakiye Güncelle
-                </Button>
-                <Button
-                  variant="outline"
-                  className="w-full justify-start hover:bg-blue-50 hover:text-blue-600 bg-transparent"
-                  onClick={() => router.push(`/uygulama/hesaplar/${account.id}/duzenle`)}
-                >
-                  <Edit className="mr-2 h-4 w-4" />
-                  Hesap Bilgilerini Düzenle
-                </Button>
-                <Button
-                  variant="outline"
-                  className="w-full justify-start hover:bg-orange-50 hover:text-orange-600 bg-transparent"
-                >
-                  <ArrowUpRight className="mr-2 h-4 w-4" />
-                  Havale/EFT Yap
-                </Button>
-                <Button
-                  variant="outline"
-                  className="w-full justify-start hover:bg-purple-50 hover:text-purple-600 bg-transparent"
-                >
-                  <ArrowDownRight className="mr-2 h-4 w-4" />
-                  Para Yatır
-                </Button>
-              </CardContent>
-            </Card>
+              </div>
+            )}
           </div>
-        </TabsContent>
-
-        <TabsContent value="hareketler" className="space-y-6">
-          <Card className="shadow-lg rounded-xl">
-            <CardHeader>
-              <CardTitle>Hesap Hareketleri</CardTitle>
-              <CardDescription>Son işlemlerinizi buradan takip edebilirsiniz.</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="text-center py-8">
-                <Wallet className="mx-auto h-12 w-12 text-gray-400" />
-                <h3 className="mt-2 text-sm font-medium text-gray-900">Henüz hareket yok</h3>
-                <p className="mt-1 text-sm text-gray-500">Hesap hareketleriniz burada görünecek.</p>
-              </div>
-            </CardContent>
-          </Card>
-        </TabsContent>
-
-        <TabsContent value="gecmis" className="space-y-6">
-          <Card className="shadow-lg rounded-xl">
-            <CardHeader>
-              <CardTitle>İşlem Geçmişi</CardTitle>
-              <CardDescription>Tüm işlem geçmişinizi buradan inceleyebilirsiniz.</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="text-center py-8">
-                <Calendar className="mx-auto h-12 w-12 text-gray-400" />
-                <h3 className="mt-2 text-sm font-medium text-gray-900">Geçmiş kayıt yok</h3>
-                <p className="mt-1 text-sm text-gray-500">İşlem geçmişiniz burada görünecek.</p>
-              </div>
-            </CardContent>
-          </Card>
-        </TabsContent>
-
-        <TabsContent value="grafikler" className="space-y-6">
-          <div className="grid gap-6 md:grid-cols-2">
-            <Card className="shadow-lg rounded-xl">
-              <CardHeader>
-                <CardTitle>Bakiye Trendi</CardTitle>
-                <CardDescription>Son 6 ayın bakiye değişimi</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <ResponsiveContainer width="100%" height={300}>
-                  <LineChart data={balanceHistory}>
-                    <CartesianGrid strokeDasharray="3 3" />
-                    <XAxis dataKey="date" />
-                    <YAxis />
-                    <Tooltip formatter={(value) => [formatCurrency(value as number), "Bakiye"]} />
-                    <Line type="monotone" dataKey="balance" stroke="#3b82f6" strokeWidth={2} />
-                  </LineChart>
-                </ResponsiveContainer>
-              </CardContent>
-            </Card>
-
-            <Card className="shadow-lg rounded-xl">
-              <CardHeader>
-                <CardTitle>İşlem Dağılımı</CardTitle>
-                <CardDescription>İşlem türlerine göre dağılım</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <ResponsiveContainer width="100%" height={300}>
-                  <PieChart>
-                    <Pie
-                      data={transactionCategories}
-                      cx="50%"
-                      cy="50%"
-                      outerRadius={80}
-                      fill="#8884d8"
-                      dataKey="value"
-                      label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
-                    >
-                      {transactionCategories.map((entry, index) => (
-                        <Cell key={`cell-${index}`} fill={entry.color} />
-                      ))}
-                    </Pie>
-                    <Tooltip />
-                  </PieChart>
-                </ResponsiveContainer>
-              </CardContent>
-            </Card>
-          </div>
-        </TabsContent>
-
-        <TabsContent value="ayarlar" className="space-y-6">
-          <Card className="shadow-lg rounded-xl">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Settings className="h-5 w-5 text-gray-600" />
-                Hesap Ayarları
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <h4 className="font-medium">Bildirimler</h4>
-                  <p className="text-sm text-gray-500">Hesap hareketleri için bildirim al</p>
-                </div>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => setNotificationsEnabled(!notificationsEnabled)}
-                  className={notificationsEnabled ? "text-green-600 border-green-600" : "text-gray-600"}
-                >
-                  {notificationsEnabled ? <Bell className="h-4 w-4" /> : <BellOff className="h-4 w-4" />}
-                </Button>
-              </div>
-              <div className="flex items-center justify-between">
-                <div>
-                  <h4 className="font-medium">Hesap Numarası Gizliliği</h4>
-                  <p className="text-sm text-gray-500">Hesap numarasını gizli göster</p>
-                </div>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => setShowAccountNumber(!showAccountNumber)}
-                  className="text-blue-600 border-blue-600"
-                >
-                  {showAccountNumber ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
-        </TabsContent>
-      </Tabs>
+        </Tabs>
+      </div>
 
       {/* Balance Update Dialog */}
       <Dialog open={balanceUpdateDialogOpen} onOpenChange={setBalanceUpdateDialogOpen}>

@@ -11,69 +11,136 @@ import {
   Check,
   X,
   CreditCard,
-  Home,
-  Car,
-  Briefcase,
-  GraduationCap,
-  Heart,
+  Star,
+  Shield,
+  Plane,
   ShoppingBag,
-  Banknote,
-  Building,
+  Fuel,
+  Gift,
   Zap,
+  Building,
+  Users,
 } from "lucide-react"
 import { cn } from "@/lib/utils"
 
-interface CreditType {
+interface CreditCardType {
   id: string
   name: string
   category: string
   description?: string
+  features?: string[]
 }
 
-interface CreditTypeSelectorProps {
+interface CreditCardTypeSelectorProps {
   open: boolean
   onOpenChange: (open: boolean) => void
-  onSelect: (creditType: CreditType) => void
-  selectedCreditType?: CreditType | null
+  onSelect: (cardType: CreditCardType) => void
+  selectedCardType?: CreditCardType | null
 }
 
-// Kredi türü kategorileri
-const creditTypeCategories = [
+// Kredi kartı türü kategorileri
+const cardTypeCategories = [
   { id: "all", name: "Tümü", icon: CreditCard },
-  { id: "konut", name: "Konut", icon: Home },
-  { id: "tasit", name: "Taşıt", icon: Car },
-  { id: "ticari", name: "Ticari", icon: Briefcase },
-  { id: "egitim", name: "Eğitim", icon: GraduationCap },
-  { id: "saglik", name: "Sağlık", icon: Heart },
-  { id: "tuketici", name: "Tüketici", icon: ShoppingBag },
-  { id: "nakit", name: "Nakit", icon: Banknote },
-  { id: "yatirim", name: "Yatırım", icon: Building },
-  { id: "enerji", name: "Enerji", icon: Zap },
+  { id: "klasik", name: "Klasik", icon: CreditCard },
+  { id: "gold", name: "Gold", icon: Star },
+  { id: "platinum", name: "Platinum", icon: Shield },
+  { id: "world", name: "World", icon: Plane },
+  { id: "alisveris", name: "Alışveriş", icon: ShoppingBag },
+  { id: "yakit", name: "Yakıt", icon: Fuel },
+  { id: "cashback", name: "Cashback", icon: Gift },
+  { id: "dijital", name: "Dijital", icon: Zap },
+  { id: "ticari", name: "Ticari", icon: Building },
+  { id: "kurumsal", name: "Kurumsal", icon: Users },
 ]
 
-// Örnek kredi türleri verisi
-const sampleCreditTypes: CreditType[] = [
-  { id: "1", name: "Konut Kredisi", category: "konut", description: "Ev satın alma kredisi" },
-  { id: "2", name: "Taşıt Kredisi", category: "tasit", description: "Araç satın alma kredisi" },
-  { id: "3", name: "İhtiyaç Kredisi", category: "tuketici", description: "Genel ihtiyaçlar için kredi" },
-  { id: "4", name: "Ticari Kredi", category: "ticari", description: "İşletme kredisi" },
-  { id: "5", name: "Eğitim Kredisi", category: "egitim", description: "Eğitim masrafları kredisi" },
-  { id: "6", name: "Sağlık Kredisi", category: "saglik", description: "Sağlık harcamaları kredisi" },
-  { id: "7", name: "Nakit Kredi", category: "nakit", description: "Nakit avans kredisi" },
-  { id: "8", name: "Yatırım Kredisi", category: "yatirim", description: "Yatırım amaçlı kredi" },
-  { id: "9", name: "Enerji Kredisi", category: "enerji", description: "Enerji verimliliği kredisi" },
-  { id: "10", name: "Tüketici Kredisi", category: "tuketici", description: "Tüketim malları kredisi" },
+// Örnek kredi kartı türleri verisi
+const sampleCardTypes: CreditCardType[] = [
+  {
+    id: "1",
+    name: "Klasik Kart",
+    category: "klasik",
+    description: "Temel bankacılık hizmetleri",
+    features: ["Temel özellikler", "Düşük yıllık ücret"],
+  },
+  {
+    id: "2",
+    name: "Gold Kart",
+    category: "gold",
+    description: "Gelişmiş avantajlar",
+    features: ["Puan kazanma", "Sigorta avantajları", "Havalimanı lounges"],
+  },
+  {
+    id: "3",
+    name: "Platinum Kart",
+    category: "platinum",
+    description: "Premium hizmetler",
+    features: ["Yüksek limit", "Concierge hizmeti", "Seyahat sigortası"],
+  },
+  {
+    id: "4",
+    name: "World Kart",
+    category: "world",
+    description: "Dünya çapında avantajlar",
+    features: ["Global kabul", "Seyahat avantajları", "Mil kazanma"],
+  },
+  {
+    id: "5",
+    name: "Alışveriş Kartı",
+    category: "alisveris",
+    description: "Alışverişte ekstra avantajlar",
+    features: ["Market indirimleri", "Online alışveriş puanları"],
+  },
+  {
+    id: "6",
+    name: "Yakıt Kartı",
+    category: "yakit",
+    description: "Yakıt alımlarında indirim",
+    features: ["Yakıt indirimi", "Oto servis avantajları"],
+  },
+  {
+    id: "7",
+    name: "Cashback Kart",
+    category: "cashback",
+    description: "Nakit geri ödeme",
+    features: ["Nakit iadesi", "Harcama kategorileri"],
+  },
+  {
+    id: "8",
+    name: "Dijital Kart",
+    category: "dijital",
+    description: "Tamamen dijital deneyim",
+    features: ["Anında onay", "Mobil yönetim", "Sanal kart"],
+  },
+  {
+    id: "9",
+    name: "Ticari Kart",
+    category: "ticari",
+    description: "İşletmeler için özel",
+    features: ["İşletme avantajları", "Harcama raporları"],
+  },
+  {
+    id: "10",
+    name: "Kurumsal Kart",
+    category: "kurumsal",
+    description: "Büyük şirketler için",
+    features: ["Toplu yönetim", "Detaylı raporlama", "Özel limitler"],
+  },
 ]
 
-export function CreditTypeSelector({ open, onOpenChange, onSelect, selectedCreditType }: CreditTypeSelectorProps) {
-  const [creditTypes, setCreditTypes] = useState<CreditType[]>([])
-  const [filteredCreditTypes, setFilteredCreditTypes] = useState<CreditType[]>([])
+export function CreditCardTypeSelector({
+  open,
+  onOpenChange,
+  onSelect,
+  selectedCardType,
+}: CreditCardTypeSelectorProps) {
+  const [cardTypes, setCardTypes] = useState<CreditCardType[]>([])
+  const [filteredCardTypes, setFilteredCardTypes] = useState<CreditCardType[]>([])
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [searchTerm, setSearchTerm] = useState("")
   const [selectedCategory, setSelectedCategory] = useState("all")
 
-  // Kredi türlerini yükle
+  // Kredi kartı türlerini yükle
   useEffect(() => {
     if (open) {
       setLoading(true)
@@ -81,8 +148,8 @@ export function CreditTypeSelector({ open, onOpenChange, onSelect, selectedCredi
 
       // Simüle edilmiş API çağrısı
       setTimeout(() => {
-        setCreditTypes(sampleCreditTypes)
-        setFilteredCreditTypes(sampleCreditTypes)
+        setCardTypes(sampleCardTypes)
+        setFilteredCardTypes(sampleCardTypes)
         setLoading(false)
       }, 500)
     }
@@ -90,7 +157,7 @@ export function CreditTypeSelector({ open, onOpenChange, onSelect, selectedCredi
 
   // Filtreleme
   useEffect(() => {
-    let filtered = creditTypes
+    let filtered = cardTypes
 
     // Kategori filtresi
     if (selectedCategory !== "all") {
@@ -102,15 +169,16 @@ export function CreditTypeSelector({ open, onOpenChange, onSelect, selectedCredi
       filtered = filtered.filter(
         (type) =>
           type.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-          type.description?.toLowerCase().includes(searchTerm.toLowerCase()),
+          type.description?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          type.features?.some((feature) => feature.toLowerCase().includes(searchTerm.toLowerCase())),
       )
     }
 
-    setFilteredCreditTypes(filtered)
-  }, [creditTypes, selectedCategory, searchTerm])
+    setFilteredCardTypes(filtered)
+  }, [cardTypes, selectedCategory, searchTerm])
 
-  const handleSelect = (creditType: CreditType) => {
-    onSelect(creditType)
+  const handleSelect = (cardType: CreditCardType) => {
+    onSelect(cardType)
     onOpenChange(false)
   }
 
@@ -129,7 +197,7 @@ export function CreditTypeSelector({ open, onOpenChange, onSelect, selectedCredi
             <div className="flex items-center justify-between">
               <DialogTitle className="text-2xl font-bold flex items-center gap-3">
                 <CreditCard className="h-7 w-7" />
-                Kredi Türü Seçin
+                Kredi Kartı Türü Seçin
               </DialogTitle>
               <Button
                 variant="ghost"
@@ -141,7 +209,7 @@ export function CreditTypeSelector({ open, onOpenChange, onSelect, selectedCredi
               </Button>
             </div>
             <p className="text-emerald-100 text-base">
-              Kredi türünüzü seçerek devam edin. Arama yapabilir veya kategorilere göre filtreleyebilirsiniz.
+              Kredi kartı türünüzü seçerek devam edin. Arama yapabilir veya kategorilere göre filtreleyebilirsiniz.
             </p>
           </DialogHeader>
         </div>
@@ -151,7 +219,7 @@ export function CreditTypeSelector({ open, onOpenChange, onSelect, selectedCredi
           <div className="relative">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
             <Input
-              placeholder="Kredi türü ara..."
+              placeholder="Kredi kartı türü ara..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               className="pl-10 h-12 text-base bg-white dark:bg-gray-900 border-gray-300 dark:border-gray-600 focus:border-emerald-500 focus:ring-emerald-500"
@@ -162,7 +230,7 @@ export function CreditTypeSelector({ open, onOpenChange, onSelect, selectedCredi
         {/* Categories */}
         <div className="p-6 border-b border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900">
           <div className="flex flex-wrap gap-2">
-            {creditTypeCategories.map((category) => {
+            {cardTypeCategories.map((category) => {
               const Icon = category.icon
               const isSelected = selectedCategory === category.id
               return (
@@ -191,7 +259,7 @@ export function CreditTypeSelector({ open, onOpenChange, onSelect, selectedCredi
           {loading ? (
             <div className="flex flex-col items-center justify-center h-64 space-y-4">
               <Loader2 className="h-8 w-8 animate-spin text-emerald-600" />
-              <p className="text-gray-600 dark:text-gray-400">Kredi türleri yükleniyor...</p>
+              <p className="text-gray-600 dark:text-gray-400">Kredi kartı türleri yükleniyor...</p>
             </div>
           ) : error ? (
             <div className="flex flex-col items-center justify-center h-64 space-y-4">
@@ -205,25 +273,25 @@ export function CreditTypeSelector({ open, onOpenChange, onSelect, selectedCredi
             </div>
           ) : (
             <div className="h-[400px] overflow-y-auto p-6">
-              {filteredCreditTypes.length === 0 ? (
+              {filteredCardTypes.length === 0 ? (
                 <div className="flex flex-col items-center justify-center h-full space-y-4 text-gray-500 dark:text-gray-400">
                   <CreditCard className="h-12 w-12" />
                   <div className="text-center">
-                    <p className="font-medium">Kredi türü bulunamadı</p>
+                    <p className="font-medium">Kredi kartı türü bulunamadı</p>
                     <p className="text-sm">Arama kriterlerinizi değiştirmeyi deneyin</p>
                   </div>
                 </div>
               ) : (
                 <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
-                  {filteredCreditTypes.map((creditType) => {
-                    const isSelected = selectedCreditType?.id === creditType.id
-                    const categoryInfo = creditTypeCategories.find((cat) => cat.id === creditType.category)
+                  {filteredCardTypes.map((cardType) => {
+                    const isSelected = selectedCardType?.id === cardType.id
+                    const categoryInfo = cardTypeCategories.find((cat) => cat.id === cardType.category)
                     const Icon = categoryInfo?.icon || CreditCard
 
                     return (
                       <div
-                        key={creditType.id}
-                        onClick={() => handleSelect(creditType)}
+                        key={cardType.id}
+                        onClick={() => handleSelect(cardType)}
                         className={cn(
                           "relative p-4 rounded-xl border-2 cursor-pointer transition-all duration-200 hover:shadow-lg group",
                           isSelected
@@ -261,14 +329,28 @@ export function CreditTypeSelector({ open, onOpenChange, onSelect, selectedCredi
                                   : "text-gray-900 dark:text-gray-100",
                               )}
                             >
-                              {creditType.name}
+                              {cardType.name}
                             </h3>
-                            {creditType.description && (
+                            {cardType.description && (
                               <p className="text-xs text-gray-600 dark:text-gray-400 line-clamp-2">
-                                {creditType.description}
+                                {cardType.description}
                               </p>
                             )}
                           </div>
+
+                          {/* Features */}
+                          {cardType.features && cardType.features.length > 0 && (
+                            <div className="space-y-1">
+                              {cardType.features.slice(0, 2).map((feature, index) => (
+                                <div key={index} className="text-xs text-gray-500 dark:text-gray-400">
+                                  • {feature}
+                                </div>
+                              ))}
+                              {cardType.features.length > 2 && (
+                                <div className="text-xs text-gray-400">+{cardType.features.length - 2} daha...</div>
+                              )}
+                            </div>
+                          )}
 
                           {/* Category badge */}
                           <Badge
@@ -280,7 +362,7 @@ export function CreditTypeSelector({ open, onOpenChange, onSelect, selectedCredi
                                 : "bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300",
                             )}
                           >
-                            {categoryInfo?.name || creditType.category}
+                            {categoryInfo?.name || cardType.category}
                           </Badge>
                         </div>
                       </div>
@@ -296,10 +378,10 @@ export function CreditTypeSelector({ open, onOpenChange, onSelect, selectedCredi
         <div className="p-6 border-t border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 rounded-b-lg">
           <div className="flex items-center justify-between">
             <div className="text-sm text-gray-600 dark:text-gray-400">
-              {filteredCreditTypes.length} kredi türü listeleniyor
-              {selectedCreditType && (
+              {filteredCardTypes.length} kredi kartı türü listeleniyor
+              {selectedCardType && (
                 <span className="ml-2 font-medium text-emerald-600 dark:text-emerald-400">
-                  • {selectedCreditType.name} seçili
+                  • {selectedCardType.name} seçili
                 </span>
               )}
             </div>
@@ -311,9 +393,9 @@ export function CreditTypeSelector({ open, onOpenChange, onSelect, selectedCredi
               >
                 İptal
               </Button>
-              {selectedCreditType && (
+              {selectedCardType && (
                 <Button
-                  onClick={() => handleSelect(selectedCreditType)}
+                  onClick={() => handleSelect(selectedCardType)}
                   className="bg-gradient-to-r from-emerald-600 to-teal-700 hover:from-emerald-700 hover:to-teal-800 text-white shadow-md"
                 >
                   <Check className="h-4 w-4 mr-2" />
