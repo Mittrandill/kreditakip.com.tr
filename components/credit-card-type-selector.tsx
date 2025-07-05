@@ -23,22 +23,31 @@ import {
   X,
   Loader2,
   Building2,
+  Star,
+  Zap,
 } from "lucide-react"
-
-interface CreditCardTypeSelectorProps {
-  onCreditCardTypeSelect: (creditCardType: any) => void
-  onSkip: () => void
-  initialSelectedCategory?: string
-  registeredBanks?: Array<{ id: string; name: string; logo_url?: string }>
-}
 
 interface CreditCardType {
   id: string
   name: string
   bank_name: string
   card_network: string
+  program?: string
+  segment: string
   category: string
-  description: string
+  card_type: string
+  description?: string
+  annual_fee_info?: string
+  special_features?: string[]
+  is_active: boolean
+  matched_bank_name?: string
+  original_bank_name?: string
+}
+
+interface CreditCardTypeSelectorProps {
+  onCreditCardTypeSelect: (creditCardType: CreditCardType) => void
+  onSkip: () => void
+  registeredBanks: Array<{ id: string; name: string; logo_url?: string }>
 }
 
 const categoryIcons: Record<string, any> = {
@@ -52,6 +61,9 @@ const categoryIcons: Record<string, any> = {
   "Ortak Markalı Kartlar": Users,
   "Dijital Kartlar": Smartphone,
   "Özel Segment Kartları": Target,
+  "Gold Kartlar": Star,
+  "Platinum Kartlar": Shield,
+  "World Kartlar": Zap,
 }
 
 const categoryColors: Record<string, string> = {
@@ -65,6 +77,9 @@ const categoryColors: Record<string, string> = {
   "Ortak Markalı Kartlar": "bg-orange-50 border-orange-200 text-orange-700 hover:bg-orange-100",
   "Dijital Kartlar": "bg-cyan-50 border-cyan-200 text-cyan-700 hover:bg-cyan-100",
   "Özel Segment Kartları": "bg-gray-50 border-gray-200 text-gray-700 hover:bg-gray-100",
+  "Gold Kartlar": "bg-yellow-50 border-yellow-200 text-yellow-700 hover:bg-yellow-100",
+  "Platinum Kartlar": "bg-purple-50 border-purple-200 text-purple-700 hover:bg-purple-100",
+  "World Kartlar": "bg-blue-50 border-blue-200 text-blue-700 hover:bg-blue-100",
 }
 
 // Yedek kredi kartı türleri
@@ -74,40 +89,55 @@ const fallbackCreditCardTypes: CreditCardType[] = [
     name: "Bonus Card",
     bank_name: "Garanti BBVA",
     card_network: "Visa/Mastercard",
+    segment: "Classic",
     category: "Klasik Kredi Kartları",
+    card_type: "Classic",
     description: "Türkiye'de ilk çok markalı kart olan Bonus Card.",
+    is_active: true,
   },
   {
     id: "fb-2",
     name: "Worldcard",
     bank_name: "Yapı Kredi",
     card_network: "Visa/Mastercard",
+    segment: "Classic",
     category: "Klasik Kredi Kartları",
+    card_type: "Classic",
     description: "Türkiye'nin en yaygın kredi kartı programlarından World'ün kartları.",
+    is_active: true,
   },
   {
     id: "fb-3",
     name: "Sağlam Kart",
     bank_name: "Kuveyt Türk",
     card_network: "Visa/Mastercard/Troy",
+    segment: "Classic",
     category: "Katılım Kartları",
+    card_type: "Classic",
     description: "Kuveyt Türk'ün faizsiz kredi kartıdır.",
+    is_active: true,
   },
   {
     id: "fb-4",
     name: "Axess",
     bank_name: "Akbank",
     card_network: "Visa/Mastercard",
+    segment: "Classic",
     category: "Klasik Kredi Kartları",
+    card_type: "Classic",
     description: "Akbank'ın ana kredi kartı programı.",
+    is_active: true,
   },
   {
     id: "fb-5",
     name: "Paraf",
     bank_name: "Halkbank",
     card_network: "Visa/Mastercard",
+    segment: "Classic",
     category: "Klasik Kredi Kartları",
+    card_type: "Classic",
     description: "Halkbank'ın Paraf kart ailesinin temel ürünleri.",
+    is_active: true,
   },
 ]
 
@@ -142,11 +172,10 @@ function findMatchingBank(
 export function CreditCardTypeSelector({
   onCreditCardTypeSelect,
   onSkip,
-  initialSelectedCategory,
   registeredBanks = [],
 }: CreditCardTypeSelectorProps) {
   const [selectedCreditCardType, setSelectedCreditCardType] = useState<CreditCardType | null>(null)
-  const [selectedCategory, setSelectedCategory] = useState<string>(initialSelectedCategory || "Klasik Kredi Kartları")
+  const [selectedCategory, setSelectedCategory] = useState<string>("Klasik Kredi Kartları")
   const [searchTerm, setSearchTerm] = useState("")
   const [creditCardTypes, setCreditCardTypes] = useState<CreditCardType[]>([])
   const [loading, setLoading] = useState(true)
@@ -159,7 +188,7 @@ export function CreditCardTypeSelector({
         setErrorLoading(null)
         const { data, error } = await supabase
           .from("credit_card_types")
-          .select("id, name, bank_name, card_network, category, description")
+          .select("*")
           .eq("is_active", true)
           .order("category, bank_name, name")
 
@@ -209,6 +238,13 @@ export function CreditCardTypeSelector({
         matched_bank_name: matchedBankName,
         original_bank_name: selectedCreditCardType.bank_name,
       }
+
+      console.log("🎯 Kart türü seçildi:", {
+        name: updatedCreditCardType.name,
+        segment: updatedCreditCardType.segment,
+        bank: matchedBankName,
+      })
+
       onCreditCardTypeSelect(updatedCreditCardType)
     }
   }
@@ -396,8 +432,29 @@ export function CreditCardTypeSelector({
                                   <CreditCard className="h-3 w-3" />
                                   {creditCardType.card_network}
                                 </span>
+                                {creditCardType.segment && (
+                                  <Badge variant="outline" className="text-xs">
+                                    {creditCardType.segment}
+                                  </Badge>
+                                )}
                               </div>
-                              <p className="text-gray-600 text-sm leading-relaxed">{creditCardType.description}</p>
+                              <p className="text-gray-600 text-sm leading-relaxed">
+                                {creditCardType.description || "Kart açıklaması mevcut değil."}
+                              </p>
+                              {creditCardType.special_features && creditCardType.special_features.length > 0 && (
+                                <div className="mt-2 flex flex-wrap gap-1">
+                                  {creditCardType.special_features.slice(0, 3).map((feature, index) => (
+                                    <Badge key={index} variant="secondary" className="text-xs">
+                                      {feature}
+                                    </Badge>
+                                  ))}
+                                  {creditCardType.special_features.length > 3 && (
+                                    <Badge variant="secondary" className="text-xs">
+                                      +{creditCardType.special_features.length - 3} daha
+                                    </Badge>
+                                  )}
+                                </div>
+                              )}
                             </div>
                             <div className="flex-shrink-0">
                               {isSelected && (
@@ -456,3 +513,5 @@ export function CreditCardTypeSelector({
     </div>
   )
 }
+
+export default CreditCardTypeSelector

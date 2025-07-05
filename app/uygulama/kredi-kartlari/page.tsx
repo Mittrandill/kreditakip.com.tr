@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { Card, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Input } from "@/components/ui/input"
@@ -37,8 +37,11 @@ import {
   Clock,
   Shield,
   Percent,
-  AlertTriangle,
   Eye,
+  Wifi,
+  Calendar,
+  Star,
+  Zap,
 } from "lucide-react"
 import { BsFillGrid3X3GapFill } from "react-icons/bs"
 
@@ -49,6 +52,7 @@ import { useToast } from "@/hooks/use-toast"
 import { format } from "date-fns"
 import BankLogo from "@/components/bank-logo"
 import { MetricCard } from "@/components/metric-card"
+import { maskCardNumber, getCardBrand } from "@/lib/utils/encryption"
 
 const getCardTypeBadgeClass = (type: string): string => {
   switch (type.toLowerCase()) {
@@ -70,43 +74,53 @@ const getCardTypeIcon = (type: string) => {
     case "classic":
       return <CreditCard className="h-4 w-4" />
     case "gold":
-      return <TrendingUp className="h-4 w-4" />
+      return <Star className="h-4 w-4" />
     case "platinum":
       return <Shield className="h-4 w-4" />
     case "world":
-      return <DollarSign className="h-4 w-4" />
+      return <Zap className="h-4 w-4" />
     default:
       return <CreditCard className="h-4 w-4" />
   }
 }
 
-const getStatusBadgeClass = (status: string): string => {
-  switch (status.toLowerCase()) {
-    case "aktif":
-      return "bg-gradient-to-r from-emerald-600 to-teal-700 text-white border-transparent hover:from-emerald-700 hover:to-teal-800"
-    case "pasif":
-      return "bg-gradient-to-r from-gray-600 to-slate-700 text-white border-transparent hover:from-gray-700 hover:to-slate-800"
-    case "blokeli":
-      return "bg-gradient-to-r from-red-600 to-rose-700 text-white border-transparent hover:from-red-700 hover:to-rose-800"
-    case "iptal":
-      return "bg-gradient-to-r from-orange-600 to-amber-700 text-white border-transparent hover:from-orange-700 hover:to-amber-800"
+const getStatusBadgeClass = (status: boolean): string => {
+  return status
+    ? "bg-gradient-to-r from-emerald-600 to-teal-700 text-white border-transparent hover:from-emerald-700 hover:to-teal-800"
+    : "bg-gradient-to-r from-gray-600 to-slate-700 text-white border-transparent hover:from-gray-700 hover:to-slate-800"
+}
+
+const getStatusIcon = (status: boolean) => {
+  return status ? <CheckCircle className="h-4 w-4" /> : <Clock className="h-4 w-4" />
+}
+
+// Gelişmiş kart gradyanları
+const getCardGradient = (type: string) => {
+  switch (type.toLowerCase()) {
+    case "classic":
+      return "from-slate-800 via-slate-900 to-black"
+    case "gold":
+      return "from-yellow-500 via-yellow-600 to-amber-700"
+    case "platinum":
+      return "from-purple-600 via-purple-700 to-indigo-800"
+    case "world":
+      return "from-blue-600 via-blue-700 to-indigo-800"
     default:
-      return "bg-gradient-to-r from-blue-600 to-indigo-700 text-white border-transparent hover:from-blue-700 hover:to-indigo-800"
+      return "from-slate-800 via-slate-900 to-black"
   }
 }
 
-const getStatusIcon = (status: string) => {
-  switch (status.toLowerCase()) {
-    case "aktif":
-      return <CheckCircle className="h-4 w-4" />
-    case "pasif":
-      return <Clock className="h-4 w-4" />
-    case "blokeli":
-      return <AlertCircle className="h-4 w-4" />
-    case "iptal":
-      return <AlertTriangle className="h-4 w-4" />
+// Kart türüne göre özel efektler
+const getCardEffects = (type: string) => {
+  switch (type.toLowerCase()) {
+    case "gold":
+      return "shadow-yellow-500/20"
+    case "platinum":
+      return "shadow-purple-500/20"
+    case "world":
+      return "shadow-blue-500/20"
     default:
-      return <Shield className="h-4 w-4" />
+      return "shadow-gray-500/20"
   }
 }
 
@@ -133,7 +147,7 @@ export default function KrediKartlariPage() {
   const [sortOrder, setSortOrder] = useState<"asc" | "desc">("desc")
   const [currentPage, setCurrentPage] = useState(1)
 
-  const itemsPerPageCards = 8
+  const itemsPerPageCards = 9
   const itemsPerPageTable = 8
 
   useEffect(() => {
@@ -155,12 +169,21 @@ export default function KrediKartlariPage() {
         getUpcomingDueDates(userId, 30),
       ])
 
+      console.log("🔄 Kredi kartları yüklendi:", cardsData)
+      console.log("📊 Özet veriler:", summaryData)
+      console.log("⏰ Yaklaşan ödemeler:", upcomingData)
+
       setCreditCards(cardsData || [])
       setSummary(summaryData || {})
       setUpcomingDues(upcomingData || [])
     } catch (err: any) {
-      console.error("Kredi kartları yüklenirken hata:", err)
+      console.error("❌ Kredi kartları yüklenirken hata:", err)
       setError("Kredi kartları yüklenirken bir sorun oluştu.")
+      toast({
+        title: "Hata",
+        description: "Kredi kartları yüklenirken bir sorun oluştu.",
+        variant: "destructive",
+      })
     } finally {
       setLoading(false)
     }
@@ -168,10 +191,9 @@ export default function KrediKartlariPage() {
 
   const filteredAndSortedCards = creditCards
     .filter((card) => {
-      if (activeTab === "classicKartlar" && card.card_type !== "Classic") return false
-      if (activeTab === "goldKartlar" && card.card_type !== "Gold") return false
-      if (activeTab === "platinumKartlar" && card.card_type !== "Platinum") return false
-      if (activeTab === "worldKartlar" && card.card_type !== "World") return false
+      // Filter by active/inactive status
+      if (activeTab === "aktifKartlar" && !card.is_active) return false
+      if (activeTab === "pasifKartlar" && card.is_active) return false
 
       if (searchTerm) {
         const lowerSearchTerm = searchTerm.toLowerCase()
@@ -243,15 +265,18 @@ export default function KrediKartlariPage() {
   }
 
   const handleDeleteCard = async () => {
-    if (!userId || !cardToDelete) return
+    if (!cardToDelete) return
 
     setIsDeleting(true)
     try {
-      await deleteCreditCard(userId, cardToDelete.id)
+      await deleteCreditCard(cardToDelete.id)
       setCreditCards((prev) => prev.filter((c) => c.id !== cardToDelete.id))
       toast({ title: "Başarılı", description: "Kredi kartı başarıyla silindi." })
+
+      // Refresh data after deletion
+      await fetchCreditCards()
     } catch (err: any) {
-      console.error("Kredi kartı silme hatası:", err)
+      console.error("❌ Kredi kartı silme hatası:", err)
       toast({ title: "Hata", description: "Kredi kartı silinirken bir sorun oluştu.", variant: "destructive" })
     } finally {
       setIsDeleting(false)
@@ -270,19 +295,7 @@ export default function KrediKartlariPage() {
   const totalCurrentDebt = creditCards.reduce((sum, card) => sum + (card.current_debt || 0), 0)
   const totalAvailableLimit = totalCreditLimit - totalCurrentDebt
   const averageUtilization = totalCreditLimit > 0 ? (totalCurrentDebt / totalCreditLimit) * 100 : 0
-  const activeCardsCount = creditCards.filter((c) => c.status === "aktif").length
-
-  const cardTypeDistribution = creditCards.reduce(
-    (acc, card) => {
-      const type = card.card_type.toLowerCase()
-      if (type === "classic") acc.classic++
-      else if (type === "gold") acc.gold++
-      else if (type === "platinum") acc.platinum++
-      else if (type === "world") acc.world++
-      return acc
-    },
-    { classic: 0, gold: 0, platinum: 0, world: 0 },
-  )
+  const activeCardsCount = creditCards.filter((c) => c.is_active).length
 
   if (authLoading || loading) {
     return (
@@ -322,9 +335,10 @@ export default function KrediKartlariPage() {
               <p className="opacity-90 text-lg">Kredi kartlarınızı takip edin ve yönetin.</p>
             </div>
             <Button
-              variant="outline-white"
+              variant="outline"
               onClick={openCreateDialog}
-              size="lg"      
+              size="lg"
+              className="bg-white/10 border-white/30 text-white hover:bg-white/20 text-white"
             >
               <Plus className="h-5 w-5 mr-2" />
               Yeni Kart Ekle
@@ -332,41 +346,6 @@ export default function KrediKartlariPage() {
           </div>
         </CardContent>
       </Card>
-
-      {/* Upcoming Due Dates Alert */}
-      {upcomingDues.length > 0 && (
-        <Card className="border-orange-200 bg-orange-50">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2 text-orange-800">
-              <AlertTriangle className="h-5 w-5" />
-              Yaklaşan Son Ödeme Tarihleri
-            </CardTitle>
-            <CardDescription className="text-orange-700">
-              Önümüzdeki 30 gün içinde {upcomingDues.length} kartınızın son ödeme tarihi var.
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-2">
-              {upcomingDues.slice(0, 3).map((card) => (
-                <div key={card.id} className="flex items-center justify-between p-3 bg-white rounded-lg">
-                  <div className="flex items-center gap-3">
-                    <div>
-                      <p className="font-medium text-gray-900">{card.card_name}</p>
-                      <p className="text-sm text-gray-600">
-                        Son ödeme: {new Date(card.next_due_date).toLocaleDateString("tr-TR")}
-                      </p>
-                    </div>
-                  </div>
-                  <div className="text-right">
-                    <p className="font-semibold text-orange-600">{formatCurrency(card.minimumPayment || 0)}</p>
-                    <p className="text-sm text-gray-600">minimum ödeme</p>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
-      )}
 
       {/* Metrics */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
@@ -404,41 +383,27 @@ export default function KrediKartlariPage() {
       <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
         <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full">
           <div className="border-b border-gray-100 bg-gray-50/50">
-            <TabsList className="grid grid-cols-2 sm:grid-cols-5 bg-transparent h-auto p-2 gap-2">
+            <TabsList className="grid grid-cols-3 bg-transparent h-auto p-2 gap-2">
               <TabsTrigger
                 value="tumKartlar"
                 className="flex items-center gap-2 py-3 px-4 data-[state=active]:text-emerald-600 rounded-xl transition-all duration-200 hover:bg-gray-100"
               >
                 <CreditCard className="h-4 w-4" />
-                Tümü
+                Tüm Kartlar ({creditCards.length})
               </TabsTrigger>
               <TabsTrigger
-                value="classicKartlar"
+                value="aktifKartlar"
                 className="flex items-center gap-2 py-3 px-4 data-[state=active]:text-emerald-600 rounded-xl transition-all duration-200 hover:bg-gray-100"
               >
-                <CreditCard className="h-4 w-4" />
-                Classic
+                <CheckCircle className="h-4 w-4" />
+                Aktif Kartlar ({activeCardsCount})
               </TabsTrigger>
               <TabsTrigger
-                value="goldKartlar"
+                value="pasifKartlar"
                 className="flex items-center gap-2 py-3 px-4 data-[state=active]:text-emerald-600 rounded-xl transition-all duration-200 hover:bg-gray-100"
               >
-                <TrendingUp className="h-4 w-4" />
-                Gold
-              </TabsTrigger>
-              <TabsTrigger
-                value="platinumKartlar"
-                className="flex items-center gap-2 py-3 px-4 data-[state=active]:text-emerald-600 rounded-xl transition-all duration-200 hover:bg-gray-100"
-              >
-                <Shield className="h-4 w-4" />
-                Platinum
-              </TabsTrigger>
-              <TabsTrigger
-                value="worldKartlar"
-                className="flex items-center gap-2 py-3 px-4 data-[state=active]:text-emerald-600 rounded-xl transition-all duration-200 hover:bg-gray-100"
-              >
-                <DollarSign className="h-4 w-4" />
-                World
+                <Clock className="h-4 w-4" />
+                Pasif Kartlar ({creditCards.length - activeCardsCount})
               </TabsTrigger>
             </TabsList>
           </div>
@@ -523,104 +488,113 @@ export default function KrediKartlariPage() {
 
             {viewMode === "cards" && currentCards.length > 0 && (
               <div className="space-y-6">
-                <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+                <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3">
                   {currentCards.map((card) => {
-                    // Credit card gradient based on type
-                    const getCardGradient = (type: string) => {
-                      switch (type.toLowerCase()) {
-                        case "classic":
-                          return "from-slate-700 via-slate-800 to-slate-900"
-                        case "gold":
-                          return "from-yellow-600 via-yellow-700 to-amber-800"
-                        case "platinum":
-                          return "from-purple-700 via-purple-800 to-indigo-900"
-                        case "world":
-                          return "from-blue-700 via-blue-800 to-indigo-900"
-                        default:
-                          return "from-slate-700 via-slate-800 to-slate-900"
-                      }
-                    }
-
                     return (
                       <Card
                         key={card.id}
-                        className="shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 rounded-xl border-gray-200 overflow-hidden"
+                        className="group relative overflow-hidden rounded-2xl border-0 shadow-xl hover:shadow-2xl transition-all duration-500 hover:scale-[1.02] bg-white"
                       >
                         <CardContent className="p-0">
-                          {/* Credit Card Design */}
-                          <div className="relative">
-                            <div
-                              className={`relative w-full h-48 rounded-t-xl overflow-hidden bg-gradient-to-br ${getCardGradient(card.card_type)}`}
-                            >
-                              {/* Card Background Pattern */}
-                              <div className="absolute inset-0">
-                                <div className="absolute top-0 right-0 w-24 h-24 bg-white/5 rounded-full -translate-y-12 translate-x-12"></div>
-                                <div className="absolute bottom-0 left-0 w-20 h-20 bg-white/5 rounded-full translate-y-10 -translate-x-10"></div>
-                                <div className="absolute top-1/2 left-1/2 w-32 h-32 bg-white/3 rounded-full -translate-x-1/2 -translate-y-1/2"></div>
+                          {/* Premium Credit Card Design */}
+                          <div
+                            className={`relative w-full h-56 bg-gradient-to-br ${getCardGradient(card.card_type)} ${getCardEffects(card.card_type)}`}
+                            style={{
+                              background:
+                                card.card_type.toLowerCase() === "gold"
+                                  ? "linear-gradient(135deg, #FFD700 0%, #FFA500 50%, #FF8C00 100%)"
+                                  : card.card_type.toLowerCase() === "platinum"
+                                    ? "linear-gradient(135deg, #E6E6FA 0%, #9370DB 50%, #4B0082 100%)"
+                                    : card.card_type.toLowerCase() === "world"
+                                      ? "linear-gradient(135deg, #1E90FF 0%, #0000CD 50%, #000080 100%)"
+                                      : "linear-gradient(135deg, #2F2F2F 0%, #1C1C1C 50%, #000000 100%)",
+                            }}
+                          >
+                            {/* Card Background Patterns */}
+                            <div className="absolute inset-0 opacity-20">
+                              <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full -translate-y-16 translate-x-16"></div>
+                              <div className="absolute bottom-0 left-0 w-24 h-24 bg-white/5 rounded-full translate-y-12 -translate-x-12"></div>
+                              <div className="absolute top-1/2 left-1/2 w-40 h-40 bg-white/5 rounded-full -translate-x-1/2 -translate-y-1/2"></div>
+                            </div>
+
+                            {/* Card Content */}
+                            <div className="relative z-10 p-4 h-full flex flex-col justify-between text-white">
+                              {/* Top Section - Bank Logo and Status */}
+                              <div className="flex items-start justify-between">
+                                <div className="flex items-center gap-2">
+                                  <BankLogo
+                                    bankName={card.bank_name || "Bilinmeyen Banka"}
+                                    logoUrl={card.banks?.logo_url}
+                                    size="sm"
+                                    className="ring-1 ring-white/30 shadow-lg bg-white/20 backdrop-blur-md rounded-md"
+                                  />
+                                  <div>
+                                    <h3 className="font-bold text-sm leading-tight">{card.card_name}</h3>
+                                    <p className="text-white/80 text-xs">{card.bank_name}</p>
+                                  </div>
+                                </div>
+                                <div className="flex flex-col items-end gap-1">
+                                  <Wifi className="h-5 w-5 rotate-90 text-white/80" />
+                                  <div
+                                    className={`w-2 h-2 rounded-full ${card.is_active ? "bg-green-400" : "bg-red-400"} shadow-lg`}
+                                  >
+                                    <div
+                                      className={`w-2 h-2 rounded-full ${card.is_active ? "bg-green-400" : "bg-red-400"} animate-ping`}
+                                    ></div>
+                                  </div>
+                                </div>
                               </div>
 
-                              {/* Card Content */}
-                              <div className="relative z-10 p-5 h-full flex flex-col justify-between text-white">
-                                {/* Top Section - Bank Logo and Card Icon */}
-                                <div className="flex items-start justify-between">
-                                  <div className="flex items-center gap-2">
-                                    <BankLogo
-                                      bankName={card.bank_name || "Bilinmeyen Banka"}
-                                      logoUrl={card.bank_logo_url}
-                                      size="sm"
-                                      className="ring-1 ring-white/20 shadow-md bg-white/10 backdrop-blur-sm"
-                                    />
-                                    <div>
-                                      <h3 className="font-semibold text-base leading-tight">{card.card_name}</h3>
-                                      <p className="text-white/80 text-xs">{card.bank_name}</p>
-                                    </div>
-                                  </div>
-                                  <CreditCard className="h-6 w-6 text-white/80" />
-                                </div>
+                              {/* Middle Section - Card Number */}
+                              <div className="my-3">
+                                <p className="text-xs text-white/60 mb-1">Kart Numarası</p>
+                                <p className="font-mono text-lg tracking-wider font-bold">
+                                  {card.card_number || "**** **** **** ****"}
+                                </p>
+                                {card.card_number && (
+                                  <p className="text-xs text-white/70 mt-1">{getCardBrand(card.card_number)}</p>
+                                )}
+                              </div>
 
-                                {/* Middle Section - Card Number */}
-                                <div className="my-3">
-                                  <p className="text-xs text-white/60 mb-1">Kart Numarası</p>
-                                  <p className="font-mono text-base tracking-wider">
-                                    {card.card_number ? `****${card.card_number.slice(-4)}` : "****3456"}
+                              {/* Bottom Section - Expiry and Card Type */}
+                              <div className="flex items-end justify-between">
+                                <div>
+                                  <p className="text-white/60 text-xs">Son Kullanma</p>
+                                  <p className="font-semibold text-sm">
+                                    {card.expiry_month && card.expiry_year
+                                      ? `${card.expiry_month.toString().padStart(2, "0")}/${card.expiry_year.toString().slice(-2)}`
+                                      : "12/28"}
                                   </p>
                                 </div>
-
-                                {/* Bottom Section - Limit and Due Date */}
-                                <div className="flex items-end justify-between">
-                                  <div>
-                                    <p className="text-white/60 text-xs">Limit</p>
-                                    <p className="font-semibold text-sm">{formatCurrency(card.credit_limit || 0)}</p>
-                                  </div>
-                                  <div className="text-right">
-                                    <p className="text-white/60 text-xs">Son Ödeme</p>
-                                    <p className="font-semibold text-sm">
-                                      {card.next_due_date
-                                        ? new Date(card.next_due_date).toLocaleDateString("tr-TR")
-                                        : "25.01.2025"}
-                                    </p>
-                                  </div>
-                                </div>
+                                <Badge
+                                  className={`${getCardTypeBadgeClass(card.card_type)} text-xs px-2 py-1`}
+                                  variant="secondary"
+                                >
+                                  {getCardTypeIcon(card.card_type)}
+                                  <span className="ml-1 uppercase">{card.card_type}</span>
+                                </Badge>
                               </div>
                             </div>
+
+                            {/* Premium card shine effect */}
+                            <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/5 to-transparent transform rotate-12 translate-x-full group-hover:-translate-x-full transition-transform duration-1000"></div>
                           </div>
 
-                          {/* Action Buttons */}
-                          <div className="p-4">
+                          {/* Action Buttons Section - Inside Card but Separate */}
+                          <div className="bg-white border-t border-gray-100 p-4">
                             <div className="flex gap-2">
                               <Button
-                                size="sm"
                                 variant="outline"
-                                className="flex-1 border-gray-300 text-gray-700 hover:bg-gray-50 hover:border-gray-400 bg-transparent"
+                                className="flex-1 bg-gray-50 border-gray-200 text-gray-700 hover:bg-gray-100 hover:border-gray-300 transition-colors"
                                 onClick={() => router.push(`/uygulama/kredi-kartlari/${card.id}`)}
                               >
                                 <Eye className="mr-2 h-4 w-4" />
                                 Detay
                               </Button>
                               <Button
-                                size="sm"
                                 variant="outline"
-                                className="border-gray-300 text-gray-700 hover:bg-gray-50 hover:border-gray-400 bg-transparent"
+                                size="icon"
+                                className="bg-gray-50 border-gray-200 text-gray-700 hover:bg-gray-100 hover:border-gray-300 transition-colors"
                                 onClick={() => openEditDialog(card)}
                               >
                                 <Edit className="h-4 w-4" />
@@ -628,20 +602,24 @@ export default function KrediKartlariPage() {
                               <DropdownMenu>
                                 <DropdownMenuTrigger asChild>
                                   <Button
-                                    size="sm"
                                     variant="outline"
-                                    className="border-gray-300 text-gray-700 hover:bg-gray-50 hover:border-gray-400 bg-transparent"
+                                    size="icon"
+                                    className="bg-gray-50 border-gray-200 text-gray-700 hover:bg-gray-100 hover:border-gray-300 transition-colors"
                                   >
                                     <MoreHorizontal className="h-4 w-4" />
                                   </Button>
                                 </DropdownMenuTrigger>
-                                <DropdownMenuContent align="end">
+                                <DropdownMenuContent align="end" className="bg-white/95 backdrop-blur-sm">
                                   <DropdownMenuItem
                                     onClick={() => router.push(`/uygulama/kredi-kartlari/${card.id}/odeme-gecmisi`)}
                                   >
+                                    <Calendar className="mr-2 h-4 w-4" />
                                     Ödeme Geçmişi
                                   </DropdownMenuItem>
-                                  <DropdownMenuItem>Rapor Al</DropdownMenuItem>
+                                  <DropdownMenuItem>
+                                    <TrendingUp className="mr-2 h-4 w-4" />
+                                    Rapor Al
+                                  </DropdownMenuItem>
                                   <DropdownMenuItem className="text-red-600" onClick={() => openDeleteDialog(card)}>
                                     <Trash2 className="mr-2 h-4 w-4" />
                                     Sil
@@ -699,20 +677,23 @@ export default function KrediKartlariPage() {
                             }`}
                           >
                             <TableCell>
-                              <div className="flex items-center gap-6">
+                              <div className="flex items-center gap-4">
                                 <BankLogo
                                   bankName={card.bank_name || "Bilinmeyen Banka"}
-                                  logoUrl={card.bank_logo_url}
+                                  logoUrl={card.banks?.logo_url}
                                   size="md"
-                                  className="ring-1 ring-emerald-200 bg-white"
+                                  className="ring-1 ring-emerald-200 bg-white shadow-sm"
                                 />
                                 <div>
                                   <span className="font-medium text-gray-900 dark:text-white block">
                                     {card.card_name}
                                   </span>
                                   <span className="text-xs text-emerald-600 font-medium">
-                                    {card.card_number ? `****${card.card_number.slice(-4)}` : "****3456"}
+                                    {card.card_number ? maskCardNumber(card.card_number) : "****"}
                                   </span>
+                                  {card.card_number && (
+                                    <span className="text-xs text-gray-500 ml-2">{getCardBrand(card.card_number)}</span>
+                                  )}
                                 </div>
                               </div>
                             </TableCell>
@@ -757,9 +738,9 @@ export default function KrediKartlariPage() {
                               </div>
                             </TableCell>
                             <TableCell>
-                              <Badge className={getStatusBadgeClass(card.status || "aktif")}>
-                                {getStatusIcon(card.status || "aktif")}
-                                <span className="ml-1">{card.status || "Aktif"}</span>
+                              <Badge className={getStatusBadgeClass(card.is_active)}>
+                                {getStatusIcon(card.is_active)}
+                                <span className="ml-1">{card.is_active ? "Aktif" : "Pasif"}</span>
                               </Badge>
                             </TableCell>
                             <TableCell className="text-gray-600 dark:text-gray-400">
