@@ -674,15 +674,6 @@ export default function HesaplarPage() {
               Bu hesabı silmek istediğinizden emin misiniz? Bu işlem geri alınamaz.
             </AlertDialogDescription>
           </AlertDialogHeader>
-          {accountToDelete && (
-            <div className="mt-2 p-2 bg-gray-100 dark:bg-gray-800 rounded text-sm">
-              <strong>Hesap:</strong> {accountToDelete.account_name}
-              <br />
-              <strong>Banka:</strong> {accountToDelete.banks?.name}
-              <br />
-              <strong>Bakiye:</strong> {formatCurrency(accountToDelete.current_balance || 0)} {accountToDelete.currency}
-            </div>
-          )}
           <AlertDialogFooter>
             <AlertDialogCancel disabled={isDeleting}>İptal</AlertDialogCancel>
             <AlertDialogAction

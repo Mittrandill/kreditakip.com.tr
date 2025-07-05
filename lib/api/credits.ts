@@ -1,5 +1,6 @@
 import { supabase } from "@/lib/supabase"
 import type { Credit } from "@/lib/types"
+import { createPaymentPlansForCredit } from "./payment-plans"
 
 /* ------------------------------------------------------------------ */
 /*  CRUD UTILS                                                        */
@@ -80,6 +81,38 @@ export async function createCredit(creditData: Omit<Credit, "id" | "created_at" 
   }
 
   return data
+}
+
+// New function to create credit with payment plans
+export async function createCreditWithPaymentPlans(
+  creditData: Omit<Credit, "id" | "created_at" | "updated_at">,
+  createPaymentPlans = true,
+) {
+  const { data: credit, error } = await supabase.from("credits").insert(creditData).select().single()
+
+  if (error) {
+    console.error("Error creating credit:", error)
+    throw error
+  }
+
+  if (createPaymentPlans) {
+    try {
+      const paymentPlansData = {
+        initial_amount: creditData.initial_amount,
+        monthly_payment: creditData.monthly_payment,
+        interest_rate: creditData.interest_rate,
+        start_date: creditData.start_date,
+        total_installments: creditData.total_installments,
+      }
+
+      await createPaymentPlansForCredit(credit.id, paymentPlansData)
+    } catch (paymentPlanError) {
+      console.error("Error creating payment plans for credit:", paymentPlanError)
+      // Don't throw here, let the credit creation succeed
+    }
+  }
+
+  return credit
 }
 
 export async function updateCredit(creditId: string, updates: Partial<Credit>) {

@@ -9,6 +9,9 @@ import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Separator } from "@/components/ui/separator"
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { Badge } from "@/components/ui/badge"
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import {
   ArrowLeft,
   Save,
@@ -26,15 +29,19 @@ import {
   Loader2,
   AlertCircle,
   CheckCircle,
+  Clock,
+  Edit,
+  CalendarDays,
 } from "lucide-react"
 import { useAuth } from "@/hooks/use-auth"
 import { getCreditById, updateCredit, getBanks, getCreditTypes } from "@/lib/api/credits"
-import type { Credit, Bank, CreditType } from "@/lib/types"
+import { getPaymentPlans, updatePaymentPlan } from "@/lib/api/payment-plans"
+import type { Credit, Bank, CreditType, PaymentPlan } from "@/lib/types"
 import { formatCurrency } from "@/lib/format"
 import { useToast } from "@/hooks/use-toast"
 import BankLogo from "@/components/bank-logo"
 import BankSelector from "@/components/bank-selector"
-import CreditTypeSelector from "@/components/credit-type-selector"
+import { CreditTypeSelector } from "@/components/credit-type-selector"
 
 interface PopulatedCredit extends Credit {
   banks: Pick<Bank, "id" | "name" | "logo_url" | "contact_phone" | "contact_email" | "website"> | null
@@ -74,9 +81,14 @@ export default function KrediDuzenlePage() {
   const [krediDetay, setKrediDetay] = useState<PopulatedCredit | null>(null)
   const [banks, setBanks] = useState<Bank[]>([])
   const [creditTypes, setCreditTypes] = useState<CreditType[]>([])
+  const [paymentPlans, setPaymentPlans] = useState<PaymentPlan[]>([])
   const [loadingData, setLoadingData] = useState(true)
+  const [loadingPaymentPlans, setLoadingPaymentPlans] = useState(false)
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [activeTab, setActiveTab] = useState("credit-info")
+  const [editingPlan, setEditingPlan] = useState<string | null>(null)
+  const [editingPlanData, setEditingPlanData] = useState<Partial<PaymentPlan>>({})
 
   const [formData, setFormData] = useState<FormData>({
     credit_code: "",
@@ -167,6 +179,33 @@ export default function KrediDuzenlePage() {
     }
   }, [user, creditId, authLoading])
 
+  // Ödeme planlarını yükle
+  const fetchPaymentPlans = async () => {
+    if (!creditId) return
+
+    setLoadingPaymentPlans(true)
+    try {
+      const plans = await getPaymentPlans(creditId)
+      setPaymentPlans(plans)
+    } catch (err) {
+      console.error("Error fetching payment plans:", err)
+      toast({
+        title: "Hata",
+        description: "Ödeme planları yüklenirken bir hata oluştu.",
+        variant: "destructive",
+      })
+    } finally {
+      setLoadingPaymentPlans(false)
+    }
+  }
+
+  // Tab değiştiğinde ödeme planlarını yükle
+  useEffect(() => {
+    if (activeTab === "payment-plan" && paymentPlans.length === 0) {
+      fetchPaymentPlans()
+    }
+  }, [activeTab])
+
   const handleInputChange = (field: keyof FormData, value: string | number) => {
     setFormData((prev) => ({
       ...prev,
@@ -217,6 +256,70 @@ export default function KrediDuzenlePage() {
       })
     } finally {
       setSaving(false)
+    }
+  }
+
+  const handleEditPlan = (plan: PaymentPlan) => {
+    setEditingPlan(plan.id)
+    setEditingPlanData({
+      due_date: plan.due_date,
+      principal_amount: plan.principal_amount,
+      interest_amount: plan.interest_amount,
+      total_payment: plan.total_payment,
+      status: plan.status,
+    })
+  }
+
+  const handleSavePlan = async (planId: string) => {
+    try {
+      const updatedPlan = await updatePaymentPlan(planId, editingPlanData)
+      setPaymentPlans((prev) => prev.map((p) => (p.id === planId ? updatedPlan : p)))
+      setEditingPlan(null)
+      setEditingPlanData({})
+      toast({
+        title: "Başarılı",
+        description: "Ödeme planı güncellendi.",
+      })
+    } catch (err) {
+      console.error("Error updating payment plan:", err)
+      toast({
+        title: "Hata",
+        description: "Ödeme planı güncellenirken bir hata oluştu.",
+        variant: "destructive",
+      })
+    }
+  }
+
+  const handleCancelEdit = () => {
+    setEditingPlan(null)
+    setEditingPlanData({})
+  }
+
+  const getStatusBadge = (status: string) => {
+    switch (status) {
+      case "paid":
+        return (
+          <Badge variant="default" className="bg-green-100 text-green-800 border-green-200">
+            <CheckCircle className="w-3 h-3 mr-1" />
+            Ödendi
+          </Badge>
+        )
+      case "pending":
+        return (
+          <Badge variant="secondary" className="bg-yellow-100 text-yellow-800 border-yellow-200">
+            <Clock className="w-3 h-3 mr-1" />
+            Bekliyor
+          </Badge>
+        )
+      case "overdue":
+        return (
+          <Badge variant="destructive" className="bg-red-100 text-red-800 border-red-200">
+            <AlertCircle className="w-3 h-3 mr-1" />
+            Gecikmiş
+          </Badge>
+        )
+      default:
+        return <Badge variant="outline">{status}</Badge>
     }
   }
 
@@ -319,319 +422,509 @@ export default function KrediDuzenlePage() {
         </div>
       </div>
 
-      {/* Form Sections */}
-      <div className="grid gap-6">
-        {/* Temel Kredi Bilgileri */}
-        <Card className="shadow-sm border-gray-200">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2 text-gray-900">
-              <CreditCard className="h-5 w-5 text-blue-600" />
-              Temel Kredi Bilgileri
-            </CardTitle>
-            <CardDescription>Kredinin temel bilgilerini düzenleyin</CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-6">
-            <div className="grid md:grid-cols-2 gap-6">
-              <div className="space-y-2">
-                <Label htmlFor="credit_code" className="flex items-center gap-2">
-                  <Hash className="h-4 w-4" />
-                  Kredi Kodu
-                </Label>
-                <Input
-                  id="credit_code"
-                  value={formData.credit_code}
-                  onChange={(e) => handleInputChange("credit_code", e.target.value)}
-                  placeholder="Kredi kodunu girin"
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="account_number" className="flex items-center gap-2">
-                  <Hash className="h-4 w-4" />
-                  Hesap Numarası
-                </Label>
-                <Input
-                  id="account_number"
-                  value={formData.account_number}
-                  onChange={(e) => handleInputChange("account_number", e.target.value)}
-                  placeholder="Hesap numarasını girin"
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="customer_number" className="flex items-center gap-2">
-                  <User className="h-4 w-4" />
-                  Müşteri Numarası
-                </Label>
-                <Input
-                  id="customer_number"
-                  value={formData.customer_number}
-                  onChange={(e) => handleInputChange("customer_number", e.target.value)}
-                  placeholder="Müşteri numarasını girin"
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="credit_score" className="flex items-center gap-2">
-                  <CheckCircle className="h-4 w-4" />
-                  Kredi Notu
-                </Label>
-                <Input
-                  id="credit_score"
-                  value={formData.credit_score}
-                  onChange={(e) => handleInputChange("credit_score", e.target.value)}
-                  placeholder="Kredi notunu girin"
-                />
-              </div>
-            </div>
-
-            <Separator />
-
-            <div className="space-y-4">
-              <div className="space-y-2">
-                <Label className="flex items-center gap-2">
-                  <Building className="h-4 w-4" />
-                  Banka
-                </Label>
-                <Button
-                  variant="outline"
-                  onClick={() => setShowBankSelector(true)}
-                  className="w-full justify-start h-auto p-4"
-                >
-                  {selectedBank ? (
-                    <div className="flex items-center gap-3">
-                      <BankLogo bankName={selectedBank.name} size="sm" />
-                      <div className="text-left">
-                        <p className="font-medium">{selectedBank.name}</p>
-                        <p className="text-sm text-gray-500">Banka seçildi</p>
+      {/* Modern Tabs - Kredi Detay Sayfasıyla Aynı Tasarım */}
+      <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+          <div className="border-b border-gray-100 bg-gray-100">
+            <TabsList className="grid grid-cols-2 bg-transparent h-auto p-2 gap-2">
+              <TabsTrigger
+                value="credit-info"
+                className="flex items-center gap-2 py-3 px-4 data-[state=active]:text-emerald-600 rounded-xl transition-all duration-200 hover:bg-gray-100"
+              >
+                <CreditCard className="h-4 w-4" />
+                <span className="hidden sm:inline font-medium">Kredi Bilgileri</span>
+                <span className="sm:hidden font-medium">Bilgiler</span>
+              </TabsTrigger>
+              <TabsTrigger
+                value="payment-plan"
+                className="flex items-center gap-2 py-3 px-4 data-[state=active]:text-emerald-600 rounded-xl transition-all duration-200 hover:bg-gray-100"
+              >
+                <CalendarDays className="h-4 w-4" />
+                <span className="hidden sm:inline font-medium">Ödeme Planı</span>
+                <span className="sm:hidden font-medium">Plan</span>
+              </TabsTrigger>
+            </TabsList>
+          </div>
+          <div className="p-6">
+            {/* Kredi Bilgileri Tab */}
+            {activeTab === "credit-info" && (
+              <div className="space-y-6">
+                {/* Temel Kredi Bilgileri */}
+                <Card className="shadow-sm border-gray-200">
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2 text-gray-900">
+                      Temel Kredi Bilgileri
+                    </CardTitle>
+                    <CardDescription>Kredinin temel bilgilerini düzenleyin</CardDescription>
+                  </CardHeader>
+                  <CardContent className="space-y-6">
+                    <div className="grid md:grid-cols-2 gap-6">
+                      <div className="space-y-2">
+                        <Label htmlFor="credit_code" className="flex items-center gap-2">
+                          <Hash className="h-4 w-4" />
+                          Kredi Kodu
+                        </Label>
+                        <Input
+                          id="credit_code"
+                          value={formData.credit_code}
+                          onChange={(e) => handleInputChange("credit_code", e.target.value)}
+                          placeholder="Kredi kodunu girin"
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="account_number" className="flex items-center gap-2">
+                          <Hash className="h-4 w-4" />
+                          Hesap Numarası
+                        </Label>
+                        <Input
+                          id="account_number"
+                          value={formData.account_number}
+                          onChange={(e) => handleInputChange("account_number", e.target.value)}
+                          placeholder="Hesap numarasını girin"
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="customer_number" className="flex items-center gap-2">
+                          <User className="h-4 w-4" />
+                          Müşteri Numarası
+                        </Label>
+                        <Input
+                          id="customer_number"
+                          value={formData.customer_number}
+                          onChange={(e) => handleInputChange("customer_number", e.target.value)}
+                          placeholder="Müşteri numarasını girin"
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="credit_score" className="flex items-center gap-2">
+                          <CheckCircle className="h-4 w-4" />
+                          Kredi Notu
+                        </Label>
+                        <Input
+                          id="credit_score"
+                          value={formData.credit_score}
+                          onChange={(e) => handleInputChange("credit_score", e.target.value)}
+                          placeholder="Kredi notunu girin"
+                        />
                       </div>
                     </div>
-                  ) : (
-                    <div className="flex items-center gap-3">
-                      <div className="w-8 h-8 bg-gray-200 rounded-full flex items-center justify-center">
-                        <Building className="h-4 w-4 text-gray-400" />
+
+                    <Separator />
+
+                    <div className="space-y-4">
+                      <div className="space-y-2">
+                        <Label className="flex items-center gap-2">
+                          <Building className="h-4 w-4" />
+                          Banka
+                        </Label>
+                        <Button
+                          variant="outline"
+                          onClick={() => setShowBankSelector(true)}
+                          className="w-full justify-start h-auto p-4"
+                        >
+                          {selectedBank ? (
+                            <div className="flex items-center gap-3">
+                              <BankLogo bankName={selectedBank.name} size="sm" />
+                              <div className="text-left">
+                                <p className="font-medium">{selectedBank.name}</p>
+                                <p className="text-sm text-gray-500">Banka seçildi</p>
+                              </div>
+                            </div>
+                          ) : (
+                            <div className="flex items-center gap-3">
+                              <div className="w-8 h-8 bg-gray-200 rounded-full flex items-center justify-center">
+                                <Building className="h-4 w-4 text-gray-400" />
+                              </div>
+                              <span className="text-gray-500">Banka seçin</span>
+                            </div>
+                          )}
+                        </Button>
                       </div>
-                      <span className="text-gray-500">Banka seçin</span>
+
+                      <div className="space-y-2">
+                        <Label className="flex items-center gap-2">
+                          <FileText className="h-4 w-4" />
+                          Kredi Türü
+                        </Label>
+                        <Button
+                          variant="outline"
+                          onClick={() => setShowCreditTypeSelector(true)}
+                          className="w-full justify-start h-auto p-4"
+                        >
+                          {selectedCreditType ? (
+                            <div className="text-left">
+                              <p className="font-medium">{selectedCreditType.name}</p>
+                              <p className="text-sm text-gray-500">{selectedCreditType.description}</p>
+                            </div>
+                          ) : (
+                            <span className="text-gray-500">Kredi türü seçin</span>
+                          )}
+                        </Button>
+                      </div>
+
+                      <div className="space-y-2">
+                        <Label htmlFor="branch_name" className="flex items-center gap-2">
+                          <MapPin className="h-4 w-4" />
+                          Şube Adı
+                        </Label>
+                        <Input
+                          id="branch_name"
+                          value={formData.branch_name}
+                          onChange={(e) => handleInputChange("branch_name", e.target.value)}
+                          placeholder="Şube adını girin"
+                        />
+                      </div>
                     </div>
-                  )}
-                </Button>
-              </div>
+                  </CardContent>
+                </Card>
 
-              <div className="space-y-2">
-                <Label className="flex items-center gap-2">
-                  <FileText className="h-4 w-4" />
-                  Kredi Türü
-                </Label>
-                <Button
-                  variant="outline"
-                  onClick={() => setShowCreditTypeSelector(true)}
-                  className="w-full justify-start h-auto p-4"
-                >
-                  {selectedCreditType ? (
-                    <div className="text-left">
-                      <p className="font-medium">{selectedCreditType.name}</p>
-                      <p className="text-sm text-gray-500">{selectedCreditType.description}</p>
+                {/* Finansal Bilgiler */}
+                <Card className="shadow-sm border-gray-200">
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2 text-gray-900">
+                      Finansal Bilgiler
+                    </CardTitle>
+                    <CardDescription>Kredinin finansal detaylarını düzenleyin</CardDescription>
+                  </CardHeader>
+                  <CardContent className="space-y-6">
+                    <div className="grid md:grid-cols-2 gap-6">
+                      <div className="space-y-2">
+                        <Label htmlFor="initial_amount">Başlangıç Tutarı (₺)</Label>
+                        <Input
+                          id="initial_amount"
+                          type="number"
+                          value={formData.initial_amount}
+                          onChange={(e) => handleInputChange("initial_amount", Number.parseFloat(e.target.value) || 0)}
+                          placeholder="0"
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="remaining_debt">Kalan Borç (₺)</Label>
+                        <Input
+                          id="remaining_debt"
+                          type="number"
+                          value={formData.remaining_debt}
+                          onChange={(e) => handleInputChange("remaining_debt", Number.parseFloat(e.target.value) || 0)}
+                          placeholder="0"
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="monthly_payment">Aylık Ödeme (₺)</Label>
+                        <Input
+                          id="monthly_payment"
+                          type="number"
+                          value={formData.monthly_payment}
+                          onChange={(e) => handleInputChange("monthly_payment", Number.parseFloat(e.target.value) || 0)}
+                          placeholder="0"
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="total_payback">Toplam Geri Ödeme (₺)</Label>
+                        <Input
+                          id="total_payback"
+                          type="number"
+                          value={formData.total_payback}
+                          onChange={(e) => handleInputChange("total_payback", Number.parseFloat(e.target.value) || 0)}
+                          placeholder="0"
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="interest_rate" className="flex items-center gap-2">
+                          <Percent className="h-4 w-4" />
+                          Faiz Oranı (%)
+                        </Label>
+                        <Input
+                          id="interest_rate"
+                          type="number"
+                          step="0.01"
+                          value={formData.interest_rate}
+                          onChange={(e) => handleInputChange("interest_rate", Number.parseFloat(e.target.value) || 0)}
+                          placeholder="0.00"
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="status">Kredi Durumu</Label>
+                        <Select
+                          value={formData.status}
+                          onValueChange={(value: "active" | "closed" | "overdue") => handleInputChange("status", value)}
+                        >
+                          <SelectTrigger>
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="active">Aktif</SelectItem>
+                            <SelectItem value="closed">Kapalı</SelectItem>
+                            <SelectItem value="overdue">Gecikmiş</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
                     </div>
-                  ) : (
-                    <span className="text-gray-500">Kredi türü seçin</span>
-                  )}
-                </Button>
-              </div>
+                  </CardContent>
+                </Card>
 
-              <div className="space-y-2">
-                <Label htmlFor="branch_name" className="flex items-center gap-2">
-                  <MapPin className="h-4 w-4" />
-                  Şube Adı
-                </Label>
-                <Input
-                  id="branch_name"
-                  value={formData.branch_name}
-                  onChange={(e) => handleInputChange("branch_name", e.target.value)}
-                  placeholder="Şube adını girin"
-                />
-              </div>
-            </div>
-          </CardContent>
-        </Card>
+                {/* Tarih ve Taksit Bilgileri */}
+                <Card className="shadow-sm border-gray-200">
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2 text-gray-900">
+                     
+                      Tarih ve Taksit Bilgileri
+                    </CardTitle>
+                    <CardDescription>Kredi tarihlerini ve taksit bilgilerini düzenleyin</CardDescription>
+                  </CardHeader>
+                  <CardContent className="space-y-6">
+                    <div className="grid md:grid-cols-2 gap-6">
+                      <div className="space-y-2">
+                        <Label htmlFor="start_date">Başlangıç Tarihi</Label>
+                        <Input
+                          id="start_date"
+                          type="date"
+                          value={formData.start_date}
+                          onChange={(e) => handleInputChange("start_date", e.target.value)}
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="end_date">Bitiş Tarihi</Label>
+                        <Input
+                          id="end_date"
+                          type="date"
+                          value={formData.end_date}
+                          onChange={(e) => handleInputChange("end_date", e.target.value)}
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="total_installments">Toplam Taksit Sayısı</Label>
+                        <Input
+                          id="total_installments"
+                          type="number"
+                          value={formData.total_installments}
+                          onChange={(e) =>
+                            handleInputChange("total_installments", Number.parseInt(e.target.value) || 0)
+                          }
+                          placeholder="0"
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="remaining_installments">Kalan Taksit Sayısı</Label>
+                        <Input
+                          id="remaining_installments"
+                          type="number"
+                          value={formData.remaining_installments}
+                          onChange={(e) =>
+                            handleInputChange("remaining_installments", Number.parseInt(e.target.value) || 0)
+                          }
+                          placeholder="0"
+                        />
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
 
-        {/* Finansal Bilgiler */}
-        <Card className="shadow-sm border-gray-200">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2 text-gray-900">
-              <DollarSign className="h-5 w-5 text-green-600" />
-              Finansal Bilgiler
-            </CardTitle>
-            <CardDescription>Kredinin finansal detaylarını düzenleyin</CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-6">
-            <div className="grid md:grid-cols-2 gap-6">
-              <div className="space-y-2">
-                <Label htmlFor="initial_amount">Başlangıç Tutarı (₺)</Label>
-                <Input
-                  id="initial_amount"
-                  type="number"
-                  value={formData.initial_amount}
-                  onChange={(e) => handleInputChange("initial_amount", Number.parseFloat(e.target.value) || 0)}
-                  placeholder="0"
-                />
+                {/* Teminat ve Sigorta */}
+                <Card className="shadow-sm border-gray-200">
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2 text-gray-900">
+                    
+                      Teminat ve Sigorta
+                    </CardTitle>
+                    <CardDescription>Teminat ve sigorta bilgilerini düzenleyin</CardDescription>
+                  </CardHeader>
+                  <CardContent className="space-y-6">
+                    <div className="space-y-2">
+                      <Label htmlFor="collateral">Teminat</Label>
+                      <Textarea
+                        id="collateral"
+                        value={formData.collateral}
+                        onChange={(e) => handleInputChange("collateral", e.target.value)}
+                        placeholder="Teminat bilgilerini girin"
+                        rows={3}
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="insurance_status">Sigorta Durumu</Label>
+                      <Input
+                        id="insurance_status"
+                        value={formData.insurance_status}
+                        onChange={(e) => handleInputChange("insurance_status", e.target.value)}
+                        placeholder="Sigorta durumunu girin"
+                      />
+                    </div>
+                  </CardContent>
+                </Card>
               </div>
-              <div className="space-y-2">
-                <Label htmlFor="remaining_debt">Kalan Borç (₺)</Label>
-                <Input
-                  id="remaining_debt"
-                  type="number"
-                  value={formData.remaining_debt}
-                  onChange={(e) => handleInputChange("remaining_debt", Number.parseFloat(e.target.value) || 0)}
-                  placeholder="0"
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="monthly_payment">Aylık Ödeme (₺)</Label>
-                <Input
-                  id="monthly_payment"
-                  type="number"
-                  value={formData.monthly_payment}
-                  onChange={(e) => handleInputChange("monthly_payment", Number.parseFloat(e.target.value) || 0)}
-                  placeholder="0"
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="total_payback">Toplam Geri Ödeme (₺)</Label>
-                <Input
-                  id="total_payback"
-                  type="number"
-                  value={formData.total_payback}
-                  onChange={(e) => handleInputChange("total_payback", Number.parseFloat(e.target.value) || 0)}
-                  placeholder="0"
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="interest_rate" className="flex items-center gap-2">
-                  <Percent className="h-4 w-4" />
-                  Faiz Oranı (%)
-                </Label>
-                <Input
-                  id="interest_rate"
-                  type="number"
-                  step="0.01"
-                  value={formData.interest_rate}
-                  onChange={(e) => handleInputChange("interest_rate", Number.parseFloat(e.target.value) || 0)}
-                  placeholder="0.00"
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="status">Kredi Durumu</Label>
-                <Select
-                  value={formData.status}
-                  onValueChange={(value: "active" | "closed" | "overdue") => handleInputChange("status", value)}
-                >
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="active">Aktif</SelectItem>
-                    <SelectItem value="closed">Kapalı</SelectItem>
-                    <SelectItem value="overdue">Gecikmiş</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
+            )}
 
-        {/* Tarih ve Taksit Bilgileri */}
-        <Card className="shadow-sm border-gray-200">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2 text-gray-900">
-              <Calendar className="h-5 w-5 text-purple-600" />
-              Tarih ve Taksit Bilgileri
-            </CardTitle>
-            <CardDescription>Kredi tarihlerini ve taksit bilgilerini düzenleyin</CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-6">
-            <div className="grid md:grid-cols-2 gap-6">
-              <div className="space-y-2">
-                <Label htmlFor="start_date">Başlangıç Tarihi</Label>
-                <Input
-                  id="start_date"
-                  type="date"
-                  value={formData.start_date}
-                  onChange={(e) => handleInputChange("start_date", e.target.value)}
-                />
+            {/* Ödeme Planı Tab */}
+            {activeTab === "payment-plan" && (
+              <div className="space-y-6">
+                <Card className="shadow-sm border-gray-200">
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2 text-gray-900">
+                      <CalendarDays className="h-5 w-5 text-blue-600" />
+                      Ödeme Planı
+                    </CardTitle>
+                    <CardDescription>Kredinin ödeme planını görüntüleyin ve düzenleyin</CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    {loadingPaymentPlans ? (
+                      <div className="flex items-center justify-center py-8">
+                        <Loader2 className="h-8 w-8 animate-spin text-blue-600" />
+                        <span className="ml-2 text-gray-600">Ödeme planı yükleniyor...</span>
+                      </div>
+                    ) : paymentPlans.length === 0 ? (
+                      <div className="text-center py-8">
+                        <CalendarDays className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+                        <p className="text-gray-600">Bu kredi için ödeme planı bulunamadı.</p>
+                      </div>
+                    ) : (
+                      <div className="overflow-x-auto">
+                        <Table>
+                          <TableHeader>
+                            <TableRow>
+                              <TableHead>Taksit No</TableHead>
+                              <TableHead>Vade Tarihi</TableHead>
+                              <TableHead>Ana Para</TableHead>
+                              <TableHead>Faiz</TableHead>
+                              <TableHead>Toplam Ödeme</TableHead>
+                              <TableHead>Kalan Borç</TableHead>
+                              <TableHead>Durum</TableHead>
+                              <TableHead>İşlemler</TableHead>
+                            </TableRow>
+                          </TableHeader>
+                          <TableBody>
+                            {paymentPlans.map((plan) => (
+                              <TableRow key={plan.id}>
+                                <TableCell className="font-medium">{plan.installment_number}</TableCell>
+                                <TableCell>
+                                  {editingPlan === plan.id ? (
+                                    <Input
+                                      type="date"
+                                      value={editingPlanData.due_date || plan.due_date}
+                                      onChange={(e) =>
+                                        setEditingPlanData((prev) => ({ ...prev, due_date: e.target.value }))
+                                      }
+                                      className="w-32"
+                                    />
+                                  ) : (
+                                    new Date(plan.due_date).toLocaleDateString("tr-TR")
+                                  )}
+                                </TableCell>
+                                <TableCell>
+                                  {editingPlan === plan.id ? (
+                                    <Input
+                                      type="number"
+                                      value={editingPlanData.principal_amount || plan.principal_amount}
+                                      onChange={(e) =>
+                                        setEditingPlanData((prev) => ({
+                                          ...prev,
+                                          principal_amount: Number.parseFloat(e.target.value) || 0,
+                                        }))
+                                      }
+                                      className="w-24"
+                                    />
+                                  ) : (
+                                    formatCurrency(plan.principal_amount)
+                                  )}
+                                </TableCell>
+                                <TableCell>
+                                  {editingPlan === plan.id ? (
+                                    <Input
+                                      type="number"
+                                      value={editingPlanData.interest_amount || plan.interest_amount}
+                                      onChange={(e) =>
+                                        setEditingPlanData((prev) => ({
+                                          ...prev,
+                                          interest_amount: Number.parseFloat(e.target.value) || 0,
+                                        }))
+                                      }
+                                      className="w-24"
+                                    />
+                                  ) : (
+                                    formatCurrency(plan.interest_amount)
+                                  )}
+                                </TableCell>
+                                <TableCell>
+                                  {editingPlan === plan.id ? (
+                                    <Input
+                                      type="number"
+                                      value={editingPlanData.total_payment || plan.total_payment}
+                                      onChange={(e) =>
+                                        setEditingPlanData((prev) => ({
+                                          ...prev,
+                                          total_payment: Number.parseFloat(e.target.value) || 0,
+                                        }))
+                                      }
+                                      className="w-24"
+                                    />
+                                  ) : (
+                                    formatCurrency(plan.total_payment)
+                                  )}
+                                </TableCell>
+                                <TableCell>{formatCurrency(plan.remaining_debt)}</TableCell>
+                                <TableCell>
+                                  {editingPlan === plan.id ? (
+                                    <Select
+                                      value={editingPlanData.status || plan.status}
+                                      onValueChange={(value: "paid" | "pending" | "overdue") =>
+                                        setEditingPlanData((prev) => ({ ...prev, status: value }))
+                                      }
+                                    >
+                                      <SelectTrigger className="w-24">
+                                        <SelectValue />
+                                      </SelectTrigger>
+                                      <SelectContent>
+                                        <SelectItem value="pending">Bekliyor</SelectItem>
+                                        <SelectItem value="paid">Ödendi</SelectItem>
+                                        <SelectItem value="overdue">Gecikmiş</SelectItem>
+                                      </SelectContent>
+                                    </Select>
+                                  ) : (
+                                    getStatusBadge(plan.status)
+                                  )}
+                                </TableCell>
+                                <TableCell>
+                                  {editingPlan === plan.id ? (
+                                    <div className="flex gap-2">
+                                      <Button
+                                        size="sm"
+                                        onClick={() => handleSavePlan(plan.id)}
+                                        className="bg-green-600 hover:bg-green-700"
+                                      >
+                                        <CheckCircle className="h-3 w-3" />
+                                      </Button>
+                                      <Button size="sm" variant="outline" onClick={handleCancelEdit}>
+                                        <X className="h-3 w-3" />
+                                      </Button>
+                                    </div>
+                                  ) : (
+                                    <Button size="sm" variant="outline" onClick={() => handleEditPlan(plan)}>
+                                      <Edit className="h-3 w-3" />
+                                    </Button>
+                                  )}
+                                </TableCell>
+                              </TableRow>
+                            ))}
+                          </TableBody>
+                        </Table>
+                      </div>
+                    )}
+                  </CardContent>
+                </Card>
               </div>
-              <div className="space-y-2">
-                <Label htmlFor="end_date">Bitiş Tarihi</Label>
-                <Input
-                  id="end_date"
-                  type="date"
-                  value={formData.end_date}
-                  onChange={(e) => handleInputChange("end_date", e.target.value)}
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="total_installments">Toplam Taksit Sayısı</Label>
-                <Input
-                  id="total_installments"
-                  type="number"
-                  value={formData.total_installments}
-                  onChange={(e) => handleInputChange("total_installments", Number.parseInt(e.target.value) || 0)}
-                  placeholder="0"
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="remaining_installments">Kalan Taksit Sayısı</Label>
-                <Input
-                  id="remaining_installments"
-                  type="number"
-                  value={formData.remaining_installments}
-                  onChange={(e) => handleInputChange("remaining_installments", Number.parseInt(e.target.value) || 0)}
-                  placeholder="0"
-                />
-              </div>
-            </div>
-          </CardContent>
-        </Card>
+            )}
+          </div>
+        </Tabs>
+      </div>
 
-        {/* Teminat ve Sigorta */}
-        <Card className="shadow-sm border-gray-200">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2 text-gray-900">
-              <Shield className="h-5 w-5 text-orange-600" />
-              Teminat ve Sigorta
-            </CardTitle>
-            <CardDescription>Teminat ve sigorta bilgilerini düzenleyin</CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-6">
-            <div className="space-y-2">
-              <Label htmlFor="collateral">Teminat</Label>
-              <Textarea
-                id="collateral"
-                value={formData.collateral}
-                onChange={(e) => handleInputChange("collateral", e.target.value)}
-                placeholder="Teminat bilgilerini girin"
-                rows={3}
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="insurance_status">Sigorta Durumu</Label>
-              <Input
-                id="insurance_status"
-                value={formData.insurance_status}
-                onChange={(e) => handleInputChange("insurance_status", e.target.value)}
-                placeholder="Sigorta durumunu girin"
-              />
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Kaydet/İptal Butonları */}
-        <div className="flex justify-end gap-4 pt-6">
-          <Button variant="outline" onClick={() => router.back()} disabled={saving}>
-            <X className="mr-2 h-4 w-4" />
-            İptal
-          </Button>
-          <Button onClick={handleSave} disabled={saving} className="bg-blue-600 hover:bg-blue-700 text-white">
-            {saving ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Save className="mr-2 h-4 w-4" />}
-            {saving ? "Kaydediliyor..." : "Değişiklikleri Kaydet"}
-          </Button>
-        </div>
+      {/* Kaydet/İptal Butonları */}
+      <div className="flex justify-end gap-4 pt-6">
+        <Button variant="outline" onClick={() => router.back()} disabled={saving}>
+          <X className="mr-2 h-4 w-4" />
+          İptal
+        </Button>
+        <Button onClick={handleSave} disabled={saving} className="bg-blue-600 hover:bg-blue-700 text-white">
+          {saving ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Save className="mr-2 h-4 w-4" />}
+          {saving ? "Kaydediliyor..." : "Değişiklikleri Kaydet"}
+        </Button>
       </div>
 
       {/* Bank Selector Modal */}
@@ -642,8 +935,11 @@ export default function KrediDuzenlePage() {
       {/* Credit Type Selector Modal */}
       {showCreditTypeSelector && (
         <CreditTypeSelector
-          onCreditTypeSelect={handleCreditTypeSelect}
-          onSkip={() => setShowCreditTypeSelector(false)}
+          open={showCreditTypeSelector}
+          onOpenChange={setShowCreditTypeSelector}
+          onSelect={handleCreditTypeSelect}
+          selectedCreditType={selectedCreditType}
+          creditTypes={creditTypes}
         />
       )}
     </div>

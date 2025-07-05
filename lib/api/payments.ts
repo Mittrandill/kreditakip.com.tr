@@ -132,7 +132,7 @@ export async function deletePaymentHistory(paymentId: string) {
     throw error
   }
 
-  return data // can be null if the row didn’t exist
+  return data // can be null if the row didn't exist
 }
 
 export async function getPaymentHistoryById(paymentId: string) {

@@ -21,6 +21,7 @@ import { formatCurrency } from "@/lib/format"
 import { supabase } from "@/lib/supabase"
 import Link from "next/link"
 import BankLogoTest from "@/components/bank-logo-test"
+import { createPaymentPlansForCredit } from "@/lib/api/payment-plans"
 
 interface CreditFormData {
   bank_id: string
@@ -311,12 +312,38 @@ export default function KrediEklePage() {
 
       console.log("Submitting credit data:", creditData)
 
-      await createCredit(creditData)
+      // Create the credit first
+      const createdCredit = await createCredit(creditData)
 
-      toast({
-        title: "Başarılı",
-        description: "Kredi başarıyla eklendi",
-      })
+      console.log("Credit created successfully:", createdCredit)
+
+      // Create payment plans for the credit
+      try {
+        const paymentPlansData = {
+          initial_amount: formData.initial_amount,
+          monthly_payment: formData.monthly_payment,
+          interest_rate: formData.interest_rate,
+          start_date: formData.start_date!.toISOString().split("T")[0],
+          total_installments: formData.total_installments,
+        }
+
+        const paymentPlans = await createPaymentPlansForCredit(createdCredit.id, paymentPlansData)
+        console.log("Payment plans created successfully:", paymentPlans.length, "plans")
+
+        toast({
+          title: "Başarılı",
+          description: `Kredi ve ${paymentPlans.length} taksitlik ödeme planı başarıyla oluşturuldu`,
+        })
+      } catch (paymentPlanError) {
+        console.error("Error creating payment plans:", paymentPlanError)
+        // Credit was created but payment plans failed
+        toast({
+          title: "Kısmi Başarı",
+          description:
+            "Kredi oluşturuldu ancak ödeme planı oluşturulurken hata oluştu. Lütfen kredi detayından manuel olarak ekleyiniz.",
+          variant: "destructive",
+        })
+      }
 
       router.push("/uygulama/krediler")
     } catch (error) {

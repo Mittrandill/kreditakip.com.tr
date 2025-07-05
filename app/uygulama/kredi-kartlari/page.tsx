@@ -824,15 +824,6 @@ export default function KrediKartlariPage() {
               Bu kredi kartını silmek istediğinizden emin misiniz? Bu işlem geri alınamaz.
             </AlertDialogDescription>
           </AlertDialogHeader>
-          {cardToDelete && (
-            <div className="mt-2 p-2 bg-gray-100 dark:bg-gray-800 rounded text-sm">
-              <strong>Kart:</strong> {cardToDelete.card_name}
-              <br />
-              <strong>Banka:</strong> {cardToDelete.bank_name}
-              <br />
-              <strong>Limit:</strong> {formatCurrency(cardToDelete.credit_limit || 0)}
-            </div>
-          )}
           <AlertDialogFooter>
             <AlertDialogCancel disabled={isDeleting}>İptal</AlertDialogCancel>
             <AlertDialogAction

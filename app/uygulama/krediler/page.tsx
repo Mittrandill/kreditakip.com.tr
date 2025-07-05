@@ -31,7 +31,6 @@ import {
   Archive,
   AlertCircle,
   Wallet,
-  Settings,
   Loader2,
 } from "lucide-react"
 
@@ -44,6 +43,17 @@ import type { Credit, Bank, CreditType, PaymentPlan } from "@/lib/types"
 import { formatCurrency, formatPercent, formatNumber } from "@/lib/format"
 import { useToast } from "@/hooks/use-toast"
 import { updateCreditStatus } from "@/lib/api/credits"
+
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog"
 
 interface PopulatedCredit extends Credit {
   banks: Pick<Bank, "id" | "name" | "logo_url"> | null
@@ -109,6 +119,9 @@ export default function KredilerPage() {
   const [sortBy, setSortBy] = useState("sonOdemeTarihi")
   const [sortOrder, setSortOrder] = useState<"asc" | "desc">("asc")
   const [currentPage, setCurrentPage] = useState(1)
+
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false)
+  const [creditToDelete, setCreditToDelete] = useState<string | null>(null)
 
   const itemsPerPageCards = 8
   const itemsPerPageTable = 8
@@ -257,16 +270,23 @@ export default function KredilerPage() {
   }
 
   const handleDeleteCredit = async (creditId: string) => {
-    if (!confirm("Bu krediyi silmek istediğinizden emin misiniz? Bu işlem geri alınamaz.")) {
-      return
-    }
+    setCreditToDelete(creditId)
+    setShowDeleteDialog(true)
+  }
+
+  const confirmDeleteCredit = async () => {
+    if (!creditToDelete) return
+
     try {
-      await apiDeleteCredit(creditId)
-      setAllCredits((prev) => prev.filter((c) => c.id !== creditId))
+      await apiDeleteCredit(creditToDelete)
+      setAllCredits((prev) => prev.filter((c) => c.id !== creditToDelete))
       toast({ title: "Başarılı", description: "Kredi başarıyla silindi." })
     } catch (error) {
       console.error("Kredi silinirken hata:", error)
       toast({ title: "Hata", description: "Kredi silinirken bir sorun oluştu.", variant: "destructive" })
+    } finally {
+      setShowDeleteDialog(false)
+      setCreditToDelete(null)
     }
   }
 
@@ -316,10 +336,14 @@ export default function KredilerPage() {
               </p>
             </div>
             <div className="flex flex-col sm:flex-row gap-3">
-              <Button variant="outline-white" size="lg" onClick={() => router.push("/uygulama/krediler/pdf-odeme-plani")}>
+              <Button
+                variant="outline-white"
+                size="lg"
+                onClick={() => router.push("/uygulama/krediler/pdf-odeme-plani")}
+              >
                 <Plus className="h-5 w-5 mr-2" />
                 PDF Ödeme Planı Ekle
-              </Button>    
+              </Button>
             </div>
           </div>
         </CardContent>
@@ -412,7 +436,7 @@ export default function KredilerPage() {
                 </div>
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
-                    <Button variant="outline" className="flex items-center gap-2">
+                    <Button variant="outline" className="flex items-center gap-2 bg-transparent">
                       <ArrowUpDown className="h-4 w-4" />
                       Sırala: {sortBy === "kalanBorc" ? "Kalan Borç" : "Son Ödeme Tarihi"} (
                       {sortOrder === "asc" ? "Artan" : "Azalan"})
@@ -550,7 +574,7 @@ export default function KredilerPage() {
                           <Button
                             size="sm"
                             variant="outline"
-                            className="flex-1 border-gray-300 text-gray-700 hover:bg-gray-50 hover:border-gray-400"
+                            className="flex-1 border-gray-300 text-gray-700 hover:bg-gray-50 hover:border-gray-400 bg-transparent"
                             onClick={() => router.push(`/uygulama/kredi-detay/${kredi.id}`)}
                           >
                             <Eye className="mr-2 h-4 w-4" />
@@ -559,7 +583,7 @@ export default function KredilerPage() {
                           <Button
                             size="sm"
                             variant="outline"
-                            className="border-gray-300 text-gray-700 hover:bg-gray-50 hover:border-gray-400"
+                            className="border-gray-300 text-gray-700 hover:bg-gray-50 hover:border-gray-400 bg-transparent"
                             onClick={() => router.push(`/uygulama/kredi-duzenle/${kredi.id}`)}
                           >
                             <Edit className="h-4 w-4" />
@@ -569,7 +593,7 @@ export default function KredilerPage() {
                               <Button
                                 size="sm"
                                 variant="outline"
-                                className="border-gray-300 text-gray-700 hover:bg-gray-50 hover:border-gray-400"
+                                className="border-gray-300 text-gray-700 hover:bg-gray-50 hover:border-gray-400 bg-transparent"
                               >
                                 <MoreHorizontal className="h-4 w-4" />
                               </Button>
@@ -722,6 +746,32 @@ export default function KredilerPage() {
           </div>
         </Tabs>
       </div>
+      {/* Delete Confirmation Dialog */}
+      <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Krediyi Sil</AlertDialogTitle>
+            <AlertDialogDescription>
+              Bu hesabı silmek istediğinizden emin misiniz? Bu işlem geri alınamaz.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter className="gap-2 sm:gap-0">
+            <AlertDialogCancel
+              onClick={() => {
+                setShowDeleteDialog(false)
+                setCreditToDelete(null)
+              }}
+              className="border-gray-300 text-gray-700 hover:bg-gray-50"
+            >
+              İptal
+            </AlertDialogCancel>
+            <AlertDialogAction onClick={confirmDeleteCredit} className="bg-red-600 hover:bg-red-700 text-white">
+              <Trash2 className="h-4 w-4 mr-2" />
+              Sil
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   )
 }

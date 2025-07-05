@@ -282,8 +282,8 @@ export default function HesapDetayPage() {
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                   <Button
-                    size="sm"
-                    className="bg-white text-gray-800 hover:bg-gray-100 hover:text-gray-900 font-semibold shadow-lg border border-white/20 backdrop-blur-sm gap-2"
+                    size="lg"
+                    className="bg-white text-white-800 hover:bg-gray-100 hover:text-white-900 font-semibold shadow-lg border border-white/20 backdrop-blur-sm gap-2"
                   >
                     <MoreVertical className="h-4 w-4" />
                     İşlemler
