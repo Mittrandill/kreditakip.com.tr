@@ -129,8 +129,8 @@ export default function HesaplarPage() {
   const [sortOrder, setSortOrder] = useState<"asc" | "desc">("desc")
   const [currentPage, setCurrentPage] = useState(1)
 
-  const itemsPerPageCards = 8
-  const itemsPerPageTable = 8
+  const itemsPerPageCards = 6
+  const itemsPerPageTable = 6
 
   useEffect(() => {
     if (userId) {
@@ -478,7 +478,7 @@ export default function HesaplarPage() {
 
             {viewMode === "cards" && currentAccounts.length > 0 && (
               <div className="space-y-6">
-                <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+                <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3">
                   {currentAccounts.map((account) => (
                     <Card
                       key={account.id}
@@ -524,7 +524,7 @@ export default function HesaplarPage() {
                           <Button
                             size="sm"
                             variant="outline"
-                            className="flex-1 bg-transparent hover:bg-blue-50 hover:text-blue-600"
+                            className="flex-1 border-gray-300 text-gray-700 hover:bg-gray-50 hover:border-gray-400 bg-transparent"
                             onClick={() => openDetailPage(account)}
                           >
                             <Eye className="mr-2 h-4 w-4" />
@@ -533,7 +533,7 @@ export default function HesaplarPage() {
                           <Button
                             size="sm"
                             variant="outline"
-                            className="bg-transparent hover:bg-blue-50 hover:text-blue-600"
+                            className="border-gray-300 text-gray-700 hover:bg-gray-50 hover:border-gray-400 bg-transparent"
                             onClick={() => openEditDialog(account)}
                           >
                             <Edit className="h-4 w-4" />
@@ -541,7 +541,7 @@ export default function HesaplarPage() {
                           <Button
                             size="sm"
                             variant="outline"
-                            className="text-red-600 hover:text-red-700 hover:bg-red-50 bg-transparent"
+                            className="border-gray-300 text-gray-700 hover:bg-gray-50 hover:border-gray-400 bg-transparent"
                             onClick={() => openDeleteDialog(account)}
                           >
                             <Trash2 className="h-4 w-4" />

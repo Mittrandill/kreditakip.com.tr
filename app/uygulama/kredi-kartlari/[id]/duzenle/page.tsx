@@ -9,7 +9,7 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Textarea } from "@/components/ui/textarea"
-import { ArrowLeft, Save, CreditCard, Building2, Loader2, Shield, Zap, TrendingUp } from "lucide-react"
+import { ArrowLeft, Save, CreditCard, Building2, Loader2, Shield, Zap, TrendingUp, User } from "lucide-react"
 import { useAuth } from "@/hooks/use-auth"
 import { getCreditCard, updateCreditCard } from "@/lib/api/credit-cards"
 import { toast } from "sonner"
@@ -17,6 +17,7 @@ import BankSelector from "@/components/bank-selector"
 import { CreditCardTypeSelector } from "@/components/credit-card-type-selector"
 import { supabase } from "@/lib/supabase"
 import Link from "next/link"
+import { validateCardNumber, formatCardNumber, validateExpiryDate } from "@/lib/utils/encryption"
 
 interface CreditCardData {
   id: string
@@ -25,8 +26,13 @@ interface CreditCardData {
   card_name: string
   card_type: "kredi" | "bankakarti" | "prepaid"
   card_number: string | null
+  cardholder_name: string | null
+  expiry_month: number | null
+  expiry_year: number | null
+  cvv: string | null
   credit_limit: number
   current_debt: number
+  current_balance: number
   available_limit: number
   minimum_payment_rate: number
   interest_rate: number
@@ -34,10 +40,13 @@ interface CreditCardData {
   annual_fee: number
   statement_day: number | null
   due_day: number | null
+  due_date: number | null
   next_statement_date: string | null
   next_due_date: string | null
   is_active: boolean
+  status: string
   notes: string | null
+  description: string | null
   created_at: string
   updated_at: string
   banks: {
@@ -64,15 +73,20 @@ export default function KrediKartiDuzenlePage() {
     card_name: "",
     bank_name: "",
     card_type: "Classic",
+    cardholder_name: "",
+    card_number: "",
+    expiry_month: "",
+    expiry_year: "",
+    cvv: "",
     credit_limit: "",
-    current_debt: "",
-    due_day: "",
+    current_balance: "",
+    due_date: "",
     annual_fee: "",
     interest_rate: "",
     minimum_payment_rate: "",
     late_payment_fee: "",
-    is_active: true,
-    notes: "",
+    status: "aktif",
+    description: "",
   })
 
   const [errors, setErrors] = useState<Record<string, string>>({})
@@ -91,6 +105,7 @@ export default function KrediKartiDuzenlePage() {
           console.error("Error fetching registered banks:", error)
         } else {
           setRegisteredBanks(data || [])
+          console.log(`📋 ${data?.length || 0} kayıtlı banka yüklendi`)
         }
       } catch (error) {
         console.error("Error fetching registered banks:", error)
@@ -118,15 +133,20 @@ export default function KrediKartiDuzenlePage() {
         card_name: data.card_name || "",
         bank_name: data.banks?.name || data.bank_name || "",
         card_type: data.card_type || "Classic",
+        cardholder_name: data.cardholder_name || "",
+        card_number: data.card_number || "",
+        expiry_month: data.expiry_month?.toString() || "",
+        expiry_year: data.expiry_year?.toString() || "",
+        cvv: data.cvv || "",
         credit_limit: data.credit_limit?.toString() || "",
-        current_debt: data.current_debt?.toString() || "",
-        due_day: data.due_day?.toString() || "",
+        current_balance: (data.current_debt || data.current_balance)?.toString() || "",
+        due_date: (data.due_day || data.due_date)?.toString() || "",
         annual_fee: data.annual_fee?.toString() || "",
         interest_rate: data.interest_rate?.toString() || "",
         minimum_payment_rate: data.minimum_payment_rate?.toString() || "",
         late_payment_fee: data.late_payment_fee?.toString() || "",
-        is_active: data.is_active ?? true,
-        notes: data.notes || "",
+        status: data.is_active ? "aktif" : "pasif",
+        description: data.notes || data.description || "",
       })
     } catch (error) {
       console.error("Error fetching credit card:", error)
@@ -148,19 +168,39 @@ export default function KrediKartiDuzenlePage() {
       newErrors.bank_name = "Banka adı gereklidir"
     }
 
+    // Only validate card number if it's provided and not empty
+    if (formData.card_number && formData.card_number.trim() !== "") {
+      const isValidCard = validateCardNumber(formData.card_number)
+      console.log("Card validation result:", { cardNumber: formData.card_number, isValid: isValidCard })
+
+      if (!isValidCard) {
+        newErrors.card_number = "Geçersiz kart numarası"
+      }
+    }
+
+    if (formData.expiry_month && formData.expiry_year) {
+      if (!validateExpiryDate(formData.expiry_month, formData.expiry_year)) {
+        newErrors.expiry_date = "Geçersiz son kullanma tarihi"
+      }
+    }
+
+    if (formData.cvv && (formData.cvv.length < 3 || formData.cvv.length > 4)) {
+      newErrors.cvv = "CVV 3 veya 4 haneli olmalıdır"
+    }
+
     if (!formData.credit_limit || isNaN(Number(formData.credit_limit)) || Number(formData.credit_limit) <= 0) {
       newErrors.credit_limit = "Geçerli bir kredi limiti giriniz"
     }
 
-    if (formData.current_debt && isNaN(Number(formData.current_debt))) {
-      newErrors.current_debt = "Geçerli bir borç tutarı giriniz"
+    if (formData.current_balance && isNaN(Number(formData.current_balance))) {
+      newErrors.current_balance = "Geçerli bir borç tutarı giriniz"
     }
 
     if (
-      formData.due_day &&
-      (isNaN(Number(formData.due_day)) || Number(formData.due_day) < 1 || Number(formData.due_day) > 31)
+      formData.due_date &&
+      (isNaN(Number(formData.due_date)) || Number(formData.due_date) < 1 || Number(formData.due_date) > 31)
     ) {
-      newErrors.due_day = "Son ödeme günü 1-31 arasında olmalıdır"
+      newErrors.due_date = "Son ödeme günü 1-31 arasında olmalıdır"
     }
 
     if (formData.annual_fee && isNaN(Number(formData.annual_fee))) {
@@ -205,17 +245,23 @@ export default function KrediKartiDuzenlePage() {
         card_name: formData.card_name.trim(),
         bank_name: formData.bank_name.trim(),
         card_type: formData.card_type,
+        cardholder_name: formData.cardholder_name.trim() || undefined,
+        card_number: formData.card_number.replace(/\s/g, "") || undefined,
+        expiry_month: formData.expiry_month ? Number(formData.expiry_month) : undefined,
+        expiry_year: formData.expiry_year ? Number(formData.expiry_year) : undefined,
+        cvv: formData.cvv.trim() || undefined,
         credit_limit: Number(formData.credit_limit),
-        current_debt: Number(formData.current_debt) || 0,
-        due_day: formData.due_day ? Number(formData.due_day) : null,
+        current_balance: Number(formData.current_balance) || 0,
+        due_date: formData.due_date ? Number(formData.due_date) : null,
         annual_fee: Number(formData.annual_fee) || 0,
         interest_rate: Number(formData.interest_rate) || 0,
         minimum_payment_rate: Number(formData.minimum_payment_rate) || 0,
         late_payment_fee: Number(formData.late_payment_fee) || 0,
-        is_active: formData.is_active,
-        notes: formData.notes.trim(),
+        status: formData.status,
+        description: formData.description.trim(),
       }
 
+      console.log("Updating card data:", updateData)
       await updateCreditCard(creditCard.id, updateData)
       toast.success("Kredi kartı başarıyla güncellendi!")
       router.push(`/uygulama/kredi-kartlari/${creditCard.id}`)
@@ -237,34 +283,62 @@ export default function KrediKartiDuzenlePage() {
 
   const handleCreditCardTypeSelect = (creditCardType: any) => {
     setSelectedCreditCardType(creditCardType)
+    // Eşleştirilmiş banka adını kullan
     const bankNameToUse = creditCardType.matched_bank_name || creditCardType.bank_name
 
     setFormData({
       ...formData,
-      card_name: creditCardType.name,
+      card_name: creditCardType.name, // Kart adını da güncelle
       card_type: creditCardType.segment || "Classic",
-      bank_name: bankNameToUse,
+      bank_name: bankNameToUse, // Eşleştirilmiş banka adını kullan
     })
     setShowCreditCardTypeSelector(false)
 
+    // Banka adı hatası varsa temizle
     if (errors.bank_name) {
       setErrors({ ...errors, bank_name: "" })
     }
     if (errors.card_name) {
       setErrors({ ...errors, card_name: "" })
     }
+
+    console.log(`✅ Kart türü seçildi ve banka güncellendi:`, {
+      cardName: creditCardType.name,
+      originalBank: creditCardType.original_bank_name || creditCardType.bank_name,
+      matchedBank: bankNameToUse,
+    })
   }
 
-  const handleInputChange = (field: string, value: string | boolean) => {
-    setFormData({ ...formData, [field]: value })
+  const handleInputChange = (field: string, value: string) => {
+    // Format card number as user types
+    if (field === "card_number") {
+      const cleanValue = value.replace(/\D/g, "")
+      const formattedValue = formatCardNumber(cleanValue)
+      setFormData({ ...formData, [field]: formattedValue })
+    } else {
+      setFormData({ ...formData, [field]: value })
+    }
+
+    // Clear error when user starts typing
     if (errors[field]) {
       setErrors({ ...errors, [field]: "" })
     }
+
+    // Clear card number error specifically when typing
+    if (field === "card_number" && errors.card_number) {
+      setErrors({ ...errors, card_number: "" })
+    }
   }
 
-  const availableLimit = Number(formData.credit_limit) - Number(formData.current_debt || 0)
+  const availableCredit = Number(formData.credit_limit) - Number(formData.current_balance || 0)
   const utilizationRate =
-    Number(formData.credit_limit) > 0 ? (Number(formData.current_debt || 0) / Number(formData.credit_limit)) * 100 : 0
+    Number(formData.credit_limit) > 0
+      ? (Number(formData.current_balance || 0) / Number(formData.credit_limit)) * 100
+      : 0
+
+  // Generate year options (current year + 10 years)
+  const currentYear = new Date().getFullYear()
+  const yearOptions = Array.from({ length: 11 }, (_, i) => currentYear + i)
 
   if (loading) {
     return (
@@ -340,6 +414,7 @@ export default function KrediKartiDuzenlePage() {
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
+                  <CreditCard className="h-5 w-5 text-purple-600" />
                   Temel Kart Bilgileri
                 </CardTitle>
                 <CardDescription>Kredi kartınızın temel bilgilerini güncelleyin</CardDescription>
@@ -390,19 +465,113 @@ export default function KrediKartiDuzenlePage() {
                   </div>
 
                   <div className="space-y-2">
-                    <Label htmlFor="is_active">Durum</Label>
-                    <Select
-                      value={formData.is_active ? "aktif" : "pasif"}
-                      onValueChange={(value) => handleInputChange("is_active", value === "aktif")}
-                    >
+                    <Label htmlFor="status">Durum</Label>
+                    <Select value={formData.status} onValueChange={(value) => handleInputChange("status", value)}>
                       <SelectTrigger>
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
                         <SelectItem value="aktif">Aktif</SelectItem>
                         <SelectItem value="pasif">Pasif</SelectItem>
+                        <SelectItem value="blokeli">Blokeli</SelectItem>
+                        <SelectItem value="iptal">İptal</SelectItem>
                       </SelectContent>
                     </Select>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Kart Detayları */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <User className="h-5 w-5 text-green-600" />
+                  Kart Sahibi ve Detayları
+                </CardTitle>
+                <CardDescription>Kart sahibi bilgileri ve kart detayları (opsiyonel)</CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="space-y-2 md:col-span-2">
+                    <Label htmlFor="cardholder_name">Kart Sahibi Adı</Label>
+                    <Input
+                      id="cardholder_name"
+                      value={formData.cardholder_name}
+                      onChange={(e) => handleInputChange("cardholder_name", e.target.value)}
+                      placeholder="AHMET YILMAZ"
+                      className="uppercase"
+                    />
+                    <p className="text-xs text-gray-500">Kart üzerinde yazıldığı gibi (büyük harflerle)</p>
+                  </div>
+
+                  <div className="space-y-2 md:col-span-2">
+                    <Label htmlFor="card_number">Kart Numarası</Label>
+                    <Input
+                      id="card_number"
+                      type="text"
+                      value={formData.card_number}
+                      onChange={(e) => handleInputChange("card_number", e.target.value)}
+                      placeholder="1234 5678 9123 4567"
+                      maxLength={19}
+                      className={errors.card_number ? "border-red-500" : ""}
+                    />
+                    {errors.card_number && <p className="text-sm text-red-600">{errors.card_number}</p>}
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="expiry_month">Son Kullanma Ayı</Label>
+                    <Select
+                      value={formData.expiry_month}
+                      onValueChange={(value) => handleInputChange("expiry_month", value)}
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Ay seçiniz" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {Array.from({ length: 12 }, (_, i) => i + 1).map((month) => (
+                          <SelectItem key={month} value={month.toString()}>
+                            {month.toString().padStart(2, "0")} -{" "}
+                            {new Date(0, month - 1).toLocaleDateString("tr-TR", { month: "long" })}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="expiry_year">Son Kullanma Yılı</Label>
+                    <Select
+                      value={formData.expiry_year}
+                      onValueChange={(value) => handleInputChange("expiry_year", value)}
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Yıl seçiniz" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {yearOptions.map((year) => (
+                          <SelectItem key={year} value={year.toString()}>
+                            {year}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    {errors.expiry_date && <p className="text-sm text-red-600">{errors.expiry_date}</p>}
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="cvv">CVV Güvenlik Kodu</Label>
+                    <Input
+                      id="cvv"
+                      type="text"
+                      value={formData.cvv}
+                      onChange={(e) => handleInputChange("cvv", e.target.value.replace(/\D/g, ""))}
+                      placeholder="123"
+                      maxLength={4}
+                      className={errors.cvv ? "border-red-500" : ""}
+                    />
+                    {errors.cvv && <p className="text-sm text-red-600">{errors.cvv}</p>}
+                    <p className="text-xs text-gray-500">Kartın arkasındaki 3 haneli kod</p>
                   </div>
                 </div>
               </CardContent>
@@ -431,17 +600,17 @@ export default function KrediKartiDuzenlePage() {
                   </div>
 
                   <div className="space-y-2">
-                    <Label htmlFor="current_debt">Mevcut Borç</Label>
+                    <Label htmlFor="current_balance">Mevcut Borç (₺)</Label>
                     <Input
-                      id="current_debt"
+                      id="current_balance"
                       type="number"
                       step="0.01"
-                      value={formData.current_debt}
-                      onChange={(e) => handleInputChange("current_debt", e.target.value)}
+                      value={formData.current_balance}
+                      onChange={(e) => handleInputChange("current_balance", e.target.value)}
                       placeholder="0.00"
-                      className={errors.current_debt ? "border-red-500" : ""}
+                      className={errors.current_balance ? "border-red-500" : ""}
                     />
-                    {errors.current_debt && <p className="text-sm text-red-600">{errors.current_debt}</p>}
+                    {errors.current_balance && <p className="text-sm text-red-600">{errors.current_balance}</p>}
                   </div>
 
                   <div className="space-y-2">
@@ -518,18 +687,18 @@ export default function KrediKartiDuzenlePage() {
               <CardContent className="space-y-4">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div className="space-y-2">
-                    <Label htmlFor="due_day">Son Ödeme Günü</Label>
+                    <Label htmlFor="due_date">Son Ödeme Günü</Label>
                     <Input
-                      id="due_day"
+                      id="due_date"
                       type="number"
                       min="1"
                       max="31"
-                      value={formData.due_day}
-                      onChange={(e) => handleInputChange("due_day", e.target.value)}
+                      value={formData.due_date}
+                      onChange={(e) => handleInputChange("due_date", e.target.value)}
                       placeholder="15"
-                      className={errors.due_day ? "border-red-500" : ""}
+                      className={errors.due_date ? "border-red-500" : ""}
                     />
-                    {errors.due_day && <p className="text-sm text-red-600">{errors.due_day}</p>}
+                    {errors.due_date && <p className="text-sm text-red-600">{errors.due_date}</p>}
                     <p className="text-xs text-gray-500">Ayın hangi günü son ödeme tarihi (1-31)</p>
                   </div>
                 </div>
@@ -544,11 +713,11 @@ export default function KrediKartiDuzenlePage() {
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="space-y-2">
-                  <Label htmlFor="notes">Açıklama</Label>
+                  <Label htmlFor="description">Açıklama</Label>
                   <Textarea
-                    id="notes"
-                    value={formData.notes}
-                    onChange={(e) => handleInputChange("notes", e.target.value)}
+                    id="description"
+                    value={formData.description}
+                    onChange={(e) => handleInputChange("description", e.target.value)}
                     placeholder="Kart hakkında notlar..."
                     rows={3}
                     className="resize-none"
@@ -579,9 +748,31 @@ export default function KrediKartiDuzenlePage() {
                     <span className="text-gray-600">Kart Türü:</span>
                     <span className="font-medium">{selectedCreditCardType?.name || formData.card_type}</span>
                   </div>
+                  {formData.cardholder_name && (
+                    <div className="flex justify-between text-sm">
+                      <span className="text-gray-600">Kart Sahibi:</span>
+                      <span className="font-medium">{formData.cardholder_name}</span>
+                    </div>
+                  )}
+                  {formData.card_number && (
+                    <div className="flex justify-between text-sm">
+                      <span className="text-gray-600">Kart No:</span>
+                      <span className="font-medium">
+                        **** **** **** {formData.card_number.replace(/\s/g, "").slice(-4)}
+                      </span>
+                    </div>
+                  )}
+                  {formData.expiry_month && formData.expiry_year && (
+                    <div className="flex justify-between text-sm">
+                      <span className="text-gray-600">Son Kullanma:</span>
+                      <span className="font-medium">
+                        {formData.expiry_month.padStart(2, "0")}/{formData.expiry_year}
+                      </span>
+                    </div>
+                  )}
                   <div className="flex justify-between text-sm">
                     <span className="text-gray-600">Durum:</span>
-                    <span className="font-medium">{formData.is_active ? "Aktif" : "Pasif"}</span>
+                    <span className="font-medium capitalize">{formData.status}</span>
                   </div>
                   <div className="border-t pt-3">
                     <div className="flex justify-between text-sm font-semibold">
@@ -591,11 +782,11 @@ export default function KrediKartiDuzenlePage() {
                   </div>
                   <div className="flex justify-between text-sm">
                     <span className="text-gray-600">Mevcut Borç:</span>
-                    <span className="font-medium text-red-600">{Number(formData.current_debt) || 0} ₺</span>
+                    <span className="font-medium text-red-600">{Number(formData.current_balance) || 0} ₺</span>
                   </div>
                   <div className="flex justify-between text-sm">
                     <span className="text-gray-600">Kullanılabilir Limit:</span>
-                    <span className="font-medium text-green-600">{availableLimit} ₺</span>
+                    <span className="font-medium text-green-600">{availableCredit} ₺</span>
                   </div>
                   {Number(formData.credit_limit) > 0 && (
                     <div className="flex justify-between text-sm">
@@ -615,10 +806,22 @@ export default function KrediKartiDuzenlePage() {
                       <span className="font-medium">{Number(formData.annual_fee)} ₺</span>
                     </div>
                   )}
-                  {formData.due_day && (
+                  {Number(formData.minimum_payment_rate) > 0 && (
+                    <div className="flex justify-between text-sm">
+                      <span className="text-gray-600">Min. Ödeme Oranı:</span>
+                      <span className="font-medium">%{formData.minimum_payment_rate}</span>
+                    </div>
+                  )}
+                  {Number(formData.late_payment_fee) > 0 && (
+                    <div className="flex justify-between text-sm">
+                      <span className="text-gray-600">Gecikme Ücreti:</span>
+                      <span className="font-medium">{Number(formData.late_payment_fee)} ₺</span>
+                    </div>
+                  )}
+                  {formData.due_date && (
                     <div className="flex justify-between text-sm">
                       <span className="text-gray-600">Son Ödeme Günü:</span>
-                      <span className="font-medium">Her ayın {formData.due_day}. günü</span>
+                      <span className="font-medium">Her ayın {formData.due_date}. günü</span>
                     </div>
                   )}
                 </div>

@@ -119,6 +119,23 @@ export function getCardBrand(cardNumber: string): string {
   return "Bilinmeyen"
 }
 
+// Test kart numaraları - geliştirme için
+const TEST_CARD_NUMBERS = [
+  "1111111111111111", // Test kartı
+  "4111111111111111", // Visa test kartı
+  "5555555555554444", // Mastercard test kartı
+  "378282246310005", // American Express test kartı
+  "6011111111111117", // Discover test kartı
+  "4000000000000002", // Visa test kartı
+  "5200828282828210", // Mastercard test kartı
+  "4242424242424242", // Stripe test kartı
+  "4000000000000069", // Visa test kartı (declined)
+  "4000000000000127", // Visa test kartı (insufficient funds)
+  "1234567890123456", // Basit test kartı
+  "9999999999999999", // Basit test kartı
+  "0000000000000000", // Sıfır test kartı
+]
+
 export function validateCardNumber(cardNumber: string): boolean {
   if (!cardNumber) return false
 
@@ -127,7 +144,21 @@ export function validateCardNumber(cardNumber: string): boolean {
   // 13-19 haneli olmalı
   if (!/^\d{13,19}$/.test(cleanNumber)) return false
 
-  // Luhn algoritması ile doğrula
+  // Geliştirme ortamında test kartlarını kabul et
+  if (process.env.NODE_ENV === "development") {
+    // Test kart numaralarını kontrol et
+    if (TEST_CARD_NUMBERS.includes(cleanNumber)) {
+      console.log("✅ Test kart numarası kabul edildi:", cleanNumber.substring(0, 4) + "****")
+      return true
+    }
+
+    // Geliştirme ortamında daha esnek validasyon
+    // Sadece rakam kontrolü yap, Luhn algoritmasını atla
+    console.log("⚠️ Geliştirme ortamında esnek validasyon kullanılıyor")
+    return true
+  }
+
+  // Prodüksiyon ortamında Luhn algoritması ile doğrula
   return luhnCheck(cleanNumber)
 }
 
@@ -150,6 +181,14 @@ export function validateExpiryDate(month: string | number, year: string | number
 
   // 2 haneli yılı 4 haneli yap
   const fullYear = yearNum < 100 ? 2000 + yearNum : yearNum
+
+  // Geliştirme ortamında daha esnek tarih kontrolü
+  if (process.env.NODE_ENV === "development") {
+    // Sadece mantıklı bir tarih olup olmadığını kontrol et
+    if (fullYear >= currentYear - 10 && fullYear <= currentYear + 20) {
+      return true
+    }
+  }
 
   // Gelecek tarih olmalı
   if (fullYear < currentYear) return false
@@ -190,4 +229,22 @@ export function sanitizeForLog(data: string): string {
   if (!data) return "[BOŞ]"
   if (data.length <= 4) return "[KISA_VERİ]"
   return data.substring(0, 2) + "***" + data.substring(data.length - 2)
+}
+
+// Geliştirme ortamı için yardımcı fonksiyon
+export function getTestCardNumbers(): string[] {
+  return TEST_CARD_NUMBERS.map((num) => formatCardNumber(num))
+}
+
+// Kart numarası önerileri
+export function getCardNumberSuggestions(): Array<{ number: string; brand: string; description: string }> {
+  return [
+    { number: "4111 1111 1111 1111", brand: "Visa", description: "Visa Test Kartı" },
+    { number: "5555 5555 5555 4444", brand: "Mastercard", description: "Mastercard Test Kartı" },
+    { number: "3782 8224 6310 005", brand: "American Express", description: "Amex Test Kartı" },
+    { number: "6011 1111 1111 1117", brand: "Discover", description: "Discover Test Kartı" },
+    { number: "4242 4242 4242 4242", brand: "Visa", description: "Stripe Test Kartı" },
+    { number: "1111 1111 1111 1111", brand: "Test", description: "Basit Test Kartı" },
+    { number: "1234 5678 9012 3456", brand: "Test", description: "Demo Kartı" },
+  ]
 }

@@ -147,8 +147,8 @@ export default function KrediKartlariPage() {
   const [sortOrder, setSortOrder] = useState<"asc" | "desc">("desc")
   const [currentPage, setCurrentPage] = useState(1)
 
-  const itemsPerPageCards = 9
-  const itemsPerPageTable = 8
+  const itemsPerPageCards = 6
+  const itemsPerPageTable = 6
 
   useEffect(() => {
     if (userId) {
@@ -335,10 +335,10 @@ export default function KrediKartlariPage() {
               <p className="opacity-90 text-lg">Kredi kartlarınızı takip edin ve yönetin.</p>
             </div>
             <Button
-              variant="outline"
+              variant="outline-white"
               onClick={openCreateDialog}
               size="lg"
-              className="bg-white/10 border-white/30 text-white hover:bg-white/20 text-white"
+             
             >
               <Plus className="h-5 w-5 mr-2" />
               Yeni Kart Ekle
@@ -346,6 +346,8 @@ export default function KrediKartlariPage() {
           </div>
         </CardContent>
       </Card>
+
+    
 
       {/* Metrics */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
@@ -585,7 +587,7 @@ export default function KrediKartlariPage() {
                             <div className="flex gap-2">
                               <Button
                                 variant="outline"
-                                className="flex-1 bg-gray-50 border-gray-200 text-gray-700 hover:bg-gray-100 hover:border-gray-300 transition-colors"
+                            className="flex-1 border-gray-300 text-gray-700 hover:bg-gray-50 hover:border-gray-400 bg-transparent"
                                 onClick={() => router.push(`/uygulama/kredi-kartlari/${card.id}`)}
                               >
                                 <Eye className="mr-2 h-4 w-4" />
@@ -594,7 +596,7 @@ export default function KrediKartlariPage() {
                               <Button
                                 variant="outline"
                                 size="icon"
-                                className="bg-gray-50 border-gray-200 text-gray-700 hover:bg-gray-100 hover:border-gray-300 transition-colors"
+                                className="border-gray-300 text-gray-700 hover:bg-gray-50 hover:border-gray-400 bg-transparent"
                                 onClick={() => openEditDialog(card)}
                               >
                                 <Edit className="h-4 w-4" />
@@ -604,7 +606,7 @@ export default function KrediKartlariPage() {
                                   <Button
                                     variant="outline"
                                     size="icon"
-                                    className="bg-gray-50 border-gray-200 text-gray-700 hover:bg-gray-100 hover:border-gray-300 transition-colors"
+                                    className="border-gray-300 text-gray-700 hover:bg-gray-50 hover:border-gray-400 bg-transparent"
                                   >
                                     <MoreHorizontal className="h-4 w-4" />
                                   </Button>

@@ -31,7 +31,7 @@
     const [formData, setFormData] = useState({
       card_name: "",
       bank_name: "",
-      card_type: "Classic",
+      card_type: "",
       cardholder_name: "",
       card_number: "",
       expiry_month: "",
@@ -298,7 +298,6 @@
               <Card>
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
-                    <CreditCard className="h-5 w-5 text-purple-600" />
                     Temel Kart Bilgileri
                   </CardTitle>
                   <CardDescription>Kredi kartınızın temel bilgilerini giriniz</CardDescription>
@@ -370,7 +369,6 @@
               <Card>
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
-                    <User className="h-5 w-5 text-green-600" />
                     Kart Sahibi ve Detayları
                   </CardTitle>
                   <CardDescription>Kart sahibi bilgileri ve kart detayları (opsiyonel)</CardDescription>
@@ -386,7 +384,7 @@
                         placeholder="AHMET YILMAZ"
                         className="uppercase"
                       />
-                      <p className="text-xs text-gray-500">Kart üzerinde yazıldığı gibi (büyük harflerle)</p>
+                  
                     </div>
 
                     <div className="space-y-2 md:col-span-2">
@@ -396,14 +394,11 @@
                         type="text"
                         value={formData.card_number}
                         onChange={(e) => handleInputChange("card_number", e.target.value)}
-                        placeholder="1111 1111 1111 1111 (test için)"
+                        placeholder="**** **** **** ****"
                         maxLength={19}
                         className={errors.card_number ? "border-red-500" : ""}
                       />
                       {errors.card_number && <p className="text-sm text-red-600">{errors.card_number}</p>}
-                      <p className="text-xs text-gray-500">
-                        Test için: 1111 1111 1111 1111 veya 4111 1111 1111 1111 kullanabilirsiniz
-                      </p>
                     </div>
 
                     <div className="space-y-2">
@@ -458,7 +453,6 @@
                         className={errors.cvv ? "border-red-500" : ""}
                       />
                       {errors.cvv && <p className="text-sm text-red-600">{errors.cvv}</p>}
-                      <p className="text-xs text-gray-500">Kartın arkasındaki 3 haneli kod</p>
                     </div>
                   </div>
                 </CardContent>
