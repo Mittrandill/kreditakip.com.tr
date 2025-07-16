@@ -39,6 +39,8 @@ import {
   PlayCircle,
   RefreshCw,
   History,
+  CreditCardIcon,
+  Landmark,
 } from "lucide-react"
 import { BsFillGrid3X3GapFill } from "react-icons/bs"
 import { Progress } from "@/components/ui/progress"
@@ -46,8 +48,10 @@ import { Progress } from "@/components/ui/progress"
 import { useAuth } from "@/hooks/use-auth"
 import { getFinancialProfile } from "@/lib/api/financials"
 import { getCredits } from "@/lib/api/credits"
+import { getAccounts } from "@/lib/api/accounts"
+import { getCreditCards } from "@/lib/api/credit-cards"
 import { saveRiskAnalysis, getRiskAnalyses, deleteRiskAnalysis } from "@/lib/api/risk-analyses"
-import type { FinancialProfile, Credit, RiskAnalysis as RiskAnalysisType } from "@/lib/types"
+import type { FinancialProfile, Credit, Account, RiskAnalysis as RiskAnalysisType } from "@/lib/types"
 import { formatCurrency, formatNumber } from "@/lib/format"
 import { useToast } from "@/hooks/use-toast"
 import { formatDistanceToNow, format } from "date-fns"
@@ -91,6 +95,8 @@ export default function RiskAnaliziPage() {
 
   const [financialProfile, setFinancialProfile] = useState<FinancialProfile | null>(null)
   const [credits, setCredits] = useState<Credit[]>([])
+  const [accounts, setAccounts] = useState<Account[]>([])
+  const [creditCards, setCreditCards] = useState<any[]>([])
   const [allPastAnalyses, setAllPastAnalyses] = useState<RiskAnalysisType[]>([])
 
   const [initialDataLoading, setInitialDataLoading] = useState(true)
@@ -124,9 +130,11 @@ export default function RiskAnaliziPage() {
           setInitialDataError(null)
         }
         try {
-          const [profileData, creditsData, pastAnalysesData] = await Promise.all([
+          const [profileData, creditsData, accountsData, creditCardsData, pastAnalysesData] = await Promise.all([
             getFinancialProfile(userId),
             getCredits(userId),
+            getAccounts(userId),
+            getCreditCards(userId),
             getRiskAnalyses(userId),
           ])
 
@@ -134,6 +142,8 @@ export default function RiskAnaliziPage() {
 
           setFinancialProfile(profileData)
           setCredits(creditsData as Credit[])
+          setAccounts(accountsData as Account[])
+          setCreditCards(creditCardsData)
           setAllPastAnalyses(pastAnalysesData || [])
 
           if (!profileData || profileData.monthly_income === null || profileData.monthly_income === undefined) {
@@ -145,7 +155,7 @@ export default function RiskAnaliziPage() {
           console.error("Risk Analizi - Başlangıç verileri alınırken hata:", err)
           if (isMounted) {
             setInitialDataError(
-              "Finansal bilgileriniz, kredi verileriniz veya geçmiş analizleriniz yüklenirken bir sorun oluştu.",
+              "Finansal bilgileriniz, kredi verileriniz, hesap bilgileriniz veya geçmiş analizleriniz yüklenirken bir sorun oluştu.",
             )
           }
         } finally {
@@ -254,7 +264,12 @@ export default function RiskAnaliziPage() {
       const response = await fetch("/api/risk-analysis", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ financialProfile, credits }),
+        body: JSON.stringify({
+          financialProfile,
+          credits,
+          accounts,
+          creditCards,
+        }),
       })
       const responseData = await response.json()
 
@@ -269,9 +284,9 @@ export default function RiskAnaliziPage() {
         throw new Error(`${errorMessage}${errorDetails}`)
       }
 
-      const saved = await saveRiskAnalysis(user.id, responseData, financialProfile, credits)
+      const saved = await saveRiskAnalysis(user.id, responseData, financialProfile, credits, accounts, creditCards)
       setAllPastAnalyses((prev) => [saved, ...prev.filter((p) => p.id !== saved.id)])
-      toast({ title: "Başarılı", description: "Risk analizi tamamlandı ve kaydedildi." })
+      toast({ title: "Başarılı", description: "Kapsamlı risk analizi tamamlandı ve kaydedildi." })
 
       // Small delay to show 100% progress
       setTimeout(() => {
@@ -332,6 +347,9 @@ export default function RiskAnaliziPage() {
     [allPastAnalyses],
   )
 
+  // Finansal araçların sayısı
+  const totalFinancialInstruments = credits.length + accounts.length + creditCards.length
+
   if (authLoading || (userId && initialDataLoading)) {
     return (
       <div className="flex items-center justify-center min-h-[200px]">
@@ -354,21 +372,36 @@ export default function RiskAnaliziPage() {
 
   const canAnalyze =
     financialProfile && financialProfile.monthly_income !== null && financialProfile.monthly_income !== undefined
-  const heroButtonText = "Analizi Başlat"
+  const heroButtonText = "Kapsamlı Analizi Başlat"
 
   return (
     <div className="flex flex-col gap-4 md:gap-6">
+      {/* Hero Section */}
       <Card className="bg-gradient-to-r from-red-600 to-rose-700 text-white border-transparent shadow-xl rounded-xl">
         <CardContent className="p-6 md:p-8">
           <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
             <div>
               <h2 className="text-3xl font-bold mb-2 flex items-center gap-3">
                 <ShieldCheck className="h-8 w-8" />
-                Finansal Risk Değerlendirmesi
+                Kapsamlı Finansal Risk Değerlendirmesi
               </h2>
               <p className="opacity-90 text-lg">
-                Kapsamlı risk analizi ile finansal sağlığınızı ve geleceğinizi planlayın.
+                Krediler, kredi kartları ve hesaplarınızı dahil ederek tam finansal sağlık analizi.
               </p>
+              <div className="mt-3 flex flex-wrap gap-4 text-sm opacity-80">
+                <span className="flex items-center gap-1">
+                  <History className="h-4 w-4" />
+                  {credits.length} Kredi
+                </span>
+                <span className="flex items-center gap-1">
+                  <CreditCardIcon className="h-4 w-4" />
+                  {creditCards.length} Kredi Kartı
+                </span>
+                <span className="flex items-center gap-1">
+                  <Landmark className="h-4 w-4" />
+                  {accounts.length} Hesap
+                </span>
+              </div>
             </div>
             <div className="flex flex-col sm:flex-row gap-3">
               <Button
@@ -422,8 +455,8 @@ export default function RiskAnaliziPage() {
             <div className="flex flex-col items-center gap-4">
               <RefreshCw className="h-16 w-16 animate-spin text-red-600" />
               <div className="space-y-2">
-                <h3 className="text-xl font-semibold text-gray-900">Risk Analizi Hazırlanıyor</h3>
-                <p className="text-gray-600">Finansal verileriniz analiz ediliyor...</p>
+                <h3 className="text-xl font-semibold text-gray-900">Kapsamlı Risk Analizi Hazırlanıyor</h3>
+                <p className="text-gray-600">{totalFinancialInstruments} finansal araç analiz ediliyor...</p>
               </div>
               <div className="w-full max-w-md">
                 <div className="flex justify-between text-sm text-gray-500 mb-1">
@@ -432,7 +465,9 @@ export default function RiskAnaliziPage() {
                 </div>
                 <Progress value={analysisProgress} className="h-2" />
               </div>
-              <p className="text-sm text-gray-500">Bu işlem genellikle 10-15 saniye sürer</p>
+              <p className="text-sm text-gray-500">
+                Krediler, kredi kartları ve hesaplar dahil kapsamlı analiz yapılıyor
+              </p>
             </div>
           </CardContent>
         </Card>
@@ -534,7 +569,7 @@ export default function RiskAnaliziPage() {
                       </div>
                       <DropdownMenu>
                         <DropdownMenuTrigger asChild>
-                          <Button variant="outline" className="flex items-center gap-2">
+                          <Button variant="outline" className="flex items-center gap-2 bg-transparent">
                             <ArrowUpDown className="h-4 w-4" />
                             Sırala: {sortBy === "created_at" ? "Tarih" : "Risk Skoru"} (
                             {sortOrder === "asc" ? "Artan" : "Azalan"})
@@ -624,7 +659,7 @@ export default function RiskAnaliziPage() {
                                 <Button
                                   size="sm"
                                   variant="outline"
-                                  className="flex-1"
+                                  className="flex-1 bg-transparent"
                                   onClick={(e) => {
                                     e.stopPropagation()
                                     viewAnalysisDetails(pa.id)
@@ -636,7 +671,7 @@ export default function RiskAnaliziPage() {
                                 <Button
                                   size="sm"
                                   variant="outline"
-                                  className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                                  className="text-red-600 hover:text-red-700 hover:bg-red-50 bg-transparent"
                                   onClick={(e) => {
                                     e.stopPropagation()
                                     openDeleteDialog(pa)
@@ -677,53 +712,33 @@ export default function RiskAnaliziPage() {
                             </TableRow>
                           </TableHeader>
                           <TableBody>
-                            {currentPastAnalyses.map((pa, index) => (
+                            {currentPastAnalyses.map((pa) => (
                               <TableRow
                                 key={pa.id}
-                                className={`hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors duration-150 ease-in-out cursor-pointer ${
-                                  index % 2 === 0 ? "bg-white dark:bg-gray-900" : "bg-gray-50/50 dark:bg-gray-800/50"
-                                }`}
+                                className="hover:bg-gray-50 dark:hover:bg-gray-800 cursor-pointer"
                                 onClick={() => viewAnalysisDetails(pa.id)}
                               >
-                                <TableCell className="font-medium text-teal-700 dark:text-teal-400">
+                                <TableCell className="font-medium">
                                   {format(new Date(pa.created_at), "dd.MM.yyyy HH:mm")}
                                 </TableCell>
-                                <TableCell className="font-semibold text-gray-900 dark:text-white">
-                                  {pa.overall_risk_score || "N/A"}
-                                </TableCell>
+                                <TableCell>{pa.overall_risk_score || "N/A"}</TableCell>
                                 <TableCell>
-                                  <div className="flex items-center gap-3">
-                                    <Progress
-                                      value={getRiskProgressValue(pa.overall_risk_color).value}
-                                      className={`h-2 w-20 [&>div]:${getRiskProgressValue(pa.overall_risk_color).className}`}
-                                    />
-                                    <Badge
-                                      className={`${getRiskBadgeClass(pa.overall_risk_color)} flex items-center gap-1`}
-                                    >
-                                      {getRiskBadgeText(pa.overall_risk_color)}
-                                    </Badge>
-                                  </div>
+                                  <Badge className={getRiskBadgeClass(pa.overall_risk_color)}>
+                                    {getRiskBadgeText(pa.overall_risk_color)}
+                                  </Badge>
                                 </TableCell>
-                                <TableCell className="font-medium text-gray-900 dark:text-white">
-                                  {pa.debt_to_income_ratio || "N/A"}
-                                </TableCell>
-                                <TableCell className="font-semibold text-gray-900 dark:text-white">
-                                  {pa.monthly_income ? formatCurrency(pa.monthly_income) : "N/A"}
-                                </TableCell>
-                                <TableCell className="font-semibold text-gray-900 dark:text-white">
-                                  {pa.total_debt_amount ? formatCurrency(pa.total_debt_amount) : "N/A"}
-                                </TableCell>
+                                <TableCell>{pa.debt_to_income_ratio || "N/A"}</TableCell>
+                                <TableCell>{formatCurrency(pa.monthly_income || 0)}</TableCell>
+                                <TableCell>{formatCurrency(pa.total_debt_amount || 0)}</TableCell>
                                 <TableCell className="text-right">
                                   <DropdownMenu>
                                     <DropdownMenuTrigger asChild>
                                       <Button
                                         variant="ghost"
-                                        size="icon"
-                                        className="h-8 w-8 hover:bg-red-50 hover:text-red-600 dark:hover:bg-red-900/20"
+                                        className="h-8 w-8 p-0"
                                         onClick={(e) => e.stopPropagation()}
                                       >
                                         <MoreHorizontal className="h-4 w-4" />
-                                        <span className="sr-only">Actions</span>
                                       </Button>
                                     </DropdownMenuTrigger>
                                     <DropdownMenuContent align="end">
@@ -734,14 +749,14 @@ export default function RiskAnaliziPage() {
                                         }}
                                       >
                                         <Eye className="mr-2 h-4 w-4" />
-                                        Detayları Gör
+                                        Detayları Görüntüle
                                       </DropdownMenuItem>
                                       <DropdownMenuItem
-                                        className="text-red-600"
                                         onClick={(e) => {
                                           e.stopPropagation()
                                           openDeleteDialog(pa)
                                         }}
+                                        className="text-red-600"
                                       >
                                         <Trash2 className="mr-2 h-4 w-4" />
                                         Sil
@@ -770,30 +785,6 @@ export default function RiskAnaliziPage() {
               </Tabs>
             </div>
           )}
-
-          {!isAnalyzing && allPastAnalyses.length === 0 && canAnalyze && !initialDataLoading && (
-            <Card className="shadow-lg mt-6">
-              <CardContent className="p-8 text-center">
-                <PlayCircle className="h-16 w-16 mx-auto text-gray-400 dark:text-gray-500 mb-6" />
-                <h3 className="text-2xl font-semibold mb-3 text-gray-700 dark:text-gray-300">
-                  Risk Analizine Hazır Mısınız?
-                </h3>
-                <p className="text-gray-600 dark:text-gray-400 mb-6 max-w-md mx-auto">
-                  Finansal durumunuzu ve mevcut kredilerinizi kapsamlı bir şekilde değerlendirmek için yukarıdaki
-                  "Analizi Başlat" düğmesine tıklayın.
-                </p>
-                <Button
-                  size="lg"
-                  onClick={handleAnalyze}
-                  disabled={isAnalyzing || initialDataLoading || !canAnalyze}
-                  className="bg-gradient-to-r from-red-600 to-rose-700 hover:from-red-700 hover:to-rose-800 text-white"
-                >
-                  <PlayCircle className="h-5 w-5 mr-2" />
-                  Analizi Başlat
-                </Button>
-              </CardContent>
-            </Card>
-          )}
         </>
       )}
 
@@ -805,20 +796,14 @@ export default function RiskAnaliziPage() {
               Bu risk analizini silmek istediğinizden emin misiniz? Bu işlem geri alınamaz.
             </AlertDialogDescription>
           </AlertDialogHeader>
-          {analysisToDelete && (
-            <div className="mt-2 p-2 bg-gray-100 dark:bg-gray-800 rounded text-sm">
-              <strong>Tarih:</strong> {format(new Date(analysisToDelete.created_at), "dd.MM.yyyy HH:mm")}
-              <br />
-              <strong>Risk Skoru:</strong> {analysisToDelete.overall_risk_score || "Bilinmiyor"}
-            </div>
-          )}
           <AlertDialogFooter>
             <AlertDialogCancel disabled={isDeleting}>İptal</AlertDialogCancel>
             <AlertDialogAction
               onClick={handleDeleteAnalysis}
               disabled={isDeleting}
-              className="bg-red-600 hover:bg-red-700 text-white"
+              className="bg-red-600 hover:bg-red-700"
             >
+              {isDeleting ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Trash2 className="mr-2 h-4 w-4" />}
               {isDeleting ? "Siliniyor..." : "Sil"}
             </AlertDialogAction>
           </AlertDialogFooter>

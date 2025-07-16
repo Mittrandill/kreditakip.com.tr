@@ -277,7 +277,7 @@ export default function LandingPage() {
                 <Button
                   size="lg"
                   variant="outline"
-                  className="border-gray-600 text-gray-300 hover:bg-gray-800 hover:border-emerald-500 text-lg px-8 py-4 h-auto"
+                  className="border-gray-600 text-white-300 hover:bg-gray-800 hover:border-emerald-500 text-lg px-8 py-4 h-auto"
                 >
                   <Play className="mr-2 h-5 w-5" />
                   Demo İzleyin

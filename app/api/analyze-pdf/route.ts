@@ -557,7 +557,7 @@ export async function POST(request: Request) {
       )
     }
 
-    console.log(`[${Date.now() - startTime}ms] 💎 DIAMOND ULTRA ANALYSIS COMPLETED`)
+    console.log(`[${Date.now() - startTime}ms] �� DIAMOND ULTRA ANALYSIS COMPLETED`)
     return Response.json({
       success: true,
       paymentPlan: paymentPlan,

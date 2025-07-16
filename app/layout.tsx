@@ -11,6 +11,7 @@ export const metadata: Metadata = {
   title: "Kredi Takip - Akıllı Kredi Yönetimi",
   description:
     "OCR teknolojisi ve AI destekli risk analizi ile kredilerinizi akıllıca yönetin. PDF ödeme planlarınızı analiz edin, tasarruf edin.",
+    generator: 'v0.dev'
 }
 
 export default function RootLayout({

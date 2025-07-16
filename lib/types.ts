@@ -564,6 +564,52 @@ export interface Database {
           updated_at?: string
         }
       }
+      banking_credentials: {
+        Row: {
+          id: string
+          user_id: string
+          bank_id: string
+          credential_name: string
+          username: string | null
+          encrypted_password: string | null
+          credential_type: "internet_banking" | "mobile_banking" | "phone_banking" | "other"
+          notes: string | null
+          last_used_date: string | null
+          password_change_frequency_days: number | null
+          last_password_change_date: string | null
+          is_active: boolean
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          user_id: string
+          bank_id: string
+          credential_name: string
+          username?: string | null
+          encrypted_password?: string | null
+          credential_type?: "internet_banking" | "mobile_banking" | "phone_banking" | "other"
+          notes?: string | null
+          last_used_date?: string | null
+          password_change_frequency_days?: number | null
+          last_password_change_date?: string | null
+          is_active?: boolean
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          credential_name?: string
+          username?: string | null
+          encrypted_password?: string | null
+          credential_type?: "internet_banking" | "mobile_banking" | "phone_banking" | "other"
+          notes?: string | null
+          last_used_date?: string | null
+          password_change_frequency_days?: number | null
+          last_password_change_date?: string | null
+          is_active?: boolean
+          updated_at?: string
+        }
+      }
     }
   }
 }
@@ -796,4 +842,25 @@ export interface RefinancingAnalysisData {
     additionalCost?: number
     suitability: string
   }>
+}
+
+// BankingCredential tipini ekle
+export type BankingCredential = {
+  id: string
+  user_id: string
+  bank_id: string
+  credential_name: string
+  username: string | null
+  encrypted_password: string | null
+  credential_type: "internet_banking" | "mobile_banking" | "phone_banking" | "other"
+  notes: string | null
+  last_used_date: string | null
+  password_change_frequency_days: number | null
+  last_password_change_date: string | null
+  is_active: boolean
+  created_at: string
+  updated_at: string
+  // Join fields
+  bank_name?: string
+  bank_logo_url?: string | null
 }
