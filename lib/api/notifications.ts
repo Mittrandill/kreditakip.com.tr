@@ -1,95 +1,146 @@
 import { supabase } from "@/lib/supabase"
 
 export async function getNotifications(userId: string) {
-  const { data, error } = await supabase
-    .from("notifications")
-    .select(`
-      *,
-      credits (
-        credit_code,
-        banks (
-          name,
+  try {
+    if (!userId) {
+      console.warn("No userId provided to getNotifications")
+      return []
+    }
+
+    const { data, error } = await supabase
+      .from("notifications")
+      .select(`
+        *,
+        credits (
+          credit_code,
+          banks (
+            name,
           logo_url
         )
       )
     `)
-    .eq("user_id", userId)
-    .order("created_at", { ascending: false })
+      .eq("user_id", userId)
+      .order("created_at", { ascending: false })
 
-  if (error) {
+    if (error) {
+      console.error("Supabase error fetching notifications:", error)
+      return []
+    }
+
+    return data || []
+  } catch (error) {
     console.error("Error fetching notifications:", error)
-    throw error
+    return []
   }
-
-  return data
 }
 
 export async function markNotificationAsRead(notificationId: string) {
-  const { data, error } = await supabase
-    .from("notifications")
-    .update({ is_read: true })
-    .eq("id", notificationId)
-    .select()
-    .single()
+  try {
+    if (!notificationId) {
+      throw new Error("No notification ID provided")
+    }
 
-  if (error) {
+    const { data, error } = await supabase
+      .from("notifications")
+      .update({ is_read: true })
+      .eq("id", notificationId)
+      .select()
+      .single()
+
+    if (error) {
+      console.error("Supabase error marking notification as read:", error)
+      throw error
+    }
+
+    return data
+  } catch (error) {
     console.error("Error marking notification as read:", error)
     throw error
   }
-
-  return data
 }
 
 export async function markAllNotificationsAsRead(userId: string) {
-  const { data, error } = await supabase
-    .from("notifications")
-    .update({ is_read: true })
-    .eq("user_id", userId)
-    .eq("is_read", false)
+  try {
+    if (!userId) {
+      throw new Error("No userId provided")
+    }
 
-  if (error) {
+    const { data, error } = await supabase
+      .from("notifications")
+      .update({ is_read: true })
+      .eq("user_id", userId)
+      .eq("is_read", false)
+
+    if (error) {
+      console.error("Supabase error marking all notifications as read:", error)
+      throw error
+    }
+
+    return data
+  } catch (error) {
     console.error("Error marking all notifications as read:", error)
     throw error
   }
-
-  return data
 }
 
 export async function deleteNotification(notificationId: string) {
-  const { data, error } = await supabase.from("notifications").delete().eq("id", notificationId)
+  try {
+    if (!notificationId) {
+      throw new Error("No notification ID provided")
+    }
 
-  if (error) {
+    const { data, error } = await supabase.from("notifications").delete().eq("id", notificationId)
+
+    if (error) {
+      console.error("Supabase error deleting notification:", error)
+      throw error
+    }
+
+    return data
+  } catch (error) {
     console.error("Error deleting notification:", error)
     throw error
   }
-
-  return data
 }
 
 export async function getNotificationStats(userId: string) {
-  const { data: allNotifications, error: allError } = await supabase
-    .from("notifications")
-    .select("id, is_read")
-    .eq("user_id", userId)
+  try {
+    if (!userId) {
+      console.warn("No userId provided to getNotificationStats")
+      return { total: 0, unread: 0, read: 0 }
+    }
 
-  if (allError) {
-    console.error("Error fetching notification stats:", allError)
-    throw allError
-  }
+    const { data: allNotifications, error: allError } = await supabase
+      .from("notifications")
+      .select("id, is_read")
+      .eq("user_id", userId)
 
-  const total = allNotifications?.length || 0
-  const unread = allNotifications?.filter((n) => !n.is_read).length || 0
+    if (allError) {
+      console.error("Supabase error fetching notification stats:", allError)
+      return { total: 0, unread: 0, read: 0 }
+    }
 
-  return {
-    total,
-    unread,
-    read: total - unread,
+    const total = allNotifications?.length || 0
+    const unread = allNotifications?.filter((n) => !n.is_read).length || 0
+
+    return {
+      total,
+      unread,
+      read: total - unread,
+    }
+  } catch (error) {
+    console.error("Error fetching notification stats:", error)
+    return { total: 0, unread: 0, read: 0 }
   }
 }
 
 // Sadece 3 gün kala ödeme bildirimleri oluştur
 export async function createPaymentReminders(userId: string) {
   try {
+    if (!userId) {
+      throw new Error("No userId provided")
+    }
+
     // 3 gün sonraki tarihi hesapla
     const threeDaysLater = new Date()
     threeDaysLater.setDate(threeDaysLater.getDate() + 3)
@@ -142,7 +193,7 @@ export async function createPaymentReminders(userId: string) {
       const { data, error } = await supabase.from("notifications").insert(notifications).select()
 
       if (error) {
-        console.error("Error creating payment reminders:", error)
+        console.error("Supabase error creating payment reminders:", error)
         throw error
       }
 

@@ -214,7 +214,11 @@ export default function Header({ pageTitle }: HeaderProps) {
   }, [pathname, pageTitle])
 
   const loadHeaderNotifications = async () => {
-    if (!user?.id) return
+    if (!user?.id) {
+      console.warn("No user ID available for loading notifications")
+      return
+    }
+
     try {
       const data = await getNotifications(user.id)
       const recent = data?.slice(0, 5) || []
@@ -223,16 +227,25 @@ export default function Header({ pageTitle }: HeaderProps) {
       setUnreadCount(unread)
     } catch (error) {
       console.error("Error loading header notifications:", error)
+      // Set empty state on error to prevent UI issues
+      setNotifications([])
+      setUnreadCount(0)
     }
   }
 
   const handleHeaderNotificationRead = async (notificationId: string) => {
+    if (!notificationId) {
+      console.warn("No notification ID provided")
+      return
+    }
+
     try {
       await markNotificationAsRead(notificationId)
       setNotifications((prev) => prev.map((n) => (n.id === notificationId ? { ...n, is_read: true } : n)))
       setUnreadCount((prev) => Math.max(0, prev - 1))
     } catch (error) {
       console.error("Error marking notification as read:", error)
+      // Don't update UI state if the API call failed
     }
   }
 
@@ -295,7 +308,7 @@ export default function Header({ pageTitle }: HeaderProps) {
       {isMobile ? (
         <Sheet>
           <SheetTrigger asChild>
-            <Button variant="outline" size="icon" className="shrink-0 md:hidden">
+            <Button variant="outline" size="icon" className="shrink-0 md:hidden bg-transparent">
               <Menu className="h-5 w-5" />
               <span className="sr-only">Toggle navigation menu</span>
             </Button>
