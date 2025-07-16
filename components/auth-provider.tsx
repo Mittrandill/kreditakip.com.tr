@@ -1,44 +1,22 @@
 "use client"
 
-import { createContext, useState, useEffect, useContext, type ReactNode } from "react"
-import { type Session, type SupabaseClient, useSessionContext, useSupabaseClient } from "@supabase/auth-helpers-react"
+import type React from "react"
 
-interface AuthContextProps {
-  supabaseClient: SupabaseClient | null
-  session: Session | null
-  isLoading: boolean
+export interface AuthProviderProps {
+  children: React.ReactNode
 }
 
-const AuthContext = createContext<AuthContextProps>({
-  supabaseClient: null,
-  session: null,
-  isLoading: true,
-})
-
-interface Props {
-  children: ReactNode
+/**
+ * A very light wrapper that can later be replaced with
+ * Supabase, NextAuth, or any other auth provider.
+ *
+ * For now it simply renders its children so that the
+ * named export `AuthProvider` is available alongside the
+ * default export.
+ */
+function AuthProvider({ children }: AuthProviderProps) {
+  return <>{children}</>
 }
 
-const AuthProvider = ({ children }: Props) => {
-  const [isLoading, setIsLoading] = useState(true)
-  const { session } = useSessionContext()
-  const supabaseClient = useSupabaseClient()
-
-  useEffect(() => {
-    setIsLoading(false)
-  }, [session])
-
-  const value: AuthContextProps = {
-    supabaseClient,
-    session,
-    isLoading,
-  }
-
-  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>
-}
-
-export const useAuth = () => {
-  return useContext(AuthContext)
-}
-
+export default AuthProvider
 export { AuthProvider }
