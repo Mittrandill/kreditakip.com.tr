@@ -1,32 +1,49 @@
-import { type NextRequest, NextResponse } from "next/server"
-import { createUpcomingPaymentNotifications } from "@/lib/api/notifications"
-import { supabase } from "@/lib/supabase"
+import { NextResponse } from "next/server"
+import { createClient } from "@supabase/supabase-js"
 
-export async function POST(request: NextRequest) {
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || ""
+const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || ""
+const supabase = createClient(supabaseUrl, supabaseKey)
+
+export async function POST(request: Request) {
   try {
-    const { userId } = await request.json()
+    const { user_id, message, type, link } = await request.json()
 
-    if (!userId) {
-      return NextResponse.json({ error: "User ID is required" }, { status: 400 })
+    if (!user_id || !message || !type) {
+      return new NextResponse(JSON.stringify({ message: "Missing required fields" }), {
+        status: 400,
+        headers: { "Content-Type": "application/json" },
+      })
     }
 
-    // Kullanıcının varlığını kontrol et
-    const { data: user, error: userError } = await supabase.auth.getUser()
+    const { data, error } = await supabase
+      .from("notifications")
+      .insert([
+        {
+          user_id,
+          message,
+          type,
+          link,
+          read: false,
+        },
+      ])
+      .select()
 
-    if (userError || !user) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
+    if (error) {
+      return new NextResponse(JSON.stringify({ message: "Failed to create notification", error: error.message }), {
+        status: 500,
+        headers: { "Content-Type": "application/json" },
+      })
     }
 
-    // Otomatik bildirimleri oluştur
-    const notifications = await createUpcomingPaymentNotifications(userId)
-
-    return NextResponse.json({
-      success: true,
-      message: `${notifications?.length || 0} yeni bildirim oluşturuldu`,
-      notifications,
+    return new NextResponse(JSON.stringify({ message: "Notification created successfully", data }), {
+      status: 201,
+      headers: { "Content-Type": "application/json" },
     })
-  } catch (error) {
-    console.error("Error in auto-create notifications:", error)
-    return NextResponse.json({ error: "Bildirimler oluşturulurken hata oluştu" }, { status: 500 })
+  } catch (error: any) {
+    return new NextResponse(JSON.stringify({ message: "Internal server error", error: error.message }), {
+      status: 500,
+      headers: { "Content-Type": "application/json" },
+    })
   }
 }

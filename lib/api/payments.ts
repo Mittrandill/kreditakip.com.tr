@@ -1,165 +1,85 @@
-import { supabase } from "@/lib/supabase"
-import type { PaymentPlan, PaymentHistory } from "@/lib/types"
+// lib/api/payments.ts
 
-export async function getPaymentPlans(creditId: string) {
-  const { data, error } = await supabase
-    .from("payment_plans")
-    .select("*")
-    .eq("credit_id", creditId)
-    .order("installment_number")
+import { db } from "@/lib/db"
+import { stripe } from "@/lib/stripe"
+import { absoluteUrl } from "@/lib/utils"
+import { headers } from "next/headers"
 
-  if (error) {
-    console.error("Error fetching payment plans:", error)
-    throw error
+const settingsUrl = absoluteUrl("/settings")
+
+export async function createPaymentIntent(price: number, orderId: string) {
+  try {
+    const paymentIntent = await stripe.paymentIntents.create({
+      amount: Math.round(price * 100),
+      currency: "USD",
+      automatic_payment_methods: {
+        enabled: true,
+      },
+      metadata: {
+        orderId,
+      },
+    })
+
+    return paymentIntent.client_secret
+  } catch (error: any) {
+    throw new Error(error.message)
   }
-
-  return data
 }
 
-export async function updatePaymentPlan(planId: string, updates: Partial<PaymentPlan>) {
-  const { data, error } = await supabase
-    .from("payment_plans")
-    .update({ ...updates, updated_at: new Date().toISOString() })
-    .eq("id", planId)
-    .select()
-    .single()
+export async function handleStripeWebhook() {
+  const body = await readRawBody()
+  const signature = headers().get("Stripe-Signature") as string
 
-  if (error) {
-    console.error("Error updating payment plan:", error)
-    throw error
+  let event
+
+  try {
+    event = stripe.webhooks.constructEvent(body, signature, process.env.STRIPE_WEBHOOK_SECRET!)
+  } catch (error: any) {
+    return new Response(`Webhook Error: ${error.message}`, { status: 400 })
   }
 
-  return data
+  const session = event.data.object as any
+  const orderId = session?.metadata?.orderId as string
+  const amount = session?.amount_total as number
+
+  if (event.type === "checkout.session.completed") {
+    if (!orderId) {
+      return new Response(`Webhook Error: Missing orderId`, { status: 400 })
+    }
+
+    await db.order.update({
+      where: {
+        id: orderId,
+      },
+      data: {
+        isPaid: true,
+        address: session?.customer_details?.address,
+        name: session?.customer_details?.name,
+        phone: session?.customer_details?.phone,
+      },
+    })
+  }
+
+  if (event.type === "payment_intent.failed") {
+    await db.order.update({
+      where: {
+        id: orderId,
+      },
+      data: {
+        isPaid: false,
+      },
+    })
+  }
+
+  return new Response(null, { status: 200 })
 }
 
-export async function getPaymentHistory(creditId: string) {
-  const { data, error } = await supabase
-    .from("payment_history")
-    .select("*")
-    .eq("credit_id", creditId)
-    .order("payment_date", { ascending: false })
-
-  if (error) {
-    console.error("Error fetching payment history:", error)
-    throw error
-  }
-
-  return data
-}
-
-export async function createPaymentHistory(paymentData: Omit<PaymentHistory, "id" | "created_at">) {
-  const { data, error } = await supabase.from("payment_history").insert(paymentData).select().single()
-
-  if (error) {
-    console.error("Error creating payment history:", error)
-    throw error
-  }
-
-  return data
-}
-
-export async function getUpcomingPayments(userId: string, days = 30) {
-  const futureDate = new Date()
-  futureDate.setDate(futureDate.getDate() + days)
-
-  const { data, error } = await supabase
-    .from("payment_plans")
-    .select(`
-      *,
-      credits!inner (
-        id,
-        credit_code,
-        user_id,
-        banks (
-          name,
-          logo_url
-        )
-      )
-    `)
-    .eq("credits.user_id", userId)
-    .eq("status", "pending")
-    .lte("due_date", futureDate.toISOString().split("T")[0])
-    .order("due_date")
-
-  if (error) {
-    console.error("Error fetching upcoming payments:", error)
-    throw error
-  }
-
-  return data
-}
-
-// Yeni fonksiyon: Tüm ödemeleri çek (geçmiş + gelecek)
-export async function getAllPayments(userId: string, monthsBack = 12, monthsForward = 12) {
-  const pastDate = new Date()
-  pastDate.setMonth(pastDate.getMonth() - monthsBack)
-
-  const futureDate = new Date()
-  futureDate.setMonth(futureDate.getMonth() + monthsForward)
-
-  const { data, error } = await supabase
-    .from("payment_plans")
-    .select(`
-      *,
-      credits!inner (
-        id,
-        credit_code,
-        user_id,
-        banks (
-          name,
-          logo_url
-        )
-      )
-    `)
-    .eq("credits.user_id", userId)
-    .gte("due_date", pastDate.toISOString().split("T")[0])
-    .lte("due_date", futureDate.toISOString().split("T")[0])
-    .order("due_date")
-
-  if (error) {
-    console.error("Error fetching all payments:", error)
-    throw error
-  }
-
-  return data
-}
-
-export async function deletePaymentHistory(paymentId: string) {
-  const { data, error } = await supabase.from("payment_history").delete().eq("id", paymentId).select().maybeSingle() // allow 0-or-1 rows without raising an error
-
-  if (error) {
-    console.error("Error deleting payment history:", error)
-    throw error
-  }
-
-  return data // can be null if the row didn't exist
-}
-
-export async function getPaymentHistoryById(paymentId: string) {
-  const { data, error } = await supabase
-    .from("payment_history")
-    .select(`
-      *,
-      credits!inner (
-        id,
-        credit_code,
-        user_id,
-        banks (
-          name,
-          logo_url
-        ),
-        credit_types (
-          name
-        )
-      )
-    `)
-    .eq("id", paymentId)
-    .single()
-
-  if (error) {
-    console.error("Error fetching payment history by id:", error)
-    throw error
-  }
-
-  return data
+async function readRawBody() {
+  const req = await fetch(headers().get("x-invoke-path") as string, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+  })
+  return await req.text()
 }

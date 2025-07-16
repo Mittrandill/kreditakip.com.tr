@@ -1,149 +1,78 @@
-import { supabase } from "@/lib/supabase"
-import type { Account } from "@/lib/types"
+import { db } from "@/lib/db"
+import { currentProfile } from "@/lib/current-profile"
+import { NextResponse } from "next/server"
 
-export async function getAccounts(userId: string): Promise<Account[]> {
-  const { data, error } = await supabase
-    .from("accounts")
-    .select(`
-      *,
-      banks (
-        id,
-        name,
-        logo_url
-      )
-    `)
-    .eq("user_id", userId)
-    .eq("is_active", true)
-    .order("created_at", { ascending: false })
+export async function POST(req: Request) {
+  try {
+    const profile = await currentProfile()
 
-  if (error) {
-    console.error("Error fetching accounts:", error)
-    throw error
-  }
-
-  return data || []
-}
-
-export async function getAccount(accountId: string): Promise<Account | null> {
-  const { data, error } = await supabase
-    .from("accounts")
-    .select(`
-      *,
-      banks (
-        id,
-        name,
-        logo_url
-      )
-    `)
-    .eq("id", accountId)
-    .single()
-
-  if (error) {
-    console.error("Error fetching account:", error)
-    throw error
-  }
-
-  return data
-}
-
-export async function getAccountSummary(userId: string) {
-  const { data: accounts, error } = await supabase
-    .from("accounts")
-    .select("current_balance, currency, overdraft_limit")
-    .eq("user_id", userId)
-    .eq("is_active", true)
-
-  if (error) {
-    console.error("Error fetching account summary:", error)
-    throw error
-  }
-
-  if (!accounts || accounts.length === 0) {
-    return {
-      totalAccounts: 0,
-      totalBalance: 0,
-      totalOverdraftLimit: 0,
-      totalOverdraftUsed: 0,
-      accountsByCurrency: {},
+    if (!profile) {
+      return new NextResponse("Unauthorized", { status: 401 })
     }
-  }
 
-  const summary = accounts.reduce(
-    (acc, account) => {
-      // Total balance
-      acc.totalBalance += account.current_balance
+    const { name } = await req.json()
 
-      // Overdraft calculations
-      acc.totalOverdraftLimit += account.overdraft_limit || 0
-      if (account.current_balance < 0) {
-        acc.totalOverdraftUsed += Math.abs(account.current_balance)
-      }
+    if (!name) {
+      return new NextResponse("Name is required", { status: 400 })
+    }
 
-      // Group by currency
-      if (!acc.accountsByCurrency[account.currency]) {
-        acc.accountsByCurrency[account.currency] = {
-          count: 0,
-          totalBalance: 0,
-        }
-      }
-      acc.accountsByCurrency[account.currency].count += 1
-      acc.accountsByCurrency[account.currency].totalBalance += account.current_balance
+    const account = await db.account.create({
+      data: {
+        profileId: profile.id,
+        name,
+      },
+    })
 
-      return acc
-    },
-    {
-      totalBalance: 0,
-      totalOverdraftLimit: 0,
-      totalOverdraftUsed: 0,
-      accountsByCurrency: {} as Record<string, { count: number; totalBalance: number }>,
-    },
-  )
-
-  return {
-    totalAccounts: accounts.length,
-    ...summary,
+    return NextResponse.json(account)
+  } catch (error) {
+    return new NextResponse("Internal Error", { status: 500 })
   }
 }
 
-export async function createAccount(account: Omit<Account, "id" | "created_at" | "updated_at">) {
-  const { data, error } = await supabase.from("accounts").insert([account]).select().single()
+export async function PATCH(req: Request, { params }: { params: { accountId: string } }) {
+  try {
+    const profile = await currentProfile()
+    const { name } = await req.json()
 
-  if (error) {
-    console.error("Error creating account:", error)
-    throw error
-  }
+    if (!profile) {
+      return new NextResponse("Unauthorized", { status: 401 })
+    }
 
-  return data
-}
+    if (!name) {
+      return new NextResponse("Name is required", { status: 400 })
+    }
 
-export async function updateAccount(accountId: string, updates: Partial<Account>) {
-  const { data, error } = await supabase.from("accounts").update(updates).eq("id", accountId).select().single()
+    const account = await db.account.update({
+      where: {
+        id: params.accountId,
+      },
+      data: {
+        name,
+      },
+    })
 
-  if (error) {
-    console.error("Error updating account:", error)
-    throw error
-  }
-
-  return data
-}
-
-export async function deleteAccount(accountId: string) {
-  const { error } = await supabase.from("accounts").update({ is_active: false }).eq("id", accountId)
-
-  if (error) {
-    console.error("Error deleting account:", error)
-    throw error
+    return NextResponse.json(account)
+  } catch (error) {
+    return new NextResponse("Internal Error", { status: 500 })
   }
 }
 
-// Banka adından banka ID'si bulma fonksiyonu
-export async function getBankIdByName(bankName: string): Promise<string | null> {
-  const { data, error } = await supabase.from("banks").select("id").ilike("name", `%${bankName}%`).single()
+export async function DELETE(req: Request, { params }: { params: { accountId: string } }) {
+  try {
+    const profile = await currentProfile()
 
-  if (error) {
-    console.error("Error finding bank:", error)
-    return null
+    if (!profile) {
+      return new NextResponse("Unauthorized", { status: 401 })
+    }
+
+    const account = await db.account.delete({
+      where: {
+        id: params.accountId,
+      },
+    })
+
+    return NextResponse.json(account)
+  } catch (error) {
+    return new NextResponse("Internal Error", { status: 500 })
   }
-
-  return data?.id || null
 }

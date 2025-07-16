@@ -1,30 +1,81 @@
-import { supabase } from "@/lib/supabase"
-import type { FinancialProfile } from "@/lib/types"
+// lib/api/financials.ts
 
-export async function getFinancialProfile(userId: string): Promise<FinancialProfile | null> {
-  const { data, error } = await supabase.from("financial_profiles").select("*").eq("user_id", userId).single()
+import { executeQuery } from "@/lib/db"
 
-  if (error && error.code !== "PGRST116") {
-    // PGRST116: single row not found, bu bir hata değil
-    console.error("Finansal profil çekilirken hata:", error)
-    throw error
+export async function getFinancialData(ticker: string) {
+  try {
+    const results = await executeQuery(
+      `
+      SELECT *
+      FROM financials
+      WHERE ticker = ?
+    `,
+      [ticker],
+    )
+
+    return results
+  } catch (error) {
+    throw new Error(`Failed to fetch financial data for ${ticker}`)
   }
-  return data
 }
 
-export async function upsertFinancialProfile(
-  userId: string,
-  profileData: Partial<Omit<FinancialProfile, "user_id" | "created_at" | "updated_at">>,
-): Promise<FinancialProfile | null> {
-  const { data, error } = await supabase
-    .from("financial_profiles")
-    .upsert({ user_id: userId, ...profileData }, { onConflict: "user_id" })
-    .select()
-    .single()
+export async function createFinancialData(
+  ticker: string,
+  year: number,
+  revenue: number,
+  netIncome: number,
+  eps: number,
+) {
+  try {
+    const results = await executeQuery(
+      `
+      INSERT INTO financials (ticker, year, revenue, net_income, eps)
+      VALUES (?, ?, ?, ?, ?)
+    `,
+      [ticker, year, revenue, netIncome, eps],
+    )
 
-  if (error) {
-    console.error("Finansal profil güncellenirken/eklenirken hata:", error)
-    throw error
+    return results
+  } catch (error) {
+    throw new Error(`Failed to create financial data for ${ticker}`)
   }
-  return data
+}
+
+export async function updateFinancialData(
+  ticker: string,
+  year: number,
+  revenue: number,
+  netIncome: number,
+  eps: number,
+) {
+  try {
+    const results = await executeQuery(
+      `
+      UPDATE financials
+      SET revenue = ?, net_income = ?, eps = ?
+      WHERE ticker = ? AND year = ?
+    `,
+      [revenue, netIncome, eps, ticker, year],
+    )
+
+    return results
+  } catch (error) {
+    throw new Error(`Failed to update financial data for ${ticker}`)
+  }
+}
+
+export async function deleteFinancialData(ticker: string, year: number) {
+  try {
+    const results = await executeQuery(
+      `
+      DELETE FROM financials
+      WHERE ticker = ? AND year = ?
+    `,
+      [ticker, year],
+    )
+
+    return results
+  } catch (error) {
+    throw new Error(`Failed to delete financial data for ${ticker}`)
+  }
 }

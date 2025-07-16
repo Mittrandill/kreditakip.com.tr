@@ -1,194 +1,77 @@
 "use client"
 
-import { useState, useEffect, useCallback, useRef } from "react"
-import type { User, Session } from "@supabase/supabase-js"
-import { supabase } from "@/lib/supabase"
-import { getProfile } from "@/lib/auth"
-import type { Profile } from "@/lib/types"
+import type React from "react"
 
-interface AuthState {
-  user: User | null
-  profile: Profile | null
-  loading: boolean
-  isAuthenticated: boolean
-  session: Session | null
-}
+import { useState, useEffect, createContext, useContext } from "react"
+import { useRouter } from "next/router"
+import { Magic } from "magic-sdk"
 
-const initialState: AuthState = {
+const AuthContext = createContext<{
+  user: any | null
+  isLoading: boolean
+  login: (email: string) => Promise<void>
+  logout: () => Promise<void>
+}>({
   user: null,
-  profile: null,
-  loading: true,
-  isAuthenticated: false,
-  session: null,
-}
+  isLoading: true,
+  login: async () => {},
+  logout: async () => {},
+})
 
-export function useAuth() {
-  const [state, setState] = useState<AuthState>(initialState)
-  const mountedRef = useRef(true)
-  const profileCacheRef = useRef<Map<string, Profile>>(new Map())
-  const loadingProfileRef = useRef<Set<string>>(new Set())
-
-  // Optimized profile loader with caching
-  const loadProfile = useCallback(async (userId: string) => {
-    if (!mountedRef.current) return null
-
-    // Check cache first
-    const cachedProfile = profileCacheRef.current.get(userId)
-    if (cachedProfile) {
-      return cachedProfile
-    }
-
-    // Prevent duplicate requests
-    if (loadingProfileRef.current.has(userId)) {
-      return null
-    }
-
-    loadingProfileRef.current.add(userId)
-
-    try {
-      const profileData = await getProfile(userId)
-
-      if (profileData && mountedRef.current) {
-        // Cache the profile
-        profileCacheRef.current.set(userId, profileData)
-        return profileData
-      }
-    } catch (error) {
-      console.error("Error loading profile:", error)
-    } finally {
-      loadingProfileRef.current.delete(userId)
-    }
-
-    return null
-  }, [])
-
-  // Optimized state updater
-  const updateAuthState = useCallback((updates: Partial<AuthState>) => {
-    if (!mountedRef.current) return
-
-    setState((prevState) => {
-      const newState = { ...prevState, ...updates }
-
-      // Only update if state actually changed
-      if (JSON.stringify(prevState) === JSON.stringify(newState)) {
-        return prevState
-      }
-
-      return newState
-    })
-  }, [])
-
-  // Handle auth state change
-  const handleAuthStateChange = useCallback(
-    async (event: string, session: Session | null) => {
-      if (!mountedRef.current) return
-
-      const user = session?.user ?? null
-      const isAuthenticated = !!user
-
-      // Update basic auth state immediately
-      updateAuthState({
-        user,
-        session,
-        isAuthenticated,
-        loading: user ? state.loading : false, // Keep loading true if we need to fetch profile
-      })
-
-      if (user) {
-        // Load profile asynchronously
-        const profile = await loadProfile(user.id)
-        if (mountedRef.current) {
-          updateAuthState({
-            profile,
-            loading: false,
-          })
-        }
-      } else {
-        // Clear profile when user logs out
-        updateAuthState({
-          profile: null,
-          loading: false,
-        })
-        // Clear cache
-        profileCacheRef.current.clear()
-      }
-    },
-    [loadProfile, updateAuthState, state.loading],
-  )
+export function AuthProvider({ children }: { children: React.ReactNode }) {
+  const [user, setUser] = useState<any | null>(null)
+  const [isLoading, setIsLoading] = useState(true)
+  const router = useRouter()
 
   useEffect(() => {
-    mountedRef.current = true
-    let subscription: any = null
+    const magic = new Magic(process.env.NEXT_PUBLIC_MAGIC_PUBLISHABLE_KEY!)
 
-    const initializeAuth = async () => {
+    const checkUser = async () => {
       try {
-        // Get initial session
-        const {
-          data: { session },
-          error,
-        } = await supabase.auth.getSession()
-
-        if (error) {
-          console.error("Error getting session:", error)
-          updateAuthState({ loading: false })
-          return
+        const isLoggedIn = await magic.user.isLoggedIn()
+        if (isLoggedIn) {
+          const userData = await magic.user.getMetadata()
+          setUser(userData)
         }
-
-        // Handle initial session
-        await handleAuthStateChange("INITIAL_SESSION", session)
-
-        // Set up auth state listener
-        const {
-          data: { subscription: authSubscription },
-        } = supabase.auth.onAuthStateChange(handleAuthStateChange)
-
-        subscription = authSubscription
       } catch (error) {
-        console.error("Error initializing auth:", error)
-        updateAuthState({ loading: false })
+        // Handle error appropriately, maybe set user to null or display an error message
+      } finally {
+        setIsLoading(false)
       }
     }
 
-    initializeAuth()
+    checkUser()
 
-    // Cleanup function
-    return () => {
-      mountedRef.current = false
-      if (subscription) {
-        subscription.unsubscribe()
-      }
-      // Clear any pending profile loads
-      loadingProfileRef.current.clear()
+    // Log out user if they navigate to /logout
+    if (router.pathname === "/logout") {
+      logout()
     }
-  }, [handleAuthStateChange, updateAuthState])
+  }, [router])
 
-  // Cleanup on unmount
-  useEffect(() => {
-    return () => {
-      mountedRef.current = false
+  const login = async (email: string) => {
+    try {
+      const magic = new Magic(process.env.NEXT_PUBLIC_MAGIC_PUBLISHABLE_KEY!)
+      await magic.auth.loginWithMagicLink({ email })
+      const userData = await magic.user.getMetadata()
+      setUser(userData)
+      router.push("/profile")
+    } catch (error) {
+      // Handle error appropriately
     }
-  }, [])
-
-  // Refresh profile function
-  const refreshProfile = useCallback(async () => {
-    if (!state.user?.id || !mountedRef.current) return null
-
-    // Clear cache for this user
-    profileCacheRef.current.delete(state.user.id)
-
-    const profile = await loadProfile(state.user.id)
-    return profile
-  }, [state.user?.id, loadProfile])
-
-  // Clear auth cache function
-  const clearAuthCache = useCallback(() => {
-    profileCacheRef.current.clear()
-    loadingProfileRef.current.clear()
-  }, [])
-
-  return {
-    ...state,
-    refreshProfile,
-    clearAuthCache,
   }
+
+  const logout = async () => {
+    try {
+      const magic = new Magic(process.env.NEXT_PUBLIC_MAGIC_PUBLISHABLE_KEY!)
+      await magic.user.logout()
+      setUser(null)
+      router.push("/")
+    } catch (error) {
+      // Handle error appropriately
+    }
+  }
+
+  return <AuthContext.Provider value={{ user, isLoading, login, logout }}>{children}</AuthContext.Provider>
 }
+
+export const useAuth = () => useContext(AuthContext)
