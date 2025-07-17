@@ -416,3 +416,5 @@ export function CreditTypeSelector({
     </div>
   )
 }
+
+export default CreditTypeSelector
