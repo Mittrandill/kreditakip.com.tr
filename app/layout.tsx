@@ -1,31 +1,32 @@
 import type React from "react"
 import type { Metadata } from "next"
-import { Inter } from "next/font/google"
+import { Poppins } from "next/font/google"
 import "./globals.css"
-import { Toaster } from "@/components/ui/toaster"
-import { AuthProvider } from "@/components/auth-provider"
+import { cn } from "@/lib/utils"
 
-const inter = Inter({ subsets: ["latin"] })
+const poppins = Poppins({
+  subsets: ["latin"],
+  weight: ["400", "500", "600", "700", "800"],
+  variable: "--font-poppins",
+})
 
 export const metadata: Metadata = {
-  title: "Kredi Takip - Akıllı Kredi Yönetimi",
-  description:
-    "OCR teknolojisi ve AI destekli risk analizi ile kredilerinizi akıllıca yönetin. PDF ödeme planlarınızı analiz edin, tasarruf edin.",
+  title: "Kredi Takip - Kredi yönetiminin geleceği.",
+  description: "Transform your credit statements into smart digital payment plans in seconds with OCR technology.",
+  icons: {
+    icon: "/favicon.svg",
+  },
+    generator: 'v0.dev'
 }
 
 export default function RootLayout({
   children,
-}: {
+}: Readonly<{
   children: React.ReactNode
-}) {
+}>) {
   return (
-    <html lang="tr">
-      <body className={inter.className}>
-        <AuthProvider>
-          {children}
-          <Toaster />
-        </AuthProvider>
-      </body>
+    <html lang="en">
+      <body className={cn("font-sans antialiased", poppins.variable)}>{children}</body>
     </html>
   )
 }

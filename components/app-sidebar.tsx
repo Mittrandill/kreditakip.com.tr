@@ -22,6 +22,7 @@ import {
   Menu,
   RefreshCw,
   Wallet,
+  Key,
 } from "lucide-react"
 import {
   DropdownMenu,
@@ -41,6 +42,7 @@ const navItems = [
   { href: "/uygulama/krediler", label: "Kredilerim", icon: CreditCard },
   { href: "/uygulama/hesaplar", label: "Hesaplarım", icon: Wallet },
   { href: "/uygulama/kredi-kartlari", label: "Kredi Kartlarım", icon: CreditCard },
+  { href: "/uygulama/sifrelerim", label: "Şifrelerim", icon: Key },
   { href: "/uygulama/odeme-plani", label: "Ödeme Planı", icon: Calendar },
   { href: "/uygulama/raporlar", label: "Raporlar", icon: BarChart3 },
   { href: "/uygulama/risk-analizi", label: "Risk Analizi", icon: ShieldCheck },

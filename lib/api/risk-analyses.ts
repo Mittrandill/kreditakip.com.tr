@@ -1,14 +1,24 @@
 import { supabase } from "@/lib/supabase"
-import type { RiskAnalysis, RiskAnalysisData, FinancialProfile, Credit } from "@/lib/types"
+import type { RiskAnalysis, RiskAnalysisData, FinancialProfile, Credit, Account, CreditCard } from "@/lib/types"
 
 export async function saveRiskAnalysis(
   userId: string,
   analysisData: RiskAnalysisData,
   financialProfile: FinancialProfile,
   credits: Credit[],
+  accounts: Account[] = [],
+  creditCards: CreditCard[] = [],
 ): Promise<RiskAnalysis> {
-  // Toplam borç miktarını hesapla
-  const totalDebtAmount = credits.reduce((sum, credit) => sum + credit.remaining_debt, 0)
+  // Toplam borç miktarını hesapla (krediler + kredi kartları + kredili mevduat)
+  const totalDebtFromCredits = credits.reduce((sum, credit) => sum + credit.remaining_debt, 0)
+  const totalCreditCardDebt = creditCards.reduce((sum, card) => sum + (card.current_debt || 0), 0)
+  const totalOverdraftUsed = accounts.reduce((sum, account) => {
+    return sum + (account.current_balance < 0 ? Math.abs(account.current_balance) : 0)
+  }, 0)
+  const totalDebtAmount = totalDebtFromCredits + totalCreditCardDebt + totalOverdraftUsed
+
+  // Toplam hesap bakiyesi
+  const totalAccountBalance = accounts.reduce((sum, account) => sum + (account.current_balance || 0), 0)
 
   const { data, error } = await supabase
     .from("risk_analyses")
@@ -20,9 +30,14 @@ export async function saveRiskAnalysis(
       debt_to_income_ratio: analysisData.debtToIncomeRatio.value,
       monthly_income: financialProfile.monthly_income,
       monthly_expenses: financialProfile.monthly_expenses,
-      total_assets: financialProfile.total_assets,
+      total_assets: (financialProfile.total_assets || 0) + totalAccountBalance,
       total_credits_count: credits.length,
       total_debt_amount: totalDebtAmount,
+      // Yeni alanlar ekleyebiliriz
+      total_accounts_count: accounts.length,
+      total_credit_cards_count: creditCards.length,
+      total_account_balance: totalAccountBalance,
+      credit_card_utilization_rate: analysisData.creditUtilization?.overallUtilizationRate || null,
     })
     .select()
     .single()

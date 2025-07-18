@@ -98,6 +98,15 @@ const PAGE_INFO: Record<string, { title: string; description: string; parent?: s
     description: "Kredi bilgilerinizi güncelleyin",
     parent: "Kredilerim",
   },
+  "/uygulama/kredi-kartlari": {
+    title: "Kredi Kartlarım",
+    description: "Kredi kartlarınızı görüntüleyin, yönetin ve takip edin",
+  },
+  "/uygulama/kredi-kartlari/ekle": {
+    title: "Kredi Kartı Ekle",
+    description: "Yeni kredi kartı bilgilerinizi sisteme ekleyin",
+    parent: "Kredi Kartlarım",
+  },
   "/uygulama/odeme-plani": {
     title: "Ödeme Planı",
     description: "Tüm kredilerinizin ödeme takvimi ve yaklaşan ödemeler",
@@ -121,6 +130,29 @@ const PAGE_INFO: Record<string, { title: string; description: string; parent?: s
   "/uygulama/profil": {
     title: "Profil",
     description: "Kişisel bilgilerinizi görüntüleyin ve düzenleyin",
+  },
+  "/uygulama/sifrelerim": {
+    title: "Şifrelerim",
+    description: "Bankacılık şifrelerinizi güvenli bir şekilde saklayın ve yönetin",
+  },
+  "/uygulama/sifrelerim/ekle": {
+    title: "Şifre Ekle",
+    description: "Yeni bankacılık şifre bilgisi ekleyin",
+    parent: "Şifrelerim",
+  },
+  "/uygulama/sifrelerim/[id]/duzenle": {
+    title: "Şifre Düzenle",
+    description: "Mevcut şifre bilgilerinizi güncelleyin",
+    parent: "Şifrelerim",
+  },
+  "/uygulama/hesaplar": {
+    title: "Hesaplarım",
+    description: "Banka hesaplarınızı görüntüleyin, yönetin ve takip edin",
+  },
+  "/uygulama/hesaplar/ekle": {
+    title: "Hesap Ekle",
+    description: "Yeni banka hesabı bilgilerinizi sisteme ekleyin",
+    parent: "Hesaplarım",
   },
 }
 
@@ -183,6 +215,54 @@ export default function Header({ pageTitle }: HeaderProps) {
         description: "Kredi bilgilerinizi güncelleyin",
         parent: "Kredilerim",
       }
+    if (pathname.includes("/kredi-kartlari/ekle"))
+      return {
+        title: "Kredi Kartı Ekle",
+        description: "Yeni kredi kartı bilgilerinizi sisteme ekleyin",
+        parent: "Kredi Kartlarım",
+      }
+    if (pathname.includes("/kredi-kartlari/") && pathname.includes("/duzenle"))
+      return {
+        title: "Kredi Kartı Düzenle",
+        description: "Kredi kartı bilgilerinizi güncelleyin",
+        parent: "Kredi Kartlarım",
+      }
+    if (
+      pathname.includes("/kredi-kartlari/") &&
+      !pathname.includes("/duzenle") &&
+      !pathname.includes("/ekle") &&
+      pathname !== "/uygulama/kredi-kartlari"
+    )
+      return {
+        title: "Kredi Kartı Detayı",
+        description: "Seçilen kredi kartının detaylı bilgileri",
+        parent: "Kredi Kartlarım",
+      }
+
+    if (pathname.includes("/hesaplar/ekle"))
+      return {
+        title: "Hesap Ekle",
+        description: "Yeni banka hesabı bilgilerinizi sisteme ekleyin",
+        parent: "Hesaplarım",
+      }
+    if (pathname.includes("/hesaplar/") && pathname.includes("/duzenle"))
+      return {
+        title: "Hesap Düzenle",
+        description: "Banka hesabı bilgilerinizi güncelleyin",
+        parent: "Hesaplarım",
+      }
+    if (
+      pathname.includes("/hesaplar/") &&
+      !pathname.includes("/duzenle") &&
+      !pathname.includes("/ekle") &&
+      pathname !== "/uygulama/hesaplar"
+    )
+      return {
+        title: "Hesap Detayı",
+        description: "Seçilen hesabın detaylı bilgileri ve işlem geçmişi",
+        parent: "Hesaplarım",
+      }
+
     if (pathname.includes("/risk-analizi/") && pathname !== "/uygulama/risk-analizi")
       return {
         title: "Risk Analizi Detayı",
@@ -194,6 +274,13 @@ export default function Header({ pageTitle }: HeaderProps) {
         title: "PDF Analiz Detayı",
         description: "PDF analiz sonuçlarının detaylı görünümü",
         parent: "PDF Ödeme Planı",
+      }
+
+    if (pathname.includes("/sifrelerim/") && pathname.includes("/duzenle"))
+      return {
+        title: "Şifre Düzenle",
+        description: "Mevcut şifre bilgilerinizi güncelleyin",
+        parent: "Şifrelerim",
       }
 
     const info = PAGE_INFO[pathname]
@@ -295,7 +382,7 @@ export default function Header({ pageTitle }: HeaderProps) {
       {isMobile ? (
         <Sheet>
           <SheetTrigger asChild>
-            <Button variant="outline" size="icon" className="shrink-0 md:hidden">
+            <Button variant="outline" size="icon" className="shrink-0 md:hidden bg-transparent">
               <Menu className="h-5 w-5" />
               <span className="sr-only">Toggle navigation menu</span>
             </Button>

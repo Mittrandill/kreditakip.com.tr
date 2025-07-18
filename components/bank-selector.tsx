@@ -10,8 +10,12 @@ import { supabase } from "@/lib/supabase"
 
 interface BankSelectorProps {
   banks?: Bank[]
-  onBankSelect: (bankName: string) => void
-  onSkip: () => void
+  /**
+   * Fires when the user confirms a bank.
+   * @param bank the selected bank object
+   */
+  onBankSelect?: (bank: Bank) => void
+  onSkip?: () => void
 }
 
 interface Bank {
@@ -185,7 +189,7 @@ export function BankSelector({ banks: propBanks, onBankSelect, onSkip }: BankSel
     },
     {
       id: "29",
-      name: "Sociét�� Générale (SA)",
+      name: "Sociét Générale (SA)",
       category: "Yabancı Şubeler",
       logo_url: "/bank-icons/societe-generale.png",
     },
@@ -369,8 +373,8 @@ export function BankSelector({ banks: propBanks, onBankSelect, onSkip }: BankSel
 
   const handleConfirm = () => {
     if (selectedBank) {
-      console.log("🎯 Banka seçildi:", selectedBank.name)
-      onBankSelect(selectedBank.name)
+      console.log("🎯 Banka seçildi:", selectedBank)
+      onBankSelect?.(selectedBank) // Pass the full bank object
     }
   }
 
@@ -513,7 +517,7 @@ export function BankSelector({ banks: propBanks, onBankSelect, onSkip }: BankSel
               <Check className="mr-2 h-4 w-4" />
               Seçimi Onayla
             </Button>
-            <Button onClick={onSkip} variant="outline" className="hover:bg-gray-50 border-gray-300">
+            <Button onClick={onSkip} variant="outline" className="hover:bg-gray-50 border-gray-300 bg-transparent">
               Atla
             </Button>
           </div>
@@ -524,3 +528,4 @@ export function BankSelector({ banks: propBanks, onBankSelect, onSkip }: BankSel
 }
 
 export default BankSelector
+export type { Bank }

@@ -2,16 +2,6 @@
 @tailwind components;
 @tailwind utilities;
 
-body {
-  font-family: Arial, Helvetica, sans-serif;
-}
-
-@layer utilities {
-  .text-balance {
-    text-wrap: balance;
-  }
-}
-
 @layer base {
   :root {
     --background: 0 0% 100%;
@@ -19,9 +9,9 @@ body {
     --card: 0 0% 100%;
     --card-foreground: 0 0% 3.9%;
     --popover: 0 0% 100%;
-    --popover-foreground: 0 0% 3.9%;
-    --primary: 158 64% 52%;
-    --primary-foreground: 180 100% 98%;
+    --popover-foreground: 0 0% 98%;
+    --primary: 0 0% 9%;
+    --primary-foreground: 0 0% 98%;
     --secondary: 0 0% 96.1%;
     --secondary-foreground: 0 0% 9%;
     --muted: 0 0% 96.1%;
@@ -32,13 +22,13 @@ body {
     --destructive-foreground: 0 0% 98%;
     --border: 0 0% 89.8%;
     --input: 0 0% 89.8%;
-    --ring: 158 64% 52%;
+    --ring: 0 0% 3.9%;
+    --radius: 0.5rem;
     --chart-1: 12 76% 61%;
     --chart-2: 173 58% 39%;
     --chart-3: 197 37% 24%;
     --chart-4: 43 74% 66%;
     --chart-5: 27 87% 67%;
-    --radius: 0.5rem;
     --sidebar-background: 0 0% 98%;
     --sidebar-foreground: 240 5.3% 26.1%;
     --sidebar-primary: 240 5.9% 10%;
@@ -50,38 +40,38 @@ body {
   }
 
   .dark {
-    --background: 222.2 84% 4.9%;
-    --foreground: 210 40% 98%;
-    --card: 222.2 84% 4.9%;
-    --card-foreground: 210 40% 98%;
-    --popover: 222.2 84% 4.9%;
-    --popover-foreground: 210 40% 98%;
-    --primary: 158 64% 52%;
-    --primary-foreground: 180 100% 98%;
-    --secondary: 217.2 32.6% 17.5%;
-    --secondary-foreground: 210 40% 98%;
-    --muted: 217.2 32.6% 17.5%;
-    --muted-foreground: 215 20.2% 65.1%;
-    --accent: 217.2 32.6% 17.5%;
-    --accent-foreground: 210 40% 98%;
+    --background: 0 0% 3.9%;
+    --foreground: 0 0% 98%;
+    --card: 0 0% 3.9%;
+    --card-foreground: 0 0% 98%;
+    --popover: 0 0% 3.9%;
+    --popover-foreground: 0 0% 98%;
+    --primary: 0 0% 98%;
+    --primary-foreground: 0 0% 9%;
+    --secondary: 0 0% 14.9%;
+    --secondary-foreground: 0 0% 98%;
+    --muted: 0 0% 14.9%;
+    --muted-foreground: 0 0% 63.9%;
+    --accent: 0 0% 14.9%;
+    --accent-foreground: 0 0% 98%;
     --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 210 40% 98%;
-    --border: 217.2 32.6% 17.5%;
-    --input: 217.2 32.6% 17.5%;
-    --ring: 158 64% 52%;
+    --destructive-foreground: 0 0% 98%;
+    --border: 0 0% 14.9%;
+    --input: 0 0% 14.9%;
+    --ring: 0 0% 83.1%;
     --chart-1: 220 70% 50%;
     --chart-2: 160 60% 45%;
     --chart-3: 30 80% 55%;
     --chart-4: 280 65% 60%;
     --chart-5: 340 75% 55%;
-    --sidebar-background: 222.2 84% 4.9%;
-    --sidebar-foreground: 210 40% 98%;
-    --sidebar-primary: 158 64% 52%;
-    --sidebar-primary-foreground: 180 100% 98%;
-    --sidebar-accent: 217.2 32.6% 17.5%;
-    --sidebar-accent-foreground: 210 40% 98%;
-    --sidebar-border: 217.2 32.6% 17.5%;
-    --sidebar-ring: 158 64% 52%;
+    --sidebar-background: 240 5.9% 10%;
+    --sidebar-foreground: 240 4.8% 95.9%;
+    --sidebar-primary: 0 0% 98%;
+    --sidebar-primary-foreground: 240 5.9% 10%;
+    --sidebar-accent: 240 3.7% 15.9%;
+    --sidebar-accent-foreground: 240 4.8% 95.9%;
+    --sidebar-border: 240 3.7% 15.9%;
+    --sidebar-ring: 217.2 91.2% 59.8%;
   }
 }
 
@@ -94,59 +84,112 @@ body {
   }
 }
 
-/* Premium Input Styles */
-input[type="search"]::-webkit-search-decoration,
-input[type="search"]::-webkit-search-cancel-button,
-input[type="search"]::-webkit-search-results-button,
-input[type="search"]::-webkit-search-results-decoration {
-  -webkit-appearance: none;
-  appearance: none;
-}
+/* Custom Input Styles - Completely Override Browser Defaults */
+@layer components {
+  .custom-input {
+    /* Reset all browser styles */
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
 
-input[type="number"]::-webkit-outer-spin-button,
-input[type="number"]::-webkit-inner-spin-button {
-  -webkit-appearance: none;
-  margin: 0;
-}
+    /* Remove ALL borders and outlines */
+    border: none !important;
+    outline: none !important;
+    box-shadow: none !important;
 
-input[type="number"] {
-  -moz-appearance: textfield;
-}
+    /* Custom styling */
+    @apply w-full h-12 px-4 py-3 text-gray-900 placeholder:text-gray-500;
+    @apply bg-white rounded-lg;
+    @apply transition-all duration-200 ease-in-out;
 
-/* Custom focus ring */
-.focus-ring {
-  @apply focus-visible:outline-none focus-visible:ring-0 focus-visible:border-emerald-500;
-  box-shadow: 0 0 0 0.5px rgb(16, 185, 129);
-}
+    /* Custom outline instead of border */
+    outline: 1px solid #d1d5db !important;
+    outline-offset: 0px;
 
-/* Smooth transitions */
-input {
-  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-}
+    /* Typography */
+    font-family: inherit;
+    font-size: 14px;
+    line-height: 1.5;
+  }
 
-/* Dark mode specific styles */
-.dark {
-  color-scheme: dark;
-}
+  /* Hover state */
+  .custom-input:hover {
+    outline: 1px solid #9ca3af !important;
+  }
 
-.dark .shadow-soft {
-  box-shadow: 0 4px 12px -1px rgba(0, 0, 0, 0.3), 0 2px 8px -2px rgba(0, 0, 0, 0.2);
-}
+  /* Focus state */
+  .custom-input:focus {
+    outline: 2px solid #50f1be !important;
+    outline-offset: 0px;
+  }
 
-/* Custom scrollbar for dark mode */
-.dark ::-webkit-scrollbar {
-  width: 8px;
-}
+  /* Remove autofill background */
+  .custom-input:-webkit-autofill,
+  .custom-input:-webkit-autofill:hover,
+  .custom-input:-webkit-autofill:focus,
+  .custom-input:-webkit-autofill:active {
+    -webkit-box-shadow: 0 0 0 30px white inset !important;
+    -webkit-text-fill-color: #111827 !important;
+    background-color: white !important;
+    background-image: none !important;
+    transition: background-color 5000s ease-in-out 0s;
+    outline: 1px solid #d1d5db !important;
+  }
 
-.dark ::-webkit-scrollbar-track {
-  background: hsl(217.2 32.6% 17.5%);
-}
+  .custom-input:-webkit-autofill:focus {
+    outline: 2px solid #50f1be !important;
+  }
 
-.dark ::-webkit-scrollbar-thumb {
-  background: hsl(215 20.2% 65.1%);
-  border-radius: 4px;
-}
+  /* Remove password reveal button in Edge/IE */
+  .custom-input::-ms-reveal,
+  .custom-input::-ms-clear {
+    display: none;
+  }
 
-.dark ::-webkit-scrollbar-thumb:hover {
-  background: hsl(210 40% 98%);
+  /* Remove search cancel button in Safari */
+  .custom-input::-webkit-search-cancel-button,
+  .custom-input::-webkit-search-decoration {
+    -webkit-appearance: none;
+  }
+
+  /* Remove number input spinners */
+  .custom-input::-webkit-outer-spin-button,
+  .custom-input::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+  }
+
+  .custom-input[type="number"] {
+    -moz-appearance: textfield;
+  }
+
+  /* Disabled state */
+  .custom-input:disabled {
+    @apply opacity-50 cursor-not-allowed bg-gray-100;
+    outline: 1px solid #e5e7eb !important;
+  }
+
+  /* Error state */
+  .custom-input.error {
+    outline: 2px solid #ef4444 !important;
+  }
+
+  /* Placeholder styling */
+  .custom-input::placeholder {
+    color: #6b7280 !important;
+    opacity: 1;
+  }
+
+  .custom-input::-webkit-input-placeholder {
+    color: #6b7280 !important;
+  }
+
+  .custom-input::-moz-placeholder {
+    color: #6b7280 !important;
+    opacity: 1;
+  }
+
+  .custom-input:-ms-input-placeholder {
+    color: #6b7280 !important;
+  }
 }

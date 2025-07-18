@@ -1,5 +1,7 @@
 import { type NextRequest, NextResponse } from "next/server"
 import { GoogleGenerativeAI } from "@google/generative-ai"
+// Uses json5 for lenient JSON parsing when Gemini returns trailing commas or comments
+import JSON5 from "json5"
 
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY!)
 
@@ -20,30 +22,32 @@ function cleanJsonString(str: string): string {
 function extractJsonFromResponse(response: string): any {
   console.log("[SERVER] Raw AI Response:", response.substring(0, 1000))
 
-  // Try to find JSON content between ```json and ``` or just look for { }
+  // Locate a JSON-looking block – fenced or bare.
   const jsonMatch =
-    response.match(/```json\s*([\s\S]*?)\s*```/) ||
-    response.match(/```\s*([\s\S]*?)\s*```/) ||
-    response.match(/(\{[\s\S]*\})/)
+    response.match(/```json\s*([\s\S]*?)\s*```/) || response.match(/```[\s\S]*?```/) || response.match(/(\{[\s\S]*\})/)
 
-  if (jsonMatch) {
-    const jsonStr = cleanJsonString(jsonMatch[1])
-    console.log("[SERVER] Extracted JSON string:", jsonStr.substring(0, 500))
-    try {
-      return JSON.parse(jsonStr)
-    } catch (e) {
-      console.error("[SERVER] JSON parse error after cleaning:", e)
-      throw new Error(`JSON parse failed: ${e}`)
-    }
+  if (!jsonMatch) {
+    throw new Error("No JSON block found in AI response")
   }
 
-  // If no JSON blocks found, try to parse the entire response
-  const cleanedResponse = cleanJsonString(response)
+  const jsonStr = cleanJsonString(jsonMatch[1] || jsonMatch[0])
+  console.log("[SERVER] Extracted JSON string:", jsonStr.substring(0, 500))
+
+  // 1️⃣  Try strict JSON first
   try {
-    return JSON.parse(cleanedResponse)
-  } catch (e) {
-    console.error("[SERVER] Failed to parse entire response as JSON:", e)
-    throw new Error(`No valid JSON found in response: ${e}`)
+    return JSON.parse(jsonStr)
+  } catch (strictErr) {
+    console.warn("[SERVER] Strict JSON.parse failed, falling back to JSON5:", strictErr.message)
+  }
+
+  // 2️⃣  Try lenient JSON5 parsing
+  try {
+    const parsed = JSON5.parse(jsonStr)
+    console.log("[SERVER] Parsed successfully with JSON5")
+    return parsed
+  } catch (json5Err) {
+    console.error("[SERVER] JSON5 parse error:", json5Err.message)
+    throw new Error(`Both JSON.parse and JSON5.parse failed: ${json5Err}`)
   }
 }
 

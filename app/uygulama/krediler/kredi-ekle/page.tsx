@@ -14,7 +14,7 @@ import { CalendarIcon, CreditCard, Plus, ArrowLeft, Building2, Shield, Zap, Cloc
 import { useToast } from "@/hooks/use-toast"
 import { useAuth } from "@/hooks/use-auth"
 import { createCredit } from "@/lib/api/credits"
-import { BankSelector } from "@/components/bank-selector"
+import { BankSelector, type Bank } from "@/components/bank-selector"
 import { CreditTypeSelector } from "@/components/credit-type-selector" // Changed to named import
 import { CalendarModal } from "@/components/calendar-modal"
 import { formatCurrency } from "@/lib/format"
@@ -154,23 +154,10 @@ export default function KrediEklePage() {
     return endDate
   }
 
-  const handleBankSelect = (bankName: string) => {
-    // Find bank by name and get proper ID
-    const selectedBank = banks.find((bank) => bank.name === bankName)
-    if (selectedBank) {
-      handleInputChange("bank_id", selectedBank.id)
-      handleInputChange("bank_name", selectedBank.name)
-      console.log("Selected bank:", selectedBank)
-    } else {
-      // Fallback: create a temporary ID based on bank name
-      const tempBankId = bankName
-        .toLowerCase()
-        .replace(/\s+/g, "-")
-        .replace(/[^a-z0-9-]/g, "")
-      handleInputChange("bank_id", tempBankId)
-      handleInputChange("bank_name", bankName)
-      console.log("Bank not found in list, using temp ID:", tempBankId)
-    }
+  const handleBankSelect = (bank: Bank) => {
+    handleInputChange("bank_id", bank.id)
+    handleInputChange("bank_name", bank.name)
+    console.log("Selected bank:", bank)
     setShowBankModal(false)
   }
 
