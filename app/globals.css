@@ -9,7 +9,7 @@
     --card: 0 0% 100%;
     --card-foreground: 0 0% 3.9%;
     --popover: 0 0% 100%;
-    --popover-foreground: 0 0% 98%;
+    --popover-foreground: 0 0% 3.9%;
     --primary: 0 0% 9%;
     --primary-foreground: 0 0% 98%;
     --secondary: 0 0% 96.1%;
@@ -192,4 +192,49 @@
   .custom-input:-ms-input-placeholder {
     color: #6b7280 !important;
   }
+}
+
+/* Force dropdown menu styling with high specificity */
+[data-radix-dropdown-menu-content] {
+  background-color: white !important;
+  color: #111827 !important;
+  border: 1px solid #e5e7eb !important;
+}
+
+[data-radix-dropdown-menu-item] {
+  color: #111827 !important;
+}
+
+[data-radix-dropdown-menu-item]:hover,
+[data-radix-dropdown-menu-item]:focus,
+[data-radix-dropdown-menu-item][data-highlighted] {
+  background-color: #f3f4f6 !important;
+  color: #111827 !important;
+}
+
+/* Dark mode overrides */
+.dark [data-radix-dropdown-menu-content] {
+  background-color: #1f2937 !important;
+  color: #f9fafb !important;
+  border-color: #374151 !important;
+}
+
+.dark [data-radix-dropdown-menu-item] {
+  color: #f9fafb !important;
+}
+
+.dark [data-radix-dropdown-menu-item]:hover,
+.dark [data-radix-dropdown-menu-item]:focus,
+.dark [data-radix-dropdown-menu-item][data-highlighted] {
+  background-color: #374151 !important;
+  color: #f9fafb !important;
+}
+
+/* Additional specificity for stubborn cases */
+div[data-radix-dropdown-menu-content] > div[data-radix-dropdown-menu-item] {
+  color: #111827 !important;
+}
+
+.dark div[data-radix-dropdown-menu-content] > div[data-radix-dropdown-menu-item] {
+  color: #f9fafb !important;
 }

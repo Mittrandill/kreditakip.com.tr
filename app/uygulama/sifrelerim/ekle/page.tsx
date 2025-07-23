@@ -13,7 +13,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { ArrowLeft, Key, Building2, Shield, Zap, Clock, Plus } from "lucide-react"
 import { useAuth } from "@/hooks/use-auth"
 import { useToast } from "@/hooks/use-toast"
-import { BankSelector } from "@/components/bank-selector"
+import { BankSelector, type Bank } from "@/components/bank-selector"
 import { createBankingCredential, type BankingCredentialInput } from "@/lib/api/banking-credentials"
 import { supabase } from "@/lib/supabase"
 
@@ -86,12 +86,9 @@ export default function SifreEklePage() {
     return Object.keys(newErrors).length === 0
   }
 
-  const handleBankSelect = (bankName: string) => {
-    const selectedBank = banks.find((bank) => bank.name === bankName)
-    if (selectedBank) {
-      handleInputChange("bank_id", selectedBank.id)
-      setSelectedBankName(selectedBank.name)
-    }
+  const handleBankSelect = (bank: Bank) => {
+    handleInputChange("bank_id", bank.id)
+    setSelectedBankName(bank.name)
     setShowBankModal(false)
   }
 
