@@ -60,6 +60,34 @@ export async function signIn(email: string, password: string) {
 }
 
 /**
+ * Sign in with Google OAuth
+ */
+export async function signInWithGoogle() {
+  try {
+    const { data, error } = await supabase.auth.signInWithOAuth({
+      provider: 'google',
+      options: {
+        redirectTo: `${window.location.origin}/uygulama/ana-sayfa`,
+        queryParams: {
+          access_type: 'offline',
+          prompt: 'consent',
+        },
+      },
+    })
+
+    if (error) {
+      console.error("Error signing in with Google:", error)
+      throw error
+    }
+
+    return data
+  } catch (error) {
+    console.error("GoogleSignIn error:", error)
+    throw error
+  }
+}
+
+/**
  * Sign out the current user
  */
 export async function signOut() {
