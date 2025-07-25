@@ -49,6 +49,10 @@ import { useToast } from "@/hooks/use-toast"
 import { PieChart as CustomPieChart } from "@/components/reports/PieChart"
 import { BarChart as CustomBarChart } from "@/components/reports/BarChart"
 import { LineChart as CustomLineChart } from "@/components/reports/LineChart"
+import PDFReportModal from "@/components/pdf-report-modal"
+import ReportFilters, { type ReportFilters as IReportFilters } from "@/components/reports/filters"
+import AdvancedCharts from "@/components/reports/advanced-charts"
+import TabFilters, { type TabFilters } from "@/components/reports/tab-filters"
 
 interface PopulatedCredit extends Credit {
   banks: Pick<Bank, "id" | "name" | "logo_url"> | null
@@ -191,6 +195,72 @@ export default function RaporlarPage() {
   const [currentPage, setCurrentPage] = useState(1)
 
   const itemsPerPage = 10
+  
+  // Report filters state
+  const [reportFilters, setReportFilters] = useState<IReportFilters>({
+    dateRange: { preset: 'all' },
+    bankFilter: [],
+    creditTypeFilter: 'all',
+    statusFilter: 'all',
+    amountRange: { min: 0, max: 999999999 }
+  })
+
+  // Tab filters state for each tab
+  const [tabFilters, setTabFilters] = useState<{[key: string]: TabFilters}>({
+    'genel-bakis': {
+      searchTerm: '',
+      bankFilter: 'all',
+      statusFilter: 'all',
+      dateRange: {},
+      amountRange: { min: '', max: '' },
+      sortBy: 'date',
+      sortOrder: 'desc'
+    },
+    'kredi-kartlari': {
+      searchTerm: '',
+      bankFilter: 'all',
+      statusFilter: 'all',
+      dateRange: {},
+      amountRange: { min: '', max: '' },
+      sortBy: 'limit',
+      sortOrder: 'desc'
+    },
+    'kredi-odemeleri': {
+      searchTerm: '',
+      bankFilter: 'all',
+      statusFilter: 'all',
+      dateRange: {},
+      amountRange: { min: '', max: '' },
+      sortBy: 'date',
+      sortOrder: 'desc'
+    },
+    'aylik-ozet': {
+      searchTerm: '',
+      bankFilter: 'all',
+      statusFilter: 'all',
+      dateRange: {},
+      amountRange: { min: '', max: '' },
+      sortBy: 'month',
+      sortOrder: 'desc'
+    },
+    'banka-dagilim': {
+      searchTerm: '',
+      bankFilter: 'all',
+      statusFilter: 'all',
+      dateRange: {},
+      amountRange: { min: '', max: '' },
+      sortBy: 'total',
+      sortOrder: 'desc'
+    }
+  })
+
+  // Handle tab filter changes
+  const handleTabFiltersChange = (tabId: string, filters: TabFilters) => {
+    setTabFilters(prev => ({
+      ...prev,
+      [tabId]: filters
+    }))
+  }
 
   useEffect(() => {
     let isMounted = true
@@ -352,13 +422,6 @@ export default function RaporlarPage() {
       .slice(-6) // Last 6 months
   }, [allPayments])
 
-  const handleExportPDF = () => {
-    toast({
-      title: "PDF Export",
-      description: "Rapor PDF olarak dışa aktarılıyor...",
-    })
-    // Here you would implement actual PDF export functionality
-  }
 
   const resetPagination = () => setCurrentPage(1)
 
@@ -396,14 +459,44 @@ export default function RaporlarPage() {
               </p>
             </div>
             <div className="flex flex-col sm:flex-row gap-3">
-              <Button
-                variant="outline-white"
-                size="lg"
-                onClick={handleExportPDF}
-              >
-                <Download className="h-5 w-5 mr-2" />
-                Raporu PDF Olarak İndir
-              </Button>
+              <PDFReportModal
+                userData={{
+                  credits: allCredits.map(credit => ({
+                    bankName: credit.banks?.name,
+                    creditType: credit.credit_types?.name,
+                    remainingDebt: credit.remaining_debt,
+                    monthlyPayment: credit.monthly_payment,
+                    interestRate: credit.interest_rate
+                  })),
+                  payments: allPayments.map(payment => ({
+                    date: payment.payment_date || payment.due_date,
+                    bankName: payment.credits?.banks?.name,
+                    amount: payment.total_payment,
+                    status: payment.status
+                  })),
+                  creditCards: creditCards.map(card => ({
+                    bankName: card.bank_name,
+                    creditLimit: card.credit_limit,
+                    currentDebt: card.current_debt,
+                    utilizationRate: card.utilization_rate
+                  })),
+                  summary: {
+                    totalDebt: totalActiveDebt + (creditCardSummary.totalCurrentDebt || 0),
+                    monthlyPayment: totalUpcomingPayments,
+                    activeCredits: activeCredits.length,
+                    activeCreditCards: creditCards.filter(c => c.is_active).length
+                  }
+                }}
+                trigger={
+                  <Button
+                    variant="outline-white"
+                    size="lg"
+                  >
+                    <Download className="h-5 w-5 mr-2" />
+                    Detaylı PDF Raporu
+                  </Button>
+                }
+              />
             </div>
           </div>
         </CardContent>
@@ -459,6 +552,16 @@ export default function RaporlarPage() {
 
           {/* Genel Bakış Tab */}
           <TabsContent value="genel-bakis" className="p-6 space-y-6">
+            {/* Tab Filters */}
+            <TabFilters
+              tabId="genel-bakis"
+              filters={tabFilters['genel-bakis']}
+              onFiltersChange={(filters) => handleTabFiltersChange('genel-bakis', filters)}
+              availableBanks={uniqueBanks}
+              showAmountFilter={true}
+              showDateFilter={true}
+            />
+            
             {/* Summary Cards */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
               <MetricCard
@@ -575,6 +678,24 @@ export default function RaporlarPage() {
 
           {/* Kredi Kartları Tab */}
           <TabsContent value="kredi-kartlari" className="p-6 space-y-6">
+            {/* Tab Filters */}
+            <TabFilters
+              tabId="kredi-kartlari"
+              filters={tabFilters['kredi-kartlari']}
+              onFiltersChange={(filters) => handleTabFiltersChange('kredi-kartlari', filters)}
+              availableBanks={uniqueBanks}
+              availableStatuses={[
+                { value: 'all', label: 'Tüm Durumlar' },
+                { value: 'active', label: 'Aktif' },
+                { value: 'passive', label: 'Pasif' },
+                { value: 'low', label: 'Düşük Kullanım (0-30%)' },
+                { value: 'medium', label: 'Orta Kullanım (30-70%)' },
+                { value: 'high', label: 'Yüksek Kullanım (70-100%)' }
+              ]}
+              showAmountFilter={true}
+              showDateFilter={false}
+            />
+            
             {/* Credit Card Summary Cards */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
               <MetricCard
@@ -714,81 +835,21 @@ export default function RaporlarPage() {
 
           {/* Kredi Ödemeleri Tab */}
           <TabsContent value="kredi-odemeleri" className="p-6 space-y-6">
-            {/* Filters */}
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Filter className="h-5 w-5 text-emerald-600" />
-                  Filtreler
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="flex flex-col lg:flex-row gap-4">
-                  <div className="flex-1">
-                    <div className="relative">
-                      <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-                      <Input
-                        placeholder="Banka adı veya kredi kodu ile ara..."
-                        value={searchTerm}
-                        onChange={(e) => {
-                          setSearchTerm(e.target.value)
-                          resetPagination()
-                        }}
-                        className="pl-8 w-[250px]"
-                      />
-                    </div>
-                  </div>
-                  <div className="flex gap-2">
-                    <Select value={filterBank} onValueChange={(value) => {
-                      setFilterBank(value)
-                      resetPagination()
-                    }}>
-                      <SelectTrigger className="w-[150px]">
-                        <SelectValue placeholder="Banka" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="all">Tüm Bankalar</SelectItem>
-                        {uniqueBanks.map((bank) => (
-                          <SelectItem key={bank} value={bank!}>
-                            {bank}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                    
-                    <Select value={filterStatus} onValueChange={(value) => {
-                      setFilterStatus(value)
-                      resetPagination()
-                    }}>
-                      <SelectTrigger className="w-[130px]">
-                        <SelectValue placeholder="Durum" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="all">Tüm Durumlar</SelectItem>
-                        <SelectItem value="paid">Ödendi</SelectItem>
-                        <SelectItem value="pending">Beklemede</SelectItem>
-                        <SelectItem value="overdue">Gecikmiş</SelectItem>
-                      </SelectContent>
-                    </Select>
-
-                    <Select value={dateRange} onValueChange={(value) => {
-                      setDateRange(value)
-                      resetPagination()
-                    }}>
-                      <SelectTrigger className="w-[140px]">
-                        <SelectValue placeholder="Tarih" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="all">Tüm Zamanlar</SelectItem>
-                        <SelectItem value="thisMonth">Bu Ay</SelectItem>
-                        <SelectItem value="lastMonth">Geçen Ay</SelectItem>
-                        <SelectItem value="last3Months">Son 3 Ay</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
+            {/* Tab Filters */}
+            <TabFilters
+              tabId="kredi-odemeleri"
+              filters={tabFilters['kredi-odemeleri']}
+              onFiltersChange={(filters) => handleTabFiltersChange('kredi-odemeleri', filters)}
+              availableBanks={uniqueBanks}
+              availableStatuses={[
+                { value: 'all', label: 'Tüm Durumlar' },
+                { value: 'paid', label: 'Ödendi' },
+                { value: 'pending', label: 'Beklemede' },
+                { value: 'overdue', label: 'Gecikmiş' }
+              ]}
+              showAmountFilter={true}
+              showDateFilter={true}
+            />
 
             {/* Payments Table */}
             <Card>
@@ -907,6 +968,22 @@ export default function RaporlarPage() {
 
           {/* Aylık Özet Tab */}
           <TabsContent value="aylik-ozet" className="p-6 space-y-6">
+            {/* Tab Filters */}
+            <TabFilters
+              tabId="aylik-ozet"
+              filters={tabFilters['aylik-ozet']}
+              onFiltersChange={(filters) => handleTabFiltersChange('aylik-ozet', filters)}
+              availableBanks={uniqueBanks}
+              availableStatuses={[
+                { value: 'all', label: 'Tüm Durumlar' },
+                { value: 'completed', label: 'Tamamlanmış' },
+                { value: 'pending', label: 'Beklemede' },
+                { value: 'overdue', label: 'Gecikmiş' }
+              ]}
+              showAmountFilter={true}
+              showDateFilter={true}
+            />
+            
             {/* Monthly Summary Cards */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
               <MetricCard
@@ -1028,6 +1105,23 @@ export default function RaporlarPage() {
 
           {/* Bankaya Göre Dağılım Tab */}
           <TabsContent value="banka-dagilim" className="p-6 space-y-6">
+            {/* Tab Filters */}
+            <TabFilters
+              tabId="banka-dagilim"
+              filters={tabFilters['banka-dagilim']}
+              onFiltersChange={(filters) => handleTabFiltersChange('banka-dagilim', filters)}
+              availableBanks={uniqueBanks}
+              availableStatuses={[
+                { value: 'all', label: 'Tüm Durumlar' },
+                { value: 'active', label: 'Aktif İlişki' },
+                { value: 'passive', label: 'Pasif İlişki' },
+                { value: 'high-debt', label: 'Yüksek Borç' },
+                { value: 'low-debt', label: 'Düşük Borç' }
+              ]}
+              showAmountFilter={true}
+              showDateFilter={false}
+            />
+            
             {/* Bank Distribution Cards */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
               <MetricCard
