@@ -365,6 +365,7 @@ function PaymentsList({
           payment_channel: "Manuel İşaretleme",
           transaction_id: `TKS-${paymentToUpdate.installment_number}-${Date.now()}`,
           status: "completed",
+          notes: null,
         })
       }
 
@@ -382,15 +383,8 @@ function PaymentsList({
         duration: 3000,
       })
 
-      console.log("🎉 Payment status updated successfully:", {
-        paymentId,
-        newStatus,
-        installmentNumber: paymentToUpdate.installment_number,
-        amount: paymentToUpdate.total_payment,
-      })
+      // Payment status updated successfully
     } catch (error) {
-      console.error("Error updating payment status:", error)
-
       // Hata durumunda rollback yap
       setAllPayments?.(originalPayments)
 
@@ -890,7 +884,7 @@ export default function OdemePlaniPage() {
       setAllPayments(paymentsData || [])
       setCredits(creditsData || [])
     } catch (error) {
-      console.error("Error loading payment data:", error)
+      // Error loading payment data
     } finally {
       setLoading(false)
     }
@@ -938,32 +932,67 @@ export default function OdemePlaniPage() {
 
   return (
     <div className="flex flex-col gap-4 md:gap-6">
-      {/* Hero Section */}
-      <Card className="bg-gradient-to-r from-orange-600 to-red-700 text-white border-transparent shadow-xl rounded-xl">
-        <CardContent className="p-8">
-          <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+      {/* Hero Section with Modern Design */}
+      <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 text-white shadow-2xl">
+        <div className="absolute inset-0 bg-gradient-to-br from-red-600/20 to-orange-600/20" />
+        <div className="absolute -top-24 -right-24 w-96 h-96 bg-red-500/10 rounded-full blur-3xl" />
+        <div className="absolute -bottom-24 -left-24 w-96 h-96 bg-orange-500/10 rounded-full blur-3xl" />
+        
+        <CardContent className="relative p-8 md:p-12">
+          <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-6">
             <div>
-              <h2 className="text-3xl font-bold mb-2 flex items-center gap-3">
-                <Calendar className="h-8 w-8" />
-                Ödeme Planı Yönetimi
-              </h2>
-              <p className="text-orange-100 text-lg">
-                Tüm kredilerinizin ödeme planlarını görüntüleyin, takip edin ve hatırlatıcılar oluşturun
+              <div className="flex items-center gap-3 mb-4">
+                <div className="p-3 bg-red-500/20 rounded-lg backdrop-blur-sm">
+                  <Calendar className="h-8 w-8 text-red-400" />
+                </div>
+                <h1 className="text-4xl font-bold bg-gradient-to-r from-white to-gray-300 bg-clip-text text-transparent">
+                  Ödeme Planı Yönetimi
+                </h1>
+              </div>
+              <p className="text-gray-300 text-lg max-w-2xl">
+                Tüm kredilerinizin ödeme planlarını görüntüleyin, takip edin ve hatırlatıcılar oluşturun.
               </p>
+              
+              {/* Quick Stats */}
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-6">
+                <div className="bg-white/10 backdrop-blur-sm rounded-lg p-3">
+                  <p className="text-sm text-gray-300">Bu Ay Ödeme</p>
+                  <p className="text-xl font-bold">{formatCurrency(thisMonthTotal)}</p>
+                </div>
+                <div className="bg-white/10 backdrop-blur-sm rounded-lg p-3">
+                  <p className="text-sm text-gray-300">7 Gün İçinde</p>
+                  <p className="text-xl font-bold">{next7DaysPayments.length}</p>
+                </div>
+                <div className="bg-white/10 backdrop-blur-sm rounded-lg p-3">
+                  <p className="text-sm text-gray-300">Geciken</p>
+                  <p className="text-xl font-bold">{overduePayments.length}</p>
+                </div>
+                <div className="bg-white/10 backdrop-blur-sm rounded-lg p-3">
+                  <p className="text-sm text-gray-300">Bu Yıl Ödenen</p>
+                  <p className="text-xl font-bold">{completedThisYear}</p>
+                </div>
+              </div>
             </div>
+            
             <div className="flex flex-col sm:flex-row gap-3">
-              <Button variant="outline" size="lg" className="bg-white text-orange-600 hover:bg-orange-50 border-white">
-                <Download className="h-5 w-5" />
+              <Button
+                className="bg-white/20 backdrop-blur-sm border-white/30 hover:bg-white/30 text-white"
+                size="lg"
+              >
+                <Download className="h-5 w-5 mr-2" />
                 PDF İndir
               </Button>
-              <Button variant="outline" size="lg" className="bg-white text-orange-600 hover:bg-orange-50 border-white">
-                <Bell className="h-5 w-5" />
+              <Button
+                className="bg-white/20 backdrop-blur-sm border-white/30 hover:bg-white/30 text-white"
+                size="lg"
+              >
+                <Bell className="h-5 w-5 mr-2" />
                 Hatırlatıcı Ekle
               </Button>
             </div>
           </div>
         </CardContent>
-      </Card>
+      </div>
 
       {/* Modern Tabs */}
       <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">

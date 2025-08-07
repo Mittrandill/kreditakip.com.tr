@@ -1,7 +1,7 @@
 import { type NextRequest, NextResponse } from "next/server"
 import { GoogleGenerativeAI } from "@google/generative-ai"
 // Uses json5 for lenient JSON parsing when Gemini returns trailing commas or comments
-import JSON5 from "json5"
+// import JSON5 from "json5" // Temporarily disabled
 
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY!)
 
@@ -20,7 +20,6 @@ function cleanJsonString(str: string): string {
 }
 
 function extractJsonFromResponse(response: string): any {
-  console.log("[SERVER] Raw AI Response:", response.substring(0, 1000))
 
   // Locate a JSON-looking block – fenced or bare.
   const jsonMatch =
@@ -31,24 +30,23 @@ function extractJsonFromResponse(response: string): any {
   }
 
   const jsonStr = cleanJsonString(jsonMatch[1] || jsonMatch[0])
-  console.log("[SERVER] Extracted JSON string:", jsonStr.substring(0, 500))
 
   // 1️⃣  Try strict JSON first
   try {
     return JSON.parse(jsonStr)
   } catch (strictErr) {
-    console.warn("[SERVER] Strict JSON.parse failed, falling back to JSON5:", strictErr.message)
   }
 
-  // 2️⃣  Try lenient JSON5 parsing
-  try {
-    const parsed = JSON5.parse(jsonStr)
-    console.log("[SERVER] Parsed successfully with JSON5")
-    return parsed
-  } catch (json5Err) {
-    console.error("[SERVER] JSON5 parse error:", json5Err.message)
-    throw new Error(`Both JSON.parse and JSON5.parse failed: ${json5Err}`)
-  }
+  // 2️⃣  Try lenient JSON5 parsing (temporarily disabled)
+  // try {
+  //   const parsed = JSON5.parse(jsonStr)
+  //   return parsed
+  // } catch (json5Err) {
+  //   throw new Error(`Both JSON.parse and JSON5.parse failed: ${json5Err}`)
+  // }
+  
+  // For now, just throw a generic error
+  throw new Error(`JSON.parse failed`)
 }
 
 export async function POST(request: NextRequest) {
@@ -164,7 +162,6 @@ UNUTMA: Her öneride hangi bankadan hangi koşullarda kredi alınacağını NET 
     const response = await result.response
     const text = response.text()
 
-    console.log("[SERVER] AI Response:", text.substring(0, 500) + "...")
 
     try {
       const analysisData = extractJsonFromResponse(text)
@@ -174,10 +171,8 @@ UNUTMA: Her öneride hangi bankadan hangi koşullarda kredi alınacağını NET 
         throw new Error("overallAssessment field missing")
       }
 
-      console.log("[SERVER] Successfully parsed analysis data")
       return NextResponse.json(analysisData)
     } catch (parseError: any) {
-      console.error("[SERVER] JSON Parse Error:", parseError)
 
       // Return a more realistic fallback response with actual analysis
       const totalCurrentPayment = credits.reduce((sum: number, c: any) => sum + (c.monthly_payment || 0), 0)
@@ -270,7 +265,6 @@ UNUTMA: Her öneride hangi bankadan hangi koşullarda kredi alınacağını NET 
       return NextResponse.json(fallbackResponse)
     }
   } catch (error: any) {
-    console.error("[SERVER] Refinancing analysis error:", error)
     return NextResponse.json(
       {
         error: "Refinansman analizi oluşturulurken bir hata oluştu",

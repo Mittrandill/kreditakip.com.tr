@@ -102,13 +102,10 @@ export default function KrediKartiDuzenlePage() {
           .order("name")
 
         if (error) {
-          console.error("Error fetching registered banks:", error)
-        } else {
+          } else {
           setRegisteredBanks(data || [])
-          console.log(`📋 ${data?.length || 0} kayıtlı banka yüklendi`)
         }
       } catch (error) {
-        console.error("Error fetching registered banks:", error)
       }
     }
 
@@ -126,11 +123,12 @@ export default function KrediKartiDuzenlePage() {
     try {
       setLoading(true)
       const data = await getCreditCard(params.id as string)
-      setCreditCard(data)
+      setCreditCard(data as any)
 
       // Form verilerini doldur
-      setFormData({
-        card_name: data.card_name || "",
+      if (data) {
+        setFormData({
+          card_name: data.card_name || "",
         bank_name: data.banks?.name || data.bank_name || "",
         card_type: data.card_type || "Classic",
         cardholder_name: data.cardholder_name || "",
@@ -139,17 +137,17 @@ export default function KrediKartiDuzenlePage() {
         expiry_year: data.expiry_year?.toString() || "",
         cvv: data.cvv || "",
         credit_limit: data.credit_limit?.toString() || "",
-        current_balance: (data.current_debt || data.current_balance)?.toString() || "",
-        due_date: (data.due_day || data.due_date)?.toString() || "",
+        current_balance: data.current_debt?.toString() || "",
+        due_date: "",
         annual_fee: data.annual_fee?.toString() || "",
         interest_rate: data.interest_rate?.toString() || "",
         minimum_payment_rate: data.minimum_payment_rate?.toString() || "",
-        late_payment_fee: data.late_payment_fee?.toString() || "",
+        late_payment_fee: "",
         status: data.is_active ? "aktif" : "pasif",
-        description: data.notes || data.description || "",
+        description: "",
       })
+      }
     } catch (error) {
-      console.error("Error fetching credit card:", error)
       toast.error("Kredi kartı bilgileri yüklenirken hata oluştu")
       router.push("/uygulama/kredi-kartlari")
     } finally {
@@ -171,7 +169,6 @@ export default function KrediKartiDuzenlePage() {
     // Only validate card number if it's provided and not empty
     if (formData.card_number && formData.card_number.trim() !== "") {
       const isValidCard = validateCardNumber(formData.card_number)
-      console.log("Card validation result:", { cardNumber: formData.card_number, isValid: isValidCard })
 
       if (!isValidCard) {
         newErrors.card_number = "Geçersiz kart numarası"
@@ -261,12 +258,10 @@ export default function KrediKartiDuzenlePage() {
         description: formData.description.trim(),
       }
 
-      console.log("Updating card data:", updateData)
       await updateCreditCard(creditCard.id, updateData)
       toast.success("Kredi kartı başarıyla güncellendi!")
       router.push(`/uygulama/kredi-kartlari/${creditCard.id}`)
     } catch (error: any) {
-      console.error("Kredi kartı güncelleme hatası:", error)
       toast.error("Kredi kartı güncellenirken bir hata oluştu")
     } finally {
       setIsSubmitting(false)
@@ -302,11 +297,6 @@ export default function KrediKartiDuzenlePage() {
       setErrors({ ...errors, card_name: "" })
     }
 
-    console.log(`✅ Kart türü seçildi ve banka güncellendi:`, {
-      cardName: creditCardType.name,
-      originalBank: creditCardType.original_bank_name || creditCardType.bank_name,
-      matchedBank: bankNameToUse,
-    })
   }
 
   const handleInputChange = (field: string, value: string) => {
@@ -854,7 +844,7 @@ export default function KrediKartiDuzenlePage() {
       </form>
 
       {/* Bank Selector Modal */}
-      {showBankSelector && <BankSelector onBankSelect={handleBankSelect} onSkip={() => setShowBankSelector(false)} />}
+      {showBankSelector && <BankSelector onBankSelect={handleBankSelect as any} onSkip={() => setShowBankSelector(false)} />}
 
       {/* Credit Card Type Selector Modal */}
       {showCreditCardTypeSelector && (

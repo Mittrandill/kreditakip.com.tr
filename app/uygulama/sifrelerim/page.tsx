@@ -124,7 +124,6 @@ export default function BankaciSifrelerimPage() {
       setCredentials(filteredData)
       setTotalItems(total)
     } catch (error: any) {
-      console.error("Credentials loading error:", error)
       toast({
         title: "Hata",
         description: "Şifreler yüklenirken bir hata oluştu.",
@@ -142,7 +141,7 @@ export default function BankaciSifrelerimPage() {
       const statsData = await getBankingCredentialsStats(user.id)
       setStats(statsData)
     } catch (error: any) {
-      console.error("Stats loading error:", error)
+      // Stats loading error
     }
   }
 
@@ -158,7 +157,6 @@ export default function BankaciSifrelerimPage() {
         description: "Şifre bilgisi silindi.",
       })
     } catch (error: any) {
-      console.error("Delete error:", error)
       toast({
         title: "Hata",
         description: "Silme işlemi sırasında bir hata oluştu.",
@@ -180,7 +178,7 @@ export default function BankaciSifrelerimPage() {
         await updateLastUsedDate(user.id, credentialId)
         await loadStats()
       } catch (error) {
-        console.error("Last used date update error:", error)
+        // Last used date update error
       }
     }
     setVisiblePasswords(newVisible)
@@ -224,7 +222,6 @@ export default function BankaciSifrelerimPage() {
         })
       }, 2000)
     } catch (error: any) {
-      console.error("Copy password error:", error)
       toast({
         title: "Hata",
         description: "Şifre kopyalanırken bir hata oluştu.",
@@ -276,22 +273,54 @@ export default function BankaciSifrelerimPage() {
 
   return (
     <div className="flex flex-col gap-4 md:gap-6">
-      {/* Hero Section */}
-      <Card className="bg-gradient-to-r from-blue-600 to-indigo-700 text-white border-transparent shadow-xl rounded-xl">
-        <CardContent className="p-8">
-          <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+      {/* Hero Section with Modern Design */}
+      <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 text-white shadow-2xl">
+        <div className="absolute inset-0 bg-gradient-to-br from-indigo-600/20 to-purple-600/20" />
+        <div className="absolute -top-24 -right-24 w-96 h-96 bg-indigo-500/10 rounded-full blur-3xl" />
+        <div className="absolute -bottom-24 -left-24 w-96 h-96 bg-purple-500/10 rounded-full blur-3xl" />
+        
+        <CardContent className="relative p-8 md:p-12">
+          <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-6">
             <div>
-              <h2 className="text-3xl font-bold mb-2 flex items-center gap-3">
-                <Lock className="h-8 w-8" />
-                Bankacılık Şifrelerim
-              </h2>
-              <p className="text-blue-100 text-lg">
-                Mobil ve internet bankacılığı şifrelerinizi güvenli bir şekilde saklayın
+              <div className="flex items-center gap-3 mb-4">
+                <div className="p-3 bg-indigo-500/20 rounded-lg backdrop-blur-sm">
+                  <Lock className="h-8 w-8 text-indigo-400" />
+                </div>
+                <h1 className="text-4xl font-bold bg-gradient-to-r from-white to-gray-300 bg-clip-text text-transparent">
+                  Bankacılık Şifrelerim
+                </h1>
+              </div>
+              <p className="text-gray-300 text-lg max-w-2xl">
+                Mobil ve internet bankacılığı şifrelerinizi güvenli bir şekilde saklayın.
               </p>
+              
+              {/* Quick Stats */}
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-6">
+                <div className="bg-white/10 backdrop-blur-sm rounded-lg p-3">
+                  <p className="text-sm text-gray-300">Toplam Şifre</p>
+                  <p className="text-xl font-bold">{stats.total}</p>
+                </div>
+                <div className="bg-white/10 backdrop-blur-sm rounded-lg p-3">
+                  <p className="text-sm text-gray-300">İnternet Bank.</p>
+                  <p className="text-xl font-bold">{stats.internetBanking}</p>
+                </div>
+                <div className="bg-white/10 backdrop-blur-sm rounded-lg p-3">
+                  <p className="text-sm text-gray-300">Mobil Bank.</p>
+                  <p className="text-xl font-bold">{stats.mobileBanking}</p>
+                </div>
+                <div className="bg-white/10 backdrop-blur-sm rounded-lg p-3">
+                  <p className="text-sm text-gray-300">Değişim Gerekli</p>
+                  <p className="text-xl font-bold">{stats.needsPasswordChange}</p>
+                </div>
+              </div>
             </div>
+            
             <div className="flex flex-col sm:flex-row gap-3">
               <Link href="/uygulama/sifrelerim/ekle">
-                <Button variant="outline" size="lg" className="bg-white text-blue-600 hover:bg-blue-50 border-white">
+                <Button
+                  className="bg-white/20 backdrop-blur-sm border-white/30 hover:bg-white/30 text-white"
+                  size="lg"
+                >
                   <Plus className="h-5 w-5 mr-2" />
                   Yeni Şifre Ekle
                 </Button>
@@ -299,7 +328,7 @@ export default function BankaciSifrelerimPage() {
             </div>
           </div>
         </CardContent>
-      </Card>
+      </div>
 
       {/* Metrics */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
@@ -419,7 +448,7 @@ export default function BankaciSifrelerimPage() {
                   <div className="flex items-start justify-between">
                     <div className="flex items-start gap-4 flex-1">
                       <div className="flex-shrink-0">
-                        <BankLogo bankName={credential.bank_name || ""} logoUrl={credential.bank_logo_url} size="md" />
+                        <BankLogo bankName={credential.bank_name || ""} logoUrl={credential.bank_logo_url || undefined} size="md" />
                       </div>
 
                       <div className="flex-1 min-w-0">

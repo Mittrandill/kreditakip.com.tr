@@ -150,7 +150,6 @@ export function AccountTypeSelector({
         .order("category, name")
 
       if (error) {
-        console.error("Supabase error fetching account types:", error)
         setErrorLoading("Hesap türleri yüklenirken bir sorun oluştu.")
         setAccountTypes(fallbackAccountTypes)
       } else {
@@ -161,7 +160,6 @@ export function AccountTypeSelector({
         }
       }
     } catch (error) {
-      console.error("Error fetching account types:", error)
       setErrorLoading("Hesap türleri yüklenemedi.")
       setAccountTypes(fallbackAccountTypes)
     } finally {
@@ -185,7 +183,6 @@ export function AccountTypeSelector({
 
   const handleConfirm = () => {
     if (selectedAccountTypeState) {
-      console.log(`🎯 Hesap türü seçildi:`, selectedAccountTypeState)
       onSelect(selectedAccountTypeState)
       onOpenChange(false)
     }

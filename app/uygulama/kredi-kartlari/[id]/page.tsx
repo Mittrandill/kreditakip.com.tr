@@ -134,7 +134,7 @@ export default function CreditCardDetailPage() {
     try {
       setLoading(true)
       const data = await getCreditCard(params.id as string)
-      setCreditCard(data)
+      setCreditCard(data as any)
     } catch (error) {
       console.error("Error fetching credit card:", error)
       toast.error("Kredi kartı bilgileri yüklenirken hata oluştu")
@@ -717,7 +717,7 @@ export default function CreditCardDetailPage() {
                         <Label className="text-sm font-medium">Ödeme Hatırlatması</Label>
                         <p className="text-xs text-gray-600">Ödeme tarihi yaklaştığında bildirim al</p>
                       </div>
-                      <Switch defaultChecked />
+                      <Switch checked />
                     </div>
                     <div className="flex items-center justify-between">
                       <div>
@@ -731,7 +731,7 @@ export default function CreditCardDetailPage() {
                         <Label className="text-sm font-medium">Limit Uyarısı</Label>
                         <p className="text-xs text-gray-600">Limit %80'e ulaştığında uyar</p>
                       </div>
-                      <Switch defaultChecked />
+                      <Switch checked />
                     </div>
                   </CardContent>
                 </Card>

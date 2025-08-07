@@ -130,7 +130,6 @@ export default function AyarlarPage() {
             setProfileData(fetchedProfile || { email: user.email })
           }
         } catch (e) {
-          console.error("Profil çekilirken hata:", e)
           if (isMounted) {
             setError("Profil bilgileri yüklenemedi.")
           }
@@ -187,7 +186,6 @@ export default function AyarlarPage() {
             setFinancialProfileData(fetchedData || {})
           }
         } catch (e) {
-          console.error("Finansal profil çekilirken hata:", e)
         } finally {
           if (isMounted) {
             setLoadingFinancialProfile(false)
@@ -233,7 +231,6 @@ export default function AyarlarPage() {
       await updateProfile(user.id, profileData)
       toast({ title: "Başarılı", description: "Profil bilgileriniz güncellendi." })
     } catch (err: any) {
-      console.error("Profil güncellenirken hata:", err)
       setError(err.message || "Profil güncellenirken bir hata oluştu.")
       toast({
         title: "Hata",
@@ -256,7 +253,6 @@ export default function AyarlarPage() {
       await upsertFinancialProfile(user.id, financialProfileData)
       toast({ title: "Başarılı", description: "Finansal bilgileriniz güncellendi." })
     } catch (err: any) {
-      console.error("Finansal profil güncellenirken hata:", err)
       setError(err.message || "Finansal profil güncellenirken bir hata oluştu.")
       toast({
         title: "Hata",
@@ -296,8 +292,6 @@ export default function AyarlarPage() {
       // User ID ile klasör oluştur
       const filePath = `${user.id}/${fileName}`
 
-      console.log("Uploading to path:", filePath)
-      console.log("User ID:", user.id)
 
       const { data, error: uploadError } = await supabase.storage.from("avatars").upload(filePath, avatarFile, {
         cacheControl: "3600",
@@ -305,17 +299,14 @@ export default function AyarlarPage() {
       })
 
       if (uploadError) {
-        console.error("Upload error:", uploadError)
         throw uploadError
       }
 
-      console.log("Upload successful:", data)
 
       const {
         data: { publicUrl },
       } = supabase.storage.from("avatars").getPublicUrl(filePath)
 
-      console.log("Public URL:", publicUrl)
 
       await updateProfile(user.id, { avatar_url: publicUrl })
       setProfileData((prev) => ({ ...prev, avatar_url: publicUrl }))
@@ -324,7 +315,6 @@ export default function AyarlarPage() {
 
       toast({ title: "Başarılı", description: "Profil fotoğrafınız güncellendi." })
     } catch (error: any) {
-      console.error("Avatar upload error:", error)
       toast({
         title: "Hata",
         description: error.message || "Fotoğraf yüklenirken bir hata oluştu.",
@@ -362,7 +352,6 @@ export default function AyarlarPage() {
       setConfirmPassword("")
       toast({ title: "Başarılı", description: "Şifreniz başarıyla değiştirildi." })
     } catch (error: any) {
-      console.error("Password change error:", error)
       toast({ title: "Hata", description: "Şifre değiştirilirken bir hata oluştu.", variant: "destructive" })
     } finally {
       setIsChangingPassword(false)
@@ -670,7 +659,7 @@ export default function AyarlarPage() {
                         <MapPin className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
                         <Textarea
                           id="address"
-                          value={profileData.address || ""}
+                          value={(profileData as any).address || ""}
                           onChange={(e) => setProfileData((prev) => ({ ...prev, address: e.target.value }))}
                           className="pl-10 custom-input min-h-[80px]"
                           placeholder="Tam adresinizi girin..."
@@ -760,7 +749,7 @@ export default function AyarlarPage() {
                             id="total_assets"
                             type="number"
                             placeholder="Örn: 50000"
-                            value={financialProfileData.total_assets ?? ""}
+                            value={(financialProfileData as any).total_assets ?? ""}
                             onChange={handleFinancialInputChange}
                           />
                         </div>
@@ -770,7 +759,7 @@ export default function AyarlarPage() {
                             id="total_liabilities"
                             type="number"
                             placeholder="Örn: 5000"
-                            value={financialProfileData.total_liabilities ?? ""}
+                            value={(financialProfileData as any).total_liabilities ?? ""}
                             onChange={handleFinancialInputChange}
                           />
                         </div>
@@ -800,7 +789,7 @@ export default function AyarlarPage() {
                         <div className="space-y-2">
                           <Label htmlFor="housing_status">Konut Durumu</Label>
                           <Select
-                            value={financialProfileData.housing_status || ""}
+                            value={(financialProfileData as any).housing_status || ""}
                             onValueChange={(value) => handleSelectChange("housing_status", value)}
                           >
                             <SelectTrigger>
@@ -821,7 +810,7 @@ export default function AyarlarPage() {
                         <Textarea
                           id="other_debt_obligations"
                           placeholder="Örn: Kredi kartı borcu, öğrenim kredisi"
-                          value={financialProfileData.other_debt_obligations || ""}
+                          value={(financialProfileData as any).other_debt_obligations || ""}
                           onChange={handleFinancialInputChange}
                         />
                       </div>
@@ -830,14 +819,14 @@ export default function AyarlarPage() {
                         <Textarea
                           id="savings_goals"
                           placeholder="Örn: Ev almak, araba almak, emeklilik"
-                          value={financialProfileData.savings_goals || ""}
+                          value={(financialProfileData as any).savings_goals || ""}
                           onChange={handleFinancialInputChange}
                         />
                       </div>
                       <div className="space-y-2">
                         <Label htmlFor="risk_tolerance">Risk Toleransı</Label>
                         <Select
-                          value={financialProfileData.risk_tolerance || ""}
+                          value={(financialProfileData as any).risk_tolerance || ""}
                           onValueChange={(value) => handleSelectChange("risk_tolerance", value)}
                         >
                           <SelectTrigger>

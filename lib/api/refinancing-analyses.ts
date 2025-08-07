@@ -43,7 +43,7 @@ export async function saveRefinancingAnalysis(
     .single()
 
   if (error) {
-    console.error("Error saving refinancing analysis:", error)
+    // console.error("Error saving refinancing analysis:", error)
     throw error
   }
 
@@ -58,7 +58,7 @@ export async function getRefinancingAnalyses(userId: string) {
     .order("created_at", { ascending: false })
 
   if (error) {
-    console.error("Error fetching refinancing analyses:", error)
+    // console.error("Error fetching refinancing analyses:", error)
     throw error
   }
 
@@ -74,7 +74,7 @@ export async function getRefinancingAnalysisById(userId: string, analysisId: str
     .single()
 
   if (error) {
-    console.error("Error fetching refinancing analysis:", error)
+    // console.error("Error fetching refinancing analysis:", error)
     throw error
   }
 
@@ -91,7 +91,7 @@ export async function deleteRefinancingAnalysis(userId: string, analysisId: stri
     .single()
 
   if (error) {
-    console.error("Error deleting refinancing analysis:", error)
+    // console.error("Error deleting refinancing analysis:", error)
     throw error
   }
 

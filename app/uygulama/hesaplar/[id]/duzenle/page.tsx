@@ -66,7 +66,7 @@ export default function HesapDuzenlePage() {
         setAccount(data)
         setFormData({
           account_name: data.account_name || "",
-          bank_name: data.banks?.name || "",
+          bank_name: (data as any).banks?.name || "",
           account_number: data.account_number || "",
           iban: data.iban || "",
           account_type: data.account_type || "",
@@ -83,7 +83,6 @@ export default function HesapDuzenlePage() {
         })
       }
     } catch (err: any) {
-      console.error("Hesap yüklenirken hata:", err)
       setError("Hesap bilgileri yüklenirken bir sorun oluştu.")
     } finally {
       setLoading(false)
@@ -164,9 +163,9 @@ export default function HesapDuzenlePage() {
         account_name: formData.account_name.trim(),
         account_number: formData.account_number.trim() || null,
         iban: formData.iban.trim() || null,
-        account_type: formData.account_type,
+        account_type: formData.account_type as "vadesiz" | "vadeli" | "tasarruf" | "yatirim" | "diger",
         current_balance: Number(formData.current_balance) || 0,
-        currency: formData.currency as "TRY" | "USD" | "EUR" | "GBP" | "GOLD",
+        currency: formData.currency as "TRY" | "USD" | "EUR" | "GBP",
         overdraft_limit: Number(formData.overdraft_limit) || 0,
         overdraft_interest_rate: Number(formData.overdraft_interest_rate) || 0,
         interest_rate: Number(formData.interest_rate) || 0,
@@ -175,13 +174,11 @@ export default function HesapDuzenlePage() {
         updated_at: new Date().toISOString(),
       }
 
-      console.log("📝 Hesap güncelleme verisi:", updateData)
 
       await updateAccount(account.id, updateData)
       toast({ title: "Başarılı", description: "Hesap başarıyla güncellendi!" })
       router.push(`/uygulama/hesaplar/${account.id}`)
     } catch (error: any) {
-      console.error("Hesap güncelleme hatası:", error)
 
       let errorMessage = "Hesap güncellenirken bir hata oluştu"
       if (error?.message?.includes("check constraint")) {
@@ -196,8 +193,8 @@ export default function HesapDuzenlePage() {
     }
   }
 
-  const handleBankSelect = (bankName: string) => {
-    setFormData({ ...formData, bank_name: bankName })
+  const handleBankSelect = (bank: { name: string; id: string }) => {
+    setFormData({ ...formData, bank_name: bank.name })
     setShowBankSelector(false)
     if (errors.bank_name) {
       setErrors({ ...errors, bank_name: "" })

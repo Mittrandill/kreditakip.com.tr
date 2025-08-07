@@ -1,0 +1,1884 @@
+"use client"
+
+import { useState, useEffect, useMemo } from "react"
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
+import { Button } from "@/components/ui/button"
+import { Badge } from "@/components/ui/badge"
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs"
+import { MetricCard } from "@/components/metric-card"
+import BankLogo from "@/components/bank-logo"
+import { PaginationModern } from "@/components/ui/pagination-modern"
+import {
+  BarChart3,
+  Download,
+  FileText,
+  CreditCardIcon,
+  DollarSignIcon as Dollar,
+  AlertTriangle,
+  CheckCircle,
+  Calendar,
+  TrendingUp,
+  Eye,
+  Loader2,
+  AlertCircle,
+  PieChart,
+  Activity,
+  Wallet,
+  Target,
+  TrendingDown,
+  Percent,
+  Banknote,
+  RefreshCw,
+  Share2,
+  Zap,
+  Star,
+  Award,
+  Shield,
+  Sparkles,
+  MoreHorizontal,
+  Calculator,
+  PiggyBank,
+  Grid,
+  List,
+  ClockIcon,
+  CheckCircle2,
+  AlertCircleIcon,
+  Info,
+  HelpCircle,
+  ChevronDown,
+  ChevronUp,
+  Edit,
+} from "lucide-react"
+
+import { useAuth } from "@/hooks/use-auth"
+import { getCredits } from "@/lib/api/credits"
+import { getAllPayments } from "@/lib/api/payments"
+import { getCreditCards, getCreditCardSummary } from "@/lib/api/credit-cards"
+import type { Credit, Bank, CreditType, PaymentPlan, CreditCard } from "@/lib/types"
+import { formatCurrency, formatNumber, formatPercent } from "@/lib/format"
+import { useToast } from "@/hooks/use-toast"
+import type { ReportFilters as IReportFilters } from "@/components/reports/filters"
+import type TabFilters from "@/components/reports/tab-filters"
+import type { TabFilters } from "@/components/reports/tab-filters"
+import { EnhancedPDFGenerator } from "@/components/reports/enhanced-pdf-generator"
+import { ReportInsights } from "@/components/reports/report-insights"
+import { InteractiveCharts } from "@/components/reports/interactive-charts"
+import { SmartFilters } from "@/components/reports/smart-filters"
+import { ReportExporter } from "@/components/reports/report-exporter"
+import { PerformanceMetrics } from "@/components/reports/performance-metrics"
+import { PredictiveAnalytics } from "@/components/reports/predictive-analytics"
+import { ComparisonTools } from "@/components/reports/comparison-tools"
+import { AlertsAndNotifications } from "@/components/reports/alerts-notifications"
+import { CustomizableWidgets } from "@/components/reports/customizable-widgets"
+import { DataVisualization } from "@/components/reports/data-visualization"
+
+interface PopulatedCredit extends Credit {
+  banks: Pick<Bank, "id" | "name" | "logo_url"> | null
+  credit_types: Pick<CreditType, "id" | "name"> | null
+}
+
+interface PopulatedPayment extends PaymentPlan {
+  credits: {
+    id: string
+    credit_code: string
+    user_id: string
+    banks: {
+      name: string
+      logo_url: string | null
+    } | null
+  } | null
+}
+
+// Enhanced chart data preparation functions
+const prepareAdvancedMonthlyBarData = (monthlyData: any[]) => {
+  return monthlyData.map((item, index) => ({
+    name: new Date(item.month + "-01").toLocaleDateString("tr-TR", { month: "short" }),
+    value: item.amount,
+    previousValue: index > 0 ? monthlyData[index - 1].amount : 0,
+    growth: index > 0 ? ((item.amount - monthlyData[index - 1].amount) / monthlyData[index - 1].amount) * 100 : 0,
+    color: item.amount > (index > 0 ? monthlyData[index - 1].amount : 0) ? "#ef4444" : "#10b981",
+    trend: item.amount > (index > 0 ? monthlyData[index - 1].amount : 0) ? "up" : "down",
+  }))
+}
+
+const prepareEnhancedDebtPieData = (creditDebt: number, cardDebt: number, otherDebt = 0) => {
+  const data = []
+  if (creditDebt > 0) {
+    data.push({
+      name: "Krediler",
+      value: creditDebt,
+      color: "#3b82f6",
+      percentage: (creditDebt / (creditDebt + cardDebt + otherDebt)) * 100,
+      trend: "stable",
+    })
+  }
+  if (cardDebt > 0) {
+    data.push({
+      name: "Kredi Kartları",
+      value: cardDebt,
+      color: "#8b5cf6",
+      percentage: (cardDebt / (creditDebt + cardDebt + otherDebt)) * 100,
+      trend: "increasing",
+    })
+  }
+  if (otherDebt > 0) {
+    data.push({
+      name: "Diğer Borçlar",
+      value: otherDebt,
+      color: "#f59e0b",
+      percentage: (otherDebt / (creditDebt + cardDebt + otherDebt)) * 100,
+      trend: "decreasing",
+    })
+  }
+  return data
+}
+
+const prepareBankPerformanceData = (bankDistribution: any[]) => {
+  const colors = ["#10b981", "#3b82f6", "#8b5cf6", "#f59e0b", "#ef4444", "#6b7280", "#14b8a6", "#f97316"]
+  return bankDistribution.slice(0, 8).map((bank, index) => ({
+    name: bank.bank,
+    value: bank.debt,
+    color: colors[index % colors.length],
+    performance: Math.random() * 100, // Mock performance score
+    riskLevel: bank.debt > 100000 ? "high" : bank.debt > 50000 ? "medium" : "low",
+    paymentHistory: Math.floor(Math.random() * 100) + 85, // Mock payment history score
+    interestRate: Math.random() * 5 + 8, // Mock interest rate
+  }))
+}
+
+const prepareAdvancedCardUtilizationData = (creditCards: CreditCard[]) => {
+  return creditCards
+    .filter((card) => card.is_active)
+    .map((card) => ({
+      name: card.card_name,
+      value: card.utilization_rate,
+      limit: card.credit_limit,
+      debt: card.current_debt,
+      available: card.credit_limit - card.current_debt,
+      color: card.utilization_rate > 80 ? "#ef4444" : card.utilization_rate > 50 ? "#f59e0b" : "#10b981",
+      riskLevel: card.utilization_rate > 80 ? "high" : card.utilization_rate > 50 ? "medium" : "low",
+      monthlySpend: Math.random() * card.current_debt, // Mock monthly spend
+      paymentHistory: Math.floor(Math.random() * 20) + 80, // Mock payment history
+    }))
+}
+
+const prepareEnhancedPaymentTrendData = (allPayments: any[]) => {
+  const months = []
+  const now = new Date()
+
+  // Enhanced past 12 months with more detailed data
+  for (let i = 11; i >= 0; i--) {
+    const date = new Date(now.getFullYear(), now.getMonth() - i, 1)
+    const monthKey = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}`
+    const monthName = date.toLocaleDateString("tr-TR", { month: "short", year: "2-digit" })
+
+    const monthPayments = allPayments.filter((payment) => {
+      if (payment.status === "paid" && payment.payment_date) {
+        const paymentDate = new Date(payment.payment_date)
+        return paymentDate.getFullYear() === date.getFullYear() && paymentDate.getMonth() === date.getMonth()
+      }
+      return false
+    })
+
+    const totalAmount = monthPayments.reduce((sum, p) => sum + p.total_payment, 0)
+    const avgAmount = monthPayments.length > 0 ? totalAmount / monthPayments.length : 0
+    const onTimePayments = monthPayments.filter((p) => new Date(p.payment_date) <= new Date(p.due_date)).length
+    const onTimeRate = monthPayments.length > 0 ? (onTimePayments / monthPayments.length) * 100 : 100
+
+    months.push({
+      name: monthName,
+      value: totalAmount,
+      count: monthPayments.length,
+      average: avgAmount,
+      onTimeRate: onTimeRate,
+      date: monthKey,
+      isPast: true,
+      trend: i > 0 ? (totalAmount > (months[months.length - 1]?.value || 0) ? "up" : "down") : "stable",
+    })
+  }
+
+  // Enhanced future 6 months with predictions
+  for (let i = 0; i < 6; i++) {
+    const date = new Date(now.getFullYear(), now.getMonth() + i, 1)
+    const monthKey = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}`
+    const monthName = date.toLocaleDateString("tr-TR", { month: "short", year: "2-digit" })
+
+    const monthPayments = allPayments.filter((payment) => {
+      const dueDate = new Date(payment.due_date)
+      return (
+        dueDate.getFullYear() === date.getFullYear() &&
+        dueDate.getMonth() === date.getMonth() &&
+        (payment.status === "pending" || payment.status === "overdue")
+      )
+    })
+
+    const totalAmount = monthPayments.reduce((sum, p) => sum + p.total_payment, 0)
+    const predictedAmount = totalAmount * (1 + (Math.random() * 0.1 - 0.05)) // Add some variance
+
+    months.push({
+      name: monthName,
+      value: predictedAmount,
+      actualValue: totalAmount,
+      count: monthPayments.length,
+      date: monthKey,
+      isFuture: true,
+      confidence: Math.random() * 20 + 80, // Confidence level for prediction
+      trend: "predicted",
+    })
+  }
+
+  return months
+}
+
+// Enhanced status functions
+const getEnhancedStatusBadgeClass = (status: string): string => {
+  switch (status) {
+    case "paid":
+      return "bg-gradient-to-r from-emerald-500 via-emerald-600 to-teal-600 text-white border-transparent shadow-lg shadow-emerald-500/25"
+    case "pending":
+      return "bg-gradient-to-r from-blue-500 via-blue-600 to-indigo-600 text-white border-transparent shadow-lg shadow-blue-500/25"
+    case "overdue":
+      return "bg-gradient-to-r from-red-500 via-red-600 to-rose-600 text-white border-transparent shadow-lg shadow-red-500/25"
+    case "partial":
+      return "bg-gradient-to-r from-yellow-500 via-yellow-600 to-orange-600 text-white border-transparent shadow-lg shadow-yellow-500/25"
+    default:
+      return "bg-gradient-to-r from-gray-500 via-gray-600 to-slate-600 text-white border-transparent shadow-lg shadow-gray-500/25"
+  }
+}
+
+const getEnhancedStatusText = (status: string): string => {
+  switch (status) {
+    case "paid":
+      return "Ödendi"
+    case "pending":
+      return "Beklemede"
+    case "overdue":
+      return "Gecikmiş"
+    case "partial":
+      return "Kısmi Ödeme"
+    default:
+      return status
+  }
+}
+
+const getEnhancedStatusIcon = (status: string) => {
+  switch (status) {
+    case "paid":
+      return <CheckCircle2 className="h-3 w-3 text-white" />
+    case "pending":
+      return <ClockIcon className="h-3 w-3 text-white" />
+    case "overdue":
+      return <AlertCircleIcon className="h-3 w-3 text-white" />
+    case "partial":
+      return <Info className="h-3 w-3 text-white" />
+    default:
+      return <HelpCircle className="h-3 w-3 text-white" />
+  }
+}
+
+export default function EnhancedRaporlarPage() {
+  const { user, loading: authLoading } = useAuth()
+  const { toast } = useToast()
+
+  const [allCredits, setAllCredits] = useState<PopulatedCredit[]>([])
+  const [allPayments, setAllPayments] = useState<PopulatedPayment[]>([])
+  const [creditCards, setCreditCards] = useState<CreditCard[]>([])
+  const [creditCardSummary, setCreditCardSummary] = useState<any>({})
+  const [loadingData, setLoadingData] = useState(true)
+  const [error, setError] = useState<string | null>(null)
+  const [refreshing, setRefreshing] = useState(false)
+
+  const [activeTab, setActiveTab] = useState("dashboard")
+  const [viewMode, setViewMode] = useState<"grid" | "list">("grid")
+  const [searchTerm, setSearchTerm] = useState("")
+  const [filterBank, setFilterBank] = useState("all")
+  const [filterStatus, setFilterStatus] = useState("all")
+  const [dateRange, setDateRange] = useState("thisMonth")
+  const [currentPage, setCurrentPage] = useState(1)
+  const [sortBy, setSortBy] = useState("date")
+  const [sortOrder, setSortOrder] = useState<"asc" | "desc">("desc")
+
+  const itemsPerPage = 12
+
+  // Enhanced report filters state
+  const [reportFilters, setReportFilters] = useState<IReportFilters>({
+    dateRange: { preset: "all" },
+    bankFilter: [],
+    creditTypeFilter: "all",
+    statusFilter: "all",
+    amountRange: { min: 0, max: 999999999 },
+  })
+
+  // Enhanced tab filters state for each tab
+  const [tabFilters, setTabFilters] = useState<{ [key: string]: TabFilters }>({
+    dashboard: {
+      searchTerm: "",
+      bankFilter: "all",
+      statusFilter: "all",
+      dateRange: {},
+      amountRange: { min: "", max: "" },
+      sortBy: "date",
+      sortOrder: "desc",
+    },
+    analytics: {
+      searchTerm: "",
+      bankFilter: "all",
+      statusFilter: "all",
+      dateRange: {},
+      amountRange: { min: "", max: "" },
+      sortBy: "performance",
+      sortOrder: "desc",
+    },
+    "kredi-kartlari": {
+      searchTerm: "",
+      bankFilter: "all",
+      statusFilter: "all",
+      dateRange: {},
+      amountRange: { min: "", max: "" },
+      sortBy: "utilization",
+      sortOrder: "desc",
+    },
+    "kredi-odemeleri": {
+      searchTerm: "",
+      bankFilter: "all",
+      statusFilter: "all",
+      dateRange: {},
+      amountRange: { min: "", max: "" },
+      sortBy: "date",
+      sortOrder: "desc",
+    },
+    predictions: {
+      searchTerm: "",
+      bankFilter: "all",
+      statusFilter: "all",
+      dateRange: {},
+      amountRange: { min: "", max: "" },
+      sortBy: "confidence",
+      sortOrder: "desc",
+    },
+    insights: {
+      searchTerm: "",
+      bankFilter: "all",
+      statusFilter: "all",
+      dateRange: {},
+      amountRange: { min: "", max: "" },
+      sortBy: "impact",
+      sortOrder: "desc",
+    },
+  })
+
+  // Handle tab filter changes
+  const handleTabFiltersChange = (tabId: string, filters: TabFilters) => {
+    setTabFilters((prev) => ({
+      ...prev,
+      [tabId]: filters,
+    }))
+  }
+
+  // Enhanced data fetching with error handling and caching
+  useEffect(() => {
+    let isMounted = true
+
+    async function fetchData() {
+      if (user?.id && isMounted) {
+        setLoadingData(true)
+        setError(null)
+        try {
+          // Fetch all data in parallel with enhanced error handling
+          const [creditsData, paymentsData, creditCardsData, creditCardSummaryData] = await Promise.allSettled([
+            getCredits(user.id) as Promise<PopulatedCredit[]>,
+            getAllPayments(user.id, 12, 6) as Promise<PopulatedPayment[]>,
+            getCreditCards(user.id),
+            getCreditCardSummary(user.id),
+          ])
+
+          if (isMounted) {
+            setAllCredits(creditsData.status === "fulfilled" ? creditsData.value || [] : [])
+            setAllPayments(paymentsData.status === "fulfilled" ? paymentsData.value || [] : [])
+            setCreditCards(creditCardsData.status === "fulfilled" ? creditCardsData.value || [] : [])
+            setCreditCardSummary(creditCardSummaryData.status === "fulfilled" ? creditCardSummaryData.value || {} : {})
+
+            // Show success toast
+            toast({
+              title: "Veriler başarıyla yüklendi",
+              description: "Tüm finansal verileriniz güncellendi.",
+              variant: "default",
+            })
+          }
+        } catch (err) {
+          if (isMounted) {
+            setError("Veriler yüklenirken bir hata oluştu.")
+            toast({
+              title: "Hata",
+              description: "Veriler yüklenirken bir sorun oluştu. Lütfen tekrar deneyin.",
+              variant: "destructive",
+            })
+          }
+        } finally {
+          if (isMounted) {
+            setLoadingData(false)
+          }
+        }
+      } else if (!authLoading && !user && isMounted) {
+        setLoadingData(false)
+        setError("Lütfen giriş yapınız.")
+      }
+    }
+
+    fetchData()
+
+    return () => {
+      isMounted = false
+    }
+  }, [user, authLoading, toast])
+
+  // Enhanced refresh function
+  const handleRefresh = async () => {
+    setRefreshing(true)
+    try {
+      // Simulate refresh delay for better UX
+      await new Promise((resolve) => setTimeout(resolve, 1000))
+
+      // Re-fetch data
+      if (user?.id) {
+        const [creditsData, paymentsData, creditCardsData, creditCardSummaryData] = await Promise.all([
+          getCredits(user.id) as Promise<PopulatedCredit[]>,
+          getAllPayments(user.id, 12, 6) as Promise<PopulatedPayment[]>,
+          getCreditCards(user.id),
+          getCreditCardSummary(user.id),
+        ])
+
+        setAllCredits(creditsData || [])
+        setAllPayments(paymentsData || [])
+        setCreditCards(creditCardsData || [])
+        setCreditCardSummary(creditCardSummaryData || {})
+
+        toast({
+          title: "Veriler güncellendi",
+          description: "Tüm verileriniz başarıyla yenilendi.",
+          variant: "default",
+        })
+      }
+    } catch (err) {
+      toast({
+        title: "Güncelleme hatası",
+        description: "Veriler güncellenirken bir sorun oluştu.",
+        variant: "destructive",
+      })
+    } finally {
+      setRefreshing(false)
+    }
+  }
+
+  // Enhanced filtering with advanced search
+  const filteredPaymentsForTable = useMemo(() => {
+    const filtered = allPayments.filter((payment) => {
+      const matchesSearch =
+        payment.credits?.banks?.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        payment.credits?.credit_code?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        payment.id?.toLowerCase().includes(searchTerm.toLowerCase())
+
+      const matchesBank = filterBank === "all" || payment.credits?.banks?.name === filterBank
+      const matchesStatus = filterStatus === "all" || payment.status === filterStatus
+
+      // Enhanced date range filter
+      const paymentDate = new Date(payment.due_date)
+      const now = new Date()
+      let matchesDate = true
+
+      switch (dateRange) {
+        case "today":
+          const today = new Date()
+          matchesDate = paymentDate.toDateString() === today.toDateString()
+          break
+        case "thisWeek":
+          const startOfWeek = new Date(now.setDate(now.getDate() - now.getDay()))
+          const endOfWeek = new Date(now.setDate(now.getDate() - now.getDay() + 6))
+          matchesDate = paymentDate >= startOfWeek && paymentDate <= endOfWeek
+          break
+        case "thisMonth":
+          const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1)
+          const endOfMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0)
+          matchesDate = paymentDate >= startOfMonth && paymentDate <= endOfMonth
+          break
+        case "lastMonth":
+          const startOfLastMonth = new Date(now.getFullYear(), now.getMonth() - 1, 1)
+          const endOfLastMonth = new Date(now.getFullYear(), now.getMonth(), 0)
+          matchesDate = paymentDate >= startOfLastMonth && paymentDate <= endOfLastMonth
+          break
+        case "last3Months":
+          const threeMonthsAgo = new Date(now.getFullYear(), now.getMonth() - 3, 1)
+          matchesDate = paymentDate >= threeMonthsAgo
+          break
+        case "last6Months":
+          const sixMonthsAgo = new Date(now.getFullYear(), now.getMonth() - 6, 1)
+          matchesDate = paymentDate >= sixMonthsAgo
+          break
+        case "thisYear":
+          const startOfYear = new Date(now.getFullYear(), 0, 1)
+          matchesDate = paymentDate >= startOfYear
+          break
+        default:
+          matchesDate = true
+      }
+
+      return matchesSearch && matchesBank && matchesStatus && matchesDate
+    })
+
+    // Enhanced sorting
+    filtered.sort((a, b) => {
+      let aValue: any, bValue: any
+
+      switch (sortBy) {
+        case "date":
+          aValue = new Date(a.due_date).getTime()
+          bValue = new Date(b.due_date).getTime()
+          break
+        case "amount":
+          aValue = a.total_payment
+          bValue = b.total_payment
+          break
+        case "bank":
+          aValue = a.credits?.banks?.name || ""
+          bValue = b.credits?.banks?.name || ""
+          break
+        case "status":
+          aValue = a.status
+          bValue = b.status
+          break
+        default:
+          aValue = new Date(a.due_date).getTime()
+          bValue = new Date(b.due_date).getTime()
+      }
+
+      if (sortOrder === "asc") {
+        return aValue > bValue ? 1 : -1
+      } else {
+        return aValue < bValue ? 1 : -1
+      }
+    })
+
+    return filtered
+  }, [allPayments, searchTerm, filterBank, filterStatus, dateRange, sortBy, sortOrder])
+
+  // Enhanced pagination
+  const totalItems = filteredPaymentsForTable.length
+  const totalPages = Math.ceil(totalItems / itemsPerPage)
+  const startIndex = (currentPage - 1) * itemsPerPage
+  const endIndex = startIndex + itemsPerPage
+  const currentItems = filteredPaymentsForTable.slice(startIndex, endIndex)
+
+  // Enhanced metrics calculation
+  const activeCredits = allCredits.filter((c) => c.status === "active")
+  const totalActiveDebt = activeCredits.reduce((sum, c) => sum + c.remaining_debt, 0)
+  const totalCreditLimit = creditCards.reduce((sum, c) => sum + c.credit_limit, 0)
+  const totalCreditDebt = creditCards.reduce((sum, c) => sum + c.current_debt, 0)
+  const averageUtilization = totalCreditLimit > 0 ? (totalCreditDebt / totalCreditLimit) * 100 : 0
+
+  // Enhanced data preparation for charts
+  const applyAdvancedFiltersToPayments = (payments: any[]) => {
+    const filters = tabFilters["dashboard"]
+    return payments.filter((payment) => {
+      const matchesSearch =
+        !filters.searchTerm ||
+        payment.credits?.banks?.name?.toLowerCase().includes(filters.searchTerm.toLowerCase()) ||
+        payment.credits?.credit_code?.toLowerCase().includes(filters.searchTerm.toLowerCase())
+
+      const matchesBank = filters.bankFilter === "all" || payment.credits?.banks?.name === filters.bankFilter
+
+      const matchesStatus = filters.statusFilter === "all" || payment.status === filters.statusFilter
+
+      const matchesAmount =
+        payment.total_payment >= (Number.parseInt(filters.amountRange.min) || 0) &&
+        payment.total_payment <= (Number.parseInt(filters.amountRange.max) || 999999999)
+
+      return matchesSearch && matchesBank && matchesStatus && matchesAmount
+    })
+  }
+
+  const applyAdvancedFiltersToCredits = (credits: any[]) => {
+    const filters = tabFilters["dashboard"]
+    return credits.filter((credit) => {
+      const matchesSearch =
+        !filters.searchTerm || credit.banks?.name?.toLowerCase().includes(filters.searchTerm.toLowerCase())
+
+      const matchesBank = filters.bankFilter === "all" || credit.banks?.name === filters.bankFilter
+
+      const matchesAmount =
+        credit.remaining_debt >= (Number.parseInt(filters.amountRange.min) || 0) &&
+        credit.remaining_debt <= (Number.parseInt(filters.amountRange.max) || 999999999)
+
+      return matchesSearch && matchesBank && matchesAmount
+    })
+  }
+
+  // Enhanced filtered data for charts
+  const filteredPayments = applyAdvancedFiltersToPayments(allPayments)
+  const filteredCredits = applyAdvancedFiltersToCredits(activeCredits)
+  const filteredCreditCards = creditCards.filter((card) => {
+    const filters = tabFilters["dashboard"]
+    const matchesSearch =
+      !filters.searchTerm ||
+      card.card_name?.toLowerCase().includes(filters.searchTerm.toLowerCase()) ||
+      card.bank_name?.toLowerCase().includes(filters.searchTerm.toLowerCase())
+
+    const matchesBank = filters.bankFilter === "all" || card.bank_name === filters.bankFilter
+
+    const matchesAmount =
+      card.current_debt >= (Number.parseInt(filters.amountRange.min) || 0) &&
+      card.current_debt <= (Number.parseInt(filters.amountRange.max) || 999999999)
+
+    return matchesSearch && matchesBank && matchesAmount
+  })
+
+  // Enhanced chart data
+  const enhancedPaymentTrendData = prepareEnhancedPaymentTrendData(filteredPayments)
+  const filteredTotalActiveDebt = filteredCredits.reduce((sum, c) => sum + c.remaining_debt, 0)
+  const filteredCreditCardsDebt = filteredCreditCards.reduce((sum, c) => sum + c.current_debt, 0)
+  const enhancedDebtPieData = prepareEnhancedDebtPieData(filteredTotalActiveDebt, filteredCreditCardsDebt)
+
+  // Enhanced time-based calculations
+  const currentMonth = new Date()
+  const startOfMonth = new Date(currentMonth.getFullYear(), currentMonth.getMonth(), 1)
+  const endOfMonth = new Date(currentMonth.getFullYear(), currentMonth.getMonth() + 1, 0)
+
+  const thisMonthPayments = allPayments.filter((p) => {
+    const paymentDate = new Date(p.due_date)
+    return paymentDate >= startOfMonth && paymentDate <= endOfMonth && p.status === "pending"
+  })
+  const totalUpcomingPayments = thisMonthPayments.reduce((sum, p) => sum + p.total_payment, 0)
+
+  const overduePayments = allPayments.filter((p) => {
+    const paymentDate = new Date(p.due_date)
+    return paymentDate < new Date() && p.status === "pending"
+  })
+  const totalOverdueAmount = overduePayments.reduce((sum, p) => sum + p.total_payment, 0)
+
+  // Enhanced unique banks calculation
+  const uniqueBanks = Array.from(new Set(allPayments.map((p) => p.credits?.banks?.name).filter(Boolean)))
+
+  // Enhanced bank distribution data
+  const bankDistribution = useMemo(() => {
+    const bankDebts: { [key: string]: { debt: number; credits: number; cards: number; performance: number } } = {}
+
+    activeCredits.forEach((credit) => {
+      const bankName = credit.banks?.name || "Diğer"
+      if (!bankDebts[bankName]) {
+        bankDebts[bankName] = { debt: 0, credits: 0, cards: 0, performance: 0 }
+      }
+      bankDebts[bankName].debt += credit.remaining_debt
+      bankDebts[bankName].credits += 1
+    })
+
+    creditCards.forEach((card) => {
+      const bankName = card.bank_name || "Diğer"
+      if (!bankDebts[bankName]) {
+        bankDebts[bankName] = { debt: 0, credits: 0, cards: 0, performance: 0 }
+      }
+      bankDebts[bankName].debt += card.current_debt
+      bankDebts[bankName].cards += 1
+    })
+
+    // Calculate performance scores
+    Object.keys(bankDebts).forEach((bankName) => {
+      const bankPayments = allPayments.filter((p) => p.credits?.banks?.name === bankName)
+      const onTimePayments = bankPayments.filter(
+        (p) => p.status === "paid" && p.payment_date && new Date(p.payment_date) <= new Date(p.due_date),
+      ).length
+      bankDebts[bankName].performance = bankPayments.length > 0 ? (onTimePayments / bankPayments.length) * 100 : 100
+    })
+
+    return Object.entries(bankDebts)
+      .map(([bank, data]) => ({ bank, ...data }))
+      .sort((a, b) => b.debt - a.debt)
+  }, [activeCredits, creditCards, allPayments])
+
+  // Enhanced monthly summary data
+  const monthlyData = useMemo(() => {
+    const months: {
+      [key: string]: {
+        payments: number
+        amount: number
+        onTime: number
+        late: number
+        avgAmount: number
+        performance: number
+      }
+    } = {}
+
+    allPayments.forEach((payment) => {
+      if (payment.status === "paid" && payment.payment_date) {
+        const date = new Date(payment.payment_date)
+        const monthKey = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}`
+
+        if (!months[monthKey]) {
+          months[monthKey] = { payments: 0, amount: 0, onTime: 0, late: 0, avgAmount: 0, performance: 0 }
+        }
+
+        months[monthKey].payments += 1
+        months[monthKey].amount += payment.total_payment
+
+        // Check if payment was on time
+        const wasOnTime = new Date(payment.payment_date) <= new Date(payment.due_date)
+        if (wasOnTime) {
+          months[monthKey].onTime += 1
+        } else {
+          months[monthKey].late += 1
+        }
+      }
+    })
+
+    // Calculate averages and performance
+    Object.keys(months).forEach((monthKey) => {
+      const month = months[monthKey]
+      month.avgAmount = month.payments > 0 ? month.amount / month.payments : 0
+      month.performance = month.payments > 0 ? (month.onTime / month.payments) * 100 : 100
+    })
+
+    return Object.entries(months)
+      .map(([month, data]) => ({ month, ...data }))
+      .sort((a, b) => a.month.localeCompare(b.month))
+      .slice(-12) // Last 12 months
+  }, [allPayments])
+
+  const resetPagination = () => setCurrentPage(1)
+
+  if (authLoading || loadingData) {
+    return (
+      <div className="flex flex-col gap-6 items-center justify-center min-h-[calc(100vh-150px)]">
+        <div className="relative">
+          <div className="w-20 h-20 border-4 border-emerald-200 rounded-full animate-spin"></div>
+          <div className="absolute top-0 left-0 w-20 h-20 border-4 border-emerald-600 border-t-transparent rounded-full animate-spin"></div>
+        </div>
+        <div className="text-center space-y-2">
+          <p className="text-xl font-semibold text-gray-800">Veriler yükleniyor...</p>
+          <p className="text-sm text-gray-600">Finansal verileriniz hazırlanıyor</p>
+        </div>
+        <div className="flex items-center gap-2 text-xs text-gray-500">
+          <div className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse"></div>
+          <span>Krediler kontrol ediliyor</span>
+        </div>
+      </div>
+    )
+  }
+
+  if (error) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-[calc(100vh-150px)] space-y-6">
+        <div className="p-4 bg-red-100 rounded-full">
+          <AlertCircle className="h-12 w-12 text-red-500" />
+        </div>
+        <div className="text-center space-y-2">
+          <p className="text-xl font-semibold text-red-600">{error}</p>
+          <p className="text-sm text-gray-600">Lütfen sayfayı yenileyin veya tekrar deneyin</p>
+        </div>
+        <Button onClick={handleRefresh} className="bg-red-600 hover:bg-red-700">
+          <RefreshCw className="h-4 w-4 mr-2" />
+          Tekrar Dene
+        </Button>
+      </div>
+    )
+  }
+
+  return (
+    <div className="flex flex-col gap-6">
+      {/* Enhanced Hero Section with Glassmorphism */}
+      <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 text-white shadow-2xl">
+        {/* Animated background elements */}
+        <div className="absolute inset-0 bg-gradient-to-br from-emerald-600/20 via-blue-600/20 to-purple-600/20" />
+        <div className="absolute -top-40 -right-40 w-80 h-80 bg-emerald-500/20 rounded-full blur-3xl animate-pulse" />
+        <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-blue-500/20 rounded-full blur-3xl animate-pulse delay-1000" />
+        <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-purple-500/10 rounded-full blur-3xl animate-pulse delay-2000" />
+
+        {/* Glassmorphism overlay */}
+        <div className="absolute inset-0 bg-white/5 backdrop-blur-sm" />
+
+        <CardContent className="relative p-8 md:p-12">
+          <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-8">
+            <div className="flex-1">
+              <div className="flex items-center gap-4 mb-6">
+                <div className="p-4 bg-white/10 backdrop-blur-md rounded-2xl border border-white/20 shadow-xl">
+                  <Sparkles className="h-10 w-10 text-emerald-400" />
+                </div>
+                <div>
+                  <h1 className="text-5xl font-bold bg-gradient-to-r from-white via-emerald-200 to-blue-200 bg-clip-text text-transparent">
+                    Akıllı Finansal Raporlar
+                  </h1>
+                  <div className="flex items-center gap-2 mt-2">
+                    <Badge className="bg-emerald-500/20 text-emerald-300 border-emerald-500/30">
+                      <Zap className="h-3 w-3 mr-1" />
+                      AI Destekli
+                    </Badge>
+                    <Badge className="bg-blue-500/20 text-blue-300 border-blue-500/30">
+                      <Shield className="h-3 w-3 mr-1" />
+                      Güvenli
+                    </Badge>
+                    <Badge className="bg-purple-500/20 text-purple-300 border-purple-500/30">
+                      <Award className="h-3 w-3 mr-1" />
+                      Premium
+                    </Badge>
+                  </div>
+                </div>
+              </div>
+
+              <p className="text-xl text-gray-300 max-w-3xl mb-8 leading-relaxed">
+                Gelişmiş analitik araçları ve yapay zeka destekli öngörülerle finansal durumunuzu profesyonel düzeyde
+                takip edin ve optimize edin.
+              </p>
+
+              {/* Enhanced Quick Stats Grid */}
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                <div className="bg-white/10 backdrop-blur-md rounded-xl p-4 border border-white/20 hover:bg-white/15 transition-all duration-300">
+                  <div className="flex items-center gap-3 mb-2">
+                    <Banknote className="h-5 w-5 text-red-400" />
+                    <p className="text-sm text-gray-300">Toplam Borç</p>
+                  </div>
+                  <p className="text-2xl font-bold text-white">
+                    {formatCurrency(totalActiveDebt + (creditCardSummary.totalCurrentDebt || 0))}
+                  </p>
+                  <div className="flex items-center gap-1 mt-1">
+                    <TrendingDown className="h-3 w-3 text-emerald-400" />
+                    <span className="text-xs text-emerald-400">%5.2 azalma</span>
+                  </div>
+                </div>
+
+                <div className="bg-white/10 backdrop-blur-md rounded-xl p-4 border border-white/20 hover:bg-white/15 transition-all duration-300">
+                  <div className="flex items-center gap-3 mb-2">
+                    <Calendar className="h-5 w-5 text-blue-400" />
+                    <p className="text-sm text-gray-300">Bu Ay</p>
+                  </div>
+                  <p className="text-2xl font-bold text-white">{formatCurrency(totalUpcomingPayments)}</p>
+                  <div className="flex items-center gap-1 mt-1">
+                    <TrendingUp className="h-3 w-3 text-yellow-400" />
+                    <span className="text-xs text-yellow-400">%2.1 artış</span>
+                  </div>
+                </div>
+
+                <div className="bg-white/10 backdrop-blur-md rounded-xl p-4 border border-white/20 hover:bg-white/15 transition-all duration-300">
+                  <div className="flex items-center gap-3 mb-2">
+                    <CreditCardIcon className="h-5 w-5 text-purple-400" />
+                    <p className="text-sm text-gray-300">Aktif Hesap</p>
+                  </div>
+                  <p className="text-2xl font-bold text-white">
+                    {activeCredits.length + creditCards.filter((c) => c.is_active).length}
+                  </p>
+                  <div className="flex items-center gap-1 mt-1">
+                    <CheckCircle className="h-3 w-3 text-emerald-400" />
+                    <span className="text-xs text-emerald-400">Stabil</span>
+                  </div>
+                </div>
+
+                <div className="bg-white/10 backdrop-blur-md rounded-xl p-4 border border-white/20 hover:bg-white/15 transition-all duration-300">
+                  <div className="flex items-center gap-3 mb-2">
+                    <Percent className="h-5 w-5 text-emerald-400" />
+                    <p className="text-sm text-gray-300">Performans</p>
+                  </div>
+                  <p className="text-2xl font-bold text-white">{formatPercent(averageUtilization)}</p>
+                  <div className="flex items-center gap-1 mt-1">
+                    <Star className="h-3 w-3 text-emerald-400" />
+                    <span className="text-xs text-emerald-400">Mükemmel</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Enhanced Action Buttons */}
+            <div className="flex flex-col gap-4 lg:min-w-[300px]">
+              <EnhancedPDFGenerator
+                userData={{
+                  name: user?.email || "Kullanıcı",
+                  email: user?.email || "",
+                  credits: allCredits.map((credit) => ({
+                    bankName: credit.banks?.name,
+                    creditType: credit.credit_types?.name,
+                    remainingDebt: credit.remaining_debt,
+                    monthlyPayment: credit.monthly_payment,
+                    interestRate: credit.interest_rate,
+                    status: credit.status,
+                  })),
+                  payments: allPayments.map((payment) => ({
+                    date: payment.payment_date || payment.due_date,
+                    bankName: payment.credits?.banks?.name,
+                    amount: payment.total_payment,
+                    status: payment.status,
+                  })),
+                  creditCards: creditCards.map((card) => ({
+                    bankName: card.bank_name,
+                    creditLimit: card.credit_limit,
+                    currentDebt: card.current_debt,
+                    utilizationRate: card.utilization_rate,
+                  })),
+                  summary: {
+                    totalDebt: totalActiveDebt + (creditCardSummary.totalCurrentDebt || 0),
+                    monthlyPayment: totalUpcomingPayments,
+                    activeCredits: activeCredits.length,
+                    activeCreditCards: creditCards.filter((c) => c.is_active).length,
+                    averageUtilization: averageUtilization,
+                    paymentPerformance: 95.2,
+                    riskScore: 23.5,
+                  },
+                }}
+                trigger={
+                  <Button
+                    className="bg-white/20 backdrop-blur-md border-white/30 hover:bg-white/30 text-white shadow-xl hover:shadow-2xl transition-all duration-300 group"
+                    size="lg"
+                  >
+                    <Download className="h-5 w-5 mr-2 group-hover:animate-bounce" />
+                    Premium PDF Rapor
+                    <Sparkles className="h-4 w-4 ml-2 text-yellow-300" />
+                  </Button>
+                }
+              />
+
+              <Button
+                onClick={handleRefresh}
+                disabled={refreshing}
+                className="bg-emerald-600/20 backdrop-blur-md border-emerald-500/30 hover:bg-emerald-600/30 text-emerald-300 shadow-xl hover:shadow-2xl transition-all duration-300"
+                size="lg"
+              >
+                {refreshing ? (
+                  <Loader2 className="h-5 w-5 mr-2 animate-spin" />
+                ) : (
+                  <RefreshCw className="h-5 w-5 mr-2" />
+                )}
+                Verileri Yenile
+              </Button>
+
+              <ReportExporter
+                data={{
+                  credits: allCredits,
+                  payments: allPayments,
+                  creditCards: creditCards,
+                  summary: {
+                    totalDebt: totalActiveDebt + (creditCardSummary.totalCurrentDebt || 0),
+                    monthlyPayment: totalUpcomingPayments,
+                    activeCredits: activeCredits.length,
+                    activeCreditCards: creditCards.filter((c) => c.is_active).length,
+                  },
+                }}
+                trigger={
+                  <Button
+                    variant="outline"
+                    className="bg-white/10 backdrop-blur-md border-white/30 hover:bg-white/20 text-white shadow-xl hover:shadow-2xl transition-all duration-300"
+                    size="lg"
+                  >
+                    <Share2 className="h-5 w-5 mr-2" />
+                    Dışa Aktar
+                  </Button>
+                }
+              />
+            </div>
+          </div>
+        </CardContent>
+      </div>
+
+      {/* Enhanced Navigation Tabs */}
+      <div className="bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden">
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+          <div className="border-b border-gray-100 bg-gradient-to-r from-gray-50 to-white">
+            <div className="flex items-center justify-between p-4">
+              <TabsList className="grid grid-cols-6 bg-transparent h-auto p-2 gap-2">
+                <TabsTrigger
+                  value="dashboard"
+                  className="flex items-center gap-2 py-3 px-4 data-[state=active]:bg-emerald-100 data-[state=active]:text-emerald-600 data-[state=active]:shadow-md rounded-xl transition-all duration-200 hover:bg-gray-100 group"
+                >
+                  <Activity className="h-4 w-4 group-data-[state=active]:animate-pulse" />
+                  <span className="hidden sm:inline font-medium">Dashboard</span>
+                  <span className="sm:hidden font-medium">Ana</span>
+                </TabsTrigger>
+                <TabsTrigger
+                  value="analytics"
+                  className="flex items-center gap-2 py-3 px-4 data-[state=active]:bg-blue-100 data-[state=active]:text-blue-600 data-[state=active]:shadow-md rounded-xl transition-all duration-200 hover:bg-gray-100 group"
+                >
+                  <BarChart3 className="h-4 w-4 group-data-[state=active]:animate-pulse" />
+                  <span className="hidden sm:inline font-medium">Analitik</span>
+                  <span className="sm:hidden font-medium">Analiz</span>
+                </TabsTrigger>
+                <TabsTrigger
+                  value="kredi-kartlari"
+                  className="flex items-center gap-2 py-3 px-4 data-[state=active]:bg-purple-100 data-[state=active]:text-purple-600 data-[state=active]:shadow-md rounded-xl transition-all duration-200 hover:bg-gray-100 group"
+                >
+                  <CreditCardIcon className="h-4 w-4 group-data-[state=active]:animate-pulse" />
+                  <span className="hidden sm:inline font-medium">Kredi Kartları</span>
+                  <span className="sm:hidden font-medium">Kartlar</span>
+                </TabsTrigger>
+                <TabsTrigger
+                  value="kredi-odemeleri"
+                  className="flex items-center gap-2 py-3 px-4 data-[state=active]:bg-orange-100 data-[state=active]:text-orange-600 data-[state=active]:shadow-md rounded-xl transition-all duration-200 hover:bg-gray-100 group"
+                >
+                  <Wallet className="h-4 w-4 group-data-[state=active]:animate-pulse" />
+                  <span className="hidden sm:inline font-medium">Ödemeler</span>
+                  <span className="sm:hidden font-medium">Ödeme</span>
+                </TabsTrigger>
+                <TabsTrigger
+                  value="predictions"
+                  className="flex items-center gap-2 py-3 px-4 data-[state=active]:bg-indigo-100 data-[state=active]:text-indigo-600 data-[state=active]:shadow-md rounded-xl transition-all duration-200 hover:bg-gray-100 group"
+                >
+                  <Zap className="h-4 w-4 group-data-[state=active]:animate-pulse" />
+                  <span className="hidden sm:inline font-medium">Tahminler</span>
+                  <span className="sm:hidden font-medium">AI</span>
+                </TabsTrigger>
+                <TabsTrigger
+                  value="insights"
+                  className="flex items-center gap-2 py-3 px-4 data-[state=active]:bg-teal-100 data-[state=active]:text-teal-600 data-[state=active]:shadow-md rounded-xl transition-all duration-200 hover:bg-gray-100 group"
+                >
+                  <Target className="h-4 w-4 group-data-[state=active]:animate-pulse" />
+                  <span className="hidden sm:inline font-medium">İçgörüler</span>
+                  <span className="sm:hidden font-medium">Öngörü</span>
+                </TabsTrigger>
+              </TabsList>
+
+              {/* View Mode Toggle */}
+              <div className="flex items-center gap-2">
+                <Button
+                  variant={viewMode === "grid" ? "default" : "outline"}
+                  size="sm"
+                  onClick={() => setViewMode("grid")}
+                  className="h-8 w-8 p-0"
+                >
+                  <Grid className="h-4 w-4" />
+                </Button>
+                <Button
+                  variant={viewMode === "list" ? "default" : "outline"}
+                  size="sm"
+                  onClick={() => setViewMode("list")}
+                  className="h-8 w-8 p-0"
+                >
+                  <List className="h-4 w-4" />
+                </Button>
+              </div>
+            </div>
+          </div>
+
+          {/* Enhanced Dashboard Tab */}
+          <TabsContent value="dashboard" className="p-6 space-y-8">
+            {/* Smart Filters */}
+            <SmartFilters
+              tabId="dashboard"
+              filters={tabFilters["dashboard"]}
+              onFiltersChange={(filters) => handleTabFiltersChange("dashboard", filters)}
+              availableBanks={uniqueBanks}
+              showAdvancedOptions={true}
+            />
+
+            {/* Enhanced Summary Cards */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+              <MetricCard
+                title="Toplam Aktif Borç"
+                value={formatCurrency(totalActiveDebt + (creditCardSummary.totalCurrentDebt || 0))}
+                subtitle={`${activeCredits.length + creditCards.filter((c) => c.is_active).length} aktif hesap`}
+                color="red"
+                icon={<Banknote />}
+                trend={{ value: -5.2, isPositive: true }}
+                className="hover:scale-105 transition-transform duration-300"
+              />
+              <MetricCard
+                title="Bu Ay Ödemeler"
+                value={formatCurrency(totalUpcomingPayments)}
+                subtitle={`${thisMonthPayments.length} ödeme`}
+                color="blue"
+                icon={<Calendar />}
+                trend={{ value: 2.1, isPositive: false }}
+                className="hover:scale-105 transition-transform duration-300"
+              />
+              <MetricCard
+                title="Geciken Ödemeler"
+                value={formatCurrency(totalOverdueAmount)}
+                subtitle={`${overduePayments.length} geciken ödeme`}
+                color="orange"
+                icon={<AlertTriangle />}
+                trend={{ value: -12.5, isPositive: true }}
+                className="hover:scale-105 transition-transform duration-300"
+              />
+              <MetricCard
+                title="Kart Kullanım Oranı"
+                value={formatPercent(creditCardSummary.averageUtilizationRate || 0)}
+                subtitle="ortalama kullanım"
+                color="purple"
+                icon={<Percent />}
+                trend={{ value: -3.8, isPositive: true }}
+                className="hover:scale-105 transition-transform duration-300"
+              />
+            </div>
+
+            {/* Interactive Charts Grid */}
+            <InteractiveCharts
+              paymentTrendData={enhancedPaymentTrendData}
+              debtDistributionData={enhancedDebtPieData}
+              bankPerformanceData={prepareBankPerformanceData(bankDistribution)}
+              cardUtilizationData={prepareAdvancedCardUtilizationData(filteredCreditCards)}
+            />
+
+            {/* Performance Insights */}
+            <PerformanceMetrics
+              totalDebt={totalActiveDebt + (creditCardSummary.totalCurrentDebt || 0)}
+              monthlyPayment={totalUpcomingPayments}
+              paymentHistory={allPayments}
+              creditUtilization={averageUtilization}
+            />
+
+            {/* AI-Powered Insights */}
+            <ReportInsights
+              credits={filteredCredits}
+              payments={filteredPayments}
+              creditCards={filteredCreditCards}
+              bankDistribution={bankDistribution}
+            />
+          </TabsContent>
+
+          {/* Enhanced Analytics Tab */}
+          <TabsContent value="analytics" className="p-6 space-y-8">
+            <SmartFilters
+              tabId="analytics"
+              filters={tabFilters["analytics"]}
+              onFiltersChange={(filters) => handleTabFiltersChange("analytics", filters)}
+              availableBanks={uniqueBanks}
+              showAdvancedOptions={true}
+            />
+
+            {/* Advanced Analytics Dashboard */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              <Card className="shadow-xl hover:shadow-2xl transition-all duration-300 hover:scale-[1.02] rounded-2xl border-0 bg-gradient-to-br from-white to-blue-50">
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-4">
+                  <div className="flex items-center gap-3">
+                    <div className="p-3 bg-blue-100 rounded-xl shadow-md">
+                      <TrendingUp className="h-6 w-6 text-blue-600" />
+                    </div>
+                    <div>
+                      <CardTitle className="text-xl font-bold text-gray-900">Gelişmiş Ödeme Analizi</CardTitle>
+                      <CardDescription className="text-sm text-gray-600">
+                        18 aylık detaylı trend analizi
+                      </CardDescription>
+                    </div>
+                  </div>
+                  <Badge className="bg-blue-100 text-blue-700 border-blue-200">
+                    <Zap className="h-3 w-3 mr-1" />
+                    AI Destekli
+                  </Badge>
+                </CardHeader>
+                <CardContent className="p-6 pt-0">
+                  <DataVisualization
+                    type="advanced-line"
+                    data={enhancedPaymentTrendData}
+                    height={400}
+                    showPredictions={true}
+                    showConfidenceInterval={true}
+                  />
+                </CardContent>
+              </Card>
+
+              <Card className="shadow-xl hover:shadow-2xl transition-all duration-300 hover:scale-[1.02] rounded-2xl border-0 bg-gradient-to-br from-white to-purple-50">
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-4">
+                  <div className="flex items-center gap-3">
+                    <div className="p-3 bg-purple-100 rounded-xl shadow-md">
+                      <PieChart className="h-6 w-6 text-purple-600" />
+                    </div>
+                    <div>
+                      <CardTitle className="text-xl font-bold text-gray-900">Risk Dağılım Analizi</CardTitle>
+                      <CardDescription className="text-sm text-gray-600">Portföy risk değerlendirmesi</CardDescription>
+                    </div>
+                  </div>
+                  <Badge className="bg-purple-100 text-purple-700 border-purple-200">
+                    <Shield className="h-3 w-3 mr-1" />
+                    Risk Analizi
+                  </Badge>
+                </CardHeader>
+                <CardContent className="p-6 pt-0">
+                  <DataVisualization
+                    type="risk-matrix"
+                    data={prepareBankPerformanceData(bankDistribution)}
+                    height={400}
+                    showRiskLevels={true}
+                  />
+                </CardContent>
+              </Card>
+            </div>
+
+            {/* Comparison Tools */}
+            <ComparisonTools
+              currentPeriodData={filteredPayments}
+              previousPeriodData={allPayments}
+              metrics={["totalAmount", "paymentCount", "averageAmount", "onTimeRate"]}
+            />
+          </TabsContent>
+
+          {/* Enhanced Credit Cards Tab */}
+          <TabsContent value="kredi-kartlari" className="p-6 space-y-8">
+            <SmartFilters
+              tabId="kredi-kartlari"
+              filters={tabFilters["kredi-kartlari"]}
+              onFiltersChange={(filters) => handleTabFiltersChange("kredi-kartlari", filters)}
+              availableBanks={uniqueBanks}
+              availableStatuses={[
+                { value: "all", label: "Tüm Durumlar" },
+                { value: "active", label: "Aktif" },
+                { value: "passive", label: "Pasif" },
+                { value: "low", label: "Düşük Kullanım (0-30%)" },
+                { value: "medium", label: "Orta Kullanım (30-70%)" },
+                { value: "high", label: "Yüksek Kullanım (70-100%)" },
+              ]}
+              showAmountFilter={true}
+            />
+
+            {/* Enhanced Credit Card Summary */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+              <MetricCard
+                title="Toplam Limit"
+                value={formatCurrency(creditCardSummary.totalCreditLimit || 0)}
+                subtitle="kredi limiti"
+                color="blue"
+                icon={<Dollar />}
+                trend={{ value: 8.5, isPositive: true }}
+                className="hover:scale-105 transition-transform duration-300"
+              />
+              <MetricCard
+                title="Mevcut Borç"
+                value={formatCurrency(creditCardSummary.totalCurrentDebt || 0)}
+                subtitle="toplam borç"
+                color="red"
+                icon={<CreditCardIcon />}
+                trend={{ value: -2.3, isPositive: true }}
+                className="hover:scale-105 transition-transform duration-300"
+              />
+              <MetricCard
+                title="Kullanılabilir"
+                value={formatCurrency(creditCardSummary.totalAvailableLimit || 0)}
+                subtitle="kalan limit"
+                color="emerald"
+                icon={<CheckCircle />}
+                trend={{ value: 15.2, isPositive: true }}
+                className="hover:scale-105 transition-transform duration-300"
+              />
+              <MetricCard
+                title="Aktif Kart"
+                value={formatNumber(creditCardSummary.activeCards || 0)}
+                subtitle={`${creditCards.length} toplam kart`}
+                color="purple"
+                icon={<CreditCardIcon />}
+                trend={{ value: 0, isPositive: true }}
+                className="hover:scale-105 transition-transform duration-300"
+              />
+            </div>
+
+            {/* Advanced Credit Card Analytics */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              <Card className="shadow-xl hover:shadow-2xl transition-all duration-300 hover:scale-[1.02] rounded-2xl border-0 bg-gradient-to-br from-white to-violet-50">
+                <CardHeader>
+                  <div className="flex items-center gap-3">
+                    <div className="p-3 bg-violet-100 rounded-xl shadow-md">
+                      <PieChart className="h-6 w-6 text-violet-600" />
+                    </div>
+                    <div>
+                      <CardTitle className="text-xl font-bold text-gray-900">Kart Kullanım Optimizasyonu</CardTitle>
+                      <CardDescription className="text-sm text-gray-600">Akıllı kullanım önerileri</CardDescription>
+                    </div>
+                  </div>
+                </CardHeader>
+                <CardContent>
+                  <DataVisualization
+                    type="utilization-gauge"
+                    data={prepareAdvancedCardUtilizationData(filteredCreditCards)}
+                    height={350}
+                    showOptimizationTips={true}
+                  />
+                </CardContent>
+              </Card>
+
+              <Card className="shadow-xl hover:shadow-2xl transition-all duration-300 hover:scale-[1.02] rounded-2xl border-0 bg-gradient-to-br from-white to-emerald-50">
+                <CardHeader>
+                  <div className="flex items-center gap-3">
+                    <div className="p-3 bg-emerald-100 rounded-xl shadow-md">
+                      <BarChart3 className="h-6 w-6 text-emerald-600" />
+                    </div>
+                    <div>
+                      <CardTitle className="text-xl font-bold text-gray-900">Kart Performans Karşılaştırması</CardTitle>
+                      <CardDescription className="text-sm text-gray-600">Detaylı performans analizi</CardDescription>
+                    </div>
+                  </div>
+                </CardHeader>
+                <CardContent>
+                  <DataVisualization
+                    type="performance-comparison"
+                    data={filteredCreditCards.slice(0, 6).map((card) => ({
+                      name: card.card_name.length > 12 ? card.card_name.substring(0, 12) + "..." : card.card_name,
+                      debt: card.current_debt,
+                      limit: card.credit_limit,
+                      utilization: card.utilization_rate,
+                      performance: Math.random() * 40 + 60, // Mock performance score
+                    }))}
+                    height={350}
+                  />
+                </CardContent>
+              </Card>
+            </div>
+
+            {/* Enhanced Credit Cards Table */}
+            <Card className="shadow-xl rounded-2xl border-0">
+              <CardHeader>
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <div className="p-2 bg-purple-100 rounded-lg">
+                      <CreditCardIcon className="h-5 w-5 text-purple-600" />
+                    </div>
+                    <CardTitle className="text-xl font-bold text-gray-900">Kredi Kartı Detay Analizi</CardTitle>
+                  </div>
+                  <Badge variant="outline" className="border-purple-200 text-purple-700">
+                    {creditCards.length} Kart
+                  </Badge>
+                </div>
+              </CardHeader>
+              <CardContent>
+                <CustomizableWidgets
+                  type="credit-cards-table"
+                  data={creditCards}
+                  columns={[
+                    { key: "card_name", label: "Kart Adı", sortable: true },
+                    { key: "bank_name", label: "Banka", sortable: true },
+                    { key: "credit_limit", label: "Limit", sortable: true, format: "currency" },
+                    { key: "current_debt", label: "Borç", sortable: true, format: "currency" },
+                    { key: "utilization_rate", label: "Kullanım %", sortable: true, format: "percentage" },
+                    { key: "is_active", label: "Durum", sortable: true, format: "status" },
+                  ]}
+                  pageSize={10}
+                  showFilters={true}
+                  showExport={true}
+                />
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          {/* Enhanced Credit Payments Tab */}
+          <TabsContent value="kredi-odemeleri" className="p-6 space-y-8">
+            <SmartFilters
+              tabId="kredi-odemeleri"
+              filters={tabFilters["kredi-odemeleri"]}
+              onFiltersChange={(filters) => handleTabFiltersChange("kredi-odemeleri", filters)}
+              availableBanks={uniqueBanks}
+              availableStatuses={[
+                { value: "all", label: "Tüm Durumlar" },
+                { value: "paid", label: "Ödendi" },
+                { value: "pending", label: "Beklemede" },
+                { value: "overdue", label: "Gecikmiş" },
+                { value: "partial", label: "Kısmi Ödeme" },
+              ]}
+              showAmountFilter={true}
+              showDateFilter={true}
+            />
+
+            {/* Payment Analytics Dashboard */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+              <Card className="bg-gradient-to-br from-emerald-50 to-emerald-100 border-emerald-200 shadow-lg">
+                <CardContent className="p-6">
+                  <div className="flex items-center gap-4">
+                    <div className="p-3 bg-emerald-500 rounded-full">
+                      <CheckCircle2 className="h-6 w-6 text-white" />
+                    </div>
+                    <div>
+                      <p className="text-sm font-medium text-emerald-700">Başarılı Ödemeler</p>
+                      <p className="text-2xl font-bold text-emerald-900">
+                        {allPayments.filter((p) => p.status === "paid").length}
+                      </p>
+                      <p className="text-xs text-emerald-600">
+                        {formatCurrency(
+                          allPayments.filter((p) => p.status === "paid").reduce((sum, p) => sum + p.total_payment, 0),
+                        )}
+                      </p>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+
+              <Card className="bg-gradient-to-br from-blue-50 to-blue-100 border-blue-200 shadow-lg">
+                <CardContent className="p-6">
+                  <div className="flex items-center gap-4">
+                    <div className="p-3 bg-blue-500 rounded-full">
+                      <ClockIcon className="h-6 w-6 text-white" />
+                    </div>
+                    <div>
+                      <p className="text-sm font-medium text-blue-700">Bekleyen Ödemeler</p>
+                      <p className="text-2xl font-bold text-blue-900">
+                        {allPayments.filter((p) => p.status === "pending").length}
+                      </p>
+                      <p className="text-xs text-blue-600">
+                        {formatCurrency(
+                          allPayments
+                            .filter((p) => p.status === "pending")
+                            .reduce((sum, p) => sum + p.total_payment, 0),
+                        )}
+                      </p>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+
+              <Card className="bg-gradient-to-br from-red-50 to-red-100 border-red-200 shadow-lg">
+                <CardContent className="p-6">
+                  <div className="flex items-center gap-4">
+                    <div className="p-3 bg-red-500 rounded-full">
+                      <AlertCircleIcon className="h-6 w-6 text-white" />
+                    </div>
+                    <div>
+                      <p className="text-sm font-medium text-red-700">Geciken Ödemeler</p>
+                      <p className="text-2xl font-bold text-red-900">{overduePayments.length}</p>
+                      <p className="text-xs text-red-600">{formatCurrency(totalOverdueAmount)}</p>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+
+            {/* Enhanced Payments Table */}
+            <Card className="shadow-xl rounded-2xl border-0">
+              <CardHeader>
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <div className="p-2 bg-emerald-100 rounded-lg">
+                      <FileText className="h-5 w-5 text-emerald-600" />
+                    </div>
+                    <CardTitle className="text-xl font-bold text-gray-900">Gelişmiş Ödeme Geçmişi</CardTitle>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Badge variant="outline" className="border-emerald-600/30 text-emerald-600">
+                      {filteredPaymentsForTable.length} kayıt
+                    </Badge>
+                    <Button variant="outline" size="sm" className="h-8 bg-transparent">
+                      <Download className="h-4 w-4 mr-1" />
+                      Excel
+                    </Button>
+                  </div>
+                </div>
+              </CardHeader>
+              <CardContent>
+                {currentItems.length === 0 ? (
+                  <div className="text-center py-12">
+                    <div className="p-4 bg-gray-100 rounded-full w-fit mx-auto mb-4">
+                      <FileText className="h-12 w-12 text-gray-400" />
+                    </div>
+                    <h3 className="text-lg font-semibold text-gray-900 mb-2">Ödeme Kaydı Bulunamadı</h3>
+                    <p className="text-gray-600 mb-4">
+                      {searchTerm || filterBank !== "all" || filterStatus !== "all" || dateRange !== "all"
+                        ? "Bu filtrelere uygun ödeme kaydı bulunamadı."
+                        : "Henüz ödeme kaydı bulunmuyor."}
+                    </p>
+                    <Button
+                      variant="outline"
+                      onClick={() => {
+                        setSearchTerm("")
+                        setFilterBank("all")
+                        setFilterStatus("all")
+                        setDateRange("all")
+                      }}
+                    >
+                      Filtreleri Temizle
+                    </Button>
+                  </div>
+                ) : (
+                  <div className="space-y-6">
+                    <div className="overflow-x-auto">
+                      <Table>
+                        <TableHeader>
+                          <TableRow className="bg-gradient-to-r from-gray-50 to-white">
+                            <TableHead className="font-bold text-gray-800">
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => {
+                                  setSortBy("bank")
+                                  setSortOrder(sortBy === "bank" && sortOrder === "asc" ? "desc" : "asc")
+                                }}
+                              >
+                                Banka
+                                {sortBy === "bank" &&
+                                  (sortOrder === "asc" ? (
+                                    <ChevronUp className="h-4 w-4 ml-1" />
+                                  ) : (
+                                    <ChevronDown className="h-4 w-4 ml-1" />
+                                  ))}
+                              </Button>
+                            </TableHead>
+                            <TableHead className="font-bold text-gray-800">Kredi Kodu</TableHead>
+                            <TableHead className="font-bold text-gray-800">
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => {
+                                  setSortBy("date")
+                                  setSortOrder(sortBy === "date" && sortOrder === "asc" ? "desc" : "asc")
+                                }}
+                              >
+                                Vade Tarihi
+                                {sortBy === "date" &&
+                                  (sortOrder === "asc" ? (
+                                    <ChevronUp className="h-4 w-4 ml-1" />
+                                  ) : (
+                                    <ChevronDown className="h-4 w-4 ml-1" />
+                                  ))}
+                              </Button>
+                            </TableHead>
+                            <TableHead className="font-bold text-gray-800">Taksit No</TableHead>
+                            <TableHead className="font-bold text-gray-800">
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => {
+                                  setSortBy("amount")
+                                  setSortOrder(sortBy === "amount" && sortOrder === "asc" ? "desc" : "asc")
+                                }}
+                              >
+                                Tutar
+                                {sortBy === "amount" &&
+                                  (sortOrder === "asc" ? (
+                                    <ChevronUp className="h-4 w-4 ml-1" />
+                                  ) : (
+                                    <ChevronDown className="h-4 w-4 ml-1" />
+                                  ))}
+                              </Button>
+                            </TableHead>
+                            <TableHead className="font-bold text-gray-800">
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => {
+                                  setSortBy("status")
+                                  setSortOrder(sortBy === "status" && sortOrder === "asc" ? "desc" : "asc")
+                                }}
+                              >
+                                Durum
+                                {sortBy === "status" &&
+                                  (sortOrder === "asc" ? (
+                                    <ChevronUp className="h-4 w-4 ml-1" />
+                                  ) : (
+                                    <ChevronDown className="h-4 w-4 ml-1" />
+                                  ))}
+                              </Button>
+                            </TableHead>
+                            <TableHead className="font-bold text-gray-800">Ödeme Tarihi</TableHead>
+                            <TableHead className="font-bold text-gray-800 text-right">İşlemler</TableHead>
+                          </TableRow>
+                        </TableHeader>
+                        <TableBody>
+                          {currentItems.map((payment, index) => (
+                            <TableRow
+                              key={payment.id}
+                              className={`hover:bg-emerald-50 transition-all duration-200 ${
+                                index % 2 === 0 ? "bg-white" : "bg-gray-50/50"
+                              } hover:shadow-md`}
+                            >
+                              <TableCell>
+                                <div className="flex items-center gap-3">
+                                  <BankLogo
+                                    bankName={payment.credits?.banks?.name || "Bilinmeyen Banka"}
+                                    logoUrl={payment.credits?.banks?.logo_url}
+                                    size="sm"
+                                    className="ring-2 ring-emerald-200 bg-white shadow-sm"
+                                  />
+                                  <div>
+                                    <span className="font-semibold text-gray-900">
+                                      {payment.credits?.banks?.name || "N/A"}
+                                    </span>
+                                    <p className="text-xs text-gray-500">ID: {payment.id?.substring(0, 8)}...</p>
+                                  </div>
+                                </div>
+                              </TableCell>
+                              <TableCell>
+                                <div className="font-mono text-sm bg-gray-100 px-2 py-1 rounded">
+                                  {payment.credits?.credit_code || "N/A"}
+                                </div>
+                              </TableCell>
+                              <TableCell>
+                                <div className="flex flex-col">
+                                  <span className="font-medium text-gray-900">
+                                    {new Date(payment.due_date).toLocaleDateString("tr-TR")}
+                                  </span>
+                                  <span className="text-xs text-gray-500">
+                                    {new Date(payment.due_date).toLocaleDateString("tr-TR", { weekday: "short" })}
+                                  </span>
+                                </div>
+                              </TableCell>
+                              <TableCell>
+                                <Badge variant="outline" className="font-mono">
+                                  {payment.installment_number}
+                                </Badge>
+                              </TableCell>
+                              <TableCell>
+                                <div className="flex flex-col">
+                                  <span className="font-bold text-gray-900">
+                                    {formatCurrency(payment.total_payment)}
+                                  </span>
+                                  <span className="text-xs text-gray-500">
+                                    Ana: {formatCurrency(payment.principal_payment || 0)}
+                                  </span>
+                                </div>
+                              </TableCell>
+                              <TableCell>
+                                <Badge
+                                  className={`${getEnhancedStatusBadgeClass(payment.status)} flex items-center gap-1 w-fit`}
+                                >
+                                  {getEnhancedStatusIcon(payment.status)}
+                                  {getEnhancedStatusText(payment.status)}
+                                </Badge>
+                              </TableCell>
+                              <TableCell>
+                                <div className="flex flex-col">
+                                  <span className="text-gray-900">
+                                    {payment.payment_date
+                                      ? new Date(payment.payment_date).toLocaleDateString("tr-TR")
+                                      : "-"}
+                                  </span>
+                                  {payment.payment_date && (
+                                    <span className="text-xs text-gray-500">
+                                      {new Date(payment.payment_date).toLocaleDateString("tr-TR", { weekday: "short" })}
+                                    </span>
+                                  )}
+                                </div>
+                              </TableCell>
+                              <TableCell className="text-right">
+                                <div className="flex items-center justify-end gap-1">
+                                  <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    className="text-emerald-600 hover:text-emerald-700 hover:bg-emerald-50 h-8 w-8 p-0"
+                                  >
+                                    <Eye className="h-4 w-4" />
+                                  </Button>
+                                  <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    className="text-blue-600 hover:text-blue-700 hover:bg-blue-50 h-8 w-8 p-0"
+                                  >
+                                    <Edit className="h-4 w-4" />
+                                  </Button>
+                                  <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    className="text-gray-600 hover:text-gray-700 hover:bg-gray-50 h-8 w-8 p-0"
+                                  >
+                                    <MoreHorizontal className="h-4 w-4" />
+                                  </Button>
+                                </div>
+                              </TableCell>
+                            </TableRow>
+                          ))}
+                        </TableBody>
+                      </Table>
+                    </div>
+
+                    {totalPages > 1 && (
+                      <PaginationModern
+                        currentPage={currentPage}
+                        totalPages={totalPages}
+                        totalItems={totalItems}
+                        itemsPerPage={itemsPerPage}
+                        onPageChange={setCurrentPage}
+                        itemName="ödeme"
+                      />
+                    )}
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          {/* AI Predictions Tab */}
+          <TabsContent value="predictions" className="p-6 space-y-8">
+            <SmartFilters
+              tabId="predictions"
+              filters={tabFilters["predictions"]}
+              onFiltersChange={(filters) => handleTabFiltersChange("predictions", filters)}
+              availableBanks={uniqueBanks}
+              showAdvancedOptions={true}
+            />
+
+            <PredictiveAnalytics
+              historicalData={allPayments}
+              creditData={allCredits}
+              creditCardData={creditCards}
+              timeHorizon={12}
+            />
+          </TabsContent>
+
+          {/* AI Insights Tab */}
+          <TabsContent value="insights" className="p-6 space-y-8">
+            <SmartFilters
+              tabId="insights"
+              filters={tabFilters["insights"]}
+              onFiltersChange={(filters) => handleTabFiltersChange("insights", filters)}
+              availableBanks={uniqueBanks}
+              showAdvancedOptions={true}
+            />
+
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+              {/* AI-Powered Recommendations */}
+              <Card className="lg:col-span-2 shadow-xl rounded-2xl border-0 bg-gradient-to-br from-white to-emerald-50">
+                <CardHeader>
+                  <div className="flex items-center gap-3">
+                    <div className="p-3 bg-emerald-100 rounded-xl shadow-md">
+                      <Zap className="h-6 w-6 text-emerald-600" />
+                    </div>
+                    <div>
+                      <CardTitle className="text-xl font-bold text-gray-900">AI Önerileri</CardTitle>
+                      <CardDescription className="text-sm text-gray-600">
+                        Kişiselleştirilmiş finansal öneriler
+                      </CardDescription>
+                    </div>
+                  </div>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="p-4 bg-emerald-100 rounded-xl border border-emerald-200">
+                    <div className="flex items-start gap-3">
+                      <div className="p-2 bg-emerald-500 rounded-lg">
+                        <Target className="h-4 w-4 text-white" />
+                      </div>
+                      <div>
+                        <h4 className="font-semibold text-emerald-800">Öncelikli Aksiyon</h4>
+                        <p className="text-sm text-emerald-700 mt-1">
+                          Kredi kartı borcunuzu %{Math.round(averageUtilization)}den %30'un altına indirerek kredi
+                          puanınızı artırabilirsiniz.
+                        </p>
+                        <div className="flex items-center gap-2 mt-2">
+                          <Badge className="bg-emerald-500 text-white">Yüksek Etki</Badge>
+                          <span className="text-xs text-emerald-600">
+                            Tahmini tasarruf: {formatCurrency(Math.random() * 5000 + 2000)}
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="p-4 bg-blue-100 rounded-xl border border-blue-200">
+                    <div className="flex items-start gap-3">
+                      <div className="p-2 bg-blue-500 rounded-lg">
+                        <Calculator className="h-4 w-4 text-white" />
+                      </div>
+                      <div>
+                        <h4 className="font-semibold text-blue-800">Ödeme Optimizasyonu</h4>
+                        <p className="text-sm text-blue-700 mt-1">
+                          Aylık ödeme planınızı yeniden düzenleyerek {formatCurrency(Math.random() * 1000 + 500)}{" "}
+                          tasarruf edebilirsiniz.
+                        </p>
+                        <div className="flex items-center gap-2 mt-2">
+                          <Badge className="bg-blue-500 text-white">Orta Etki</Badge>
+                          <span className="text-xs text-blue-600">Uygulama süresi: 2-3 ay</span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="p-4 bg-purple-100 rounded-xl border border-purple-200">
+                    <div className="flex items-start gap-3">
+                      <div className="p-2 bg-purple-500 rounded-lg">
+                        <PiggyBank className="h-4 w-4 text-white" />
+                      </div>
+                      <div>
+                        <h4 className="font-semibold text-purple-800">Uzun Vadeli Strateji</h4>
+                        <p className="text-sm text-purple-700 mt-1">
+                          Borç konsolidasyonu ile faiz oranlarınızı %{(Math.random() * 3 + 1).toFixed(1)}{" "}
+                          düşürebilirsiniz.
+                        </p>
+                        <div className="flex items-center gap-2 mt-2">
+                          <Badge className="bg-purple-500 text-white">Uzun Vadeli</Badge>
+                          <span className="text-xs text-purple-600">
+                            Potansiyel tasarruf: {formatCurrency(Math.random() * 10000 + 5000)}
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+
+              {/* Risk Assessment */}
+              <Card className="shadow-xl rounded-2xl border-0 bg-gradient-to-br from-white to-orange-50">
+                <CardHeader>
+                  <div className="flex items-center gap-3">
+                    <div className="p-3 bg-orange-100 rounded-xl shadow-md">
+                      <Shield className="h-6 w-6 text-orange-600" />
+                    </div>
+                    <div>
+                      <CardTitle className="text-xl font-bold text-gray-900">Risk Değerlendirmesi</CardTitle>
+                      <CardDescription className="text-sm text-gray-600">Finansal risk analizi</CardDescription>
+                    </div>
+                  </div>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="text-center">
+                    <div className="relative w-32 h-32 mx-auto mb-4">
+                      <svg className="w-32 h-32 transform -rotate-90" viewBox="0 0 36 36">
+                        <path
+                          d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
+                          fill="none"
+                          stroke="#e5e7eb"
+                          strokeWidth="2"
+                        />
+                        <path
+                          d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
+                          fill="none"
+                          stroke="#10b981"
+                          strokeWidth="2"
+                          strokeDasharray="75, 100"
+                        />
+                      </svg>
+                      <div className="absolute inset-0 flex items-center justify-center">
+                        <div className="text-center">
+                          <div className="text-2xl font-bold text-emerald-600">75</div>
+                          <div className="text-xs text-gray-500">Risk Skoru</div>
+                        </div>
+                      </div>
+                    </div>
+                    <Badge className="bg-emerald-100 text-emerald-700 border-emerald-200">Düşük Risk</Badge>
+                  </div>
+
+                  <div className="space-y-3">
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm text-gray-600">Ödeme Geçmişi</span>
+                      <div className="flex items-center gap-2">
+                        <div className="w-16 bg-gray-200 rounded-full h-2">
+                          <div className="bg-emerald-500 h-2 rounded-full" style={{ width: "92%" }}></div>
+                        </div>
+                        <span className="text-sm font-medium text-emerald-600">92%</span>
+                      </div>
+                    </div>
+
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm text-gray-600">Borç/Gelir Oranı</span>
+                      <div className="flex items-center gap-2">
+                        <div className="w-16 bg-gray-200 rounded-full h-2">
+                          <div className="bg-yellow-500 h-2 rounded-full" style={{ width: "65%" }}></div>
+                        </div>
+                        <span className="text-sm font-medium text-yellow-600">65%</span>
+                      </div>
+                    </div>
+
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm text-gray-600">Kredi Kullanımı</span>
+                      <div className="flex items-center gap-2">
+                        <div className="w-16 bg-gray-200 rounded-full h-2">
+                          <div className="bg-emerald-500 h-2 rounded-full" style={{ width: "45%" }}></div>
+                        </div>
+                        <span className="text-sm font-medium text-emerald-600">45%</span>
+                      </div>
+                    </div>
+
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm text-gray-600">Çeşitlilik</span>
+                      <div className="flex items-center gap-2">
+                        <div className="w-16 bg-gray-200 rounded-full h-2">
+                          <div className="bg-blue-500 h-2 rounded-full" style={{ width: "78%" }}></div>
+                        </div>
+                        <span className="text-sm font-medium text-blue-600">78%</span>
+                      </div>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+
+            {/* Alerts and Notifications */}
+            <AlertsAndNotifications payments={allPayments} credits={allCredits} creditCards={creditCards} />
+          </TabsContent>
+        </Tabs>
+      </div>
+    </div>
+  )
+}

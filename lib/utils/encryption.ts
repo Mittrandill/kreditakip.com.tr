@@ -29,13 +29,10 @@ export function encryptSensitiveData(data: string): string {
     // IV + AuthTag + Encrypted Data formatında birleştir
     const result = iv.toString("hex") + ":" + authTag.toString("hex") + ":" + encrypted
 
-    console.log(`✅ Veri başarıyla şifrelendi: ${data.substring(0, 4)}...`)
     return result
   } catch (error) {
-    console.error("Şifreleme hatası:", error)
     // Geliştirme ortamında fallback olarak base64 kullan
     if (process.env.NODE_ENV === "development") {
-      console.warn("⚠️ Geliştirme ortamında base64 kullanılıyor")
       return Buffer.from(data).toString("base64")
     }
     throw new Error("Hassas veri şifrelenemedi")
@@ -50,7 +47,6 @@ export function decryptSensitiveData(encryptedData: string): string {
 
     // Base64 formatında mı kontrol et (eski veriler için)
     if (!encryptedData.includes(":")) {
-      console.warn("⚠️ Eski base64 formatı tespit edildi, çözülüyor...")
       return Buffer.from(encryptedData, "base64").toString("utf-8")
     }
 
@@ -70,17 +66,13 @@ export function decryptSensitiveData(encryptedData: string): string {
     let decrypted = decipher.update(encrypted, "hex", "utf8")
     decrypted += decipher.final("utf8")
 
-    console.log(`✅ Veri başarıyla çözüldü`)
     return decrypted
   } catch (error) {
-    console.error("Çözme hatası:", error)
     // Geliştirme ortamında fallback
     if (process.env.NODE_ENV === "development") {
       try {
-        console.warn("⚠️ Base64 fallback deneniyor...")
         return Buffer.from(encryptedData, "base64").toString("utf-8")
       } catch (fallbackError) {
-        console.error("Base64 fallback da başarısız:", fallbackError)
       }
     }
     throw new Error("Hassas veri çözülemedi")
@@ -148,13 +140,11 @@ export function validateCardNumber(cardNumber: string): boolean {
   if (process.env.NODE_ENV === "development") {
     // Test kart numaralarını kontrol et
     if (TEST_CARD_NUMBERS.includes(cleanNumber)) {
-      console.log("✅ Test kart numarası kabul edildi:", cleanNumber.substring(0, 4) + "****")
       return true
     }
 
     // Geliştirme ortamında daha esnek validasyon
     // Sadece rakam kontrolü yap, Luhn algoritmasını atla
-    console.log("⚠️ Geliştirme ortamında esnek validasyon kullanılıyor")
     return true
   }
 

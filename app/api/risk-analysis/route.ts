@@ -75,12 +75,12 @@ export async function POST(request: Request) {
     const financialProfileText = `
       Aylık Gelir: ${financialProfile.monthly_income || "N/A"} TRY
       Aylık Gider: ${financialProfile.monthly_expenses || "N/A"} TRY
-      Toplam Varlık: ${financialProfile.total_assets || "N/A"} TRY
+      Toplam Varlık: ${(financialProfile as any).total_assets || "N/A"} TRY
       Toplam Borç: ${totalDebt} TRY
       Aylık Toplam Borç Ödemesi: ${totalMonthlyDebtPayments} TRY
       Borç/Gelir Oranı: %${dtiRatio.toFixed(1)}
-      İstihdam Durumu: ${financialProfile.employment_status || "N/A"}
-      Konut Durumu: ${financialProfile.housing_status || "N/A"}
+      İstihdam Durumu: ${(financialProfile as any).employment_status || "N/A"}
+      Konut Durumu: ${(financialProfile as any).housing_status || "N/A"}
     `
 
     // Krediler detayı
@@ -88,8 +88,8 @@ export async function POST(request: Request) {
       credits.length > 0
         ? credits
             .map((c) => {
-              const bankName = c.banks?.name || "Bilinmeyen Banka"
-              const creditType = c.credit_types?.name || "Bilinmeyen Kredi"
+              const bankName = (c as any).banks?.name || "Bilinmeyen Banka"
+              const creditType = (c as any).credit_types?.name || "Bilinmeyen Kredi"
               const progress = Math.round(
                 ((c.total_installments - c.remaining_installments) / c.total_installments) * 100,
               )
@@ -103,7 +103,7 @@ export async function POST(request: Request) {
       accounts.length > 0
         ? accounts
             .map((a) => {
-              const bankName = a.banks?.name || "Bilinmeyen Banka"
+              const bankName = (a as any).banks?.name || "Bilinmeyen Banka"
               const accountType = a.account_type || "Bilinmeyen Tür"
               const balance = a.current_balance || 0
               const overdraftStatus = balance < 0 ? `(${Math.abs(balance)} TRY kredili mevduat kullanımı)` : ""
@@ -117,7 +117,7 @@ export async function POST(request: Request) {
       creditCards.length > 0
         ? creditCards
             .map((cc) => {
-              const bankName = cc.bank_name || "Bilinmeyen Banka"
+              const bankName = (cc as any).bank_name || "Bilinmeyen Banka"
               const cardType = cc.card_type || "Bilinmeyen Tür"
               const utilization = cc.credit_limit > 0 ? ((cc.current_debt / cc.credit_limit) * 100).toFixed(1) : "0"
               const minPayment = ((cc.current_debt || 0) * (cc.minimum_payment_rate || 3)) / 100
@@ -193,11 +193,11 @@ export async function POST(request: Request) {
           "suggestions": ["Nakit akışı iyileştirme önerisi 1", "Nakit akışı iyileştirme önerisi 2"]
         },
         "assetLiabilityAnalysis": {
-          "totalAssets": ${(financialProfile.total_assets || 0) + totalAccountBalance},
+          "totalAssets": ${((financialProfile as any).total_assets || 0) + totalAccountBalance},
           "totalLiabilities": ${totalDebt},
           "accountBalances": ${totalAccountBalance},
-          "netWorth": ${(financialProfile.total_assets || 0) + totalAccountBalance - totalDebt},
-          "assessment": "${(financialProfile.total_assets || 0) + totalAccountBalance - totalDebt > 0 ? "Pozitif" : "Negatif"}",
+          "netWorth": ${((financialProfile as any).total_assets || 0) + totalAccountBalance - totalDebt},
+          "assessment": "${((financialProfile as any).total_assets || 0) + totalAccountBalance - totalDebt > 0 ? "Pozitif" : "Negatif"}",
           "explanation": "Hesap bakiyeleri dahil net varlık durumu analizi"
         },
         "creditUtilization": {

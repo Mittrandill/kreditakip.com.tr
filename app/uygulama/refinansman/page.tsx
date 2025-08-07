@@ -167,7 +167,6 @@ export default function RefinansmanPage() {
             )
           }
         } catch (err) {
-          console.error("Refinansman Analizi - Başlangıç verileri alınırken hata:", err)
           if (isMounted) {
             setInitialDataError(
               "Finansal bilgileriniz, kredi verileriniz veya geçmiş analizleriniz yüklenirken bir sorun oluştu.",
@@ -313,7 +312,6 @@ export default function RefinansmanPage() {
       }, 500)
     } catch (err: any) {
       clearInterval(progressInterval)
-      console.error("Refinansman analizi hatası:", err)
       setAnalysisError(err.message || "Refinansman analizi oluşturulurken bir hata oluştu.")
     } finally {
       setTimeout(() => {
@@ -331,7 +329,6 @@ export default function RefinansmanPage() {
       setAllPastAnalyses((prev) => prev.filter((a) => a.id !== analysisToDelete!.id))
       toast({ title: "Başarılı", description: "Refinansman analizi silindi." })
     } catch (err) {
-      console.error("Analiz silme hatası:", err)
       toast({ title: "Hata", description: "Analiz silinirken bir sorun oluştu.", variant: "destructive" })
     } finally {
       setIsDeleting(false)
@@ -395,32 +392,60 @@ export default function RefinansmanPage() {
 
   return (
     <div className="flex flex-col gap-4 md:gap-6">
-      <Card className="bg-gradient-to-r from-blue-600 to-indigo-700 text-white border-transparent shadow-xl rounded-xl">
-        <CardContent className="p-6 md:p-8">
-          <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+      {/* Hero Section with Modern Design */}
+      <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 text-white shadow-2xl">
+        <div className="absolute inset-0 bg-gradient-to-br from-teal-600/20 to-green-600/20" />
+        <div className="absolute -top-24 -right-24 w-96 h-96 bg-teal-500/10 rounded-full blur-3xl" />
+        <div className="absolute -bottom-24 -left-24 w-96 h-96 bg-green-500/10 rounded-full blur-3xl" />
+        
+        <CardContent className="relative p-8 md:p-12">
+          <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-6">
             <div>
-              <h2 className="text-3xl font-bold mb-2 flex items-center gap-3">
-                <Calculator className="h-8 w-8" />
-                Refinansman Analizi
-              </h2>
-              <p className="opacity-90 text-lg">
+              <div className="flex items-center gap-3 mb-4">
+                <div className="p-3 bg-teal-500/20 rounded-lg backdrop-blur-sm">
+                  <Calculator className="h-8 w-8 text-teal-400" />
+                </div>
+                <h1 className="text-4xl font-bold bg-gradient-to-r from-white to-gray-300 bg-clip-text text-transparent">
+                  Refinansman Analizi
+                </h1>
+              </div>
+              <p className="text-gray-300 text-lg max-w-2xl">
                 Mevcut kredilerinizi yeniden yapılandırarak tasarruf fırsatlarını keşfedin.
               </p>
+              
+              {/* Quick Stats */}
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-6">
+                <div className="bg-white/10 backdrop-blur-sm rounded-lg p-3">
+                  <p className="text-sm text-gray-300">Toplam Kredi</p>
+                  <p className="text-xl font-bold">{credits.length}</p>
+                </div>
+                <div className="bg-white/10 backdrop-blur-sm rounded-lg p-3">
+                  <p className="text-sm text-gray-300">Analiz Sayısı</p>
+                  <p className="text-xl font-bold">{totalAnalysesCount}</p>
+                </div>
+                <div className="bg-white/10 backdrop-blur-sm rounded-lg p-3">
+                  <p className="text-sm text-gray-300">Yüksek Potansiyel</p>
+                  <p className="text-xl font-bold">{potentialDistribution.high}</p>
+                </div>
+                <div className="bg-white/10 backdrop-blur-sm rounded-lg p-3">
+                  <p className="text-sm text-gray-300">Orta Potansiyel</p>
+                  <p className="text-xl font-bold">{potentialDistribution.medium}</p>
+                </div>
+              </div>
             </div>
+            
             <div className="flex flex-col sm:flex-row gap-3">
               <Button
-                variant="outline"
+                className="bg-white/20 backdrop-blur-sm border-white/30 hover:bg-white/30 text-white"
                 size="lg"
-                className="bg-white/20 hover:bg-white/30 border-white/50 text-white"
                 onClick={() => router.push("/uygulama/ayarlar?tab=financial")}
               >
                 <Settings className="h-5 w-5 mr-2" />
                 Finansal Bilgiler
               </Button>
               <Button
-                variant="outline"
+                className="bg-white/20 backdrop-blur-sm border-white/30 hover:bg-white/30 text-white"
                 size="lg"
-                className="bg-white text-blue-700 hover:bg-gray-100 border-white"
                 onClick={handleAnalyze}
                 disabled={isAnalyzing || initialDataLoading || !canAnalyze}
               >
@@ -434,7 +459,7 @@ export default function RefinansmanPage() {
             </div>
           </div>
         </CardContent>
-      </Card>
+      </div>
 
       {!initialDataLoading && !canAnalyze && (
         <Alert variant="destructive" className="shadow-md">

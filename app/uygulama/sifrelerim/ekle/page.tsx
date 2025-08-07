@@ -62,7 +62,7 @@ export default function SifreEklePage() {
         const { data } = await supabase.from("banks").select("id, name, category, logo_url").order("name")
         if (data) setBanks(data)
       } catch (error) {
-        console.error("Error loading banks:", error)
+        // Error loading banks
       }
     }
     loadBanks()
@@ -125,7 +125,7 @@ export default function SifreEklePage() {
 
       router.push("/uygulama/sifrelerim")
     } catch (error: any) {
-      console.error("Error creating credential:", error)
+      // Error creating credential
       toast({
         title: "Hata",
         description: `Şifre eklenirken bir hata oluştu: ${error.message || "Bilinmeyen hata"}`,

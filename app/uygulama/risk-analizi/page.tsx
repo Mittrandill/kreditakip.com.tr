@@ -152,7 +152,6 @@ export default function RiskAnaliziPage() {
             )
           }
         } catch (err) {
-          console.error("Risk Analizi - Başlangıç verileri alınırken hata:", err)
           if (isMounted) {
             setInitialDataError(
               "Finansal bilgileriniz, kredi verileriniz, hesap bilgileriniz veya geçmiş analizleriniz yüklenirken bir sorun oluştu.",
@@ -294,7 +293,6 @@ export default function RiskAnaliziPage() {
       }, 500)
     } catch (err: any) {
       clearInterval(progressInterval)
-      console.error("Risk analizi hatası:", err)
       setAnalysisError(err.message || "Risk analizi oluşturulurken bir hata oluştu.")
     } finally {
       setTimeout(() => {
@@ -312,7 +310,6 @@ export default function RiskAnaliziPage() {
       setAllPastAnalyses((prev) => prev.filter((a) => a.id !== analysisToDelete!.id))
       toast({ title: "Başarılı", description: "Risk analizi silindi." })
     } catch (err) {
-      console.error("Analiz silme hatası:", err)
       toast({ title: "Hata", description: "Analiz silinirken bir sorun oluştu.", variant: "destructive" })
     } finally {
       setIsDeleting(false)
@@ -376,47 +373,60 @@ export default function RiskAnaliziPage() {
 
   return (
     <div className="flex flex-col gap-4 md:gap-6">
-      {/* Hero Section */}
-      <Card className="bg-gradient-to-r from-red-600 to-rose-700 text-white border-transparent shadow-xl rounded-xl">
-        <CardContent className="p-6 md:p-8">
-          <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+      {/* Hero Section with Modern Design */}
+      <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 text-white shadow-2xl">
+        <div className="absolute inset-0 bg-gradient-to-br from-purple-600/20 to-pink-600/20" />
+        <div className="absolute -top-24 -right-24 w-96 h-96 bg-purple-500/10 rounded-full blur-3xl" />
+        <div className="absolute -bottom-24 -left-24 w-96 h-96 bg-pink-500/10 rounded-full blur-3xl" />
+        
+        <CardContent className="relative p-8 md:p-12">
+          <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-6">
             <div>
-              <h2 className="text-3xl font-bold mb-2 flex items-center gap-3">
-                <ShieldCheck className="h-8 w-8" />
-                Kapsamlı Finansal Risk Değerlendirmesi
-              </h2>
-              <p className="opacity-90 text-lg">
+              <div className="flex items-center gap-3 mb-4">
+                <div className="p-3 bg-purple-500/20 rounded-lg backdrop-blur-sm">
+                  <ShieldCheck className="h-8 w-8 text-purple-400" />
+                </div>
+                <h1 className="text-4xl font-bold bg-gradient-to-r from-white to-gray-300 bg-clip-text text-transparent">
+                  Risk Analizi
+                </h1>
+              </div>
+              <p className="text-gray-300 text-lg max-w-2xl">
                 Krediler, kredi kartları ve hesaplarınızı dahil ederek tam finansal sağlık analizi.
               </p>
-              <div className="mt-3 flex flex-wrap gap-4 text-sm opacity-80">
-                <span className="flex items-center gap-1">
-                  <History className="h-4 w-4" />
-                  {credits.length} Kredi
-                </span>
-                <span className="flex items-center gap-1">
-                  <CreditCardIcon className="h-4 w-4" />
-                  {creditCards.length} Kredi Kartı
-                </span>
-                <span className="flex items-center gap-1">
-                  <Landmark className="h-4 w-4" />
-                  {accounts.length} Hesap
-                </span>
+              
+              {/* Quick Stats */}
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-6">
+                <div className="bg-white/10 backdrop-blur-sm rounded-lg p-3">
+                  <p className="text-sm text-gray-300">Krediler</p>
+                  <p className="text-xl font-bold">{credits.length}</p>
+                </div>
+                <div className="bg-white/10 backdrop-blur-sm rounded-lg p-3">
+                  <p className="text-sm text-gray-300">Kredi Kartları</p>
+                  <p className="text-xl font-bold">{creditCards.length}</p>
+                </div>
+                <div className="bg-white/10 backdrop-blur-sm rounded-lg p-3">
+                  <p className="text-sm text-gray-300">Hesaplar</p>
+                  <p className="text-xl font-bold">{accounts.length}</p>
+                </div>
+                <div className="bg-white/10 backdrop-blur-sm rounded-lg p-3">
+                  <p className="text-sm text-gray-300">Toplam Analiz</p>
+                  <p className="text-xl font-bold">{totalAnalysesCount}</p>
+                </div>
               </div>
             </div>
+            
             <div className="flex flex-col sm:flex-row gap-3">
               <Button
-                variant="outline"
+                className="bg-white/20 backdrop-blur-sm border-white/30 hover:bg-white/30 text-white"
                 size="lg"
-                className="bg-white/20 hover:bg-white/30 border-white/50 text-white"
                 onClick={() => router.push("/uygulama/ayarlar?tab=financial")}
               >
                 <Settings className="h-5 w-5 mr-2" />
                 Finansal Bilgiler
               </Button>
               <Button
-                variant="outline"
+                className="bg-white/20 backdrop-blur-sm border-white/30 hover:bg-white/30 text-white"
                 size="lg"
-                className="bg-white text-red-700 hover:bg-gray-100 border-white"
                 onClick={handleAnalyze}
                 disabled={isAnalyzing || initialDataLoading || !canAnalyze}
               >
@@ -430,7 +440,7 @@ export default function RiskAnaliziPage() {
             </div>
           </div>
         </CardContent>
-      </Card>
+      </div>
 
       {!initialDataLoading && !canAnalyze && (
         <Alert variant="destructive" className="shadow-md">

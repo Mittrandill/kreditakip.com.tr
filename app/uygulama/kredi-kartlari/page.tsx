@@ -141,7 +141,7 @@ export default function KrediKartlariPage() {
   const [isDeleting, setIsDeleting] = useState(false)
 
   const [activeTab, setActiveTab] = useState("tumKartlar")
-  const [viewMode, setViewMode] = useState("cards")
+  const [viewMode, setViewMode] = useState("table")
   const [searchTerm, setSearchTerm] = useState("")
   const [sortBy, setSortBy] = useState("created_at")
   const [sortOrder, setSortOrder] = useState<"asc" | "desc">("desc")
@@ -169,15 +169,10 @@ export default function KrediKartlariPage() {
         getUpcomingDueDates(userId, 30),
       ])
 
-      console.log("🔄 Kredi kartları yüklendi:", cardsData)
-      console.log("📊 Özet veriler:", summaryData)
-      console.log("⏰ Yaklaşan ödemeler:", upcomingData)
-
       setCreditCards(cardsData || [])
       setSummary(summaryData || {})
       setUpcomingDues(upcomingData || [])
     } catch (err: any) {
-      console.error("❌ Kredi kartları yüklenirken hata:", err)
       setError("Kredi kartları yüklenirken bir sorun oluştu.")
       toast({
         title: "Hata",
@@ -276,7 +271,6 @@ export default function KrediKartlariPage() {
       // Refresh data after deletion
       await fetchCreditCards()
     } catch (err: any) {
-      console.error("❌ Kredi kartı silme hatası:", err)
       toast({ title: "Hata", description: "Kredi kartı silinirken bir sorun oluştu.", variant: "destructive" })
     } finally {
       setIsDeleting(false)
@@ -323,29 +317,61 @@ export default function KrediKartlariPage() {
 
   return (
     <div className="flex flex-col gap-4 md:gap-6">
-      {/* Hero Section */}
-      <Card className="bg-gradient-to-r from-purple-600 to-pink-700 text-white border-transparent shadow-xl rounded-xl">
-        <CardContent className="p-6 md:p-8">
-          <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+      {/* Hero Section with Modern Design */}
+      <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 text-white shadow-2xl">
+        <div className="absolute inset-0 bg-gradient-to-br from-purple-600/20 to-pink-600/20" />
+        <div className="absolute -top-24 -right-24 w-96 h-96 bg-purple-500/10 rounded-full blur-3xl" />
+        <div className="absolute -bottom-24 -left-24 w-96 h-96 bg-pink-500/10 rounded-full blur-3xl" />
+        
+        <CardContent className="relative p-8 md:p-12">
+          <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-6">
             <div>
-              <h2 className="text-3xl font-bold mb-2 flex items-center gap-3">
-                <CreditCard className="h-8 w-8" />
-                Kredi Kartı Yönetimi
-              </h2>
-              <p className="opacity-90 text-lg">Kredi kartlarınızı takip edin ve yönetin.</p>
+              <div className="flex items-center gap-3 mb-4">
+                <div className="p-3 bg-purple-500/20 rounded-lg backdrop-blur-sm">
+                  <CreditCard className="h-8 w-8 text-purple-400" />
+                </div>
+                <h1 className="text-4xl font-bold bg-gradient-to-r from-white to-gray-300 bg-clip-text text-transparent">
+                  Kredi Kartı Yönetimi
+                </h1>
+              </div>
+              <p className="text-gray-300 text-lg max-w-2xl">
+                Kredi kartlarınızı takip edin ve yönetin.
+              </p>
+              
+              {/* Quick Stats */}
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-6">
+                <div className="bg-white/10 backdrop-blur-sm rounded-lg p-3">
+                  <p className="text-sm text-gray-300">Aktif Kart</p>
+                  <p className="text-xl font-bold">{activeCardsCount}</p>
+                </div>
+                <div className="bg-white/10 backdrop-blur-sm rounded-lg p-3">
+                  <p className="text-sm text-gray-300">Toplam Limit</p>
+                  <p className="text-xl font-bold">{formatCurrency(totalCreditLimit)}</p>
+                </div>
+                <div className="bg-white/10 backdrop-blur-sm rounded-lg p-3">
+                  <p className="text-sm text-gray-300">Toplam Borç</p>
+                  <p className="text-xl font-bold">{formatCurrency(totalCurrentDebt)}</p>
+                </div>
+                <div className="bg-white/10 backdrop-blur-sm rounded-lg p-3">
+                  <p className="text-sm text-gray-300">Kullanım Oranı</p>
+                  <p className="text-xl font-bold">{averageUtilization.toFixed(1)}%</p>
+                </div>
+              </div>
             </div>
-            <Button
-              variant="outline-white"
-              onClick={openCreateDialog}
-              size="lg"
-             
-            >
-              <Plus className="h-5 w-5 mr-2" />
-              Yeni Kart Ekle
-            </Button>
+            
+            <div className="flex flex-col sm:flex-row gap-3">
+              <Button
+                className="bg-white/20 backdrop-blur-sm border-white/30 hover:bg-white/30 text-white"
+                size="lg"
+                onClick={openCreateDialog}
+              >
+                <Plus className="h-5 w-5 mr-2" />
+                Yeni Kart Ekle
+              </Button>
+            </div>
           </div>
         </CardContent>
-      </Card>
+      </div>
 
     
 

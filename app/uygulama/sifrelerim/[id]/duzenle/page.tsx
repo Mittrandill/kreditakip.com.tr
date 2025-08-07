@@ -71,7 +71,7 @@ export default function SifreDuzenlePage() {
         const { data } = await supabase.from("banks").select("id, name, category, logo_url").order("name")
         if (data) setBanks(data)
       } catch (error) {
-        console.error("Error loading banks:", error)
+        // Error loading banks
       }
     }
     loadBanks()
@@ -115,15 +115,12 @@ export default function SifreDuzenlePage() {
         setSelectedBank({
           id: data.bank_id,
           name: data.bank_name,
-          logo_url: data.bank_logo_url,
+          logo_url: data.bank_logo_url || undefined,
           category: "",
-          is_active: true,
-          created_at: "",
-          updated_at: "",
-        })
+        } as any)
       }
     } catch (error: any) {
-      console.error("Credential loading error:", error)
+      // Credential loading error
       toast({
         title: "Hata",
         description: "Şifre bilgisi yüklenirken bir hata oluştu.",
@@ -184,7 +181,7 @@ export default function SifreDuzenlePage() {
 
       router.push("/uygulama/sifrelerim")
     } catch (error: any) {
-      console.error("Form submission error:", error)
+      // Form submission error
       toast({
         title: "Hata",
         description: error.message || "İşlem sırasında bir hata oluştu.",

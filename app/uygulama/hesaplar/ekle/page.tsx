@@ -117,9 +117,9 @@ export default function HesapEklePage() {
         account_name: formData.account_name.trim(),
         account_number: formData.account_number.trim() || null,
         iban: formData.iban.trim() || null,
-        account_type: formData.account_type, // Seçilen hesap türü adını doğrudan kullan
+        account_type: formData.account_type as "vadesiz" | "vadeli" | "tasarruf" | "yatirim" | "diger", // Seçilen hesap türü adını doğrudan kullan
         current_balance: Number(formData.current_balance) || 0,
-        currency: formData.currency as "TRY" | "USD" | "EUR" | "GBP" | "GOLD",
+        currency: formData.currency as "TRY" | "USD" | "EUR" | "GBP",
         overdraft_limit: Number(formData.overdraft_limit) || 0,
         overdraft_interest_rate: Number(formData.overdraft_interest_rate) || 0,
         interest_rate: Number(formData.interest_rate) || 0,
@@ -128,13 +128,11 @@ export default function HesapEklePage() {
         last_balance_update: new Date().toISOString(),
       }
 
-      console.log("📝 Hesap verisi gönderiliyor:", accountData)
 
       await createAccount(accountData)
       toast.success("Hesap başarıyla eklendi!")
       router.push("/uygulama/hesaplar")
     } catch (error: any) {
-      console.error("Hesap ekleme hatası:", error)
 
       // Daha detaylı hata mesajı
       let errorMessage = "Hesap eklenirken bir hata oluştu"
@@ -150,8 +148,8 @@ export default function HesapEklePage() {
     }
   }
 
-  const handleBankSelect = (bankName: string) => {
-    setFormData({ ...formData, bank_name: bankName })
+  const handleBankSelect = (bank: { name: string; id: string }) => {
+    setFormData({ ...formData, bank_name: bank.name })
     setShowBankSelector(false)
     if (errors.bank_name) {
       setErrors({ ...errors, bank_name: "" })
@@ -168,10 +166,6 @@ export default function HesapEklePage() {
     if (errors.account_type) {
       setErrors({ ...errors, account_type: "" })
     }
-    console.log(`✅ Hesap türü seçildi:`, {
-      name: accountType.name,
-      category: accountType.category,
-    })
   }
 
   const handleInputChange = (field: string, value: string) => {

@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useState } from "react"
+import { useEffect, useState, useMemo, useCallback, memo } from "react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Button } from "@/components/ui/button"
@@ -10,13 +10,15 @@ import { MetricCard } from "@/components/metric-card"
 import BankLogo from "@/components/bank-logo"
 import type { Credit, Bank, CreditType, PaymentPlan, Account } from "@/lib/types"
 import { formatCurrency, formatPercent } from "@/lib/format"
-import { SimpleLineChart, SimpleBarChart } from "@/components/simple-charts"
+import OptimizedLineChart from "@/components/charts/OptimizedLineChart"
+import OptimizedBarChart from "@/components/charts/OptimizedBarChart"
 import Link from "next/link"
 import { useAuth } from "@/hooks/use-auth"
 import { getCredits } from "@/lib/api/credits"
 import { getCreditCards } from "@/lib/api/credit-cards"
 import { getAccounts } from "@/lib/api/accounts"
 import { getUpcomingPayments } from "@/lib/api/payments"
+import { createPaymentReminders } from "@/lib/api/notifications"
 import {
   Loader2,
   AlertCircle,
@@ -87,284 +89,197 @@ export default function DashboardPage() {
   const [loadingData, setLoadingData] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
-  // Metrik state'leri
-  const [totalCredits, setTotalCredits] = useState(0)
-  const [totalDebt, setTotalDebt] = useState(0)
-  const [monthlyPayment, setMonthlyPayment] = useState(0)
-  const [averageInterestRate, setAverageInterestRate] = useState(0)
+  // Optimized computed values with useMemo
+  const activeCredits = useMemo(() => credits.filter(c => c.status === "active"), [credits])
+  const activeCards = useMemo(() => creditCards.filter(c => c.is_active), [creditCards])
+  const activeAccounts = useMemo(() => accounts.filter(a => a.is_active), [accounts])
 
-  // Kredi kartı metrikleri
-  const [totalCreditCards, setTotalCreditCards] = useState(0)
-  const [totalCreditLimit, setTotalCreditLimit] = useState(0)
-  const [totalCreditCardDebt, setTotalCreditCardDebt] = useState(0)
-  const [creditUtilization, setCreditUtilization] = useState(0)
+  const totalCredits = useMemo(() => activeCredits.length, [activeCredits])
+  const totalDebt = useMemo(() => activeCredits.reduce((sum, c) => sum + c.remaining_debt, 0), [activeCredits])
+  const monthlyPayment = useMemo(() => activeCredits.reduce((sum, c) => sum + c.monthly_payment, 0), [activeCredits])
+  
+  const averageInterestRate = useMemo(() => {
+    if (activeCredits.length === 0 || totalDebt === 0) return 0
+    const weightedInterestSum = activeCredits.reduce((sum, c) => sum + c.interest_rate * c.remaining_debt, 0)
+    return weightedInterestSum / totalDebt
+  }, [activeCredits, totalDebt])
 
-  // Hesap metrikleri
-  const [totalAccounts, setTotalAccounts] = useState(0)
-  const [totalBalance, setTotalBalance] = useState(0)
-  const [totalSavings, setTotalSavings] = useState(0)
-  const [monthlyIncome, setMonthlyIncome] = useState(0)
+  const totalCreditCards = useMemo(() => activeCards.length, [activeCards])
+  const totalCreditLimit = useMemo(() => activeCards.reduce((sum, c) => sum + c.credit_limit, 0), [activeCards])
+  const totalCreditCardDebt = useMemo(() => activeCards.reduce((sum, c) => sum + c.current_debt, 0), [activeCards])
+  const creditUtilization = useMemo(() => 
+    totalCreditLimit > 0 ? (totalCreditCardDebt / totalCreditLimit) * 100 : 0, 
+    [totalCreditLimit, totalCreditCardDebt]
+  )
 
-  // Genel metrikler
-  const [netWorth, setNetWorth] = useState(0)
-  const [upcomingPaymentCount, setUpcomingPaymentCount] = useState(0)
+  const totalAccounts = useMemo(() => activeAccounts.length, [activeAccounts])
+  const totalBalance = useMemo(() => activeAccounts.reduce((sum, a) => sum + a.current_balance, 0), [activeAccounts])
+  
+  const totalSavings = useMemo(() => {
+    const savingsAccounts = activeAccounts.filter(a => 
+      a.account_type === "tasarruf" || a.account_type === "vadeli"
+    )
+    return savingsAccounts.reduce((sum, a) => sum + a.current_balance, 0)
+  }, [activeAccounts])
 
-  // Grafik state'leri
-  const [lineChartData, setLineChartData] = useState(defaultLineChartData)
-  const [barChartData, setBarChartData] = useState(defaultBarChartData)
-  const [paymentTimelineData, setPaymentTimelineData] = useState<any[]>([])
-  const [interestRateData, setInterestRateData] = useState<any[]>([])
-  const [assetDistributionData, setAssetDistributionData] = useState<any[]>([])
-  const [debtDistributionData, setDebtDistributionData] = useState<any[]>([])
+  const netWorth = useMemo(() => totalBalance - totalDebt - totalCreditCardDebt, [totalBalance, totalDebt, totalCreditCardDebt])
+  const upcomingPaymentCount = useMemo(() => upcomingPayments.length, [upcomingPayments])
+
+  // Optimized chart data
+  const assetDistributionData = useMemo(() => {
+    if (activeAccounts.length === 0) return []
+    return [
+      {
+        name: "Vadesiz Hesap",
+        tutar: activeAccounts.filter(a => a.account_type === "vadesiz").reduce((sum, a) => sum + a.current_balance, 0),
+        fill: "#10b981",
+      },
+      {
+        name: "Vadeli Hesap", 
+        tutar: activeAccounts.filter(a => a.account_type === "vadeli").reduce((sum, a) => sum + a.current_balance, 0),
+        fill: "#3b82f6",
+      },
+      {
+        name: "Tasarruf",
+        tutar: activeAccounts.filter(a => a.account_type === "tasarruf").reduce((sum, a) => sum + a.current_balance, 0),
+        fill: "#8b5cf6",
+      },
+      {
+        name: "Yatırım",
+        tutar: activeAccounts.filter(a => a.account_type === "yatirim").reduce((sum, a) => sum + a.current_balance, 0),
+        fill: "#f59e0b",
+      },
+    ].filter(item => item.tutar > 0)
+  }, [activeAccounts])
+
+  const debtDistributionData = useMemo(() => {
+    const data = []
+    if (totalDebt > 0) {
+      data.push({ name: "Krediler", tutar: totalDebt, fill: "#ef4444" })
+    }
+    if (totalCreditCardDebt > 0) {
+      data.push({ name: "Kredi Kartları", tutar: totalCreditCardDebt, fill: "#f97316" })
+    }
+    return data
+  }, [totalDebt, totalCreditCardDebt])
+
+  const lineChartData = useMemo(() => {
+    if (activeCredits.length === 0 && activeAccounts.length === 0) return defaultLineChartData
+    
+    const now = new Date()
+    const months = []
+
+    for (let i = 5; i >= 0; i--) {
+      const date = new Date(now.getFullYear(), now.getMonth() - i, 1)
+      const monthName = date.toLocaleDateString("tr-TR", { month: "short" })
+
+      const totalDebtAtMonth = activeCredits.reduce((sum, credit) => {
+        const monthlyReduction = credit.monthly_payment * 0.7
+        const remainingAtMonth = credit.remaining_debt + monthlyReduction * i
+        return sum + remainingAtMonth
+      }, 0)
+
+      const totalPaidAtMonth = activeCredits.reduce((sum, credit) => {
+        const monthlyPayment = credit.monthly_payment
+        return sum + monthlyPayment * (6 - i)
+      }, 0)
+
+      const accountBalanceAtMonth = activeAccounts.reduce((sum, account) => {
+        return sum + account.current_balance * (1 + (6 - i) * 0.02)
+      }, 0)
+
+      months.push({
+        month: monthName,
+        anaParaBorcu: Math.max(0, totalDebtAtMonth),
+        toplamOdenen: totalPaidAtMonth,
+        hesapBakiye: accountBalanceAtMonth,
+      })
+    }
+
+    return months
+  }, [activeCredits, activeAccounts])
+
+  const barChartData = useMemo(() => {
+    if (activeCredits.length === 0 && activeCards.length === 0) return defaultBarChartData
+    
+    const now = new Date()
+    const cashFlowMonths = []
+
+    for (let i = 0; i < 6; i++) {
+      const date = new Date(now.getFullYear(), now.getMonth() + i, 1)
+      const monthName = date.toLocaleDateString("tr-TR", { month: "short" })
+
+      const monthlyKrediPayment = activeCredits.reduce((sum, credit) => sum + credit.monthly_payment, 0)
+      const monthlyKartPayment = activeCards.reduce((sum, card) => {
+        const minPayment = (card.current_debt * card.minimum_payment_rate) / 100
+        return sum + Math.max(minPayment, 50)
+      }, 0)
+
+      const estimatedIncome = monthlyKrediPayment + monthlyKartPayment + 5000
+
+      cashFlowMonths.push({
+        name: monthName,
+        krediOdeme: monthlyKrediPayment,
+        kartOdeme: monthlyKartPayment,
+        gelir: estimatedIncome,
+      })
+    }
+
+    return cashFlowMonths
+  }, [activeCredits, activeCards])
+
+  const fetchData = useCallback(async () => {
+    if (!user) {
+      setLoadingData(false)
+      setError("Lütfen giriş yapınız.")
+      return
+    }
+
+    setLoadingData(true)
+    setError(null)
+    
+    try {
+      // Önce yaklaşan ödemeler için bildirim oluştur
+      await createPaymentReminders(user.id)
+      
+      const [creditsData, creditCardsData, accountsData, upcomingPaymentsData] = await Promise.all([
+        getCredits(user.id) as Promise<any[]>,
+        getCreditCards(user.id) as Promise<any[]>, 
+        getAccounts(user.id) as Promise<any[]>,
+        getUpcomingPayments(user.id, 30) as Promise<any[]>,
+      ])
+
+      setCredits(creditsData || [])
+      setCreditCards(creditCardsData || [])
+      setAccounts(accountsData || [])
+      setUpcomingPayments(upcomingPaymentsData || [])
+    } catch (err) {
+      setError("Veriler yüklenirken bir hata oluştu.")
+    } finally {
+      setLoadingData(false)
+    }
+  }, [user])
+
+  // All hooks must be declared before any early returns
+  const displayName = useMemo(() => 
+    profile?.first_name || user?.email?.split("@")[0] || "Kullanıcı", 
+    [profile?.first_name, user?.email]
+  )
+
+  const creditPerformancePercentage = useMemo(() => {
+    if (activeCredits.length === 0) return 0
+    return Math.round(
+      activeCredits.reduce((sum, c) => sum + (c.payment_progress || 0), 0) / activeCredits.length
+    )
+  }, [activeCredits])
 
   useEffect(() => {
-    let isMounted = true
-
-    async function fetchData() {
-      if (user && isMounted) {
-        setLoadingData(true)
-        setError(null)
-        try {
-          const [creditsData, creditCardsData, accountsData, upcomingPaymentsData] = await Promise.all([
-            getCredits(user.id) as Promise<any[]>,
-            getCreditCards(user.id) as Promise<any[]>,
-            getAccounts(user.id) as Promise<any[]>,
-            getUpcomingPayments(user.id, 30) as Promise<any[]>,
-          ])
-
-          if (isMounted) {
-            setCredits(creditsData || [])
-            setCreditCards(creditCardsData || [])
-            setAccounts(accountsData || [])
-            setUpcomingPayments(upcomingPaymentsData || [])
-
-            // Kredi metrikleri
-            const activeCredits = creditsData?.filter((c) => c.status === "active") || []
-            setTotalCredits(activeCredits.length)
-            const currentTotalDebt = activeCredits.reduce((sum, c) => sum + c.remaining_debt, 0)
-            setTotalDebt(currentTotalDebt)
-            const currentMonthlyPayment = activeCredits.reduce((sum, c) => sum + c.monthly_payment, 0)
-            setMonthlyPayment(currentMonthlyPayment)
-
-            if (activeCredits.length > 0 && currentTotalDebt > 0) {
-              const weightedInterestSum = activeCredits.reduce((sum, c) => sum + c.interest_rate * c.remaining_debt, 0)
-              setAverageInterestRate(weightedInterestSum / currentTotalDebt)
-            } else {
-              setAverageInterestRate(0)
-            }
-
-            // Kredi kartı metrikleri
-            const activeCards = creditCardsData?.filter((c) => c.is_active) || []
-            setTotalCreditCards(activeCards.length)
-            const totalLimit = activeCards.reduce((sum, c) => sum + c.credit_limit, 0)
-            const totalCardDebt = activeCards.reduce((sum, c) => sum + c.current_debt, 0)
-            setTotalCreditLimit(totalLimit)
-            setTotalCreditCardDebt(totalCardDebt)
-            setCreditUtilization(totalLimit > 0 ? (totalCardDebt / totalLimit) * 100 : 0)
-
-            // Hesap metrikleri
-            const activeAccounts = accountsData?.filter((a) => a.is_active) || []
-            setTotalAccounts(activeAccounts.length)
-            const balance = activeAccounts.reduce((sum, a) => sum + a.current_balance, 0)
-            setTotalBalance(balance)
-
-            // Tasarruf hesapları
-            const savingsAccounts = activeAccounts.filter(
-              (a) => a.account_type === "tasarruf" || a.account_type === "vadeli",
-            )
-            setTotalSavings(savingsAccounts.reduce((sum, a) => sum + a.current_balance, 0))
-
-            // Tahmini aylık gelir (hesap bakiyelerindeki artış)
-            setMonthlyIncome(0) // Bu gerçek uygulamada transaction history'den hesaplanır
-
-            // Net değer hesaplama
-            const totalAssets = balance
-            const totalLiabilities = currentTotalDebt + totalCardDebt
-            setNetWorth(totalAssets - totalLiabilities)
-
-            setUpcomingPaymentCount(upcomingPaymentsData?.length || 0)
-
-            // Varlık dağılımı grafiği
-            if (activeAccounts.length > 0) {
-              const assetData = [
-                {
-                  name: "Vadesiz Hesap",
-                  tutar: activeAccounts
-                    .filter((a) => a.account_type === "vadesiz")
-                    .reduce((sum, a) => sum + a.current_balance, 0),
-                  fill: "#10b981",
-                },
-                {
-                  name: "Vadeli Hesap",
-                  tutar: activeAccounts
-                    .filter((a) => a.account_type === "vadeli")
-                    .reduce((sum, a) => sum + a.current_balance, 0),
-                  fill: "#3b82f6",
-                },
-                {
-                  name: "Tasarruf",
-                  tutar: activeAccounts
-                    .filter((a) => a.account_type === "tasarruf")
-                    .reduce((sum, a) => sum + a.current_balance, 0),
-                  fill: "#8b5cf6",
-                },
-                {
-                  name: "Yatırım",
-                  tutar: activeAccounts
-                    .filter((a) => a.account_type === "yatirim")
-                    .reduce((sum, a) => sum + a.current_balance, 0),
-                  fill: "#f59e0b",
-                },
-              ].filter((item) => item.tutar > 0)
-              setAssetDistributionData(assetData)
-            }
-
-            // Borç dağılımı grafiği
-            const debtData = []
-            if (currentTotalDebt > 0) {
-              debtData.push({ name: "Krediler", tutar: currentTotalDebt, fill: "#ef4444" })
-            }
-            if (totalCardDebt > 0) {
-              debtData.push({ name: "Kredi Kartları", tutar: totalCardDebt, fill: "#f97316" })
-            }
-            setDebtDistributionData(debtData)
-
-            // Payment Timeline Data
-            if (upcomingPaymentsData && upcomingPaymentsData.length > 0) {
-              const timelineData = upcomingPaymentsData
-                .sort((a, b) => new Date(a.due_date).getTime() - new Date(b.due_date).getTime())
-                .slice(0, 5)
-                .map((payment) => ({
-                  date: new Date(payment.due_date).toLocaleDateString("tr-TR", {
-                    day: "numeric",
-                    month: "short",
-                  }),
-                  amount: payment.total_payment,
-                  bank: payment.credits?.banks?.name || "Bilinmeyen Banka",
-                }))
-              setPaymentTimelineData(timelineData)
-            } else {
-              setPaymentTimelineData([])
-            }
-
-            // Interest Rate Data
-            const allInterestRates = []
-            if (activeCredits.length > 0) {
-              activeCredits.forEach((credit) => {
-                allInterestRates.push({
-                  bank: credit.banks?.name || "Bilinmeyen Banka",
-                  rate: credit.interest_rate,
-                  amount: credit.remaining_debt,
-                  type: "Kredi",
-                })
-              })
-            }
-            if (activeCards.length > 0) {
-              activeCards.forEach((card) => {
-                allInterestRates.push({
-                  bank: card.bank?.name || card.banks?.name || "Bilinmeyen Banka",
-                  rate: card.interest_rate,
-                  amount: card.current_debt,
-                  type: "Kredi Kartı",
-                })
-              })
-            }
-
-            const sortedRates = allInterestRates.sort((a, b) => b.rate - a.rate).slice(0, 5)
-            setInterestRateData(sortedRates)
-
-            // Line Chart verisi - Finansal trend
-            if (activeCredits.length > 0 || activeAccounts.length > 0) {
-              const now = new Date()
-              const months = []
-
-              for (let i = 5; i >= 0; i--) {
-                const date = new Date(now.getFullYear(), now.getMonth() - i, 1)
-                const monthName = date.toLocaleDateString("tr-TR", { month: "short" })
-
-                // Basit simülasyon
-                const totalDebtAtMonth = activeCredits.reduce((sum, credit) => {
-                  const monthlyReduction = credit.monthly_payment * 0.7
-                  const remainingAtMonth = credit.remaining_debt + monthlyReduction * i
-                  return sum + remainingAtMonth
-                }, 0)
-
-                const totalPaidAtMonth = activeCredits.reduce((sum, credit) => {
-                  const monthlyPayment = credit.monthly_payment
-                  return sum + monthlyPayment * (6 - i)
-                }, 0)
-
-                const accountBalanceAtMonth = activeAccounts.reduce((sum, account) => {
-                  // Basit simülasyon - hesap bakiyesi trend
-                  return sum + account.current_balance * (1 + (6 - i) * 0.02)
-                }, 0)
-
-                months.push({
-                  month: monthName,
-                  anaParaBorcu: Math.max(0, totalDebtAtMonth),
-                  toplamOdenen: totalPaidAtMonth,
-                  hesapBakiye: accountBalanceAtMonth,
-                })
-              }
-
-              setLineChartData(months)
-            } else {
-              setLineChartData(defaultLineChartData)
-            }
-
-            // Bar Chart verisi - Nakit akış
-            if (activeCredits.length > 0 || activeCards.length > 0) {
-              const now = new Date()
-              const cashFlowMonths = []
-
-              for (let i = 0; i < 6; i++) {
-                const date = new Date(now.getFullYear(), now.getMonth() + i, 1)
-                const monthName = date.toLocaleDateString("tr-TR", { month: "short" })
-
-                const monthlyKrediPayment = activeCredits.reduce((sum, credit) => sum + credit.monthly_payment, 0)
-                const monthlyKartPayment = activeCards.reduce((sum, card) => {
-                  const minPayment = (card.current_debt * card.minimum_payment_rate) / 100
-                  return sum + Math.max(minPayment, 50)
-                }, 0)
-
-                // Tahmini gelir (gerçek uygulamada kullanıcıdan alınır)
-                const estimatedIncome = monthlyKrediPayment + monthlyKartPayment + 5000
-
-                cashFlowMonths.push({
-                  name: monthName,
-                  krediOdeme: monthlyKrediPayment,
-                  kartOdeme: monthlyKartPayment,
-                  gelir: estimatedIncome,
-                })
-              }
-
-              setBarChartData(cashFlowMonths)
-            } else {
-              setBarChartData(defaultBarChartData)
-            }
-          }
-        } catch (err) {
-          console.error("Dashboard data fetch error:", err)
-          if (isMounted) {
-            setError("Veriler yüklenirken bir hata oluştu.")
-          }
-        } finally {
-          if (isMounted) {
-            setLoadingData(false)
-          }
-        }
-      } else if (!authLoading && !user && isMounted) {
-        setLoadingData(false)
-        setError("Lütfen giriş yapınız.")
-      }
+    if (!authLoading) {
+      fetchData()
     }
-    fetchData()
+  }, [authLoading, fetchData])
 
-    return () => {
-      isMounted = false
-    }
-  }, [user, authLoading])
-
+  // Early returns after all hooks
   if (authLoading || loadingData) {
     return (
       <div className="flex flex-col gap-4 md:gap-6 items-center justify-center min-h-[calc(100vh-150px)]">
@@ -388,66 +303,72 @@ export default function DashboardPage() {
     )
   }
 
-  const displayName = profile?.first_name || user?.email?.split("@")[0] || "Kullanıcı"
-
-  // Kredi performansı hesaplama
-  const creditPerformancePercentage =
-    credits.filter((c) => c.status === "active").length > 0
-      ? Math.round(
-          credits.filter((c) => c.status === "active").reduce((sum, c) => sum + (c.payment_progress || 0), 0) /
-            credits.filter((c) => c.status === "active").length,
-        )
-      : 0
-
   return (
     <div className="flex flex-col gap-4 md:gap-6">
-      {/* Hero Section */}
-      <Card className="bg-gradient-to-r from-emerald-600 to-teal-700 text-white border-transparent shadow-xl rounded-xl">
-        <CardContent className="p-8">
-          <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+      {/* Hero Section with Modern Design */}
+      <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 text-white shadow-2xl">
+        <div className="absolute inset-0 bg-gradient-to-br from-emerald-600/20 to-teal-600/20" />
+        <div className="absolute -top-24 -right-24 w-96 h-96 bg-emerald-500/10 rounded-full blur-3xl" />
+        <div className="absolute -bottom-24 -left-24 w-96 h-96 bg-teal-500/10 rounded-full blur-3xl" />
+        
+        <CardContent className="relative p-8 md:p-12">
+          <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-6">
             <div>
-              <h2 className="text-3xl font-bold mb-2 flex items-center gap-3">
-                <Home className="h-8 w-8" />
-                Finansal Kontrol Merkezi
-              </h2>
-              <p className="text-emerald-100 text-lg">
+              <div className="flex items-center gap-3 mb-4">
+                <div className="p-3 bg-emerald-500/20 rounded-lg backdrop-blur-sm">
+                  <Home className="h-8 w-8 text-emerald-400" />
+                </div>
+                <h1 className="text-4xl font-bold bg-gradient-to-r from-white to-gray-300 bg-clip-text text-transparent">
+                  Finansal Kontrol Merkezi
+                </h1>
+              </div>
+              <p className="text-gray-300 text-lg max-w-2xl">
                 Hoş geldiniz, {displayName}! Tüm finansal durumunuzu tek yerden yönetin.
               </p>
-              <div className="mt-4 flex items-center gap-6 text-emerald-100">
-                <div className="flex items-center gap-2">
-                  <Banknote className="h-5 w-5" />
-                  <span>{totalCredits} Kredi</span>
+              
+              {/* Quick Stats */}
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-6">
+                <div className="bg-white/10 backdrop-blur-sm rounded-lg p-3">
+                  <p className="text-sm text-gray-300">Net Değer</p>
+                  <p className="text-xl font-bold">{formatCurrency(netWorth)}</p>
                 </div>
-                <div className="flex items-center gap-2">
-                  <Wallet className="h-5 w-5" />
-                  <span>{totalCreditCards} Kart</span>
+                <div className="bg-white/10 backdrop-blur-sm rounded-lg p-3">
+                  <p className="text-sm text-gray-300">Toplam Borç</p>
+                  <p className="text-xl font-bold">{formatCurrency(totalDebt + totalCreditCardDebt)}</p>
                 </div>
-                <div className="flex items-center gap-2">
-                  <Building2 className="h-5 w-5" />
-                  <span>{totalAccounts} Hesap</span>
+                <div className="bg-white/10 backdrop-blur-sm rounded-lg p-3">
+                  <p className="text-sm text-gray-300">Aktif Kredi</p>
+                  <p className="text-xl font-bold">{totalCredits}</p>
+                </div>
+                <div className="bg-white/10 backdrop-blur-sm rounded-lg p-3">
+                  <p className="text-sm text-gray-300">Kart Sayısı</p>
+                  <p className="text-xl font-bold">{totalCreditCards}</p>
                 </div>
               </div>
             </div>
+            
             <div className="flex flex-col sm:flex-row gap-3">
-              <Button variant="outline-white" size="lg">
-                <Settings className="h-5 w-5" />
+              <Button 
+                className="bg-white/20 backdrop-blur-sm border-white/30 hover:bg-white/30 text-white"
+                size="lg"
+              >
+                <Settings className="h-5 w-5 mr-2" />
                 Ayarlar
               </Button>
               <Button
-                variant="outline"
+                className="bg-white/20 backdrop-blur-sm border-white/30 hover:bg-white/30 text-white"
                 size="lg"
-                className="bg-white text-emerald-600 hover:bg-emerald-50 border-white"
               >
-                <Bell className="h-5 w-5" />
+                <Bell className="h-5 w-5 mr-2" />
                 Bildirimler
               </Button>
             </div>
           </div>
         </CardContent>
-      </Card>
+      </div>
 
       {/* Ana Metrik Kartları - Sadece 4 Adet */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
         <MetricCard
           title="Net Değer"
           value={formatCurrency(netWorth)}
@@ -485,14 +406,14 @@ export default function DashboardPage() {
       </div>
 
       {/* Grafikler */}
-      <div className="grid gap-4 md:gap-6 md:grid-cols-2 lg:grid-cols-7">
+      <div className="grid gap-4 md:gap-6 grid-cols-1 lg:grid-cols-7">
         <Card className="lg:col-span-4 shadow-lg hover:shadow-xl transition-shadow duration-300 rounded-xl border-gray-200">
           <CardHeader>
             <CardTitle className="text-gray-900">Finansal Trend Analizi</CardTitle>
             <CardDescription>Son 6 aylık borç azalış trendi, ödenen tutarlar ve hesap bakiye değişimi.</CardDescription>
           </CardHeader>
           <CardContent className="pt-6">
-            <SimpleLineChart data={lineChartData} />
+            <OptimizedLineChart data={lineChartData} />
           </CardContent>
         </Card>
 
@@ -502,13 +423,13 @@ export default function DashboardPage() {
             <CardDescription>Önümüzdeki 6 aylık gelir ve gider dağılımı.</CardDescription>
           </CardHeader>
           <CardContent className="pt-6">
-            <SimpleBarChart data={barChartData} />
+            <OptimizedBarChart data={barChartData} />
           </CardContent>
         </Card>
       </div>
 
       {/* Varlık ve Borç Dağılımı - Financial Health Style */}
-      <div className="grid gap-4 md:grid-cols-2">
+      <div className="grid gap-4 grid-cols-1 md:grid-cols-2">
         <Card className="shadow-lg hover:shadow-xl transition-shadow duration-300 rounded-xl border-gray-200 dark:border-gray-700 dark:bg-gray-800">
           <CardHeader className="pb-4">
             <CardTitle className="text-base text-gray-900 dark:text-white flex items-center gap-2">
@@ -647,7 +568,7 @@ export default function DashboardPage() {
       </div>
 
       {/* Finansal Sağlık Kartları - 3 Adet */}
-      <div className="grid gap-4 md:grid-cols-3">
+      <div className="grid gap-4 grid-cols-1 sm:grid-cols-1 md:grid-cols-3">
         <Card className="shadow-lg hover:shadow-xl transition-shadow duration-300 rounded-xl border-gray-200 dark:border-gray-700 dark:bg-gray-800">
           <CardHeader className="pb-4">
             <CardTitle className="text-base text-gray-900 dark:text-white">Kredi Performansı</CardTitle>
@@ -900,36 +821,36 @@ export default function DashboardPage() {
       <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
         <Tabs defaultValue="credits" className="w-full">
           <div className="border-b border-gray-100 bg-gray-50">
-            <TabsList className="grid grid-cols-3 bg-transparent h-auto p-2 gap-2">
+            <TabsList className="grid grid-cols-3 bg-transparent h-auto p-2 gap-1 md:gap-2">
               <TabsTrigger
                 value="credits"
-                className="flex items-center gap-2 py-3 px-4 data-[state=active]:text-emerald-600 rounded-xl transition-all duration-200 hover:bg-gray-100"
+                className="flex items-center gap-1 md:gap-2 py-2 md:py-3 px-2 md:px-4 data-[state=active]:text-emerald-600 rounded-xl transition-all duration-200 hover:bg-gray-100"
               >
-                <Banknote className="h-4 w-4" />
-                <span className="hidden sm:inline font-medium">Krediler</span>
-                <span className="sm:hidden font-medium">Kredi</span>
+                <Banknote className="h-4 w-4 flex-shrink-0" />
+                <span className="hidden sm:inline font-medium text-sm md:text-base">Krediler</span>
+                <span className="sm:hidden font-medium text-xs">Kredi</span>
               </TabsTrigger>
               <TabsTrigger
                 value="cards"
-                className="flex items-center gap-2 py-3 px-4 data-[state=active]:text-emerald-600 rounded-xl transition-all duration-200 hover:bg-gray-100"
+                className="flex items-center gap-1 md:gap-2 py-2 md:py-3 px-2 md:px-4 data-[state=active]:text-emerald-600 rounded-xl transition-all duration-200 hover:bg-gray-100"
               >
-                <Wallet className="h-4 w-4" />
-                <span className="hidden sm:inline font-medium">Kredi Kartları</span>
-                <span className="sm:hidden font-medium">Kartlar</span>
+                <Wallet className="h-4 w-4 flex-shrink-0" />
+                <span className="hidden sm:inline font-medium text-sm md:text-base">Kredi Kartları</span>
+                <span className="sm:hidden font-medium text-xs">Kartlar</span>
               </TabsTrigger>
               <TabsTrigger
                 value="accounts"
-                className="flex items-center gap-2 py-3 px-4 data-[state=active]:text-emerald-600 rounded-xl transition-all duration-200 hover:bg-gray-100"
+                className="flex items-center gap-1 md:gap-2 py-2 md:py-3 px-2 md:px-4 data-[state=active]:text-emerald-600 rounded-xl transition-all duration-200 hover:bg-gray-100"
               >
-                <Building2 className="h-4 w-4" />
-                <span className="hidden sm:inline font-medium">Hesaplar</span>
-                <span className="sm:hidden font-medium">Hesap</span>
+                <Building2 className="h-4 w-4 flex-shrink-0" />
+                <span className="hidden sm:inline font-medium text-sm md:text-base">Hesaplar</span>
+                <span className="sm:hidden font-medium text-xs">Hesap</span>
               </TabsTrigger>
             </TabsList>
           </div>
-          <div className="p-6">
-            <TabsContent value="credits" className="mt-6">
-              <div className="overflow-x-auto">
+          <div className="p-3 md:p-6">
+            <TabsContent value="credits" className="mt-3 md:mt-6">
+              <div className="overflow-x-auto -mx-3 md:mx-0">
                 <Table>
                   <TableHeader>
                     <TableRow className="bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700">

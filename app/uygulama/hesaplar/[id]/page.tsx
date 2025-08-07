@@ -265,14 +265,14 @@ export default function HesapDetayPage() {
               </Button>
               <div className="flex items-center gap-4">
                 <BankLogo
-                  bankName={account.banks?.name || "Bilinmeyen Banka"}
+                  bankName={(account as any).banks?.name || "Bilinmeyen Banka"}
                   size="lg"
                   className="bg-white/20 border-2 border-white"
                 />
                 <div>
                   <h1 className="text-3xl md:text-4xl font-bold mb-2">Hesap Detayı</h1>
                   <p className="text-teal-100 text-lg">
-                    {account.account_name} - {account.banks?.name || "N/A"}
+                    {account.account_name} - {(account as any).banks?.name || "N/A"}
                   </p>
                   <p className="text-teal-200 text-sm capitalize">{account.account_type}</p>
                 </div>
@@ -486,24 +486,24 @@ export default function HesapDetayPage() {
                     </CardHeader>
                     <CardContent className="space-y-4">
                       <div className="flex items-center gap-4 mb-4">
-                        <BankLogo bankName={account.banks?.name || "Bilinmeyen Banka"} size="md" />
+                        <BankLogo bankName={(account as any).banks?.name || "Bilinmeyen Banka"} size="md" />
                         <div>
-                          <p className="font-semibold text-gray-900">{account.banks?.name || "N/A"}</p>
+                          <p className="font-semibold text-gray-900">{(account as any).banks?.name || "N/A"}</p>
                           <p className="text-sm text-gray-500">Banka</p>
                         </div>
                       </div>
                       <div className="space-y-3">
                         <div className="flex items-center gap-2 text-sm">
                           <Phone className="h-4 w-4 text-gray-400" />
-                          <span className="text-gray-600">{account.banks?.contact_phone || "N/A"}</span>
+                          <span className="text-gray-600">{(account as any).banks?.contact_phone || "N/A"}</span>
                         </div>
                         <div className="flex items-center gap-2 text-sm">
                           <Mail className="h-4 w-4 text-gray-400" />
-                          <span className="text-gray-600">{account.banks?.contact_email || "N/A"}</span>
+                          <span className="text-gray-600">{(account as any).banks?.contact_email || "N/A"}</span>
                         </div>
                         <div className="flex items-center gap-2 text-sm">
                           <MapPin className="h-4 w-4 text-gray-400" />
-                          <span className="text-gray-600">{account.banks?.website || "N/A"}</span>
+                          <span className="text-gray-600">{(account as any).banks?.website || "N/A"}</span>
                         </div>
                       </div>
                     </CardContent>

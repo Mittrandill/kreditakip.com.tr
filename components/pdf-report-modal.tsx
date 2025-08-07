@@ -503,7 +503,7 @@ export default function PDFReportModal({ userData, trigger }: PDFReportModalProp
                           <Calendar
                             mode="single"
                             selected={dateTo}
-                            onSelect={setDateTo}
+                            onSelect={setDateTo as any}
                             initialFocus
                             locale={tr}
                           />
@@ -590,8 +590,8 @@ export default function PDFReportModal({ userData, trigger }: PDFReportModalProp
                   Format Ayarları
                 </CardTitle>
               </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="grid grid-cols-2 gap-4">
+              <CardContent className="p-6 space-y-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div>
                     <Label>Dil</Label>
                     <Select value={formatOptions.language} onValueChange={(value) => setFormatOptions(prev => ({ ...prev, language: value }))}>

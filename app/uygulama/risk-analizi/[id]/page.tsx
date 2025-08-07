@@ -58,14 +58,14 @@ import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/component
 
 const getSeverityBadgeVariant = (
   severity: string | undefined,
-): "destructive" | "warning" | "success" | "secondary" | "info" | "outline" | "default" => {
+): "destructive" | "outline" | "default" | "secondary" => {
   switch (severity?.toLowerCase()) {
     case "yüksek":
       return "destructive"
     case "orta":
-      return "warning"
+      return "outline"
     case "düşük":
-      return "success"
+      return "default"
     default:
       return "secondary"
   }
@@ -221,7 +221,7 @@ export default function RiskAnalysisDetailPage() {
       const parsedAnalysisData = data.analysis_data as RiskAnalysisData
       setAnalysisData(parsedAnalysisData)
     } catch (err: any) {
-      console.error("Risk analizi getirilirken hata:", err)
+      // Risk analizi getirilirken hata
       setError("Risk analizi yüklenirken bir sorun oluştu.")
       setAnalysis(null)
       setAnalysisData(null)
@@ -239,11 +239,10 @@ export default function RiskAnalysisDetailPage() {
       toast({
         title: "Başarılı",
         description: "Risk analizi başarıyla silindi.",
-        variant: "success",
       })
       router.push("/uygulama/risk-analizi")
     } catch (err: any) {
-      console.error("Risk analizi silinirken hata:", err)
+      // Risk analizi silinirken hata
       toast({
         title: "Hata",
         description: "Risk analizi silinirken bir sorun oluştu.",
@@ -488,9 +487,9 @@ export default function RiskAnalysisDetailPage() {
                     <Badge
                       variant={
                         analysisData.debtToIncomeRatio.assessment === "İyi"
-                          ? "success"
+                          ? "default"
                           : analysisData.debtToIncomeRatio.assessment === "Orta"
-                            ? "warning"
+                            ? "outline"
                             : analysisData.debtToIncomeRatio.assessment === "Yüksek" ||
                                 analysisData.debtToIncomeRatio.assessment === "İyileştirilmeli"
                               ? "destructive"
@@ -544,7 +543,7 @@ export default function RiskAnalysisDetailPage() {
                     <Badge
                       variant={
                         analysisData.cashFlowAnalysis.assessment === "Pozitif"
-                          ? "success"
+                          ? "default"
                           : analysisData.cashFlowAnalysis.assessment === "Negatif"
                             ? "destructive"
                             : "secondary"
@@ -715,7 +714,7 @@ export default function RiskAnalysisDetailPage() {
                   <div className="flex items-center">
                     <strong className="mr-2">Değerlendirme:</strong>
                     <Badge
-                      variant={analysisData.assetLiabilityAnalysis.assessment === "Sağlıklı" ? "success" : "warning"}
+                      variant={analysisData.assetLiabilityAnalysis.assessment === "Sağlıklı" ? "default" : "outline"}
                     >
                       {analysisData.assetLiabilityAnalysis.assessment}
                     </Badge>
@@ -765,7 +764,7 @@ export default function RiskAnalysisDetailPage() {
                 <div className="space-y-3">
                   <div className="flex items-center">
                     <strong className="mr-2">Değerlendirme:</strong>
-                    <Badge variant={analysisData.savingsAnalysis.assessment === "Yeterli" ? "success" : "warning"}>
+                    <Badge variant={analysisData.savingsAnalysis.assessment === "Yeterli" ? "default" : "outline"}>
                       {analysisData.savingsAnalysis.assessment}
                     </Badge>
                   </div>
@@ -794,7 +793,7 @@ export default function RiskAnalysisDetailPage() {
                   <div className="mt-3 pt-3 border-t border-gray-200 dark:border-gray-700 space-y-2">
                     <div className="flex items-center">
                       <strong className="mr-2">Değerlendirme:</strong>
-                      <Badge variant={analysisData.creditUtilization.assessment === "İyi" ? "success" : "warning"}>
+                      <Badge variant={analysisData.creditUtilization.assessment === "İyi" ? "default" : "outline"}>
                         {analysisData.creditUtilization.assessment}
                       </Badge>
                     </div>

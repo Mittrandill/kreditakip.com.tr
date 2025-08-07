@@ -42,7 +42,7 @@ import { useToast } from "@/hooks/use-toast"
 import { usePathname } from "next/navigation"
 import Image from "next/image"
 import { useState, useEffect, useRef, useMemo } from "react"
-import { getNotifications, markNotificationAsRead } from "@/lib/api/notifications"
+import { getNotifications, markNotificationAsRead, createPaymentReminders as createUpcomingPaymentNotifications } from "@/lib/api/notifications"
 import { formatDistanceToNow } from "date-fns"
 import { tr } from "date-fns/locale"
 
@@ -303,13 +303,17 @@ export default function Header({ pageTitle }: HeaderProps) {
   const loadHeaderNotifications = async () => {
     if (!user?.id) return
     try {
+      // Önce yaklaşan ödemeler için bildirim oluştur
+      await createUpcomingPaymentNotifications(user.id)
+      
+      // Sonra bildirimleri yükle
       const data = await getNotifications(user.id)
       const recent = data?.slice(0, 5) || []
       const unread = data?.filter((n) => !n.is_read).length || 0
       setNotifications(recent)
       setUnreadCount(unread)
     } catch (error) {
-      console.error("Error loading header notifications:", error)
+      // Silently fail for notifications
     }
   }
 
@@ -319,7 +323,7 @@ export default function Header({ pageTitle }: HeaderProps) {
       setNotifications((prev) => prev.map((n) => (n.id === notificationId ? { ...n, is_read: true } : n)))
       setUnreadCount((prev) => Math.max(0, prev - 1))
     } catch (error) {
-      console.error("Error marking notification as read:", error)
+      // Silently fail for marking as read
     }
   }
 
@@ -363,7 +367,6 @@ export default function Header({ pageTitle }: HeaderProps) {
         description: "Çıkış yapılırken bir sorun oluştu.",
         variant: "destructive",
       })
-      console.error("Sign out error:", error)
     }
   }
 

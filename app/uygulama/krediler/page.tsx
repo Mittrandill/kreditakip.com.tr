@@ -114,7 +114,7 @@ export default function KredilerPage() {
   const [error, setError] = useState<string | null>(null)
 
   const [activeTab, setActiveTab] = useState("tumKrediler")
-  const [viewMode, setViewMode] = useState("cards")
+  const [viewMode, setViewMode] = useState("table")
   const [searchTerm, setSearchTerm] = useState("")
   const [sortBy, setSortBy] = useState("sonOdemeTarihi")
   const [sortOrder, setSortOrder] = useState<"asc" | "desc">("asc")
@@ -166,7 +166,6 @@ export default function KredilerPage() {
                     nextPaymentAmount,
                   } as PopulatedCredit
                 } catch (error) {
-                  console.error(`Error updating credit ${credit.id}:`, error)
                   return {
                     ...credit,
                     nextPaymentAmount: credit.monthly_payment,
@@ -176,10 +175,8 @@ export default function KredilerPage() {
             )
 
             setAllCredits(updatedCredits || [])
-            console.log("💳 Krediler yüklendi ve güncellendi:", updatedCredits?.length || 0, "adet")
           }
         } catch (err) {
-          console.error("Krediler data fetch error:", err)
           if (isMounted) {
             setError("Krediler yüklenirken bir hata oluştu.")
           }
@@ -282,7 +279,6 @@ export default function KredilerPage() {
       setAllCredits((prev) => prev.filter((c) => c.id !== creditToDelete))
       toast({ title: "Başarılı", description: "Kredi başarıyla silindi." })
     } catch (error) {
-      console.error("Kredi silinirken hata:", error)
       toast({ title: "Hata", description: "Kredi silinirken bir sorun oluştu.", variant: "destructive" })
     } finally {
       setShowDeleteDialog(false)
@@ -296,6 +292,9 @@ export default function KredilerPage() {
   const totalRemainingDebt = activeCreditsList.reduce((sum, c) => sum + c.remaining_debt, 0)
   const totalNextPayments = activeCreditsList.reduce((sum, c) => sum + (c.nextPaymentAmount || c.monthly_payment), 0)
   const overdueCreditsCount = allCredits.filter((c) => c.status === "overdue" || (c.overdue_days || 0) > 0).length
+  const averageInterestRate = activeCreditsList.length > 0 
+    ? activeCreditsList.reduce((sum, c) => sum + (c.interest_rate || 0), 0) / activeCreditsList.length 
+    : 0
 
   if (authLoading || loadingData) {
     return (
@@ -322,22 +321,51 @@ export default function KredilerPage() {
 
   return (
     <div className="flex flex-col gap-4 md:gap-6">
-      {/* Hero Section */}
-      <Card className="bg-gradient-to-r from-blue-600 to-indigo-700 text-white border-transparent shadow-xl rounded-xl">
-        <CardContent className="p-8">
-          <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+      {/* Hero Section with Modern Design */}
+      <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 text-white shadow-2xl">
+        <div className="absolute inset-0 bg-gradient-to-br from-blue-600/20 to-indigo-600/20" />
+        <div className="absolute -top-24 -right-24 w-96 h-96 bg-blue-500/10 rounded-full blur-3xl" />
+        <div className="absolute -bottom-24 -left-24 w-96 h-96 bg-indigo-500/10 rounded-full blur-3xl" />
+        
+        <CardContent className="relative p-8 md:p-12">
+          <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-6">
             <div>
-              <h2 className="text-3xl font-bold mb-2 flex items-center gap-3">
-                <Wallet className="h-8 w-8" />
-                Kredi Portföy Yönetimi
-              </h2>
-              <p className="text-blue-100 text-lg">
+              <div className="flex items-center gap-3 mb-4">
+                <div className="p-3 bg-blue-500/20 rounded-lg backdrop-blur-sm">
+                  <Wallet className="h-8 w-8 text-blue-400" />
+                </div>
+                <h1 className="text-4xl font-bold bg-gradient-to-r from-white to-gray-300 bg-clip-text text-transparent">
+                  Kredi Portföy Yönetimi
+                </h1>
+              </div>
+              <p className="text-gray-300 text-lg max-w-2xl">
                 Tüm kredi hesaplarınızı tek yerden yönetin, takip edin ve optimize edin
               </p>
+              
+              {/* Quick Stats */}
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-6">
+                <div className="bg-white/10 backdrop-blur-sm rounded-lg p-3">
+                  <p className="text-sm text-gray-300">Aktif Kredi</p>
+                  <p className="text-xl font-bold">{totalActiveCredits}</p>
+                </div>
+                <div className="bg-white/10 backdrop-blur-sm rounded-lg p-3">
+                  <p className="text-sm text-gray-300">Toplam Borç</p>
+                  <p className="text-xl font-bold">{formatCurrency(totalRemainingDebt)}</p>
+                </div>
+                <div className="bg-white/10 backdrop-blur-sm rounded-lg p-3">
+                  <p className="text-sm text-gray-300">Aylık Ödeme</p>
+                  <p className="text-xl font-bold">{formatCurrency(totalNextPayments)}</p>
+                </div>
+                <div className="bg-white/10 backdrop-blur-sm rounded-lg p-3">
+                  <p className="text-sm text-gray-300">Ort. Faiz</p>
+                  <p className="text-xl font-bold">{formatPercent(averageInterestRate)}</p>
+                </div>
+              </div>
             </div>
+            
             <div className="flex flex-col sm:flex-row gap-3">
               <Button
-                variant="outline-white"
+                className="bg-white/20 backdrop-blur-sm border-white/30 hover:bg-white/30 text-white"
                 size="lg"
                 onClick={() => router.push("/uygulama/krediler/pdf-odeme-plani")}
               >
@@ -347,7 +375,7 @@ export default function KredilerPage() {
             </div>
           </div>
         </CardContent>
-      </Card>
+      </div>
 
       {/* Stats Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
@@ -508,7 +536,7 @@ export default function KredilerPage() {
                             <div className="relative">
                               <BankLogo
                                 bankName={kredi.banks?.name || "Bilinmeyen Banka"}
-                                logoUrl={kredi.banks?.logo_url}
+                                logoUrl={kredi.banks?.logo_url || undefined}
                                 size="md"
                                 className="ring-2 ring-white shadow-lg"
                               />
@@ -658,7 +686,7 @@ export default function KredilerPage() {
                             <div className="flex items-center gap-3">
                               <BankLogo
                                 bankName={kredi.banks?.name || "Bilinmeyen Banka"}
-                                logoUrl={kredi.banks?.logo_url}
+                                logoUrl={kredi.banks?.logo_url || undefined}
                                 size="md"
                                 className="ring-1 ring-emerald-200 bg-white"
                               />

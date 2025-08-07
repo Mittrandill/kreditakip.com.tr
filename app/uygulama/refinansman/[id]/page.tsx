@@ -131,9 +131,9 @@ const getPriorityIcon = (priority: string | undefined) => {
 
 const getFeasibilityBadgeVariant = (
   feasibility: string | undefined,
-): "success" | "warning" | "destructive" | "secondary" => {
-  if (feasibility === "Yüksek") return "success"
-  if (feasibility === "Orta") return "warning"
+): "default" | "destructive" | "outline" | "secondary" => {
+  if (feasibility === "Yüksek") return "default"
+  if (feasibility === "Orta") return "outline"
   if (feasibility === "Düşük") return "destructive"
   return "secondary"
 }
@@ -386,7 +386,7 @@ export default function RefinansmanDetayPage() {
       setAnalysis(data)
       setAnalysisData(data.analysis_data as RefinancingAnalysisData)
     } catch (err: any) {
-      console.error("Refinansman analizi getirilirken hata:", err)
+      // Refinansman analizi getirilirken hata
       setError("Refinansman analizi yüklenirken bir sorun oluştu.")
       setAnalysis(null)
       setAnalysisData(null)
@@ -404,11 +404,10 @@ export default function RefinansmanDetayPage() {
       toast({
         title: "Başarılı",
         description: "Refinansman analizi başarıyla silindi.",
-        variant: "success",
       })
       router.push("/uygulama/refinansman")
     } catch (err: any) {
-      console.error("Refinansman analizi silinirken hata:", err)
+      // Refinansman analizi silinirken hata
       toast({
         title: "Hata",
         description: "Refinansman analizi silinirken bir sorun oluştu.",
@@ -677,7 +676,7 @@ export default function RefinansmanDetayPage() {
                     <Building2 className="h-8 w-8" />
                     <div>
                       <h4 className="text-2xl font-bold">
-                        Önerilen Banka: {analysisData.consolidationAnalysis.recommendedBank}
+                        Önerilen Banka: {(analysisData.consolidationAnalysis as any).recommendedBank || "Bilinmeyen"}
                       </h4>
                       <Badge
                         variant={getFeasibilityBadgeVariant(analysisData.consolidationAnalysis.feasibility)}
@@ -704,7 +703,7 @@ export default function RefinansmanDetayPage() {
                     <div className="text-center p-4 bg-white/15 backdrop-blur-sm rounded-xl">
                       <Calendar className="h-6 w-6 mx-auto mb-2" />
                       <p className="text-sm opacity-80">Yeni Vade</p>
-                      <p className="text-xl font-bold">{analysisData.consolidationAnalysis.suggestedTerm} ay</p>
+                      <p className="text-xl font-bold">{(analysisData.consolidationAnalysis as any).suggestedTerm || "N/A"} ay</p>
                     </div>
                     <div className="text-center p-4 bg-white/15 backdrop-blur-sm rounded-xl">
                       <TrendingUp className="h-6 w-6 mx-auto mb-2" />
@@ -847,7 +846,7 @@ export default function RefinansmanDetayPage() {
                             credit.priority === "Yüksek"
                               ? "destructive"
                               : credit.priority === "Orta"
-                                ? "warning"
+                                ? "outline"
                                 : "secondary"
                           }
                         >
@@ -895,13 +894,13 @@ export default function RefinansmanDetayPage() {
                         </div>
                       )}
 
-                      {credit.netBenefit && (
+                      {(credit as any).netBenefit && (
                         <div className="bg-gradient-to-r from-emerald-50 to-green-50 dark:from-emerald-900/20 dark:to-green-900/20 p-6 rounded-xl border border-emerald-200 dark:border-emerald-800">
                           <h6 className="font-bold text-emerald-800 dark:text-emerald-200 mb-3 flex items-center gap-2 text-lg">
                             <PiggyBank className="h-5 w-5" />
                             Net Fayda Analizi
                           </h6>
-                          <p className="text-emerald-700 dark:text-emerald-300 leading-relaxed">{credit.netBenefit}</p>
+                          <p className="text-emerald-700 dark:text-emerald-300 leading-relaxed">{(credit as any).netBenefit}</p>
                         </div>
                       )}
                     </CardContent>

@@ -43,7 +43,7 @@ export async function saveRiskAnalysis(
     .single()
 
   if (error) {
-    console.error("Risk analizi kaydedilirken hata:", error)
+    // console.error("Risk analizi kaydedilirken hata:", error)
     throw new Error("Risk analizi kaydedilemedi")
   }
 
@@ -58,7 +58,7 @@ export async function getRiskAnalyses(userId: string): Promise<RiskAnalysis[]> {
     .order("created_at", { ascending: false })
 
   if (error) {
-    console.error("Risk analizleri getirilirken hata:", error)
+    // console.error("Risk analizleri getirilirken hata:", error)
     throw new Error("Risk analizleri getirilemedi")
   }
 
@@ -77,7 +77,7 @@ export async function getRiskAnalysisById(userId: string, analysisId: string): P
     if (error.code === "PGRST116") {
       return null // Kayıt bulunamadı
     }
-    console.error("Risk analizi getirilirken hata:", error)
+    // console.error("Risk analizi getirilirken hata:", error)
     throw new Error("Risk analizi getirilemedi")
   }
 
@@ -88,7 +88,7 @@ export async function deleteRiskAnalysis(userId: string, analysisId: string): Pr
   const { error } = await supabase.from("risk_analyses").delete().eq("user_id", userId).eq("id", analysisId)
 
   if (error) {
-    console.error("Risk analizi silinirken hata:", error)
+    // console.error("Risk analizi silinirken hata:", error)
     throw new Error("Risk analizi silinemedi")
   }
 }

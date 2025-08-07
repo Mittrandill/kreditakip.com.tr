@@ -59,13 +59,10 @@ export default function KrediKartiEklePage() {
           .order("name")
 
         if (error) {
-          console.error("Error fetching registered banks:", error)
-        } else {
+          } else {
           setRegisteredBanks(data || [])
-          console.log(`📋 ${data?.length || 0} kayıtlı banka yüklendi`)
         }
       } catch (error) {
-        console.error("Error fetching registered banks:", error)
       }
     }
 
@@ -86,7 +83,6 @@ export default function KrediKartiEklePage() {
     // Only validate card number if it's provided and not empty
     if (formData.card_number && formData.card_number.trim() !== "") {
       const isValidCard = validateCardNumber(formData.card_number)
-      console.log("Card validation result:", { cardNumber: formData.card_number, isValid: isValidCard })
 
       if (!isValidCard) {
         newErrors.card_number = "Geçersiz kart numarası"
@@ -161,12 +157,10 @@ export default function KrediKartiEklePage() {
         description: formData.description.trim(),
       }
 
-      console.log("Submitting card data:", cardData)
       await createCreditCard(user.id, cardData)
       toast.success("Kredi kartı başarıyla eklendi!")
       router.push("/uygulama/kredi-kartlari")
     } catch (error: any) {
-      console.error("Kredi kartı ekleme hatası:", error)
       toast.error("Kredi kartı eklenirken bir hata oluştu")
     } finally {
       setIsSubmitting(false)
@@ -202,11 +196,6 @@ export default function KrediKartiEklePage() {
       setErrors({ ...errors, card_name: "" })
     }
 
-    console.log(`✅ Kart türü seçildi ve banka güncellendi:`, {
-      cardName: creditCardType.name,
-      originalBank: creditCardType.original_bank_name || creditCardType.bank_name,
-      matchedBank: bankNameToUse,
-    })
   }
 
   const handleInputChange = (field: string, value: string) => {

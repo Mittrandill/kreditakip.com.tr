@@ -46,7 +46,7 @@ export async function getBankingCredentials(
     .eq("is_active", true)
 
   if (countError) {
-    console.error("Banking credentials count error:", countError)
+    // console.error("Banking credentials count error:", countError)
     throw countError
   }
 
@@ -66,7 +66,7 @@ export async function getBankingCredentials(
     .range(offset, offset + limit - 1)
 
   if (error) {
-    console.error("Banking credentials fetch error:", error)
+    // console.error("Banking credentials fetch error:", error)
     throw error
   }
 
@@ -99,7 +99,7 @@ export async function getBankingCredential(userId: string, credentialId: string)
 
   if (error) {
     if (error.code === "PGRST116") return null
-    console.error("Banking credential fetch error:", error)
+    // console.error("Banking credential fetch error:", error)
     throw error
   }
 
@@ -141,7 +141,7 @@ export async function createBankingCredential(
     .single()
 
   if (error) {
-    console.error("Banking credential creation error:", error)
+    // console.error("Banking credential creation error:", error)
     throw error
   }
 
@@ -194,7 +194,7 @@ export async function updateBankingCredential(
     .single()
 
   if (error) {
-    console.error("Banking credential update error:", error)
+    // console.error("Banking credential update error:", error)
     throw error
   }
 
@@ -210,7 +210,7 @@ export async function deleteBankingCredential(userId: string, credentialId: stri
   const { error } = await supabase.from("banking_credentials").delete().eq("user_id", userId).eq("id", credentialId)
 
   if (error) {
-    console.error("Banking credential deletion error:", error)
+    // console.error("Banking credential deletion error:", error)
     throw error
   }
 }
@@ -226,7 +226,7 @@ export async function updateLastUsedDate(userId: string, credentialId: string): 
     .eq("id", credentialId)
 
   if (error) {
-    console.error("Last used date update error:", error)
+    // console.error("Last used date update error:", error)
     throw error
   }
 }
@@ -237,7 +237,7 @@ export function decryptPassword(encryptedPassword: string | null): string | null
   try {
     return decryptSensitiveData(encryptedPassword)
   } catch (error) {
-    console.error("Password decryption error:", error)
+    // console.error("Password decryption error:", error)
     return null
   }
 }
@@ -255,7 +255,7 @@ export async function getBankingCredentialsStats(userId: string) {
     .eq("is_active", true)
 
   if (error) {
-    console.error("Banking credentials stats error:", error)
+    // console.error("Banking credentials stats error:", error)
     throw error
   }
 

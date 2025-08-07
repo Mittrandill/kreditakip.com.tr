@@ -45,7 +45,7 @@ import { BsFillGrid3X3GapFill } from "react-icons/bs"
 
 import { useAuth } from "@/hooks/use-auth"
 import { getAccounts, deleteAccount, type Account } from "@/lib/api/accounts"
-import { formatCurrency, formatNumber } from "@/lib/format"
+import { formatCurrency, formatNumber, formatPercent } from "@/lib/format"
 import { useToast } from "@/hooks/use-toast"
 import { formatDistanceToNow, format } from "date-fns"
 import { tr } from "date-fns/locale"
@@ -123,7 +123,7 @@ export default function HesaplarPage() {
   const [isDeleting, setIsDeleting] = useState(false)
 
   const [activeTab, setActiveTab] = useState("tumHesaplar")
-  const [viewMode, setViewMode] = useState("cards")
+  const [viewMode, setViewMode] = useState("table")
   const [searchTerm, setSearchTerm] = useState("")
   const [sortBy, setSortBy] = useState("created_at")
   const [sortOrder, setSortOrder] = useState<"asc" | "desc">("desc")
@@ -148,7 +148,6 @@ export default function HesaplarPage() {
       const data = await getAccounts(userId)
       setAccounts(data || [])
     } catch (err: any) {
-      console.error("Hesaplar yüklenirken hata:", err)
       setError("Hesaplar yüklenirken bir sorun oluştu.")
     } finally {
       setLoading(false)
@@ -164,7 +163,7 @@ export default function HesaplarPage() {
 
       if (searchTerm) {
         const lowerSearchTerm = searchTerm.toLowerCase()
-        const bankName = a.banks?.name || ""
+        const bankName = (a as any).banks?.name || ""
         if (
           !a.account_name.toLowerCase().includes(lowerSearchTerm) &&
           !bankName.toLowerCase().includes(lowerSearchTerm) &&
@@ -243,7 +242,6 @@ export default function HesaplarPage() {
       setAccounts((prev) => prev.filter((a) => a.id !== accountToDelete.id))
       toast({ title: "Başarılı", description: "Hesap başarıyla silindi." })
     } catch (err: any) {
-      console.error("Hesap silme hatası:", err)
       toast({ title: "Hata", description: "Hesap silinirken bir sorun oluştu.", variant: "destructive" })
     } finally {
       setIsDeleting(false)
@@ -260,6 +258,12 @@ export default function HesaplarPage() {
   // Metrics calculations
   const totalBalance = accounts.reduce((sum, account) => sum + (account.current_balance || 0), 0)
   const activeAccountsCount = accounts.filter((a) => a.is_active).length
+  const totalSavings = accounts
+    .filter((account) => account.account_type.toLowerCase() === "tasarruf")
+    .reduce((sum, account) => sum + (account.current_balance || 0), 0)
+  const averageInterestRate = accounts.length > 0 
+    ? accounts.reduce((sum, account) => sum + (account.interest_rate || 0), 0) / accounts.length 
+    : 0
   const accountTypeDistribution = accounts.reduce(
     (acc, account) => {
       const type = account.account_type.toLowerCase()
@@ -297,29 +301,61 @@ export default function HesaplarPage() {
 
   return (
     <div className="flex flex-col gap-4 md:gap-6">
-      {/* Hero Section */}
-      <Card className="bg-gradient-to-r from-blue-600 to-indigo-700 text-white border-transparent shadow-xl rounded-xl">
-        <CardContent className="p-6 md:p-8">
-          <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+      {/* Hero Section with Modern Design */}
+      <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 text-white shadow-2xl">
+        <div className="absolute inset-0 bg-gradient-to-br from-orange-600/20 to-amber-600/20" />
+        <div className="absolute -top-24 -right-24 w-96 h-96 bg-orange-500/10 rounded-full blur-3xl" />
+        <div className="absolute -bottom-24 -left-24 w-96 h-96 bg-amber-500/10 rounded-full blur-3xl" />
+        
+        <CardContent className="relative p-8 md:p-12">
+          <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-6">
             <div>
-              <h2 className="text-3xl font-bold mb-2 flex items-center gap-3">
-                <Wallet className="h-8 w-8" />
-                Hesap Yönetimi
-              </h2>
-              <p className="opacity-90 text-lg">Banka hesaplarınızı takip edin ve yönetin.</p>
+              <div className="flex items-center gap-3 mb-4">
+                <div className="p-3 bg-orange-500/20 rounded-lg backdrop-blur-sm">
+                  <Wallet className="h-8 w-8 text-orange-400" />
+                </div>
+                <h1 className="text-4xl font-bold bg-gradient-to-r from-white to-gray-300 bg-clip-text text-transparent">
+                  Hesap Yönetimi
+                </h1>
+              </div>
+              <p className="text-gray-300 text-lg max-w-2xl">
+                Banka hesaplarınızı takip edin ve yönetin.
+              </p>
+              
+              {/* Quick Stats */}
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-6">
+                <div className="bg-white/10 backdrop-blur-sm rounded-lg p-3">
+                  <p className="text-sm text-gray-300">Aktif Hesap</p>
+                  <p className="text-xl font-bold">{activeAccountsCount}</p>
+                </div>
+                <div className="bg-white/10 backdrop-blur-sm rounded-lg p-3">
+                  <p className="text-sm text-gray-300">Toplam Bakiye</p>
+                  <p className="text-xl font-bold">{formatCurrency(totalBalance)}</p>
+                </div>
+                <div className="bg-white/10 backdrop-blur-sm rounded-lg p-3">
+                  <p className="text-sm text-gray-300">Tasarruf</p>
+                  <p className="text-xl font-bold">{formatCurrency(totalSavings)}</p>
+                </div>
+                <div className="bg-white/10 backdrop-blur-sm rounded-lg p-3">
+                  <p className="text-sm text-gray-300">Ort. Faiz</p>
+                  <p className="text-xl font-bold">{formatPercent(averageInterestRate)}</p>
+                </div>
+              </div>
             </div>
-            <Button
-              variant="outline-white"
-              onClick={openCreateDialog}
-              size="lg"
-             
-            >
-              <Plus className="h-5 w-5 mr-2" />
-              Yeni Hesap Ekle
-            </Button>
+            
+            <div className="flex flex-col sm:flex-row gap-3">
+              <Button
+                className="bg-white/20 backdrop-blur-sm border-white/30 hover:bg-white/30 text-white"
+                size="lg"
+                onClick={openCreateDialog}
+              >
+                <Plus className="h-5 w-5 mr-2" />
+                Yeni Hesap Ekle
+              </Button>
+            </div>
           </div>
         </CardContent>
-      </Card>
+      </div>
 
       {/* Metrics */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
@@ -438,7 +474,7 @@ export default function HesaplarPage() {
                   variant={viewMode === "cards" ? "default" : "ghost"}
                   size="sm"
                   onClick={() => handleViewModeChange("cards")}
-                  className={`rounded-r-none ${viewMode === "cards" ? "bg-gradient-to-r from-blue-600 to-indigo-700 hover:from-blue-700 hover:to-indigo-800 text-white" : ""}`}
+                  className={`rounded-r-none ${viewMode === "cards" ? "bg-gradient-to-r from-emerald-600 to-teal-700 hover:from-emerald-700 hover:to-teal-800 text-white" : ""}`}
                 >
                   <BsFillGrid3X3GapFill className="h-4 w-4" />
                 </Button>
@@ -446,7 +482,7 @@ export default function HesaplarPage() {
                   variant={viewMode === "table" ? "default" : "ghost"}
                   size="sm"
                   onClick={() => handleViewModeChange("table")}
-                  className={`rounded-l-none ${viewMode === "table" ? "bg-gradient-to-r from-blue-600 to-indigo-700 hover:from-blue-700 hover:to-indigo-800 text-white" : ""}`}
+                  className={`rounded-l-none ${viewMode === "table" ? "bg-gradient-to-r from-emerald-600 to-teal-700 hover:from-emerald-700 hover:to-teal-800 text-white" : ""}`}
                 >
                   <List className="h-4 w-4" />
                 </Button>
@@ -488,13 +524,13 @@ export default function HesaplarPage() {
                         <div className="flex items-center justify-between">
                           <div className="flex items-center gap-3">
                             <div className="flex items-center gap-2">
-                              <BankLogo bankName={account.banks?.name || ""} size="sm" />
+                              <BankLogo bankName={(account as any).banks?.name || ""} size="sm" />
                             </div>
                             <div>
                               <CardTitle className="text-lg text-gray-900 dark:text-white">
                                 {account.account_name}
                               </CardTitle>
-                              <p className="text-sm text-gray-500">{account.banks?.name}</p>
+                              <p className="text-sm text-gray-500">{(account as any).banks?.name}</p>
                             </div>
                           </div>
                           <Badge className={getStatusBadgeClass(account.is_active ? "aktif" : "pasif")}>
@@ -590,8 +626,8 @@ export default function HesaplarPage() {
                         >
                           <TableCell>
                             <div className="flex items-center gap-2">
-                              <BankLogo bankName={account.banks?.name || ""} size="sm" />
-                              <span className="text-gray-700 dark:text-gray-300">{account.banks?.name}</span>
+                              <BankLogo bankName={(account as any).banks?.name || ""} size="sm" />
+                              <span className="text-gray-700 dark:text-gray-300">{(account as any).banks?.name}</span>
                             </div>
                           </TableCell>
                           <TableCell className="font-medium text-blue-700 dark:text-blue-400">

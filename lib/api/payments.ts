@@ -9,7 +9,7 @@ export async function getPaymentPlans(creditId: string) {
     .order("installment_number")
 
   if (error) {
-    console.error("Error fetching payment plans:", error)
+    // console.error("Error fetching payment plans:", error)
     throw error
   }
 
@@ -25,7 +25,7 @@ export async function updatePaymentPlan(planId: string, updates: Partial<Payment
     .single()
 
   if (error) {
-    console.error("Error updating payment plan:", error)
+    // console.error("Error updating payment plan:", error)
     throw error
   }
 
@@ -40,7 +40,7 @@ export async function getPaymentHistory(creditId: string) {
     .order("payment_date", { ascending: false })
 
   if (error) {
-    console.error("Error fetching payment history:", error)
+    // console.error("Error fetching payment history:", error)
     throw error
   }
 
@@ -51,7 +51,7 @@ export async function createPaymentHistory(paymentData: Omit<PaymentHistory, "id
   const { data, error } = await supabase.from("payment_history").insert(paymentData).select().single()
 
   if (error) {
-    console.error("Error creating payment history:", error)
+    // console.error("Error creating payment history:", error)
     throw error
   }
 
@@ -82,7 +82,7 @@ export async function getUpcomingPayments(userId: string, days = 30) {
     .order("due_date")
 
   if (error) {
-    console.error("Error fetching upcoming payments:", error)
+    // console.error("Error fetching upcoming payments:", error)
     throw error
   }
 
@@ -117,7 +117,7 @@ export async function getAllPayments(userId: string, monthsBack = 12, monthsForw
     .order("due_date")
 
   if (error) {
-    console.error("Error fetching all payments:", error)
+    // console.error("Error fetching all payments:", error)
     throw error
   }
 
@@ -128,7 +128,7 @@ export async function deletePaymentHistory(paymentId: string) {
   const { data, error } = await supabase.from("payment_history").delete().eq("id", paymentId).select().maybeSingle() // allow 0-or-1 rows without raising an error
 
   if (error) {
-    console.error("Error deleting payment history:", error)
+    // console.error("Error deleting payment history:", error)
     throw error
   }
 
@@ -157,7 +157,7 @@ export async function getPaymentHistoryById(paymentId: string) {
     .single()
 
   if (error) {
-    console.error("Error fetching payment history by id:", error)
+    // console.error("Error fetching payment history by id:", error)
     throw error
   }
 

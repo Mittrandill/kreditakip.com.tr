@@ -155,7 +155,6 @@ export function CreditTypeSelector({
         .order("category, name")
 
       if (error) {
-        console.error("Supabase error fetching credit types:", error)
         setErrorLoading("Kredi türleri yüklenirken bir sorun oluştu.")
         setCreditTypes(fallbackCreditTypes)
       } else {
@@ -166,7 +165,6 @@ export function CreditTypeSelector({
         }
       }
     } catch (error) {
-      console.error("Error fetching credit types:", error)
       setErrorLoading("Kredi türleri yüklenemedi.")
       setCreditTypes(fallbackCreditTypes)
     } finally {
@@ -190,7 +188,6 @@ export function CreditTypeSelector({
 
   const handleConfirm = () => {
     if (selectedCreditTypeState) {
-      console.log(`🎯 Kredi türü seçildi:`, selectedCreditTypeState)
       onSelect(selectedCreditTypeState)
       onOpenChange(false)
     }

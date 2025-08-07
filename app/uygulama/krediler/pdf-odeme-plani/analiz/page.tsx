@@ -85,14 +85,14 @@ export default function PDFAnalysisPage() {
   useEffect(() => {
     const loadData = async () => {
       try {
-        console.log("Bankalar ve kredi türleri yükleniyor...")
+        // Bankalar ve kredi türleri yükleniyor
         const [banksData, creditTypesData] = await Promise.all([getBanks(), getCreditTypes()])
-        console.log("Yüklenen bankalar:", banksData)
-        console.log("Yüklenen kredi türleri:", creditTypesData)
+        // Yüklenen bankalar
+        // Yüklenen kredi türleri
         setBanks(banksData || [])
         setCreditTypes(creditTypesData || [])
       } catch (err) {
-        console.error("Error loading banks/credit types:", err)
+        // Error loading banks/credit types
         toast({
           title: "Veri Yükleme Hatası",
           description: "Banka ve kredi türü verileri yüklenemedi. Lütfen sayfayı yenileyin.",
@@ -118,12 +118,12 @@ export default function PDFAnalysisPage() {
         parsedData.bankName = mapBankName(parsedData.bankName)
       }
 
-      console.log("📋 PDF'den gelen kredi türü:", parsedData.planName)
+      // PDF'den gelen kredi türü
       setPaymentPlan(parsedData)
 
       // Kredi türünü eşleştir - PDF'den gelen planName'i kullan
       if (parsedData.planName && creditTypes.length > 0) {
-        console.log("🔍 Kredi türü eşleştiriliyor:", parsedData.planName)
+        // Kredi türü eşleştiriliyor
 
         // Önce tam eşleşme ara
         let matchedCreditType = creditTypes.find((ct) => ct.name.toLowerCase() === parsedData.planName.toLowerCase())
@@ -148,10 +148,10 @@ export default function PDFAnalysisPage() {
         }
 
         if (matchedCreditType) {
-          console.log("✅ Kredi türü eşleştirildi:", matchedCreditType.name)
+          // Kredi türü eşleştirildi
           setSelectedCreditType(matchedCreditType)
         } else {
-          console.log("⚠️ Kredi türü eşleştirilemedi, varsayılan seçiliyor")
+          // Kredi türü eşleştirilemedi, varsayılan seçiliyor
           // Varsayılan olarak İhtiyaç Kredisi'ni ara
           const defaultCreditType =
             creditTypes.find((ct) => ct.name.toLowerCase().includes("ihtiyaç")) || creditTypes[0]
@@ -167,7 +167,7 @@ export default function PDFAnalysisPage() {
   // Kredi türleri yüklendiğinde eşleştirmeyi tekrar yap
   useEffect(() => {
     if (paymentPlan && paymentPlan.planName && creditTypes.length > 0 && !selectedCreditType) {
-      console.log("🔄 Kredi türleri yüklendi, eşleştirme yapılıyor...")
+      // Kredi türleri yüklendi, eşleştirme yapılıyor
 
       // Önce tam eşleşme ara
       let matchedCreditType = creditTypes.find((ct) => ct.name.toLowerCase() === paymentPlan.planName.toLowerCase())
@@ -192,10 +192,10 @@ export default function PDFAnalysisPage() {
       }
 
       if (matchedCreditType) {
-        console.log("✅ Gecikmeli kredi türü eşleştirildi:", matchedCreditType.name)
+        // Gecikmeli kredi türü eşleştirildi
         setSelectedCreditType(matchedCreditType)
       } else {
-        console.log("⚠️ Kredi türü eşleştirilemedi, varsayılan seçiliyor")
+        // Kredi türü eşleştirilemedi, varsayılan seçiliyor
         // Varsayılan olarak İhtiyaç Kredisi'ni ara
         const defaultCreditType = creditTypes.find((ct) => ct.name.toLowerCase().includes("ihtiyaç")) || creditTypes[0]
         setSelectedCreditType(defaultCreditType)
@@ -231,20 +231,20 @@ export default function PDFAnalysisPage() {
     })
   }
 
-  const handleBankSelect = (bankName: string) => {
-    console.log("Manuel banka seçimi:", bankName)
-    handleGeneralEdit("bankName", bankName)
+  const handleBankSelect = (bank: any) => {
+    // Manuel banka seçimi
+    handleGeneralEdit("bankName", bank.name || bank)
     setShowBankSelector(false)
 
     // Seçilen bankayı kaydetme işlemi için hazırla
-    const selectedBankForSave = banks.find((bank) => bank.name === bankName)
+    const selectedBankForSave = banks.find((b) => b.name === (bank.name || bank))
     if (selectedBankForSave) {
-      console.log("Manuel seçilen banka ID:", selectedBankForSave.id)
+      // Manuel seçilen banka ID
     }
   }
 
   const handleCreditTypeSelect = (creditType: any) => {
-    console.log("Manuel kredi türü seçimi:", creditType.name)
+    // Manuel kredi türü seçimi
     setSelectedCreditType(creditType)
     setShowCreditTypeSelector(false)
   }
@@ -282,25 +282,20 @@ export default function PDFAnalysisPage() {
     }, 15000)
 
     try {
-      console.log("Kaydetme işlemi başlıyor...")
-      console.log("Seçilen banka:", paymentPlan.bankName)
-      console.log("Seçilen kredi türü:", selectedCreditType)
-      console.log("Taksit sayısı:", paymentPlan.installments.length)
+      // Kaydetme işlemi başlıyor
+      // Seçilen banka
+      // Seçilen kredi türü
+      // Taksit sayısı
 
       // 1. Doğru bankayı bul - YENİ AKILLI EŞLEŞTİRME
       let selectedBank = null
       if (paymentPlan.bankName) {
-        console.log("=== KAYDETME İŞLEMİ DEBUG ===")
-        console.log("PDF'den gelen banka adı:", paymentPlan.bankName)
-        console.log(
-          "Mevcut bankalar:",
-          banks.map((b) => ({ id: b.id, name: b.name })),
-        )
+        // Kaydetme işlemi debug bilgileri
 
         // Akıllı banka eşleştirme kullan
         selectedBank = findBestBankMatch(paymentPlan.bankName, banks)
 
-        console.log("Bulunan banka:", selectedBank)
+        // Bulunan banka
       }
 
       // Eğer hala banka bulunamazsa kullanıcıya sor
@@ -316,9 +311,7 @@ export default function PDFAnalysisPage() {
         return
       }
 
-      console.log("Seçilen banka:", selectedBank)
-      console.log("Seçilen kredi türü:", selectedCreditType)
-      console.log("================================")
+      // Seçilen banka ve kredi türü bilgileri
 
       if (!selectedCreditType) {
         throw new Error("Kredi türü seçilmedi")
@@ -363,14 +356,14 @@ export default function PDFAnalysisPage() {
         calculated_interest_rate: paymentPlan.interestRate,
       }
 
-      console.log("Kaydedilecek kredi verisi:", creditData)
+      // Kaydedilecek kredi verisi hazırlandı
 
       // Krediyi kaydet
       const savedCredit = await createCredit(creditData)
-      console.log("Kredi kaydedildi:", savedCredit)
+      // Kredi kaydedildi
 
       // 5. Taksitleri kaydet
-      console.log("Taksitler kaydediliyor...")
+      // Taksitler kaydediliyor
 
       const paymentHistoryRecords = []
 
@@ -390,7 +383,7 @@ export default function PDFAnalysisPage() {
           payment_channel: "Banka",
         }
 
-        console.log(`${i + 1}. taksit kaydediliyor:`, paymentPlanData)
+        // Taksit kaydediliyor
 
         const { data: paymentPlanResult, error } = await supabase
           .from("payment_plans")
@@ -399,11 +392,11 @@ export default function PDFAnalysisPage() {
           .single()
 
         if (error) {
-          console.error(`${i + 1}. taksit kaydedilemedi:`, error)
+          // Taksit kaydedilemedi
           throw new Error(`Taksit kaydetme hatası: ${error.message}`)
         }
 
-        console.log(`${i + 1}. taksit kaydedildi`)
+        // Taksit kaydedildi
 
         // Eğer taksit ödenmişse payment_history'ye de kaydet
         if (installment.isPaid) {
@@ -424,18 +417,18 @@ export default function PDFAnalysisPage() {
 
       // 6. Ödeme geçmişi kayıtlarını toplu olarak kaydet
       if (paymentHistoryRecords.length > 0) {
-        console.log(`${paymentHistoryRecords.length} ödeme geçmişi kaydı ekleniyor...`)
+        // Ödeme geçmişi kayıtları ekleniyor
 
         const { data: historyData, error: historyError } = await supabase
           .from("payment_history")
           .insert(paymentHistoryRecords)
 
         if (historyError) {
-          console.error("Ödeme geçmişi kaydedilemedi:", historyError)
+          // Ödeme geçmişi kaydedilemedi
           // Bu hata kritik değil, sadece log'la
-          console.warn("Ödeme geçmişi kaydetme hatası, ancak kredi başarıyla kaydedildi")
+          // Ödeme geçmişi kaydetme hatası, ancak kredi başarıyla kaydedildi
         } else {
-          console.log(`${paymentHistoryRecords.length} ödeme geçmişi kaydı başarıyla eklendi`)
+          // Ödeme geçmişi kayıtları başarıyla eklendi
         }
       }
 
@@ -807,8 +800,9 @@ export default function PDFAnalysisPage() {
       {showBankSelector && <BankSelector onBankSelect={handleBankSelect} onSkip={() => setShowBankSelector(false)} />}
       {showCreditTypeSelector && (
         <CreditTypeSelector
-          onCreditTypeSelect={handleCreditTypeSelect}
-          onSkip={() => setShowCreditTypeSelector(false)}
+          open={showCreditTypeSelector}
+          onOpenChange={setShowCreditTypeSelector}
+          onSelect={handleCreditTypeSelect}
         />
       )}
     </div>

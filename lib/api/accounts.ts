@@ -1,6 +1,9 @@
 import { supabase } from "@/lib/supabase"
 import type { Account } from "@/lib/types"
 
+// Export Account type for components
+export type { Account } from "@/lib/types"
+
 export async function getAccounts(userId: string): Promise<Account[]> {
   const { data, error } = await supabase
     .from("accounts")
@@ -17,7 +20,7 @@ export async function getAccounts(userId: string): Promise<Account[]> {
     .order("created_at", { ascending: false })
 
   if (error) {
-    console.error("Error fetching accounts:", error)
+    // Error fetching accounts
     throw error
   }
 
@@ -39,7 +42,7 @@ export async function getAccount(accountId: string): Promise<Account | null> {
     .single()
 
   if (error) {
-    console.error("Error fetching account:", error)
+    // Error fetching account
     throw error
   }
 
@@ -54,7 +57,7 @@ export async function getAccountSummary(userId: string) {
     .eq("is_active", true)
 
   if (error) {
-    console.error("Error fetching account summary:", error)
+    // Error fetching account summary
     throw error
   }
 
@@ -109,7 +112,7 @@ export async function createAccount(account: Omit<Account, "id" | "created_at" |
   const { data, error } = await supabase.from("accounts").insert([account]).select().single()
 
   if (error) {
-    console.error("Error creating account:", error)
+    // Error creating account
     throw error
   }
 
@@ -120,7 +123,7 @@ export async function updateAccount(accountId: string, updates: Partial<Account>
   const { data, error } = await supabase.from("accounts").update(updates).eq("id", accountId).select().single()
 
   if (error) {
-    console.error("Error updating account:", error)
+    // Error updating account
     throw error
   }
 
@@ -131,7 +134,7 @@ export async function deleteAccount(accountId: string) {
   const { error } = await supabase.from("accounts").update({ is_active: false }).eq("id", accountId)
 
   if (error) {
-    console.error("Error deleting account:", error)
+    // Error deleting account
     throw error
   }
 }
@@ -141,7 +144,7 @@ export async function getBankIdByName(bankName: string): Promise<string | null> 
   const { data, error } = await supabase.from("banks").select("id").ilike("name", `%${bankName}%`).single()
 
   if (error) {
-    console.error("Error finding bank:", error)
+    // Error finding bank
     return null
   }
 

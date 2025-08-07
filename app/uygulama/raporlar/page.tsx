@@ -43,16 +43,16 @@ import { useAuth } from "@/hooks/use-auth"
 import { getCredits } from "@/lib/api/credits"
 import { getAllPayments } from "@/lib/api/payments"
 import { getCreditCards, getCreditCardSummary } from "@/lib/api/credit-cards"
-import type { Credit, Bank, CreditType, PaymentPlan, CreditCard } from "@/lib/types"
+import type { Credit, Bank, CreditType, PaymentPlan, CreditCard as CreditCardType } from "@/lib/types"
 import { formatCurrency, formatNumber, formatPercent } from "@/lib/format"
 import { useToast } from "@/hooks/use-toast"
 import { PieChart as CustomPieChart } from "@/components/reports/PieChart"
 import { BarChart as CustomBarChart } from "@/components/reports/BarChart"
 import { LineChart as CustomLineChart } from "@/components/reports/LineChart"
-import PDFReportModal from "@/components/pdf-report-modal"
+import PDFReportModal from "@/components/pdf-report-modal-v2"
 import ReportFilters, { type ReportFilters as IReportFilters } from "@/components/reports/filters"
 import AdvancedCharts from "@/components/reports/advanced-charts"
-import TabFilters, { type TabFilters } from "@/components/reports/tab-filters"
+import TabFilters, { type TabFilters as ITabFilters } from "@/components/reports/tab-filters"
 
 interface PopulatedCredit extends Credit {
   banks: Pick<Bank, "id" | "name" | "logo_url"> | null
@@ -100,12 +100,15 @@ const prepareBankDistributionData = (bankDistribution: any[]) => {
   }))
 }
 
-const prepareCardUtilizationData = (creditCards: CreditCard[]) => {
-  return creditCards.filter(card => card.is_active).map(card => ({
-    name: card.card_name,
-    value: card.utilization_rate,
-    color: card.utilization_rate > 80 ? "#ef4444" : card.utilization_rate > 50 ? "#f59e0b" : "#10b981"
-  }))
+const prepareCardUtilizationData = (creditCards: CreditCardType[]) => {
+  return creditCards.filter(card => card.is_active).map(card => {
+    const utilizationRate = card.credit_limit > 0 ? (card.current_debt / card.credit_limit) * 100 : 0
+    return {
+      name: card.card_name,
+      value: utilizationRate,
+      color: utilizationRate > 80 ? "#ef4444" : utilizationRate > 50 ? "#f59e0b" : "#10b981"
+    }
+  })
 }
 
 const preparePaymentTrendData = (allPayments: any[]) => {
@@ -182,7 +185,7 @@ export default function RaporlarPage() {
 
   const [allCredits, setAllCredits] = useState<PopulatedCredit[]>([])
   const [allPayments, setAllPayments] = useState<PopulatedPayment[]>([])
-  const [creditCards, setCreditCards] = useState<CreditCard[]>([])
+  const [creditCards, setCreditCards] = useState<CreditCardType[]>([])
   const [creditCardSummary, setCreditCardSummary] = useState<any>({})
   const [loadingData, setLoadingData] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -206,7 +209,7 @@ export default function RaporlarPage() {
   })
 
   // Tab filters state for each tab
-  const [tabFilters, setTabFilters] = useState<{[key: string]: TabFilters}>({
+  const [tabFilters, setTabFilters] = useState<{[key: string]: ITabFilters}>({
     'genel-bakis': {
       searchTerm: '',
       bankFilter: 'all',
@@ -255,7 +258,7 @@ export default function RaporlarPage() {
   })
 
   // Handle tab filter changes
-  const handleTabFiltersChange = (tabId: string, filters: TabFilters) => {
+  const handleTabFiltersChange = (tabId: string, filters: ITabFilters) => {
     setTabFilters(prev => ({
       ...prev,
       [tabId]: filters
@@ -281,7 +284,7 @@ export default function RaporlarPage() {
           if (isMounted) {
             setAllCredits(creditsData || [])
             setAllPayments(paymentsData || [])
-            setCreditCards(creditCardsData || [])
+            setCreditCards((creditCardsData as any) || [])
             setCreditCardSummary(creditCardSummaryData || {})
             console.log("📊 Raporlar verisi yüklendi:", {
               credits: creditsData?.length || 0,
@@ -378,7 +381,7 @@ export default function RaporlarPage() {
     allPayments
       .map(p => p.credits?.banks?.name)
       .filter(Boolean)
-  ))
+  )) as string[]
 
   // Bank distribution data
   const bankDistribution = useMemo(() => {
@@ -389,7 +392,7 @@ export default function RaporlarPage() {
     })
     
     creditCards.forEach(card => {
-      const bankName = card.bank_name || "Diğer"
+      const bankName = (card as any).bank_name || "Diğer"
       bankDebts[bankName] = (bankDebts[bankName] || 0) + card.current_debt
     })
 
@@ -475,10 +478,10 @@ export default function RaporlarPage() {
                     status: payment.status
                   })),
                   creditCards: creditCards.map(card => ({
-                    bankName: card.bank_name,
+                    bankName: (card as any).bank_name,
                     creditLimit: card.credit_limit,
                     currentDebt: card.current_debt,
-                    utilizationRate: card.utilization_rate
+                    utilizationRate: card.credit_limit > 0 ? (card.current_debt / card.credit_limit) * 100 : 0
                   })),
                   summary: {
                     totalDebt: totalActiveDebt + (creditCardSummary.totalCurrentDebt || 0),
@@ -751,11 +754,14 @@ export default function RaporlarPage() {
                 </CardHeader>
                 <CardContent>
                   <CustomBarChart 
-                    data={creditCards.slice(0, 6).map(card => ({
-                      name: card.card_name.length > 10 ? card.card_name.substring(0, 10) + '...' : card.card_name,
-                      value: card.current_debt,
-                      color: card.utilization_rate > 80 ? "#ef4444" : "#8b5cf6"
-                    }))}
+                    data={creditCards.slice(0, 6).map(card => {
+                      const utilizationRate = card.credit_limit > 0 ? (card.current_debt / card.credit_limit) * 100 : 0
+                      return {
+                        name: card.card_name.length > 10 ? card.card_name.substring(0, 10) + '...' : card.card_name,
+                        value: card.current_debt,
+                        color: utilizationRate > 80 ? "#ef4444" : "#8b5cf6"
+                      }
+                    })}
                     height={300}
                   />
                 </CardContent>
@@ -794,15 +800,15 @@ export default function RaporlarPage() {
                           <TableCell>
                             <div className="flex items-center gap-3">
                               <BankLogo
-                                bankName={card.bank_name || "Bilinmeyen Banka"}
-                                logoUrl={card.banks?.logo_url}
+                                bankName={(card as any).bank_name || "Bilinmeyen Banka"}
+                                logoUrl={undefined}
                                 size="sm"
                                 className="ring-1 ring-purple-200 bg-white"
                               />
                               <span className="font-medium text-gray-900">{card.card_name}</span>
                             </div>
                           </TableCell>
-                          <TableCell className="text-gray-600">{card.bank_name}</TableCell>
+                          <TableCell className="text-gray-600">{(card as any).bank_name}</TableCell>
                           <TableCell className="font-semibold text-gray-900">
                             {formatCurrency(card.credit_limit)}
                           </TableCell>
@@ -812,10 +818,13 @@ export default function RaporlarPage() {
                           <TableCell>
                             <div className="flex items-center gap-2">
                               <span className={`font-medium ${
-                                card.utilization_rate > 80 ? "text-red-600" :
-                                card.utilization_rate > 50 ? "text-yellow-600" : "text-emerald-600"
+                                (() => {
+                                  const utilizationRate = card.credit_limit > 0 ? (card.current_debt / card.credit_limit) * 100 : 0
+                                  return utilizationRate > 80 ? "text-red-600" :
+                                         utilizationRate > 50 ? "text-yellow-600" : "text-emerald-600"
+                                })()
                               }`}>
-                                {formatPercent(card.utilization_rate)}
+                                {formatPercent(card.credit_limit > 0 ? (card.current_debt / card.credit_limit) * 100 : 0)}
                               </span>
                             </div>
                           </TableCell>
@@ -903,7 +912,7 @@ export default function RaporlarPage() {
                                 <div className="flex items-center gap-3">
                                   <BankLogo
                                     bankName={payment.credits?.banks?.name || "Bilinmeyen Banka"}
-                                    logoUrl={payment.credits?.banks?.logo_url}
+                                    logoUrl={payment.credits?.banks?.logo_url || undefined}
                                     size="sm"
                                     className="ring-1 ring-emerald-200 bg-white"
                                   />
@@ -1196,7 +1205,7 @@ export default function RaporlarPage() {
                     <TableBody>
                       {bankDistribution.map((bank, index) => {
                         const bankCredits = activeCredits.filter(c => c.banks?.name === bank.bank)
-                        const bankCards = creditCards.filter(c => c.bank_name === bank.bank)
+                        const bankCards = creditCards.filter(c => (c as any).bank_name === bank.bank)
                         const totalDebt = bankDistribution.reduce((sum, b) => sum + b.debt, 0)
                         const percentage = totalDebt > 0 ? (bank.debt / totalDebt) * 100 : 0
                         
@@ -1206,7 +1215,7 @@ export default function RaporlarPage() {
                               <div className="flex items-center gap-3">
                                 <BankLogo
                                   bankName={bank.bank}
-                                  logoUrl={bankCredits[0]?.banks?.logo_url || bankCards[0]?.banks?.logo_url}
+                                  logoUrl={bankCredits[0]?.banks?.logo_url || undefined}
                                   size="sm"
                                   className="ring-1 ring-emerald-200 bg-white"
                                 />

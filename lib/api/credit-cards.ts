@@ -73,12 +73,6 @@ export interface CreditCard {
 
 export async function createCreditCard(userId: string, data: CreateCreditCardData): Promise<CreditCard> {
   try {
-    console.log("🔄 Kredi kartı oluşturuluyor:", {
-      card_name: data.card_name,
-      bank_name: data.bank_name,
-      card_type: data.card_type,
-      has_sensitive_data: !!(data.card_number || data.cardholder_name || data.cvv),
-    })
 
     // Banka bul veya oluştur
     let bankId = null
@@ -87,7 +81,7 @@ export async function createCreditCard(userId: string, data: CreateCreditCardDat
 
       if (existingBank) {
         bankId = existingBank.id
-        console.log("✅ Mevcut banka bulundu:", data.bank_name)
+        // // console.log("✅ Mevcut banka bulundu:", data.bank_name)
       } else {
         const { data: newBank, error: bankError } = await supabase
           .from("banks")
@@ -99,10 +93,10 @@ export async function createCreditCard(userId: string, data: CreateCreditCardDat
           .single()
 
         if (bankError) {
-          console.error("❌ Banka oluşturma hatası:", bankError)
+          // // console.error("❌ Banka oluşturma hatası:", bankError)
         } else {
           bankId = newBank.id
-          console.log("✅ Yeni banka oluşturuldu:", data.bank_name)
+          // // console.log("✅ Yeni banka oluşturuldu:", data.bank_name)
         }
       }
     }
@@ -122,20 +116,14 @@ export async function createCreditCard(userId: string, data: CreateCreditCardDat
       if (cardTypeData) {
         // Segment değerini öncelikle kullan, yoksa card_type kullan
         finalCardType = cardTypeData.segment || cardTypeData.card_type || data.card_type
-        console.log("✅ Kart türü eşleştirildi:", {
-          selected: data.card_type,
-          matched: finalCardType,
-          segment: cardTypeData.segment,
-          category: cardTypeData.category,
-        })
       } else {
         // Eşleşme bulunamazsa gelen değeri kullan
         finalCardType = data.card_type
-        console.log("ℹ️ Kart türü eşleştirmesi bulunamadı, orijinal değer kullanılıyor:", finalCardType)
+        // // console.log("ℹ️ Kart türü eşleştirmesi bulunamadı, orijinal değer kullanılıyor:", finalCardType)
       }
     }
 
-    console.log("🎯 Final kart türü:", finalCardType)
+    // // console.log("🎯 Final kart türü:", finalCardType)
 
     // Veritabanı şemasına uygun veri yapısı
     const cardData: any = {
@@ -163,9 +151,9 @@ export async function createCreditCard(userId: string, data: CreateCreditCardDat
     if (data.cardholder_name) {
       try {
         cardData.cardholder_name_encrypted = encryptSensitiveData(data.cardholder_name)
-        console.log("🔒 Kart sahibi adı şifrelendi")
+        // // console.log("🔒 Kart sahibi adı şifrelendi")
       } catch (error) {
-        console.error("❌ Kart sahibi adı şifreleme hatası:", error)
+        // // console.error("❌ Kart sahibi adı şifreleme hatası:", error)
         throw new Error("Kart sahibi adı şifrelenemedi")
       }
     }
@@ -173,9 +161,9 @@ export async function createCreditCard(userId: string, data: CreateCreditCardDat
     if (data.card_number) {
       try {
         cardData.card_number_encrypted = encryptSensitiveData(data.card_number)
-        console.log("🔒 Kart numarası şifrelendi")
+        // // console.log("🔒 Kart numarası şifrelendi")
       } catch (error) {
-        console.error("❌ Kart numarası şifreleme hatası:", error)
+        // // console.error("❌ Kart numarası şifreleme hatası:", error)
         throw new Error("Kart numarası şifrelenemedi")
       }
     }
@@ -183,9 +171,9 @@ export async function createCreditCard(userId: string, data: CreateCreditCardDat
     if (data.expiry_month) {
       try {
         cardData.expiry_month_encrypted = encryptSensitiveData(data.expiry_month.toString())
-        console.log("🔒 Son kullanma ayı şifrelendi")
+        // // console.log("🔒 Son kullanma ayı şifrelendi")
       } catch (error) {
-        console.error("❌ Son kullanma ayı şifreleme hatası:", error)
+        // // console.error("❌ Son kullanma ayı şifreleme hatası:", error)
         throw new Error("Son kullanma ayı şifrelenemedi")
       }
     }
@@ -193,9 +181,9 @@ export async function createCreditCard(userId: string, data: CreateCreditCardDat
     if (data.expiry_year) {
       try {
         cardData.expiry_year_encrypted = encryptSensitiveData(data.expiry_year.toString())
-        console.log("🔒 Son kullanma yılı şifrelendi")
+        // // console.log("🔒 Son kullanma yılı şifrelendi")
       } catch (error) {
-        console.error("❌ Son kullanma yılı şifreleme hatası:", error)
+        // // console.error("❌ Son kullanma yılı şifreleme hatası:", error)
         throw new Error("Son kullanma yılı şifrelenemedi")
       }
     }
@@ -203,38 +191,32 @@ export async function createCreditCard(userId: string, data: CreateCreditCardDat
     if (data.cvv) {
       try {
         cardData.cvv_encrypted = encryptSensitiveData(data.cvv)
-        console.log("🔒 CVV şifrelendi")
+        // // console.log("🔒 CVV şifrelendi")
       } catch (error) {
-        console.error("❌ CVV şifreleme hatası:", error)
+        // // console.error("❌ CVV şifreleme hatası:", error)
         throw new Error("CVV şifrelenemedi")
       }
     }
 
-    console.log("💾 Veritabanına kaydediliyor:", {
-      ...cardData,
-      cardholder_name_encrypted: cardData.cardholder_name_encrypted ? "[ŞİFRELİ]" : undefined,
-      card_number_encrypted: cardData.card_number_encrypted ? "[ŞİFRELİ]" : undefined,
-      cvv_encrypted: cardData.cvv_encrypted ? "[ŞİFRELİ]" : undefined,
-    })
 
     const { data: creditCard, error } = await supabase.from("credit_cards").insert(cardData).select().single()
 
     if (error) {
-      console.error("❌ Kredi kartı oluşturma hatası:", error)
+      // // console.error("❌ Kredi kartı oluşturma hatası:", error)
       throw new Error(`Kredi kartı oluşturulamadı: ${error.message}`)
     }
 
-    console.log("✅ Kredi kartı başarıyla oluşturuldu:", creditCard.id)
+    // // console.log("✅ Kredi kartı başarıyla oluşturuldu:", creditCard.id)
     return await processCreditCardData(creditCard)
   } catch (error) {
-    console.error("❌ createCreditCard hatası:", error)
+    // // console.error("❌ createCreditCard hatası:", error)
     throw error
   }
 }
 
 export async function getCreditCards(userId: string): Promise<CreditCard[]> {
   try {
-    console.log("🔄 Kullanıcı kredi kartları getiriliyor:", userId)
+    // // console.log("🔄 Kullanıcı kredi kartları getiriliyor:", userId)
 
     const { data: creditCards, error } = await supabase
       .from("credit_cards")
@@ -250,30 +232,30 @@ export async function getCreditCards(userId: string): Promise<CreditCard[]> {
       .order("created_at", { ascending: false })
 
     if (error) {
-      console.error("❌ Kredi kartları getirme hatası:", error)
+      // // console.error("❌ Kredi kartları getirme hatası:", error)
       throw new Error(`Kredi kartları getirilemedi: ${error.message}`)
     }
 
     if (!creditCards) {
-      console.log("ℹ️ Kredi kartı bulunamadı")
+      // // console.log("ℹ️ Kredi kartı bulunamadı")
       return []
     }
 
-    console.log(`✅ ${creditCards.length} kredi kartı bulundu`)
+    // // console.log(`✅ ${creditCards.length} kredi kartı bulundu`)
 
     // Her kredi kartını işle ve hassas verileri çöz
     const processedCards = await Promise.all(creditCards.map((card) => processCreditCardData(card)))
 
     return processedCards
   } catch (error) {
-    console.error("❌ getCreditCards hatası:", error)
+    // // console.error("❌ getCreditCards hatası:", error)
     throw error
   }
 }
 
 export async function getCreditCard(cardId: string): Promise<CreditCard | null> {
   try {
-    console.log("🔄 Kredi kartı detayı getiriliyor:", cardId)
+    // // console.log("🔄 Kredi kartı detayı getiriliyor:", cardId)
 
     const { data: creditCard, error } = await supabase
       .from("credit_cards")
@@ -290,24 +272,24 @@ export async function getCreditCard(cardId: string): Promise<CreditCard | null> 
 
     if (error) {
       if (error.code === "PGRST116") {
-        console.log("ℹ️ Kredi kartı bulunamadı:", cardId)
+        // // console.log("ℹ️ Kredi kartı bulunamadı:", cardId)
         return null
       }
-      console.error("❌ Kredi kartı getirme hatası:", error)
+      // // console.error("❌ Kredi kartı getirme hatası:", error)
       throw new Error(`Kredi kartı getirilemedi: ${error.message}`)
     }
 
-    console.log("✅ Kredi kartı bulundu:", creditCard.card_name)
+    // // console.log("✅ Kredi kartı bulundu:", creditCard.card_name)
     return await processCreditCardData(creditCard)
   } catch (error) {
-    console.error("❌ getCreditCard hatası:", error)
+    // // console.error("❌ getCreditCard hatası:", error)
     throw error
   }
 }
 
 export async function updateCreditCard(cardId: string, data: UpdateCreditCardData): Promise<CreditCard> {
   try {
-    console.log("🔄 Kredi kartı güncelleniyor:", cardId)
+    // // console.log("🔄 Kredi kartı güncelleniyor:", cardId)
 
     // Banka bul veya oluştur
     let bankId = undefined
@@ -327,7 +309,7 @@ export async function updateCreditCard(cardId: string, data: UpdateCreditCardDat
           .single()
 
         if (bankError) {
-          console.error("❌ Banka oluşturma hatası:", bankError)
+          // // console.error("❌ Banka oluşturma hatası:", bankError)
         } else {
           bankId = newBank.id
         }
@@ -355,9 +337,9 @@ export async function updateCreditCard(cardId: string, data: UpdateCreditCardDat
     if (data.cardholder_name !== undefined) {
       try {
         updateData.cardholder_name_encrypted = data.cardholder_name ? encryptSensitiveData(data.cardholder_name) : null
-        console.log("🔒 Kart sahibi adı güncellendi ve şifrelendi")
+        // // console.log("🔒 Kart sahibi adı güncellendi ve şifrelendi")
       } catch (error) {
-        console.error("❌ Kart sahibi adı şifreleme hatası:", error)
+        // // console.error("❌ Kart sahibi adı şifreleme hatası:", error)
         throw new Error("Kart sahibi adı şifrelenemedi")
       }
     }
@@ -365,9 +347,9 @@ export async function updateCreditCard(cardId: string, data: UpdateCreditCardDat
     if (data.card_number !== undefined) {
       try {
         updateData.card_number_encrypted = data.card_number ? encryptSensitiveData(data.card_number) : null
-        console.log("🔒 Kart numarası güncellendi ve şifrelendi")
+        // // console.log("🔒 Kart numarası güncellendi ve şifrelendi")
       } catch (error) {
-        console.error("❌ Kart numarası şifreleme hatası:", error)
+        // // console.error("❌ Kart numarası şifreleme hatası:", error)
         throw new Error("Kart numarası şifrelenemedi")
       }
     }
@@ -377,9 +359,9 @@ export async function updateCreditCard(cardId: string, data: UpdateCreditCardDat
         updateData.expiry_month_encrypted = data.expiry_month
           ? encryptSensitiveData(data.expiry_month.toString())
           : null
-        console.log("🔒 Son kullanma ayı güncellendi ve şifrelendi")
+        // // console.log("🔒 Son kullanma ayı güncellendi ve şifrelendi")
       } catch (error) {
-        console.error("❌ Son kullanma ayı şifreleme hatası:", error)
+        // // console.error("❌ Son kullanma ayı şifreleme hatası:", error)
         throw new Error("Son kullanma ayı şifrelenemedi")
       }
     }
@@ -387,9 +369,9 @@ export async function updateCreditCard(cardId: string, data: UpdateCreditCardDat
     if (data.expiry_year !== undefined) {
       try {
         updateData.expiry_year_encrypted = data.expiry_year ? encryptSensitiveData(data.expiry_year.toString()) : null
-        console.log("🔒 Son kullanma yılı güncellendi ve şifrelendi")
+        // // console.log("🔒 Son kullanma yılı güncellendi ve şifrelendi")
       } catch (error) {
-        console.error("❌ Son kullanma yılı şifreleme hatası:", error)
+        // // console.error("❌ Son kullanma yılı şifreleme hatası:", error)
         throw new Error("Son kullanma yılı şifrelenemedi")
       }
     }
@@ -397,9 +379,9 @@ export async function updateCreditCard(cardId: string, data: UpdateCreditCardDat
     if (data.cvv !== undefined) {
       try {
         updateData.cvv_encrypted = data.cvv ? encryptSensitiveData(data.cvv) : null
-        console.log("🔒 CVV güncellendi ve şifrelendi")
+        // // console.log("🔒 CVV güncellendi ve şifrelendi")
       } catch (error) {
-        console.error("❌ CVV şifreleme hatası:", error)
+        // // console.error("❌ CVV şifreleme hatası:", error)
         throw new Error("CVV şifrelenemedi")
       }
     }
@@ -421,32 +403,32 @@ export async function updateCreditCard(cardId: string, data: UpdateCreditCardDat
       .single()
 
     if (error) {
-      console.error("❌ Kredi kartı güncelleme hatası:", error)
+      // // console.error("❌ Kredi kartı güncelleme hatası:", error)
       throw new Error(`Kredi kartı güncellenemedi: ${error.message}`)
     }
 
-    console.log("✅ Kredi kartı başarıyla güncellendi")
+    // // console.log("✅ Kredi kartı başarıyla güncellendi")
     return await processCreditCardData(creditCard)
   } catch (error) {
-    console.error("❌ updateCreditCard hatası:", error)
+    // // console.error("❌ updateCreditCard hatası:", error)
     throw error
   }
 }
 
 export async function deleteCreditCard(cardId: string): Promise<void> {
   try {
-    console.log("🔄 Kredi kartı siliniyor:", cardId)
+    // // console.log("🔄 Kredi kartı siliniyor:", cardId)
 
     const { error } = await supabase.from("credit_cards").delete().eq("id", cardId)
 
     if (error) {
-      console.error("❌ Kredi kartı silme hatası:", error)
+      // // console.error("❌ Kredi kartı silme hatası:", error)
       throw new Error(`Kredi kartı silinemedi: ${error.message}`)
     }
 
-    console.log("✅ Kredi kartı başarıyla silindi")
+    // // console.log("✅ Kredi kartı başarıyla silindi")
   } catch (error) {
-    console.error("❌ deleteCreditCard hatası:", error)
+    // // console.error("❌ deleteCreditCard hatası:", error)
     throw error
   }
 }
@@ -454,12 +436,6 @@ export async function deleteCreditCard(cardId: string): Promise<void> {
 // Kredi kartı verisini işle (şifre çöz ve hesapla)
 async function processCreditCardData(card: any): Promise<CreditCard> {
   try {
-    console.log("🔄 Kart verisi işleniyor:", {
-      id: card.id,
-      card_name: card.card_name,
-      has_encrypted_data: !!(card.cardholder_name_encrypted || card.card_number_encrypted),
-      card_type: card.card_type,
-    })
 
     // Hassas verileri çöz
     let cardholder_name: string | undefined
@@ -472,9 +448,9 @@ async function processCreditCardData(card: any): Promise<CreditCard> {
     if (card.cardholder_name_encrypted) {
       try {
         cardholder_name = decryptSensitiveData(card.cardholder_name_encrypted)
-        console.log("🔓 Kart sahibi adı çözüldü")
+        // // console.log("🔓 Kart sahibi adı çözüldü")
       } catch (error) {
-        console.error("❌ Kart sahibi adı çözme hatası:", error)
+        // // console.error("❌ Kart sahibi adı çözme hatası:", error)
         cardholder_name = card.cardholder_name // Fallback
       }
     } else {
@@ -485,9 +461,9 @@ async function processCreditCardData(card: any): Promise<CreditCard> {
     if (card.card_number_encrypted) {
       try {
         card_number = decryptSensitiveData(card.card_number_encrypted)
-        console.log("🔓 Kart numarası çözüldü")
+        // // console.log("🔓 Kart numarası çözüldü")
       } catch (error) {
-        console.error("❌ Kart numarası çözme hatası:", error)
+        // // console.error("❌ Kart numarası çözme hatası:", error)
         card_number = card.card_number // Fallback
       }
     } else {
@@ -499,9 +475,9 @@ async function processCreditCardData(card: any): Promise<CreditCard> {
       try {
         const decryptedMonth = decryptSensitiveData(card.expiry_month_encrypted)
         expiry_month = decryptedMonth ? Number.parseInt(decryptedMonth, 10) : undefined
-        console.log("🔓 Son kullanma ayı çözüldü")
+        // // console.log("🔓 Son kullanma ayı çözüldü")
       } catch (error) {
-        console.error("❌ Son kullanma ayı çözme hatası:", error)
+        // // console.error("❌ Son kullanma ayı çözme hatası:", error)
         expiry_month = card.expiry_month // Fallback
       }
     } else {
@@ -513,9 +489,9 @@ async function processCreditCardData(card: any): Promise<CreditCard> {
       try {
         const decryptedYear = decryptSensitiveData(card.expiry_year_encrypted)
         expiry_year = decryptedYear ? Number.parseInt(decryptedYear, 10) : undefined
-        console.log("🔓 Son kullanma yılı çözüldü")
+        // // console.log("🔓 Son kullanma yılı çözüldü")
       } catch (error) {
-        console.error("❌ Son kullanma yılı çözme hatası:", error)
+        // // console.error("❌ Son kullanma yılı çözme hatası:", error)
         expiry_year = card.expiry_year // Fallback
       }
     } else {
@@ -526,9 +502,9 @@ async function processCreditCardData(card: any): Promise<CreditCard> {
     if (card.cvv_encrypted) {
       try {
         cvv = decryptSensitiveData(card.cvv_encrypted)
-        console.log("🔓 CVV çözüldü")
+        // // console.log("🔓 CVV çözüldü")
       } catch (error) {
-        console.error("❌ CVV çözme hatası:", error)
+        // // console.error("❌ CVV çözme hatası:", error)
         cvv = card.cvv // Fallback
       }
     } else {
@@ -569,17 +545,10 @@ async function processCreditCardData(card: any): Promise<CreditCard> {
       banks: card.banks,
     }
 
-    console.log("✅ Kart verisi başarıyla işlendi:", {
-      id: processedCard.id,
-      has_cardholder_name: !!processedCard.cardholder_name,
-      has_card_number: !!processedCard.card_number,
-      card_type: processedCard.card_type,
-      is_active: processedCard.is_active,
-    })
 
     return processedCard
   } catch (error) {
-    console.error("❌ Kart verisi işleme hatası:", error)
+    // // console.error("❌ Kart verisi işleme hatası:", error)
     throw error
   }
 }
@@ -607,7 +576,7 @@ export async function getCreditCardSummary(userId: string) {
       cards: creditCards,
     }
   } catch (error) {
-    console.error("❌ getCreditCardSummary hatası:", error)
+    // // console.error("❌ getCreditCardSummary hatası:", error)
     throw error
   }
 }
@@ -637,7 +606,7 @@ export async function getUpcomingDueDates(userId: string, daysAhead = 30) {
       .order("next_due_date", { ascending: true })
 
     if (error) {
-      console.error("❌ Yaklaşan son ödeme tarihleri hatası:", error)
+      // // console.error("❌ Yaklaşan son ödeme tarihleri hatası:", error)
       throw new Error("Yaklaşan son ödeme tarihleri yüklenirken hata oluştu")
     }
 
@@ -651,7 +620,7 @@ export async function getUpcomingDueDates(userId: string, daysAhead = 30) {
           const decrypted = decryptSensitiveData(card.card_number_encrypted)
           card_number_masked = maskCardNumber(decrypted)
         } catch (error) {
-          console.error("❌ Kart numarası çözme hatası (due dates):", error)
+          // // console.error("❌ Kart numarası çözme hatası (due dates):", error)
         }
       }
 
@@ -662,7 +631,7 @@ export async function getUpcomingDueDates(userId: string, daysAhead = 30) {
       }
     })
   } catch (error) {
-    console.error("❌ getUpcomingDueDates hatası:", error)
+    // // console.error("❌ getUpcomingDueDates hatası:", error)
     throw error
   }
 }
