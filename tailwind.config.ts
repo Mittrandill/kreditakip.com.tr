@@ -9,9 +9,6 @@ const config = {
     "./src/**/*.{ts,tsx}",
     "*.{js,ts,jsx,tsx,mdx}",
   ],
-  future: {
-    hoverOnlyWhenSupported: true,
-  },
   prefix: "",
   theme: {
     container: {

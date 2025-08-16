@@ -86,7 +86,7 @@ import {
 } from "@/components/ui/alert-dialog"
 
 interface PopulatedCredit extends Credit {
-  banks: Pick<Bank, "id" | "name" | "logo_url"> | null
+  banks: Pick<Bank, "id" | "name" | "logo_url" | "contact_phone" | "contact_email" | "website"> | null
   credit_types: Pick<CreditType, "id" | "name" | "description"> | null
 }
 
@@ -402,15 +402,12 @@ export default function KrediDetayPage() {
   const handleRaporAl = async () => {
     setRaporLoading(true)
     try {
-      const { generatePDFReport } = await import("@/lib/utils/pdf-generator-modern")
-      generatePDFReport({
-        totalDebt: krediDetay?.remaining_debt || 0,
-        monthlyPayment: krediDetay?.monthly_payment || 0,
-        activeCredits: 1,
-        totalCredits: 1,
-        credits: krediDetay ? [krediDetay] : [],
-        payments: odemeGecmisi || [],
-        creditCards: []
+      const { generateCreditReport } = await import("@/lib/utils/pdf-generator")
+      await generateCreditReport({
+        credit: krediDetay,
+        paymentPlans: odemePlani,
+        paymentHistory: odemeGecmisi,
+        dynamicStats,
       })
 
       toast({
@@ -862,15 +859,15 @@ export default function KrediDetayPage() {
                       <div className="space-y-3">
                         <div className="flex items-center gap-2 text-sm">
                           <Phone className="h-4 w-4 text-gray-400" />
-                          <span className="text-gray-600">N/A</span>
+                          <span className="text-gray-600">{krediDetay.banks?.contact_phone || "N/A"}</span>
                         </div>
                         <div className="flex items-center gap-2 text-sm">
                           <Mail className="h-4 w-4 text-gray-400" />
-                          <span className="text-gray-600">N/A</span>
+                          <span className="text-gray-600">{krediDetay.banks?.contact_email || "N/A"}</span>
                         </div>
                         <div className="flex items-center gap-2 text-sm">
                           <MapPin className="h-4 w-4 text-gray-400" />
-                          <span className="text-gray-600">N/A</span>
+                          <span className="text-gray-600">{krediDetay.banks?.website || "N/A"}</span>
                         </div>
                       </div>
                     </CardContent>
@@ -1171,7 +1168,7 @@ export default function KrediDetayPage() {
                               </div>
                               <div className="text-xs text-gray-500 mt-1">
                                 Kanal: {odeme.payment_channel || "Bilinmiyor"} • Referans:{" "}
-                                N/A
+                                {odeme.reference_number || "N/A"}
                               </div>
                             </div>
                           </div>
@@ -1689,14 +1686,14 @@ export default function KrediDetayPage() {
                           <p className="font-medium text-gray-900">Ödeme Hatırlatması</p>
                           <p className="text-sm text-gray-500">Ödeme tarihi yaklaştığında bildirim al</p>
                         </div>
-                        <Switch checked={true} />
+                        <Switch defaultChecked />
                       </div>
                       <div className="flex items-center justify-between">
                         <div>
                           <p className="font-medium text-gray-900">Faiz Oranı Değişikliği</p>
                           <p className="text-sm text-gray-500">Faiz oranı değiştiğinde bildirim al</p>
                         </div>
-                        <Switch checked={true} />
+                        <Switch defaultChecked />
                       </div>
                       <div className="flex items-center justify-between">
                         <div>

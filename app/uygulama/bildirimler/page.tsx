@@ -98,6 +98,7 @@ export default function BildirimlerPage() {
       setNotifications(notificationsData || [])
       setStats(statsData || {})
     } catch (error) {
+      console.error("Error loading notifications:", error)
       toast.error("Bildirimler yüklenirken hata oluştu")
     } finally {
       setLoading(false)
@@ -111,15 +112,15 @@ export default function BildirimlerPage() {
     try {
       await createPaymentReminders(user.id)
     } catch (error) {
-      // Silently fail for auto-creating notifications
+      console.error("Error auto-creating notifications:", error)
     }
   }
 
   const handleMarkAsRead = async (notificationId: string) => {
     try {
       await markNotificationAsRead(notificationId)
-      setNotifications((prev: any) => prev.map((n: any) => (n.id === notificationId ? { ...n, is_read: true } : n)))
-      setStats((prev: any) => ({
+      setNotifications((prev) => prev.map((n) => (n.id === notificationId ? { ...n, is_read: true } : n)))
+      setStats((prev) => ({
         ...prev,
         unread: Math.max(0, prev.unread - 1),
         read: prev.read + 1,
@@ -135,8 +136,8 @@ export default function BildirimlerPage() {
 
     try {
       await markAllNotificationsAsRead(user.id)
-      setNotifications((prev: any) => prev.map((n: any) => ({ ...n, is_read: true })))
-      setStats((prev: any) => ({
+      setNotifications((prev) => prev.map((n) => ({ ...n, is_read: true })))
+      setStats((prev) => ({
         ...prev,
         unread: 0,
         read: prev.total,
@@ -151,8 +152,8 @@ export default function BildirimlerPage() {
     try {
       await deleteNotification(notificationId)
       const deletedNotification = notifications.find((n) => n.id === notificationId)
-      setNotifications((prev: any) => prev.filter((n: any) => n.id !== notificationId))
-      setStats((prev: any) => ({
+      setNotifications((prev) => prev.filter((n) => n.id !== notificationId))
+      setStats((prev) => ({
         ...prev,
         total: prev.total - 1,
         unread: deletedNotification?.is_read ? prev.unread : prev.unread - 1,
@@ -163,7 +164,6 @@ export default function BildirimlerPage() {
       toast.error("Bildirim silinirken hata oluştu")
     }
   }
-
 
   // Filtrelenmiş bildirimler
   const filteredNotifications = notifications.filter((notification) => {
@@ -284,7 +284,6 @@ export default function BildirimlerPage() {
                 <RefreshCw className="h-4 w-4" />
                 Yenile
               </Button>
-
 
               {stats.unread > 0 && (
                 <Button variant="default" size="sm" onClick={handleMarkAllAsRead} className="gap-2">

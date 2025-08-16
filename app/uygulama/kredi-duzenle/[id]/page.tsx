@@ -44,7 +44,7 @@ import BankSelector from "@/components/bank-selector"
 import { CreditTypeSelector } from "@/components/credit-type-selector"
 
 interface PopulatedCredit extends Credit {
-  banks: Pick<Bank, "id" | "name" | "logo_url"> | null
+  banks: Pick<Bank, "id" | "name" | "logo_url" | "contact_phone" | "contact_email" | "website"> | null
   credit_types: Pick<CreditType, "id" | "name" | "description"> | null
 }
 
@@ -929,7 +929,7 @@ export default function KrediDuzenlePage() {
 
       {/* Bank Selector Modal */}
       {showBankSelector && (
-        <BankSelector banks={banks as any} onBankSelect={handleBankSelect as any} onSkip={() => setShowBankSelector(false)} />
+        <BankSelector banks={banks} onBankSelect={handleBankSelect} onSkip={() => setShowBankSelector(false)} />
       )}
 
       {/* Credit Type Selector Modal */}
@@ -938,8 +938,8 @@ export default function KrediDuzenlePage() {
           open={showCreditTypeSelector}
           onOpenChange={setShowCreditTypeSelector}
           onSelect={handleCreditTypeSelect}
-          selectedCreditType={selectedCreditType as any}
-          creditTypes={creditTypes as any}
+          selectedCreditType={selectedCreditType}
+          creditTypes={creditTypes}
         />
       )}
     </div>

@@ -7,7 +7,7 @@ import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { Chrome, FileText, Scan, ArrowRight, TrendingUp, Shield, Eye, EyeOff, AlertCircle } from "lucide-react"
+import { FileText, Scan, ArrowRight, TrendingUp, Shield, Eye, EyeOff, AlertCircle } from "lucide-react"
 import { signIn, signUp, signInWithGoogle } from "@/lib/auth"
 import { useToast } from "@/hooks/use-toast"
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
@@ -127,7 +127,11 @@ export default function LoginPage() {
 
     try {
       await signInWithGoogle()
-      // Redirect will be handled by OAuth flow
+      // OAuth akışı callback sayfasında işlenecek
+      toast({
+        title: "Yönlendiriliyor...",
+        description: "Google ile giriş için yönlendiriliyorsunuz.",
+      })
     } catch (err: any) {
       console.error("Google sign-in error:", err)
       setError(err.message || "Google ile giriş yapılırken bir hata oluştu.")
@@ -136,7 +140,6 @@ export default function LoginPage() {
         title: "Google Giriş Hatası",
         description: err.message || "Google ile giriş yapılırken bir hata oluştu.",
       })
-    } finally {
       setIsLoading(false)
     }
   }
@@ -380,11 +383,7 @@ export default function LoginPage() {
                       size="lg"
                       className="w-full bg-transparent border-white/20 text-white hover:bg-white/10 hover:border-transparent hover:text-white disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200"
                     >
-                      <svg
-                        className="mr-3 h-5 w-5"
-                        viewBox="0 0 24 24"
-                        aria-hidden="true"
-                      >
+                      <svg className="mr-3 h-5 w-5" viewBox="0 0 24 24" aria-hidden="true">
                         <path
                           fill="#4285F4"
                           d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"

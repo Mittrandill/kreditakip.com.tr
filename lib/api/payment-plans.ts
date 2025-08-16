@@ -55,7 +55,7 @@ export async function createPaymentPlansForCredit(
   const { data, error } = await supabase.from("payment_plans").insert(paymentPlans).select()
 
   if (error) {
-    // console.error("Error creating payment plans:", error)
+    console.error("Error creating payment plans:", error)
     throw error
   }
 
@@ -70,7 +70,7 @@ export async function getPaymentPlans(creditId: string) {
     .order("installment_number")
 
   if (error) {
-    // console.error("Error fetching payment plans:", error)
+    console.error("Error fetching payment plans:", error)
     throw error
   }
 
@@ -86,7 +86,7 @@ export async function updatePaymentPlan(planId: string, updates: Partial<Payment
     .single()
 
   if (error) {
-    // console.error("Error updating payment plan:", error)
+    console.error("Error updating payment plan:", error)
     throw error
   }
 
@@ -97,7 +97,7 @@ export async function deletePaymentPlansForCredit(creditId: string) {
   const { error } = await supabase.from("payment_plans").delete().eq("credit_id", creditId)
 
   if (error) {
-    // console.error("Error deleting payment plans:", error)
+    console.error("Error deleting payment plans:", error)
     throw error
   }
 }

@@ -8,21 +8,26 @@ export function formatCurrency(amount: number): string {
 }
 
 export function formatPercent(value: number): string {
-  return `%${value.toFixed(1)}`
+  return new Intl.NumberFormat("tr-TR", {
+    style: "percent",
+    minimumFractionDigits: 1,
+    maximumFractionDigits: 1,
+  }).format(value / 100)
 }
 
 export function formatNumber(value: number): string {
-  return value.toLocaleString("tr-TR")
+  return new Intl.NumberFormat("tr-TR").format(value)
 }
 
-export function formatDate(date: string | Date): string {
-  try {
-    const dateObj = typeof date === 'string' ? new Date(date) : date
-    if (isNaN(dateObj.getTime())) {
-      return "-"
-    }
-    return dateObj.toLocaleDateString("tr-TR")
-  } catch {
-    return "-"
-  }
+/**
+ * Format a Date (or an ISO string) as "DD.MM.YYYY".
+ * Example: 2025-06-23  →  "23.06.2025"
+ */
+export function formatDate(dateInput: string | Date): string {
+  const date = typeof dateInput === "string" ? new Date(dateInput) : dateInput
+  return date.toLocaleDateString("tr-TR", {
+    day: "2-digit",
+    month: "2-digit",
+    year: "numeric",
+  })
 }

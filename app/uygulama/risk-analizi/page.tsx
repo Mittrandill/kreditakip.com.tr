@@ -21,37 +21,15 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog"
-import {
-  ShieldCheck,
-  Search,
-  MoreHorizontal,
-  Eye,
-  Trash2,
-  Calendar,
-  AlertTriangle,
-  CheckCircle,
-  Clock,
-  ArrowUpDown,
-  List,
-  AlertCircle,
-  Settings,
-  Loader2,
-  PlayCircle,
-  RefreshCw,
-  History,
-  CreditCardIcon,
-  Landmark,
-} from "lucide-react"
+import { ShieldCheck, Search, MoreHorizontal, Eye, Trash2, Calendar, AlertTriangle, CheckCircle, Clock, ArrowUpDown, List, AlertCircle, Settings, Loader2, PlayCircle, RefreshCw, History, CreditCardIcon, Landmark } from 'lucide-react'
 import { BsFillGrid3X3GapFill } from "react-icons/bs"
 import { Progress } from "@/components/ui/progress"
 
 import { useAuth } from "@/hooks/use-auth"
 import { getFinancialProfile } from "@/lib/api/financials"
 import { getCredits } from "@/lib/api/credits"
-import { getAccounts } from "@/lib/api/accounts"
-import { getCreditCards } from "@/lib/api/credit-cards"
 import { saveRiskAnalysis, getRiskAnalyses, deleteRiskAnalysis } from "@/lib/api/risk-analyses"
-import type { FinancialProfile, Credit, Account, RiskAnalysis as RiskAnalysisType } from "@/lib/types"
+import type { FinancialProfile, Credit, RiskAnalysis as RiskAnalysisType } from "@/lib/types"
 import { formatCurrency, formatNumber } from "@/lib/format"
 import { useToast } from "@/hooks/use-toast"
 import { formatDistanceToNow, format } from "date-fns"
@@ -61,7 +39,7 @@ import {
   AlertDescription as ShadcnAlertDescription,
   AlertTitle as ShadcnAlertTitle,
 } from "@/components/ui/alert"
-import { ListChecks } from "lucide-react"
+import { ListChecks } from 'lucide-react'
 
 const getRiskBadgeText = (color: string | null | undefined): string => {
   if (color === "emerald") return "Düşük Risk"
@@ -95,8 +73,6 @@ export default function RiskAnaliziPage() {
 
   const [financialProfile, setFinancialProfile] = useState<FinancialProfile | null>(null)
   const [credits, setCredits] = useState<Credit[]>([])
-  const [accounts, setAccounts] = useState<Account[]>([])
-  const [creditCards, setCreditCards] = useState<any[]>([])
   const [allPastAnalyses, setAllPastAnalyses] = useState<RiskAnalysisType[]>([])
 
   const [initialDataLoading, setInitialDataLoading] = useState(true)
@@ -130,11 +106,9 @@ export default function RiskAnaliziPage() {
           setInitialDataError(null)
         }
         try {
-          const [profileData, creditsData, accountsData, creditCardsData, pastAnalysesData] = await Promise.all([
+          const [profileData, creditsData, pastAnalysesData] = await Promise.all([
             getFinancialProfile(userId),
             getCredits(userId),
-            getAccounts(userId),
-            getCreditCards(userId),
             getRiskAnalyses(userId),
           ])
 
@@ -142,8 +116,6 @@ export default function RiskAnaliziPage() {
 
           setFinancialProfile(profileData)
           setCredits(creditsData as Credit[])
-          setAccounts(accountsData as Account[])
-          setCreditCards(creditCardsData)
           setAllPastAnalyses(pastAnalysesData || [])
 
           if (!profileData || profileData.monthly_income === null || profileData.monthly_income === undefined) {
@@ -152,9 +124,10 @@ export default function RiskAnaliziPage() {
             )
           }
         } catch (err) {
+          console.error("Risk Analizi - Başlangıç verileri alınırken hata:", err)
           if (isMounted) {
             setInitialDataError(
-              "Finansal bilgileriniz, kredi verileriniz, hesap bilgileriniz veya geçmiş analizleriniz yüklenirken bir sorun oluştu.",
+              "Finansal bilgileriniz, kredi verileriniz veya geçmiş analizleriniz yüklenirken bir sorun oluştu.",
             )
           }
         } finally {
@@ -266,8 +239,6 @@ export default function RiskAnaliziPage() {
         body: JSON.stringify({
           financialProfile,
           credits,
-          accounts,
-          creditCards,
         }),
       })
       const responseData = await response.json()
@@ -283,7 +254,7 @@ export default function RiskAnaliziPage() {
         throw new Error(`${errorMessage}${errorDetails}`)
       }
 
-      const saved = await saveRiskAnalysis(user.id, responseData, financialProfile, credits, accounts, creditCards)
+      const saved = await saveRiskAnalysis(user.id, responseData, financialProfile, credits)
       setAllPastAnalyses((prev) => [saved, ...prev.filter((p) => p.id !== saved.id)])
       toast({ title: "Başarılı", description: "Kapsamlı risk analizi tamamlandı ve kaydedildi." })
 
@@ -293,6 +264,7 @@ export default function RiskAnaliziPage() {
       }, 500)
     } catch (err: any) {
       clearInterval(progressInterval)
+      console.error("Risk analizi hatası:", err)
       setAnalysisError(err.message || "Risk analizi oluşturulurken bir hata oluştu.")
     } finally {
       setTimeout(() => {
@@ -310,6 +282,7 @@ export default function RiskAnaliziPage() {
       setAllPastAnalyses((prev) => prev.filter((a) => a.id !== analysisToDelete!.id))
       toast({ title: "Başarılı", description: "Risk analizi silindi." })
     } catch (err) {
+      console.error("Analiz silme hatası:", err)
       toast({ title: "Hata", description: "Analiz silinirken bir sorun oluştu.", variant: "destructive" })
     } finally {
       setIsDeleting(false)
@@ -345,7 +318,7 @@ export default function RiskAnaliziPage() {
   )
 
   // Finansal araçların sayısı
-  const totalFinancialInstruments = credits.length + accounts.length + creditCards.length
+  const totalFinancialInstruments = credits.length
 
   if (authLoading || (userId && initialDataLoading)) {
     return (
@@ -373,60 +346,39 @@ export default function RiskAnaliziPage() {
 
   return (
     <div className="flex flex-col gap-4 md:gap-6">
-      {/* Hero Section with Modern Design */}
-      <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 text-white shadow-2xl">
-        <div className="absolute inset-0 bg-gradient-to-br from-purple-600/20 to-pink-600/20" />
-        <div className="absolute -top-24 -right-24 w-96 h-96 bg-purple-500/10 rounded-full blur-3xl" />
-        <div className="absolute -bottom-24 -left-24 w-96 h-96 bg-pink-500/10 rounded-full blur-3xl" />
-        
-        <CardContent className="relative p-8 md:p-12">
-          <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-6">
+      {/* Hero Section */}
+      <Card className="bg-gradient-to-r from-red-600 to-rose-700 text-white border-transparent shadow-xl rounded-xl">
+        <CardContent className="p-6 md:p-8">
+          <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
             <div>
-              <div className="flex items-center gap-3 mb-4">
-                <div className="p-3 bg-purple-500/20 rounded-lg backdrop-blur-sm">
-                  <ShieldCheck className="h-8 w-8 text-purple-400" />
-                </div>
-                <h1 className="text-4xl font-bold bg-gradient-to-r from-white to-gray-300 bg-clip-text text-transparent">
-                  Risk Analizi
-                </h1>
-              </div>
-              <p className="text-gray-300 text-lg max-w-2xl">
+              <h2 className="text-3xl font-bold mb-2 flex items-center gap-3">
+                <ShieldCheck className="h-8 w-8" />
+                Kapsamlı Finansal Risk Değerlendirmesi
+              </h2>
+              <p className="opacity-90 text-lg">
                 Krediler, kredi kartları ve hesaplarınızı dahil ederek tam finansal sağlık analizi.
               </p>
-              
-              {/* Quick Stats */}
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-6">
-                <div className="bg-white/10 backdrop-blur-sm rounded-lg p-3">
-                  <p className="text-sm text-gray-300">Krediler</p>
-                  <p className="text-xl font-bold">{credits.length}</p>
-                </div>
-                <div className="bg-white/10 backdrop-blur-sm rounded-lg p-3">
-                  <p className="text-sm text-gray-300">Kredi Kartları</p>
-                  <p className="text-xl font-bold">{creditCards.length}</p>
-                </div>
-                <div className="bg-white/10 backdrop-blur-sm rounded-lg p-3">
-                  <p className="text-sm text-gray-300">Hesaplar</p>
-                  <p className="text-xl font-bold">{accounts.length}</p>
-                </div>
-                <div className="bg-white/10 backdrop-blur-sm rounded-lg p-3">
-                  <p className="text-sm text-gray-300">Toplam Analiz</p>
-                  <p className="text-xl font-bold">{totalAnalysesCount}</p>
-                </div>
+              <div className="mt-3 flex flex-wrap gap-4 text-sm opacity-80">
+                <span className="flex items-center gap-1">
+                  <History className="h-4 w-4" />
+                  {credits.length} Kredi
+                </span>
               </div>
             </div>
-            
             <div className="flex flex-col sm:flex-row gap-3">
               <Button
-                className="bg-white/20 backdrop-blur-sm border-white/30 hover:bg-white/30 text-white"
+                variant="outline"
                 size="lg"
+                className="bg-white/20 hover:bg-white/30 border-white/50 text-white"
                 onClick={() => router.push("/uygulama/ayarlar?tab=financial")}
               >
                 <Settings className="h-5 w-5 mr-2" />
                 Finansal Bilgiler
               </Button>
               <Button
-                className="bg-white/20 backdrop-blur-sm border-white/30 hover:bg-white/30 text-white"
+                variant="outline"
                 size="lg"
+                className="bg-white text-red-700 hover:bg-gray-100 border-white"
                 onClick={handleAnalyze}
                 disabled={isAnalyzing || initialDataLoading || !canAnalyze}
               >
@@ -440,7 +392,7 @@ export default function RiskAnaliziPage() {
             </div>
           </div>
         </CardContent>
-      </div>
+      </Card>
 
       {!initialDataLoading && !canAnalyze && (
         <Alert variant="destructive" className="shadow-md">
@@ -466,7 +418,7 @@ export default function RiskAnaliziPage() {
               <RefreshCw className="h-16 w-16 animate-spin text-red-600" />
               <div className="space-y-2">
                 <h3 className="text-xl font-semibold text-gray-900">Kapsamlı Risk Analizi Hazırlanıyor</h3>
-                <p className="text-gray-600">{totalFinancialInstruments} finansal araç analiz ediliyor...</p>
+                <p className="text-gray-600">{totalFinancialInstruments} kredi analiz ediliyor...</p>
               </div>
               <div className="w-full max-w-md">
                 <div className="flex justify-between text-sm text-gray-500 mb-1">
@@ -476,7 +428,7 @@ export default function RiskAnaliziPage() {
                 <Progress value={analysisProgress} className="h-2" />
               </div>
               <p className="text-sm text-gray-500">
-                Krediler, kredi kartları ve hesaplar dahil kapsamlı analiz yapılıyor
+                Krediler kapsamlı analiz yapılıyor
               </p>
             </div>
           </CardContent>

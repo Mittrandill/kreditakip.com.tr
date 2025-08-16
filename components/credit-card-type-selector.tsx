@@ -193,6 +193,7 @@ export function CreditCardTypeSelector({
           .order("category, bank_name, name")
 
         if (error) {
+          console.error("Supabase error fetching credit card types:", error)
           setErrorLoading("Kredi kartı türleri yüklenirken bir sorun oluştu.")
           setCreditCardTypes(fallbackCreditCardTypes)
         } else {
@@ -203,6 +204,7 @@ export function CreditCardTypeSelector({
           }
         }
       } catch (error) {
+        console.error("Error fetching credit card types:", error)
         setErrorLoading("Kredi kartı türleri yüklenemedi.")
         setCreditCardTypes(fallbackCreditCardTypes)
       } finally {
@@ -236,6 +238,12 @@ export function CreditCardTypeSelector({
         matched_bank_name: matchedBankName,
         original_bank_name: selectedCreditCardType.bank_name,
       }
+
+      console.log("🎯 Kart türü seçildi:", {
+        name: updatedCreditCardType.name,
+        segment: updatedCreditCardType.segment,
+        bank: matchedBankName,
+      })
 
       onCreditCardTypeSelect(updatedCreditCardType)
     }

@@ -365,7 +365,6 @@ function PaymentsList({
           payment_channel: "Manuel İşaretleme",
           transaction_id: `TKS-${paymentToUpdate.installment_number}-${Date.now()}`,
           status: "completed",
-          notes: null,
         })
       }
 
@@ -383,8 +382,15 @@ function PaymentsList({
         duration: 3000,
       })
 
-      // Payment status updated successfully
+      console.log("🎉 Payment status updated successfully:", {
+        paymentId,
+        newStatus,
+        installmentNumber: paymentToUpdate.installment_number,
+        amount: paymentToUpdate.total_payment,
+      })
     } catch (error) {
+      console.error("Error updating payment status:", error)
+
       // Hata durumunda rollback yap
       setAllPayments?.(originalPayments)
 
@@ -715,60 +721,306 @@ function PaymentsList({
 function PaymentAnalysis({ payments, credits }: { payments: PaymentWithCredit[]; credits: Credit[] }) {
   const currentMonth = new Date().getMonth()
   const currentYear = new Date().getFullYear()
+  const currentDate = new Date()
 
-  const thisMonthPendingPayments = payments.filter((p) => {
+  // Bu ay ödenecek ödemeler
+  const thisMonthPayments = payments.filter((p) => {
     const paymentDate = new Date(p.due_date)
     return (
       paymentDate.getMonth() === currentMonth && paymentDate.getFullYear() === currentYear && p.status === "pending"
     )
   })
 
-  const totalMonthlyPayment = thisMonthPendingPayments.reduce((sum, p) => sum + p.total_payment, 0)
+  // Gecikmiş ödemeler
+  const overduePayments = payments.filter((p) => {
+    const paymentDate = new Date(p.due_date)
+    return paymentDate < currentDate && p.status === "pending"
+  })
 
+  // Bu yıl ödenen taksitler
+  const paidThisYear = payments.filter((p) => {
+    const paymentDate = new Date(p.due_date)
+    return paymentDate.getFullYear() === currentYear && p.status === "paid"
+  })
+
+  // Yaklaşan ödemeler (7 gün içinde)
+  const upcomingPayments = payments.filter((p) => {
+    const paymentDate = new Date(p.due_date)
+    const daysDiff = Math.ceil((paymentDate.getTime() - currentDate.getTime()) / (1000 * 60 * 60 * 24))
+    return daysDiff >= 0 && daysDiff <= 7 && p.status === "pending"
+  })
+
+  // Hesaplamalar
+  const totalMonthlyPayment = thisMonthPayments.reduce((sum, p) => sum + p.total_payment, 0)
+  const totalOverdueAmount = overduePayments.reduce((sum, p) => sum + p.total_payment, 0)
+  const totalUpcomingAmount = upcomingPayments.reduce((sum, p) => sum + p.total_payment, 0)
   const averagePayment =
     payments.length > 0 ? payments.reduce((sum, p) => sum + p.total_payment, 0) / payments.length : 0
+  const totalPaidThisYear = paidThisYear.reduce((sum, p) => sum + p.total_payment, 0)
+
+  // Banka bazında dağılım
+  const bankDistribution = payments.reduce(
+    (acc, payment) => {
+      const bankName = payment.credits.banks.name
+      if (!acc[bankName]) {
+        acc[bankName] = { total: 0, count: 0, pending: 0, paid: 0 }
+      }
+      acc[bankName].total += payment.total_payment
+      acc[bankName].count += 1
+      if (payment.status === "pending") {
+        acc[bankName].pending += payment.total_payment
+      } else if (payment.status === "paid") {
+        acc[bankName].paid += payment.total_payment
+      }
+      return acc
+    },
+    {} as Record<string, { total: number; count: number; pending: number; paid: number }>,
+  )
+
+  // Aylık trend verisi (son 6 ay)
+  const monthlyTrend = []
+  for (let i = 5; i >= 0; i--) {
+    const targetDate = new Date(currentYear, currentMonth - i, 1)
+    const monthPayments = payments.filter((p) => {
+      const paymentDate = new Date(p.due_date)
+      return paymentDate.getMonth() === targetDate.getMonth() && paymentDate.getFullYear() === targetDate.getFullYear()
+    })
+
+    const monthNames = ["Oca", "Şub", "Mar", "Nis", "May", "Haz", "Tem", "Ağu", "Eyl", "Eki", "Kas", "Ara"]
+    monthlyTrend.push({
+      month: monthNames[targetDate.getMonth()],
+      total: monthPayments.reduce((sum, p) => sum + p.total_payment, 0),
+      paid: monthPayments.filter((p) => p.status === "paid").reduce((sum, p) => sum + p.total_payment, 0),
+      pending: monthPayments.filter((p) => p.status === "pending").reduce((sum, p) => sum + p.total_payment, 0),
+    })
+  }
 
   return (
     <div className="space-y-6">
-      <h3 className="text-xl font-semibold">Ödeme Analizi</h3>
+      <div className="flex items-center justify-between">
+        <h3 className="text-xl font-semibold">Ödeme Analizi</h3>
+        <div className="text-sm text-gray-500">Son güncelleme: {new Date().toLocaleDateString("tr-TR")}</div>
+      </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-sm font-medium text-gray-600">Bu Ay Ödenecek</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-blue-600">{formatCurrency(totalMonthlyPayment)}</div>
+      {/* Ana Metrikler */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        <Card className="bg-gradient-to-br from-blue-600 to-blue-700 text-white border-transparent shadow-lg">
+          <CardContent className="p-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-blue-100 text-sm font-medium">Bu Ay Ödenecek</p>
+                <p className="text-2xl font-bold mt-1">{formatCurrency(totalMonthlyPayment)}</p>
+                <p className="text-blue-200 text-xs mt-1">{thisMonthPayments.length} taksit</p>
+              </div>
+              <div className="bg-blue-500/30 p-3 rounded-full">
+                <Calendar className="h-6 w-6 text-blue-100" />
+              </div>
+            </div>
           </CardContent>
         </Card>
 
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-sm font-medium text-gray-600">Ortalama Taksit</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-green-600">{formatCurrency(averagePayment)}</div>
+        <Card className="bg-gradient-to-br from-emerald-600 to-emerald-700 text-white border-transparent shadow-lg">
+          <CardContent className="p-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-emerald-100 text-sm font-medium">Ortalama Taksit</p>
+                <p className="text-2xl font-bold mt-1">{formatCurrency(averagePayment)}</p>
+                <p className="text-emerald-200 text-xs mt-1">Tüm krediler ortalaması</p>
+              </div>
+              <div className="bg-emerald-500/30 p-3 rounded-full">
+                <TrendingUp className="h-6 w-6 text-emerald-100" />
+              </div>
+            </div>
           </CardContent>
         </Card>
 
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-sm font-medium text-gray-600">Aktif Kredi</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-orange-600">{credits.length}</div>
+        <Card className="bg-gradient-to-br from-orange-600 to-orange-700 text-white border-transparent shadow-lg">
+          <CardContent className="p-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-orange-100 text-sm font-medium">Aktif Kredi</p>
+                <p className="text-2xl font-bold mt-1">{credits.length}</p>
+                <p className="text-orange-200 text-xs mt-1">Toplam kredi sayısı</p>
+              </div>
+              <div className="bg-orange-500/30 p-3 rounded-full">
+                <CreditCard className="h-6 w-6 text-orange-100" />
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card
+          className={`bg-gradient-to-br ${overduePayments.length > 0 ? "from-red-600 to-red-700" : "from-gray-600 to-gray-700"} text-white border-transparent shadow-lg`}
+        >
+          <CardContent className="p-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className={`text-sm font-medium ${overduePayments.length > 0 ? "text-red-100" : "text-gray-100"}`}>
+                  Gecikmiş Ödeme
+                </p>
+                <p className="text-2xl font-bold mt-1">{formatCurrency(totalOverdueAmount)}</p>
+                <p className={`text-xs mt-1 ${overduePayments.length > 0 ? "text-red-200" : "text-gray-200"}`}>
+                  {overduePayments.length} gecikmiş taksit
+                </p>
+              </div>
+              <div className={`p-3 rounded-full ${overduePayments.length > 0 ? "bg-red-500/30" : "bg-gray-500/30"}`}>
+                <AlertTriangle className={`h-6 w-6 ${overduePayments.length > 0 ? "text-red-100" : "text-gray-100"}`} />
+              </div>
+            </div>
           </CardContent>
         </Card>
       </div>
 
+      {/* Yaklaşan Ödemeler */}
+      {upcomingPayments.length > 0 && (
+        <Card className="bg-gradient-to-br from-purple-600 to-purple-700 text-white border-transparent shadow-lg">
+          <CardHeader>
+            <CardTitle className="text-white flex items-center gap-2">
+              <Clock className="h-5 w-5" />
+              Yaklaşan Ödemeler (7 Gün İçinde)
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="flex items-center justify-between mb-4">
+              <div className="text-2xl font-bold text-white">{formatCurrency(totalUpcomingAmount)}</div>
+              <div className="text-sm text-purple-200">{upcomingPayments.length} taksit</div>
+            </div>
+            <div className="space-y-2 max-h-32 overflow-y-auto">
+              {upcomingPayments.slice(0, 5).map((payment) => (
+                <div
+                  key={payment.id}
+                  className="flex items-center justify-between text-sm bg-purple-500/20 p-2 rounded-lg"
+                >
+                  <div className="flex items-center gap-2">
+                    <BankLogo bankName={payment.credits.banks.name} size="sm" />
+                    <span className="font-medium text-white">{payment.credits.banks.name}</span>
+                  </div>
+                  <div className="text-right">
+                    <div className="font-semibold text-white">{formatCurrency(payment.total_payment)}</div>
+                    <div className="text-xs text-purple-200">{formatDate(payment.due_date)}</div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Banka Bazında Dağılım */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <CreditCard className="h-5 w-5" />
+              Banka Bazında Dağılım
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-4">
+              {Object.entries(bankDistribution)
+                .sort(([, a], [, b]) => b.total - a.total)
+                .slice(0, 5)
+                .map(([bankName, data]) => (
+                  <div key={bankName} className="space-y-2">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <BankLogo bankName={bankName} size="sm" />
+                        <span className="font-medium text-sm">{bankName}</span>
+                      </div>
+                      <span className="text-sm font-semibold">{formatCurrency(data.total)}</span>
+                    </div>
+                    <div className="w-full bg-gray-200 rounded-full h-2">
+                      <div
+                        className="bg-gradient-to-r from-blue-500 to-blue-600 h-2 rounded-full transition-all duration-300"
+                        style={{
+                          width: `${Math.max(5, (data.total / Math.max(...Object.values(bankDistribution).map((d) => d.total))) * 100)}%`,
+                        }}
+                      ></div>
+                    </div>
+                    <div className="flex justify-between text-xs text-gray-600">
+                      <span>{data.count} taksit</span>
+                      <span>Bekleyen: {formatCurrency(data.pending)}</span>
+                    </div>
+                  </div>
+                ))}
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <TrendingUp className="h-5 w-5" />
+              Aylık Ödeme Trendi
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-4">
+              {monthlyTrend.map((month, index) => (
+                <div key={index} className="space-y-2">
+                  <div className="flex items-center justify-between">
+                    <span className="font-medium text-sm">
+                      {month.month} {currentYear}
+                    </span>
+                    <span className="text-sm font-semibold">{formatCurrency(month.total)}</span>
+                  </div>
+                  <div className="w-full bg-gray-200 rounded-full h-2">
+                    <div className="flex h-2 rounded-full overflow-hidden">
+                      <div
+                        className="bg-emerald-500 transition-all duration-300"
+                        style={{
+                          width: `${month.total > 0 ? Math.max(5, (month.paid / month.total) * 100) : 0}%`,
+                        }}
+                      ></div>
+                      <div
+                        className="bg-orange-400 transition-all duration-300"
+                        style={{
+                          width: `${month.total > 0 ? Math.max(5, (month.pending / month.total) * 100) : 0}%`,
+                        }}
+                      ></div>
+                    </div>
+                  </div>
+                  <div className="flex justify-between text-xs text-gray-600">
+                    <span className="flex items-center gap-1">
+                      <div className="w-2 h-2 bg-emerald-500 rounded-full"></div>
+                      Ödenen: {formatCurrency(month.paid)}
+                    </span>
+                    <span className="flex items-center gap-1">
+                      <div className="w-2 h-2 bg-orange-400 rounded-full"></div>
+                      Bekleyen: {formatCurrency(month.pending)}
+                    </span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Yıllık Özet */}
       <Card>
         <CardHeader>
-          <CardTitle>Aylık Ödeme Trendi</CardTitle>
+          <CardTitle className="flex items-center gap-2">
+            <CheckCircle className="h-5 w-5" />
+            {currentYear} Yılı Özeti
+          </CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="text-center py-8 text-gray-500">
-            <TrendingUp className="h-12 w-12 mx-auto mb-4" />
-            <p>Ödeme trendi grafiği burada gösterilecek</p>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div className="text-center">
+              <div className="text-2xl font-bold text-emerald-600">{paidThisYear.length}</div>
+              <p className="text-sm text-gray-600">Ödenen Taksit</p>
+            </div>
+            <div className="text-center">
+              <div className="text-2xl font-bold text-emerald-600">{formatCurrency(totalPaidThisYear)}</div>
+              <p className="text-sm text-gray-600">Toplam Ödenen</p>
+            </div>
+            <div className="text-center">
+              <div className="text-2xl font-bold text-blue-600">
+                {payments.filter((p) => p.status === "pending").length}
+              </div>
+              <p className="text-sm text-gray-600">Kalan Taksit</p>
+            </div>
           </div>
         </CardContent>
       </Card>
@@ -777,53 +1029,327 @@ function PaymentAnalysis({ payments, credits }: { payments: PaymentWithCredit[];
 }
 
 function ReminderSettings({ payments }: { payments: PaymentWithCredit[] }) {
+  const { user } = useAuth()
+  const { toast } = useToast()
+  const [preferences, setPreferences] = useState<any>(null)
+  const [loading, setLoading] = useState(true)
+  const [updating, setUpdating] = useState<string | null>(null)
+
+  useEffect(() => {
+    if (user) {
+      loadPreferences()
+    }
+  }, [user])
+
+  const loadPreferences = async () => {
+    try {
+      setLoading(true)
+      const { getNotificationPreferences } = await import("@/lib/api/notification-preferences")
+      const prefs = await getNotificationPreferences(user!.id)
+      setPreferences(prefs)
+    } catch (error) {
+      console.error("Error loading preferences:", error)
+      toast({
+        title: "Hata",
+        description: "Bildirim tercihleri yüklenemedi",
+        variant: "destructive",
+      })
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const togglePreference = async (field: string, currentValue: boolean) => {
+    if (!preferences) return
+
+    setUpdating(field)
+    try {
+      const { toggleNotificationPreference } = await import("@/lib/api/notification-preferences")
+      const updated = await toggleNotificationPreference(user!.id, field as any, !currentValue)
+      setPreferences(updated)
+
+      toast({
+        title: "Başarılı",
+        description: "Bildirim tercihi güncellendi",
+      })
+    } catch (error) {
+      console.error("Error updating preference:", error)
+      toast({
+        title: "Hata",
+        description: "Bildirim tercihi güncellenemedi",
+        variant: "destructive",
+      })
+    } finally {
+      setUpdating(null)
+    }
+  }
+
+  const sendTestReminder = async (type: string) => {
+    setUpdating(`test_${type}`)
+    try {
+      const response = await fetch("/api/notifications/send-reminders", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ userId: user!.id, type }),
+      })
+
+      const result = await response.json()
+
+      if (result.success) {
+        toast({
+          title: "Test bildirimi gönderildi! 📧",
+          description:
+            result.emailsSent > 0
+              ? `${result.emailsSent} e-posta başarıyla gönderildi`
+              : "Gönderilecek ödeme bulunamadı",
+        })
+      } else {
+        throw new Error(result.error)
+      }
+    } catch (error) {
+      console.error("Error sending test reminder:", error)
+      toast({
+        title: "Hata ❌",
+        description: "Test bildirimi gönderilemedi. Lütfen tekrar deneyin.",
+        variant: "destructive",
+      })
+    } finally {
+      setUpdating(null)
+    }
+  }
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center py-8">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-orange-600"></div>
+      </div>
+    )
+  }
+
+  if (!preferences) {
+    return (
+      <div className="text-center py-8">
+        <p className="text-gray-600">Bildirim tercihleri yüklenemedi</p>
+      </div>
+    )
+  }
+
+  const upcomingPayments = payments.filter((p) => {
+    const dueDate = new Date(p.due_date)
+    const today = new Date()
+    const next7Days = new Date(today.getTime() + 7 * 24 * 60 * 60 * 1000)
+    return dueDate >= today && dueDate <= next7Days && p.status === "pending"
+  })
+
   return (
     <div className="space-y-6">
-      <h3 className="text-xl font-semibold">Hatırlatıcı Ayarları</h3>
+      <div className="flex items-center justify-between">
+        <h3 className="text-xl font-semibold">Hatırlatıcı Ayarları</h3>
+        <div className="text-sm text-gray-500">
+          Son güncelleme: {new Date(preferences.updated_at).toLocaleDateString("tr-TR")}
+        </div>
+      </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <Card>
           <CardHeader>
-            <CardTitle>E-posta Hatırlatıcıları</CardTitle>
+            <CardTitle className="flex items-center gap-2">
+              <Bell className="h-5 w-5" />
+              E-posta Hatırlatıcıları
+            </CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="flex items-center justify-between">
-              <span>3 gün önceden hatırlat</span>
-              <Button variant="outline" size="sm">
-                Aktif
-              </Button>
+              <div>
+                <span className="font-medium">3 gün önceden hatırlat</span>
+                <p className="text-sm text-gray-600">Vade tarihinden 3 gün önce e-posta gönder</p>
+              </div>
+              <div className="flex items-center gap-2">
+                <Button
+                  variant={preferences.email_3_days_before ? "default" : "outline"}
+                  size="sm"
+                  onClick={() => togglePreference("email_3_days_before", preferences.email_3_days_before)}
+                  disabled={updating === "email_3_days_before"}
+                >
+                  {updating === "email_3_days_before" ? (
+                    <div className="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent"></div>
+                  ) : preferences.email_3_days_before ? (
+                    "Aktif"
+                  ) : (
+                    "Pasif"
+                  )}
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => sendTestReminder("3_days_before")}
+                  disabled={updating === "test_3_days_before" || !preferences.email_3_days_before}
+                  title="Test bildirimi gönder"
+                >
+                  {updating === "test_3_days_before" ? (
+                    <div className="animate-spin rounded-full h-4 w-4 border-2 border-gray-400 border-t-transparent"></div>
+                  ) : (
+                    "Test"
+                  )}
+                </Button>
+              </div>
             </div>
+
             <div className="flex items-center justify-between">
-              <span>1 gün önceden hatırlat</span>
-              <Button variant="outline" size="sm">
-                Aktif
-              </Button>
+              <div>
+                <span className="font-medium">1 gün önceden hatırlat</span>
+                <p className="text-sm text-gray-600">Vade tarihinden 1 gün önce e-posta gönder</p>
+              </div>
+              <div className="flex items-center gap-2">
+                <Button
+                  variant={preferences.email_1_day_before ? "default" : "outline"}
+                  size="sm"
+                  onClick={() => togglePreference("email_1_day_before", preferences.email_1_day_before)}
+                  disabled={updating === "email_1_day_before"}
+                >
+                  {updating === "email_1_day_before" ? (
+                    <div className="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent"></div>
+                  ) : preferences.email_1_day_before ? (
+                    "Aktif"
+                  ) : (
+                    "Pasif"
+                  )}
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => sendTestReminder("1_day_before")}
+                  disabled={updating === "test_1_day_before" || !preferences.email_1_day_before}
+                  title="Test bildirimi gönder"
+                >
+                  {updating === "test_1_day_before" ? (
+                    <div className="animate-spin rounded-full h-4 w-4 border-2 border-gray-400 border-t-transparent"></div>
+                  ) : (
+                    "Test"
+                  )}
+                </Button>
+              </div>
             </div>
+
             <div className="flex items-center justify-between">
-              <span>Vade günü hatırlat</span>
-              <Button variant="outline" size="sm">
-                Aktif
-              </Button>
+              <div>
+                <span className="font-medium">Vade günü hatırlat</span>
+                <p className="text-sm text-gray-600">Vade gününde e-posta gönder</p>
+              </div>
+              <div className="flex items-center gap-2">
+                <Button
+                  variant={preferences.email_on_due_date ? "default" : "outline"}
+                  size="sm"
+                  onClick={() => togglePreference("email_on_due_date", preferences.email_on_due_date)}
+                  disabled={updating === "email_on_due_date"}
+                >
+                  {updating === "email_on_due_date" ? (
+                    <div className="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent"></div>
+                  ) : preferences.email_on_due_date ? (
+                    "Aktif"
+                  ) : (
+                    "Pasif"
+                  )}
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => sendTestReminder("due_date")}
+                  disabled={updating === "test_due_date" || !preferences.email_on_due_date}
+                  title="Test bildirimi gönder"
+                >
+                  {updating === "test_due_date" ? (
+                    <div className="animate-spin rounded-full h-4 w-4 border-2 border-gray-400 border-t-transparent"></div>
+                  ) : (
+                    "Test"
+                  )}
+                </Button>
+              </div>
+            </div>
+
+            <div className="flex items-center justify-between">
+              <div>
+                <span className="font-medium">Gecikme bildirimi</span>
+                <p className="text-sm text-gray-600">Vade geçtiğinde e-posta gönder</p>
+              </div>
+              <div className="flex items-center gap-2">
+                <Button
+                  variant={preferences.email_overdue ? "default" : "outline"}
+                  size="sm"
+                  onClick={() => togglePreference("email_overdue", preferences.email_overdue)}
+                  disabled={updating === "email_overdue"}
+                >
+                  {updating === "email_overdue" ? (
+                    <div className="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent"></div>
+                  ) : preferences.email_overdue ? (
+                    "Aktif"
+                  ) : (
+                    "Pasif"
+                  )}
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => sendTestReminder("overdue")}
+                  disabled={updating === "test_overdue" || !preferences.email_overdue}
+                  title="Test bildirimi gönder"
+                >
+                  {updating === "test_overdue" ? (
+                    <div className="animate-spin rounded-full h-4 w-4 border-2 border-gray-400 border-t-transparent"></div>
+                  ) : (
+                    "Test"
+                  )}
+                </Button>
+              </div>
             </div>
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader>
-            <CardTitle>SMS Hatırlatıcıları</CardTitle>
+            <CardTitle className="flex items-center gap-2">
+              <Clock className="h-5 w-5" />
+              Genel Ayarlar
+            </CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="flex items-center justify-between">
-              <span>1 gün önceden SMS</span>
-              <Button variant="outline" size="sm">
-                Pasif
+              <div>
+                <span className="font-medium">E-posta bildirimleri</span>
+                <p className="text-sm text-gray-600">Tüm e-posta bildirimlerini aç/kapat</p>
+              </div>
+              <Button
+                variant={preferences.email_enabled ? "default" : "outline"}
+                size="sm"
+                onClick={() => togglePreference("email_enabled", preferences.email_enabled)}
+                disabled={updating === "email_enabled"}
+              >
+                {updating === "email_enabled" ? (
+                  <div className="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent"></div>
+                ) : preferences.email_enabled ? (
+                  "Aktif"
+                ) : (
+                  "Pasif"
+                )}
               </Button>
             </div>
+
             <div className="flex items-center justify-between">
-              <span>Vade günü SMS</span>
-              <Button variant="outline" size="sm">
-                Pasif
-              </Button>
+              <div>
+                <span className="font-medium">Bildirim saati</span>
+                <p className="text-sm text-gray-600">Bildirimlerin gönderileceği saat</p>
+              </div>
+              <div className="text-sm font-medium text-gray-700">{preferences.notification_time}</div>
+            </div>
+
+            <div className="pt-4 border-t">
+              <div className="text-sm text-gray-600 mb-2">SMS Bildirimleri (Yakında)</div>
+              <div className="flex items-center justify-between opacity-50">
+                <span className="text-sm">SMS bildirimleri</span>
+                <Button variant="outline" size="sm" disabled>
+                  Yakında
+                </Button>
+              </div>
             </div>
           </CardContent>
         </Card>
@@ -831,30 +1357,54 @@ function ReminderSettings({ payments }: { payments: PaymentWithCredit[] }) {
 
       <Card>
         <CardHeader>
-          <CardTitle>Yaklaşan Hatırlatıcılar</CardTitle>
+          <CardTitle className="flex items-center gap-2">
+            <Calendar className="h-5 w-5" />
+            Yaklaşan Hatırlatıcılar
+          </CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="space-y-3">
-            {payments
-              .filter((p) => p.status === "pending")
-              .slice(0, 5)
-              .map((payment) => (
-                <div key={payment.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-                  <div className="flex items-center gap-3">
-                    <BankLogo bankName={payment.credits.banks.name} size="sm" />
-                    <div>
-                      <div className="font-medium">{payment.credits.banks.name}</div>
-                      <div className="text-sm text-gray-600">
-                        {formatDate(payment.due_date)} - {formatCurrency(payment.total_payment)}
+          {upcomingPayments.length > 0 ? (
+            <div className="space-y-3">
+              {upcomingPayments.slice(0, 5).map((payment) => {
+                const dueDate = new Date(payment.due_date)
+                const today = new Date()
+                const daysUntilDue = Math.ceil((dueDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24))
+
+                return (
+                  <div key={payment.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                    <div className="flex items-center gap-3">
+                      <BankLogo bankName={payment.credits.banks.name} size="sm" />
+                      <div>
+                        <div className="font-medium">{payment.credits.banks.name}</div>
+                        <div className="text-sm text-gray-600">
+                          {formatDate(payment.due_date)} - {formatCurrency(payment.total_payment)}
+                        </div>
                       </div>
                     </div>
+                    <div className="text-right">
+                      <div
+                        className={`text-sm font-medium ${
+                          daysUntilDue <= 1 ? "text-red-600" : daysUntilDue <= 3 ? "text-orange-600" : "text-gray-600"
+                        }`}
+                      >
+                        {daysUntilDue === 0 ? "Bugün" : daysUntilDue === 1 ? "Yarın" : `${daysUntilDue} gün kaldı`}
+                      </div>
+                      <div className="text-xs text-gray-500">#{payment.installment_number}. taksit</div>
+                    </div>
                   </div>
-                  <Button variant="outline" size="sm">
-                    <Bell className="h-4 w-4" />
-                  </Button>
-                </div>
-              ))}
-          </div>
+                )
+              })}
+              {upcomingPayments.length > 5 && (
+                <div className="text-center text-sm text-gray-600 pt-2">+{upcomingPayments.length - 5} ödeme daha</div>
+              )}
+            </div>
+          ) : (
+            <div className="text-center py-8 text-gray-500">
+              <Bell className="h-12 w-12 mx-auto mb-3 text-gray-400" />
+              <p className="font-medium">Yaklaşan ödeme yok</p>
+              <p className="text-sm">Önümüzdeki 7 gün içinde vadesi gelen ödeme bulunmuyor</p>
+            </div>
+          )}
         </CardContent>
       </Card>
     </div>
@@ -867,6 +1417,7 @@ export default function OdemePlaniPage() {
   const [credits, setCredits] = useState<Credit[]>([])
   const [loading, setLoading] = useState(true)
   const [selectedTab, setSelectedTab] = useState("takvim")
+  const { toast } = useToast()
 
   useEffect(() => {
     if (user) {
@@ -884,7 +1435,7 @@ export default function OdemePlaniPage() {
       setAllPayments(paymentsData || [])
       setCredits(creditsData || [])
     } catch (error) {
-      // Error loading payment data
+      console.error("Error loading payment data:", error)
     } finally {
       setLoading(false)
     }
@@ -932,67 +1483,82 @@ export default function OdemePlaniPage() {
 
   return (
     <div className="flex flex-col gap-4 md:gap-6">
-      {/* Hero Section with Modern Design */}
-      <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 text-white shadow-2xl">
-        <div className="absolute inset-0 bg-gradient-to-br from-red-600/20 to-orange-600/20" />
-        <div className="absolute -top-24 -right-24 w-96 h-96 bg-red-500/10 rounded-full blur-3xl" />
-        <div className="absolute -bottom-24 -left-24 w-96 h-96 bg-orange-500/10 rounded-full blur-3xl" />
-        
-        <CardContent className="relative p-8 md:p-12">
-          <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-6">
+      {/* Hero Section */}
+      <Card className="bg-gradient-to-r from-orange-600 to-red-700 text-white border-transparent shadow-xl rounded-xl">
+        <CardContent className="p-8">
+          <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
             <div>
-              <div className="flex items-center gap-3 mb-4">
-                <div className="p-3 bg-red-500/20 rounded-lg backdrop-blur-sm">
-                  <Calendar className="h-8 w-8 text-red-400" />
-                </div>
-                <h1 className="text-4xl font-bold bg-gradient-to-r from-white to-gray-300 bg-clip-text text-transparent">
-                  Ödeme Planı Yönetimi
-                </h1>
-              </div>
-              <p className="text-gray-300 text-lg max-w-2xl">
-                Tüm kredilerinizin ödeme planlarını görüntüleyin, takip edin ve hatırlatıcılar oluşturun.
+              <h2 className="text-3xl font-bold mb-2 flex items-center gap-3">
+                <Calendar className="h-8 w-8" />
+                Ödeme Planı Yönetimi
+              </h2>
+              <p className="text-orange-100 text-lg">
+                Tüm kredilerinizin ödeme planlarını görüntüleyin, takip edin ve hatırlatıcılar oluşturun
               </p>
-              
-              {/* Quick Stats */}
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-6">
-                <div className="bg-white/10 backdrop-blur-sm rounded-lg p-3">
-                  <p className="text-sm text-gray-300">Bu Ay Ödeme</p>
-                  <p className="text-xl font-bold">{formatCurrency(thisMonthTotal)}</p>
-                </div>
-                <div className="bg-white/10 backdrop-blur-sm rounded-lg p-3">
-                  <p className="text-sm text-gray-300">7 Gün İçinde</p>
-                  <p className="text-xl font-bold">{next7DaysPayments.length}</p>
-                </div>
-                <div className="bg-white/10 backdrop-blur-sm rounded-lg p-3">
-                  <p className="text-sm text-gray-300">Geciken</p>
-                  <p className="text-xl font-bold">{overduePayments.length}</p>
-                </div>
-                <div className="bg-white/10 backdrop-blur-sm rounded-lg p-3">
-                  <p className="text-sm text-gray-300">Bu Yıl Ödenen</p>
-                  <p className="text-xl font-bold">{completedThisYear}</p>
-                </div>
-              </div>
             </div>
-            
             <div className="flex flex-col sm:flex-row gap-3">
               <Button
-                className="bg-white/20 backdrop-blur-sm border-white/30 hover:bg-white/30 text-white"
+                variant="outline"
                 size="lg"
+                className="bg-white text-orange-600 hover:bg-orange-50 border-white"
+                onClick={() => {
+                  // PDF export functionality
+                  const data = allPayments.map((payment) => ({
+                    Banka: payment.credits.banks.name,
+                    "Taksit No": payment.installment_number,
+                    "Vade Tarihi": formatDate(payment.due_date),
+                    "Ana Para": formatCurrency(payment.principal_amount),
+                    Faiz: formatCurrency(payment.interest_amount),
+                    Toplam: formatCurrency(payment.total_payment),
+                    Durum: payment.status === "paid" ? "Ödendi" : "Bekliyor",
+                  }))
+
+                  const ws = XLSX.utils.json_to_sheet(data)
+                  const wb = XLSX.utils.book_new()
+                  XLSX.utils.book_append_sheet(wb, ws, "Ödeme Planı")
+                  const excelBuffer = XLSX.write(wb, { bookType: "xlsx", type: "array" })
+
+                  const blob = new Blob([excelBuffer], {
+                    type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet;charset=UTF-8",
+                  })
+
+                  const url = URL.createObjectURL(blob)
+                  const link = document.createElement("a")
+                  link.href = url
+                  link.download = "odeme-plani.xlsx"
+                  document.body.appendChild(link)
+                  link.click()
+                  document.body.removeChild(link)
+                  URL.revokeObjectURL(url)
+
+                  toast({
+                    title: "PDF dosyası indirildi!",
+                    description: "Ödeme planınız başarıyla indirildi.",
+                  })
+                }}
               >
-                <Download className="h-5 w-5 mr-2" />
+                <Download className="h-5 w-5" />
                 PDF İndir
               </Button>
               <Button
-                className="bg-white/20 backdrop-blur-sm border-white/30 hover:bg-white/30 text-white"
+                variant="outline"
                 size="lg"
+                className="bg-white text-orange-600 hover:bg-orange-50 border-white"
+                onClick={() => {
+                  setSelectedTab("hatirlatici")
+                  toast({
+                    title: "Hatırlatıcı sayfasına yönlendirildiniz",
+                    description: "Hatırlatıcı ayarlarınızı buradan yapabilirsiniz.",
+                  })
+                }}
               >
-                <Bell className="h-5 w-5 mr-2" />
+                <Bell className="h-5 w-5" />
                 Hatırlatıcı Ekle
               </Button>
             </div>
           </div>
         </CardContent>
-      </div>
+      </Card>
 
       {/* Modern Tabs */}
       <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">

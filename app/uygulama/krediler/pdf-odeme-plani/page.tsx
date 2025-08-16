@@ -110,7 +110,7 @@ export default function PDFOdemePlaniPage() {
       const formData = new FormData()
       formData.append("pdf", file)
 
-      // PDF analizi başlıyor
+      console.log("PDF analizi başlıyor...")
       const response = await fetch("/api/analyze-pdf", {
         method: "POST",
         body: formData,
@@ -128,7 +128,7 @@ export default function PDFOdemePlaniPage() {
       }
 
       const data = await response.json()
-      // Analiz tamamlandı
+      console.log(`Analiz tamamlandı: ${processingTimeMs}ms`)
 
       if (data.success && data.paymentPlan) {
         setAnalysisResult(data.paymentPlan)
@@ -161,7 +161,7 @@ export default function PDFOdemePlaniPage() {
         throw new Error(data.error || "PDF analizi tamamlanamadı")
       }
     } catch (err: any) {
-      // PDF analiz hatası
+      console.error("PDF analiz hatası:", err)
       setError(err.message || "PDF analizi sırasında bir hata oluştu")
       toast({
         title: "Analiz Hatası",
@@ -174,8 +174,7 @@ export default function PDFOdemePlaniPage() {
     }
   }
 
-  const handleBankSelect = (bank: any) => {
-    const bankName = bank.name || bank
+  const handleBankSelect = (bankName: string) => {
     if (analysisResult) {
       const updatedResult = { ...analysisResult, bankName }
       router.push(`/uygulama/krediler/pdf-odeme-plani/analiz?data=${encodeURIComponent(JSON.stringify(updatedResult))}`)
