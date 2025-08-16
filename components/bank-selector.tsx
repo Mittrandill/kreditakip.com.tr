@@ -45,11 +45,14 @@ export function BankSelector({ banks: propBanks, onBankSelect, onSkip }: BankSel
         const { data, error } = await supabase.from("banks").select("id, name, category, logo_url").order("name")
 
         if (error) {
+          console.error("Supabase error:", error)
           setBanks(getComprehensiveBankList())
         } else {
+          console.log("🏦 Veritabanından", data?.length || 0, "banka yüklendi")
           setBanks(data || getComprehensiveBankList())
         }
       } catch (error) {
+        console.error("Error fetching banks:", error)
         setBanks(getComprehensiveBankList())
       } finally {
         setLoading(false)
@@ -350,6 +353,7 @@ export function BankSelector({ banks: propBanks, onBankSelect, onSkip }: BankSel
   useEffect(() => {
     const timeoutId = setTimeout(() => {
       if (loading) {
+        console.warn("Bank loading timeout, using comprehensive fallback data")
         setBanks(getComprehensiveBankList())
         setLoading(false)
       }
@@ -369,6 +373,7 @@ export function BankSelector({ banks: propBanks, onBankSelect, onSkip }: BankSel
 
   const handleConfirm = () => {
     if (selectedBank) {
+      console.log("🎯 Banka seçildi:", selectedBank)
       onBankSelect?.(selectedBank) // Pass the full bank object
     }
   }

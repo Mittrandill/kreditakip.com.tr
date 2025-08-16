@@ -17,7 +17,7 @@ export async function getNotifications(userId: string) {
     .order("created_at", { ascending: false })
 
   if (error) {
-    // console.error("Error fetching notifications:", error)
+    console.error("Error fetching notifications:", error)
     throw error
   }
 
@@ -33,7 +33,7 @@ export async function markNotificationAsRead(notificationId: string) {
     .single()
 
   if (error) {
-    // console.error("Error marking notification as read:", error)
+    console.error("Error marking notification as read:", error)
     throw error
   }
 
@@ -48,7 +48,7 @@ export async function markAllNotificationsAsRead(userId: string) {
     .eq("is_read", false)
 
   if (error) {
-    // console.error("Error marking all notifications as read:", error)
+    console.error("Error marking all notifications as read:", error)
     throw error
   }
 
@@ -59,7 +59,7 @@ export async function deleteNotification(notificationId: string) {
   const { data, error } = await supabase.from("notifications").delete().eq("id", notificationId)
 
   if (error) {
-    // console.error("Error deleting notification:", error)
+    console.error("Error deleting notification:", error)
     throw error
   }
 
@@ -73,7 +73,7 @@ export async function getNotificationStats(userId: string) {
     .eq("user_id", userId)
 
   if (allError) {
-    // console.error("Error fetching notification stats:", allError)
+    console.error("Error fetching notification stats:", allError)
     throw allError
   }
 
@@ -142,7 +142,7 @@ export async function createPaymentReminders(userId: string) {
       const { data, error } = await supabase.from("notifications").insert(notifications).select()
 
       if (error) {
-        // console.error("Error creating payment reminders:", error)
+        console.error("Error creating payment reminders:", error)
         throw error
       }
 
@@ -151,7 +151,7 @@ export async function createPaymentReminders(userId: string) {
 
     return []
   } catch (error) {
-    // console.error("Error in createPaymentReminders:", error)
+    console.error("Error in createPaymentReminders:", error)
     throw error
   }
 }

@@ -46,7 +46,7 @@ export async function getBankingCredentials(
     .eq("is_active", true)
 
   if (countError) {
-    // console.error("Banking credentials count error:", countError)
+    console.error("Banking credentials count error:", countError)
     throw countError
   }
 
@@ -66,7 +66,7 @@ export async function getBankingCredentials(
     .range(offset, offset + limit - 1)
 
   if (error) {
-    // console.error("Banking credentials fetch error:", error)
+    console.error("Banking credentials fetch error:", error)
     throw error
   }
 
@@ -99,7 +99,7 @@ export async function getBankingCredential(userId: string, credentialId: string)
 
   if (error) {
     if (error.code === "PGRST116") return null
-    // console.error("Banking credential fetch error:", error)
+    console.error("Banking credential fetch error:", error)
     throw error
   }
 
@@ -115,22 +115,43 @@ export async function createBankingCredential(
   userId: string,
   credentialData: BankingCredentialInput,
 ): Promise<BankingCredential> {
+  console.log("Creating banking credential:", {
+    ...credentialData,
+    password: credentialData.password ? "***" : "empty",
+  })
+
   // Şifreyi şifrele
-  const encryptedPassword = credentialData.password ? encryptSensitiveData(credentialData.password) : null
+  let encryptedPassword = null
+  if (credentialData.password && credentialData.password.trim() !== "") {
+    try {
+      encryptedPassword = await encryptSensitiveData(credentialData.password)
+      console.log("Password encrypted successfully")
+    } catch (error) {
+      console.error("Password encryption error:", error)
+      throw new Error("Şifre şifrelenemedi")
+    }
+  }
+
+  const insertData = {
+    user_id: userId,
+    bank_id: credentialData.bank_id,
+    credential_name: credentialData.credential_name,
+    username: credentialData.username || null,
+    encrypted_password: encryptedPassword,
+    credential_type: credentialData.credential_type,
+    notes: credentialData.notes || null,
+    password_change_frequency_days: credentialData.password_change_frequency_days || null,
+    last_password_change_date: credentialData.password ? new Date().toISOString() : null,
+  }
+
+  console.log("Inserting data:", {
+    ...insertData,
+    encrypted_password: insertData.encrypted_password ? "***encrypted***" : null,
+  })
 
   const { data, error } = await supabase
     .from("banking_credentials")
-    .insert({
-      user_id: userId,
-      bank_id: credentialData.bank_id,
-      credential_name: credentialData.credential_name,
-      username: credentialData.username || null,
-      encrypted_password: encryptedPassword,
-      credential_type: credentialData.credential_type,
-      notes: credentialData.notes || null,
-      password_change_frequency_days: credentialData.password_change_frequency_days || null,
-      last_password_change_date: credentialData.password ? new Date().toISOString() : null,
-    })
+    .insert(insertData)
     .select(`
       *,
       banks (
@@ -141,9 +162,11 @@ export async function createBankingCredential(
     .single()
 
   if (error) {
-    // console.error("Banking credential creation error:", error)
+    console.error("Banking credential creation error:", error)
     throw error
   }
+
+  console.log("Banking credential created successfully")
 
   return {
     ...data,
@@ -173,9 +196,17 @@ export async function updateBankingCredential(
 
   // Şifre güncelleniyorsa şifrele ve son değiştirme tarihini güncelle
   if (credentialData.password !== undefined) {
-    updateData.encrypted_password = credentialData.password ? encryptSensitiveData(credentialData.password) : null
-    if (credentialData.password) {
-      updateData.last_password_change_date = new Date().toISOString()
+    if (credentialData.password && credentialData.password.trim() !== "") {
+      try {
+        updateData.encrypted_password = await encryptSensitiveData(credentialData.password)
+        updateData.last_password_change_date = new Date().toISOString()
+        console.log("Password updated and encrypted")
+      } catch (error) {
+        console.error("Password encryption error:", error)
+        throw new Error("Şifre şifrelenemedi")
+      }
+    } else {
+      updateData.encrypted_password = null
     }
   }
 
@@ -194,7 +225,7 @@ export async function updateBankingCredential(
     .single()
 
   if (error) {
-    // console.error("Banking credential update error:", error)
+    console.error("Banking credential update error:", error)
     throw error
   }
 
@@ -210,7 +241,7 @@ export async function deleteBankingCredential(userId: string, credentialId: stri
   const { error } = await supabase.from("banking_credentials").delete().eq("user_id", userId).eq("id", credentialId)
 
   if (error) {
-    // console.error("Banking credential deletion error:", error)
+    console.error("Banking credential deletion error:", error)
     throw error
   }
 }
@@ -226,24 +257,25 @@ export async function updateLastUsedDate(userId: string, credentialId: string): 
     .eq("id", credentialId)
 
   if (error) {
-    // console.error("Last used date update error:", error)
+    console.error("Last used date update error:", error)
     throw error
   }
 }
 
-export function decryptPassword(encryptedPassword: string | null): string | null {
+export async function decryptPassword(encryptedPassword: string | null): Promise<string | null> {
   if (!encryptedPassword) return null
 
   try {
-    return decryptSensitiveData(encryptedPassword)
+    const decrypted = await decryptSensitiveData(encryptedPassword)
+    return decrypted
   } catch (error) {
-    // console.error("Password decryption error:", error)
+    console.error("Password decryption error:", error)
     return null
   }
 }
 
 export function maskPassword(password: string | null): string {
-  if (!password) return ""
+  if (!password) return "••••••••"
   return "•".repeat(Math.min(password.length, 12))
 }
 
@@ -255,7 +287,7 @@ export async function getBankingCredentialsStats(userId: string) {
     .eq("is_active", true)
 
   if (error) {
-    // console.error("Banking credentials stats error:", error)
+    console.error("Banking credentials stats error:", error)
     throw error
   }
 

@@ -6,7 +6,7 @@ export async function getFinancialProfile(userId: string): Promise<FinancialProf
 
   if (error && error.code !== "PGRST116") {
     // PGRST116: single row not found, bu bir hata değil
-    // console.error("Finansal profil çekilirken hata:", error)
+    console.error("Finansal profil çekilirken hata:", error)
     throw error
   }
   return data
@@ -23,7 +23,7 @@ export async function upsertFinancialProfile(
     .single()
 
   if (error) {
-    // console.error("Finansal profil güncellenirken/eklenirken hata:", error)
+    console.error("Finansal profil güncellenirken/eklenirken hata:", error)
     throw error
   }
   return data

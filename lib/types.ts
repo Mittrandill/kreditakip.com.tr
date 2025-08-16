@@ -610,6 +610,52 @@ export interface Database {
           updated_at?: string
         }
       }
+      notification_preferences: {
+        Row: {
+          id: string
+          user_id: string
+          email_3_days_before: boolean
+          email_1_day_before: boolean
+          email_on_due_date: boolean
+          email_overdue: boolean
+          sms_1_day_before: boolean
+          sms_on_due_date: boolean
+          email_enabled: boolean
+          sms_enabled: boolean
+          notification_time: string
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          user_id: string
+          email_3_days_before?: boolean
+          email_1_day_before?: boolean
+          email_on_due_date?: boolean
+          email_overdue?: boolean
+          sms_1_day_before?: boolean
+          sms_on_due_date?: boolean
+          email_enabled?: boolean
+          sms_enabled?: boolean
+          notification_time?: string
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          user_id?: string
+          email_3_days_before?: boolean
+          email_1_day_before?: boolean
+          email_on_due_date?: boolean
+          email_overdue?: boolean
+          sms_1_day_before?: boolean
+          sms_on_due_date?: boolean
+          email_enabled?: boolean
+          sms_enabled?: boolean
+          notification_time?: string
+          updated_at?: string
+        }
+      }
     }
   }
 }
@@ -642,10 +688,7 @@ export type RefinancingAnalysis = Database["public"]["Tables"]["refinancing_anal
 // Yeni tipler
 export type Account = Database["public"]["Tables"]["accounts"]["Row"]
 export type CreditCard = Database["public"]["Tables"]["credit_cards"]["Row"]
-export type AccountTransaction = Database["public"]["Tables"]["account_transactions"]["Row"]
-export type CreditCardTransaction = Database["public"]["Tables"]["credit_card_transactions"]["Row"]
-export type AccountBalanceHistory = Database["public"]["Tables"]["account_balance_history"]["Row"]
-export type CreditCardBalanceHistory = Database["public"]["Tables"]["credit_card_balance_history"]["Row"]
+export type NotificationPreferences = Database["public"]["Tables"]["notification_preferences"]["Row"]
 
 // Gelişmiş Risk Analizi Veri Yapısı
 export interface RiskAnalysisData {

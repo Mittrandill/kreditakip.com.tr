@@ -6,24 +6,7 @@ import { useSidebar } from "@/components/ui/sidebar"
 import { Separator } from "@/components/ui/separator"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"
-import {
-  Home,
-  CreditCard,
-  Calendar,
-  BarChart3,
-  Settings,
-  Bell,
-  LogOut,
-  ChevronUp,
-  UserIcon,
-  Briefcase,
-  HelpCircle,
-  ShieldCheck,
-  Menu,
-  RefreshCw,
-  Wallet,
-  Key,
-} from "lucide-react"
+import { Home, CreditCard, Calendar, BarChart3, Settings, Bell, LogOut, ChevronUp, UserIcon, Briefcase, HelpCircle, ShieldCheck, Menu, Key } from 'lucide-react'
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -40,13 +23,10 @@ import Image from "next/image"
 const navItems = [
   { href: "/uygulama/ana-sayfa", label: "Ana Sayfa", icon: Home },
   { href: "/uygulama/krediler", label: "Kredilerim", icon: CreditCard },
-  { href: "/uygulama/hesaplar", label: "Hesaplarım", icon: Wallet },
-  { href: "/uygulama/kredi-kartlari", label: "Kredi Kartlarım", icon: CreditCard },
   { href: "/uygulama/sifrelerim", label: "Şifrelerim", icon: Key },
   { href: "/uygulama/odeme-plani", label: "Ödeme Planı", icon: Calendar },
   { href: "/uygulama/raporlar", label: "Raporlar", icon: BarChart3 },
   { href: "/uygulama/risk-analizi", label: "Risk Analizi", icon: ShieldCheck },
-  { href: "/uygulama/refinansman", label: "Refinansman", icon: RefreshCw },
 ]
 
 const settingsItems = [

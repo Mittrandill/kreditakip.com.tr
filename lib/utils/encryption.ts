@@ -1,81 +1,84 @@
-import crypto from "crypto"
-
-// Güvenli şifreleme için AES-256-GCM kullanıyoruz
-const ALGORITHM = "aes-256-gcm"
+// Simple and reliable encryption utilities
 const ENCRYPTION_KEY =
-  process.env.ENCRYPTION_KEY || process.env.NEXT_PUBLIC_ENCRYPTION_KEY || "dev-key-32-chars-long-for-aes256"
+  process.env.ENCRYPTION_KEY || process.env.NEXT_PUBLIC_ENCRYPTION_KEY || "default-encryption-key-32-chars"
 
-// Şifreleme anahtarının 32 karakter olduğundan emin olalım
-const getEncryptionKey = (): Buffer => {
-  const key = ENCRYPTION_KEY.padEnd(32, "0").substring(0, 32)
-  return Buffer.from(key, "utf8")
+// Simple XOR encryption function
+function xorEncrypt(text: string, key: string): string {
+  let result = ""
+  for (let i = 0; i < text.length; i++) {
+    const textChar = text.charCodeAt(i)
+    const keyChar = key.charCodeAt(i % key.length)
+    result += String.fromCharCode(textChar ^ keyChar)
+  }
+  return result
 }
 
-export function encryptSensitiveData(data: string): string {
+// XOR decryption (same as encryption for XOR)
+function xorDecrypt(encryptedText: string, key: string): string {
+  return xorEncrypt(encryptedText, key) // XOR is symmetric
+}
+
+// Safe base64 encoding
+function safeBase64Encode(str: string): string {
+  try {
+    return btoa(unescape(encodeURIComponent(str)))
+  } catch (error) {
+    console.error("Base64 encode error:", error)
+    return btoa(str)
+  }
+}
+
+// Safe base64 decoding
+function safeBase64Decode(str: string): string {
+  try {
+    return decodeURIComponent(escape(atob(str)))
+  } catch (error) {
+    console.error("Base64 decode error:", error)
+    return atob(str)
+  }
+}
+
+export async function encryptSensitiveData(data: string): Promise<string> {
   try {
     if (!data || data.trim() === "") {
       return ""
     }
 
-    const key = getEncryptionKey()
-    const iv = crypto.randomBytes(16) // 128-bit IV
-    const cipher = crypto.createCipher(ALGORITHM, key)
+    console.log(`🔐 Encrypting password: ${data.substring(0, 2)}***`)
 
-    let encrypted = cipher.update(data, "utf8", "hex")
-    encrypted += cipher.final("hex")
+    // Step 1: XOR encrypt with key
+    const encrypted = xorEncrypt(data, ENCRYPTION_KEY)
 
-    const authTag = cipher.getAuthTag()
+    // Step 2: Base64 encode for safe storage
+    const encoded = safeBase64Encode(encrypted)
 
-    // IV + AuthTag + Encrypted Data formatında birleştir
-    const result = iv.toString("hex") + ":" + authTag.toString("hex") + ":" + encrypted
-
-    return result
+    console.log(`✅ Password encrypted successfully`)
+    return encoded
   } catch (error) {
-    // Geliştirme ortamında fallback olarak base64 kullan
-    if (process.env.NODE_ENV === "development") {
-      return Buffer.from(data).toString("base64")
-    }
-    throw new Error("Hassas veri şifrelenemedi")
+    console.error("Encryption error:", error)
+    throw new Error("Failed to encrypt password")
   }
 }
 
-export function decryptSensitiveData(encryptedData: string): string {
+export async function decryptSensitiveData(encryptedData: string): Promise<string> {
   try {
     if (!encryptedData || encryptedData.trim() === "") {
       return ""
     }
 
-    // Base64 formatında mı kontrol et (eski veriler için)
-    if (!encryptedData.includes(":")) {
-      return Buffer.from(encryptedData, "base64").toString("utf-8")
-    }
+    console.log(`🔓 Decrypting password...`)
 
-    const parts = encryptedData.split(":")
-    if (parts.length !== 3) {
-      throw new Error("Geçersiz şifreli veri formatı")
-    }
+    // Step 1: Base64 decode
+    const decoded = safeBase64Decode(encryptedData)
 
-    const [ivHex, authTagHex, encrypted] = parts
-    const key = getEncryptionKey()
-    const iv = Buffer.from(ivHex, "hex")
-    const authTag = Buffer.from(authTagHex, "hex")
+    // Step 2: XOR decrypt with key
+    const decrypted = xorDecrypt(decoded, ENCRYPTION_KEY)
 
-    const decipher = crypto.createDecipher(ALGORITHM, key)
-    decipher.setAuthTag(authTag)
-
-    let decrypted = decipher.update(encrypted, "hex", "utf8")
-    decrypted += decipher.final("utf8")
-
+    console.log(`✅ Password decrypted successfully`)
     return decrypted
   } catch (error) {
-    // Geliştirme ortamında fallback
-    if (process.env.NODE_ENV === "development") {
-      try {
-        return Buffer.from(encryptedData, "base64").toString("utf-8")
-      } catch (fallbackError) {
-      }
-    }
-    throw new Error("Hassas veri çözülemedi")
+    console.error("Decryption error:", error)
+    throw new Error("Failed to decrypt password")
   }
 }
 
@@ -84,14 +87,9 @@ export function maskCardNumber(cardNumber: string): string {
     return "**** **** **** ****"
   }
 
-  // Boşlukları ve tireleri temizle
   const cleanNumber = cardNumber.replace(/[\s-]/g, "")
-
-  // Son 4 hanesi göster
   const lastFour = cleanNumber.slice(-4)
   const maskedPart = "*".repeat(Math.max(0, cleanNumber.length - 4))
-
-  // 4'lü gruplar halinde formatla
   const formatted = (maskedPart + lastFour).replace(/(.{4})/g, "$1 ").trim()
   return formatted
 }
@@ -101,31 +99,23 @@ export function getCardBrand(cardNumber: string): string {
 
   const cleanNumber = cardNumber.replace(/[\s-]/g, "")
 
-  // Türk bankalarının kart numarası başlangıçları
   if (cleanNumber.startsWith("4")) return "Visa"
   if (cleanNumber.startsWith("5") || cleanNumber.startsWith("2")) return "Mastercard"
   if (cleanNumber.startsWith("3")) return "American Express"
   if (cleanNumber.startsWith("6")) return "Discover"
-  if (cleanNumber.startsWith("9792")) return "Troy" // Türkiye'ye özel
+  if (cleanNumber.startsWith("9792")) return "Troy"
 
   return "Bilinmeyen"
 }
 
-// Test kart numaraları - geliştirme için
 const TEST_CARD_NUMBERS = [
-  "1111111111111111", // Test kartı
-  "4111111111111111", // Visa test kartı
-  "5555555555554444", // Mastercard test kartı
-  "378282246310005", // American Express test kartı
-  "6011111111111117", // Discover test kartı
-  "4000000000000002", // Visa test kartı
-  "5200828282828210", // Mastercard test kartı
-  "4242424242424242", // Stripe test kartı
-  "4000000000000069", // Visa test kartı (declined)
-  "4000000000000127", // Visa test kartı (insufficient funds)
-  "1234567890123456", // Basit test kartı
-  "9999999999999999", // Basit test kartı
-  "0000000000000000", // Sıfır test kartı
+  "1111111111111111",
+  "4111111111111111",
+  "5555555555554444",
+  "378282246310005",
+  "6011111111111117",
+  "4242424242424242",
+  "1234567890123456",
 ]
 
 export function validateCardNumber(cardNumber: string): boolean {
@@ -133,29 +123,20 @@ export function validateCardNumber(cardNumber: string): boolean {
 
   const cleanNumber = cardNumber.replace(/[\s-]/g, "")
 
-  // 13-19 haneli olmalı
   if (!/^\d{13,19}$/.test(cleanNumber)) return false
 
-  // Geliştirme ortamında test kartlarını kabul et
   if (process.env.NODE_ENV === "development") {
-    // Test kart numaralarını kontrol et
     if (TEST_CARD_NUMBERS.includes(cleanNumber)) {
       return true
     }
-
-    // Geliştirme ortamında daha esnek validasyon
-    // Sadece rakam kontrolü yap, Luhn algoritmasını atla
-    return true
+    return true // Allow any format in development
   }
 
-  // Prodüksiyon ortamında Luhn algoritması ile doğrula
   return luhnCheck(cleanNumber)
 }
 
 export function formatCardNumber(cardNumber: string): string {
   const cleanNumber = cardNumber.replace(/[\s-]/g, "")
-
-  // 4'lü gruplar halinde formatla
   return cleanNumber.replace(/(\d{4})(?=\d)/g, "$1 ")
 }
 
@@ -169,30 +150,24 @@ export function validateExpiryDate(month: string | number, year: string | number
   const currentYear = currentDate.getFullYear()
   const currentMonth = currentDate.getMonth() + 1
 
-  // 2 haneli yılı 4 haneli yap
   const fullYear = yearNum < 100 ? 2000 + yearNum : yearNum
 
-  // Geliştirme ortamında daha esnek tarih kontrolü
   if (process.env.NODE_ENV === "development") {
-    // Sadece mantıklı bir tarih olup olmadığını kontrol et
     if (fullYear >= currentYear - 10 && fullYear <= currentYear + 20) {
       return true
     }
   }
 
-  // Gelecek tarih olmalı
   if (fullYear < currentYear) return false
   if (fullYear === currentYear && monthNum < currentMonth) return false
 
   return true
 }
 
-// Luhn algoritması
 function luhnCheck(cardNumber: string): boolean {
   let sum = 0
   let isEven = false
 
-  // Sağdan sola doğru
   for (let i = cardNumber.length - 1; i >= 0; i--) {
     let digit = Number.parseInt(cardNumber.charAt(i), 10)
 
@@ -210,9 +185,13 @@ function luhnCheck(cardNumber: string): boolean {
   return sum % 10 === 0
 }
 
-// Hassas veri güvenlik kontrolleri
 export function isDataEncrypted(data: string): boolean {
-  return data.includes(":") && data.split(":").length === 3
+  try {
+    atob(data)
+    return data.length > 20
+  } catch {
+    return false
+  }
 }
 
 export function sanitizeForLog(data: string): string {
@@ -221,12 +200,10 @@ export function sanitizeForLog(data: string): string {
   return data.substring(0, 2) + "***" + data.substring(data.length - 2)
 }
 
-// Geliştirme ortamı için yardımcı fonksiyon
 export function getTestCardNumbers(): string[] {
   return TEST_CARD_NUMBERS.map((num) => formatCardNumber(num))
 }
 
-// Kart numarası önerileri
 export function getCardNumberSuggestions(): Array<{ number: string; brand: string; description: string }> {
   return [
     { number: "4111 1111 1111 1111", brand: "Visa", description: "Visa Test Kartı" },
@@ -237,4 +214,63 @@ export function getCardNumberSuggestions(): Array<{ number: string; brand: strin
     { number: "1111 1111 1111 1111", brand: "Test", description: "Basit Test Kartı" },
     { number: "1234 5678 9012 3456", brand: "Test", description: "Demo Kartı" },
   ]
+}
+
+export function createTestPassword(): string {
+  const testPasswords = [
+    "123456",
+    "password123",
+    "test123",
+    "demo456",
+    "sample789",
+    "bankpass456",
+    "secure789",
+    "mypassword",
+  ]
+  return testPasswords[Math.floor(Math.random() * testPasswords.length)]
+}
+
+export function validatePasswordStrength(password: string): {
+  score: number
+  feedback: string[]
+  isStrong: boolean
+} {
+  const feedback: string[] = []
+  let score = 0
+
+  if (password.length >= 8) {
+    score += 1
+  } else {
+    feedback.push("En az 8 karakter olmalı")
+  }
+
+  if (/[a-z]/.test(password)) {
+    score += 1
+  } else {
+    feedback.push("Küçük harf içermeli")
+  }
+
+  if (/[A-Z]/.test(password)) {
+    score += 1
+  } else {
+    feedback.push("Büyük harf içermeli")
+  }
+
+  if (/\d/.test(password)) {
+    score += 1
+  } else {
+    feedback.push("Rakam içermeli")
+  }
+
+  if (/[!@#$%^&*(),.?":{}|<>]/.test(password)) {
+    score += 1
+  } else {
+    feedback.push("Özel karakter içermeli")
+  }
+
+  return {
+    score,
+    feedback,
+    isStrong: score >= 4,
+  }
 }

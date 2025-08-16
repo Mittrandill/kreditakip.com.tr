@@ -6,6 +6,7 @@ export const maxDuration = 60
 // Gelişmiş JSON temizleme ve düzeltme fonksiyonu
 function cleanAndParseJSON(text: string) {
   try {
+    console.log("Ham JSON uzunluğu:", text.length)
     let cleanText = text
       .replace(/```(?:json)?\s*/g, "")
       .replace(/```\s*/g, "")
@@ -19,9 +20,11 @@ function cleanAndParseJSON(text: string) {
     cleanText = cleanText.replace(/,(\s*[}\]])/g, "$1").replace(/,(\s*,)/g, ",")
     cleanText = cleanText.replace(/}\s*{/g, "},{").replace(/]\s*\[/g, "],[")
     cleanText = cleanText.replace(/[\u0000-\u001F\u007F-\u009F]/g, "").replace(/\n\s*\n/g, "\n")
+    console.log("Temizlenmiş JSON uzunluğu:", cleanText.length)
     try {
       return JSON.parse(cleanText)
     } catch (firstError: any) {
+      console.log("İlk parse hatası:", firstError.message)
       cleanText = cleanText
         .replace(/,\s*}/g, "}")
         .replace(/,\s*]/g, "]")
@@ -29,6 +32,7 @@ function cleanAndParseJSON(text: string) {
       try {
         return JSON.parse(cleanText)
       } catch (secondError: any) {
+        console.log("İkinci parse hatası:", secondError.message)
         const lines = cleanText.split("\n")
         const fixedLines = []
         let inArray = false
@@ -55,14 +59,24 @@ function cleanAndParseJSON(text: string) {
           fixedLines.push(line)
         }
         const repairedText = fixedLines.join("\n")
+        console.log("Onarılmış JSON:", repairedText.substring(0, 500) + "...")
         try {
           return JSON.parse(repairedText)
         } catch (finalError: any) {
+          console.error("Final parse hatası:", finalError.message)
+          console.error(
+            "Sorunlu JSON bölümü:",
+            repairedText.substring(
+              Math.max(0, finalError.message.match(/\d+/)?.[0] - 100 || 0),
+              (finalError.message.match(/\d+/)?.[0] || 0) + 100,
+            ),
+          )
           throw new Error("JSON formatı düzeltilemedi")
         }
       }
     }
   } catch (error: any) {
+    console.error("JSON temizleme hatası:", error)
     throw new Error("JSON formatı geçersiz")
   }
 }
@@ -201,6 +215,7 @@ export async function POST(request: Request) {
       return Response.json({ error: "PDF dosyası bulunamadı" }, { status: 400 })
     }
 
+    console.log(`[${Date.now() - startTime}ms] PDF alındı:`, file.name, file.size, "bytes")
 
     const fileBuffer = await file.arrayBuffer()
     const base64Data = Buffer.from(fileBuffer).toString("base64")
@@ -216,6 +231,7 @@ export async function POST(request: Request) {
       },
     })
 
+    console.log(`[${Date.now() - startTime}ms] Gemini API çağrısı başlıyor... (ULTRA DIAMOND MODE)`)
 
     const result = await model.generateContent([
       ULTRA_ADVANCED_PROMPT,
@@ -230,10 +246,14 @@ export async function POST(request: Request) {
     const response = await result.response
     const text = response.text()
 
+    console.log(`[${Date.now() - startTime}ms] Gemini yanıtı alındı (DIAMOND EDITION)`)
+    console.log("Ham yanıt ilk 500 karakter:", text.substring(0, 500))
+    console.log("Ham yanıt son 500 karakter:", text.substring(Math.max(0, text.length - 500)))
 
-    let paymentPlan: any
+    let paymentPlan
     try {
       paymentPlan = cleanAndParseJSON(text)
+      console.log(`[${Date.now() - startTime}ms] JSON başarıyla parse edildi`)
 
       if (!paymentPlan || typeof paymentPlan !== "object") {
         throw new Error("Geçersiz veri yapısı: Ana obje yok veya obje değil.")
@@ -242,6 +262,7 @@ export async function POST(request: Request) {
       // 🏦 Banka adı eşleştirme - ULTRA GELİŞMİŞ
       if (paymentPlan.bankName && typeof paymentPlan.bankName === "string") {
         paymentPlan.bankName = mapBankName(paymentPlan.bankName)
+        console.log("🏦 Banka eşleştirildi:", paymentPlan.bankName)
       } else {
         paymentPlan.bankName = paymentPlan.bankName || null
       }
@@ -260,6 +281,7 @@ export async function POST(request: Request) {
         paymentPlan.planName.trim() === "" ||
         forbiddenPlanNames.includes(paymentPlan.planName)
       ) {
+        console.warn(`⚠️ Kredi türü düzeltiliyor: "${paymentPlan.planName}" → "İhtiyaç Kredisi"`)
         paymentPlan.planName = "İhtiyaç Kredisi"
       }
 
@@ -300,14 +322,19 @@ export async function POST(request: Request) {
       if (paymentPlan.interestRate !== null) {
         // Yıllık faiz oranı tespiti ve düzeltmesi
         if (paymentPlan.interestRate > 5 && paymentPlan.interestRate <= 100) {
+          console.warn(`📊 Yıllık faiz oranı tespit edildi: ${paymentPlan.interestRate}%. Aylığa çevriliyor.`)
           paymentPlan.interestRate = Number.parseFloat((paymentPlan.interestRate / 12).toFixed(4))
         }
         // Çok yüksek faiz oranı kontrolü
         else if (paymentPlan.interestRate > 100) {
+          console.warn(`⚠️ Anormal faiz oranı: ${paymentPlan.interestRate}%. Null yapılıyor.`)
           paymentPlan.interestRate = null
         }
         // Çok düşük faiz oranı kontrolü (promil olabilir)
         else if (paymentPlan.interestRate > 0 && paymentPlan.interestRate < 0.1) {
+          console.warn(
+            `📈 Çok düşük faiz oranı tespit edildi: ${paymentPlan.interestRate}%. Promil olabilir, %100 ile çarpılıyor.`,
+          )
           paymentPlan.interestRate = Number.parseFloat((paymentPlan.interestRate * 100).toFixed(4))
         }
       }
@@ -331,8 +358,8 @@ export async function POST(request: Request) {
       paymentPlan.installments = paymentPlan.installments.map((installment: any, index: number) => {
         const res = {
           installmentNumber: Number.isFinite(installment.installmentNumber) ? installment.installmentNumber : index + 1,
-          amount: null as number | null,
-          dueDate: null as string | null,
+          amount: null,
+          dueDate: null,
           description: typeof installment.description === "string" ? installment.description : `${index + 1}. Taksit`,
           isPaid: false,
         }
@@ -399,6 +426,10 @@ export async function POST(request: Request) {
         }
       })
 
+      console.log("💎 Taksit analizi:")
+      console.log("- Geçerli taksit sayısı:", validAmountInstallments.length)
+      console.log("- Eksik taksit sayısı:", zeroOrNullAmountInstallmentIndices.length)
+      console.log("- Değişken faiz:", paymentPlan.isVariableRate)
 
       if (zeroOrNullAmountInstallmentIndices.length > 0 && paymentPlan.installments.length > 0) {
         let estimatedAmount = 0
@@ -423,26 +454,31 @@ export async function POST(request: Request) {
             } else {
               growthFactor = 1.1 // Varsayılan %10 artış
             }
+            console.log("📈 Değişken faiz artış faktörü:", growthFactor)
           }
 
           estimatedAmount = Number.parseFloat((recentAverage * growthFactor).toFixed(2))
+          console.log("🎯 Hesaplanan taksit tutarı (trend bazlı):", estimatedAmount)
         }
         // Alternatif hesaplama - monthlyPayment varsa
         else if (paymentPlan.monthlyPayment && paymentPlan.monthlyPayment > 0) {
           const multiplier = paymentPlan.isVariableRate ? 1.15 : 1.0
           estimatedAmount = Number.parseFloat((paymentPlan.monthlyPayment * multiplier).toFixed(2))
+          console.log("💰 Hesaplanan taksit tutarı (monthlyPayment bazlı):", estimatedAmount)
         }
         // Son çare - loanAmount'tan hesapla
         else if (paymentPlan.loanAmount && paymentPlan.loanAmount > 0) {
           const multiplier = paymentPlan.isVariableRate ? 1.25 : 1.15
           const estimatedTotal = paymentPlan.loanAmount * multiplier
           estimatedAmount = Number.parseFloat((estimatedTotal / paymentPlan.installments.length).toFixed(2))
+          console.log("🔮 Hesaplanan taksit tutarı (loanAmount bazlı):", estimatedAmount)
         }
 
         // Hesaplanan tutarı eksik taksitlere ata
         if (estimatedAmount > 0) {
           zeroOrNullAmountInstallmentIndices.forEach((index: number) => {
             paymentPlan.installments[index].amount = estimatedAmount
+            console.log(`✅ ${index + 1}. taksit tutarı güncellendi:`, estimatedAmount)
           })
         }
       }
@@ -477,12 +513,22 @@ export async function POST(request: Request) {
         if (paymentPlan.loanTerm > 0) {
           const calculatedMonthlyRate = (totalInterest / paymentPlan.loanAmount / paymentPlan.loanTerm) * 100
           paymentPlan.interestRate = Number.parseFloat(calculatedMonthlyRate.toFixed(4))
+          console.log("🧮 Faiz oranı hesaplandı:", paymentPlan.interestRate)
         }
       } else if (paymentPlan.interestRate !== null && (paymentPlan.interestRate < 0 || paymentPlan.interestRate > 25)) {
+        console.warn(`⚠️ Anormal aylık faiz oranı: ${paymentPlan.interestRate}%. Null yapılıyor.`)
         paymentPlan.interestRate = null
       }
 
+      console.log("✅ ULTRA DIAMOND ANALYSIS COMPLETED!")
+      console.log("📋 Kredi Türü:", paymentPlan.planName)
+      console.log("🏦 Banka:", paymentPlan.bankName)
+      console.log("💰 Faiz Oranı:", paymentPlan.interestRate)
+      console.log("🔄 Değişken Faiz:", paymentPlan.isVariableRate)
+      console.log("📊 Taksit Sayısı:", paymentPlan.installments.length)
+      console.log("💎 Toplam Geri Ödeme:", paymentPlan.totalPayback)
     } catch (parseError: any) {
+      console.error("❌ JSON parse veya veri işleme hatası:", parseError)
       paymentPlan = {
         bankName: null,
         planName: "İhtiyaç Kredisi",
@@ -511,6 +557,7 @@ export async function POST(request: Request) {
       )
     }
 
+    console.log(`[${Date.now() - startTime}ms] �� DIAMOND ULTRA ANALYSIS COMPLETED`)
     return Response.json({
       success: true,
       paymentPlan: paymentPlan,
@@ -518,6 +565,7 @@ export async function POST(request: Request) {
       analysisVersion: "V0DEV_DIAMOND_ULTRA_PRO_PLUS_VARIABLE_RATE",
     })
   } catch (error: any) {
+    console.error("💥 PDF analiz genel hatası:", error)
     if (error instanceof Error) {
       if (error.message.includes("API_KEY"))
         return Response.json({ error: "Google API anahtarı geçersiz veya eksik" }, { status: 401 })

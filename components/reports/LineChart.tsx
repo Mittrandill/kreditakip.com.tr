@@ -6,8 +6,6 @@ interface LineChartData {
   name: string
   value: number
   date?: string
-  isFuture?: boolean
-  isPast?: boolean
 }
 
 interface LineChartProps {
@@ -35,22 +33,14 @@ export function LineChart({ data, className = "", height = 300, color = "#10b981
     return { chartData, maxValue, minValue }
   }, [data])
 
-  const generatePath = (onlyPast = false, onlyFuture = false) => {
+  const generatePath = () => {
     if (chartData.length === 0) return ""
     
-    const filteredData = chartData.filter(item => {
-      if (onlyPast) return !item.isFuture
-      if (onlyFuture) return item.isFuture
-      return true
-    })
+    let path = `M ${chartData[0].x} ${chartData[0].y}`
     
-    if (filteredData.length === 0) return ""
-    
-    let path = `M ${filteredData[0].x} ${filteredData[0].y}`
-    
-    for (let i = 1; i < filteredData.length; i++) {
-      const prev = filteredData[i - 1]
-      const curr = filteredData[i]
+    for (let i = 1; i < chartData.length; i++) {
+      const prev = chartData[i - 1]
+      const curr = chartData[i]
       
       // Smooth curve using cubic bezier
       const cpx1 = prev.x + (curr.x - prev.x) / 3
@@ -110,9 +100,9 @@ export function LineChart({ data, className = "", height = 300, color = "#10b981
             className="transition-all duration-500"
           />
           
-          {/* Past data line */}
+          {/* Main line */}
           <path
-            d={generatePath(true, false)}
+            d={generatePath()}
             fill="none"
             stroke={color}
             strokeWidth="2"
@@ -120,31 +110,6 @@ export function LineChart({ data, className = "", height = 300, color = "#10b981
             strokeLinejoin="round"
             className="transition-all duration-500"
           />
-          
-          {/* Future data line (dashed) */}
-          <path
-            d={generatePath(false, true)}
-            fill="none"
-            stroke={color}
-            strokeWidth="2"
-            strokeDasharray="5,5"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            className="transition-all duration-500"
-            opacity="0.7"
-          />
-          
-          {/* Connection line between past and future */}
-          {chartData.findIndex(item => item.isFuture) > 0 && (
-            <path
-              d={`M ${chartData[chartData.findIndex(item => item.isFuture) - 1].x} ${chartData[chartData.findIndex(item => item.isFuture) - 1].y} L ${chartData[chartData.findIndex(item => item.isFuture)].x} ${chartData[chartData.findIndex(item => item.isFuture)].y}`}
-              fill="none"
-              stroke={color}
-              strokeWidth="2"
-              strokeDasharray="5,5"
-              opacity="0.7"
-            />
-          )}
           
           {/* Data points */}
           {chartData.map((point, index) => (
@@ -153,10 +118,7 @@ export function LineChart({ data, className = "", height = 300, color = "#10b981
               cx={point.x}
               cy={point.y}
               r="3"
-              fill={point.isFuture ? "white" : color}
-              stroke={color}
-              strokeWidth={point.isFuture ? "2" : "0"}
-              opacity={point.isFuture ? "0.7" : "1"}
+              fill={color}
               className="transition-all duration-300 hover:r-4 cursor-pointer"
             />
           ))}
@@ -176,7 +138,6 @@ export function LineChart({ data, className = "", height = 300, color = "#10b981
             >
               <div className="font-medium">{point.name}</div>
               <div>₺{point.value.toLocaleString('tr-TR')}</div>
-              {point.isFuture && <div className="text-yellow-300 text-xs">Tahmini</div>}
               {point.date && <div className="text-gray-300">{point.date}</div>}
             </div>
           ))}

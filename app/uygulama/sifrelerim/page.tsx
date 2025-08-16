@@ -1,24 +1,16 @@
 "use client"
-import { useState, useEffect } from "react"
+import { useState, useEffect, useMemo } from "react"
 import { useRouter } from "next/navigation"
-import Link from "next/link"
-import { Card, CardContent } from "@/components/ui/card"
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Badge } from "@/components/ui/badge"
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-  AlertDialogTrigger,
-} from "@/components/ui/alert-dialog"
+import { Input } from "@/components/ui/input"
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
+import { MetricCard } from "@/components/metric-card"
+import BankLogo from "@/components/bank-logo"
+import { PaginationModern } from "@/components/ui/pagination-modern"
 import {
   Plus,
   Search,
@@ -38,25 +30,37 @@ import {
   Loader2,
   Key,
   Lock,
-  ChevronLeft,
-  ChevronRight,
+  ArrowUpDown,
+  List,
+  MoreHorizontal,
   AlertCircle,
 } from "lucide-react"
+
+import { BsFillGrid3X3GapFill } from "react-icons/bs"
+
 import { useAuth } from "@/hooks/use-auth"
 import { useToast } from "@/hooks/use-toast"
-import BankLogo from "@/components/bank-logo"
-import { MetricCard } from "@/components/metric-card"
 import {
   getBankingCredentials,
   deleteBankingCredential,
   updateLastUsedDate,
   decryptPassword,
   maskPassword,
-  getBankingCredentialsStats,
   type BankingCredential,
 } from "@/lib/api/banking-credentials"
 import { formatDistanceToNow } from "date-fns"
 import { tr } from "date-fns/locale"
+
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog"
 
 const credentialTypeLabels = {
   internet_banking: "İnternet Bankacılığı",
@@ -72,96 +76,197 @@ const credentialTypeIcons = {
   other: Settings,
 }
 
-const ITEMS_PER_PAGE = 6
+const getStatusIcon = (credential: BankingCredential) => {
+  const passwordStatus = getPasswordChangeStatus(credential)
+  if (passwordStatus?.status === "expired") return <AlertTriangle className="h-4 w-4 text-white" />
+  if (passwordStatus?.status === "warning") return <Clock className="h-4 w-4 text-white" />
+  return <Shield className="h-4 w-4 text-white" />
+}
+
+const getStatusBadgeText = (credential: BankingCredential): string => {
+  const passwordStatus = getPasswordChangeStatus(credential)
+  if (passwordStatus?.status === "expired") return "Değişim Gerekli"
+  if (passwordStatus?.status === "warning") return "Yakında Değişim"
+  return "Güncel"
+}
+
+const getStatusBadgeClass = (credential: BankingCredential): string => {
+  const passwordStatus = getPasswordChangeStatus(credential)
+  if (passwordStatus?.status === "expired")
+    return "bg-gradient-to-r from-red-600 to-rose-700 text-white border-transparent hover:from-red-700 hover:to-rose-800"
+  if (passwordStatus?.status === "warning")
+    return "bg-gradient-to-r from-yellow-600 to-orange-700 text-white border-transparent hover:from-yellow-700 hover:to-orange-800"
+  return "bg-gradient-to-r from-emerald-600 to-teal-700 text-white border-transparent hover:from-emerald-700 hover:to-teal-800"
+}
+
+const getPasswordChangeStatus = (credential: BankingCredential) => {
+  if (!credential.password_change_frequency_days || !credential.last_password_change_date) {
+    return null
+  }
+
+  const now = new Date()
+  const lastChange = new Date(credential.last_password_change_date)
+  const daysSinceChange = Math.floor((now.getTime() - lastChange.getTime()) / (1000 * 60 * 60 * 24))
+
+  if (daysSinceChange >= credential.password_change_frequency_days) {
+    return { status: "expired", days: daysSinceChange }
+  } else if (daysSinceChange >= credential.password_change_frequency_days * 0.8) {
+    return { status: "warning", days: daysSinceChange }
+  }
+
+  return { status: "good", days: daysSinceChange }
+}
 
 export default function BankaciSifrelerimPage() {
   const { user, loading: authLoading } = useAuth()
   const { toast } = useToast()
   const router = useRouter()
 
-  const [credentials, setCredentials] = useState<BankingCredential[]>([])
-  const [loading, setLoading] = useState(true)
+  const [allCredentials, setAllCredentials] = useState<BankingCredential[]>([])
+  const [loadingData, setLoadingData] = useState(true)
+  const [error, setError] = useState<string | null>(null)
+
+  const [activeTab, setActiveTab] = useState("tumSifreler")
+  const [viewMode, setViewMode] = useState("table") // Changed from "cards" to "table"
   const [searchTerm, setSearchTerm] = useState("")
-  const [selectedType, setSelectedType] = useState<string>("all")
+  const [sortBy, setSortBy] = useState("sonKullanim")
+  const [sortOrder, setSortOrder] = useState<"asc" | "desc">("desc")
+  const [currentPage, setCurrentPage] = useState(1)
+
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false)
+  const [credentialToDelete, setCredentialToDelete] = useState<string | null>(null)
+
   const [visiblePasswords, setVisiblePasswords] = useState<Set<string>>(new Set())
   const [copiedPasswords, setCopiedPasswords] = useState<Set<string>>(new Set())
-  const [currentPage, setCurrentPage] = useState(1)
-  const [totalItems, setTotalItems] = useState(0)
-  const [stats, setStats] = useState({
-    total: 0,
-    internetBanking: 0,
-    mobileBanking: 0,
-    used: 0,
-    needsPasswordChange: 0,
-  })
+
+  const itemsPerPageCards = 8
+  const itemsPerPageTable = 8
 
   useEffect(() => {
-    if (user && !authLoading) {
-      loadCredentials()
-      loadStats()
-    }
-  }, [user, authLoading, currentPage, searchTerm, selectedType])
+    let isMounted = true
 
-  const loadCredentials = async () => {
-    if (!user) return
+    async function fetchData() {
+      if (user?.id && isMounted) {
+        setLoadingData(true)
+        setError(null)
+        try {
+          const { data } = await getBankingCredentials(user.id, 1, 1000) // Get all credentials
+
+          if (isMounted && data) {
+            setAllCredentials(data || [])
+            console.log("🔐 Şifreler yüklendi:", data?.length || 0, "adet")
+          }
+        } catch (err) {
+          console.error("Credentials data fetch error:", err)
+          if (isMounted) {
+            setError("Şifreler yüklenirken bir hata oluştu.")
+          }
+        } finally {
+          if (isMounted) {
+            setLoadingData(false)
+          }
+        }
+      } else if (!authLoading && !user && isMounted) {
+        setLoadingData(false)
+        setError("Lütfen giriş yapınız.")
+      }
+    }
+    fetchData()
+
+    return () => {
+      isMounted = false
+    }
+  }, [user, authLoading])
+
+  const filteredAndSortedCredentials = useMemo(() => {
+    const filtered = allCredentials.filter((credential) => {
+      const matchesSearch =
+        credential.credential_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        credential.bank_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        credential.username?.toLowerCase().includes(searchTerm.toLowerCase())
+
+      switch (activeTab) {
+        case "internetBankaciligi":
+          return matchesSearch && credential.credential_type === "internet_banking"
+        case "mobilBankaciligi":
+          return matchesSearch && credential.credential_type === "mobile_banking"
+        case "telefonBankaciligi":
+          return matchesSearch && credential.credential_type === "phone_banking"
+        case "diger":
+          return matchesSearch && credential.credential_type === "other"
+        default:
+          return matchesSearch
+      }
+    })
+
+    if (sortBy === "sonKullanim") {
+      filtered.sort((a, b) => {
+        const dateA = a.last_used_date ? new Date(a.last_used_date).getTime() : 0
+        const dateB = b.last_used_date ? new Date(b.last_used_date).getTime() : 0
+        const comparison = dateA - dateB
+        return sortOrder === "asc" ? comparison : -comparison
+      })
+    } else if (sortBy === "bankaAdi") {
+      filtered.sort((a, b) => {
+        const comparison = (a.bank_name || "").localeCompare(b.bank_name || "")
+        return sortOrder === "asc" ? comparison : -comparison
+      })
+    }
+
+    return filtered
+  }, [allCredentials, searchTerm, activeTab, sortBy, sortOrder])
+
+  const currentItemsPerPage = viewMode === "cards" ? itemsPerPageCards : itemsPerPageTable
+  const totalItems = filteredAndSortedCredentials.length
+  const totalPages = Math.ceil(totalItems / currentItemsPerPage)
+  const startIndex = (currentPage - 1) * currentItemsPerPage
+  const endIndex = startIndex + currentItemsPerPage
+  const currentItems = filteredAndSortedCredentials.slice(startIndex, endIndex)
+
+  const resetPagination = () => setCurrentPage(1)
+
+  const handleSearchChange = (value: string) => {
+    setSearchTerm(value)
+    resetPagination()
+  }
+
+  const handleTabChange = (value: string) => {
+    setActiveTab(value)
+    resetPagination()
+  }
+
+  const handleViewModeChange = (mode: string) => {
+    setViewMode(mode)
+    resetPagination()
+  }
+
+  const handleSort = (column: string) => {
+    if (sortBy === column) {
+      setSortOrder((prevOrder) => (prevOrder === "asc" ? "desc" : "asc"))
+    } else {
+      setSortBy(column)
+      setSortOrder("asc")
+    }
+  }
+
+  const handleDeleteCredential = async (credentialId: string) => {
+    setCredentialToDelete(credentialId)
+    setShowDeleteDialog(true)
+  }
+
+  const confirmDeleteCredential = async () => {
+    if (!credentialToDelete || !user) return
 
     try {
-      setLoading(true)
-      const { data, total } = await getBankingCredentials(user.id, currentPage, ITEMS_PER_PAGE)
-
-      // Client-side filtering
-      const filteredData = data.filter((credential) => {
-        const matchesSearch =
-          credential.credential_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-          credential.bank_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-          credential.username?.toLowerCase().includes(searchTerm.toLowerCase())
-
-        const matchesType = selectedType === "all" || credential.credential_type === selectedType
-
-        return matchesSearch && matchesType
-      })
-
-      setCredentials(filteredData)
-      setTotalItems(total)
-    } catch (error: any) {
-      toast({
-        title: "Hata",
-        description: "Şifreler yüklenirken bir hata oluştu.",
-        variant: "destructive",
-      })
+      await deleteBankingCredential(user.id, credentialToDelete)
+      setAllCredentials((prev) => prev.filter((c) => c.id !== credentialToDelete))
+      toast({ title: "Başarılı", description: "Şifre başarıyla silindi." })
+    } catch (error) {
+      console.error("Şifre silinirken hata:", error)
+      toast({ title: "Hata", description: "Şifre silinirken bir sorun oluştu.", variant: "destructive" })
     } finally {
-      setLoading(false)
-    }
-  }
-
-  const loadStats = async () => {
-    if (!user) return
-
-    try {
-      const statsData = await getBankingCredentialsStats(user.id)
-      setStats(statsData)
-    } catch (error: any) {
-      // Stats loading error
-    }
-  }
-
-  const handleDelete = async (credentialId: string) => {
-    if (!user) return
-
-    try {
-      await deleteBankingCredential(user.id, credentialId)
-      await loadCredentials()
-      await loadStats()
-      toast({
-        title: "Başarılı",
-        description: "Şifre bilgisi silindi.",
-      })
-    } catch (error: any) {
-      toast({
-        title: "Hata",
-        description: "Silme işlemi sırasında bir hata oluştu.",
-        variant: "destructive",
-      })
+      setShowDeleteDialog(false)
+      setCredentialToDelete(null)
     }
   }
 
@@ -176,9 +281,8 @@ export default function BankaciSifrelerimPage() {
       // Son kullanım tarihini güncelle
       try {
         await updateLastUsedDate(user.id, credentialId)
-        await loadStats()
       } catch (error) {
-        // Last used date update error
+        console.error("Last used date update error:", error)
       }
     }
     setVisiblePasswords(newVisible)
@@ -188,7 +292,7 @@ export default function BankaciSifrelerimPage() {
     if (!user) return
 
     try {
-      const decryptedPassword = decryptPassword(credential.encrypted_password)
+      const decryptedPassword = await decryptPassword(credential.encrypted_password)
       if (!decryptedPassword) {
         toast({
           title: "Hata",
@@ -206,7 +310,6 @@ export default function BankaciSifrelerimPage() {
 
       // Son kullanım tarihini güncelle
       await updateLastUsedDate(user.id, credential.id)
-      await loadStats()
 
       toast({
         title: "Başarılı",
@@ -222,6 +325,7 @@ export default function BankaciSifrelerimPage() {
         })
       }, 2000)
     } catch (error: any) {
+      console.error("Copy password error:", error)
       toast({
         title: "Hata",
         description: "Şifre kopyalanırken bir hata oluştu.",
@@ -230,422 +334,593 @@ export default function BankaciSifrelerimPage() {
     }
   }
 
-  const getPasswordChangeStatus = (credential: BankingCredential) => {
-    if (!credential.password_change_frequency_days || !credential.last_password_change_date) {
-      return null
-    }
+  // Metric calculations
+  const totalCredentials = allCredentials.length
+  const internetBankingCount = allCredentials.filter((c) => c.credential_type === "internet_banking").length
+  const mobileBankingCount = allCredentials.filter((c) => c.credential_type === "mobile_banking").length
+  const recentlyUsedCount = allCredentials.filter((c) => {
+    if (!c.last_used_date) return false
+    const daysSinceUsed = Math.floor((Date.now() - new Date(c.last_used_date).getTime()) / (1000 * 60 * 60 * 24))
+    return daysSinceUsed <= 7
+  }).length
 
-    const now = new Date()
-    const lastChange = new Date(credential.last_password_change_date)
-    const daysSinceChange = Math.floor((now.getTime() - lastChange.getTime()) / (1000 * 60 * 60 * 24))
-
-    if (daysSinceChange >= credential.password_change_frequency_days) {
-      return { status: "expired", days: daysSinceChange }
-    } else if (daysSinceChange >= credential.password_change_frequency_days * 0.8) {
-      return { status: "warning", days: daysSinceChange }
-    }
-
-    return { status: "good", days: daysSinceChange }
-  }
-
-  const totalPages = Math.ceil(totalItems / ITEMS_PER_PAGE)
-
-  if (authLoading || loading) {
+  if (authLoading || loadingData) {
     return (
       <div className="flex flex-col gap-4 md:gap-6 items-center justify-center min-h-[calc(100vh-150px)]">
         <Loader2 className="h-12 w-12 animate-spin text-emerald-600" />
-        <p className="text-lg text-gray-600">Şifreler yükleniyor...</p>
+        <p className="text-lg text-gray-600">Veriler yükleniyor...</p>
       </div>
     )
   }
 
-  if (!user) {
+  if (error) {
     return (
       <div className="flex flex-col items-center justify-center min-h-[calc(100vh-150px)]">
-        <Shield className="h-12 w-12 text-red-500 mb-4" />
-        <p className="text-lg text-red-600">Lütfen giriş yapınız.</p>
-        <Button onClick={() => router.push("/giris")} className="mt-4">
-          Giriş Yap
-        </Button>
+        <AlertCircle className="h-12 w-12 text-red-500 mb-4" />
+        <p className="text-lg text-red-600">{error}</p>
+        {!user && (
+          <Button onClick={() => router.push("/giris")} className="mt-4">
+            Giriş Yap
+          </Button>
+        )}
       </div>
     )
   }
 
   return (
     <div className="flex flex-col gap-4 md:gap-6">
-      {/* Hero Section with Modern Design */}
-      <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 text-white shadow-2xl">
-        <div className="absolute inset-0 bg-gradient-to-br from-indigo-600/20 to-purple-600/20" />
-        <div className="absolute -top-24 -right-24 w-96 h-96 bg-indigo-500/10 rounded-full blur-3xl" />
-        <div className="absolute -bottom-24 -left-24 w-96 h-96 bg-purple-500/10 rounded-full blur-3xl" />
-        
-        <CardContent className="relative p-8 md:p-12">
-          <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-6">
+      {/* Hero Section */}
+      <Card className="bg-gradient-to-r from-blue-600 to-indigo-700 text-white border-transparent shadow-xl rounded-xl">
+        <CardContent className="p-8">
+          <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
             <div>
-              <div className="flex items-center gap-3 mb-4">
-                <div className="p-3 bg-indigo-500/20 rounded-lg backdrop-blur-sm">
-                  <Lock className="h-8 w-8 text-indigo-400" />
-                </div>
-                <h1 className="text-4xl font-bold bg-gradient-to-r from-white to-gray-300 bg-clip-text text-transparent">
-                  Bankacılık Şifrelerim
-                </h1>
-              </div>
-              <p className="text-gray-300 text-lg max-w-2xl">
-                Mobil ve internet bankacılığı şifrelerinizi güvenli bir şekilde saklayın.
+              <h2 className="text-3xl font-bold mb-2 flex items-center gap-3">
+                <Lock className="h-8 w-8" />
+                Bankacılık Şifre Yönetimi
+              </h2>
+              <p className="text-blue-100 text-lg">
+                Tüm bankacılık şifrelerinizi güvenli bir şekilde saklayın ve yönetin
               </p>
-              
-              {/* Quick Stats */}
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-6">
-                <div className="bg-white/10 backdrop-blur-sm rounded-lg p-3">
-                  <p className="text-sm text-gray-300">Toplam Şifre</p>
-                  <p className="text-xl font-bold">{stats.total}</p>
-                </div>
-                <div className="bg-white/10 backdrop-blur-sm rounded-lg p-3">
-                  <p className="text-sm text-gray-300">İnternet Bank.</p>
-                  <p className="text-xl font-bold">{stats.internetBanking}</p>
-                </div>
-                <div className="bg-white/10 backdrop-blur-sm rounded-lg p-3">
-                  <p className="text-sm text-gray-300">Mobil Bank.</p>
-                  <p className="text-xl font-bold">{stats.mobileBanking}</p>
-                </div>
-                <div className="bg-white/10 backdrop-blur-sm rounded-lg p-3">
-                  <p className="text-sm text-gray-300">Değişim Gerekli</p>
-                  <p className="text-xl font-bold">{stats.needsPasswordChange}</p>
-                </div>
-              </div>
             </div>
-            
             <div className="flex flex-col sm:flex-row gap-3">
-              <Link href="/uygulama/sifrelerim/ekle">
-                <Button
-                  className="bg-white/20 backdrop-blur-sm border-white/30 hover:bg-white/30 text-white"
-                  size="lg"
-                >
-                  <Plus className="h-5 w-5 mr-2" />
-                  Yeni Şifre Ekle
-                </Button>
-              </Link>
+              <Button variant="outline-white" size="lg" onClick={() => router.push("/uygulama/sifrelerim/ekle")}>
+                <Plus className="h-5 w-5 mr-2" />
+                Yeni Şifre Ekle
+              </Button>
             </div>
-          </div>
-        </CardContent>
-      </div>
-
-      {/* Metrics */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
-        <MetricCard
-          title="Toplam Şifre"
-          value={stats.total.toString()}
-          subtitle="Kayıtlı"
-          color="blue"
-          icon={<Key className="h-5 w-5" />}
-        />
-        <MetricCard
-          title="İnternet Bankacılığı"
-          value={stats.internetBanking.toString()}
-          subtitle="Adet"
-          color="green"
-          icon={<Globe className="h-5 w-5" />}
-        />
-        <MetricCard
-          title="Mobil Bankacılık"
-          value={stats.mobileBanking.toString()}
-          subtitle="Adet"
-          color="purple"
-          icon={<Smartphone className="h-5 w-5" />}
-        />
-        <MetricCard
-          title="Kullanılan Şifre"
-          value={stats.used.toString()}
-          subtitle="Son görüntülenen"
-          color="orange"
-          icon={<Eye className="h-5 w-5" />}
-        />
-        <MetricCard
-          title="Değişim Gerekli"
-          value={stats.needsPasswordChange.toString()}
-          subtitle="Süresi dolmuş"
-          color="red"
-          icon={<AlertCircle className="h-5 w-5" />}
-        />
-      </div>
-
-      {/* Filtreler */}
-      <Card>
-        <CardContent className="p-6">
-          <div className="flex flex-col sm:flex-row gap-4">
-            <div className="flex-1">
-              <div className="relative">
-                <Search className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
-                <Input
-                  placeholder="Şifre adı, banka veya kullanıcı adı ile ara..."
-                  value={searchTerm}
-                  onChange={(e) => {
-                    setSearchTerm(e.target.value)
-                    setCurrentPage(1)
-                  }}
-                  className="pl-10"
-                />
-              </div>
-            </div>
-            <Select
-              value={selectedType}
-              onValueChange={(value) => {
-                setSelectedType(value)
-                setCurrentPage(1)
-              }}
-            >
-              <SelectTrigger className="w-full sm:w-[200px]">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">Tüm Türler</SelectItem>
-                {Object.entries(credentialTypeLabels).map(([value, label]) => (
-                  <SelectItem key={value} value={value}>
-                    {label}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
           </div>
         </CardContent>
       </Card>
 
-      {/* Şifre Listesi */}
-      {credentials.length === 0 ? (
-        <Card>
-          <CardContent className="p-12 text-center">
-            <Lock className="h-16 w-16 text-gray-300 mx-auto mb-4" />
-            <h3 className="text-xl font-semibold text-gray-600 mb-2">
-              {searchTerm || selectedType !== "all" ? "Şifre bulunamadı" : "Henüz şifre eklenmemiş"}
-            </h3>
-            <p className="text-gray-500 mb-6">
-              {searchTerm || selectedType !== "all"
-                ? "Arama kriterlerinize uygun şifre bulunamadı."
-                : "Bankacılık şifrelerinizi ekleyerek güvenli bir şekilde saklayabilirsiniz."}
-            </p>
-            {!searchTerm && selectedType === "all" && (
-              <Link href="/uygulama/sifrelerim/ekle">
-                <Button>
-                  <Plus className="mr-2 h-4 w-4" />
-                  İlk Şifreni Ekle
-                </Button>
-              </Link>
-            )}
-          </CardContent>
-        </Card>
-      ) : (
-        <div className="grid gap-4">
-          {credentials.map((credential) => {
-            const TypeIcon = credentialTypeIcons[credential.credential_type]
-            const isPasswordVisible = visiblePasswords.has(credential.id)
-            const isPasswordCopied = copiedPasswords.has(credential.id)
-            const decryptedPassword = decryptPassword(credential.encrypted_password)
-            const passwordStatus = getPasswordChangeStatus(credential)
+      {/* Stats Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        <MetricCard
+          title="Toplam Şifre"
+          value={totalCredentials.toString()}
+          subtitle="Kayıtlı"
+          color="blue"
+          icon={<Key />}
+        />
+        <MetricCard
+          title="İnternet Bankacılığı"
+          value={internetBankingCount.toString()}
+          subtitle="Adet"
+          color="emerald"
+          icon={<Globe />}
+        />
+        <MetricCard
+          title="Mobil Bankacılık"
+          value={mobileBankingCount.toString()}
+          subtitle="Adet"
+          color="purple"
+          icon={<Smartphone />}
+        />
+        <MetricCard
+          title="Son Kullanılan"
+          value={recentlyUsedCount.toString()}
+          subtitle="Bu hafta"
+          color="orange"
+          icon={<Eye />}
+        />
+      </div>
 
-            return (
-              <Card key={credential.id} className="hover:shadow-md transition-shadow">
-                <CardContent className="p-6">
-                  <div className="flex items-start justify-between">
-                    <div className="flex items-start gap-4 flex-1">
-                      <div className="flex-shrink-0">
-                        <BankLogo bankName={credential.bank_name || ""} logoUrl={credential.bank_logo_url || undefined} size="md" />
-                      </div>
+      {/* Modern Tabs */}
+      <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+        <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full">
+          <div className="border-b border-gray-100 bg-gray-50/50">
+            <TabsList className="grid grid-cols-5 bg-transparent h-auto p-2 gap-2">
+              <TabsTrigger
+                value="tumSifreler"
+                className="flex items-center gap-2 py-3 px-4 data-[state=active]:text-emerald-600 rounded-xl transition-all duration-200 hover:bg-gray-100"
+              >
+                <Key className="h-4 w-4" />
+                <span className="hidden sm:inline font-medium">Tüm Şifreler</span>
+                <span className="sm:hidden font-medium">Tümü</span>
+              </TabsTrigger>
+              <TabsTrigger
+                value="internetBankaciligi"
+                className="flex items-center gap-2 py-3 px-4 data-[state=active]:text-emerald-600 rounded-xl transition-all duration-200 hover:bg-gray-100"
+              >
+                <Globe className="h-4 w-4" />
+                <span className="hidden sm:inline font-medium">İnternet</span>
+                <span className="sm:hidden font-medium">İnternet</span>
+              </TabsTrigger>
+              <TabsTrigger
+                value="mobilBankaciligi"
+                className="flex items-center gap-2 py-3 px-4 data-[state=active]:text-emerald-600 rounded-xl transition-all duration-200 hover:bg-gray-100"
+              >
+                <Smartphone className="h-4 w-4" />
+                <span className="hidden sm:inline font-medium">Mobil</span>
+                <span className="sm:hidden font-medium">Mobil</span>
+              </TabsTrigger>
+              <TabsTrigger
+                value="telefonBankaciligi"
+                className="flex items-center gap-2 py-3 px-4 data-[state=active]:text-emerald-600 rounded-xl transition-all duration-200 hover:bg-gray-100"
+              >
+                <Phone className="h-4 w-4" />
+                <span className="hidden sm:inline font-medium">Telefon</span>
+                <span className="sm:hidden font-medium">Telefon</span>
+              </TabsTrigger>
+              <TabsTrigger
+                value="diger"
+                className="flex items-center gap-2 py-3 px-4 data-[state=active]:text-emerald-600 rounded-xl transition-all duration-200 hover:bg-gray-100"
+              >
+                <Settings className="h-4 w-4" />
+                <span className="hidden sm:inline font-medium">Diğer</span>
+                <span className="sm:hidden font-medium">Diğer</span>
+              </TabsTrigger>
+            </TabsList>
+          </div>
 
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-2 mb-2">
-                          <h3 className="text-lg font-semibold text-gray-900 truncate">{credential.credential_name}</h3>
-                          <Badge variant="secondary" className="flex items-center gap-1">
-                            <TypeIcon className="h-3 w-3" />
-                            {credentialTypeLabels[credential.credential_type]}
-                          </Badge>
-                          {passwordStatus && (
-                            <Badge
-                              variant={
-                                passwordStatus.status === "expired"
-                                  ? "destructive"
-                                  : passwordStatus.status === "warning"
-                                    ? "default"
-                                    : "secondary"
-                              }
-                              className={passwordStatus.status === "warning" ? "bg-yellow-100 text-yellow-800" : ""}
-                            >
-                              {passwordStatus.status === "expired"
-                                ? "Değişim Gerekli"
-                                : passwordStatus.status === "warning"
-                                  ? "Yakında Değişim"
-                                  : "Güncel"}
-                            </Badge>
-                          )}
-                        </div>
-
-                        <p className="text-sm text-gray-600 mb-1">
-                          <strong>Banka:</strong> {credential.bank_name}
-                        </p>
-
-                        {credential.username && (
-                          <p className="text-sm text-gray-600 mb-1">
-                            <strong>Kullanıcı Adı:</strong> {credential.username}
-                          </p>
-                        )}
-
-                        <div className="flex items-center gap-2 mb-2">
-                          <span className="text-sm text-gray-600">
-                            <strong>Şifre:</strong>
-                          </span>
-                          <code className="bg-gray-100 px-2 py-1 rounded text-sm font-mono">
-                            {isPasswordVisible && decryptedPassword
-                              ? decryptedPassword
-                              : maskPassword(decryptedPassword)}
-                          </code>
-                          <div className="flex gap-1">
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              onClick={() => togglePasswordVisibility(credential.id)}
-                              className="h-8 w-8 p-0"
-                            >
-                              {isPasswordVisible ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                            </Button>
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              onClick={() => copyPassword(credential)}
-                              className="h-8 w-8 p-0"
-                            >
-                              {isPasswordCopied ? (
-                                <Check className="h-4 w-4 text-green-600" />
-                              ) : (
-                                <Copy className="h-4 w-4" />
-                              )}
-                            </Button>
-                          </div>
-                        </div>
-
-                        {credential.notes && (
-                          <p className="text-sm text-gray-600 mb-2">
-                            <strong>Notlar:</strong> {credential.notes}
-                          </p>
-                        )}
-
-                        <div className="flex items-center gap-4 text-xs text-gray-500">
-                          <span className="flex items-center gap-1">
-                            <Clock className="h-3 w-3" />
-                            Eklendi:{" "}
-                            {formatDistanceToNow(new Date(credential.created_at), {
-                              addSuffix: true,
-                              locale: tr,
-                            })}
-                          </span>
-                          {credential.last_used_date && (
-                            <span className="flex items-center gap-1">
-                              <Eye className="h-3 w-3" />
-                              Son kullanım:{" "}
-                              {formatDistanceToNow(new Date(credential.last_used_date), {
-                                addSuffix: true,
-                                locale: tr,
-                              })}
-                            </span>
-                          )}
-                          {credential.last_password_change_date && (
-                            <span className="flex items-center gap-1">
-                              <Key className="h-3 w-3" />
-                              Son değişim:{" "}
-                              {formatDistanceToNow(new Date(credential.last_password_change_date), {
-                                addSuffix: true,
-                                locale: tr,
-                              })}
-                            </span>
-                          )}
-                        </div>
-                      </div>
-                    </div>
-
-                    <div className="flex gap-2 ml-4">
-                      <Link href={`/uygulama/sifrelerim/${credential.id}/duzenle`}>
-                        <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
-                          <Edit className="h-4 w-4" />
-                        </Button>
-                      </Link>
-                      <AlertDialog>
-                        <AlertDialogTrigger asChild>
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            className="h-8 w-8 p-0 text-red-600 hover:text-red-700 hover:bg-red-50"
-                          >
-                            <Trash2 className="h-4 w-4" />
-                          </Button>
-                        </AlertDialogTrigger>
-                        <AlertDialogContent>
-                          <AlertDialogHeader>
-                            <AlertDialogTitle>Şifre Bilgisini Sil</AlertDialogTitle>
-                            <AlertDialogDescription>
-                              "{credential.credential_name}" şifre bilgisini silmek istediğinizden emin misiniz? Bu
-                              işlem geri alınamaz.
-                            </AlertDialogDescription>
-                          </AlertDialogHeader>
-                          <AlertDialogFooter>
-                            <AlertDialogCancel>İptal</AlertDialogCancel>
-                            <AlertDialogAction
-                              onClick={() => handleDelete(credential.id)}
-                              className="bg-red-600 hover:bg-red-700"
-                            >
-                              Sil
-                            </AlertDialogAction>
-                          </AlertDialogFooter>
-                        </AlertDialogContent>
-                      </AlertDialog>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            )
-          })}
-        </div>
-      )}
-
-      {/* Sayfalandırma */}
-      {totalPages > 1 && (
-        <Card>
-          <CardContent className="p-4">
-            <div className="flex items-center justify-between">
-              <div className="text-sm text-gray-600">
-                Toplam {totalItems} şifre, sayfa {currentPage} / {totalPages}
-              </div>
+          {/* Search, Sort and View Toggle */}
+          <div className="p-4 border-b border-gray-100 bg-white">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
               <div className="flex gap-2">
+                <div className="relative">
+                  <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+                  <Input
+                    placeholder="Şifre ara..."
+                    value={searchTerm}
+                    onChange={(e) => handleSearchChange(e.target.value)}
+                    className="pl-8 w-[250px]"
+                  />
+                </div>
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button variant="outline" className="flex items-center gap-2 bg-transparent">
+                      <ArrowUpDown className="h-4 w-4" />
+                      Sırala: {sortBy === "sonKullanim" ? "Son Kullanım" : "Banka Adı"} (
+                      {sortOrder === "asc" ? "Artan" : "Azalan"})
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="start">
+                    <DropdownMenuItem onClick={() => handleSort("sonKullanim")}>Son Kullanıma Göre</DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => handleSort("bankaAdi")}>Banka Adına Göre</DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              </div>
+
+              {/* View Mode Toggle */}
+              <div className="flex border rounded-lg">
                 <Button
-                  variant="outline"
+                  variant={viewMode === "cards" ? "default" : "ghost"}
                   size="sm"
-                  onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
-                  disabled={currentPage === 1}
+                  onClick={() => handleViewModeChange("cards")}
+                  className={`rounded-r-none ${viewMode === "cards" ? "bg-gradient-to-r from-emerald-600 to-teal-700 hover:from-emerald-700 hover:to-teal-800" : ""}`}
                 >
-                  <ChevronLeft className="h-4 w-4" />
-                  Önceki
+                  <BsFillGrid3X3GapFill className="h-4 w-4" />
                 </Button>
                 <Button
-                  variant="outline"
+                  variant={viewMode === "table" ? "default" : "ghost"}
                   size="sm"
-                  onClick={() => setCurrentPage(Math.min(totalPages, currentPage + 1))}
-                  disabled={currentPage === totalPages}
+                  onClick={() => handleViewModeChange("table")}
+                  className={`rounded-l-none ${viewMode === "table" ? "bg-gradient-to-r from-emerald-600 to-teal-700 hover:from-emerald-700 hover:to-teal-800" : ""}`}
                 >
-                  Sonraki
-                  <ChevronRight className="h-4 w-4" />
+                  <List className="h-4 w-4" />
                 </Button>
               </div>
             </div>
-          </CardContent>
-        </Card>
-      )}
+          </div>
 
-      {/* Güvenlik Uyarısı */}
-      <Alert className="bg-amber-50 border-amber-200">
-        <AlertTriangle className="h-4 w-4 text-amber-600" />
-        <AlertTitle className="text-amber-800">Güvenlik Uyarısı</AlertTitle>
-        <AlertDescription className="text-amber-700">
-          Şifreleriniz güvenli bir şekilde şifrelenerek saklanmaktadır. Yine de güçlü şifreler kullanın ve düzenli
-          olarak değiştirin. Bu bilgileri kimseyle paylaşmayın.
-        </AlertDescription>
-      </Alert>
+          {/* Content */}
+          <div className="p-6">
+            {currentItems.length === 0 && !loadingData && (
+              <div className="text-center py-10">
+                <Lock className="mx-auto h-12 w-12 text-gray-400" />
+                <h3 className="mt-2 text-sm font-medium text-gray-900">Şifre Bulunamadı</h3>
+                <p className="mt-1 text-sm text-gray-500">
+                  {activeTab === "tumSifreler" ? "Hiç şifre eklenmemiş." : "Bu filtreye uygun şifre bulunamadı."}
+                </p>
+                <div className="mt-6">
+                  <Button
+                    onClick={() => router.push("/uygulama/sifrelerim/ekle")}
+                    className="bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600"
+                  >
+                    <Plus className="-ml-1 mr-2 h-5 w-5" />
+                    Yeni Şifre Ekle
+                  </Button>
+                </div>
+              </div>
+            )}
+            {viewMode === "cards" && currentItems.length > 0 ? (
+              /* Cards View */
+              <div className="space-y-6">
+                <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+                  {currentItems.map((credential) => {
+                    const TypeIcon = credentialTypeIcons[credential.credential_type]
+                    const isPasswordVisible = visiblePasswords.has(credential.id)
+
+                    return (
+                      <Card
+                        key={credential.id}
+                        className="shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 rounded-xl border-gray-200 overflow-hidden"
+                      >
+                        <CardHeader className="pb-3 bg-gradient-to-r from-gray-50 to-gray-100">
+                          <div className="flex items-center justify-between">
+                            <div className="flex items-center gap-3">
+                              <div className="relative">
+                                <BankLogo
+                                  bankName={credential.bank_name || "Bilinmeyen Banka"}
+                                  logoUrl={credential.bank_logo_url}
+                                  size="md"
+                                  className="ring-2 ring-white shadow-lg"
+                                />
+                                <div className="absolute -bottom-1 -right-1 w-4 h-4 bg-emerald-500 rounded-full flex items-center justify-center">
+                                  <TypeIcon className="h-2.5 w-2.5 text-white" />
+                                </div>
+                              </div>
+                              <div>
+                                <CardTitle className="text-lg text-gray-900 dark:text-white">
+                                  {credential.bank_name || "N/A"}
+                                </CardTitle>
+                                <CardDescription className="text-emerald-600 font-medium">
+                                  {credentialTypeLabels[credential.credential_type]}
+                                </CardDescription>
+                              </div>
+                            </div>
+                            <Badge className={getStatusBadgeClass(credential)}>
+                              {getStatusIcon(credential)}
+                              {getStatusBadgeText(credential)}
+                            </Badge>
+                          </div>
+                        </CardHeader>
+                        <CardContent className="space-y-5 pt-4">
+                          <div className="grid grid-cols-1 gap-4">
+                            <div>
+                              <p className="text-sm text-gray-500 dark:text-gray-400">Şifre Adı</p>
+                              <p className="text-lg font-semibold text-gray-900 dark:text-white">
+                                {credential.credential_name}
+                              </p>
+                            </div>
+                            {credential.username && (
+                              <div>
+                                <p className="text-sm text-gray-500 dark:text-gray-400">Kullanıcı Adı</p>
+                                <p className="text-lg font-semibold text-gray-900 dark:text-white">
+                                  {credential.username}
+                                </p>
+                              </div>
+                            )}
+                          </div>
+
+                          <div className="flex items-center gap-2">
+                            <span className="text-sm text-gray-500 dark:text-gray-400">Şifre:</span>
+                            <PasswordDisplay
+                              credential={credential}
+                              isVisible={isPasswordVisible}
+                              onToggleVisibility={() => togglePasswordVisibility(credential.id)}
+                              onCopy={() => copyPassword(credential)}
+                              isCopied={copiedPasswords.has(credential.id)}
+                            />
+                          </div>
+
+                          <div className="grid grid-cols-2 gap-4 text-sm">
+                            <div>
+                              <p className="text-gray-500 dark:text-gray-400">Eklendi</p>
+                              <p className="font-medium text-gray-900 dark:text-white">
+                                {formatDistanceToNow(new Date(credential.created_at), {
+                                  addSuffix: true,
+                                  locale: tr,
+                                })}
+                              </p>
+                            </div>
+                            <div>
+                              <p className="text-gray-500 dark:text-gray-400">Son Kullanım</p>
+                              <p className="font-medium text-gray-900 dark:text-white">
+                                {credential.last_used_date
+                                  ? formatDistanceToNow(new Date(credential.last_used_date), {
+                                      addSuffix: true,
+                                      locale: tr,
+                                    })
+                                  : "Hiç"}
+                              </p>
+                            </div>
+                          </div>
+
+                          <div className="flex gap-2 pt-2">
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              className="flex-1 border-gray-300 text-gray-700 hover:bg-gray-50 hover:border-gray-400 bg-transparent"
+                              onClick={() => router.push(`/uygulama/sifrelerim/${credential.id}/duzenle`)}
+                            >
+                              <Edit className="mr-2 h-4 w-4" />
+                              Düzenle
+                            </Button>
+                            <DropdownMenu>
+                              <DropdownMenuTrigger asChild>
+                                <Button
+                                  size="sm"
+                                  variant="outline"
+                                  className="border-gray-300 text-gray-700 hover:bg-gray-50 hover:border-gray-400 bg-transparent"
+                                >
+                                  <MoreHorizontal className="h-4 w-4" />
+                                </Button>
+                              </DropdownMenuTrigger>
+                              <DropdownMenuContent align="end">
+                                <DropdownMenuItem>Rapor Al</DropdownMenuItem>
+                                <DropdownMenuItem
+                                  className="text-red-600"
+                                  onClick={() => handleDeleteCredential(credential.id)}
+                                >
+                                  <Trash2 className="mr-2 h-4 w-4" />
+                                  Sil
+                                </DropdownMenuItem>
+                              </DropdownMenuContent>
+                            </DropdownMenu>
+                          </div>
+                        </CardContent>
+                      </Card>
+                    )
+                  })}
+                </div>
+                {totalItems > 0 && (
+                  <PaginationModern
+                    currentPage={currentPage}
+                    totalPages={totalPages}
+                    totalItems={totalItems}
+                    itemsPerPage={currentItemsPerPage}
+                    onPageChange={setCurrentPage}
+                    itemName="şifre"
+                  />
+                )}
+              </div>
+            ) : viewMode === "table" && currentItems.length > 0 ? (
+              /* Table View */
+              <div className="space-y-6">
+                <div className="overflow-x-auto">
+                  <Table>
+                    <TableHeader>
+                      <TableRow className="bg-white dark:bg-gray-900">
+                        <TableHead className="font-semibold text-gray-700 dark:text-gray-300">Banka</TableHead>
+                        <TableHead className="font-semibold text-gray-700 dark:text-gray-300">Tür</TableHead>
+                        <TableHead className="font-semibold text-gray-700 dark:text-gray-300">Şifre Adı</TableHead>
+                        <TableHead className="font-semibold text-gray-700 dark:text-gray-300">Kullanıcı Adı</TableHead>
+                        <TableHead className="font-semibold text-gray-700 dark:text-gray-300">Şifre</TableHead>
+                        <TableHead className="font-semibold text-gray-700 dark:text-gray-300">Son Kullanım</TableHead>
+                        <TableHead className="font-semibold text-gray-700 dark:text-gray-300">Durum</TableHead>
+                        <TableHead className="w-[50px] text-right font-semibold text-gray-700 dark:text-gray-300">
+                          İşlemler
+                        </TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {currentItems.map((credential, index) => {
+                        const TypeIcon = credentialTypeIcons[credential.credential_type]
+                        const isPasswordVisible = visiblePasswords.has(credential.id)
+
+                        return (
+                          <TableRow
+                            key={credential.id}
+                            className={`hover:bg-emerald-50 dark:hover:bg-gray-800 transition-colors duration-150 ease-in-out ${
+                              index % 2 === 0 ? "bg-white dark:bg-gray-900" : "bg-gray-50/50 dark:bg-gray-800/50"
+                            }`}
+                          >
+                            <TableCell>
+                              <div className="flex items-center gap-3">
+                                <BankLogo
+                                  bankName={credential.bank_name || "Bilinmeyen Banka"}
+                                  logoUrl={credential.bank_logo_url}
+                                  size="md"
+                                  className="ring-1 ring-emerald-200 bg-white"
+                                />
+                                <div>
+                                  <span className="font-medium text-gray-900 dark:text-white block">
+                                    {credential.bank_name || "N/A"}
+                                  </span>
+                                </div>
+                              </div>
+                            </TableCell>
+                            <TableCell className="text-gray-600 dark:text-gray-300">
+                              <div className="flex items-center gap-2">
+                                <TypeIcon className="h-4 w-4" />
+                                {credentialTypeLabels[credential.credential_type]}
+                              </div>
+                            </TableCell>
+                            <TableCell className="font-semibold text-gray-900 dark:text-white">
+                              {credential.credential_name}
+                            </TableCell>
+                            <TableCell className="text-gray-600 dark:text-gray-300">
+                              {credential.username || "-"}
+                            </TableCell>
+                            <TableCell>
+                              <PasswordDisplay
+                                credential={credential}
+                                isVisible={isPasswordVisible}
+                                onToggleVisibility={() => togglePasswordVisibility(credential.id)}
+                                onCopy={() => copyPassword(credential)}
+                                isCopied={copiedPasswords.has(credential.id)}
+                              />
+                            </TableCell>
+                            <TableCell className="text-gray-600 dark:text-gray-300">
+                              {credential.last_used_date
+                                ? formatDistanceToNow(new Date(credential.last_used_date), {
+                                    addSuffix: true,
+                                    locale: tr,
+                                  })
+                                : "Hiç"}
+                            </TableCell>
+                            <TableCell>
+                              <Badge className={`${getStatusBadgeClass(credential)} flex items-center gap-1`}>
+                                {getStatusIcon(credential)}
+                                {getStatusBadgeText(credential)}
+                              </Badge>
+                            </TableCell>
+                            <TableCell className="text-right">
+                              <DropdownMenu>
+                                <DropdownMenuTrigger asChild>
+                                  <Button
+                                    variant="ghost"
+                                    size="icon"
+                                    className="h-8 w-8 hover:bg-emerald-50 hover:text-emerald-600 dark:hover:bg-teal-900/20"
+                                  >
+                                    <MoreHorizontal className="h-4 w-4" />
+                                    <span className="sr-only">Actions</span>
+                                  </Button>
+                                </DropdownMenuTrigger>
+                                <DropdownMenuContent align="end">
+                                  <DropdownMenuItem
+                                    onClick={() => router.push(`/uygulama/sifrelerim/${credential.id}/duzenle`)}
+                                  >
+                                    <Edit className="mr-2 h-4 w-4" />
+                                    Düzenle
+                                  </DropdownMenuItem>
+                                  <DropdownMenuItem
+                                    className="text-red-600"
+                                    onClick={() => handleDeleteCredential(credential.id)}
+                                  >
+                                    <Trash2 className="mr-2 h-4 w-4" />
+                                    Sil
+                                  </DropdownMenuItem>
+                                </DropdownMenuContent>
+                              </DropdownMenu>
+                            </TableCell>
+                          </TableRow>
+                        )
+                      })}
+                    </TableBody>
+                  </Table>
+                </div>
+                {totalItems > 0 && (
+                  <PaginationModern
+                    currentPage={currentPage}
+                    totalPages={totalPages}
+                    totalItems={totalItems}
+                    itemsPerPage={currentItemsPerPage}
+                    onPageChange={setCurrentPage}
+                    itemName="şifre"
+                  />
+                )}
+              </div>
+            ) : null}
+          </div>
+        </Tabs>
+      </div>
+
+      {/* Delete Confirmation Dialog */}
+      <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Şifreyi Sil</AlertDialogTitle>
+            <AlertDialogDescription>
+              Bu şifreyi silmek istediğinizden emin misiniz? Bu işlem geri alınamaz.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter className="gap-2 sm:gap-0">
+            <AlertDialogCancel
+              onClick={() => {
+                setShowDeleteDialog(false)
+                setCredentialToDelete(null)
+              }}
+              className="border-gray-300 text-gray-700 hover:bg-gray-50"
+            >
+              İptal
+            </AlertDialogCancel>
+            <AlertDialogAction onClick={confirmDeleteCredential} className="bg-red-600 hover:bg-red-700 text-white">
+              <Trash2 className="h-4 w-4 mr-2" />
+              Sil
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+    </div>
+  )
+}
+
+// Şifre görüntüleme komponenti
+function PasswordDisplay({
+  credential,
+  isVisible,
+  onToggleVisibility,
+  onCopy,
+  isCopied,
+}: {
+  credential: BankingCredential
+  isVisible: boolean
+  onToggleVisibility: () => void
+  onCopy: () => void
+  isCopied: boolean
+}) {
+  const [decryptedPassword, setDecryptedPassword] = useState<string | null>(null)
+  const [isDecrypting, setIsDecrypting] = useState(false)
+  const [decryptError, setDecryptError] = useState<string | null>(null)
+
+  useEffect(() => {
+    if (isVisible && !decryptedPassword && !isDecrypting) {
+      setIsDecrypting(true)
+      setDecryptError(null)
+
+      decryptPassword(credential.encrypted_password)
+        .then((password) => {
+          if (password) {
+            setDecryptedPassword(password)
+            console.log("Password decrypted successfully:", password.substring(0, 2) + "***")
+          } else {
+            setDecryptError("Şifre çözülemedi")
+          }
+        })
+        .catch((error) => {
+          console.error("Password decryption error:", error)
+          setDecryptError("Şifre çözme hatası")
+          setDecryptedPassword(null)
+        })
+        .finally(() => setIsDecrypting(false))
+    }
+  }, [isVisible, credential.encrypted_password, decryptedPassword, isDecrypting])
+
+  const displayPassword = () => {
+    if (isDecrypting) return "Çözülüyor..."
+    if (decryptError) return "Hata: " + decryptError
+    if (isVisible && decryptedPassword) return decryptedPassword
+    return maskPassword(decryptedPassword || "••••••••")
+  }
+
+  return (
+    <div className="flex items-center gap-2">
+      <code className="bg-gray-100 px-2 py-1 rounded text-sm font-mono max-w-[120px] truncate">
+        {displayPassword()}
+      </code>
+      <div className="flex gap-1">
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={onToggleVisibility}
+          className="h-8 w-8 p-0"
+          disabled={isDecrypting}
+          title={isVisible ? "Şifreyi gizle" : "Şifreyi göster"}
+        >
+          {isVisible ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+        </Button>
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={onCopy}
+          className="h-8 w-8 p-0"
+          disabled={isDecrypting || !!decryptError}
+          title="Şifreyi kopyala"
+        >
+          {isCopied ? <Check className="h-4 w-4 text-green-600" /> : <Copy className="h-4 w-4" />}
+        </Button>
+      </div>
     </div>
   )
 }

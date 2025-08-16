@@ -219,19 +219,30 @@ export function findBestBankMatch(detectedBankName: string, availableBanks: any[
 
   const normalizedDetected = detectedBankName.toLowerCase().trim()
 
+  console.log("=== BANKA EŞLEŞTIRME DEBUG ===")
+  console.log("Aranan banka:", detectedBankName)
+  console.log("Normalize edilmiş:", normalizedDetected)
+  console.log(
+    "Mevcut bankalar:",
+    availableBanks.map((b) => b.name),
+  )
+
   // 1. Önce tam eşleşme ara
   let match = availableBanks.find((bank) => bank.name.toLowerCase() === normalizedDetected)
 
   if (match) {
+    console.log("Tam eşleşme bulundu:", match.name)
     return match
   }
 
   // 2. Eşlenmiş banka adını kullanarak ara
   const mappedName = mapBankName(detectedBankName)
+  console.log("Eşlenmiş banka adı:", mappedName)
 
   match = availableBanks.find((bank) => bank.name.toLowerCase() === mappedName.toLowerCase())
 
   if (match) {
+    console.log("Eşlenmiş ad ile bulundu:", match.name)
     return match
   }
 
@@ -259,6 +270,7 @@ export function findBestBankMatch(detectedBankName: string, availableBanks: any[
       match = availableBanks.find((bank) => bank.name.toLowerCase().includes(target))
 
       if (match) {
+        console.log(`Anahtar kelime "${target}" ile bulundu:`, match.name)
         return match
       }
     }
@@ -271,9 +283,11 @@ export function findBestBankMatch(detectedBankName: string, availableBanks: any[
   })
 
   if (match) {
+    console.log("Genel kısmi eşleşme:", match.name)
     return match
   }
 
+  console.log("Hiç eşleşme bulunamadı")
   return null
 }
 

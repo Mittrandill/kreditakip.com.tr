@@ -267,6 +267,7 @@ const getBankLogoPath = (bankName: string): string => {
 
   // Önce tam eşleşme ara
   if (bankMappings[bankName]) {
+    console.log("🎯 Fallback tam eşleşme:", bankName, "->", bankMappings[bankName])
     return bankMappings[bankName]
   }
 
@@ -275,10 +276,12 @@ const getBankLogoPath = (bankName: string): string => {
   for (const [key, value] of Object.entries(bankMappings)) {
     const normalizedKey = key.toLowerCase().trim()
     if (normalizedBankName.includes(normalizedKey) || normalizedKey.includes(normalizedBankName)) {
+      console.log("🔍 Fallback kısmi eşleşme:", bankName, "->", key, "->", value)
       return value
     }
   }
 
+  console.log("❌ Fallback eşleşme bulunamadı:", bankName)
   return ""
 }
 
@@ -301,7 +304,17 @@ export default function BankLogo({ bankName, logoUrl, size = "md", className = "
   // Logo yolu belirleme - Önce logoUrl prop'u, sonra fallback mapping
   const logoPath = logoUrl && logoUrl.trim() !== "" ? logoUrl : getBankLogoPath(bankName)
 
-  // Logo yolu belirlendi
+  // Test için logo yolunu konsola yazdır
+  useEffect(() => {
+    console.log("🏦 BankLogo Debug:", {
+      bankName,
+      logoUrl: logoUrl || "YOK",
+      logoPath: logoPath || "YOK",
+      imageLoaded,
+      imageError,
+      source: logoUrl && logoUrl.trim() !== "" ? "SUPABASE" : "FALLBACK",
+    })
+  }, [bankName, logoUrl, logoPath, imageLoaded, imageError])
 
   // Fallback göster
   const renderFallback = () => (
@@ -326,10 +339,12 @@ export default function BankLogo({ bankName, logoUrl, size = "md", className = "
         alt={`${bankName} logosu`}
         className="w-full h-full object-cover scale-110"
         onLoad={() => {
+          console.log("✅ Logo yüklendi:", logoPath)
           setImageLoaded(true)
           setImageError(false)
         }}
         onError={() => {
+          console.log("❌ Logo yüklenemedi:", logoPath)
           setImageError(true)
           setImageLoaded(false)
         }}

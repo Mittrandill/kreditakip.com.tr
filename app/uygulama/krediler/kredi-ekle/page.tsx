@@ -20,7 +20,7 @@ import { CalendarModal } from "@/components/calendar-modal"
 import { formatCurrency } from "@/lib/format"
 import { supabase } from "@/lib/supabase"
 import Link from "next/link"
-import BankLogo from "@/components/bank-logo"
+import BankLogoTest from "@/components/bank-logo-test"
 import { createPaymentPlansForCredit } from "@/lib/api/payment-plans"
 
 interface CreditFormData {
@@ -103,6 +103,7 @@ export default function KrediEklePage() {
         if (banksResult.data) setBanks(banksResult.data)
         if (creditTypesResult.data) setCreditTypes(creditTypesResult.data)
       } catch (error) {
+        console.error("Error loading data:", error)
       }
     }
     loadData()
@@ -156,6 +157,7 @@ export default function KrediEklePage() {
   const handleBankSelect = (bank: Bank) => {
     handleInputChange("bank_id", bank.id)
     handleInputChange("bank_name", bank.name)
+    console.log("Selected bank:", bank)
     setShowBankModal(false)
   }
 
@@ -163,6 +165,7 @@ export default function KrediEklePage() {
     if (creditType && creditType.id) {
       handleInputChange("credit_type_id", creditType.id)
       handleInputChange("credit_type_name", creditType.name)
+      console.log("Selected credit type:", creditType)
     } else {
       // Fallback for credit type
       const tempTypeId =
@@ -172,6 +175,7 @@ export default function KrediEklePage() {
           .replace(/[^a-z0-9-]/g, "") || "unknown"
       handleInputChange("credit_type_id", tempTypeId)
       handleInputChange("credit_type_name", creditType.name || creditType)
+      console.log("Credit type fallback:", tempTypeId)
     }
     setShowCreditTypeModal(false)
   }
@@ -293,10 +297,12 @@ export default function KrediEklePage() {
         calculated_interest_rate: null,
       }
 
+      console.log("Submitting credit data:", creditData)
 
       // Create the credit first
       const createdCredit = await createCredit(creditData)
 
+      console.log("Credit created successfully:", createdCredit)
 
       // Create payment plans for the credit
       try {
@@ -309,12 +315,14 @@ export default function KrediEklePage() {
         }
 
         const paymentPlans = await createPaymentPlansForCredit(createdCredit.id, paymentPlansData)
+        console.log("Payment plans created successfully:", paymentPlans.length, "plans")
 
         toast({
           title: "Başarılı",
           description: `Kredi ve ${paymentPlans.length} taksitlik ödeme planı başarıyla oluşturuldu`,
         })
       } catch (paymentPlanError) {
+        console.error("Error creating payment plans:", paymentPlanError)
         // Credit was created but payment plans failed
         toast({
           title: "Kısmi Başarı",
@@ -326,6 +334,7 @@ export default function KrediEklePage() {
 
       router.push("/uygulama/krediler")
     } catch (error) {
+      console.error("Error creating credit:", error)
       toast({
         title: "Hata",
         description: `Kredi eklenirken bir hata oluştu: ${error instanceof Error ? error.message : "Bilinmeyen hata"}`,
@@ -339,6 +348,7 @@ export default function KrediEklePage() {
   return (
     <div className="space-y-6">
       {/* Logo Test Component */}
+      <BankLogoTest />
 
       {/* Hero Section */}
       <Card className="overflow-hidden border-0 shadow-xl rounded-2xl">
