@@ -37,6 +37,7 @@ import {
   Minus,
   Search,
   X,
+  CheckCircle,
 } from "lucide-react"
 import { format, subMonths, startOfMonth, endOfMonth, isWithinInterval } from "date-fns"
 import { tr } from "date-fns/locale"
@@ -48,7 +49,9 @@ import type { Credit, Bank, CreditType, PaymentPlan } from "@/lib/types"
 import { formatCurrency, formatPercent } from "@/lib/format"
 import PDFReportModal from "@/components/pdf-report-modal"
 import { MetricCard } from "@/components/metric-card"
+import BankLogo from "@/components/bank-logo"
 import {
+  BarChart,
   Bar,
   XAxis,
   YAxis,
@@ -58,6 +61,7 @@ import {
   PieChart as RechartsPieChart,
   Cell,
   Pie,
+  LineChart,
   Line,
   Legend,
   Area,
@@ -451,8 +455,15 @@ export default function RaporlarPage() {
       <div className="relative overflow-hidden">
         <div className="absolute inset-0 bg-gradient-to-br from-emerald-500 via-teal-600 to-cyan-700"></div>
         <div className="absolute inset-0 bg-black/10"></div>
-        <div className="absolute inset-0 bg-[url('data:image/svg+xml,%3Csvg width="60\" height="60" viewBox="0 0 60 60" xmlns="http://www.w3.org/2000/svg"%3E%3Cg fill="none" fillRule="evenodd"%3E%3Cg fill="%23ffffff" fillOpacity="0.05"%3E%3Ccircle cx="30" cy="30" r="2"/%3E%3C/g%3E%3C/g%3E%3C/svg%3E')]"></div>
-        \
+        <div className="absolute inset-0 opacity-30">
+          <div
+            className="absolute inset-0"
+            style={{
+              backgroundImage: `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fillRule='evenodd'%3E%3Cg fill='%23ffffff' fillOpacity='0.05'%3E%3Ccircle cx='30' cy='30' r='2'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")`,
+            }}
+          ></div>
+        </div>
+
         <Card className="relative border-0 bg-transparent text-white shadow-none">
           <CardContent className="p-8 lg:p-12">
             <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-8">
@@ -485,7 +496,9 @@ export default function RaporlarPage() {
                     </div>
                   </div>
                   <div className="bg-white/15 rounded-xl p-4 backdrop-blur-sm border border-white/20">
-                    <div className="text-3xl font-bold mb-1">{formatPercent(summaryMetrics.paymentPerformance / 100)}</div>
+                    <div className="text-3xl font-bold mb-1">
+                      {formatPercent(summaryMetrics.paymentPerformance / 100)}
+                    </div>
                     <div className="text-sm text-emerald-100">Performans</div>
                     <div className="flex items-center gap-1 mt-2">
                       <Target className="h-3 w-3 text-emerald-200" />
@@ -580,7 +593,9 @@ export default function RaporlarPage() {
                     filters.banks.length > 0 && `${filters.banks.length} Banka`,
                     filters.creditTypes.length > 0 && `${filters.creditTypes.length} Tür`,
                     filters.status.length > 0 && `${filters.status.length} Durum`,
-                  ].filter(Boolean).join(", ")}
+                  ]
+                    .filter(Boolean)
+                    .join(", ")}
                 </Badge>
               )}
               <Button variant="outline" size="sm" onClick={resetFilters} disabled={!hasActiveFilters}>
@@ -655,7 +670,9 @@ export default function RaporlarPage() {
                           id={`bank-${bank}`}
                           checked={filters.banks.includes(bank)}
                           onCheckedChange={(checked) => {
-                            const newBanks = checked ? [...filters.banks, bank] : filters.banks.filter((b) => b !== bank)
+                            const newBanks = checked
+                              ? [...filters.banks, bank]
+                              : filters.banks.filter((b) => b !== bank)
                             updateFilter("banks", newBanks)
                           }}
                         />
@@ -826,27 +843,45 @@ export default function RaporlarPage() {
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
         <div className="flex items-center justify-between mb-6">
           <TabsList className="grid grid-cols-3 lg:grid-cols-6 bg-gray-100/80 backdrop-blur-sm p-1 rounded-xl">
-            <TabsTrigger value="overview" className="flex items-center gap-2 data-[state=active]:bg-white data-[state=active]:shadow-sm">
+            <TabsTrigger
+              value="overview"
+              className="flex items-center gap-2 data-[state=active]:bg-white data-[state=active]:shadow-sm"
+            >
               <Eye className="h-4 w-4" />
               <span className="hidden sm:inline">Genel Bakış</span>
             </TabsTrigger>
-            <TabsTrigger value="trends" className="flex items-center gap-2 data-[state=active]:bg-white data-[state=active]:shadow-sm">
+            <TabsTrigger
+              value="trends"
+              className="flex items-center gap-2 data-[state=active]:bg-white data-[state=active]:shadow-sm"
+            >
               <TrendingUp className="h-4 w-4" />
               <span className="hidden sm:inline">Trendler</span>
             </TabsTrigger>
-            <TabsTrigger value="distribution" className="flex items-center gap-2 data-[state=active]:bg-white data-[state=active]:shadow-sm">
+            <TabsTrigger
+              value="distribution"
+              className="flex items-center gap-2 data-[state=active]:bg-white data-[state=active]:shadow-sm"
+            >
               <PieChart className="h-4 w-4" />
               <span className="hidden sm:inline">Dağılım</span>
             </TabsTrigger>
-            <TabsTrigger value="performance" className="flex items-center gap-2 data-[state=active]:bg-white data-[state=active]:shadow-sm">
+            <TabsTrigger
+              value="performance"
+              className="flex items-center gap-2 data-[state=active]:bg-white data-[state=active]:shadow-sm"
+            >
               <Activity className="h-4 w-4" />
               <span className="hidden sm:inline">Performans</span>
             </TabsTrigger>
-            <TabsTrigger value="analysis" className="flex items-center gap-2 data-[state=active]:bg-white data-[state=active]:shadow-sm">
+            <TabsTrigger
+              value="analysis"
+              className="flex items-center gap-2 data-[state=active]:bg-white data-[state=active]:shadow-sm"
+            >
               <Target className="h-4 w-4" />
               <span className="hidden sm:inline">Analiz</span>
             </TabsTrigger>
-            <TabsTrigger value="comparison" className="flex items-center gap-2 data-[state=active]:bg-white data-[state=active]:shadow-sm">
+            <TabsTrigger
+              value="comparison"
+              className="flex items-center gap-2 data-[state=active]:bg-white data-[state=active]:shadow-sm"
+            >
               <Building2 className="h-4 w-4" />
               <span className="hidden sm:inline">Karşılaştırma</span>
             </TabsTrigger>
@@ -892,11 +927,11 @@ export default function RaporlarPage() {
                               ? "Bekleyen"
                               : "Geciken",
                       ]}
-                      contentStyle={{ 
-                        backgroundColor: "white", 
-                        border: "1px solid #E5E7EB", 
+                      contentStyle={{
+                        backgroundColor: "white",
+                        border: "1px solid #E5E7EB",
                         borderRadius: "12px",
-                        boxShadow: "0 10px 15px -3px rgba(0, 0, 0, 0.1)"
+                        boxShadow: "0 10px 15px -3px rgba(0, 0, 0, 0.1)",
                       }}
                     />
                     <Legend />
@@ -939,11 +974,6 @@ export default function RaporlarPage() {
                   </RechartsPieChart>
                 </ResponsiveContainer>
               </CardContent>
-            
-                    />
-                  </RechartsPieChart>
-                </ResponsiveContainer>
-              </CardContent>
             </Card>
           </div>
 
@@ -962,7 +992,7 @@ export default function RaporlarPage() {
                   {formatPercent(summaryMetrics.paymentPerformance / 100)}
                 </p>
                 <p className="text-sm text-gray-600">
-                  Son 6 ayda {filteredPayments.filter(p => p.status === "paid").length} başarılı ödeme
+                  Son 6 ayda {filteredPayments.filter((p) => p.status === "paid").length} başarılı ödeme
                 </p>
               </CardContent>
             </Card>
@@ -976,9 +1006,7 @@ export default function RaporlarPage() {
                   <Badge className="bg-blue-100 text-blue-700">Stabil</Badge>
                 </div>
                 <h3 className="font-semibold text-lg mb-2">Ortalama Faiz</h3>
-                <p className="text-3xl font-bold text-blue-600 mb-2">
-                  %{summaryMetrics.averageInterest.toFixed(1)}
-                </p>
+                <p className="text-3xl font-bold text-blue-600 mb-2">%{summaryMetrics.averageInterest.toFixed(1)}</p>
                 <p className="text-sm text-gray-600">
                   Piyasa ortalamasının {summaryMetrics.averageInterest > 15 ? "üzerinde" : "altında"}
                 </p>
@@ -997,19 +1025,14 @@ export default function RaporlarPage() {
                 <p className="text-3xl font-bold text-purple-600 mb-2">
                   {formatCurrency(summaryMetrics.monthlyPayment)}
                 </p>
-                <p className="text-sm text-gray-600">
-                  {summaryMetrics.activeCredits} aktif krediden toplam
-                </p>
+                <p className="text-sm text-gray-600">{summaryMetrics.activeCredits} aktif krediden toplam</p>
               </CardContent>
             </Card>
           </div>
         </TabsContent>
 
-        <TabsContent
-  value = "trends"
-  className =
-    "space-y-6" >
-    <Card className=\"shadow-lg border-0 bg-white/90 backdrop-blur-sm">
+        <TabsContent value="trends" className="space-y-6">
+          <Card className="shadow-lg border-0 bg-white/90 backdrop-blur-sm">
             <CardHeader>
               <CardTitle className="flex items-center gap-2 text-xl">
                 <div className="p-2 bg-purple-100 rounded-lg">
@@ -1040,11 +1063,11 @@ export default function RaporlarPage() {
                       formatCurrency(value),
                       name === "odenen" ? "Ödenen" : "Bekleyen",
                     ]}
-                    contentStyle={{ 
-                      backgroundColor: "white", 
-                      border: "1px solid #E5E7EB", 
+                    contentStyle={{
+                      backgroundColor: "white",
+                      border: "1px solid #E5E7EB",
                       borderRadius: "12px",
-                      boxShadow: "0 10px 15px -3px rgba(0, 0, 0, 0.1)"
+                      boxShadow: "0 10px 15px -3px rgba(0, 0, 0, 0.1)",
                     }}
                   />
                   <Legend />
@@ -1074,7 +1097,7 @@ export default function RaporlarPage() {
               </ResponsiveContainer>
             </CardContent>
           </Card>
-  </TabsContent>
+        </TabsContent>
 
         <TabsContent value="distribution" className="space-y-6">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -1088,36 +1111,27 @@ export default function RaporlarPage() {
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <ResponsiveContainer width="100%" height=
-  350
-  >
-                  <BarChart data=
-  chartData.bankDistribution.slice(0, 8)
-  >\
-                    <CartesianGrid strokeDasharray="3 3" stroke="#E5E7EB" />\
-                    <XAxis dataKey="name" stroke="#6B7280" fontSize=
-  12
-  ;/  <>AYisx
-  stroke = "#6B7280"
-  fontSize={12}
-  tickFormatter = {(value) => formatCurrency(value)} />\ < Tooltip
-  \
-                      formatter=
-  ;(value: any, name: string) => [
-    name === "value" ? formatCurrency(value) : value,
-    name === "value" ? "Borç Tutarı" : name === "count" ? "Kredi Sayısı" : "Aylık Ödeme",
-  ]
-  contentStyle={{ 
-                        backgroundColor: "white", 
-                        border: \"1px solid #E5E7EB\", \
-                        borderRadius: "12px",\
-                        boxShadow: "0 10px 15px -3px rgba(0, 0, 0, 0.1)"\
-                      }}\
-                    />\
-                    <Bar dataKey="value\" fill=\"#3B82F6" radius={[4, 4, 0, 0]} />
-  </BarChart>
-                </ResponsiveContainer>\
-              </CardContent>\
+                <ResponsiveContainer width="100%" height={350}>
+                  <BarChart data={chartData.bankDistribution.slice(0, 8)}>
+                    <CartesianGrid strokeDasharray="3 3" stroke="#E5E7EB" />
+                    <XAxis dataKey="name" stroke="#6B7280" fontSize={12} />
+                    <YAxis stroke="#6B7280" fontSize={12} tickFormatter={(value) => formatCurrency(value)} />
+                    <Tooltip
+                      formatter={(value: any, name: string) => [
+                        name === "value" ? formatCurrency(value) : value,
+                        name === "value" ? "Borç Tutarı" : name === "count" ? "Kredi Sayısı" : "Aylık Ödeme",
+                      ]}
+                      contentStyle={{
+                        backgroundColor: "white",
+                        border: "1px solid #E5E7EB",
+                        borderRadius: "12px",
+                        boxShadow: "0 10px 15px -3px rgba(0, 0, 0, 0.1)",
+                      }}
+                    />
+                    <Bar dataKey="value" fill="#3B82F6" radius={[4, 4, 0, 0]} />
+                  </BarChart>
+                </ResponsiveContainer>
+              </CardContent>
             </Card>
 
             <Card className="shadow-lg border-0 bg-white/90 backdrop-blur-sm">
@@ -1130,27 +1144,22 @@ export default function RaporlarPage() {
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <ResponsiveContainer width="100%" height=
-  350
-  >
+                <ResponsiveContainer width="100%" height={350}>
                   <RechartsPieChart>
-                    <Pie\
-                      data=
-  chartData.creditTypeDistribution
-  cx = "50%"
-  cy = "50%"
-  outerRadius={120}
-  innerRadius={60}
-  paddingAngle={5}
-  \
-                      dataKey=\"value"\
-                      label=
-  ;({ name, percent }) => \`${name} ${(percent * 100).toFixed(0)}%`
-  >
-  chartData.creditTypeDistribution.map((entry, index) => (\
+                    <Pie
+                      data={chartData.creditTypeDistribution}
+                      cx="50%"
+                      cy="50%"
+                      outerRadius={120}
+                      innerRadius={60}
+                      paddingAngle={5}
+                      dataKey="value"
+                      label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
+                    >
+                      {chartData.creditTypeDistribution.map((entry, index) => (
                         <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                      ))}\
-                    </Pie>\
+                      ))}
+                    </Pie>
                     <Tooltip formatter={(value: any) => [formatCurrency(value), "Borç Tutarı"]} />
                   </RechartsPieChart>
                 </ResponsiveContainer>
@@ -1204,32 +1213,24 @@ export default function RaporlarPage() {
                   <XAxis dataKey="month" stroke="#6B7280" />
                   <YAxis stroke="#6B7280" tickFormatter={(value) => `${value}%`} />
                   <Tooltip
-                    formatter={(value: any, name: string) => [\`${value.toFixed(1)}%`, "Ödeme Oranı"
-  ]
-  contentStyle={{ 
-                      backgroundColor: "white", 
-                      border: \"1px solid #E5E7EB", \
-                      borderRadius: \"12px",
-                      boxShadow: "0 10px 15px -3px rgba(0, 0, 0, 0.1)"
-                    }
-}
-;/  <>Lein
-type = "monotone"
-dataKey={(data: any) => (data.toplam > 0 ? (data.odenen / data.toplam) * 100 : 0)}
-stroke = "#10B981"
-strokeWidth={3}
-dot={{ fill: "#10B981", strokeWidth: 2, r: 6 }
-}
+                    formatter={(value: any, name: string) => [`${value.toFixed(1)}%`, "Ödeme Oranı"]}
+                    contentStyle={{
+                      backgroundColor: "white",
+                      border: "1px solid #E5E7EB",
+                      borderRadius: "12px",
+                      boxShadow: "0 10px 15px -3px rgba(0, 0, 0, 0.1)",
+                    }}
+                  />
+                  <Line
+                    type="monotone"
+                    dataKey={(data: any) => (data.toplam > 0 ? (data.odenen / data.toplam) * 100 : 0)}
+                    stroke="#10B981"
+                    strokeWidth={3}
+                    dot={{ fill: "#10B981", strokeWidth: 2, r: 6 }}
                     name="Ödeme Oranı"
                   />
-                  <ReferenceLine y=
-{
-  80
-}
-stroke = "#F59E0B"
-strokeDasharray = "5 5"
-label="Hedef %80" />
-</LineChart>
+                  <ReferenceLine y={80} stroke="#F59E0B" strokeDasharray="5 5" label="Hedef %80" />
+                </LineChart>
               </ResponsiveContainer>
             </CardContent>
           </Card>
@@ -1247,39 +1248,21 @@ label="Hedef %80" />
               <p className="text-gray-600">Kredilerinizin faiz oranları ve piyasa karşılaştırması</p>
             </CardHeader>
             <CardContent>
-              <ResponsiveContainer width="100%" height=
-{
-  400
-}
->
-                <BarChart data=
-{
-  chartData.interestAnalysis.slice(0, 10)
-}
->
+              <ResponsiveContainer width="100%" height={400}>
+                <BarChart data={chartData.interestAnalysis.slice(0, 10)}>
                   <CartesianGrid strokeDasharray="3 3" stroke="#E5E7EB" />
-                  <XAxis dataKey="bank" stroke="#6B7280" fontSize=
-{
-  12
-}
-;/  <>AYisx
-stroke = "#6B7280"
-fontSize={12}
-tickFormatter={(value) => `%${value}`} />
+                  <XAxis dataKey="bank" stroke="#6B7280" fontSize={12} />
+                  <YAxis stroke="#6B7280" fontSize={12} tickFormatter={(value) => `%${value}`} />
                   <Tooltip
                     formatter={(value: any, name: string) => [
-                      name === "rate" ? `%$
-{
-  value
-}
-;` : formatCurrency(value),
+                      name === "rate" ? `%${value}` : formatCurrency(value),
                       name === "rate" ? "Faiz Oranı" : name === "amount" ? "Borç Tutarı" : "Aylık Faiz",
                     ]}
-                    contentStyle={{ 
-                      backgroundColor: "white", 
-                      border: "1px solid #E5E7EB", 
+                    contentStyle={{
+                      backgroundColor: "white",
+                      border: "1px solid #E5E7EB",
                       borderRadius: "12px",
-                      boxShadow: "0 10px 15px -3px rgba(0, 0, 0, 0.1)"
+                      boxShadow: "0 10px 15px -3px rgba(0, 0, 0, 0.1)",
                     }}
                   />
                   <Bar dataKey="rate" fill="#8B5CF6" radius={[4, 4, 0, 0]} />
@@ -1303,7 +1286,10 @@ tickFormatter={(value) => `%${value}`} />
               <CardContent>
                 <div className="space-y-4">
                   {chartData.bankDistribution.slice(0, 5).map((bank, index) => (
-                    <div key={bank.name} className="flex items-center justify-between p-4 bg-gradient-to-r from-gray-50 to-gray-100 rounded-xl border">
+                    <div
+                      key={bank.name}
+                      className="flex items-center justify-between p-4 bg-gradient-to-r from-gray-50 to-gray-100 rounded-xl border"
+                    >
                       <div className="flex items-center gap-3">
                         <div className="w-10 h-10 rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-sm font-bold text-white">
                           {index + 1}
@@ -1340,11 +1326,11 @@ tickFormatter={(value) => `%${value}`} />
                     <YAxis stroke="#6B7280" fontSize={12} tickFormatter={(value) => formatCurrency(value)} />
                     <Tooltip
                       formatter={(value: any) => [formatCurrency(value), "Aylık Ödeme"]}
-                      contentStyle={{ 
-                        backgroundColor: "white", 
-                        border: "1px solid #E5E7EB", 
+                      contentStyle={{
+                        backgroundColor: "white",
+                        border: "1px solid #E5E7EB",
                         borderRadius: "12px",
-                        boxShadow: "0 10px 15px -3px rgba(0, 0, 0, 0.1)"
+                        boxShadow: "0 10px 15px -3px rgba(0, 0, 0, 0.1)",
                       }}
                     />
                     <Bar dataKey="monthlyPayment" fill="#10B981" radius={[4, 4, 0, 0]} />
@@ -1376,7 +1362,10 @@ tickFormatter={(value) => `%${value}`} />
                 })
                 .slice(0, 3)
                 .map((payment) => (
-                  <div key={payment.id} className="flex items-center justify-between p-3 bg-white/70 rounded-lg border border-blue-100">
+                  <div
+                    key={payment.id}
+                    className="flex items-center justify-between p-3 bg-white/70 rounded-lg border border-blue-100"
+                  >
                     <div className="flex items-center gap-3">
                       <BankLogo
                         bankName={payment.credits?.banks?.name || ""}
@@ -1418,7 +1407,10 @@ tickFormatter={(value) => `%${value}`} />
                 .filter((p) => p.status === "overdue")
                 .slice(0, 3)
                 .map((payment) => (
-                  <div key={payment.id} className="flex items-center justify-between p-3 bg-white/70 rounded-lg border border-red-100">
+                  <div
+                    key={payment.id}
+                    className="flex items-center justify-between p-3 bg-white/70 rounded-lg border border-red-100"
+                  >
                     <div className="flex items-center gap-3">
                       <BankLogo
                         bankName={payment.credits?.banks?.name || ""}
@@ -1478,12 +1470,7 @@ tickFormatter={(value) => `%${value}`} />
                 <div className="w-full h-3 bg-gray-200 rounded-full overflow-hidden">
                   <div
                     className="h-3 bg-gradient-to-r from-emerald-500 to-teal-500 rounded-full transition-all duration-500"
-                    style={{ width: `
-$
-{
-  summaryMetrics.paymentPerformance
-}
-%` }}
+                    style={{ width: `${summaryMetrics.paymentPerformance}%` }}
                   ></div>
                 </div>
               </div>
