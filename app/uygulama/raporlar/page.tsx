@@ -464,6 +464,14 @@ export default function RaporlarPage() {
                     monthlyPayment: credit.monthly_payment,
                     interestRate: credit.interest_rate,
                     status: credit.status,
+                    amount: credit.amount || credit.initial_amount,
+                    // Alternatif alan isimleri de ekleyelim
+                    banks: credit.banks,
+                    credit_types: credit.credit_types,
+                    remaining_debt: credit.remaining_debt,
+                    monthly_payment: credit.monthly_payment,
+                    interest_rate: credit.interest_rate,
+                    initial_amount: credit.initial_amount,
                   })),
                   payments: filteredPayments.map((payment) => ({
                     id: payment.id,
@@ -472,7 +480,7 @@ export default function RaporlarPage() {
                     amount: payment.total_payment,
                     status: payment.status,
                   })),
-                  creditCards: creditCards,
+                  creditCards: creditCards || [],
                   summary: {
                     name: user?.full_name || "Kullanıcı",
                     email: user?.email || "email@example.com",
