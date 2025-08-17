@@ -184,12 +184,12 @@ export function SimpleDonutChart({ data, centerText, centerSubtext }: MiniDonutC
 
   return (
     <div className="relative">
-      <div className="h-[240px]">
+      <div className="h-[280px]">
         <ResponsiveContainer width="100%" height="100%">
           <PieChart>
-            <Pie data={data} cx="50%" cy="50%" innerRadius={50} outerRadius={100} paddingAngle={2} dataKey="tutar">
+            <Pie data={data} cx="50%" cy="50%" innerRadius={70} outerRadius={120} paddingAngle={3} dataKey="tutar">
               {data.map((entry, index) => (
-                <Cell key={`cell-${index}`} fill={entry.fill} />
+                <Cell key={`cell-${index}`} fill={entry.fill} stroke="#ffffff" strokeWidth={2} />
               ))}
             </Pie>
             <ChartTooltip
@@ -198,10 +198,10 @@ export function SimpleDonutChart({ data, centerText, centerSubtext }: MiniDonutC
                   const data = payload[0].payload
                   const percentage = total > 0 ? ((data.tutar / total) * 100).toFixed(1) : "0"
                   return (
-                    <div className="bg-white p-3 border border-gray-200 rounded-lg shadow-lg">
-                      <p className="font-medium text-gray-900">{data.name}</p>
-                      <p className="text-sm text-gray-600">{formatCurrency(data.tutar)}</p>
-                      <p className="text-xs text-gray-500">{percentage}%</p>
+                    <div className="bg-white p-4 border border-gray-200 rounded-xl shadow-lg">
+                      <p className="font-semibold text-gray-900 mb-1">{data.name}</p>
+                      <p className="text-lg font-bold text-emerald-600">{formatCurrency(data.tutar)}</p>
+                      <p className="text-sm text-gray-500">Toplam borcun %{percentage}'i</p>
                     </div>
                   )
                 }
@@ -212,24 +212,34 @@ export function SimpleDonutChart({ data, centerText, centerSubtext }: MiniDonutC
         </ResponsiveContainer>
       </div>
 
-      {/* Center text */}
       {(centerText || centerSubtext) && (
         <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-          <div className="text-center">
-            {centerText && <div className="text-lg font-bold text-gray-900">{centerText}</div>}
-            {centerSubtext && <div className="text-sm text-gray-600">{centerSubtext}</div>}
+          <div className="text-center bg-white/90 backdrop-blur-sm rounded-full p-4 border border-gray-100 shadow-sm">
+            {centerText && <div className="text-xl font-bold text-gray-900">{centerText}</div>}
+            {centerSubtext && <div className="text-sm text-gray-600 font-medium">{centerSubtext}</div>}
           </div>
         </div>
       )}
 
-      {/* Legend - Card içinde kalacak şekilde */}
-      <div className="mt-2 flex flex-wrap justify-center gap-3">
-        {data.map((entry, index) => (
-          <div key={index} className="flex items-center gap-2">
-            <div className="w-3 h-3 rounded-full" style={{ backgroundColor: entry.fill }} />
-            <span className="text-sm text-gray-600">{entry.name}</span>
-          </div>
-        ))}
+      <div className="mt-6 grid grid-cols-2 gap-3">
+        {data.map((entry, index) => {
+          const percentage = total > 0 ? ((entry.tutar / total) * 100).toFixed(1) : "0"
+          return (
+            <div
+              key={index}
+              className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors"
+            >
+              <div
+                className="w-4 h-4 rounded-full border-2 border-white shadow-sm"
+                style={{ backgroundColor: entry.fill }}
+              />
+              <div className="flex-1 min-w-0">
+                <div className="text-sm font-medium text-gray-900 truncate">{entry.name}</div>
+                <div className="text-xs text-gray-500">%{percentage}</div>
+              </div>
+            </div>
+          )
+        })}
       </div>
     </div>
   )

@@ -9,12 +9,25 @@ import { MetricCard } from "@/components/metric-card"
 import BankLogo from "@/components/bank-logo"
 import type { Credit, Bank, CreditType, PaymentPlan } from "@/lib/types"
 import { formatCurrency, formatPercent } from "@/lib/format"
-import { SimpleLineChart, SimpleBarChart } from "@/components/simple-charts"
+import { SimpleLineChart, SimpleBarChart, SimpleDonutChart } from "@/components/simple-charts"
 import Link from "next/link"
 import { useAuth } from "@/hooks/use-auth"
 import { getCredits } from "@/lib/api/credits"
 import { getUpcomingPayments } from "@/lib/api/payments"
-import { Loader2, AlertCircle, Home, Settings, Bell, TrendingUp, TrendingDown, Receipt, MoreHorizontal, ArrowUpRight, Banknote, Target, DollarSign, Calendar, Percent } from 'lucide-react'
+import {
+  Home,
+  Settings,
+  Bell,
+  Receipt,
+  MoreHorizontal,
+  ArrowUpRight,
+  Banknote,
+  Target,
+  DollarSign,
+  Calendar,
+  Percent,
+  PieChart,
+} from "lucide-react"
 
 // Kredi verisi için genişletilmiş tip (ilişkili tablolarla)
 interface PopulatedCredit extends Credit {
@@ -70,6 +83,7 @@ export default function DashboardPage() {
   // Grafik state'leri
   const [lineChartData, setLineChartData] = useState(defaultLineChartData)
   const [barChartData, setBarChartData] = useState(defaultBarChartData)
+  const [donutChartData, setDonutChartData] = useState<any[]>([])
 
   useEffect(() => {
     let isMounted = true
@@ -161,6 +175,45 @@ export default function DashboardPage() {
             } else {
               setBarChartData(defaultBarChartData)
             }
+
+            if (activeCredits.length > 0) {
+              const creditTypeDistribution = activeCredits.reduce((acc: any, credit) => {
+                const typeName = credit.credit_types?.name || "Diğer Krediler"
+                const existing = acc.find((item: any) => item.name === typeName)
+
+                if (existing) {
+                  existing.tutar += credit.remaining_debt
+                } else {
+                  acc.push({
+                    name: typeName,
+                    tutar: credit.remaining_debt,
+                    fill: getColorForCreditType(typeName),
+                  })
+                }
+                return acc
+              }, [])
+
+              // En büyük 5 kredi türünü al, geri kalanını "Diğer" olarak grupla
+              const sortedData = creditTypeDistribution.sort((a: any, b: any) => b.tutar - a.tutar)
+              if (sortedData.length > 5) {
+                const top4 = sortedData.slice(0, 4)
+                const others = sortedData.slice(4)
+                const othersTotal = others.reduce((sum: number, item: any) => sum + item.tutar, 0)
+
+                if (othersTotal > 0) {
+                  top4.push({
+                    name: "Diğer",
+                    tutar: othersTotal,
+                    fill: "#94a3b8",
+                  })
+                }
+                setDonutChartData(top4)
+              } else {
+                setDonutChartData(sortedData)
+              }
+            } else {
+              setDonutChartData([])
+            }
           }
         } catch (err) {
           console.error("Dashboard data fetch error:", err)
@@ -184,27 +237,17 @@ export default function DashboardPage() {
     }
   }, [user, authLoading])
 
-  if (authLoading || loadingData) {
-    return (
-      <div className="flex flex-col gap-4 md:gap-6 items-center justify-center min-h-[calc(100vh-150px)]">
-        <Loader2 className="h-12 w-12 animate-spin text-emerald-600" />
-        <p className="text-lg text-gray-600">Veriler yükleniyor...</p>
-      </div>
-    )
-  }
-
-  if (error) {
-    return (
-      <div className="flex flex-col items-center justify-center min-h-[calc(100vh-150px)]">
-        <AlertCircle className="h-12 w-12 text-red-500 mb-4" />
-        <p className="text-lg text-red-600">{error}</p>
-        {!user && (
-          <Button asChild className="mt-4">
-            <Link href="/giris">Giriş Yap</Link>
-          </Button>
-        )}
-      </div>
-    )
+  const getColorForCreditType = (typeName: string): string => {
+    const colorMap: { [key: string]: string } = {
+      "İhtiyaç Kredisi": "#3b82f6",
+      "Konut Kredisi": "#10b981",
+      "Taşıt Kredisi": "#f59e0b",
+      "Ticari Kredi": "#8b5cf6",
+      "Kredi Kartı": "#ef4444",
+      "Diğer Krediler": "#6b7280",
+      Diğer: "#94a3b8",
+    }
+    return colorMap[typeName] || "#6b7280"
   }
 
   const displayName = profile?.first_name || user?.email?.split("@")[0] || "Kullanıcı"
@@ -321,6 +364,34 @@ export default function DashboardPage() {
           </CardHeader>
           <CardContent className="pt-6">
             <SimpleBarChart data={barChartData} />
+          </CardContent>
+        </Card>
+
+        <Card className="shadow-lg hover:shadow-xl transition-shadow duration-300 rounded-xl border-gray-200">
+          <CardHeader>
+            <CardTitle className="text-gray-900 flex items-center gap-2">
+              <PieChart className="h-5 w-5 text-emerald-600" />
+              Kredi Türü Dağılımı
+            </CardTitle>
+            <CardDescription>Aktif kredilerinizin türlerine göre borç dağılımı ve oranları.</CardDescription>
+          </CardHeader>
+          <CardContent className="pt-6">
+            {donutChartData.length > 0 ? (
+              <SimpleDonutChart
+                data={donutChartData}
+                centerText={formatCurrency(totalDebt)}
+                centerSubtext="Toplam Borç"
+              />
+            ) : (
+              <div className="flex flex-col items-center justify-center h-[300px] text-gray-500">
+                <PieChart className="h-12 w-12 mb-4 text-gray-300" />
+                <p className="text-lg font-medium">Aktif kredi bulunmuyor</p>
+                <p className="text-sm text-gray-400 mb-4">İlk kredinizi ekleyerek başlayın</p>
+                <Button asChild size="sm">
+                  <Link href="/uygulama/krediler/kredi-ekle">Kredi Ekle</Link>
+                </Button>
+              </div>
+            )}
           </CardContent>
         </Card>
       </div>
