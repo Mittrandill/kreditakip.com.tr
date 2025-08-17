@@ -29,9 +29,7 @@ import {
   ChevronDown,
   ChevronUp,
   Calendar,
-  Zap,
   Eye,
-  FileText,
   ArrowUpRight,
   ArrowDownRight,
   Minus,
@@ -839,64 +837,53 @@ export default function RaporlarPage() {
         />
       </div>
 
-      {/* Modern Tabs */}
+      {/* Modern Tabs - Krediler sayfası tarzında */}
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-        <div className="flex items-center justify-between mb-6">
-          <TabsList className="grid grid-cols-3 lg:grid-cols-6 bg-gray-100/80 backdrop-blur-sm p-1 rounded-xl">
+        <div className="mb-8">
+          <TabsList className="grid w-full grid-cols-3 lg:grid-cols-6 h-14 bg-white/50 backdrop-blur-sm border border-gray-200 rounded-2xl p-2">
             <TabsTrigger
               value="overview"
-              className="flex items-center gap-2 data-[state=active]:bg-white data-[state=active]:shadow-sm"
+              className="flex items-center gap-2 rounded-xl data-[state=active]:bg-white data-[state=active]:shadow-lg data-[state=active]:text-emerald-600 transition-all duration-300"
             >
               <Eye className="h-4 w-4" />
-              <span className="hidden sm:inline">Genel Bakış</span>
+              <span className="hidden sm:inline font-medium">Genel Bakış</span>
             </TabsTrigger>
             <TabsTrigger
               value="trends"
-              className="flex items-center gap-2 data-[state=active]:bg-white data-[state=active]:shadow-sm"
+              className="flex items-center gap-2 rounded-xl data-[state=active]:bg-white data-[state=active]:shadow-lg data-[state=active]:text-emerald-600 transition-all duration-300"
             >
               <TrendingUp className="h-4 w-4" />
-              <span className="hidden sm:inline">Trendler</span>
+              <span className="hidden sm:inline font-medium">Trendler</span>
             </TabsTrigger>
             <TabsTrigger
               value="distribution"
-              className="flex items-center gap-2 data-[state=active]:bg-white data-[state=active]:shadow-sm"
+              className="flex items-center gap-2 rounded-xl data-[state=active]:bg-white data-[state=active]:shadow-lg data-[state=active]:text-emerald-600 transition-all duration-300"
             >
               <PieChart className="h-4 w-4" />
-              <span className="hidden sm:inline">Dağılım</span>
+              <span className="hidden sm:inline font-medium">Dağılım</span>
             </TabsTrigger>
             <TabsTrigger
               value="performance"
-              className="flex items-center gap-2 data-[state=active]:bg-white data-[state=active]:shadow-sm"
+              className="flex items-center gap-2 rounded-xl data-[state=active]:bg-white data-[state=active]:shadow-lg data-[state=active]:text-emerald-600 transition-all duration-300"
             >
               <Activity className="h-4 w-4" />
-              <span className="hidden sm:inline">Performans</span>
+              <span className="hidden sm:inline font-medium">Performans</span>
             </TabsTrigger>
             <TabsTrigger
               value="analysis"
-              className="flex items-center gap-2 data-[state=active]:bg-white data-[state=active]:shadow-sm"
+              className="flex items-center gap-2 rounded-xl data-[state=active]:bg-white data-[state=active]:shadow-lg data-[state=active]:text-emerald-600 transition-all duration-300"
             >
               <Target className="h-4 w-4" />
-              <span className="hidden sm:inline">Analiz</span>
+              <span className="hidden sm:inline font-medium">Analiz</span>
             </TabsTrigger>
             <TabsTrigger
               value="comparison"
-              className="flex items-center gap-2 data-[state=active]:bg-white data-[state=active]:shadow-sm"
+              className="flex items-center gap-2 rounded-xl data-[state=active]:bg-white data-[state=active]:shadow-lg data-[state=active]:text-emerald-600 transition-all duration-300"
             >
               <Building2 className="h-4 w-4" />
-              <span className="hidden sm:inline">Karşılaştırma</span>
+              <span className="hidden sm:inline font-medium">Karşılaştırma</span>
             </TabsTrigger>
           </TabsList>
-
-          <div className="flex items-center gap-2">
-            <Button variant="outline" size="sm" className="bg-white/70">
-              <FileText className="h-4 w-4 mr-2" />
-              Rapor Oluştur
-            </Button>
-            <Button variant="outline" size="sm" className="bg-white/70">
-              <Zap className="h-4 w-4 mr-2" />
-              Otomatik Analiz
-            </Button>
-          </div>
         </div>
 
         <TabsContent value="overview" className="space-y-6">
@@ -977,55 +964,108 @@ export default function RaporlarPage() {
             </Card>
           </div>
 
-          {/* Quick Insights */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <Card className="shadow-lg border-0 bg-gradient-to-br from-emerald-50 to-teal-50">
-              <CardContent className="p-6">
-                <div className="flex items-center justify-between mb-4">
-                  <div className="p-3 bg-emerald-100 rounded-xl">
-                    <TrendingUp className="h-6 w-6 text-emerald-600" />
+          {/* High Glass Quick Insights */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            <Card className="relative overflow-hidden border-0 bg-white/10 backdrop-blur-xl shadow-2xl">
+              <div className="absolute inset-0 bg-gradient-to-br from-emerald-500/20 via-teal-500/10 to-transparent"></div>
+              <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-emerald-500 to-teal-500"></div>
+              <CardContent className="relative p-8">
+                <div className="flex items-center justify-between mb-6">
+                  <div className="p-4 bg-emerald-500/20 rounded-2xl backdrop-blur-sm border border-emerald-500/30">
+                    <TrendingUp className="h-8 w-8 text-emerald-600" />
                   </div>
-                  <Badge className="bg-emerald-100 text-emerald-700">Pozitif</Badge>
+                  <Badge className="bg-emerald-500/20 text-emerald-700 border-emerald-500/30 backdrop-blur-sm px-3 py-1">
+                    Pozitif
+                  </Badge>
                 </div>
-                <h3 className="font-semibold text-lg mb-2">Ödeme Performansı</h3>
-                <p className="text-3xl font-bold text-emerald-600 mb-2">
+                <h3 className="font-bold text-2xl mb-3 text-gray-900">Ödeme Performansı</h3>
+                <p className="text-4xl font-black text-emerald-600 mb-4">
                   {formatPercent(summaryMetrics.paymentPerformance / 100)}
                 </p>
-                <p className="text-sm text-gray-600">
-                  Son 6 ayda {filteredPayments.filter((p) => p.status === "paid").length} başarılı ödeme
+                <p className="text-sm text-gray-600 leading-relaxed">
+                  Son 6 ayda{" "}
+                  <span className="font-semibold text-emerald-600">
+                    {filteredPayments.filter((p) => p.status === "paid").length}
+                  </span>{" "}
+                  başarılı ödeme gerçekleştirildi
                 </p>
+                <div className="mt-6 w-full h-2 bg-gray-200/50 rounded-full overflow-hidden">
+                  <div
+                    className="h-2 bg-gradient-to-r from-emerald-500 to-teal-500 rounded-full transition-all duration-1000 ease-out"
+                    style={{ width: `${summaryMetrics.paymentPerformance}%` }}
+                  ></div>
+                </div>
               </CardContent>
             </Card>
 
-            <Card className="shadow-lg border-0 bg-gradient-to-br from-blue-50 to-indigo-50">
-              <CardContent className="p-6">
-                <div className="flex items-center justify-between mb-4">
-                  <div className="p-3 bg-blue-100 rounded-xl">
-                    <DollarSign className="h-6 w-6 text-blue-600" />
+            <Card className="relative overflow-hidden border-0 bg-white/10 backdrop-blur-xl shadow-2xl">
+              <div className="absolute inset-0 bg-gradient-to-br from-blue-500/20 via-indigo-500/10 to-transparent"></div>
+              <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-blue-500 to-indigo-500"></div>
+              <CardContent className="relative p-8">
+                <div className="flex items-center justify-between mb-6">
+                  <div className="p-4 bg-blue-500/20 rounded-2xl backdrop-blur-sm border border-blue-500/30">
+                    <DollarSign className="h-8 w-8 text-blue-600" />
                   </div>
-                  <Badge className="bg-blue-100 text-blue-700">Stabil</Badge>
+                  <Badge className="bg-blue-500/20 text-blue-700 border-blue-500/30 backdrop-blur-sm px-3 py-1">
+                    Stabil
+                  </Badge>
                 </div>
-                <h3 className="font-semibold text-lg mb-2">Ortalama Faiz</h3>
-                <p className="text-3xl font-bold text-blue-600 mb-2">%{summaryMetrics.averageInterest.toFixed(1)}</p>
-                <p className="text-sm text-gray-600">
-                  Piyasa ortalamasının {summaryMetrics.averageInterest > 15 ? "üzerinde" : "altında"}
+                <h3 className="font-bold text-2xl mb-3 text-gray-900">Ortalama Faiz</h3>
+                <p className="text-4xl font-black text-blue-600 mb-4">%{summaryMetrics.averageInterest.toFixed(1)}</p>
+                <p className="text-sm text-gray-600 leading-relaxed">
+                  Piyasa ortalamasının{" "}
+                  <span
+                    className={`font-semibold ${summaryMetrics.averageInterest > 15 ? "text-red-600" : "text-green-600"}`}
+                  >
+                    {summaryMetrics.averageInterest > 15 ? "üzerinde" : "altında"}
+                  </span>
                 </p>
+                <div className="mt-6 flex items-center gap-2">
+                  <div className="flex-1 h-2 bg-gray-200/50 rounded-full overflow-hidden">
+                    <div
+                      className="h-2 bg-gradient-to-r from-blue-500 to-indigo-500 rounded-full transition-all duration-1000 ease-out"
+                      style={{ width: `${Math.min((summaryMetrics.averageInterest / 30) * 100, 100)}%` }}
+                    ></div>
+                  </div>
+                  <span className="text-xs text-gray-500">30%</span>
+                </div>
               </CardContent>
             </Card>
 
-            <Card className="shadow-lg border-0 bg-gradient-to-br from-purple-50 to-pink-50">
-              <CardContent className="p-6">
-                <div className="flex items-center justify-between mb-4">
-                  <div className="p-3 bg-purple-100 rounded-xl">
-                    <Wallet className="h-6 w-6 text-purple-600" />
+            <Card className="relative overflow-hidden border-0 bg-white/10 backdrop-blur-xl shadow-2xl">
+              <div className="absolute inset-0 bg-gradient-to-br from-purple-500/20 via-pink-500/10 to-transparent"></div>
+              <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-purple-500 to-pink-500"></div>
+              <CardContent className="relative p-8">
+                <div className="flex items-center justify-between mb-6">
+                  <div className="p-4 bg-purple-500/20 rounded-2xl backdrop-blur-sm border border-purple-500/30">
+                    <Wallet className="h-8 w-8 text-purple-600" />
                   </div>
-                  <Badge className="bg-purple-100 text-purple-700">Aktif</Badge>
+                  <Badge className="bg-purple-500/20 text-purple-700 border-purple-500/30 backdrop-blur-sm px-3 py-1">
+                    Aktif
+                  </Badge>
                 </div>
-                <h3 className="font-semibold text-lg mb-2">Aylık Yük</h3>
-                <p className="text-3xl font-bold text-purple-600 mb-2">
+                <h3 className="font-bold text-2xl mb-3 text-gray-900">Aylık Yük</h3>
+                <p className="text-4xl font-black text-purple-600 mb-4">
                   {formatCurrency(summaryMetrics.monthlyPayment)}
                 </p>
-                <p className="text-sm text-gray-600">{summaryMetrics.activeCredits} aktif krediden toplam</p>
+                <p className="text-sm text-gray-600 leading-relaxed">
+                  <span className="font-semibold text-purple-600">{summaryMetrics.activeCredits}</span> aktif krediden
+                  toplam aylık ödeme
+                </p>
+                <div className="mt-6 grid grid-cols-3 gap-2">
+                  <div className="text-center">
+                    <div className="text-xs text-gray-500 mb-1">Min</div>
+                    <div className="h-1 bg-purple-200 rounded"></div>
+                  </div>
+                  <div className="text-center">
+                    <div className="text-xs text-gray-500 mb-1">Mevcut</div>
+                    <div className="h-1 bg-gradient-to-r from-purple-500 to-pink-500 rounded"></div>
+                  </div>
+                  <div className="text-center">
+                    <div className="text-xs text-gray-500 mb-1">Max</div>
+                    <div className="h-1 bg-purple-200 rounded"></div>
+                  </div>
+                </div>
               </CardContent>
             </Card>
           </div>

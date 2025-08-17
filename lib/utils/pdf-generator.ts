@@ -287,53 +287,10 @@ class PDFReportGenerator {
     this.currentY += 10
   }
 
-  private addChartPlaceholder(title: string, data: any[], type: "bar" | "pie" | "line" = "bar") {
-    this.checkPageBreak(100)
-
-    const chartHeight = 80
-    const chartWidth = this.pageWidth - 2 * this.margin
-
-    // Title
-    this.doc.setFontSize(12)
-    this.doc.setFont("helvetica", "bold")
-    this.doc.setTextColor(...COLORS.dark)
-    this.doc.text(removeTurkishChars(title), this.margin, this.currentY)
-    this.currentY += 15
-
-    // Chart area
-    this.doc.setDrawColor(...COLORS.gray)
-    this.doc.setFillColor(...COLORS.light)
-    this.doc.roundedRect(this.margin, this.currentY, chartWidth, chartHeight, 3, 3, "FD")
-
-    // Simple visualization
-    if (type === "bar" && data.length > 0) {
-      const maxValue = Math.max(...data.map((d) => d.value || d.amount || 0))
-      const barWidth = (chartWidth / Math.min(data.length, 8)) * 0.7
-      const barSpacing = (chartWidth / Math.min(data.length, 8)) * 0.3
-
-      data.slice(0, 8).forEach((item, index) => {
-        const value = item.value || item.amount || 0
-        const barHeight = maxValue > 0 ? (value / maxValue) * (chartHeight - 20) : 0
-        const x = this.margin + index * (barWidth + barSpacing) + barSpacing / 2
-        const y = this.currentY + chartHeight - barHeight - 10
-
-        this.doc.setFillColor(...COLORS.primary)
-        this.doc.roundedRect(x, y, barWidth, barHeight, 1, 1, "F")
-
-        // Value label
-        if (barHeight > 10) {
-          this.doc.setFontSize(6)
-          this.doc.setTextColor(...COLORS.white)
-          this.doc.text(value.toLocaleString("tr-TR"), x + barWidth / 2, y + barHeight / 2, { align: "center" })
-        }
-      })
-    }
-
-    this.currentY += chartHeight + 15
-  }
-
   public generateReport(data: ReportData): void {
     try {
+      console.log("PDF generation started with data:", data)
+
       // Header
       this.addHeader()
 
@@ -409,17 +366,6 @@ class PDFReportGenerator {
         })
       }
 
-      // Charts
-      if (data.chartData) {
-        if (data.chartData.bankDistribution) {
-          this.addChartPlaceholder("Banka Dağılımı", data.chartData.bankDistribution, "bar")
-        }
-
-        if (data.chartData.monthlyPayments) {
-          this.addChartPlaceholder("Aylık Ödeme Trendi", data.chartData.monthlyPayments, "line")
-        }
-      }
-
       // Recommendations
       this.addSection(
         "Öneriler ve Değerlendirme",
@@ -453,15 +399,23 @@ class PDFReportGenerator {
 
       // Save PDF
       const fileName = `kredi-raporu-${format(new Date(), "yyyy-MM-dd-HHmm")}.pdf`
+      console.log("Saving PDF with filename:", fileName)
       this.doc.save(fileName)
+      console.log("PDF saved successfully")
     } catch (error) {
       console.error("PDF generation error:", error)
-      throw new Error("PDF oluşturulurken bir hata oluştu")
+      throw new Error("PDF oluşturulurken bir hata oluştu: " + (error as Error).message)
     }
   }
 }
 
 export const generatePDFReport = (data: ReportData) => {
-  const generator = new PDFReportGenerator()
-  generator.generateReport(data)
+  try {
+    console.log("generatePDFReport called with:", data)
+    const generator = new PDFReportGenerator()
+    generator.generateReport(data)
+  } catch (error) {
+    console.error("Error in generatePDFReport:", error)
+    throw error
+  }
 }
