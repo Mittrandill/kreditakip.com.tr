@@ -3,14 +3,7 @@
 import type React from "react"
 
 import { useState, useMemo } from "react"
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog"
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Label } from "@/components/ui/label"
@@ -31,6 +24,7 @@ import {
   ChevronRight,
   CheckCircle,
   Eye,
+  Sparkles,
 } from "lucide-react"
 import { format } from "date-fns"
 import { tr } from "date-fns/locale"
@@ -87,16 +81,6 @@ export default function PDFReportModal({ userData, trigger }: PDFReportModalProp
     bankComparison: true,
     interestComparison: true,
     paymentProgress: true,
-  })
-
-  // Report format options
-  const [formatOptions, setFormatOptions] = useState({
-    language: "tr",
-    currency: "TRY",
-    includeLogos: true,
-    colorScheme: "professional",
-    pageNumbers: true,
-    confidential: false,
   })
 
   const handlePeriodChange = (period: string) => {
@@ -334,14 +318,6 @@ export default function PDFReportModal({ userData, trigger }: PDFReportModalProp
       interestComparison: true,
       paymentProgress: true,
     })
-    setFormatOptions({
-      language: "tr",
-      currency: "TRY",
-      includeLogos: true,
-      colorScheme: "professional",
-      pageNumbers: true,
-      confidential: false,
-    })
   }
 
   const canProceed = () => {
@@ -377,7 +353,7 @@ export default function PDFReportModal({ userData, trigger }: PDFReportModalProp
         {trigger || (
           <Button
             size="lg"
-            className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white shadow-lg"
+            className="bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white shadow-lg"
           >
             <Download className="h-5 w-5 mr-2" />
             PDF Rapor İndir
@@ -385,21 +361,21 @@ export default function PDFReportModal({ userData, trigger }: PDFReportModalProp
         )}
       </DialogTrigger>
 
-      <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+      <DialogContent className="max-w-5xl max-h-[90vh] overflow-y-auto">
         <DialogHeader className="pb-6">
           <DialogTitle className="flex items-center gap-3 text-2xl font-bold">
-            <div className="p-2 bg-gradient-to-r from-blue-500 to-indigo-500 rounded-lg">
+            <div className="p-3 bg-gradient-to-r from-emerald-500 to-teal-500 rounded-xl">
               <FileText className="h-6 w-6 text-white" />
             </div>
-            Kredi Portföy Raporu
+            <div>
+              <div>Kredi Portföy Raporu</div>
+              <div className="text-sm font-normal text-gray-500 mt-1">Profesyonel PDF raporu oluşturun</div>
+            </div>
           </DialogTitle>
-          <DialogDescription className="text-base text-gray-600">
-            Kredilerinizin detaylı analizini PDF formatında indirin
-          </DialogDescription>
         </DialogHeader>
 
-        {/* Progress Steps */}
-        <div className="flex items-center justify-between mb-8 bg-gradient-to-r from-gray-50 to-blue-50 rounded-xl p-6">
+        {/* Modern Progress Steps */}
+        <div className="flex items-center justify-between mb-8 bg-gradient-to-r from-emerald-50 to-teal-50 rounded-2xl p-6 border border-emerald-100">
           {WIZARD_STEPS.map((step, index) => {
             const Icon = step.icon
             const isActive = index === currentStep
@@ -411,19 +387,20 @@ export default function PDFReportModal({ userData, trigger }: PDFReportModalProp
                   <button
                     onClick={() => goToStep(index)}
                     className={cn(
-                      "w-12 h-12 rounded-full flex items-center justify-center transition-all duration-200 shadow-md",
-                      isActive && "bg-gradient-to-r from-blue-600 to-indigo-600 text-white scale-110",
-                      isCompleted && "bg-gradient-to-r from-green-500 to-emerald-500 text-white",
-                      !isActive && !isCompleted && "bg-white text-gray-400 hover:bg-gray-100",
+                      "w-14 h-14 rounded-2xl flex items-center justify-center transition-all duration-300 shadow-lg",
+                      isActive &&
+                        "bg-gradient-to-r from-emerald-600 to-teal-600 text-white scale-110 shadow-emerald-200",
+                      isCompleted && "bg-gradient-to-r from-green-500 to-emerald-500 text-white shadow-green-200",
+                      !isActive && !isCompleted && "bg-white text-gray-400 hover:bg-gray-50 shadow-gray-200",
                     )}
                   >
-                    {isCompleted ? <CheckCircle className="h-5 w-5" /> : <Icon className="h-5 w-5" />}
+                    {isCompleted ? <CheckCircle className="h-6 w-6" /> : <Icon className="h-6 w-6" />}
                   </button>
-                  <div className="mt-2 text-center">
+                  <div className="mt-3 text-center">
                     <p
                       className={cn(
-                        "text-sm font-medium",
-                        isActive && "text-blue-600",
+                        "text-sm font-semibold",
+                        isActive && "text-emerald-600",
                         isCompleted && "text-green-600",
                         !isActive && !isCompleted && "text-gray-400",
                       )}
@@ -436,8 +413,8 @@ export default function PDFReportModal({ userData, trigger }: PDFReportModalProp
                 {index < WIZARD_STEPS.length - 1 && (
                   <div
                     className={cn(
-                      "w-16 h-0.5 mx-4 mt-6",
-                      isCompleted ? "bg-gradient-to-r from-green-500 to-emerald-500" : "bg-gray-300",
+                      "w-20 h-1 mx-6 mt-7 rounded-full transition-all duration-300",
+                      isCompleted ? "bg-gradient-to-r from-green-500 to-emerald-500" : "bg-gray-200",
                     )}
                   />
                 )}
@@ -447,19 +424,19 @@ export default function PDFReportModal({ userData, trigger }: PDFReportModalProp
         </div>
 
         {/* Step Content */}
-        <div className="min-h-[400px] mb-8">
+        <div className="min-h-[450px] mb-8">
           {/* Step 1: Basic Settings */}
           {currentStep === 0 && (
-            <Card className="border-0 shadow-lg">
-              <CardHeader className="bg-gradient-to-r from-blue-50 to-indigo-50">
-                <CardTitle className="flex items-center gap-2 text-blue-800">
-                  <Settings className="h-5 w-5" />
+            <Card className="border-0 shadow-xl bg-gradient-to-br from-white to-blue-50">
+              <CardHeader className="bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-t-lg">
+                <CardTitle className="flex items-center gap-3">
+                  <Settings className="h-6 w-6" />
                   Rapor Ayarları
                 </CardTitle>
               </CardHeader>
-              <CardContent className="space-y-6 p-6">
+              <CardContent className="space-y-6 p-8">
                 <div>
-                  <Label htmlFor="reportTitle" className="text-sm font-medium text-gray-700">
+                  <Label htmlFor="reportTitle" className="text-sm font-semibold text-gray-700 mb-2 block">
                     Rapor Başlığı
                   </Label>
                   <Input
@@ -467,14 +444,14 @@ export default function PDFReportModal({ userData, trigger }: PDFReportModalProp
                     value={reportTitle}
                     onChange={(e) => setReportTitle(e.target.value)}
                     placeholder="Rapor başlığını girin"
-                    className="mt-2 h-11"
+                    className="h-12 text-lg border-2 border-gray-200 focus:border-emerald-500 rounded-xl"
                   />
                 </div>
 
                 <div>
-                  <Label className="text-sm font-medium text-gray-700">Rapor Dönemi</Label>
+                  <Label className="text-sm font-semibold text-gray-700 mb-2 block">Rapor Dönemi</Label>
                   <Select value={reportPeriod} onValueChange={handlePeriodChange}>
-                    <SelectTrigger className="mt-2 h-11">
+                    <SelectTrigger className="h-12 border-2 border-gray-200 focus:border-emerald-500 rounded-xl">
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
@@ -490,13 +467,13 @@ export default function PDFReportModal({ userData, trigger }: PDFReportModalProp
                 {reportPeriod === "custom" && (
                   <div className="grid grid-cols-2 gap-4">
                     <div>
-                      <Label className="text-sm font-medium text-gray-700">Başlangıç Tarihi</Label>
+                      <Label className="text-sm font-semibold text-gray-700 mb-2 block">Başlangıç Tarihi</Label>
                       <Popover>
                         <PopoverTrigger asChild>
                           <Button
                             variant="outline"
                             className={cn(
-                              "w-full justify-start text-left font-normal mt-2 h-11",
+                              "w-full justify-start text-left font-normal h-12 border-2 border-gray-200 rounded-xl",
                               !dateFrom && "text-muted-foreground",
                             )}
                           >
@@ -510,13 +487,13 @@ export default function PDFReportModal({ userData, trigger }: PDFReportModalProp
                       </Popover>
                     </div>
                     <div>
-                      <Label className="text-sm font-medium text-gray-700">Bitiş Tarihi</Label>
+                      <Label className="text-sm font-semibold text-gray-700 mb-2 block">Bitiş Tarihi</Label>
                       <Popover>
                         <PopoverTrigger asChild>
                           <Button
                             variant="outline"
                             className={cn(
-                              "w-full justify-start text-left font-normal mt-2 h-11",
+                              "w-full justify-start text-left font-normal h-12 border-2 border-gray-200 rounded-xl",
                               !dateTo && "text-muted-foreground",
                             )}
                           >
@@ -537,17 +514,17 @@ export default function PDFReportModal({ userData, trigger }: PDFReportModalProp
 
           {/* Step 2: Credit Selection */}
           {currentStep === 1 && (
-            <Card className="border-0 shadow-lg">
-              <CardHeader className="bg-gradient-to-r from-green-50 to-emerald-50">
-                <CardTitle className="flex items-center gap-2 text-green-800">
-                  <CreditCard className="h-5 w-5" />
+            <Card className="border-0 shadow-xl bg-gradient-to-br from-white to-green-50">
+              <CardHeader className="bg-gradient-to-r from-green-600 to-emerald-600 text-white rounded-t-lg">
+                <CardTitle className="flex items-center gap-3">
+                  <CreditCard className="h-6 w-6" />
                   Kredi Seçimi
                 </CardTitle>
               </CardHeader>
-              <CardContent className="p-6">
-                <div className="space-y-4">
+              <CardContent className="p-8">
+                <div className="space-y-6">
                   <div className="flex items-center justify-between">
-                    <Label className="text-sm font-medium text-gray-700">Rapora Dahil Edilecek Krediler</Label>
+                    <Label className="text-sm font-semibold text-gray-700">Rapora Dahil Edilecek Krediler</Label>
                     <Button
                       variant="outline"
                       size="sm"
@@ -558,28 +535,30 @@ export default function PDFReportModal({ userData, trigger }: PDFReportModalProp
                           setSelectedCredits(creditsArray.map((c) => c.id))
                         }
                       }}
+                      className="rounded-xl"
                     >
                       {selectedCredits.length === creditsArray.length ? "Hiçbirini Seçme" : "Tümünü Seç"}
                     </Button>
                   </div>
 
-                  <div className="grid gap-3 max-h-64 overflow-y-auto">
+                  <div className="grid gap-4 max-h-80 overflow-y-auto">
                     {creditsArray.map((credit) => (
                       <div
                         key={credit.id}
-                        className="flex items-center space-x-3 p-3 border rounded-lg hover:bg-gray-50"
+                        className="flex items-center space-x-4 p-4 border-2 border-gray-100 rounded-xl hover:bg-green-50 hover:border-green-200 transition-all"
                       >
                         <Checkbox
                           id={credit.id}
                           checked={selectedCredits.includes(credit.id)}
                           onCheckedChange={(checked) => handleCreditToggle(credit.id, checked as boolean)}
+                          className="w-5 h-5"
                         />
                         <div className="flex-1">
-                          <Label htmlFor={credit.id} className="cursor-pointer font-medium">
+                          <Label htmlFor={credit.id} className="cursor-pointer font-semibold text-gray-900">
                             {credit.bankName || credit.banks?.name || "Bilinmeyen Banka"} -{" "}
                             {credit.creditType || credit.credit_types?.name || "Diğer"}
                           </Label>
-                          <p className="text-sm text-gray-500">
+                          <p className="text-sm text-gray-600 mt-1">
                             Kalan Borç: ₺{(credit.remainingDebt || credit.remaining_debt || 0).toLocaleString("tr-TR")}{" "}
                             | Aylık Ödeme: ₺
                             {(credit.monthlyPayment || credit.monthly_payment || 0).toLocaleString("tr-TR")}
@@ -588,31 +567,38 @@ export default function PDFReportModal({ userData, trigger }: PDFReportModalProp
                       </div>
                     ))}
                     {creditsArray.length === 0 && (
-                      <div className="text-center py-8 text-gray-500">
-                        <CreditCard className="h-12 w-12 mx-auto mb-4 text-gray-300" />
-                        <p>Henüz kredi kaydı bulunmuyor.</p>
+                      <div className="text-center py-12 text-gray-500">
+                        <CreditCard className="h-16 w-16 mx-auto mb-4 text-gray-300" />
+                        <p className="text-lg font-medium">Henüz kredi kaydı bulunmuyor.</p>
+                        <p className="text-sm">Önce kredi ekleyerek başlayın.</p>
                       </div>
                     )}
                   </div>
 
-                  <div className="mt-6 space-y-3">
-                    <Label className="text-sm font-medium text-gray-700">Rapor İçeriği</Label>
-                    {Object.entries(includeSections).map(([key, value]) => (
-                      <div key={key} className="flex items-center space-x-2">
-                        <Checkbox
-                          id={key}
-                          checked={value}
-                          onCheckedChange={(checked) => handleSectionToggle(key, checked as boolean)}
-                        />
-                        <Label htmlFor={key} className="cursor-pointer">
-                          {key === "summary" && "Genel Özet"}
-                          {key === "creditDetails" && "Kredi Detayları"}
-                          {key === "paymentSchedule" && "Ödeme Planı"}
-                          {key === "interestAnalysis" && "Faiz Analizi"}
-                          {key === "riskAssessment" && "Risk Değerlendirmesi"}
-                        </Label>
-                      </div>
-                    ))}
+                  <div className="mt-8 space-y-4">
+                    <Label className="text-sm font-semibold text-gray-700">Rapor İçeriği</Label>
+                    <div className="grid grid-cols-2 gap-4">
+                      {Object.entries(includeSections).map(([key, value]) => (
+                        <div
+                          key={key}
+                          className="flex items-center space-x-3 p-3 bg-white rounded-xl border border-gray-200"
+                        >
+                          <Checkbox
+                            id={key}
+                            checked={value}
+                            onCheckedChange={(checked) => handleSectionToggle(key, checked as boolean)}
+                            className="w-5 h-5"
+                          />
+                          <Label htmlFor={key} className="cursor-pointer font-medium">
+                            {key === "summary" && "Genel Özet"}
+                            {key === "creditDetails" && "Kredi Detayları"}
+                            {key === "paymentSchedule" && "Ödeme Planı"}
+                            {key === "interestAnalysis" && "Faiz Analizi"}
+                            {key === "riskAssessment" && "Risk Değerlendirmesi"}
+                          </Label>
+                        </div>
+                      ))}
+                    </div>
                   </div>
                 </div>
               </CardContent>
@@ -621,36 +607,40 @@ export default function PDFReportModal({ userData, trigger }: PDFReportModalProp
 
           {/* Step 3: Charts Selection */}
           {currentStep === 2 && (
-            <Card className="border-0 shadow-lg">
-              <CardHeader className="bg-gradient-to-r from-purple-50 to-pink-50">
-                <CardTitle className="flex items-center gap-2 text-purple-800">
-                  <BarChart3 className="h-5 w-5" />
+            <Card className="border-0 shadow-xl bg-gradient-to-br from-white to-purple-50">
+              <CardHeader className="bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-t-lg">
+                <CardTitle className="flex items-center gap-3">
+                  <BarChart3 className="h-6 w-6" />
                   Grafik & Analiz Seçimi
                 </CardTitle>
               </CardHeader>
-              <CardContent className="p-6">
-                <div className="grid grid-cols-2 gap-4">
+              <CardContent className="p-8">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   {Object.entries(chartOptions).map(([key, value]) => (
-                    <div key={key} className="flex items-center space-x-3 p-3 border rounded-lg hover:bg-gray-50">
+                    <div
+                      key={key}
+                      className="flex items-start space-x-4 p-4 bg-white rounded-xl border-2 border-gray-100 hover:border-purple-200 transition-all"
+                    >
                       <Checkbox
                         id={key}
                         checked={value}
                         onCheckedChange={(checked) => handleChartToggle(key, checked as boolean)}
+                        className="w-5 h-5 mt-1"
                       />
-                      <div>
-                        <Label htmlFor={key} className="cursor-pointer font-medium">
-                          {key === "paymentTrend" && "Ödeme Trendi"}
-                          {key === "debtDistribution" && "Borç Dağılımı"}
-                          {key === "bankComparison" && "Banka Karşılaştırması"}
-                          {key === "interestComparison" && "Faiz Karşılaştırması"}
-                          {key === "paymentProgress" && "Ödeme İlerlemesi"}
+                      <div className="flex-1">
+                        <Label htmlFor={key} className="cursor-pointer font-semibold text-gray-900 block mb-2">
+                          {key === "paymentTrend" && "📈 Ödeme Trendi"}
+                          {key === "debtDistribution" && "🏦 Borç Dağılımı"}
+                          {key === "bankComparison" && "⚖️ Banka Karşılaştırması"}
+                          {key === "interestComparison" && "📊 Faiz Karşılaştırması"}
+                          {key === "paymentProgress" && "📅 Ödeme İlerlemesi"}
                         </Label>
-                        <p className="text-xs text-gray-500 mt-1">
-                          {key === "paymentTrend" && "Aylık ödeme miktarlarının grafiği"}
-                          {key === "debtDistribution" && "Bankalara göre borç dağılımı"}
-                          {key === "bankComparison" && "Bankalar arası karşılaştırma"}
-                          {key === "interestComparison" && "Faiz oranları analizi"}
-                          {key === "paymentProgress" && "Ödeme ilerleme durumu"}
+                        <p className="text-sm text-gray-600">
+                          {key === "paymentTrend" && "Aylık ödeme miktarlarının trend analizi"}
+                          {key === "debtDistribution" && "Bankalara göre borç dağılım grafiği"}
+                          {key === "bankComparison" && "Bankalar arası detaylı karşılaştırma"}
+                          {key === "interestComparison" && "Faiz oranları ve maliyet analizi"}
+                          {key === "paymentProgress" && "Ödeme ilerleme durumu takibi"}
                         </p>
                       </div>
                     </div>
@@ -662,74 +652,83 @@ export default function PDFReportModal({ userData, trigger }: PDFReportModalProp
 
           {/* Step 4: Preview */}
           {currentStep === 3 && (
-            <Card className="border-0 shadow-lg">
-              <CardHeader className="bg-gradient-to-r from-indigo-50 to-blue-50">
-                <CardTitle className="flex items-center gap-2 text-indigo-800">
-                  <Eye className="h-5 w-5" />
+            <Card className="border-0 shadow-xl bg-gradient-to-br from-white to-indigo-50">
+              <CardHeader className="bg-gradient-to-r from-indigo-600 to-blue-600 text-white rounded-t-lg">
+                <CardTitle className="flex items-center gap-3">
+                  <Eye className="h-6 w-6" />
                   Rapor Önizlemesi
                 </CardTitle>
               </CardHeader>
-              <CardContent className="p-6">
-                <div className="space-y-6">
-                  <div className="bg-gradient-to-r from-blue-50 to-indigo-50 p-6 rounded-xl">
-                    <h4 className="font-bold text-lg text-blue-800 mb-4">📊 Rapor Özeti</h4>
-                    <div className="grid grid-cols-2 gap-4 text-sm">
-                      <div>
-                        <strong>Rapor Başlığı:</strong> {reportTitle}
+              <CardContent className="p-8">
+                <div className="space-y-8">
+                  <div className="bg-gradient-to-r from-indigo-50 to-blue-50 p-6 rounded-2xl border border-indigo-200">
+                    <div className="flex items-center gap-3 mb-4">
+                      <Sparkles className="h-6 w-6 text-indigo-600" />
+                      <h4 className="font-bold text-xl text-indigo-800">📊 Rapor Özeti</h4>
+                    </div>
+                    <div className="grid grid-cols-2 gap-6 text-sm">
+                      <div className="space-y-2">
+                        <div>
+                          <strong>Rapor Başlığı:</strong> {reportTitle}
+                        </div>
+                        <div>
+                          <strong>Dönem:</strong>{" "}
+                          {reportPeriod === "custom" && dateFrom && dateTo
+                            ? `${format(dateFrom, "dd/MM/yyyy")} - ${format(dateTo, "dd/MM/yyyy")}`
+                            : reportPeriod}
+                        </div>
+                        <div>
+                          <strong>Seçili Krediler:</strong> {selectedCredits.length || totalCreditsCount} adet
+                        </div>
                       </div>
-                      <div>
-                        <strong>Dönem:</strong>{" "}
-                        {reportPeriod === "custom" && dateFrom && dateTo
-                          ? `${format(dateFrom, "dd/MM/yyyy")} - ${format(dateTo, "dd/MM/yyyy")}`
-                          : reportPeriod}
-                      </div>
-                      <div>
-                        <strong>Seçili Krediler:</strong> {selectedCredits.length || totalCreditsCount} adet
-                      </div>
-                      <div>
-                        <strong>İçerik Bölümleri:</strong> {selectedSectionsCount} adet
-                      </div>
-                      <div>
-                        <strong>Grafikler:</strong> {selectedChartsCount} adet
-                      </div>
-                      <div>
-                        <strong>Format:</strong> PDF - Türkçe
+                      <div className="space-y-2">
+                        <div>
+                          <strong>İçerik Bölümleri:</strong> {selectedSectionsCount} adet
+                        </div>
+                        <div>
+                          <strong>Grafikler:</strong> {selectedChartsCount} adet
+                        </div>
+                        <div>
+                          <strong>Format:</strong> PDF - Türkçe
+                        </div>
                       </div>
                     </div>
                   </div>
 
-                  <div className="grid grid-cols-3 gap-4">
-                    <div className="text-center p-4 bg-green-50 rounded-lg">
-                      <div className="text-2xl font-bold text-green-600">
+                  <div className="grid grid-cols-3 gap-6">
+                    <div className="text-center p-6 bg-gradient-to-br from-green-50 to-emerald-50 rounded-2xl border border-green-200">
+                      <div className="text-3xl font-bold text-green-600 mb-2">
                         {selectedCredits.length || totalCreditsCount}
                       </div>
-                      <div className="text-sm text-green-700">Toplam Kredi</div>
+                      <div className="text-sm text-green-700 font-medium">Toplam Kredi</div>
                     </div>
-                    <div className="text-center p-4 bg-blue-50 rounded-lg">
-                      <div className="text-2xl font-bold text-blue-600">₺{totalDebtAmount.toLocaleString("tr-TR")}</div>
-                      <div className="text-sm text-blue-700">Toplam Borç</div>
+                    <div className="text-center p-6 bg-gradient-to-br from-blue-50 to-indigo-50 rounded-2xl border border-blue-200">
+                      <div className="text-3xl font-bold text-blue-600 mb-2">
+                        ₺{totalDebtAmount.toLocaleString("tr-TR")}
+                      </div>
+                      <div className="text-sm text-blue-700 font-medium">Toplam Borç</div>
                     </div>
-                    <div className="text-center p-4 bg-purple-50 rounded-lg">
-                      <div className="text-2xl font-bold text-purple-600">
+                    <div className="text-center p-6 bg-gradient-to-br from-purple-50 to-pink-50 rounded-2xl border border-purple-200">
+                      <div className="text-3xl font-bold text-purple-600 mb-2">
                         ₺{totalMonthlyPayment.toLocaleString("tr-TR")}
                       </div>
-                      <div className="text-sm text-purple-700">Aylık Ödeme</div>
+                      <div className="text-sm text-purple-700 font-medium">Aylık Ödeme</div>
                     </div>
                   </div>
 
                   <Button
                     onClick={handleGenerateReport}
                     disabled={isGenerating}
-                    className="w-full h-12 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-semibold shadow-lg"
+                    className="w-full h-14 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white font-bold text-lg shadow-xl rounded-2xl"
                   >
                     {isGenerating ? (
                       <>
-                        <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+                        <Loader2 className="mr-3 h-6 w-6 animate-spin" />
                         Rapor Hazırlanıyor...
                       </>
                     ) : (
                       <>
-                        <Download className="mr-2 h-5 w-5" />
+                        <Download className="mr-3 h-6 w-6" />
                         PDF Raporunu İndir
                       </>
                     )}
@@ -741,12 +740,12 @@ export default function PDFReportModal({ userData, trigger }: PDFReportModalProp
         </div>
 
         {/* Navigation */}
-        <div className="flex justify-between pt-6 border-t">
+        <div className="flex justify-between pt-6 border-t border-gray-200">
           <Button
             variant="outline"
             onClick={prevStep}
             disabled={currentStep === 0}
-            className="flex items-center gap-2 h-11 px-6 bg-transparent"
+            className="flex items-center gap-2 h-12 px-6 rounded-xl bg-transparent"
           >
             <ChevronLeft className="h-4 w-4" />
             Önceki Adım
@@ -756,7 +755,7 @@ export default function PDFReportModal({ userData, trigger }: PDFReportModalProp
             <Button
               onClick={nextStep}
               disabled={!canProceed()}
-              className="flex items-center gap-2 h-11 px-6 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700"
+              className="flex items-center gap-2 h-12 px-6 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white rounded-xl"
             >
               Sonraki Adım
               <ChevronRight className="h-4 w-4" />

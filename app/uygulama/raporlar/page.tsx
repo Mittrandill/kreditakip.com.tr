@@ -9,6 +9,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
 import { Checkbox } from "@/components/ui/checkbox"
 import { Label } from "@/components/ui/label"
+import { Badge } from "@/components/ui/badge"
 import {
   BarChart3,
   PieChart,
@@ -24,10 +25,18 @@ import {
   Activity,
   Target,
   Clock,
-  Minus,
   Settings,
   ChevronDown,
   ChevronUp,
+  Calendar,
+  Zap,
+  Eye,
+  FileText,
+  ArrowUpRight,
+  ArrowDownRight,
+  Minus,
+  Search,
+  X,
 } from "lucide-react"
 import { format, subMonths, startOfMonth, endOfMonth, isWithinInterval } from "date-fns"
 import { tr } from "date-fns/locale"
@@ -39,9 +48,7 @@ import type { Credit, Bank, CreditType, PaymentPlan } from "@/lib/types"
 import { formatCurrency, formatPercent } from "@/lib/format"
 import PDFReportModal from "@/components/pdf-report-modal"
 import { MetricCard } from "@/components/metric-card"
-import BankLogo from "@/components/bank-logo"
 import {
-  BarChart,
   Bar,
   XAxis,
   YAxis,
@@ -51,7 +58,6 @@ import {
   PieChart as RechartsPieChart,
   Cell,
   Pie,
-  LineChart,
   Line,
   Legend,
   Area,
@@ -60,7 +66,7 @@ import {
   ReferenceLine,
 } from "recharts"
 
-const COLORS = ["#3B82F6", "#10B981", "#F59E0B", "#EF4444", "#8B5CF6", "#06B6D4", "#F97316", "#84CC16"]
+const COLORS = ["#10B981", "#3B82F6", "#F59E0B", "#EF4444", "#8B5CF6", "#06B6D4", "#F97316", "#84CC16"]
 
 interface PopulatedCredit extends Credit {
   banks: Pick<Bank, "id" | "name" | "logo_url"> | null
@@ -86,6 +92,7 @@ interface FilterState {
   status: string[]
   amountRange: { min: number; max: number }
   interestRange: { min: number; max: number }
+  searchTerm: string
 }
 
 export default function RaporlarPage() {
@@ -104,9 +111,10 @@ export default function RaporlarPage() {
     status: [],
     amountRange: { min: 0, max: 10000000 },
     interestRange: { min: 0, max: 50 },
+    searchTerm: "",
   })
 
-  const [activeTab, setActiveTab] = useState("dashboard")
+  const [activeTab, setActiveTab] = useState("overview")
   const [expandedFilters, setExpandedFilters] = useState(false)
 
   const fetchData = async () => {
@@ -182,6 +190,16 @@ export default function RaporlarPage() {
   // Filtered data
   const filteredCredits = useMemo(() => {
     return credits.filter((credit) => {
+      // Search filter
+      if (filters.searchTerm) {
+        const searchLower = filters.searchTerm.toLowerCase()
+        const bankName = credit.banks?.name?.toLowerCase() || ""
+        const creditType = credit.credit_types?.name?.toLowerCase() || ""
+        if (!bankName.includes(searchLower) && !creditType.includes(searchLower)) {
+          return false
+        }
+      }
+
       // Bank filter
       if (filters.banks.length > 0 && !filters.banks.includes(credit.banks?.name || "")) {
         return false
@@ -391,8 +409,19 @@ export default function RaporlarPage() {
       status: [],
       amountRange: { min: 0, max: 10000000 },
       interestRange: { min: 0, max: 50 },
+      searchTerm: "",
     })
   }
+
+  const hasActiveFilters =
+    filters.searchTerm ||
+    filters.banks.length > 0 ||
+    filters.creditTypes.length > 0 ||
+    filters.status.length > 0 ||
+    filters.amountRange.min > 0 ||
+    filters.amountRange.max < 10000000 ||
+    filters.interestRange.min > 0 ||
+    filters.interestRange.max < 50
 
   if (authLoading || loading) {
     return (
@@ -417,126 +446,175 @@ export default function RaporlarPage() {
   }
 
   return (
-    <div className="flex flex-col gap-6">
-      {/* Hero Section */}
-      <Card className="bg-gradient-to-br from-blue-600 via-purple-600 to-indigo-700 text-white border-0 shadow-2xl">
-        <CardContent className="p-8">
-          <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6">
-            <div className="space-y-4">
-              <div className="flex items-center gap-3">
-                <div className="p-3 bg-white/20 rounded-xl backdrop-blur-sm">
-                  <BarChart3 className="h-8 w-8" />
+    <div className="flex flex-col gap-8">
+      {/* Modern Hero Section */}
+      <div className="relative overflow-hidden">
+        <div className="absolute inset-0 bg-gradient-to-br from-emerald-500 via-teal-600 to-cyan-700"></div>
+        <div className="absolute inset-0 bg-black/10"></div>
+        <div className="absolute inset-0 bg-[url('data:image/svg+xml,%3Csvg width="60\" height="60" viewBox="0 0 60 60" xmlns="http://www.w3.org/2000/svg"%3E%3Cg fill="none" fillRule="evenodd"%3E%3Cg fill="%23ffffff" fillOpacity="0.05"%3E%3Ccircle cx="30" cy="30" r="2"/%3E%3C/g%3E%3C/g%3E%3C/svg%3E')]"></div>
+        \
+        <Card className="relative border-0 bg-transparent text-white shadow-none">
+          <CardContent className="p-8 lg:p-12">
+            <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-8">
+              <div className="space-y-6">
+                <div className="flex items-center gap-4">
+                  <div className="p-4 bg-white/20 rounded-2xl backdrop-blur-sm border border-white/30">
+                    <BarChart3 className="h-10 w-10" />
+                  </div>
+                  <div>
+                    <h1 className="text-4xl lg:text-5xl font-bold mb-2">Finansal Raporlar</h1>
+                    <p className="text-emerald-100 text-xl">Detaylı analiz ve akıllı öngörüler</p>
+                  </div>
                 </div>
-                <div>
-                  <h1 className="text-3xl font-bold">Finansal Raporlar</h1>
-                  <p className="text-blue-100 text-lg">Detaylı analiz ve performans değerlendirmesi</p>
+
+                <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+                  <div className="bg-white/15 rounded-xl p-4 backdrop-blur-sm border border-white/20">
+                    <div className="text-3xl font-bold mb-1">{summaryMetrics.totalCredits}</div>
+                    <div className="text-sm text-emerald-100">Toplam Kredi</div>
+                    <div className="flex items-center gap-1 mt-2">
+                      <ArrowUpRight className="h-3 w-3 text-emerald-200" />
+                      <span className="text-xs text-emerald-200">{summaryMetrics.activeCredits} aktif</span>
+                    </div>
+                  </div>
+                  <div className="bg-white/15 rounded-xl p-4 backdrop-blur-sm border border-white/20">
+                    <div className="text-3xl font-bold mb-1">{formatCurrency(summaryMetrics.totalDebt)}</div>
+                    <div className="text-sm text-emerald-100">Toplam Borç</div>
+                    <div className="flex items-center gap-1 mt-2">
+                      <ArrowDownRight className="h-3 w-3 text-red-300" />
+                      <span className="text-xs text-emerald-200">Kalan borç</span>
+                    </div>
+                  </div>
+                  <div className="bg-white/15 rounded-xl p-4 backdrop-blur-sm border border-white/20">
+                    <div className="text-3xl font-bold mb-1">{formatPercent(summaryMetrics.paymentPerformance / 100)}</div>
+                    <div className="text-sm text-emerald-100">Performans</div>
+                    <div className="flex items-center gap-1 mt-2">
+                      <Target className="h-3 w-3 text-emerald-200" />
+                      <span className="text-xs text-emerald-200">Ödeme başarısı</span>
+                    </div>
+                  </div>
+                  <div className="bg-white/15 rounded-xl p-4 backdrop-blur-sm border border-white/20">
+                    <div className="text-3xl font-bold mb-1">{summaryMetrics.upcomingPayments}</div>
+                    <div className="text-sm text-emerald-100">Yaklaşan</div>
+                    <div className="flex items-center gap-1 mt-2">
+                      <Clock className="h-3 w-3 text-yellow-300" />
+                      <span className="text-xs text-emerald-200">7 gün içinde</span>
+                    </div>
+                  </div>
                 </div>
               </div>
 
-              <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-                <div className="bg-white/10 rounded-lg p-3 backdrop-blur-sm">
-                  <div className="text-2xl font-bold">{summaryMetrics.totalCredits}</div>
-                  <div className="text-sm text-blue-100">Toplam Kredi</div>
-                </div>
-                <div className="bg-white/10 rounded-lg p-3 backdrop-blur-sm">
-                  <div className="text-2xl font-bold">{formatCurrency(summaryMetrics.totalDebt)}</div>
-                  <div className="text-sm text-blue-100">Toplam Borç</div>
-                </div>
-                <div className="bg-white/10 rounded-lg p-3 backdrop-blur-sm">
-                  <div className="text-2xl font-bold">{formatPercent(summaryMetrics.paymentPerformance / 100)}</div>
-                  <div className="text-sm text-blue-100">Ödeme Performansı</div>
-                </div>
-                <div className="bg-white/10 rounded-lg p-3 backdrop-blur-sm">
-                  <div className="text-2xl font-bold">{summaryMetrics.upcomingPayments}</div>
-                  <div className="text-sm text-blue-100">Yaklaşan Ödemeler</div>
-                </div>
+              <div className="flex flex-col gap-4">
+                <PDFReportModal
+                  userData={{
+                    credits: filteredCredits.map((credit) => ({
+                      id: credit.id,
+                      bankName: credit.banks?.name,
+                      creditType: credit.credit_types?.name,
+                      remainingDebt: credit.remaining_debt,
+                      monthlyPayment: credit.monthly_payment,
+                      interestRate: credit.interest_rate,
+                      status: credit.status,
+                      amount: credit.amount || credit.initial_amount,
+                      banks: credit.banks,
+                      credit_types: credit.credit_types,
+                      remaining_debt: credit.remaining_debt,
+                      monthly_payment: credit.monthly_payment,
+                      interest_rate: credit.interest_rate,
+                      initial_amount: credit.initial_amount,
+                    })),
+                    payments: filteredPayments.map((payment) => ({
+                      id: payment.id,
+                      date: payment.payment_date || payment.due_date,
+                      bankName: payment.credits?.banks?.name,
+                      amount: payment.total_payment,
+                      status: payment.status,
+                    })),
+                    creditCards: creditCards || [],
+                    summary: {
+                      name: user?.full_name || "Kullanıcı",
+                      email: user?.email || "email@example.com",
+                    },
+                  }}
+                  trigger={
+                    <Button
+                      size="lg"
+                      className="bg-white/20 hover:bg-white/30 text-white border-white/30 backdrop-blur-sm h-12 px-6"
+                    >
+                      <Download className="h-5 w-5 mr-2" />
+                      PDF Rapor İndir
+                    </Button>
+                  }
+                />
+                <Button
+                  variant="outline"
+                  size="lg"
+                  className="bg-white/10 hover:bg-white/20 text-white border-white/30 backdrop-blur-sm h-12 px-6"
+                >
+                  <Settings className="h-5 w-5 mr-2" />
+                  Rapor Ayarları
+                </Button>
               </div>
             </div>
+          </CardContent>
+        </Card>
+      </div>
 
-            <div className="flex flex-col sm:flex-row gap-3">
-              <PDFReportModal
-                userData={{
-                  credits: filteredCredits.map((credit) => ({
-                    id: credit.id,
-                    bankName: credit.banks?.name,
-                    creditType: credit.credit_types?.name,
-                    remainingDebt: credit.remaining_debt,
-                    monthlyPayment: credit.monthly_payment,
-                    interestRate: credit.interest_rate,
-                    status: credit.status,
-                    amount: credit.amount || credit.initial_amount,
-                    // Alternatif alan isimleri de ekleyelim
-                    banks: credit.banks,
-                    credit_types: credit.credit_types,
-                    remaining_debt: credit.remaining_debt,
-                    monthly_payment: credit.monthly_payment,
-                    interest_rate: credit.interest_rate,
-                    initial_amount: credit.initial_amount,
-                  })),
-                  payments: filteredPayments.map((payment) => ({
-                    id: payment.id,
-                    date: payment.payment_date || payment.due_date,
-                    bankName: payment.credits?.banks?.name,
-                    amount: payment.total_payment,
-                    status: payment.status,
-                  })),
-                  creditCards: creditCards || [],
-                  summary: {
-                    name: user?.full_name || "Kullanıcı",
-                    email: user?.email || "email@example.com",
-                  },
-                }}
-                trigger={
-                  <Button
-                    variant="secondary"
-                    size="lg"
-                    className="bg-white/20 hover:bg-white/30 text-white border-white/30"
-                  >
-                    <Download className="h-5 w-5 mr-2" />
-                    PDF Rapor İndir
-                  </Button>
-                }
-              />
-              <Button
-                variant="secondary"
-                size="lg"
-                className="bg-white/20 hover:bg-white/30 text-white border-white/30"
-              >
-                <Settings className="h-5 w-5 mr-2" />
-                Rapor Ayarları
-              </Button>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Advanced Filters */}
-      <Card className="shadow-lg">
+      {/* Smart Filters */}
+      <Card className="shadow-xl border-0 bg-white/80 backdrop-blur-sm">
         <CardHeader className="pb-4">
           <div className="flex items-center justify-between">
-            <CardTitle className="flex items-center gap-2">
-              <Filter className="h-5 w-5 text-blue-600" />
-              Gelişmiş Filtreler
-            </CardTitle>
+            <div className="flex items-center gap-3">
+              <div className="p-2 bg-emerald-100 rounded-lg">
+                <Filter className="h-5 w-5 text-emerald-600" />
+              </div>
+              <div>
+                <CardTitle className="text-xl">Akıllı Filtreler</CardTitle>
+                <p className="text-sm text-gray-500 mt-1">Verilerinizi detaylı analiz edin</p>
+              </div>
+            </div>
             <div className="flex items-center gap-2">
-              <Button variant="outline" size="sm" onClick={resetFilters}>
-                <RefreshCw className="h-4 w-4 mr-2" />
-                Sıfırla
+              {hasActiveFilters && (
+                <Badge variant="secondary" className="bg-emerald-100 text-emerald-700">
+                  {[
+                    filters.searchTerm && "Arama",
+                    filters.banks.length > 0 && `${filters.banks.length} Banka`,
+                    filters.creditTypes.length > 0 && `${filters.creditTypes.length} Tür`,
+                    filters.status.length > 0 && `${filters.status.length} Durum`,
+                  ].filter(Boolean).join(", ")}
+                </Badge>
+              )}
+              <Button variant="outline" size="sm" onClick={resetFilters} disabled={!hasActiveFilters}>
+                <X className="h-4 w-4 mr-2" />
+                Temizle
               </Button>
               <Button variant="ghost" size="sm" onClick={() => setExpandedFilters(!expandedFilters)}>
                 {expandedFilters ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
+                {expandedFilters ? "Daralt" : "Genişlet"}
               </Button>
             </div>
           </div>
         </CardHeader>
         <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-4 mb-4">
+          {/* Quick Filters */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+            {/* Search */}
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+              <Input
+                placeholder="Banka veya kredi türü ara..."
+                value={filters.searchTerm}
+                onChange={(e) => updateFilter("searchTerm", e.target.value)}
+                className="pl-10 h-11 bg-white/70 border-gray-200 focus:border-emerald-500 focus:ring-emerald-500"
+              />
+            </div>
+
             {/* Date Range */}
             <Select
               value={filters.dateRange.preset}
               onValueChange={(value) => updateFilter("dateRange", { ...filters.dateRange, preset: value })}
             >
-              <SelectTrigger>
+              <SelectTrigger className="h-11 bg-white/70 border-gray-200">
+                <Calendar className="h-4 w-4 mr-2 text-gray-500" />
                 <SelectValue placeholder="Zaman dilimi" />
               </SelectTrigger>
               <SelectContent>
@@ -552,185 +630,149 @@ export default function RaporlarPage() {
             {/* Bank Filter */}
             <Popover>
               <PopoverTrigger asChild>
-                <Button variant="outline" className="justify-start bg-transparent">
-                  <Building2 className="h-4 w-4 mr-2" />
-                  Bankalar ({filters.banks.length})
+                <Button variant="outline" className="justify-start h-11 bg-white/70 border-gray-200">
+                  <Building2 className="h-4 w-4 mr-2 text-gray-500" />
+                  Bankalar {filters.banks.length > 0 && `(${filters.banks.length})`}
                 </Button>
               </PopoverTrigger>
-              <PopoverContent className="w-80">
-                <div className="space-y-2">
-                  <div className="flex items-center space-x-2">
-                    <Checkbox
-                      id="all-banks"
-                      checked={filters.banks.length === 0}
-                      onCheckedChange={() => updateFilter("banks", [])}
-                    />
-                    <Label htmlFor="all-banks">Tüm Bankalar</Label>
+              <PopoverContent className="w-80 p-4">
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between">
+                    <Label className="font-medium">Banka Seçimi</Label>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => updateFilter("banks", [])}
+                      className="h-6 px-2 text-xs"
+                    >
+                      Temizle
+                    </Button>
                   </div>
-                  {filterOptions.banks.map((bank) => (
-                    <div key={bank} className="flex items-center space-x-2">
-                      <Checkbox
-                        id={`bank-${bank}`}
-                        checked={filters.banks.includes(bank)}
-                        onCheckedChange={(checked) => {
-                          const newBanks = checked ? [...filters.banks, bank] : filters.banks.filter((b) => b !== bank)
-                          updateFilter("banks", newBanks)
-                        }}
-                      />
-                      <Label htmlFor={`bank-${bank}`}>{bank}</Label>
-                    </div>
-                  ))}
-                </div>
-              </PopoverContent>
-            </Popover>
-
-            {/* Credit Type Filter */}
-            <Popover>
-              <PopoverTrigger asChild>
-                <Button variant="outline" className="justify-start bg-transparent">
-                  <CreditCard className="h-4 w-4 mr-2" />
-                  Kredi Türü ({filters.creditTypes.length})
-                </Button>
-              </PopoverTrigger>
-              <PopoverContent className="w-80">
-                <div className="space-y-2">
-                  <div className="flex items-center space-x-2">
-                    <Checkbox
-                      id="all-types"
-                      checked={filters.creditTypes.length === 0}
-                      onCheckedChange={() => updateFilter("creditTypes", [])}
-                    />
-                    <Label htmlFor="all-types">Tüm Türler</Label>
+                  <div className="space-y-2 max-h-48 overflow-y-auto">
+                    {filterOptions.banks.map((bank) => (
+                      <div key={bank} className="flex items-center space-x-2">
+                        <Checkbox
+                          id={`bank-${bank}`}
+                          checked={filters.banks.includes(bank)}
+                          onCheckedChange={(checked) => {
+                            const newBanks = checked ? [...filters.banks, bank] : filters.banks.filter((b) => b !== bank)
+                            updateFilter("banks", newBanks)
+                          }}
+                        />
+                        <Label htmlFor={`bank-${bank}`} className="text-sm cursor-pointer flex-1">
+                          {bank}
+                        </Label>
+                      </div>
+                    ))}
                   </div>
-                  {filterOptions.creditTypes.map((type) => (
-                    <div key={type} className="flex items-center space-x-2">
-                      <Checkbox
-                        id={`type-${type}`}
-                        checked={filters.creditTypes.includes(type)}
-                        onCheckedChange={(checked) => {
-                          const newTypes = checked
-                            ? [...filters.creditTypes, type]
-                            : filters.creditTypes.filter((t) => t !== type)
-                          updateFilter("creditTypes", newTypes)
-                        }}
-                      />
-                      <Label htmlFor={`type-${type}`}>{type}</Label>
-                    </div>
-                  ))}
-                </div>
-              </PopoverContent>
-            </Popover>
-
-            {/* Status Filter */}
-            <Popover>
-              <PopoverTrigger asChild>
-                <Button variant="outline" className="justify-start bg-transparent">
-                  <Activity className="h-4 w-4 mr-2" />
-                  Durum ({filters.status.length})
-                </Button>
-              </PopoverTrigger>
-              <PopoverContent className="w-60">
-                <div className="space-y-2">
-                  <div className="flex items-center space-x-2">
-                    <Checkbox
-                      id="all-status"
-                      checked={filters.status.length === 0}
-                      onCheckedChange={() => updateFilter("status", [])}
-                    />
-                    <Label htmlFor="all-status">Tüm Durumlar</Label>
-                  </div>
-                  {filterOptions.statuses.map((status) => (
-                    <div key={status} className="flex items-center space-x-2">
-                      <Checkbox
-                        id={`status-${status}`}
-                        checked={filters.status.includes(status)}
-                        onCheckedChange={(checked) => {
-                          const newStatus = checked
-                            ? [...filters.status, status]
-                            : filters.status.filter((s) => s !== status)
-                          updateFilter("status", newStatus)
-                        }}
-                      />
-                      <Label htmlFor={`status-${status}`}>
-                        {status === "active" ? "Aktif" : status === "closed" ? "Kapalı" : "Gecikmiş"}
-                      </Label>
-                    </div>
-                  ))}
                 </div>
               </PopoverContent>
             </Popover>
 
             {/* Quick Stats */}
-            <div className="flex items-center gap-2 text-sm text-gray-600">
-              <span>{filteredCredits.length} kredi</span>
-              <span>•</span>
-              <span>{filteredPayments.length} ödeme</span>
+            <div className="flex items-center justify-center gap-4 text-sm text-gray-600 bg-gray-50 rounded-lg px-4 py-2">
+              <div className="flex items-center gap-1">
+                <CreditCard className="h-4 w-4" />
+                <span>{filteredCredits.length} kredi</span>
+              </div>
+              <div className="w-px h-4 bg-gray-300"></div>
+              <div className="flex items-center gap-1">
+                <Activity className="h-4 w-4" />
+                <span>{filteredPayments.length} ödeme</span>
+              </div>
             </div>
           </div>
 
+          {/* Advanced Filters */}
           {expandedFilters && (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-4 border-t">
-              <div>
-                <Label className="text-sm font-medium mb-2 block">Tutar Aralığı</Label>
-                <div className="flex items-center gap-2">
-                  <Input
-                    type="number"
-                    placeholder="Min"
-                    value={filters.amountRange.min}
-                    onChange={(e) =>
-                      updateFilter("amountRange", {
-                        ...filters.amountRange,
-                        min: Number(e.target.value),
-                      })
-                    }
-                    className="w-24"
-                  />
-                  <Minus className="h-4 w-4 text-gray-400" />
-                  <Input
-                    type="number"
-                    placeholder="Max"
-                    value={filters.amountRange.max}
-                    onChange={(e) =>
-                      updateFilter("amountRange", {
-                        ...filters.amountRange,
-                        max: Number(e.target.value),
-                      })
-                    }
-                    className="w-24"
-                  />
-                  <span className="text-sm text-gray-500">TL</span>
+            <div className="border-t pt-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {/* Credit Type Filter */}
+                <div className="space-y-3">
+                  <Label className="font-medium">Kredi Türleri</Label>
+                  <div className="space-y-2 max-h-32 overflow-y-auto">
+                    {filterOptions.creditTypes.map((type) => (
+                      <div key={type} className="flex items-center space-x-2">
+                        <Checkbox
+                          id={`type-${type}`}
+                          checked={filters.creditTypes.includes(type)}
+                          onCheckedChange={(checked) => {
+                            const newTypes = checked
+                              ? [...filters.creditTypes, type]
+                              : filters.creditTypes.filter((t) => t !== type)
+                            updateFilter("creditTypes", newTypes)
+                          }}
+                        />
+                        <Label htmlFor={`type-${type}`} className="text-sm cursor-pointer">
+                          {type}
+                        </Label>
+                      </div>
+                    ))}
+                  </div>
                 </div>
-              </div>
 
-              <div>
-                <Label className="text-sm font-medium mb-2 block">Faiz Oranı Aralığı</Label>
-                <div className="flex items-center gap-2">
-                  <Input
-                    type="number"
-                    placeholder="Min"
-                    value={filters.interestRange.min}
-                    onChange={(e) =>
-                      updateFilter("interestRange", {
-                        ...filters.interestRange,
-                        min: Number(e.target.value),
-                      })
-                    }
-                    className="w-20"
-                  />
-                  <Minus className="h-4 w-4 text-gray-400" />
-                  <Input
-                    type="number"
-                    placeholder="Max"
-                    value={filters.interestRange.max}
-                    onChange={(e) =>
-                      updateFilter("interestRange", {
-                        ...filters.interestRange,
-                        max: Number(e.target.value),
-                      })
-                    }
-                    className="w-20"
-                  />
-                  <span className="text-sm text-gray-500">%</span>
+                {/* Amount Range */}
+                <div className="space-y-3">
+                  <Label className="font-medium">Tutar Aralığı (TL)</Label>
+                  <div className="flex items-center gap-2">
+                    <Input
+                      type="number"
+                      placeholder="Min"
+                      value={filters.amountRange.min || ""}
+                      onChange={(e) =>
+                        updateFilter("amountRange", {
+                          ...filters.amountRange,
+                          min: Number(e.target.value) || 0,
+                        })
+                      }
+                      className="flex-1"
+                    />
+                    <Minus className="h-4 w-4 text-gray-400" />
+                    <Input
+                      type="number"
+                      placeholder="Max"
+                      value={filters.amountRange.max === 10000000 ? "" : filters.amountRange.max}
+                      onChange={(e) =>
+                        updateFilter("amountRange", {
+                          ...filters.amountRange,
+                          max: Number(e.target.value) || 10000000,
+                        })
+                      }
+                      className="flex-1"
+                    />
+                  </div>
+                </div>
+
+                {/* Interest Range */}
+                <div className="space-y-3">
+                  <Label className="font-medium">Faiz Oranı (%)</Label>
+                  <div className="flex items-center gap-2">
+                    <Input
+                      type="number"
+                      placeholder="Min"
+                      value={filters.interestRange.min || ""}
+                      onChange={(e) =>
+                        updateFilter("interestRange", {
+                          ...filters.interestRange,
+                          min: Number(e.target.value) || 0,
+                        })
+                      }
+                      className="flex-1"
+                    />
+                    <Minus className="h-4 w-4 text-gray-400" />
+                    <Input
+                      type="number"
+                      placeholder="Max"
+                      value={filters.interestRange.max === 50 ? "" : filters.interestRange.max}
+                      onChange={(e) =>
+                        updateFilter("interestRange", {
+                          ...filters.interestRange,
+                          max: Number(e.target.value) || 50,
+                        })
+                      }
+                      className="flex-1"
+                    />
+                  </div>
                 </div>
               </div>
             </div>
@@ -738,13 +780,13 @@ export default function RaporlarPage() {
         </CardContent>
       </Card>
 
-      {/* Key Metrics */}
+      {/* Key Metrics Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         <MetricCard
           title="Aktif Krediler"
           value={summaryMetrics.activeCredits.toString()}
           subtitle={`${summaryMetrics.totalCredits} toplam kredi`}
-          color="blue"
+          color="emerald"
           icon={<CreditCard />}
           trend={summaryMetrics.activeCredits > 0 ? "up" : "neutral"}
         />
@@ -760,7 +802,7 @@ export default function RaporlarPage() {
           title="Aylık Ödeme"
           value={formatCurrency(summaryMetrics.monthlyPayment)}
           subtitle="Toplam aylık taksit"
-          color="purple"
+          color="blue"
           icon={<Wallet />}
           trend="neutral"
         />
@@ -780,46 +822,61 @@ export default function RaporlarPage() {
         />
       </div>
 
-      {/* Charts Tabs */}
+      {/* Modern Tabs */}
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-        <TabsList className="grid w-full grid-cols-4 lg:grid-cols-6">
-          <TabsTrigger value="dashboard" className="flex items-center gap-2">
-            <BarChart3 className="h-4 w-4" />
-            <span className="hidden sm:inline">Dashboard</span>
-          </TabsTrigger>
-          <TabsTrigger value="trends" className="flex items-center gap-2">
-            <TrendingUp className="h-4 w-4" />
-            <span className="hidden sm:inline">Trendler</span>
-          </TabsTrigger>
-          <TabsTrigger value="distribution" className="flex items-center gap-2">
-            <PieChart className="h-4 w-4" />
-            <span className="hidden sm:inline">Dağılım</span>
-          </TabsTrigger>
-          <TabsTrigger value="performance" className="flex items-center gap-2">
-            <Activity className="h-4 w-4" />
-            <span className="hidden sm:inline">Performans</span>
-          </TabsTrigger>
-          <TabsTrigger value="analysis" className="flex items-center gap-2">
-            <Target className="h-4 w-4" />
-            <span className="hidden sm:inline">Analiz</span>
-          </TabsTrigger>
-          <TabsTrigger value="comparison" className="flex items-center gap-2">
-            <Building2 className="h-4 w-4" />
-            <span className="hidden sm:inline">Karşılaştırma</span>
-          </TabsTrigger>
-        </TabsList>
+        <div className="flex items-center justify-between mb-6">
+          <TabsList className="grid grid-cols-3 lg:grid-cols-6 bg-gray-100/80 backdrop-blur-sm p-1 rounded-xl">
+            <TabsTrigger value="overview" className="flex items-center gap-2 data-[state=active]:bg-white data-[state=active]:shadow-sm">
+              <Eye className="h-4 w-4" />
+              <span className="hidden sm:inline">Genel Bakış</span>
+            </TabsTrigger>
+            <TabsTrigger value="trends" className="flex items-center gap-2 data-[state=active]:bg-white data-[state=active]:shadow-sm">
+              <TrendingUp className="h-4 w-4" />
+              <span className="hidden sm:inline">Trendler</span>
+            </TabsTrigger>
+            <TabsTrigger value="distribution" className="flex items-center gap-2 data-[state=active]:bg-white data-[state=active]:shadow-sm">
+              <PieChart className="h-4 w-4" />
+              <span className="hidden sm:inline">Dağılım</span>
+            </TabsTrigger>
+            <TabsTrigger value="performance" className="flex items-center gap-2 data-[state=active]:bg-white data-[state=active]:shadow-sm">
+              <Activity className="h-4 w-4" />
+              <span className="hidden sm:inline">Performans</span>
+            </TabsTrigger>
+            <TabsTrigger value="analysis" className="flex items-center gap-2 data-[state=active]:bg-white data-[state=active]:shadow-sm">
+              <Target className="h-4 w-4" />
+              <span className="hidden sm:inline">Analiz</span>
+            </TabsTrigger>
+            <TabsTrigger value="comparison" className="flex items-center gap-2 data-[state=active]:bg-white data-[state=active]:shadow-sm">
+              <Building2 className="h-4 w-4" />
+              <span className="hidden sm:inline">Karşılaştırma</span>
+            </TabsTrigger>
+          </TabsList>
 
-        <TabsContent value="dashboard" className="space-y-6">
+          <div className="flex items-center gap-2">
+            <Button variant="outline" size="sm" className="bg-white/70">
+              <FileText className="h-4 w-4 mr-2" />
+              Rapor Oluştur
+            </Button>
+            <Button variant="outline" size="sm" className="bg-white/70">
+              <Zap className="h-4 w-4 mr-2" />
+              Otomatik Analiz
+            </Button>
+          </div>
+        </div>
+
+        <TabsContent value="overview" className="space-y-6">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            <Card className="shadow-lg">
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <TrendingUp className="h-5 w-5 text-blue-600" />
+            <Card className="shadow-lg border-0 bg-white/90 backdrop-blur-sm">
+              <CardHeader className="pb-4">
+                <CardTitle className="flex items-center gap-2 text-lg">
+                  <div className="p-2 bg-blue-100 rounded-lg">
+                    <TrendingUp className="h-5 w-5 text-blue-600" />
+                  </div>
                   12 Aylık Ödeme Trendi
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <ResponsiveContainer width="100%" height={350}>
+                <ResponsiveContainer width="100%" height={300}>
                   <ComposedChart data={chartData.monthlyTrend}>
                     <CartesianGrid strokeDasharray="3 3" stroke="#E5E7EB" />
                     <XAxis dataKey="month" stroke="#6B7280" fontSize={12} />
@@ -835,34 +892,41 @@ export default function RaporlarPage() {
                               ? "Bekleyen"
                               : "Geciken",
                       ]}
-                      contentStyle={{ backgroundColor: "white", border: "1px solid #E5E7EB", borderRadius: "8px" }}
+                      contentStyle={{ 
+                        backgroundColor: "white", 
+                        border: "1px solid #E5E7EB", 
+                        borderRadius: "12px",
+                        boxShadow: "0 10px 15px -3px rgba(0, 0, 0, 0.1)"
+                      }}
                     />
                     <Legend />
-                    <Bar dataKey="odenen" fill="#10B981" name="Ödenen" radius={[2, 2, 0, 0]} />
-                    <Bar dataKey="bekleyen" fill="#F59E0B" name="Bekleyen" radius={[2, 2, 0, 0]} />
-                    <Bar dataKey="geciken" fill="#EF4444" name="Geciken" radius={[2, 2, 0, 0]} />
+                    <Bar dataKey="odenen" fill="#10B981" name="Ödenen" radius={[4, 4, 0, 0]} />
+                    <Bar dataKey="bekleyen" fill="#F59E0B" name="Bekleyen" radius={[4, 4, 0, 0]} />
+                    <Bar dataKey="geciken" fill="#EF4444" name="Geciken" radius={[4, 4, 0, 0]} />
                     <Line type="monotone" dataKey="toplam" stroke="#3B82F6" strokeWidth={3} name="Toplam" />
                   </ComposedChart>
                 </ResponsiveContainer>
               </CardContent>
             </Card>
 
-            <Card className="shadow-lg">
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <PieChart className="h-5 w-5 text-emerald-600" />
+            <Card className="shadow-lg border-0 bg-white/90 backdrop-blur-sm">
+              <CardHeader className="pb-4">
+                <CardTitle className="flex items-center gap-2 text-lg">
+                  <div className="p-2 bg-emerald-100 rounded-lg">
+                    <PieChart className="h-5 w-5 text-emerald-600" />
+                  </div>
                   Ödeme Durumu Dağılımı
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <ResponsiveContainer width="100%" height={350}>
+                <ResponsiveContainer width="100%" height={300}>
                   <RechartsPieChart>
                     <Pie
                       data={chartData.paymentStatusDistribution}
                       cx="50%"
                       cy="50%"
-                      outerRadius={120}
-                      innerRadius={60}
+                      outerRadius={100}
+                      innerRadius={50}
                       paddingAngle={5}
                       dataKey="value"
                       label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
@@ -875,17 +939,85 @@ export default function RaporlarPage() {
                   </RechartsPieChart>
                 </ResponsiveContainer>
               </CardContent>
+            
+                    />
+                  </RechartsPieChart>
+                </ResponsiveContainer>
+              </CardContent>
+            </Card>
+          </div>
+
+          {/* Quick Insights */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <Card className="shadow-lg border-0 bg-gradient-to-br from-emerald-50 to-teal-50">
+              <CardContent className="p-6">
+                <div className="flex items-center justify-between mb-4">
+                  <div className="p-3 bg-emerald-100 rounded-xl">
+                    <TrendingUp className="h-6 w-6 text-emerald-600" />
+                  </div>
+                  <Badge className="bg-emerald-100 text-emerald-700">Pozitif</Badge>
+                </div>
+                <h3 className="font-semibold text-lg mb-2">Ödeme Performansı</h3>
+                <p className="text-3xl font-bold text-emerald-600 mb-2">
+                  {formatPercent(summaryMetrics.paymentPerformance / 100)}
+                </p>
+                <p className="text-sm text-gray-600">
+                  Son 6 ayda {filteredPayments.filter(p => p.status === "paid").length} başarılı ödeme
+                </p>
+              </CardContent>
+            </Card>
+
+            <Card className="shadow-lg border-0 bg-gradient-to-br from-blue-50 to-indigo-50">
+              <CardContent className="p-6">
+                <div className="flex items-center justify-between mb-4">
+                  <div className="p-3 bg-blue-100 rounded-xl">
+                    <DollarSign className="h-6 w-6 text-blue-600" />
+                  </div>
+                  <Badge className="bg-blue-100 text-blue-700">Stabil</Badge>
+                </div>
+                <h3 className="font-semibold text-lg mb-2">Ortalama Faiz</h3>
+                <p className="text-3xl font-bold text-blue-600 mb-2">
+                  %{summaryMetrics.averageInterest.toFixed(1)}
+                </p>
+                <p className="text-sm text-gray-600">
+                  Piyasa ortalamasının {summaryMetrics.averageInterest > 15 ? "üzerinde" : "altında"}
+                </p>
+              </CardContent>
+            </Card>
+
+            <Card className="shadow-lg border-0 bg-gradient-to-br from-purple-50 to-pink-50">
+              <CardContent className="p-6">
+                <div className="flex items-center justify-between mb-4">
+                  <div className="p-3 bg-purple-100 rounded-xl">
+                    <Wallet className="h-6 w-6 text-purple-600" />
+                  </div>
+                  <Badge className="bg-purple-100 text-purple-700">Aktif</Badge>
+                </div>
+                <h3 className="font-semibold text-lg mb-2">Aylık Yük</h3>
+                <p className="text-3xl font-bold text-purple-600 mb-2">
+                  {formatCurrency(summaryMetrics.monthlyPayment)}
+                </p>
+                <p className="text-sm text-gray-600">
+                  {summaryMetrics.activeCredits} aktif krediden toplam
+                </p>
+              </CardContent>
             </Card>
           </div>
         </TabsContent>
 
-        <TabsContent value="trends" className="space-y-6">
-          <Card className="shadow-lg">
+        <TabsContent
+  value = "trends"
+  className =
+    "space-y-6" >
+    <Card className=\"shadow-lg border-0 bg-white/90 backdrop-blur-sm">
             <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <TrendingUp className="h-5 w-5 text-purple-600" />
+              <CardTitle className="flex items-center gap-2 text-xl">
+                <div className="p-2 bg-purple-100 rounded-lg">
+                  <TrendingUp className="h-6 w-6 text-purple-600" />
+                </div>
                 Detaylı Trend Analizi
               </CardTitle>
+              <p className="text-gray-600">12 aylık ödeme performansı ve trend analizi</p>
             </CardHeader>
             <CardContent>
               <ResponsiveContainer width="100%" height={400}>
@@ -908,7 +1040,12 @@ export default function RaporlarPage() {
                       formatCurrency(value),
                       name === "odenen" ? "Ödenen" : "Bekleyen",
                     ]}
-                    contentStyle={{ backgroundColor: "white", border: "1px solid #E5E7EB", borderRadius: "8px" }}
+                    contentStyle={{ 
+                      backgroundColor: "white", 
+                      border: "1px solid #E5E7EB", 
+                      borderRadius: "12px",
+                      boxShadow: "0 10px 15px -3px rgba(0, 0, 0, 0.1)"
+                    }}
                   />
                   <Legend />
                   <Area
@@ -937,60 +1074,83 @@ export default function RaporlarPage() {
               </ResponsiveContainer>
             </CardContent>
           </Card>
-        </TabsContent>
+  </TabsContent>
 
         <TabsContent value="distribution" className="space-y-6">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            <Card className="shadow-lg">
+            <Card className="shadow-lg border-0 bg-white/90 backdrop-blur-sm">
               <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Building2 className="h-5 w-5 text-blue-600" />
+                <CardTitle className="flex items-center gap-2 text-lg">
+                  <div className="p-2 bg-blue-100 rounded-lg">
+                    <Building2 className="h-5 w-5 text-blue-600" />
+                  </div>
                   Banka Bazında Dağılım
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <ResponsiveContainer width="100%" height={350}>
-                  <BarChart data={chartData.bankDistribution.slice(0, 8)}>
-                    <CartesianGrid strokeDasharray="3 3" stroke="#E5E7EB" />
-                    <XAxis dataKey="name" stroke="#6B7280" fontSize={12} />
-                    <YAxis stroke="#6B7280" fontSize={12} tickFormatter={(value) => formatCurrency(value)} />
-                    <Tooltip
-                      formatter={(value: any, name: string) => [
-                        name === "value" ? formatCurrency(value) : value,
-                        name === "value" ? "Borç Tutarı" : name === "count" ? "Kredi Sayısı" : "Aylık Ödeme",
-                      ]}
-                      contentStyle={{ backgroundColor: "white", border: "1px solid #E5E7EB", borderRadius: "8px" }}
-                    />
-                    <Bar dataKey="value" fill="#3B82F6" radius={[4, 4, 0, 0]} />
-                  </BarChart>
-                </ResponsiveContainer>
-              </CardContent>
+                <ResponsiveContainer width="100%" height=
+  350
+  >
+                  <BarChart data=
+  chartData.bankDistribution.slice(0, 8)
+  >\
+                    <CartesianGrid strokeDasharray="3 3" stroke="#E5E7EB" />\
+                    <XAxis dataKey="name" stroke="#6B7280" fontSize=
+  12
+  ;/  <>AYisx
+  stroke = "#6B7280"
+  fontSize={12}
+  tickFormatter = {(value) => formatCurrency(value)} />\ < Tooltip
+  \
+                      formatter=
+  ;(value: any, name: string) => [
+    name === "value" ? formatCurrency(value) : value,
+    name === "value" ? "Borç Tutarı" : name === "count" ? "Kredi Sayısı" : "Aylık Ödeme",
+  ]
+  contentStyle={{ 
+                        backgroundColor: "white", 
+                        border: \"1px solid #E5E7EB\", \
+                        borderRadius: "12px",\
+                        boxShadow: "0 10px 15px -3px rgba(0, 0, 0, 0.1)"\
+                      }}\
+                    />\
+                    <Bar dataKey="value\" fill=\"#3B82F6" radius={[4, 4, 0, 0]} />
+  </BarChart>
+                </ResponsiveContainer>\
+              </CardContent>\
             </Card>
 
-            <Card className="shadow-lg">
+            <Card className="shadow-lg border-0 bg-white/90 backdrop-blur-sm">
               <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <CreditCard className="h-5 w-5 text-emerald-600" />
+                <CardTitle className="flex items-center gap-2 text-lg">
+                  <div className="p-2 bg-emerald-100 rounded-lg">
+                    <CreditCard className="h-5 w-5 text-emerald-600" />
+                  </div>
                   Kredi Türü Dağılımı
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <ResponsiveContainer width="100%" height={350}>
+                <ResponsiveContainer width="100%" height=
+  350
+  >
                   <RechartsPieChart>
-                    <Pie
-                      data={chartData.creditTypeDistribution}
-                      cx="50%"
-                      cy="50%"
-                      outerRadius={120}
-                      innerRadius={60}
-                      paddingAngle={5}
-                      dataKey="value"
-                      label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
-                    >
-                      {chartData.creditTypeDistribution.map((entry, index) => (
+                    <Pie\
+                      data=
+  chartData.creditTypeDistribution
+  cx = "50%"
+  cy = "50%"
+  outerRadius={120}
+  innerRadius={60}
+  paddingAngle={5}
+  \
+                      dataKey=\"value"\
+                      label=
+  ;({ name, percent }) => \`${name} ${(percent * 100).toFixed(0)}%`
+  >
+  chartData.creditTypeDistribution.map((entry, index) => (\
                         <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                      ))}
-                    </Pie>
+                      ))}\
+                    </Pie>\
                     <Tooltip formatter={(value: any) => [formatCurrency(value), "Borç Tutarı"]} />
                   </RechartsPieChart>
                 </ResponsiveContainer>
@@ -1000,28 +1160,30 @@ export default function RaporlarPage() {
         </TabsContent>
 
         <TabsContent value="performance" className="space-y-6">
-          <Card className="shadow-lg">
+          <Card className="shadow-lg border-0 bg-white/90 backdrop-blur-sm">
             <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Activity className="h-5 w-5 text-orange-600" />
+              <CardTitle className="flex items-center gap-2 text-xl">
+                <div className="p-2 bg-orange-100 rounded-lg">
+                  <Activity className="h-6 w-6 text-orange-600" />
+                </div>
                 Ödeme Performans Analizi
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
-                <div className="text-center p-4 bg-green-50 rounded-lg">
-                  <div className="text-3xl font-bold text-green-600 mb-2">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+                <div className="text-center p-6 bg-gradient-to-br from-green-50 to-emerald-50 rounded-xl border border-green-100">
+                  <div className="text-4xl font-bold text-green-600 mb-2">
                     {formatPercent(summaryMetrics.paymentPerformance / 100)}
                   </div>
-                  <div className="text-sm text-green-700">Genel Performans</div>
-                  <div className="text-xs text-green-600 mt-1">
+                  <div className="text-sm text-green-700 font-medium">Genel Performans</div>
+                  <div className="text-xs text-green-600 mt-2">
                     {filteredPayments.filter((p) => p.status === "paid").length} / {filteredPayments.length} ödeme
                   </div>
                 </div>
-                <div className="text-center p-4 bg-red-50 rounded-lg">
-                  <div className="text-3xl font-bold text-red-600 mb-2">{summaryMetrics.overduePayments}</div>
-                  <div className="text-sm text-red-700">Geciken Ödemeler</div>
-                  <div className="text-xs text-red-600 mt-1">
+                <div className="text-center p-6 bg-gradient-to-br from-red-50 to-rose-50 rounded-xl border border-red-100">
+                  <div className="text-4xl font-bold text-red-600 mb-2">{summaryMetrics.overduePayments}</div>
+                  <div className="text-sm text-red-700 font-medium">Geciken Ödemeler</div>
+                  <div className="text-xs text-red-600 mt-2">
                     {formatCurrency(
                       filteredPayments
                         .filter((p) => p.status === "overdue")
@@ -1029,10 +1191,10 @@ export default function RaporlarPage() {
                     )}
                   </div>
                 </div>
-                <div className="text-center p-4 bg-blue-50 rounded-lg">
-                  <div className="text-3xl font-bold text-blue-600 mb-2">{summaryMetrics.upcomingPayments}</div>
-                  <div className="text-sm text-blue-700">Yaklaşan Ödemeler</div>
-                  <div className="text-xs text-blue-600 mt-1">Sonraki 7 gün</div>
+                <div className="text-center p-6 bg-gradient-to-br from-blue-50 to-indigo-50 rounded-xl border border-blue-100">
+                  <div className="text-4xl font-bold text-blue-600 mb-2">{summaryMetrics.upcomingPayments}</div>
+                  <div className="text-sm text-blue-700 font-medium">Yaklaşan Ödemeler</div>
+                  <div className="text-xs text-blue-600 mt-2">Sonraki 7 gün</div>
                 </div>
               </div>
 
@@ -1042,44 +1204,83 @@ export default function RaporlarPage() {
                   <XAxis dataKey="month" stroke="#6B7280" />
                   <YAxis stroke="#6B7280" tickFormatter={(value) => `${value}%`} />
                   <Tooltip
-                    formatter={(value: any, name: string) => [`${value.toFixed(1)}%`, "Ödeme Oranı"]}
-                    contentStyle={{ backgroundColor: "white", border: "1px solid #E5E7EB", borderRadius: "8px" }}
-                  />
-                  <Line
-                    type="monotone"
-                    dataKey={(data: any) => (data.toplam > 0 ? (data.odenen / data.toplam) * 100 : 0)}
-                    stroke="#10B981"
-                    strokeWidth={3}
-                    dot={{ fill: "#10B981", strokeWidth: 2, r: 6 }}
+                    formatter={(value: any, name: string) => [\`${value.toFixed(1)}%`, "Ödeme Oranı"
+  ]
+  contentStyle={{ 
+                      backgroundColor: "white", 
+                      border: \"1px solid #E5E7EB", \
+                      borderRadius: \"12px",
+                      boxShadow: "0 10px 15px -3px rgba(0, 0, 0, 0.1)"
+                    }
+}
+;/  <>Lein
+type = "monotone"
+dataKey={(data: any) => (data.toplam > 0 ? (data.odenen / data.toplam) * 100 : 0)}
+stroke = "#10B981"
+strokeWidth={3}
+dot={{ fill: "#10B981", strokeWidth: 2, r: 6 }
+}
                     name="Ödeme Oranı"
                   />
-                  <ReferenceLine y={80} stroke="#F59E0B" strokeDasharray="5 5" label="Hedef %80" />
-                </LineChart>
+                  <ReferenceLine y=
+{
+  80
+}
+stroke = "#F59E0B"
+strokeDasharray = "5 5"
+label="Hedef %80" />
+</LineChart>
               </ResponsiveContainer>
             </CardContent>
           </Card>
         </TabsContent>
 
         <TabsContent value="analysis" className="space-y-6">
-          <Card className="shadow-lg">
+          <Card className="shadow-lg border-0 bg-white/90 backdrop-blur-sm">
             <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Target className="h-5 w-5 text-purple-600" />
+              <CardTitle className="flex items-center gap-2 text-xl">
+                <div className="p-2 bg-purple-100 rounded-lg">
+                  <Target className="h-6 w-6 text-purple-600" />
+                </div>
                 Faiz Oranı Analizi
               </CardTitle>
+              <p className="text-gray-600">Kredilerinizin faiz oranları ve piyasa karşılaştırması</p>
             </CardHeader>
             <CardContent>
-              <ResponsiveContainer width="100%" height={400}>
-                <BarChart data={chartData.interestAnalysis.slice(0, 10)}>
+              <ResponsiveContainer width="100%" height=
+{
+  400
+}
+>
+                <BarChart data=
+{
+  chartData.interestAnalysis.slice(0, 10)
+}
+>
                   <CartesianGrid strokeDasharray="3 3" stroke="#E5E7EB" />
-                  <XAxis dataKey="bank" stroke="#6B7280" fontSize={12} />
-                  <YAxis stroke="#6B7280" fontSize={12} tickFormatter={(value) => `%${value}`} />
+                  <XAxis dataKey="bank" stroke="#6B7280" fontSize=
+{
+  12
+}
+;/  <>AYisx
+stroke = "#6B7280"
+fontSize={12}
+tickFormatter={(value) => `%${value}`} />
                   <Tooltip
                     formatter={(value: any, name: string) => [
-                      name === "rate" ? `%${value}` : formatCurrency(value),
+                      name === "rate" ? `%$
+{
+  value
+}
+;` : formatCurrency(value),
                       name === "rate" ? "Faiz Oranı" : name === "amount" ? "Borç Tutarı" : "Aylık Faiz",
                     ]}
-                    contentStyle={{ backgroundColor: "white", border: "1px solid #E5E7EB", borderRadius: "8px" }}
+                    contentStyle={{ 
+                      backgroundColor: "white", 
+                      border: "1px solid #E5E7EB", 
+                      borderRadius: "12px",
+                      boxShadow: "0 10px 15px -3px rgba(0, 0, 0, 0.1)"
+                    }}
                   />
                   <Bar dataKey="rate" fill="#8B5CF6" radius={[4, 4, 0, 0]} />
                 </BarChart>
@@ -1090,28 +1291,30 @@ export default function RaporlarPage() {
 
         <TabsContent value="comparison" className="space-y-6">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            <Card className="shadow-lg">
+            <Card className="shadow-lg border-0 bg-white/90 backdrop-blur-sm">
               <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Building2 className="h-5 w-5 text-indigo-600" />
+                <CardTitle className="flex items-center gap-2 text-lg">
+                  <div className="p-2 bg-indigo-100 rounded-lg">
+                    <Building2 className="h-5 w-5 text-indigo-600" />
+                  </div>
                   Banka Karşılaştırması
                 </CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="space-y-4">
                   {chartData.bankDistribution.slice(0, 5).map((bank, index) => (
-                    <div key={bank.name} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                    <div key={bank.name} className="flex items-center justify-between p-4 bg-gradient-to-r from-gray-50 to-gray-100 rounded-xl border">
                       <div className="flex items-center gap-3">
-                        <div className="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center text-sm font-bold text-blue-600">
+                        <div className="w-10 h-10 rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-sm font-bold text-white">
                           {index + 1}
                         </div>
                         <div>
-                          <div className="font-medium">{bank.name}</div>
+                          <div className="font-semibold text-gray-900">{bank.name}</div>
                           <div className="text-sm text-gray-500">{bank.count} kredi</div>
                         </div>
                       </div>
                       <div className="text-right">
-                        <div className="font-bold">{formatCurrency(bank.value)}</div>
+                        <div className="font-bold text-lg">{formatCurrency(bank.value)}</div>
                         <div className="text-sm text-gray-500">Ort. %{bank.averageInterest.toFixed(1)} faiz</div>
                       </div>
                     </div>
@@ -1120,10 +1323,12 @@ export default function RaporlarPage() {
               </CardContent>
             </Card>
 
-            <Card className="shadow-lg">
+            <Card className="shadow-lg border-0 bg-white/90 backdrop-blur-sm">
               <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Wallet className="h-5 w-5 text-green-600" />
+                <CardTitle className="flex items-center gap-2 text-lg">
+                  <div className="p-2 bg-green-100 rounded-lg">
+                    <Wallet className="h-5 w-5 text-green-600" />
+                  </div>
                   Aylık Ödeme Dağılımı
                 </CardTitle>
               </CardHeader>
@@ -1135,7 +1340,12 @@ export default function RaporlarPage() {
                     <YAxis stroke="#6B7280" fontSize={12} tickFormatter={(value) => formatCurrency(value)} />
                     <Tooltip
                       formatter={(value: any) => [formatCurrency(value), "Aylık Ödeme"]}
-                      contentStyle={{ backgroundColor: "white", border: "1px solid #E5E7EB", borderRadius: "8px" }}
+                      contentStyle={{ 
+                        backgroundColor: "white", 
+                        border: "1px solid #E5E7EB", 
+                        borderRadius: "12px",
+                        boxShadow: "0 10px 15px -3px rgba(0, 0, 0, 0.1)"
+                      }}
                     />
                     <Bar dataKey="monthlyPayment" fill="#10B981" radius={[4, 4, 0, 0]} />
                   </BarChart>
@@ -1146,9 +1356,9 @@ export default function RaporlarPage() {
         </TabsContent>
       </Tabs>
 
-      {/* Summary Cards */}
+      {/* Action Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        <Card className="shadow-lg border-l-4 border-l-blue-500">
+        <Card className="shadow-lg border-0 bg-gradient-to-br from-blue-50 to-indigo-50 border-l-4 border-l-blue-500">
           <CardHeader className="pb-3">
             <CardTitle className="text-lg flex items-center gap-2">
               <Clock className="h-5 w-5 text-blue-600" />
@@ -1166,8 +1376,8 @@ export default function RaporlarPage() {
                 })
                 .slice(0, 3)
                 .map((payment) => (
-                  <div key={payment.id} className="flex items-center justify-between p-2 bg-blue-50 rounded">
-                    <div className="flex items-center gap-2">
+                  <div key={payment.id} className="flex items-center justify-between p-3 bg-white/70 rounded-lg border border-blue-100">
+                    <div className="flex items-center gap-3">
                       <BankLogo
                         bankName={payment.credits?.banks?.name || ""}
                         logoUrl={payment.credits?.banks?.logo_url}
@@ -1186,13 +1396,16 @@ export default function RaporlarPage() {
                   </div>
                 ))}
               {summaryMetrics.upcomingPayments === 0 && (
-                <div className="text-center py-4 text-gray-500">Yaklaşan ödeme bulunmuyor</div>
+                <div className="text-center py-8 text-gray-500">
+                  <Clock className="h-12 w-12 mx-auto mb-4 text-gray-300" />
+                  <p>Yaklaşan ödeme bulunmuyor</p>
+                </div>
               )}
             </div>
           </CardContent>
         </Card>
 
-        <Card className="shadow-lg border-l-4 border-l-red-500">
+        <Card className="shadow-lg border-0 bg-gradient-to-br from-red-50 to-rose-50 border-l-4 border-l-red-500">
           <CardHeader className="pb-3">
             <CardTitle className="text-lg flex items-center gap-2">
               <AlertTriangle className="h-5 w-5 text-red-600" />
@@ -1205,8 +1418,8 @@ export default function RaporlarPage() {
                 .filter((p) => p.status === "overdue")
                 .slice(0, 3)
                 .map((payment) => (
-                  <div key={payment.id} className="flex items-center justify-between p-2 bg-red-50 rounded">
-                    <div className="flex items-center gap-2">
+                  <div key={payment.id} className="flex items-center justify-between p-3 bg-white/70 rounded-lg border border-red-100">
+                    <div className="flex items-center gap-3">
                       <BankLogo
                         bankName={payment.credits?.banks?.name || ""}
                         logoUrl={payment.credits?.banks?.logo_url}
@@ -1225,45 +1438,53 @@ export default function RaporlarPage() {
                   </div>
                 ))}
               {summaryMetrics.overduePayments === 0 && (
-                <div className="text-center py-4 text-gray-500">Geciken ödeme bulunmuyor</div>
+                <div className="text-center py-8 text-gray-500">
+                  <CheckCircle className="h-12 w-12 mx-auto mb-4 text-green-300" />
+                  <p>Geciken ödeme bulunmuyor</p>
+                </div>
               )}
             </div>
           </CardContent>
         </Card>
 
-        <Card className="shadow-lg border-l-4 border-l-green-500">
+        <Card className="shadow-lg border-0 bg-gradient-to-br from-emerald-50 to-teal-50 border-l-4 border-l-emerald-500">
           <CardHeader className="pb-3">
             <CardTitle className="text-lg flex items-center gap-2">
-              <TrendingUp className="h-5 w-5 text-green-600" />
+              <TrendingUp className="h-5 w-5 text-emerald-600" />
               Finansal Özet
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="space-y-3">
+            <div className="space-y-4">
               <div className="flex justify-between items-center">
                 <span className="text-sm text-gray-600">Toplam Ödenen</span>
-                <span className="font-bold text-green-600">{formatCurrency(summaryMetrics.totalPaidAmount)}</span>
+                <span className="font-bold text-emerald-600">{formatCurrency(summaryMetrics.totalPaidAmount)}</span>
               </div>
               <div className="flex justify-between items-center">
                 <span className="text-sm text-gray-600">Ortalama Faiz</span>
                 <span className="font-bold">%{summaryMetrics.averageInterest.toFixed(2)}</span>
               </div>
               <div className="flex justify-between items-center">
-                <span className="text-sm text-gray-600">Borç/Gelir Oranı</span>
-                <span className="font-bold text-blue-600">Hesaplanıyor...</span>
+                <span className="text-sm text-gray-600">Aktif Kredi Oranı</span>
+                <span className="font-bold text-blue-600">
+                  %{Math.round((summaryMetrics.activeCredits / Math.max(summaryMetrics.totalCredits, 1)) * 100)}
+                </span>
               </div>
-              <div className="pt-2 border-t">
-                <div className="flex justify-between items-center">
+              <div className="pt-3 border-t">
+                <div className="flex justify-between items-center mb-2">
                   <span className="text-sm font-medium">Finansal Skor</span>
-                  <div className="flex items-center gap-2">
-                    <div className="w-16 h-2 bg-gray-200 rounded-full">
-                      <div
-                        className="h-2 bg-green-500 rounded-full"
-                        style={{ width: `${summaryMetrics.paymentPerformance}%` }}
-                      ></div>
-                    </div>
-                    <span className="text-sm font-bold">{Math.round(summaryMetrics.paymentPerformance)}/100</span>
-                  </div>
+                  <span className="text-sm font-bold">{Math.round(summaryMetrics.paymentPerformance)}/100</span>
+                </div>
+                <div className="w-full h-3 bg-gray-200 rounded-full overflow-hidden">
+                  <div
+                    className="h-3 bg-gradient-to-r from-emerald-500 to-teal-500 rounded-full transition-all duration-500"
+                    style={{ width: `
+$
+{
+  summaryMetrics.paymentPerformance
+}
+%` }}
+                  ></div>
                 </div>
               </div>
             </div>
