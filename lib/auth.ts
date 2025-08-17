@@ -64,10 +64,16 @@ export async function signIn(email: string, password: string) {
  */
 export async function signInWithGoogle() {
   try {
+    // Development için local URL kullan, production için origin
+    const isDev = window.location.hostname === 'localhost'
+    const redirectUrl = isDev 
+      ? `http://localhost:3001/auth/callback`
+      : `${window.location.origin}/auth/callback`
+    
     const { data, error } = await supabase.auth.signInWithOAuth({
       provider: "google",
       options: {
-        redirectTo: `${window.location.origin}/auth/callback`,
+        redirectTo: redirectUrl,
         queryParams: {
           access_type: "offline",
           prompt: "consent",
