@@ -841,81 +841,258 @@ export default function RaporlarPage() {
       </div>
 
       {/* Premium Tabs */}
-      <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-        <div className="mb-8">
-          <TabsList className="grid w-full grid-cols-3 lg:grid-cols-6 h-14 bg-gradient-to-r from-slate-100 to-gray-200 border border-gray-300 rounded-2xl p-2">
-            <TabsTrigger
-              value="overview"
-              className="flex items-center gap-2 rounded-xl data-[state=active]:bg-white data-[state=active]:shadow-lg data-[state=active]:text-emerald-600 transition-all duration-300"
-            >
-              <Eye className="h-4 w-4" />
-              <span className="hidden sm:inline font-medium">Genel Bakış</span>
-            </TabsTrigger>
-            <TabsTrigger
-              value="trends"
-              className="flex items-center gap-2 rounded-xl data-[state=active]:bg-white data-[state=active]:shadow-lg data-[state=active]:text-emerald-600 transition-all duration-300"
-            >
-              <TrendingUp className="h-4 w-4" />
-              <span className="hidden sm:inline font-medium">Trendler</span>
-            </TabsTrigger>
-            <TabsTrigger
-              value="distribution"
-              className="flex items-center gap-2 rounded-xl data-[state=active]:bg-white data-[state=active]:shadow-lg data-[state=active]:text-emerald-600 transition-all duration-300"
-            >
-              <PieChart className="h-4 w-4" />
-              <span className="hidden sm:inline font-medium">Dağılım</span>
-            </TabsTrigger>
-            <TabsTrigger
-              value="performance"
-              className="flex items-center gap-2 rounded-xl data-[state=active]:bg-white data-[state=active]:shadow-lg data-[state=active]:text-emerald-600 transition-all duration-300"
-            >
-              <Activity className="h-4 w-4" />
-              <span className="hidden sm:inline font-medium">Performans</span>
-            </TabsTrigger>
-            <TabsTrigger
-              value="analysis"
-              className="flex items-center gap-2 rounded-xl data-[state=active]:bg-white data-[state=active]:shadow-lg data-[state=active]:text-emerald-600 transition-all duration-300"
-            >
-              <Target className="h-4 w-4" />
-              <span className="hidden sm:inline font-medium">Analiz</span>
-            </TabsTrigger>
-            <TabsTrigger
-              value="comparison"
-              className="flex items-center gap-2 rounded-xl data-[state=active]:bg-white data-[state=active]:shadow-lg data-[state=active]:text-emerald-600 transition-all duration-300"
-            >
-              <Building2 className="h-4 w-4" />
-              <span className="hidden sm:inline font-medium">Karşılaştırma</span>
-            </TabsTrigger>
-          </TabsList>
-        </div>
+      <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+          <div className="border-b border-gray-100 bg-gray-50/50">
+            <TabsList className="grid w-full grid-cols-3 lg:grid-cols-6 h-14 bg-white/50 backdrop-blur-sm border border-gray-200 rounded-2xl p-2">
+              <TabsTrigger
+                value="overview"
+                className="flex items-center gap-2 rounded-xl data-[state=active]:bg-white data-[state=active]:shadow-lg data-[state=active]:text-emerald-600 transition-all duration-300"
+              >
+                <Eye className="h-4 w-4" />
+                <span className="hidden sm:inline font-medium">Genel Bakış</span>
+              </TabsTrigger>
+              <TabsTrigger
+                value="trends"
+                className="flex items-center gap-2 rounded-xl data-[state=active]:bg-white data-[state=active]:shadow-lg data-[state=active]:text-emerald-600 transition-all duration-300"
+              >
+                <TrendingUp className="h-4 w-4" />
+                <span className="hidden sm:inline font-medium">Trendler</span>
+              </TabsTrigger>
+              <TabsTrigger
+                value="distribution"
+                className="flex items-center gap-2 rounded-xl data-[state=active]:bg-white data-[state=active]:shadow-lg data-[state=active]:text-emerald-600 transition-all duration-300"
+              >
+                <PieChart className="h-4 w-4" />
+                <span className="hidden sm:inline font-medium">Dağılım</span>
+              </TabsTrigger>
+              <TabsTrigger
+                value="performance"
+                className="flex items-center gap-2 rounded-xl data-[state=active]:bg-white data-[state=active]:shadow-lg data-[state=active]:text-emerald-600 transition-all duration-300"
+              >
+                <Activity className="h-4 w-4" />
+                <span className="hidden sm:inline font-medium">Performans</span>
+              </TabsTrigger>
+              <TabsTrigger
+                value="analysis"
+                className="flex items-center gap-2 rounded-xl data-[state=active]:bg-white data-[state=active]:shadow-lg data-[state=active]:text-emerald-600 transition-all duration-300"
+              >
+                <Target className="h-4 w-4" />
+                <span className="hidden sm:inline font-medium">Analiz</span>
+              </TabsTrigger>
+              <TabsTrigger
+                value="comparison"
+                className="flex items-center gap-2 rounded-xl data-[state=active]:bg-white data-[state=active]:shadow-lg data-[state=active]:text-emerald-600 transition-all duration-300"
+              >
+                <Building2 className="h-4 w-4" />
+                <span className="hidden sm:inline font-medium">Karşılaştırma</span>
+              </TabsTrigger>
+            </TabsList>
+          </div>
 
-        <TabsContent value="overview" className="space-y-6">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            <Card className="shadow-xl border-0 bg-gradient-to-br from-white to-blue-50">
-              <CardHeader className="pb-4">
-                <CardTitle className="flex items-center gap-2 text-lg">
-                  <div className="p-2 bg-gradient-to-r from-blue-500 to-indigo-600 rounded-lg">
-                    <TrendingUp className="h-5 w-5 text-white" />
+          <TabsContent value="overview" className="space-y-6">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              <Card className="shadow-xl border-0 bg-gradient-to-br from-white to-blue-50">
+                <CardHeader className="pb-4">
+                  <CardTitle className="flex items-center gap-2 text-lg">
+                    <div className="p-2 bg-gradient-to-r from-blue-500 to-indigo-600 rounded-lg">
+                      <TrendingUp className="h-5 w-5 text-white" />
+                    </div>
+                    12 Aylık Ödeme Trendi
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <ResponsiveContainer width="100%" height={300}>
+                    <ComposedChart data={chartData.monthlyTrend}>
+                      <CartesianGrid strokeDasharray="3 3" stroke="#E5E7EB" />
+                      <XAxis dataKey="month" stroke="#6B7280" fontSize={12} />
+                      <YAxis stroke="#6B7280" fontSize={12} tickFormatter={(value) => formatCurrency(value)} />
+                      <Tooltip
+                        formatter={(value: any, name: string) => [
+                          formatCurrency(value),
+                          name === "toplam"
+                            ? "Toplam"
+                            : name === "odenen"
+                              ? "Ödenen"
+                              : name === "bekleyen"
+                                ? "Bekleyen"
+                                : "Geciken",
+                        ]}
+                        contentStyle={{
+                          backgroundColor: "white",
+                          border: "1px solid #E5E7EB",
+                          borderRadius: "12px",
+                          boxShadow: "0 10px 15px -3px rgba(0, 0, 0, 0.1)",
+                        }}
+                      />
+                      <Legend />
+                      <Bar dataKey="odenen" fill="#10B981" name="Ödenen" radius={[4, 4, 0, 0]} />
+                      <Bar dataKey="bekleyen" fill="#F59E0B" name="Bekleyen" radius={[4, 4, 0, 0]} />
+                      <Bar dataKey="geciken" fill="#EF4444" name="Geciken" radius={[4, 4, 0, 0]} />
+                      <Line type="monotone" dataKey="toplam" stroke="#3B82F6" strokeWidth={3} name="Toplam" />
+                    </ComposedChart>
+                  </ResponsiveContainer>
+                </CardContent>
+              </Card>
+
+              <Card className="shadow-xl border-0 bg-gradient-to-br from-white to-emerald-50">
+                <CardHeader className="pb-4">
+                  <CardTitle className="flex items-center gap-2 text-lg">
+                    <div className="p-2 bg-gradient-to-r from-emerald-500 to-teal-600 rounded-lg">
+                      <PieChart className="h-5 w-5 text-white" />
+                    </div>
+                    Ödeme Durumu Dağılımı
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <ResponsiveContainer width="100%" height={300}>
+                    <RechartsPieChart>
+                      <Pie
+                        data={chartData.paymentStatusDistribution}
+                        cx="50%"
+                        cy="50%"
+                        outerRadius={100}
+                        innerRadius={50}
+                        paddingAngle={5}
+                        dataKey="value"
+                        label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
+                      >
+                        {chartData.paymentStatusDistribution.map((entry, index) => (
+                          <Cell key={`cell-${index}`} fill={entry.color} />
+                        ))}
+                      </Pie>
+                      <Tooltip formatter={(value: any) => [value, "Ödeme Sayısı"]} />
+                    </RechartsPieChart>
+                  </ResponsiveContainer>
+                </CardContent>
+              </Card>
+            </div>
+
+            {/* Premium Insight Cards */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+              <Card className="relative overflow-hidden border-0 bg-gradient-to-br from-emerald-500 via-teal-600 to-cyan-700 text-white shadow-2xl">
+                <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full -translate-y-16 translate-x-16"></div>
+                <CardContent className="relative p-8">
+                  <div className="flex items-center justify-between mb-6">
+                    <div className="p-4 bg-white/20 rounded-2xl backdrop-blur-sm">
+                      <TrendingUp className="h-8 w-8 text-white" />
+                    </div>
+                    <Badge className="bg-white/20 text-white border-white/30 backdrop-blur-sm px-3 py-1">Pozitif</Badge>
                   </div>
-                  12 Aylık Ödeme Trendi
+                  <h3 className="font-bold text-2xl mb-3">Ödeme Performansı</h3>
+                  <p className="text-4xl font-black mb-4">{formatPercent(summaryMetrics.paymentPerformance / 100)}</p>
+                  <p className="text-sm text-emerald-100 leading-relaxed">
+                    Son 6 ayda{" "}
+                    <span className="font-semibold text-white">
+                      {filteredPayments.filter((p) => p.status === "paid").length}
+                    </span>{" "}
+                    başarılı ödeme gerçekleştirildi
+                  </p>
+                  <div className="mt-6 w-full h-2 bg-white/20 rounded-full overflow-hidden">
+                    <div
+                      className="h-2 bg-white rounded-full transition-all duration-1000 ease-out"
+                      style={{ width: `${summaryMetrics.paymentPerformance}%` }}
+                    ></div>
+                  </div>
+                </CardContent>
+              </Card>
+
+              <Card className="relative overflow-hidden border-0 bg-gradient-to-br from-blue-500 via-indigo-600 to-purple-700 text-white shadow-2xl">
+                <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full -translate-y-16 translate-x-16"></div>
+                <CardContent className="relative p-8">
+                  <div className="flex items-center justify-between mb-6">
+                    <div className="p-4 bg-white/20 rounded-2xl backdrop-blur-sm">
+                      <DollarSign className="h-8 w-8 text-white" />
+                    </div>
+                    <Badge className="bg-white/20 text-white border-white/30 backdrop-blur-sm px-3 py-1">Stabil</Badge>
+                  </div>
+                  <h3 className="font-bold text-2xl mb-3">Ortalama Faiz</h3>
+                  <p className="text-4xl font-black mb-4">%{summaryMetrics.averageInterest.toFixed(1)}</p>
+                  <p className="text-sm text-blue-100 leading-relaxed">
+                    Piyasa ortalamasının{" "}
+                    <span
+                      className={`font-semibold ${summaryMetrics.averageInterest > 15 ? "text-red-200" : "text-green-200"}`}
+                    >
+                      {summaryMetrics.averageInterest > 15 ? "üzerinde" : "altında"}
+                    </span>
+                  </p>
+                  <div className="mt-6 flex items-center gap-2">
+                    <div className="flex-1 h-2 bg-white/20 rounded-full overflow-hidden">
+                      <div
+                        className="h-2 bg-white rounded-full transition-all duration-1000 ease-out"
+                        style={{ width: `${Math.min((summaryMetrics.averageInterest / 30) * 100, 100)}%` }}
+                      ></div>
+                    </div>
+                    <span className="text-xs text-blue-200">30%</span>
+                  </div>
+                </CardContent>
+              </Card>
+
+              <Card className="relative overflow-hidden border-0 bg-gradient-to-br from-purple-500 via-pink-600 to-rose-700 text-white shadow-2xl">
+                <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full -translate-y-16 translate-x-16"></div>
+                <CardContent className="relative p-8">
+                  <div className="flex items-center justify-between mb-6">
+                    <div className="p-4 bg-white/20 rounded-2xl backdrop-blur-sm">
+                      <Wallet className="h-8 w-8 text-white" />
+                    </div>
+                    <Badge className="bg-white/20 text-white border-white/30 backdrop-blur-sm px-3 py-1">Aktif</Badge>
+                  </div>
+                  <h3 className="font-bold text-2xl mb-3">Aylık Yük</h3>
+                  <p className="text-4xl font-black mb-4">{formatCurrency(summaryMetrics.monthlyPayment)}</p>
+                  <p className="text-sm text-purple-100 leading-relaxed">
+                    <span className="font-semibold text-white">{summaryMetrics.activeCredits}</span> aktif krediden
+                    toplam aylık ödeme
+                  </p>
+                  <div className="mt-6 grid grid-cols-3 gap-2">
+                    <div className="text-center">
+                      <div className="text-xs text-purple-200 mb-1">Min</div>
+                      <div className="h-1 bg-white/30 rounded"></div>
+                    </div>
+                    <div className="text-center">
+                      <div className="text-xs text-purple-200 mb-1">Mevcut</div>
+                      <div className="h-1 bg-white rounded"></div>
+                    </div>
+                    <div className="text-center">
+                      <div className="text-xs text-purple-200 mb-1">Max</div>
+                      <div className="h-1 bg-white/30 rounded"></div>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+          </TabsContent>
+
+          <TabsContent value="trends" className="space-y-6">
+            <Card className="shadow-xl border-0 bg-gradient-to-br from-white to-purple-50">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2 text-xl">
+                  <div className="p-2 bg-gradient-to-r from-purple-500 to-pink-600 rounded-lg">
+                    <TrendingUp className="h-6 w-6 text-white" />
+                  </div>
+                  Detaylı Trend Analizi
                 </CardTitle>
+                <p className="text-gray-600">12 aylık ödeme performansı ve trend analizi</p>
               </CardHeader>
               <CardContent>
-                <ResponsiveContainer width="100%" height={300}>
-                  <ComposedChart data={chartData.monthlyTrend}>
+                <ResponsiveContainer width="100%" height={400}>
+                  <AreaChart data={chartData.monthlyTrend}>
+                    <defs>
+                      <linearGradient id="colorOdenen" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="5%" stopColor="#10B981" stopOpacity={0.3} />
+                        <stop offset="95%" stopColor="#10B981" stopOpacity={0} />
+                      </linearGradient>
+                      <linearGradient id="colorBekleyen" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="5%" stopColor="#F59E0B" stopOpacity={0.3} />
+                        <stop offset="95%" stopColor="#F59E0B" stopOpacity={0} />
+                      </linearGradient>
+                    </defs>
                     <CartesianGrid strokeDasharray="3 3" stroke="#E5E7EB" />
-                    <XAxis dataKey="month" stroke="#6B7280" fontSize={12} />
-                    <YAxis stroke="#6B7280" fontSize={12} tickFormatter={(value) => formatCurrency(value)} />
+                    <XAxis dataKey="month" stroke="#6B7280" />
+                    <YAxis stroke="#6B7280" tickFormatter={(value) => formatCurrency(value)} />
                     <Tooltip
                       formatter={(value: any, name: string) => [
                         formatCurrency(value),
-                        name === "toplam"
-                          ? "Toplam"
-                          : name === "odenen"
-                            ? "Ödenen"
-                            : name === "bekleyen"
-                              ? "Bekleyen"
-                              : "Geciken",
+                        name === "odenen" ? "Ödenen" : "Bekleyen",
                       ]}
                       contentStyle={{
                         backgroundColor: "white",
@@ -925,231 +1102,192 @@ export default function RaporlarPage() {
                       }}
                     />
                     <Legend />
-                    <Bar dataKey="odenen" fill="#10B981" name="Ödenen" radius={[4, 4, 0, 0]} />
-                    <Bar dataKey="bekleyen" fill="#F59E0B" name="Bekleyen" radius={[4, 4, 0, 0]} />
-                    <Bar dataKey="geciken" fill="#EF4444" name="Geciken" radius={[4, 4, 0, 0]} />
-                    <Line type="monotone" dataKey="toplam" stroke="#3B82F6" strokeWidth={3} name="Toplam" />
-                  </ComposedChart>
+                    <Area
+                      type="monotone"
+                      dataKey="odenen"
+                      stroke="#10B981"
+                      fillOpacity={1}
+                      fill="url(#colorOdenen)"
+                      strokeWidth={2}
+                    />
+                    <Area
+                      type="monotone"
+                      dataKey="bekleyen"
+                      stroke="#F59E0B"
+                      fillOpacity={1}
+                      fill="url(#colorBekleyen)"
+                      strokeWidth={2}
+                    />
+                    <ReferenceLine
+                      y={summaryMetrics.monthlyPayment}
+                      stroke="#EF4444"
+                      strokeDasharray="5 5"
+                      label="Hedef Aylık Ödeme"
+                    />
+                  </AreaChart>
                 </ResponsiveContainer>
               </CardContent>
             </Card>
+          </TabsContent>
 
-            <Card className="shadow-xl border-0 bg-gradient-to-br from-white to-emerald-50">
-              <CardHeader className="pb-4">
-                <CardTitle className="flex items-center gap-2 text-lg">
-                  <div className="p-2 bg-gradient-to-r from-emerald-500 to-teal-600 rounded-lg">
-                    <PieChart className="h-5 w-5 text-white" />
-                  </div>
-                  Ödeme Durumu Dağılımı
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <ResponsiveContainer width="100%" height={300}>
-                  <RechartsPieChart>
-                    <Pie
-                      data={chartData.paymentStatusDistribution}
-                      cx="50%"
-                      cy="50%"
-                      outerRadius={100}
-                      innerRadius={50}
-                      paddingAngle={5}
-                      dataKey="value"
-                      label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
-                    >
-                      {chartData.paymentStatusDistribution.map((entry, index) => (
-                        <Cell key={`cell-${index}`} fill={entry.color} />
-                      ))}
-                    </Pie>
-                    <Tooltip formatter={(value: any) => [value, "Ödeme Sayısı"]} />
-                  </RechartsPieChart>
-                </ResponsiveContainer>
-              </CardContent>
-            </Card>
-          </div>
+          <TabsContent value="distribution" className="space-y-6">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              <Card className="shadow-xl border-0 bg-gradient-to-br from-white to-blue-50">
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2 text-lg">
+                    <div className="p-2 bg-gradient-to-r from-blue-500 to-indigo-600 rounded-lg">
+                      <Building2 className="h-5 w-5 text-white" />
+                    </div>
+                    Banka Bazında Dağılım
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <ResponsiveContainer width="100%" height={350}>
+                    <BarChart data={chartData.bankDistribution.slice(0, 8)}>
+                      <CartesianGrid strokeDasharray="3 3" stroke="#E5E7EB" />
+                      <XAxis dataKey="name" stroke="#6B7280" fontSize={12} />
+                      <YAxis stroke="#6B7280" fontSize={12} tickFormatter={(value) => formatCurrency(value)} />
+                      <Tooltip
+                        formatter={(value: any, name: string) => [
+                          name === "value" ? formatCurrency(value) : value,
+                          name === "value" ? "Borç Tutarı" : name === "count" ? "Kredi Sayısı" : "Aylık Ödeme",
+                        ]}
+                        contentStyle={{
+                          backgroundColor: "white",
+                          border: "1px solid #E5E7EB",
+                          borderRadius: "12px",
+                          boxShadow: "0 10px 15px -3px rgba(0, 0, 0, 0.1)",
+                        }}
+                      />
+                      <Bar dataKey="value" fill="#3B82F6" radius={[4, 4, 0, 0]} />
+                    </BarChart>
+                  </ResponsiveContainer>
+                </CardContent>
+              </Card>
 
-          {/* Premium Insight Cards */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            <Card className="relative overflow-hidden border-0 bg-gradient-to-br from-emerald-500 via-teal-600 to-cyan-700 text-white shadow-2xl">
-              <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full -translate-y-16 translate-x-16"></div>
-              <CardContent className="relative p-8">
-                <div className="flex items-center justify-between mb-6">
-                  <div className="p-4 bg-white/20 rounded-2xl backdrop-blur-sm">
-                    <TrendingUp className="h-8 w-8 text-white" />
-                  </div>
-                  <Badge className="bg-white/20 text-white border-white/30 backdrop-blur-sm px-3 py-1">Pozitif</Badge>
-                </div>
-                <h3 className="font-bold text-2xl mb-3">Ödeme Performansı</h3>
-                <p className="text-4xl font-black mb-4">{formatPercent(summaryMetrics.paymentPerformance / 100)}</p>
-                <p className="text-sm text-emerald-100 leading-relaxed">
-                  Son 6 ayda{" "}
-                  <span className="font-semibold text-white">
-                    {filteredPayments.filter((p) => p.status === "paid").length}
-                  </span>{" "}
-                  başarılı ödeme gerçekleştirildi
-                </p>
-                <div className="mt-6 w-full h-2 bg-white/20 rounded-full overflow-hidden">
-                  <div
-                    className="h-2 bg-white rounded-full transition-all duration-1000 ease-out"
-                    style={{ width: `${summaryMetrics.paymentPerformance}%` }}
-                  ></div>
-                </div>
-              </CardContent>
-            </Card>
+              <Card className="shadow-xl border-0 bg-gradient-to-br from-white to-emerald-50">
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2 text-lg">
+                    <div className="p-2 bg-gradient-to-r from-emerald-500 to-teal-600 rounded-lg">
+                      <CreditCard className="h-5 w-5 text-white" />
+                    </div>
+                    Kredi Türü Dağılımı
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <ResponsiveContainer width="100%" height={350}>
+                    <RechartsPieChart>
+                      <Pie
+                        data={chartData.creditTypeDistribution}
+                        cx="50%"
+                        cy="50%"
+                        outerRadius={120}
+                        innerRadius={60}
+                        paddingAngle={5}
+                        dataKey="value"
+                        label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
+                      >
+                        {chartData.creditTypeDistribution.map((entry, index) => (
+                          <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                        ))}
+                      </Pie>
+                      <Tooltip formatter={(value: any) => [formatCurrency(value), "Borç Tutarı"]} />
+                    </RechartsPieChart>
+                  </ResponsiveContainer>
+                </CardContent>
+              </Card>
+            </div>
+          </TabsContent>
 
-            <Card className="relative overflow-hidden border-0 bg-gradient-to-br from-blue-500 via-indigo-600 to-purple-700 text-white shadow-2xl">
-              <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full -translate-y-16 translate-x-16"></div>
-              <CardContent className="relative p-8">
-                <div className="flex items-center justify-between mb-6">
-                  <div className="p-4 bg-white/20 rounded-2xl backdrop-blur-sm">
-                    <DollarSign className="h-8 w-8 text-white" />
-                  </div>
-                  <Badge className="bg-white/20 text-white border-white/30 backdrop-blur-sm px-3 py-1">Stabil</Badge>
-                </div>
-                <h3 className="font-bold text-2xl mb-3">Ortalama Faiz</h3>
-                <p className="text-4xl font-black mb-4">%{summaryMetrics.averageInterest.toFixed(1)}</p>
-                <p className="text-sm text-blue-100 leading-relaxed">
-                  Piyasa ortalamasının{" "}
-                  <span
-                    className={`font-semibold ${summaryMetrics.averageInterest > 15 ? "text-red-200" : "text-green-200"}`}
-                  >
-                    {summaryMetrics.averageInterest > 15 ? "üzerinde" : "altında"}
-                  </span>
-                </p>
-                <div className="mt-6 flex items-center gap-2">
-                  <div className="flex-1 h-2 bg-white/20 rounded-full overflow-hidden">
-                    <div
-                      className="h-2 bg-white rounded-full transition-all duration-1000 ease-out"
-                      style={{ width: `${Math.min((summaryMetrics.averageInterest / 30) * 100, 100)}%` }}
-                    ></div>
-                  </div>
-                  <span className="text-xs text-blue-200">30%</span>
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card className="relative overflow-hidden border-0 bg-gradient-to-br from-purple-500 via-pink-600 to-rose-700 text-white shadow-2xl">
-              <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full -translate-y-16 translate-x-16"></div>
-              <CardContent className="relative p-8">
-                <div className="flex items-center justify-between mb-6">
-                  <div className="p-4 bg-white/20 rounded-2xl backdrop-blur-sm">
-                    <Wallet className="h-8 w-8 text-white" />
-                  </div>
-                  <Badge className="bg-white/20 text-white border-white/30 backdrop-blur-sm px-3 py-1">Aktif</Badge>
-                </div>
-                <h3 className="font-bold text-2xl mb-3">Aylık Yük</h3>
-                <p className="text-4xl font-black mb-4">{formatCurrency(summaryMetrics.monthlyPayment)}</p>
-                <p className="text-sm text-purple-100 leading-relaxed">
-                  <span className="font-semibold text-white">{summaryMetrics.activeCredits}</span> aktif krediden toplam
-                  aylık ödeme
-                </p>
-                <div className="mt-6 grid grid-cols-3 gap-2">
-                  <div className="text-center">
-                    <div className="text-xs text-purple-200 mb-1">Min</div>
-                    <div className="h-1 bg-white/30 rounded"></div>
-                  </div>
-                  <div className="text-center">
-                    <div className="text-xs text-purple-200 mb-1">Mevcut</div>
-                    <div className="h-1 bg-white rounded"></div>
-                  </div>
-                  <div className="text-center">
-                    <div className="text-xs text-purple-200 mb-1">Max</div>
-                    <div className="h-1 bg-white/30 rounded"></div>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-        </TabsContent>
-
-        <TabsContent value="trends" className="space-y-6">
-          <Card className="shadow-xl border-0 bg-gradient-to-br from-white to-purple-50">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2 text-xl">
-                <div className="p-2 bg-gradient-to-r from-purple-500 to-pink-600 rounded-lg">
-                  <TrendingUp className="h-6 w-6 text-white" />
-                </div>
-                Detaylı Trend Analizi
-              </CardTitle>
-              <p className="text-gray-600">12 aylık ödeme performansı ve trend analizi</p>
-            </CardHeader>
-            <CardContent>
-              <ResponsiveContainer width="100%" height={400}>
-                <AreaChart data={chartData.monthlyTrend}>
-                  <defs>
-                    <linearGradient id="colorOdenen" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="5%" stopColor="#10B981" stopOpacity={0.3} />
-                      <stop offset="95%" stopColor="#10B981" stopOpacity={0} />
-                    </linearGradient>
-                    <linearGradient id="colorBekleyen" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="5%" stopColor="#F59E0B" stopOpacity={0.3} />
-                      <stop offset="95%" stopColor="#F59E0B" stopOpacity={0} />
-                    </linearGradient>
-                  </defs>
-                  <CartesianGrid strokeDasharray="3 3" stroke="#E5E7EB" />
-                  <XAxis dataKey="month" stroke="#6B7280" />
-                  <YAxis stroke="#6B7280" tickFormatter={(value) => formatCurrency(value)} />
-                  <Tooltip
-                    formatter={(value: any, name: string) => [
-                      formatCurrency(value),
-                      name === "odenen" ? "Ödenen" : "Bekleyen",
-                    ]}
-                    contentStyle={{
-                      backgroundColor: "white",
-                      border: "1px solid #E5E7EB",
-                      borderRadius: "12px",
-                      boxShadow: "0 10px 15px -3px rgba(0, 0, 0, 0.1)",
-                    }}
-                  />
-                  <Legend />
-                  <Area
-                    type="monotone"
-                    dataKey="odenen"
-                    stroke="#10B981"
-                    fillOpacity={1}
-                    fill="url(#colorOdenen)"
-                    strokeWidth={2}
-                  />
-                  <Area
-                    type="monotone"
-                    dataKey="bekleyen"
-                    stroke="#F59E0B"
-                    fillOpacity={1}
-                    fill="url(#colorBekleyen)"
-                    strokeWidth={2}
-                  />
-                  <ReferenceLine
-                    y={summaryMetrics.monthlyPayment}
-                    stroke="#EF4444"
-                    strokeDasharray="5 5"
-                    label="Hedef Aylık Ödeme"
-                  />
-                </AreaChart>
-              </ResponsiveContainer>
-            </CardContent>
-          </Card>
-        </TabsContent>
-
-        <TabsContent value="distribution" className="space-y-6">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            <Card className="shadow-xl border-0 bg-gradient-to-br from-white to-blue-50">
+          <TabsContent value="performance" className="space-y-6">
+            <Card className="shadow-xl border-0 bg-gradient-to-br from-white to-orange-50">
               <CardHeader>
-                <CardTitle className="flex items-center gap-2 text-lg">
-                  <div className="p-2 bg-gradient-to-r from-blue-500 to-indigo-600 rounded-lg">
-                    <Building2 className="h-5 w-5 text-white" />
+                <CardTitle className="flex items-center gap-2 text-xl">
+                  <div className="p-2 bg-gradient-to-r from-orange-500 to-red-600 rounded-lg">
+                    <Activity className="h-6 w-6 text-white" />
                   </div>
-                  Banka Bazında Dağılım
+                  Ödeme Performans Analizi
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <ResponsiveContainer width="100%" height={350}>
-                  <BarChart data={chartData.bankDistribution.slice(0, 8)}>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+                  <div className="text-center p-6 bg-gradient-to-br from-green-500 to-emerald-600 text-white rounded-xl shadow-lg">
+                    <div className="text-4xl font-bold mb-2">
+                      {formatPercent(summaryMetrics.paymentPerformance / 100)}
+                    </div>
+                    <div className="text-sm font-medium">Genel Performans</div>
+                    <div className="text-xs mt-2 opacity-90">
+                      {filteredPayments.filter((p) => p.status === "paid").length} / {filteredPayments.length} ödeme
+                    </div>
+                  </div>
+                  <div className="text-center p-6 bg-gradient-to-br from-red-500 to-rose-600 text-white rounded-xl shadow-lg">
+                    <div className="text-4xl font-bold mb-2">{summaryMetrics.overduePayments}</div>
+                    <div className="text-sm font-medium">Geciken Ödemeler</div>
+                    <div className="text-xs mt-2 opacity-90">
+                      {formatCurrency(
+                        filteredPayments
+                          .filter((p) => p.status === "overdue")
+                          .reduce((sum, p) => sum + (p.total_payment || 0), 0),
+                      )}
+                    </div>
+                  </div>
+                  <div className="text-center p-6 bg-gradient-to-br from-blue-500 to-indigo-600 text-white rounded-xl shadow-lg">
+                    <div className="text-4xl font-bold mb-2">{summaryMetrics.upcomingPayments}</div>
+                    <div className="text-sm font-medium">Yaklaşan Ödemeler</div>
+                    <div className="text-xs mt-2 opacity-90">Sonraki 7 gün</div>
+                  </div>
+                </div>
+
+                <ResponsiveContainer width="100%" height={300}>
+                  <LineChart data={chartData.monthlyTrend}>
                     <CartesianGrid strokeDasharray="3 3" stroke="#E5E7EB" />
-                    <XAxis dataKey="name" stroke="#6B7280" fontSize={12} />
-                    <YAxis stroke="#6B7280" fontSize={12} tickFormatter={(value) => formatCurrency(value)} />
+                    <XAxis dataKey="month" stroke="#6B7280" />
+                    <YAxis stroke="#6B7280" tickFormatter={(value) => `${value}%`} />
+                    <Tooltip
+                      formatter={(value: any, name: string) => [`${value.toFixed(1)}%`, "Ödeme Oranı"]}
+                      contentStyle={{
+                        backgroundColor: "white",
+                        border: "1px solid #E5E7EB",
+                        borderRadius: "12px",
+                        boxShadow: "0 10px 15px -3px rgba(0, 0, 0, 0.1)",
+                      }}
+                    />
+                    <Line
+                      type="monotone"
+                      dataKey={(data: any) => (data.toplam > 0 ? (data.odenen / data.toplam) * 100 : 0)}
+                      stroke="#10B981"
+                      strokeWidth={3}
+                      dot={{ fill: "#10B981", strokeWidth: 2, r: 6 }}
+                      name="Ödeme Oranı"
+                    />
+                    <ReferenceLine y={80} stroke="#F59E0B" strokeDasharray="5 5" label="Hedef %80" />
+                  </LineChart>
+                </ResponsiveContainer>
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="analysis" className="space-y-6">
+            <Card className="shadow-xl border-0 bg-gradient-to-br from-white to-purple-50">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2 text-xl">
+                  <div className="p-2 bg-gradient-to-r from-purple-500 to-pink-600 rounded-lg">
+                    <Target className="h-6 w-6 text-white" />
+                  </div>
+                  Faiz Oranı Analizi
+                </CardTitle>
+                <p className="text-gray-600">Kredilerinizin faiz oranları ve piyasa karşılaştırması</p>
+              </CardHeader>
+              <CardContent>
+                <ResponsiveContainer width="100%" height={400}>
+                  <BarChart data={chartData.interestAnalysis.slice(0, 10)}>
+                    <CartesianGrid strokeDasharray="3 3" stroke="#E5E7EB" />
+                    <XAxis dataKey="bank" stroke="#6B7280" fontSize={12} />
+                    <YAxis stroke="#6B7280" fontSize={12} tickFormatter={(value) => `%${value}`} />
                     <Tooltip
                       formatter={(value: any, name: string) => [
-                        name === "value" ? formatCurrency(value) : value,
-                        name === "value" ? "Borç Tutarı" : name === "count" ? "Kredi Sayısı" : "Aylık Ödeme",
+                        name === "rate" ? `%${value}` : formatCurrency(value),
+                        name === "rate" ? "Faiz Oranı" : name === "amount" ? "Borç Tutarı" : "Aylık Faiz",
                       ]}
                       contentStyle={{
                         backgroundColor: "white",
@@ -1158,222 +1296,86 @@ export default function RaporlarPage() {
                         boxShadow: "0 10px 15px -3px rgba(0, 0, 0, 0.1)",
                       }}
                     />
-                    <Bar dataKey="value" fill="#3B82F6" radius={[4, 4, 0, 0]} />
+                    <Bar dataKey="rate" fill="#8B5CF6" radius={[4, 4, 0, 0]} />
                   </BarChart>
                 </ResponsiveContainer>
               </CardContent>
             </Card>
+          </TabsContent>
 
-            <Card className="shadow-xl border-0 bg-gradient-to-br from-white to-emerald-50">
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2 text-lg">
-                  <div className="p-2 bg-gradient-to-r from-emerald-500 to-teal-600 rounded-lg">
-                    <CreditCard className="h-5 w-5 text-white" />
-                  </div>
-                  Kredi Türü Dağılımı
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <ResponsiveContainer width="100%" height={350}>
-                  <RechartsPieChart>
-                    <Pie
-                      data={chartData.creditTypeDistribution}
-                      cx="50%"
-                      cy="50%"
-                      outerRadius={120}
-                      innerRadius={60}
-                      paddingAngle={5}
-                      dataKey="value"
-                      label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
-                    >
-                      {chartData.creditTypeDistribution.map((entry, index) => (
-                        <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                      ))}
-                    </Pie>
-                    <Tooltip formatter={(value: any) => [formatCurrency(value), "Borç Tutarı"]} />
-                  </RechartsPieChart>
-                </ResponsiveContainer>
-              </CardContent>
-            </Card>
-          </div>
-        </TabsContent>
-
-        <TabsContent value="performance" className="space-y-6">
-          <Card className="shadow-xl border-0 bg-gradient-to-br from-white to-orange-50">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2 text-xl">
-                <div className="p-2 bg-gradient-to-r from-orange-500 to-red-600 rounded-lg">
-                  <Activity className="h-6 w-6 text-white" />
-                </div>
-                Ödeme Performans Analizi
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-                <div className="text-center p-6 bg-gradient-to-br from-green-500 to-emerald-600 text-white rounded-xl shadow-lg">
-                  <div className="text-4xl font-bold mb-2">
-                    {formatPercent(summaryMetrics.paymentPerformance / 100)}
-                  </div>
-                  <div className="text-sm font-medium">Genel Performans</div>
-                  <div className="text-xs mt-2 opacity-90">
-                    {filteredPayments.filter((p) => p.status === "paid").length} / {filteredPayments.length} ödeme
-                  </div>
-                </div>
-                <div className="text-center p-6 bg-gradient-to-br from-red-500 to-rose-600 text-white rounded-xl shadow-lg">
-                  <div className="text-4xl font-bold mb-2">{summaryMetrics.overduePayments}</div>
-                  <div className="text-sm font-medium">Geciken Ödemeler</div>
-                  <div className="text-xs mt-2 opacity-90">
-                    {formatCurrency(
-                      filteredPayments
-                        .filter((p) => p.status === "overdue")
-                        .reduce((sum, p) => sum + (p.total_payment || 0), 0),
-                    )}
-                  </div>
-                </div>
-                <div className="text-center p-6 bg-gradient-to-br from-blue-500 to-indigo-600 text-white rounded-xl shadow-lg">
-                  <div className="text-4xl font-bold mb-2">{summaryMetrics.upcomingPayments}</div>
-                  <div className="text-sm font-medium">Yaklaşan Ödemeler</div>
-                  <div className="text-xs mt-2 opacity-90">Sonraki 7 gün</div>
-                </div>
-              </div>
-
-              <ResponsiveContainer width="100%" height={300}>
-                <LineChart data={chartData.monthlyTrend}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="#E5E7EB" />
-                  <XAxis dataKey="month" stroke="#6B7280" />
-                  <YAxis stroke="#6B7280" tickFormatter={(value) => `${value}%`} />
-                  <Tooltip
-                    formatter={(value: any, name: string) => [`${value.toFixed(1)}%`, "Ödeme Oranı"]}
-                    contentStyle={{
-                      backgroundColor: "white",
-                      border: "1px solid #E5E7EB",
-                      borderRadius: "12px",
-                      boxShadow: "0 10px 15px -3px rgba(0, 0, 0, 0.1)",
-                    }}
-                  />
-                  <Line
-                    type="monotone"
-                    dataKey={(data: any) => (data.toplam > 0 ? (data.odenen / data.toplam) * 100 : 0)}
-                    stroke="#10B981"
-                    strokeWidth={3}
-                    dot={{ fill: "#10B981", strokeWidth: 2, r: 6 }}
-                    name="Ödeme Oranı"
-                  />
-                  <ReferenceLine y={80} stroke="#F59E0B" strokeDasharray="5 5" label="Hedef %80" />
-                </LineChart>
-              </ResponsiveContainer>
-            </CardContent>
-          </Card>
-        </TabsContent>
-
-        <TabsContent value="analysis" className="space-y-6">
-          <Card className="shadow-xl border-0 bg-gradient-to-br from-white to-purple-50">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2 text-xl">
-                <div className="p-2 bg-gradient-to-r from-purple-500 to-pink-600 rounded-lg">
-                  <Target className="h-6 w-6 text-white" />
-                </div>
-                Faiz Oranı Analizi
-              </CardTitle>
-              <p className="text-gray-600">Kredilerinizin faiz oranları ve piyasa karşılaştırması</p>
-            </CardHeader>
-            <CardContent>
-              <ResponsiveContainer width="100%" height={400}>
-                <BarChart data={chartData.interestAnalysis.slice(0, 10)}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="#E5E7EB" />
-                  <XAxis dataKey="bank" stroke="#6B7280" fontSize={12} />
-                  <YAxis stroke="#6B7280" fontSize={12} tickFormatter={(value) => `%${value}`} />
-                  <Tooltip
-                    formatter={(value: any, name: string) => [
-                      name === "rate" ? `%${value}` : formatCurrency(value),
-                      name === "rate" ? "Faiz Oranı" : name === "amount" ? "Borç Tutarı" : "Aylık Faiz",
-                    ]}
-                    contentStyle={{
-                      backgroundColor: "white",
-                      border: "1px solid #E5E7EB",
-                      borderRadius: "12px",
-                      boxShadow: "0 10px 15px -3px rgba(0, 0, 0, 0.1)",
-                    }}
-                  />
-                  <Bar dataKey="rate" fill="#8B5CF6" radius={[4, 4, 0, 0]} />
-                </BarChart>
-              </ResponsiveContainer>
-            </CardContent>
-          </Card>
-        </TabsContent>
-
-        <TabsContent value="comparison" className="space-y-6">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            <Card className="shadow-xl border-0 bg-gradient-to-br from-white to-indigo-50">
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2 text-lg">
-                  <div className="p-2 bg-gradient-to-r from-indigo-500 to-purple-600 rounded-lg">
-                    <Building2 className="h-5 w-5 text-white" />
-                  </div>
-                  Banka Karşılaştırması
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
-                  {chartData.bankDistribution.slice(0, 5).map((bank, index) => (
-                    <div
-                      key={bank.name}
-                      className="flex items-center justify-between p-4 bg-gradient-to-r from-gray-50 to-slate-100 rounded-xl border shadow-sm"
-                    >
-                      <div className="flex items-center gap-4">
-                        <div className="w-10 h-10 rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-sm font-bold text-white">
-                          {index + 1}
-                        </div>
-                        <div className="flex items-center gap-3">
-                          <BankLogo bankName={bank.fullName || bank.name} logoUrl={bank.logoUrl} size="sm" />
-                          <div>
-                            <div className="font-semibold text-gray-900">{bank.name}</div>
-                            <div className="text-sm text-gray-500">{bank.count} kredi</div>
+          <TabsContent value="comparison" className="space-y-6">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              <Card className="shadow-xl border-0 bg-gradient-to-br from-white to-indigo-50">
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2 text-lg">
+                    <div className="p-2 bg-gradient-to-r from-indigo-500 to-purple-600 rounded-lg">
+                      <Building2 className="h-5 w-5 text-white" />
+                    </div>
+                    Banka Karşılaştırması
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-4">
+                    {chartData.bankDistribution.slice(0, 5).map((bank, index) => (
+                      <div
+                        key={bank.name}
+                        className="flex items-center justify-between p-4 bg-gradient-to-r from-gray-50 to-slate-100 rounded-xl border shadow-sm"
+                      >
+                        <div className="flex items-center gap-4">
+                          <div className="w-10 h-10 rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-sm font-bold text-white">
+                            {index + 1}
+                          </div>
+                          <div className="flex items-center gap-3">
+                            <BankLogo bankName={bank.fullName || bank.name} logoUrl={bank.logoUrl} size="sm" />
+                            <div>
+                              <div className="font-semibold text-gray-900">{bank.name}</div>
+                              <div className="text-sm text-gray-500">{bank.count} kredi</div>
+                            </div>
                           </div>
                         </div>
+                        <div className="text-right">
+                          <div className="font-bold text-lg">{formatCurrency(bank.value)}</div>
+                          <div className="text-sm text-gray-500">Ort. %{bank.averageInterest.toFixed(1)} faiz</div>
+                        </div>
                       </div>
-                      <div className="text-right">
-                        <div className="font-bold text-lg">{formatCurrency(bank.value)}</div>
-                        <div className="text-sm text-gray-500">Ort. %{bank.averageInterest.toFixed(1)} faiz</div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card className="shadow-xl border-0 bg-gradient-to-br from-white to-green-50">
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2 text-lg">
-                  <div className="p-2 bg-gradient-to-r from-green-500 to-emerald-600 rounded-lg">
-                    <Wallet className="h-5 w-5 text-white" />
+                    ))}
                   </div>
-                  Aylık Ödeme Dağılımı
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <ResponsiveContainer width="100%" height={300}>
-                  <BarChart data={chartData.bankDistribution.slice(0, 6)}>
-                    <CartesianGrid strokeDasharray="3 3" stroke="#E5E7EB" />
-                    <XAxis dataKey="name" stroke="#6B7280" fontSize={12} />
-                    <YAxis stroke="#6B7280" fontSize={12} tickFormatter={(value) => formatCurrency(value)} />
-                    <Tooltip
-                      formatter={(value: any) => [formatCurrency(value), "Aylık Ödeme"]}
-                      contentStyle={{
-                        backgroundColor: "white",
-                        border: "1px solid #E5E7EB",
-                        borderRadius: "12px",
-                        boxShadow: "0 10px 15px -3px rgba(0, 0, 0, 0.1)",
-                      }}
-                    />
-                    <Bar dataKey="monthlyPayment" fill="#10B981" radius={[4, 4, 0, 0]} />
-                  </BarChart>
-                </ResponsiveContainer>
-              </CardContent>
-            </Card>
-          </div>
-        </TabsContent>
-      </Tabs>
+                </CardContent>
+              </Card>
+
+              <Card className="shadow-xl border-0 bg-gradient-to-br from-white to-green-50">
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2 text-lg">
+                    <div className="p-2 bg-gradient-to-r from-green-500 to-emerald-600 rounded-lg">
+                      <Wallet className="h-5 w-5 text-white" />
+                    </div>
+                    Aylık Ödeme Dağılımı
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <ResponsiveContainer width="100%" height={300}>
+                    <BarChart data={chartData.bankDistribution.slice(0, 6)}>
+                      <CartesianGrid strokeDasharray="3 3" stroke="#E5E7EB" />
+                      <XAxis dataKey="name" stroke="#6B7280" fontSize={12} />
+                      <YAxis stroke="#6B7280" fontSize={12} tickFormatter={(value) => formatCurrency(value)} />
+                      <Tooltip
+                        formatter={(value: any) => [formatCurrency(value), "Aylık Ödeme"]}
+                        contentStyle={{
+                          backgroundColor: "white",
+                          border: "1px solid #E5E7EB",
+                          borderRadius: "12px",
+                          boxShadow: "0 10px 15px -3px rgba(0, 0, 0, 0.1)",
+                        }}
+                      />
+                      <Bar dataKey="monthlyPayment" fill="#10B981" radius={[4, 4, 0, 0]} />
+                    </BarChart>
+                  </ResponsiveContainer>
+                </CardContent>
+              </Card>
+            </div>
+          </TabsContent>
+        </Tabs>
+      </div>
 
       {/* Premium Action Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
