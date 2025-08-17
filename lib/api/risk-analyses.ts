@@ -1,75 +1,111 @@
 import { supabase } from "@/lib/supabase"
-import type { FinancialProfile, Credit, RiskAnalysis } from "@/lib/types"
-
-export async function saveRiskAnalysis(
-  userId: string,
-  analysisData: any,
-  financialProfile: FinancialProfile,
-  credits: Credit[],
-): Promise<RiskAnalysis> {
-  const { data, error } = await supabase
-    .from("risk_analyses")
-    .insert({
-      user_id: userId,
-      overall_risk_score: analysisData.overall_risk_score,
-      overall_risk_color: analysisData.overall_risk_color,
-      debt_to_income_ratio: analysisData.debt_to_income_ratio,
-      monthly_income: financialProfile.monthly_income,
-      total_debt_amount: analysisData.total_debt_amount,
-      analysis_data: analysisData,
-      financial_profile_snapshot: financialProfile,
-      credits_snapshot: credits,
-    })
-    .select()
-    .single()
-
-  if (error) {
-    console.error("Risk analizi kaydetme hatası:", error)
-    throw new Error("Risk analizi kaydedilemedi")
-  }
-
-  return data
-}
+import type { RiskAnalysis } from "@/lib/types"
 
 export async function getRiskAnalyses(userId: string): Promise<RiskAnalysis[]> {
-  const { data, error } = await supabase
-    .from("risk_analyses")
-    .select("*")
-    .eq("user_id", userId)
-    .order("created_at", { ascending: false })
+  try {
+    const { data, error } = await supabase
+      .from("risk_analyses")
+      .select("*")
+      .eq("user_id", userId)
+      .order("created_at", { ascending: false })
 
-  if (error) {
-    console.error("Risk analizleri getirme hatası:", error)
-    throw new Error("Risk analizleri getirilemedi")
+    if (error) {
+      console.error("Error fetching risk analyses:", error)
+      throw error
+    }
+
+    return data || []
+  } catch (error) {
+    console.error("Error in getRiskAnalyses:", error)
+    throw error
   }
-
-  return data || []
 }
 
 export async function getRiskAnalysis(userId: string, analysisId: string): Promise<RiskAnalysis | null> {
-  const { data, error } = await supabase
-    .from("risk_analyses")
-    .select("*")
-    .eq("user_id", userId)
-    .eq("id", analysisId)
-    .single()
+  try {
+    const { data, error } = await supabase
+      .from("risk_analyses")
+      .select("*")
+      .eq("user_id", userId)
+      .eq("id", analysisId)
+      .single()
 
-  if (error) {
-    if (error.code === "PGRST116") {
-      return null // Not found
+    if (error) {
+      console.error("Error fetching risk analysis:", error)
+      throw error
     }
-    console.error("Risk analizi getirme hatası:", error)
-    throw new Error("Risk analizi getirilemedi")
-  }
 
-  return data
+    return data
+  } catch (error) {
+    console.error("Error in getRiskAnalysis:", error)
+    throw error
+  }
+}
+
+export async function saveRiskAnalysis(userId: string, analysisData: Partial<RiskAnalysis>): Promise<RiskAnalysis> {
+  try {
+    const { data, error } = await supabase
+      .from("risk_analyses")
+      .insert({
+        user_id: userId,
+        ...analysisData,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+      })
+      .select()
+      .single()
+
+    if (error) {
+      console.error("Error saving risk analysis:", error)
+      throw error
+    }
+
+    return data
+  } catch (error) {
+    console.error("Error in saveRiskAnalysis:", error)
+    throw error
+  }
 }
 
 export async function deleteRiskAnalysis(userId: string, analysisId: string): Promise<void> {
-  const { error } = await supabase.from("risk_analyses").delete().eq("user_id", userId).eq("id", analysisId)
+  try {
+    const { error } = await supabase.from("risk_analyses").delete().eq("user_id", userId).eq("id", analysisId)
 
-  if (error) {
-    console.error("Risk analizi silme hatası:", error)
-    throw new Error("Risk analizi silinemedi")
+    if (error) {
+      console.error("Error deleting risk analysis:", error)
+      throw error
+    }
+  } catch (error) {
+    console.error("Error in deleteRiskAnalysis:", error)
+    throw error
+  }
+}
+
+export async function updateRiskAnalysis(
+  userId: string,
+  analysisId: string,
+  updates: Partial<RiskAnalysis>,
+): Promise<RiskAnalysis> {
+  try {
+    const { data, error } = await supabase
+      .from("risk_analyses")
+      .update({
+        ...updates,
+        updated_at: new Date().toISOString(),
+      })
+      .eq("user_id", userId)
+      .eq("id", analysisId)
+      .select()
+      .single()
+
+    if (error) {
+      console.error("Error updating risk analysis:", error)
+      throw error
+    }
+
+    return data
+  } catch (error) {
+    console.error("Error in updateRiskAnalysis:", error)
+    throw error
   }
 }
