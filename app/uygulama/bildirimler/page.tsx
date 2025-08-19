@@ -16,7 +16,6 @@ import {
   markNotificationAsRead,
   markAllNotificationsAsRead,
   deleteNotification,
-  createPaymentReminders,
 } from "@/lib/api/notifications"
 import {
   Bell,
@@ -110,7 +109,24 @@ export default function BildirimlerPage() {
     if (!user?.id) return
 
     try {
-      await createPaymentReminders(user.id)
+      // API endpoint'ini çağır
+      const response = await fetch("/api/notifications/auto-create", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ userId: user.id }),
+      })
+
+      if (response.ok) {
+        const result = await response.json()
+        console.log("✅ Otomatik bildirimler oluşturuldu:", result.message)
+
+        // Eğer yeni bildirimler oluşturulduysa sayfayı yenile
+        if (result.notifications && result.notifications.length > 0) {
+          await loadNotifications()
+        }
+      }
     } catch (error) {
       console.error("Error auto-creating notifications:", error)
     }
@@ -280,7 +296,7 @@ export default function BildirimlerPage() {
             <CardTitle className="text-xl font-bold text-gray-800">Bildirim Listesi</CardTitle>
 
             <div className="flex items-center gap-2 flex-wrap">
-              <Button variant="outline" size="sm" onClick={loadNotifications} className="gap-2">
+              <Button variant="outline" size="sm" onClick={loadNotifications} className="gap-2 bg-transparent">
                 <RefreshCw className="h-4 w-4" />
                 Yenile
               </Button>

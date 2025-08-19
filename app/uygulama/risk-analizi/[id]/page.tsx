@@ -55,6 +55,20 @@ import { formatDistanceToNow } from "date-fns"
 import { tr } from "date-fns/locale"
 import { MetricCard } from "@/components/metric-card"
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible"
+import {
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  ResponsiveContainer,
+  PieChart as RechartsPieChart,
+  Cell,
+  Pie,
+} from "recharts"
+
+const CHART_COLORS = ["#10B981", "#3B82F6", "#F59E0B", "#EF4444", "#8B5CF6", "#06B6D4", "#F97316", "#84CC16"]
 
 const getSeverityBadgeVariant = (
   severity: string | undefined,
@@ -131,14 +145,17 @@ const SectionCard: React.FC<{
   description?: string
   children: React.ReactNode
   defaultOpen?: boolean
-}> = ({ title, icon, description, children, defaultOpen = true }) => (
+  iconGradient?: string
+}> = ({ title, icon, description, children, defaultOpen = true, iconGradient = "from-gray-500 to-gray-600" }) => (
   <Collapsible defaultOpen={defaultOpen}>
     <Card className="border-0 shadow-lg overflow-hidden">
       <CollapsibleTrigger className="w-full">
         <CardHeader className="bg-gray-50 dark:bg-gray-800/50 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors">
           <div className="flex items-center justify-between">
             <div className="flex items-center">
-              <span className="p-2 bg-primary/10 text-primary rounded-lg mr-4">{icon}</span>
+              <span className={`p-2 bg-gradient-to-r ${iconGradient} text-white rounded-lg mr-4 shadow-lg`}>
+                {icon}
+              </span>
               <div>
                 <CardTitle className="text-xl font-semibold text-gray-800 dark:text-gray-100">{title}</CardTitle>
                 {description && (
@@ -209,7 +226,7 @@ export default function RiskAnalysisDetailPage() {
     setLoading(true)
     setError(null)
     try {
-      const data = await getRiskAnalysisById(userId, params.id as string)
+      const data = await getRiskAnalysisById(params.id as string, userId)
       if (!data) {
         setError("Risk analizi bulunamadı.")
         setAnalysis(null)
@@ -235,7 +252,7 @@ export default function RiskAnalysisDetailPage() {
 
     setIsDeleting(true)
     try {
-      await deleteRiskAnalysis(user.id, analysis.id)
+      await deleteRiskAnalysis(analysis.id, user.id)
       toast({
         title: "Başarılı",
         description: "Risk analizi başarıyla silindi.",
@@ -470,7 +487,8 @@ export default function RiskAnalysisDetailPage() {
           <TabsContent value="summary" className="p-4 md:p-6 space-y-6">
             <SectionCard
               title="Genel Risk Özeti"
-              icon={<FileText className="text-blue-600" />}
+              icon={<FileText className="h-5 w-5" />}
+              iconGradient="from-blue-500 to-indigo-600"
               description="Finansal durumunuzun genel bir değerlendirmesi."
             >
               <p className="text-base">{analysisData.overallRiskSummary || "Genel özet bulunmamaktadır."}</p>
@@ -479,7 +497,8 @@ export default function RiskAnalysisDetailPage() {
             {analysisData.debtToIncomeRatio && (
               <SectionCard
                 title="Borç/Gelir Oranı (DTI)"
-                icon={<Scale className="text-indigo-600" />}
+                icon={<Scale className="h-5 w-5" />}
+                iconGradient="from-indigo-500 to-purple-600"
                 description="Gelirinize oranla borçlarınızın durumu."
               >
                 <div className="space-y-3">
@@ -523,7 +542,8 @@ export default function RiskAnalysisDetailPage() {
             {analysisData.cashFlowAnalysis && (
               <SectionCard
                 title="Nakit Akış Analizi"
-                icon={<Banknote className="text-green-600" />}
+                icon={<Banknote className="h-5 w-5" />}
+                iconGradient="from-emerald-500 to-teal-600"
                 description="Aylık gelir ve giderlerinizin dengesi."
               >
                 <div className="space-y-3">
@@ -575,7 +595,8 @@ export default function RiskAnalysisDetailPage() {
           <TabsContent value="factors" className="p-4 md:p-6 space-y-6">
             <SectionCard
               title="Temel Risk Faktörleri"
-              icon={<TrendingDown className="text-red-600" />}
+              icon={<TrendingDown className="h-5 w-5" />}
+              iconGradient="from-red-500 to-rose-600"
               description="Finansal sağlığınızı olumsuz etkileyebilecek önemli noktalar."
             >
               {analysisData.keyRiskFactors && analysisData.keyRiskFactors.length > 0 ? (
@@ -616,7 +637,8 @@ export default function RiskAnalysisDetailPage() {
 
             <SectionCard
               title="Pozitif Faktörler"
-              icon={<TrendingUp className="text-emerald-600" />}
+              icon={<TrendingUp className="h-5 w-5" />}
+              iconGradient="from-emerald-500 to-green-600"
               description="Finansal durumunuzu olumlu etkileyen güçlü yanlarınız."
             >
               {analysisData.positiveFactors && analysisData.positiveFactors.length > 0 ? (
@@ -655,7 +677,8 @@ export default function RiskAnalysisDetailPage() {
           <TabsContent value="recommendations" className="p-4 md:p-6">
             <SectionCard
               title="Öneriler"
-              icon={<Lightbulb className="text-yellow-500" />}
+              icon={<Lightbulb className="h-5 w-5" />}
+              iconGradient="from-yellow-500 to-amber-600"
               description="Finansal sağlığınızı iyileştirmek için eyleme geçirilebilir adımlar."
             >
               {analysisData.recommendations && analysisData.recommendations.length > 0 ? (
@@ -696,7 +719,8 @@ export default function RiskAnalysisDetailPage() {
             {analysisData.assetLiabilityAnalysis && (
               <SectionCard
                 title="Varlık ve Yükümlülük Analizi"
-                icon={<PieChart className="text-cyan-600" />}
+                icon={<PieChart className="h-5 w-5" />}
+                iconGradient="from-cyan-500 to-blue-600"
                 description="Mali durumunuzun anlık görüntüsü."
               >
                 <div className="space-y-3">
@@ -759,7 +783,8 @@ export default function RiskAnalysisDetailPage() {
             {analysisData.savingsAnalysis && (
               <SectionCard
                 title="Tasarruf Analizi"
-                icon={<PiggyBank className="text-pink-600" />}
+                icon={<PiggyBank className="h-5 w-5" />}
+                iconGradient="from-pink-500 to-rose-600"
                 description="Acil durum fonu ve tasarruf alışkanlıklarınız."
               >
                 <div className="space-y-3">
@@ -786,7 +811,8 @@ export default function RiskAnalysisDetailPage() {
             {analysisData.creditHealthSummary && (
               <SectionCard
                 title="Kredi Sağlığı Özeti"
-                icon={<CreditCard className="text-orange-600" />}
+                icon={<CreditCard className="h-5 w-5" />}
+                iconGradient="from-orange-500 to-red-600"
                 description="Kredi kullanımınızın genel bir değerlendirmesi."
               >
                 <p>{analysisData.creditHealthSummary}</p>
@@ -812,33 +838,168 @@ export default function RiskAnalysisDetailPage() {
             {analysisData.chartsData && (
               <SectionCard
                 title="Grafik Verileri (Önizleme)"
-                icon={<BarChart3 className="text-teal-600" />}
+                icon={<BarChart3 className="h-5 w-5" />}
+                iconGradient="from-teal-500 to-cyan-600"
                 description="AI tarafından üretilen grafik verileri."
               >
-                {analysisData.chartsData.debtBreakdown && analysisData.chartsData.debtBreakdown.length > 0 && (
-                  <div>
-                    <h5 className="font-semibold mb-1">Borç Dağılımı:</h5>
-                    <ul className="list-disc list-inside text-sm space-y-1">
-                      {analysisData.chartsData.debtBreakdown.map((item, idx) => (
-                        <li key={idx} style={{ color: item.color || "inherit" }}>
-                          {item.name}: ₺{item.amount.toLocaleString("tr-TR")}
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-                )}
-                {analysisData.chartsData.assetAllocation && analysisData.chartsData.assetAllocation.length > 0 && (
-                  <div className="mt-3">
-                    <h5 className="font-semibold mb-1">Varlık Dağılımı:</h5>
-                    <ul className="list-disc list-inside text-sm space-y-1">
-                      {analysisData.chartsData.assetAllocation.map((item, idx) => (
-                        <li key={idx} style={{ color: item.color || "inherit" }}>
-                          {item.name}: ₺{item.value.toLocaleString("tr-TR")}
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-                )}
+                <div className="space-y-8">
+                  {analysisData.chartsData.debtBreakdown && analysisData.chartsData.debtBreakdown.length > 0 && (
+                    <div>
+                      <h5 className="font-semibold mb-4 text-lg">Borç Dağılımı</h5>
+                      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                        {/* Pie Chart */}
+                        <div className="bg-gradient-to-br from-slate-50 to-gray-100 rounded-xl p-4">
+                          <ResponsiveContainer width="100%" height={250}>
+                            <RechartsPieChart>
+                              <Pie
+                                data={analysisData.chartsData.debtBreakdown.map((item, index) => ({
+                                  name: item.name,
+                                  value: item.amount,
+                                  color: item.color || CHART_COLORS[index % CHART_COLORS.length],
+                                }))}
+                                cx="50%"
+                                cy="50%"
+                                outerRadius={80}
+                                innerRadius={40}
+                                paddingAngle={5}
+                                dataKey="value"
+                                label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
+                              >
+                                {analysisData.chartsData.debtBreakdown.map((entry, index) => (
+                                  <Cell
+                                    key={`cell-${index}`}
+                                    fill={entry.color || CHART_COLORS[index % CHART_COLORS.length]}
+                                  />
+                                ))}
+                              </Pie>
+                              <Tooltip
+                                formatter={(value: any) => [`₺${Number(value).toLocaleString("tr-TR")}`, "Tutar"]}
+                                contentStyle={{
+                                  backgroundColor: "white",
+                                  border: "1px solid #E5E7EB",
+                                  borderRadius: "12px",
+                                  boxShadow: "0 10px 15px -3px rgba(0, 0, 0, 0.1)",
+                                }}
+                              />
+                            </RechartsPieChart>
+                          </ResponsiveContainer>
+                        </div>
+
+                        {/* Bar Chart */}
+                        <div className="bg-gradient-to-br from-slate-50 to-gray-100 rounded-xl p-4">
+                          <ResponsiveContainer width="100%" height={250}>
+                            <BarChart data={analysisData.chartsData.debtBreakdown}>
+                              <CartesianGrid strokeDasharray="3 3" stroke="#E5E7EB" />
+                              <XAxis
+                                dataKey="name"
+                                stroke="#6B7280"
+                                fontSize={12}
+                                angle={-45}
+                                textAnchor="end"
+                                height={80}
+                              />
+                              <YAxis
+                                stroke="#6B7280"
+                                fontSize={12}
+                                tickFormatter={(value) => `₺${(value / 1000).toFixed(0)}K`}
+                              />
+                              <Tooltip
+                                formatter={(value: any) => [`₺${Number(value).toLocaleString("tr-TR")}`, "Borç Tutarı"]}
+                                contentStyle={{
+                                  backgroundColor: "white",
+                                  border: "1px solid #E5E7EB",
+                                  borderRadius: "12px",
+                                  boxShadow: "0 10px 15px -3px rgba(0, 0, 0, 0.1)",
+                                }}
+                              />
+                              <Bar dataKey="amount" fill="#10B981" radius={[4, 4, 0, 0]} />
+                            </BarChart>
+                          </ResponsiveContainer>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
+                  {analysisData.chartsData.assetAllocation && analysisData.chartsData.assetAllocation.length > 0 && (
+                    <div className="border-t pt-6">
+                      <h5 className="font-semibold mb-4 text-lg">Varlık Dağılımı</h5>
+                      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                        {/* Asset Pie Chart */}
+                        <div className="bg-gradient-to-br from-emerald-50 to-teal-100 rounded-xl p-4">
+                          <ResponsiveContainer width="100%" height={250}>
+                            <RechartsPieChart>
+                              <Pie
+                                data={analysisData.chartsData.assetAllocation.map((item, index) => ({
+                                  name: item.name,
+                                  value: item.value,
+                                  color: item.color || CHART_COLORS[index % CHART_COLORS.length],
+                                }))}
+                                cx="50%"
+                                cy="50%"
+                                outerRadius={80}
+                                innerRadius={40}
+                                paddingAngle={5}
+                                dataKey="value"
+                                label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
+                              >
+                                {analysisData.chartsData.assetAllocation.map((entry, index) => (
+                                  <Cell
+                                    key={`cell-${index}`}
+                                    fill={entry.color || CHART_COLORS[index % CHART_COLORS.length]}
+                                  />
+                                ))}
+                              </Pie>
+                              <Tooltip
+                                formatter={(value: any) => [`₺${Number(value).toLocaleString("tr-TR")}`, "Değer"]}
+                                contentStyle={{
+                                  backgroundColor: "white",
+                                  border: "1px solid #E5E7EB",
+                                  borderRadius: "12px",
+                                  boxShadow: "0 10px 15px -3px rgba(0, 0, 0, 0.1)",
+                                }}
+                              />
+                            </RechartsPieChart>
+                          </ResponsiveContainer>
+                        </div>
+
+                        {/* Asset Bar Chart */}
+                        <div className="bg-gradient-to-br from-emerald-50 to-teal-100 rounded-xl p-4">
+                          <ResponsiveContainer width="100%" height={250}>
+                            <BarChart data={analysisData.chartsData.assetAllocation}>
+                              <CartesianGrid strokeDasharray="3 3" stroke="#E5E7EB" />
+                              <XAxis
+                                dataKey="name"
+                                stroke="#6B7280"
+                                fontSize={12}
+                                angle={-45}
+                                textAnchor="end"
+                                height={80}
+                              />
+                              <YAxis
+                                stroke="#6B7280"
+                                fontSize={12}
+                                tickFormatter={(value) => `₺${(value / 1000).toFixed(0)}K`}
+                              />
+                              <Tooltip
+                                formatter={(value: any) => [
+                                  `₺${Number(value).toLocaleString("tr-TR")}`,
+                                  "Varlık Değeri",
+                                ]}
+                                contentStyle={{
+                                  backgroundColor: "white",
+                                  border: "1px solid #E5E7EB",
+                                  borderRadius: "12px",
+                                  boxShadow: "0 10px 15px -3px rgba(0, 0, 0, 0.1)",
+                                }}
+                              />
+                              <Bar dataKey="value" fill="#10B981" radius={[4, 4, 0, 0]} />
+                            </BarChart>
+                          </ResponsiveContainer>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                </div>
               </SectionCard>
             )}
           </TabsContent>
@@ -847,7 +1008,8 @@ export default function RiskAnalysisDetailPage() {
             {analysisData.futureOutlook && (
               <SectionCard
                 title="Gelecek Perspektifi"
-                icon={<Zap className="text-fuchsia-600" />}
+                icon={<Zap className="h-5 w-5" />}
+                iconGradient="from-fuchsia-500 to-purple-600"
                 description="Finansal geleceğinize dair öngörüler ve fırsatlar."
               >
                 <div className="space-y-4">

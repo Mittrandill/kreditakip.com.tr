@@ -93,6 +93,20 @@ export default function DashboardPage() {
         setLoadingData(true)
         setError(null)
         try {
+          // Önce bildirim kontrolü yap
+          try {
+            await fetch("/api/notifications/auto-create", {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+              },
+              body: JSON.stringify({ userId: user.id }),
+            })
+          } catch (notificationError) {
+            console.error("Bildirim oluşturma hatası:", notificationError)
+            // Bildirim hatası ana veri yüklemeyi engellemez
+          }
+
           const [creditsData, upcomingPaymentsData] = await Promise.all([
             getCredits(user.id) as Promise<any[]>,
             getUpcomingPayments(user.id, 30) as Promise<any[]>,

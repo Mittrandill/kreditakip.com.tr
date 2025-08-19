@@ -580,6 +580,7 @@ export default function AyarlarPage() {
                             profileData.avatar_url ||
                             "/placeholder.svg?height=80&width=80&text=User" ||
                             "/placeholder.svg" ||
+                            "/placeholder.svg" ||
                             "/placeholder.svg"
                           }
                           alt="Profil"
@@ -739,40 +740,110 @@ export default function AyarlarPage() {
                           <Input
                             id="monthly_income"
                             type="number"
-                            placeholder="Örn: 15000"
+                            placeholder="Örn: 25000"
                             value={financialProfileData.monthly_income ?? ""}
                             onChange={handleFinancialInputChange}
                           />
+                          <p className="text-xs text-muted-foreground">Vergi sonrası aylık geliriniz</p>
                         </div>
                         <div className="space-y-2">
                           <Label htmlFor="monthly_expenses">Aylık Ortalama Gider (₺)</Label>
                           <Input
                             id="monthly_expenses"
                             type="number"
-                            placeholder="Örn: 10000"
+                            placeholder="Örn: 18000"
                             value={financialProfileData.monthly_expenses ?? ""}
                             onChange={handleFinancialInputChange}
                           />
+                          <p className="text-xs text-muted-foreground">Kira, market, faturalar dahil tüm giderler</p>
                         </div>
                         <div className="space-y-2">
-                          <Label htmlFor="total_assets">Toplam Varlıklar (₺)</Label>
+                          <Label htmlFor="emergency_fund">Acil Durum Fonu (₺)</Label>
                           <Input
-                            id="total_assets"
+                            id="emergency_fund"
                             type="number"
                             placeholder="Örn: 50000"
-                            value={financialProfileData.total_assets ?? ""}
+                            value={financialProfileData.emergency_fund ?? ""}
                             onChange={handleFinancialInputChange}
                           />
+                          <p className="text-xs text-muted-foreground">Beklenmedik durumlar için ayrılan para</p>
                         </div>
                         <div className="space-y-2">
-                          <Label htmlFor="total_liabilities">Toplam Yükümlülükler (Krediler Hariç) (₺)</Label>
+                          <Label htmlFor="investment_portfolio">Yatırım Portföyü (₺)</Label>
                           <Input
-                            id="total_liabilities"
+                            id="investment_portfolio"
                             type="number"
-                            placeholder="Örn: 5000"
-                            value={financialProfileData.total_liabilities ?? ""}
+                            placeholder="Örn: 75000"
+                            value={financialProfileData.investment_portfolio ?? ""}
                             onChange={handleFinancialInputChange}
                           />
+                          <p className="text-xs text-muted-foreground">Hisse, fon, altın vb. yatırımlar</p>
+                        </div>
+                        <div className="space-y-2">
+                          <Label htmlFor="real_estate_value">Gayrimenkul Değeri (₺)</Label>
+                          <Input
+                            id="real_estate_value"
+                            type="number"
+                            placeholder="Örn: 800000"
+                            value={financialProfileData.real_estate_value ?? ""}
+                            onChange={handleFinancialInputChange}
+                          />
+                          <p className="text-xs text-muted-foreground">Sahip olduğunuz ev/arsa değeri</p>
+                        </div>
+                        <div className="space-y-2">
+                          <Label htmlFor="vehicle_value">Araç Değeri (₺)</Label>
+                          <Input
+                            id="vehicle_value"
+                            type="number"
+                            placeholder="Örn: 150000"
+                            value={financialProfileData.vehicle_value ?? ""}
+                            onChange={handleFinancialInputChange}
+                          />
+                          <p className="text-xs text-muted-foreground">Sahip olduğunuz araçların piyasa değeri</p>
+                        </div>
+                        <div className="space-y-2">
+                          <Label htmlFor="credit_card_debt">Kredi Kartı Borcu (₺)</Label>
+                          <Input
+                            id="credit_card_debt"
+                            type="number"
+                            placeholder="Örn: 12000"
+                            value={financialProfileData.credit_card_debt ?? ""}
+                            onChange={handleFinancialInputChange}
+                          />
+                          <p className="text-xs text-muted-foreground">Toplam kredi kartı borcunuz</p>
+                        </div>
+                        <div className="space-y-2">
+                          <Label htmlFor="other_monthly_obligations">Diğer Aylık Yükümlülükler (₺)</Label>
+                          <Input
+                            id="other_monthly_obligations"
+                            type="number"
+                            placeholder="Örn: 2500"
+                            value={financialProfileData.other_monthly_obligations ?? ""}
+                            onChange={handleFinancialInputChange}
+                          />
+                          <p className="text-xs text-muted-foreground">Nafaka, öğrenim kredisi vb.</p>
+                        </div>
+                        <div className="space-y-2">
+                          <Label htmlFor="employment_duration_months">Mevcut İşteki Çalışma Süresi (Ay)</Label>
+                          <Input
+                            id="employment_duration_months"
+                            type="number"
+                            placeholder="Örn: 36"
+                            value={financialProfileData.employment_duration_months ?? ""}
+                            onChange={handleFinancialInputChange}
+                          />
+                          <p className="text-xs text-muted-foreground">Mevcut işyerindeki deneyim süresi</p>
+                        </div>
+                        <div className="space-y-2">
+                          <Label htmlFor="dependents_count">Bakmakla Yükümlü Kişi Sayısı</Label>
+                          <Input
+                            id="dependents_count"
+                            type="number"
+                            placeholder="Örn: 2"
+                            value={financialProfileData.dependents_count ?? ""}
+                            onChange={handleFinancialInputChange}
+                          />
+                          <p className="text-xs text-muted-foreground">Çocuk, yaşlı ebeveyn vb.</p>
                         </div>
                       </div>
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">

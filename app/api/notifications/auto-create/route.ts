@@ -1,6 +1,5 @@
 import { type NextRequest, NextResponse } from "next/server"
-import { createUpcomingPaymentNotifications } from "@/lib/api/notifications"
-import { supabase } from "@/lib/supabase"
+import { createWeeklyPaymentNotifications } from "@/lib/api/notifications"
 
 export async function POST(request: NextRequest) {
   try {
@@ -10,15 +9,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "User ID is required" }, { status: 400 })
     }
 
-    // Kullanıcının varlığını kontrol et
-    const { data: user, error: userError } = await supabase.auth.getUser()
-
-    if (userError || !user) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
-    }
-
-    // Otomatik bildirimleri oluştur
-    const notifications = await createUpcomingPaymentNotifications(userId)
+    const notifications = await createWeeklyPaymentNotifications(userId)
 
     return NextResponse.json({
       success: true,
