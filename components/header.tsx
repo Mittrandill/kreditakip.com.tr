@@ -301,15 +301,23 @@ export default function Header({ pageTitle }: HeaderProps) {
   }, [pathname, pageTitle])
 
   const loadHeaderNotifications = async () => {
-    if (!user?.id) return
+    if (!user?.id) {
+      console.log("[v0] No user ID available for notifications")
+      return
+    }
+
     try {
+      console.log("[v0] Loading notifications for user:", user.id)
       const data = await getNotifications(user.id)
       const recent = data?.slice(0, 5) || []
       const unread = data?.filter((n) => !n.is_read).length || 0
       setNotifications(recent)
       setUnreadCount(unread)
+      console.log("[v0] Successfully loaded notifications:", recent.length, "recent,", unread, "unread")
     } catch (error) {
-      console.error("Error loading header notifications:", error)
+      console.error("[v0] Error loading header notifications:", error)
+      setNotifications([])
+      setUnreadCount(0)
     }
   }
 
@@ -344,10 +352,12 @@ export default function Header({ pageTitle }: HeaderProps) {
   }, [notificationOpen])
 
   useEffect(() => {
-    loadHeaderNotifications()
-    const interval = setInterval(loadHeaderNotifications, 30000)
-    return () => clearInterval(interval)
-  }, [user?.id])
+    if (user?.id && !loading) {
+      loadHeaderNotifications()
+      const interval = setInterval(loadHeaderNotifications, 30000)
+      return () => clearInterval(interval)
+    }
+  }, [user?.id, loading])
 
   const handleSignOut = async () => {
     try {

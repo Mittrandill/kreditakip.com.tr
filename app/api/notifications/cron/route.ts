@@ -9,8 +9,6 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
     }
 
-    console.log("🕐 Cron job started:", new Date().toISOString())
-
     // Aktif kullanıcıları al (e-posta bildirimleri açık olanlar)
     const { data: users, error: usersError } = await supabase
       .from("notification_preferences")
@@ -21,8 +19,6 @@ export async function GET(request: NextRequest) {
       console.error("Error fetching users:", usersError)
       return NextResponse.json({ error: "Failed to fetch users" }, { status: 500 })
     }
-
-    console.log(`📧 Found ${users.length} users with email notifications enabled`)
 
     const results = {
       totalUsers: users.length,
@@ -106,13 +102,6 @@ export async function GET(request: NextRequest) {
     }
 
     const totalSent = Object.values(results.notifications).reduce((sum, count) => sum + count, 0)
-
-    console.log("✅ Cron job completed:", {
-      totalUsers: results.totalUsers,
-      totalEmailsSent: totalSent,
-      breakdown: results.notifications,
-      errors: results.errors.length,
-    })
 
     return NextResponse.json({
       success: true,

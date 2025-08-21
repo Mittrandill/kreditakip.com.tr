@@ -42,7 +42,6 @@ import { tr } from "date-fns/locale"
 import { useAuth } from "@/hooks/use-auth"
 import { getCredits } from "@/lib/api/credits"
 import { getAllPayments } from "@/lib/api/payments"
-import { getCreditCards } from "@/lib/api/credit-cards"
 import type { Credit, Bank, CreditType, PaymentPlan } from "@/lib/types"
 import { formatCurrency, formatPercent } from "@/lib/format"
 import PDFReportModal from "@/components/pdf-report-modal"
@@ -101,7 +100,6 @@ export default function RaporlarPage() {
   const { user, loading: authLoading } = useAuth()
   const [credits, setCredits] = useState<PopulatedCredit[]>([])
   const [payments, setPayments] = useState<PopulatedPayment[]>([])
-  const [creditCards, setCreditCards] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
@@ -126,15 +124,13 @@ export default function RaporlarPage() {
       setLoading(true)
       setError(null)
 
-      const [creditsData, paymentsData, creditCardsData] = await Promise.all([
+      const [creditsData, paymentsData] = await Promise.all([
         getCredits(user.id) as Promise<PopulatedCredit[]>,
         getAllPayments(user.id, 24, 12) as Promise<PopulatedPayment[]>,
-        getCreditCards(user.id).catch(() => []),
       ])
 
       setCredits(creditsData || [])
       setPayments(paymentsData || [])
-      setCreditCards(creditCardsData || [])
     } catch (error) {
       console.error("Error fetching data:", error)
       setError("Veriler yüklenirken bir hata oluştu.")
@@ -544,7 +540,6 @@ export default function RaporlarPage() {
                     amount: payment.total_payment,
                     status: payment.status,
                   })),
-                  creditCards: creditCards || [],
                   summary: {
                     name: user?.full_name || "Kullanıcı",
                     email: user?.email || "email@example.com",

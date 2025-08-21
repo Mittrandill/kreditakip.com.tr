@@ -11,16 +11,15 @@ export default function AuthCallback() {
   const [isProcessing, setIsProcessing] = useState(true)
 
   useEffect(() => {
-
     const handleAuthCallback = async () => {
       try {
         // URL parametrelerini kontrol et
         const urlParams = new URLSearchParams(window.location.search)
-        const code = urlParams.get('code')
-        const error = urlParams.get('error')
-        
+        const code = urlParams.get("code")
+        const error = urlParams.get("error")
+
         if (error) {
-          const errorDescription = urlParams.get('error_description')
+          const errorDescription = urlParams.get("error_description")
           toast({
             variant: "destructive",
             title: "Giriş Hatası",
@@ -32,7 +31,9 @@ export default function AuthCallback() {
 
         if (!code) {
           // Code yoksa mevcut session'ı kontrol et
-          const { data: { session: currentSession } } = await supabase.auth.getSession()
+          const {
+            data: { session: currentSession },
+          } = await supabase.auth.getSession()
           if (currentSession) {
             handleUserProfile(currentSession.user).catch(console.error)
             router.push("/uygulama/ana-sayfa")
@@ -46,37 +47,39 @@ export default function AuthCallback() {
         // Kısa bir delay sonra session kontrolü
         setTimeout(async () => {
           try {
-            const { data: { session } } = await supabase.auth.getSession()
-            
+            const {
+              data: { session },
+            } = await supabase.auth.getSession()
+
             if (session) {
               // Session var, direkt yönlendir
               toast({
                 title: "Giriş Başarılı",
                 description: "Google ile giriş işlemi tamamlandı.",
               })
-              
+
               // Profil kontrolünü arka planda yap (await etme)
               handleUserProfile(session.user).catch(console.error)
-              
+
               router.push("/uygulama/ana-sayfa")
             } else {
               // Session henüz yok, listener başlat
               const { data: authListener } = supabase.auth.onAuthStateChange(async (event, session) => {
-                if (event === 'SIGNED_IN' && session) {
+                if (event === "SIGNED_IN" && session) {
                   authListener.subscription.unsubscribe()
-                  
+
                   toast({
                     title: "Giriş Başarılı",
                     description: "Google ile giriş işlemi tamamlandı.",
                   })
-                  
+
                   // Profil kontrolünü arka planda yap
                   handleUserProfile(session.user).catch(console.error)
-                  
+
                   router.push("/uygulama/ana-sayfa")
                 }
               })
-              
+
               // 5 saniye timeout
               setTimeout(() => {
                 authListener.subscription.unsubscribe()
@@ -93,7 +96,6 @@ export default function AuthCallback() {
             router.push("/giris")
           }
         }, 1000)
-
       } catch (error: any) {
         console.error("Auth callback error:", error)
         toast({
@@ -117,7 +119,6 @@ export default function AuthCallback() {
           .maybeSingle()
 
         if (profileCheckError && profileCheckError.code !== "PGRST116") {
-          console.log("Profile check error:", profileCheckError.message)
           // Profil hatası olsa bile devam et
           return
         }
@@ -137,21 +138,16 @@ export default function AuthCallback() {
               user.user_metadata?.full_name?.split(" ").slice(1).join(" ") ||
               user.user_metadata?.name?.split(" ").slice(1).join(" ") ||
               "",
-            avatar_url: user.user_metadata?.avatar_url || 
-                      user.user_metadata?.picture || null,
+            avatar_url: user.user_metadata?.avatar_url || user.user_metadata?.picture || null,
           }
 
-          const { error: profileError } = await supabase
-            .from("profiles")
-            .insert(newProfile)
+          const { error: profileError } = await supabase.from("profiles").insert(newProfile)
 
           if (profileError) {
-            console.log("Profile creation error:", profileError.message)
             // Profil oluşturulamasa bile devam et
           }
         }
       } catch (error: any) {
-        console.log("Profile error:", error.message)
         // Profil hatası olsa bile devam et
       }
     }

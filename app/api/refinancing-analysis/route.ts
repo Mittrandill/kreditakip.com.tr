@@ -20,8 +20,6 @@ function cleanJsonString(str: string): string {
 }
 
 function extractJsonFromResponse(response: string): any {
-  console.log("[SERVER] Raw AI Response:", response.substring(0, 1000))
-
   // Locate a JSON-looking block – fenced or bare.
   const jsonMatch =
     response.match(/```json\s*([\s\S]*?)\s*```/) || response.match(/```[\s\S]*?```/) || response.match(/(\{[\s\S]*\})/)
@@ -31,7 +29,6 @@ function extractJsonFromResponse(response: string): any {
   }
 
   const jsonStr = cleanJsonString(jsonMatch[1] || jsonMatch[0])
-  console.log("[SERVER] Extracted JSON string:", jsonStr.substring(0, 500))
 
   // 1️⃣  Try strict JSON first
   try {
@@ -43,7 +40,6 @@ function extractJsonFromResponse(response: string): any {
   // 2️⃣  Try lenient JSON5 parsing
   try {
     const parsed = JSON5.parse(jsonStr)
-    console.log("[SERVER] Parsed successfully with JSON5")
     return parsed
   } catch (json5Err) {
     console.error("[SERVER] JSON5 parse error:", json5Err.message)
@@ -164,8 +160,6 @@ UNUTMA: Her öneride hangi bankadan hangi koşullarda kredi alınacağını NET 
     const response = await result.response
     const text = response.text()
 
-    console.log("[SERVER] AI Response:", text.substring(0, 500) + "...")
-
     try {
       const analysisData = extractJsonFromResponse(text)
 
@@ -174,7 +168,6 @@ UNUTMA: Her öneride hangi bankadan hangi koşullarda kredi alınacağını NET 
         throw new Error("overallAssessment field missing")
       }
 
-      console.log("[SERVER] Successfully parsed analysis data")
       return NextResponse.json(analysisData)
     } catch (parseError: any) {
       console.error("[SERVER] JSON Parse Error:", parseError)

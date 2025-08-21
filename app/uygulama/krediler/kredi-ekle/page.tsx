@@ -20,7 +20,6 @@ import { CalendarModal } from "@/components/calendar-modal"
 import { formatCurrency } from "@/lib/format"
 import { supabase } from "@/lib/supabase"
 import Link from "next/link"
-import BankLogoTest from "@/components/bank-logo-test"
 import { createPaymentPlansForCredit } from "@/lib/api/payment-plans"
 
 interface CreditFormData {
@@ -157,7 +156,6 @@ export default function KrediEklePage() {
   const handleBankSelect = (bank: Bank) => {
     handleInputChange("bank_id", bank.id)
     handleInputChange("bank_name", bank.name)
-    console.log("Selected bank:", bank)
     setShowBankModal(false)
   }
 
@@ -165,7 +163,6 @@ export default function KrediEklePage() {
     if (creditType && creditType.id) {
       handleInputChange("credit_type_id", creditType.id)
       handleInputChange("credit_type_name", creditType.name)
-      console.log("Selected credit type:", creditType)
     } else {
       // Fallback for credit type
       const tempTypeId =
@@ -175,7 +172,6 @@ export default function KrediEklePage() {
           .replace(/[^a-z0-9-]/g, "") || "unknown"
       handleInputChange("credit_type_id", tempTypeId)
       handleInputChange("credit_type_name", creditType.name || creditType)
-      console.log("Credit type fallback:", tempTypeId)
     }
     setShowCreditTypeModal(false)
   }
@@ -297,12 +293,8 @@ export default function KrediEklePage() {
         calculated_interest_rate: null,
       }
 
-      console.log("Submitting credit data:", creditData)
-
       // Create the credit first
       const createdCredit = await createCredit(creditData)
-
-      console.log("Credit created successfully:", createdCredit)
 
       // Create payment plans for the credit
       try {
@@ -315,7 +307,6 @@ export default function KrediEklePage() {
         }
 
         const paymentPlans = await createPaymentPlansForCredit(createdCredit.id, paymentPlansData)
-        console.log("Payment plans created successfully:", paymentPlans.length, "plans")
 
         toast({
           title: "Başarılı",
@@ -347,9 +338,6 @@ export default function KrediEklePage() {
 
   return (
     <div className="space-y-6">
-      {/* Logo Test Component */}
-      <BankLogoTest />
-
       {/* Hero Section */}
       <Card className="overflow-hidden border-0 shadow-xl rounded-2xl">
         <div className="bg-gradient-to-r from-emerald-600 to-teal-700 p-8 text-white relative">

@@ -120,7 +120,6 @@ export default function BildirimlerPage() {
 
       if (response.ok) {
         const result = await response.json()
-        console.log("✅ Otomatik bildirimler oluşturuldu:", result.message)
 
         // Eğer yeni bildirimler oluşturulduysa sayfayı yenile
         if (result.notifications && result.notifications.length > 0) {

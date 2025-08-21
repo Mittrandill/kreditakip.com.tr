@@ -387,7 +387,6 @@ export async function POST(request: NextRequest) {
             error: error.message,
           })
         } else {
-          console.log(`✅ Email sent successfully for payment ${payment.id}:`, data)
           results.push({
             paymentId: payment.id,
             bankName,
