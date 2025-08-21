@@ -33,6 +33,8 @@ export async function updatePaymentPlan(planId: string, updates: Partial<Payment
 }
 
 export async function getPaymentHistory(creditId: string) {
+  console.log("[v0] Fetching payment history for credit:", creditId)
+
   const { data, error } = await supabase
     .from("payment_history")
     .select("*")
@@ -42,6 +44,20 @@ export async function getPaymentHistory(creditId: string) {
   if (error) {
     console.error("Error fetching payment history:", error)
     throw error
+  }
+
+  console.log("[v0] Payment history data returned:", data)
+  console.log("[v0] Number of payment records:", data?.length || 0)
+
+  if (data && data.length > 0) {
+    const uniqueMonths = [
+      ...new Set(
+        data.map((payment) =>
+          new Date(payment.payment_date).toLocaleDateString("tr-TR", { month: "long", year: "numeric" }),
+        ),
+      ),
+    ]
+    console.log("[v0] Unique months in payment history:", uniqueMonths)
   }
 
   return data
