@@ -1,6 +1,6 @@
 import jsPDF from "jspdf"
 import { format } from "date-fns"
-import tr from "date-fns/locale/tr"
+import { tr } from "date-fns/locale"
 
 const safeNumber = (value: any, defaultValue = 0): number => {
   if (value === null || value === undefined || value === "") return defaultValue
