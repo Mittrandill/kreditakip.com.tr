@@ -1,6 +1,5 @@
 import jsPDF from "jspdf"
 import { format } from "date-fns"
-import { tr } from "date-fns/locale"
 
 const safeNumber = (value: any, defaultValue = 0): number => {
   if (value === null || value === undefined || value === "") return defaultValue
@@ -249,7 +248,7 @@ class PDFReportGenerator {
       this.doc.setTextColor(...COLORS.white)
       this.doc.setFontSize(12)
       this.doc.setFont("helvetica", "bold")
-      const currentDate = format(new Date(), "dd MMMM yyyy", { locale: tr })
+      const currentDate = format(new Date(), "dd MMMM yyyy")
       this.doc.text(safeText(currentDate), this.pageWidth - 72, this.currentY + 27, { align: "center" })
 
       // User info
@@ -317,6 +316,7 @@ class PDFReportGenerator {
 
       this.doc.setTextColor(...COLORS.textLight)
       this.doc.setFontSize(9)
+      this.doc.setFont("helvetica", "normal")
       this.doc.text(`${data.activeCredits} aktif kredi`, card2X + 10, this.currentY + 50)
 
       // Card 3 - Monthly Payment
