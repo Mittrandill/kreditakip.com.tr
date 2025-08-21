@@ -581,7 +581,6 @@ export default function DashboardPage() {
         <Card className="shadow-lg hover:shadow-xl dark:shadow-gray-900/20 dark:hover:shadow-gray-900/30 transition-shadow duration-300 rounded-xl border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800">
           <CardHeader className="pb-4">
             <CardTitle className="text-gray-900 dark:text-gray-100 flex items-center gap-2 text-lg">
-              <Building2 className="h-5 w-5 text-blue-600 dark:text-blue-400" />
               Banka Dağılımı
             </CardTitle>
             <CardDescription className="text-gray-600 dark:text-gray-400">
@@ -604,7 +603,6 @@ export default function DashboardPage() {
         <Card className="shadow-lg hover:shadow-xl dark:shadow-gray-900/20 dark:hover:shadow-gray-900/30 transition-shadow duration-300 rounded-xl border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800">
           <CardHeader className="pb-4">
             <CardTitle className="text-gray-900 dark:text-gray-100 flex items-center gap-2 text-lg">
-              <CreditCard className="h-5 w-5 text-green-600 dark:text-green-400" />
               Kredi Türü Dağılımı
             </CardTitle>
             <CardDescription className="text-gray-600 dark:text-gray-400">
