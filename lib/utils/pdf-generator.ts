@@ -367,23 +367,222 @@ class PDFGenerator {
     return format(date, formatString)
   }
 
+  private addHeader() {
+    this.doc.setFillColor(248, 250, 252)
+    this.doc.rect(0, 0, this.pageWidth, 60, "F")
+
+    this.doc.setTextColor(0, 0, 0)
+    this.doc.setFontSize(24)
+    this.doc.setFont("helvetica", "bold")
+    this.doc.text(safeText(this.data.reportTitle || "Kredi Portfoy Raporu"), this.margin, 35)
+
+    this.doc.setFontSize(12)
+    this.doc.setFont("helvetica", "normal")
+    this.doc.setTextColor(107, 114, 128)
+    const reportDate = format(new Date(), "dd MMMM yyyy")
+    this.doc.text(`Rapor Tarihi: ${reportDate}`, this.pageWidth - this.margin - 100, 35)
+
+    if (this.data.userData?.name) {
+      this.doc.text(`Hazırlayan: ${safeText(this.data.userData.name)}`, this.margin, 50)
+    }
+
+    this.currentY = 80
+  }
+
+  private addFooter() {
+    const pageCount = this.doc.internal.getNumberOfPages()
+    for (let i = 1; i <= pageCount; i++) {
+      this.doc.setPage(i)
+      this.doc.setFontSize(10)
+      this.doc.setTextColor(107, 114, 128)
+      this.doc.text(`Sayfa ${i} / ${pageCount}`, this.pageWidth - this.margin - 30, this.pageHeight - 20)
+      this.doc.text("KrediTakip.com.tr", this.margin, this.pageHeight - 20)
+    }
+  }
+
+  private calculateBankDistribution() {
+    if (!this.data.credits || this.data.credits.length === 0) return []
+
+    const bankMap = new Map()
+    let totalAmount = 0
+
+    this.data.credits.forEach((credit: any) => {
+      const bankName = credit.bankName || "Bilinmeyen Banka"
+      const amount = credit.remainingDebt || 0
+      totalAmount += amount
+
+      if (bankMap.has(bankName)) {
+        const existing = bankMap.get(bankName)
+        existing.count += 1
+        existing.amount += amount
+      } else {
+        bankMap.set(bankName, { name: bankName, count: 1, amount })
+      }
+    })
+
+    return Array.from(bankMap.values())
+      .map((bank) => ({
+        ...bank,
+        percentage: totalAmount > 0 ? (bank.amount / totalAmount) * 100 : 0,
+      }))
+      .sort((a, b) => b.amount - a.amount)
+  }
+
   public async generate() {
-    // Placeholder for generate method
-    // This method should be implemented to generate the PDF content
+    console.log("[v0] Starting PDF generation with data:", this.data)
+
+    try {
+      // Add header
+      this.addHeader()
+
+      // Add summary metrics
+      console.log("[v0] Adding summary metrics")
+      const summaryMetrics = [
+        {
+          title: "Toplam Kredi",
+          value: this.data.totalCredits?.toString() || "0",
+          subtitle: `${this.data.activeCredits || 0} aktif, ${this.data.closedCredits || 0} kapali`,
+          color: "primary" as keyof typeof COLORS,
+        },
+        {
+          title: "Toplam Borc",
+          value: formatCurrency(this.data.totalDebt || 0),
+          subtitle: "Kalan borc miktari",
+          color: "danger" as keyof typeof COLORS,
+        },
+        {
+          title: "Aylik Odeme",
+          value: formatCurrency(this.data.monthlyPayment || 0),
+          subtitle: "Toplam aylik taksit",
+          color: "warning" as keyof typeof COLORS,
+        },
+        {
+          title: "Toplam Odeme",
+          value: formatCurrency(this.data.totalPayment || 0),
+          subtitle: "Baslangic kredi tutari",
+          color: "success" as keyof typeof COLORS,
+        },
+      ]
+
+      this.addMetricCards(summaryMetrics)
+
+      // Add credit details section
+      if (this.data.credits && this.data.credits.length > 0) {
+        console.log("[v0] Adding credit details for", this.data.credits.length, "credits")
+        this.addSection(
+          "Kredi Detaylari",
+          () => {
+            this.data.credits.forEach((credit: any, index: number) => {
+              this.addCreditDetails(credit, index)
+            })
+          },
+          "primary",
+        )
+      }
+
+      // Add bank distribution analysis
+      console.log("[v0] Adding bank distribution analysis")
+      this.addSection(
+        "Banka Dagilimi",
+        () => {
+          const bankDistribution = this.calculateBankDistribution()
+          if (bankDistribution.length > 0) {
+            const headers = ["Banka", "Kredi Sayisi", "Toplam Borc", "Oran"]
+            const rows = bankDistribution.map((bank) => [
+              bank.name,
+              bank.count.toString(),
+              formatCurrency(bank.amount),
+              `%${bank.percentage.toFixed(1)}`,
+            ])
+            this.addTable(headers, rows, { headerColor: "info", alternateRows: true })
+          } else {
+            this.doc.setFontSize(10)
+            this.doc.text("Banka dagilim verisi bulunamadi.", this.margin + 10, this.currentY + 10)
+            this.currentY += 30
+          }
+        },
+        "info",
+      )
+
+      // Add interest analysis
+      console.log("[v0] Adding interest analysis")
+      this.addSection(
+        "Faiz Analizi",
+        () => {
+          if (this.data.credits && this.data.credits.length > 0) {
+            const headers = ["Banka", "Kredi Turu", "Faiz Orani", "Aylik Faiz", "Yillik Faiz"]
+            const rows = this.data.credits.map((credit: any) => {
+              const monthlyInterest = ((credit.remainingDebt || 0) * (credit.interestRate || 0)) / 1200
+              const yearlyInterest = monthlyInterest * 12
+              return [
+                credit.bankName || "Bilinmeyen",
+                credit.creditType || "Diger",
+                `%${(credit.interestRate || 0).toFixed(2)}`,
+                formatCurrency(monthlyInterest),
+                formatCurrency(yearlyInterest),
+              ]
+            })
+            this.addTable(headers, rows, { headerColor: "warning", alternateRows: true })
+          }
+        },
+        "warning",
+      )
+
+      // Add payment schedule if available
+      if (this.data.chartData?.monthlyPayments && this.data.chartData.monthlyPayments.length > 0) {
+        console.log("[v0] Adding payment schedule")
+        this.addSection(
+          "Odeme Gecmisi",
+          () => {
+            const headers = ["Tarih", "Tutar", "Banka", "Durum"]
+            const rows = this.data.chartData.monthlyPayments
+              .slice(0, 10)
+              .map((payment: any) => [
+                payment.month || "Bilinmeyen",
+                formatCurrency(payment.amount || 0),
+                payment.bank || "Bilinmeyen",
+                "Odendi",
+              ])
+            this.addTable(headers, rows, { headerColor: "success", alternateRows: true })
+          },
+          "success",
+        )
+      }
+
+      // Add footer
+      this.addFooter()
+
+      console.log("[v0] PDF generation completed successfully")
+    } catch (error) {
+      console.error("[v0] Error during PDF generation:", error)
+      throw error
+    }
   }
 }
 
-export async function generatePDFReport(data: any): Promise<Blob> {
-  const doc = new jsPDF({
-    orientation: "portrait",
-    unit: "pt",
-    format: "a4",
-  })
+export async function generatePDFReport(data: any): Promise<void> {
+  console.log("[v0] generatePDFReport called with data:", data)
 
-  const generator = new PDFGenerator(doc, data)
+  try {
+    const doc = new jsPDF({
+      orientation: "portrait",
+      unit: "pt",
+      format: "a4",
+    })
 
-  // Generate the PDF content
-  await generator.generate()
+    const generator = new PDFGenerator(doc, data)
+    await generator.generate()
 
-  return doc.output("blob")
+    // Generate filename with timestamp
+    const timestamp = format(new Date(), "yyyy-MM-dd_HH-mm")
+    const filename = `kredi-raporu-${timestamp}.pdf`
+
+    console.log("[v0] Saving PDF as:", filename)
+    doc.save(filename)
+
+    console.log("[v0] PDF download initiated successfully")
+  } catch (error) {
+    console.error("[v0] Error in generatePDFReport:", error)
+    throw error
+  }
 }
