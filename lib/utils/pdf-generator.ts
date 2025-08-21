@@ -76,37 +76,18 @@ const formatCurrency = (amount: any): string => {
   )
 }
 
-const getBankColor = (bankName: string): [number, number, number] => {
-  const colors: [number, number, number][] = [
-    [16, 185, 129], // Emerald
-    [59, 130, 246], // Blue
-    [147, 51, 234], // Purple
-    [245, 158, 11], // Amber
-    [239, 68, 68], // Red
-    [34, 197, 94], // Green
-    [14, 165, 233], // Sky
-    [234, 179, 8], // Yellow
-    [217, 70, 239], // Fuchsia
-    [20, 184, 166], // Teal
-  ]
-
-  let hash = 0
-  for (let i = 0; i < bankName.length; i++) {
-    const char = bankName.charCodeAt(i)
-    hash = (hash << 5) - hash + char
-    hash = hash & hash
-  }
-
-  return colors[Math.abs(hash) % colors.length]
-}
-
-const getBankInitials = (bankName: string): string => {
-  return bankName
-    .split(" ")
-    .map((word) => word[0])
-    .join("")
-    .substring(0, 2)
-    .toUpperCase()
+const COLORS = {
+  primary: [20, 83, 136], // Professional blue
+  secondary: [71, 85, 105], // Slate gray
+  accent: [16, 185, 129], // Emerald green
+  text: [15, 23, 42], // Dark slate
+  textLight: [100, 116, 139], // Light slate
+  border: [226, 232, 240], // Light border
+  background: [248, 250, 252], // Light background
+  white: [255, 255, 255],
+  success: [34, 197, 94],
+  warning: [245, 158, 11],
+  danger: [239, 68, 68],
 }
 
 export interface ReportData {
@@ -179,7 +160,7 @@ class PDFReportGenerator {
     this.doc = new jsPDF()
     this.pageWidth = this.doc.internal.pageSize.getWidth()
     this.pageHeight = this.doc.internal.pageSize.getHeight()
-    this.margin = 20
+    this.margin = 25
     this.currentY = this.margin
     this.pageNumber = 1
   }
@@ -192,10 +173,11 @@ class PDFReportGenerator {
   }
 
   private checkPageBreak(requiredHeight: number, forceBreak = false) {
-    const footerSpace = 40
+    const footerSpace = 50
     const availableSpace = this.pageHeight - this.currentY - footerSpace
 
-    if (forceBreak || requiredHeight > availableSpace || availableSpace < 80) {
+    if (forceBreak || requiredHeight > availableSpace || availableSpace < 60) {
+      this.addPageFooter()
       this.addPage()
       return true
     }
@@ -204,88 +186,164 @@ class PDFReportGenerator {
 
   private addPageHeader() {
     try {
-      this.doc.setTextColor(0, 0, 0)
+      // Header background
+      this.doc.setFillColor(...COLORS.primary)
+      this.doc.rect(0, 0, this.pageWidth, 15, "F")
+
+      // Page number
+      this.doc.setTextColor(...COLORS.white)
       this.doc.setFontSize(10)
       this.doc.setFont("helvetica", "normal")
-      this.doc.text(`Sayfa ${this.pageNumber}`, this.pageWidth - this.margin, this.margin, { align: "right" })
+      this.doc.text(`Sayfa ${this.pageNumber}`, this.pageWidth - this.margin, 10, { align: "right" })
 
-      // Simple line under header
-      this.doc.setDrawColor(200, 200, 200)
-      this.doc.setLineWidth(0.3)
-      this.doc.line(this.margin, this.margin + 10, this.pageWidth - this.margin, this.margin + 10)
+      // Company/App name
+      this.doc.text("KrediTakip.com.tr", this.margin, 10)
 
-      this.currentY = this.margin + 25
+      this.currentY = 35
     } catch (error) {
       console.error("Error in addPageHeader:", error)
-      this.currentY = this.margin + 25
+      this.currentY = 35
+    }
+  }
+
+  private addPageFooter() {
+    try {
+      const footerY = this.pageHeight - 20
+
+      // Footer line
+      this.doc.setDrawColor(...COLORS.border)
+      this.doc.setLineWidth(0.5)
+      this.doc.line(this.margin, footerY - 10, this.pageWidth - this.margin, footerY - 10)
+
+      // Footer text
+      this.doc.setTextColor(...COLORS.textLight)
+      this.doc.setFontSize(8)
+      this.doc.setFont("helvetica", "normal")
+      this.doc.text("Bu rapor KrediTakip.com.tr tarafindan olusturulmustur.", this.margin, footerY)
+      this.doc.text(format(new Date(), "dd.MM.yyyy HH:mm"), this.pageWidth - this.margin, footerY, { align: "right" })
+    } catch (error) {
+      console.error("Error in addPageFooter:", error)
     }
   }
 
   private addMainHeader(data: ReportData) {
     try {
-      this.doc.setTextColor(0, 0, 0)
-      this.doc.setFontSize(28)
+      // Background accent
+      this.doc.setFillColor(...COLORS.background)
+      this.doc.rect(0, 15, this.pageWidth, 80, "F")
+
+      // Main title
+      this.doc.setTextColor(...COLORS.text)
+      this.doc.setFontSize(32)
       this.doc.setFont("helvetica", "bold")
-      this.doc.text("Kredi Odemeleri", this.margin, this.currentY + 20)
+      this.doc.text("Kredi Odemeleri", this.margin, this.currentY + 25)
 
-      this.doc.setFontSize(28)
-      this.doc.setFont("helvetica", "normal")
-      this.doc.text("Raporu", this.margin, this.currentY + 45)
+      this.doc.setFontSize(32)
+      this.doc.setFont("helvetica", "300")
+      this.doc.text("Raporu", this.margin, this.currentY + 50)
 
-      // Date on the right
-      this.doc.setFontSize(16)
-      this.doc.setFont("helvetica", "normal")
+      // Date with modern styling
+      this.doc.setFillColor(...COLORS.primary)
+      this.doc.roundedRect(this.pageWidth - 120, this.currentY + 10, 95, 25, 3, 3, "F")
+
+      this.doc.setTextColor(...COLORS.white)
+      this.doc.setFontSize(12)
+      this.doc.setFont("helvetica", "bold")
       const currentDate = format(new Date(), "dd MMMM yyyy", { locale: tr })
-      this.doc.text(safeText(currentDate), this.pageWidth - this.margin, this.currentY + 30, { align: "right" })
+      this.doc.text(safeText(currentDate), this.pageWidth - 72, this.currentY + 27, { align: "center" })
 
-      this.currentY += 70
+      // User info
+      this.doc.setTextColor(...COLORS.textLight)
+      this.doc.setFontSize(11)
+      this.doc.setFont("helvetica", "normal")
+      this.doc.text(`Rapor Sahibi: ${safeText(data.userData.name)}`, this.margin, this.currentY + 70)
+
+      this.currentY += 100
     } catch (error) {
       console.error("Error in addMainHeader:", error)
-      this.currentY += 70
+      this.currentY += 100
     }
   }
 
   private addSummarySection(data: ReportData) {
     try {
-      this.checkPageBreak(120)
+      this.checkPageBreak(140)
 
-      this.doc.setTextColor(0, 0, 0)
-      this.doc.setFontSize(18)
+      // Section header
+      this.doc.setTextColor(...COLORS.text)
+      this.doc.setFontSize(20)
       this.doc.setFont("helvetica", "bold")
-      this.doc.text("Ozet", this.margin, this.currentY)
-      this.currentY += 25
+      this.doc.text("Finansal Ozet", this.margin, this.currentY)
+      this.currentY += 30
 
-      // Horizontal line
-      this.doc.setDrawColor(0, 0, 0)
-      this.doc.setLineWidth(0.5)
-      this.doc.line(this.margin, this.currentY, this.pageWidth - this.margin, this.currentY)
-      this.currentY += 20
+      // Modern cards layout
+      const cardWidth = (this.pageWidth - 2 * this.margin - 20) / 3
+      const cardHeight = 60
 
-      const leftColumnX = this.margin
-      const rightColumnX = this.pageWidth / 2 + 20
+      // Card 1 - Total Amount
+      this.doc.setFillColor(...COLORS.white)
+      this.doc.setDrawColor(...COLORS.border)
+      this.doc.roundedRect(this.margin, this.currentY, cardWidth, cardHeight, 5, 5, "FD")
 
-      this.doc.setFontSize(14)
+      this.doc.setTextColor(...COLORS.textLight)
+      this.doc.setFontSize(10)
       this.doc.setFont("helvetica", "normal")
+      this.doc.text("TOPLAM KREDI", this.margin + 10, this.currentY + 15)
 
-      // Left column - amounts
-      const totalAmount = safeNumber(data.totalPayment, 0)
-      const remainingDebt = safeNumber(data.totalDebt, 0)
-      const paidAmount = totalAmount - remainingDebt
+      this.doc.setTextColor(...COLORS.text)
+      this.doc.setFontSize(16)
+      this.doc.setFont("helvetica", "bold")
+      this.doc.text(formatCurrency(data.totalPayment), this.margin + 10, this.currentY + 35)
 
-      this.doc.text(formatCurrency(totalAmount).replace(" TL", ""), leftColumnX, this.currentY)
-      this.doc.text(formatCurrency(remainingDebt * 4).replace(" TL", ""), leftColumnX + 80, this.currentY)
-      this.doc.text("Odenen", rightColumnX, this.currentY)
-      this.doc.text(`${formatCurrency(paidAmount).replace(" TL", "")} TL`, rightColumnX + 80, this.currentY)
-      this.currentY += 20
+      this.doc.setTextColor(...COLORS.success)
+      this.doc.setFontSize(9)
+      this.doc.setFont("helvetica", "normal")
+      this.doc.text(`${data.totalCredits} adet kredi`, this.margin + 10, this.currentY + 50)
 
-      this.doc.text("Kalan", leftColumnX, this.currentY)
-      this.doc.text(formatCurrency(remainingDebt).replace(" TL", ""), leftColumnX + 80, this.currentY)
-      this.doc.text("Aylik Odeme", rightColumnX, this.currentY)
-      this.doc.text(`${formatCurrency(data.monthlyPayment).replace(" TL", "")} TL`, rightColumnX + 80, this.currentY)
-      this.currentY += 40
+      // Card 2 - Remaining Debt
+      const card2X = this.margin + cardWidth + 10
+      this.doc.setFillColor(...COLORS.white)
+      this.doc.setDrawColor(...COLORS.border)
+      this.doc.roundedRect(card2X, this.currentY, cardWidth, cardHeight, 5, 5, "FD")
+
+      this.doc.setTextColor(...COLORS.textLight)
+      this.doc.setFontSize(10)
+      this.doc.text("KALAN BORC", card2X + 10, this.currentY + 15)
+
+      this.doc.setTextColor(...COLORS.danger)
+      this.doc.setFontSize(16)
+      this.doc.setFont("helvetica", "bold")
+      this.doc.text(formatCurrency(data.totalDebt), card2X + 10, this.currentY + 35)
+
+      this.doc.setTextColor(...COLORS.textLight)
+      this.doc.setFontSize(9)
+      this.doc.text(`${data.activeCredits} aktif kredi`, card2X + 10, this.currentY + 50)
+
+      // Card 3 - Monthly Payment
+      const card3X = this.margin + 2 * (cardWidth + 10)
+      this.doc.setFillColor(...COLORS.white)
+      this.doc.setDrawColor(...COLORS.border)
+      this.doc.roundedRect(card3X, this.currentY, cardWidth, cardHeight, 5, 5, "FD")
+
+      this.doc.setTextColor(...COLORS.textLight)
+      this.doc.setFontSize(10)
+      this.doc.text("AYLIK ODEME", card3X + 10, this.currentY + 15)
+
+      this.doc.setTextColor(...COLORS.primary)
+      this.doc.setFontSize(16)
+      this.doc.setFont("helvetica", "bold")
+      this.doc.text(formatCurrency(data.monthlyPayment), card3X + 10, this.currentY + 35)
+
+      const paidAmount = safeNumber(data.totalPayment - data.totalDebt, 0)
+      this.doc.setTextColor(...COLORS.success)
+      this.doc.setFontSize(9)
+      this.doc.setFont("helvetica", "normal")
+      this.doc.text(`Odenen: ${formatCurrency(paidAmount)}`, card3X + 10, this.currentY + 50)
+
+      this.currentY += cardHeight + 40
     } catch (error) {
       console.error("Error in addSummarySection:", error)
-      this.currentY += 120
+      this.currentY += 140
     }
   }
 
@@ -293,37 +351,69 @@ class PDFReportGenerator {
     try {
       this.checkPageBreak(100, true)
 
-      this.doc.setTextColor(0, 0, 0)
-      this.doc.setFontSize(18)
+      this.doc.setTextColor(...COLORS.text)
+      this.doc.setFontSize(20)
       this.doc.setFont("helvetica", "bold")
       this.doc.text("Kredi Detaylari", this.margin, this.currentY)
-      this.currentY += 25
-
-      // Horizontal line
-      this.doc.setDrawColor(0, 0, 0)
-      this.doc.setLineWidth(0.5)
-      this.doc.line(this.margin, this.currentY, this.pageWidth - this.margin, this.currentY)
-      this.currentY += 20
+      this.currentY += 35
 
       data.credits.forEach((credit, index) => {
-        if (index > 0) this.currentY += 15
+        this.checkPageBreak(80)
 
-        this.checkPageBreak(60)
+        // Credit card background
+        this.doc.setFillColor(...COLORS.white)
+        this.doc.setDrawColor(...COLORS.border)
+        this.doc.roundedRect(this.margin, this.currentY, this.pageWidth - 2 * this.margin, 70, 5, 5, "FD")
 
+        // Bank name header
+        this.doc.setFillColor(...COLORS.primary)
+        this.doc.roundedRect(this.margin, this.currentY, this.pageWidth - 2 * this.margin, 20, 5, 5, "F")
+
+        this.doc.setTextColor(...COLORS.white)
         this.doc.setFontSize(12)
         this.doc.setFont("helvetica", "bold")
-        this.doc.text(`Kredi Tutari`, this.margin, this.currentY)
-        this.doc.text(`${formatCurrency(credit.amount).replace(" TL", "")} TL`, this.margin + 80, this.currentY)
-        this.doc.text(`Faiz Orani`, this.pageWidth / 2, this.currentY)
-        this.doc.text(`${safeNumber(credit.interestRate, 0).toFixed(2)}%`, this.pageWidth / 2 + 80, this.currentY)
-        this.currentY += 15
+        this.doc.text(
+          `${safeText(credit.bankName)} - ${safeText(credit.creditType)}`,
+          this.margin + 10,
+          this.currentY + 13,
+        )
 
+        // Credit details in two columns
+        this.doc.setTextColor(...COLORS.text)
+        this.doc.setFontSize(10)
         this.doc.setFont("helvetica", "normal")
-        this.doc.text(`Baslangic Tarihi`, this.margin, this.currentY)
-        this.doc.text(`01.01.2023`, this.margin + 80, this.currentY)
-        this.doc.text(`Vade`, this.pageWidth / 2, this.currentY)
-        this.doc.text(`60 ay`, this.pageWidth / 2 + 80, this.currentY)
-        this.currentY += 25
+
+        // Left column
+        this.doc.setTextColor(...COLORS.textLight)
+        this.doc.text("Kredi Tutari:", this.margin + 10, this.currentY + 35)
+        this.doc.setTextColor(...COLORS.text)
+        this.doc.setFont("helvetica", "bold")
+        this.doc.text(formatCurrency(credit.amount), this.margin + 70, this.currentY + 35)
+
+        this.doc.setTextColor(...COLORS.textLight)
+        this.doc.setFont("helvetica", "normal")
+        this.doc.text("Kalan Borc:", this.margin + 10, this.currentY + 50)
+        this.doc.setTextColor(...COLORS.danger)
+        this.doc.setFont("helvetica", "bold")
+        this.doc.text(formatCurrency(credit.remainingDebt), this.margin + 70, this.currentY + 50)
+
+        // Right column
+        const rightColX = this.pageWidth / 2 + 10
+        this.doc.setTextColor(...COLORS.textLight)
+        this.doc.setFont("helvetica", "normal")
+        this.doc.text("Faiz Orani:", rightColX, this.currentY + 35)
+        this.doc.setTextColor(...COLORS.warning)
+        this.doc.setFont("helvetica", "bold")
+        this.doc.text(`%${safeNumber(credit.interestRate, 0).toFixed(2)}`, rightColX + 60, this.currentY + 35)
+
+        this.doc.setTextColor(...COLORS.textLight)
+        this.doc.setFont("helvetica", "normal")
+        this.doc.text("Aylik Odeme:", rightColX, this.currentY + 50)
+        this.doc.setTextColor(...COLORS.primary)
+        this.doc.setFont("helvetica", "bold")
+        this.doc.text(formatCurrency(credit.monthlyPayment), rightColX + 60, this.currentY + 50)
+
+        this.currentY += 85
       })
     } catch (error) {
       console.error("Error in addCreditDetailsSection:", error)
@@ -335,17 +425,11 @@ class PDFReportGenerator {
     try {
       this.checkPageBreak(150, true)
 
-      this.doc.setTextColor(0, 0, 0)
-      this.doc.setFontSize(18)
+      this.doc.setTextColor(...COLORS.text)
+      this.doc.setFontSize(20)
       this.doc.setFont("helvetica", "bold")
       this.doc.text("Banka Dagilimi", this.margin, this.currentY)
-      this.currentY += 25
-
-      // Horizontal line
-      this.doc.setDrawColor(0, 0, 0)
-      this.doc.setLineWidth(0.5)
-      this.doc.line(this.margin, this.currentY, this.pageWidth - this.margin, this.currentY)
-      this.currentY += 20
+      this.currentY += 35
 
       const bankDistribution = data.credits
         .reduce((acc: any[], credit) => {
@@ -365,18 +449,46 @@ class PDFReportGenerator {
         }, [])
         .sort((a, b) => b.amount - a.amount)
 
-      this.doc.setFontSize(12)
-      this.doc.setFont("helvetica", "normal")
-
       bankDistribution.forEach((bank, index) => {
-        this.checkPageBreak(20)
+        this.checkPageBreak(35)
 
-        const percentage = data.totalDebt > 0 ? ((bank.amount / data.totalDebt) * 100).toFixed(1) : "0.0"
+        const percentage = data.totalDebt > 0 ? (bank.amount / data.totalDebt) * 100 : 0
+        const barWidth = (percentage / 100) * (this.pageWidth - 2 * this.margin - 100)
 
-        this.doc.text(`${bank.name}`, this.margin, this.currentY)
-        this.doc.text(`${formatCurrency(bank.amount).replace(" TL", "")} TL`, this.margin + 100, this.currentY)
-        this.doc.text(`%${percentage}`, this.pageWidth - this.margin - 40, this.currentY)
-        this.currentY += 18
+        // Bank row background
+        this.doc.setFillColor(index % 2 === 0 ? COLORS.white : COLORS.background)
+        this.doc.rect(this.margin, this.currentY - 5, this.pageWidth - 2 * this.margin, 30, "F")
+
+        // Progress bar background
+        this.doc.setFillColor(...COLORS.border)
+        this.doc.roundedRect(this.margin + 10, this.currentY + 15, this.pageWidth - 2 * this.margin - 120, 8, 4, 4, "F")
+
+        // Progress bar fill
+        if (barWidth > 0) {
+          const colors = [COLORS.primary, COLORS.accent, COLORS.warning, COLORS.success, COLORS.danger]
+          const color = colors[index % colors.length]
+          this.doc.setFillColor(...color)
+          this.doc.roundedRect(this.margin + 10, this.currentY + 15, Math.max(barWidth, 5), 8, 4, 4, "F")
+        }
+
+        // Bank name and details
+        this.doc.setTextColor(...COLORS.text)
+        this.doc.setFontSize(12)
+        this.doc.setFont("helvetica", "bold")
+        this.doc.text(bank.name, this.margin + 10, this.currentY + 10)
+
+        // Amount and percentage
+        this.doc.setTextColor(...COLORS.textLight)
+        this.doc.setFontSize(10)
+        this.doc.setFont("helvetica", "normal")
+        this.doc.text(formatCurrency(bank.amount), this.pageWidth - this.margin - 80, this.currentY + 5, {
+          align: "right",
+        })
+        this.doc.text(`%${percentage.toFixed(1)}`, this.pageWidth - this.margin - 80, this.currentY + 18, {
+          align: "right",
+        })
+
+        this.currentY += 30
       })
 
       this.currentY += 20
@@ -390,17 +502,11 @@ class PDFReportGenerator {
     try {
       this.checkPageBreak(150, true)
 
-      this.doc.setTextColor(0, 0, 0)
-      this.doc.setFontSize(18)
+      this.doc.setTextColor(...COLORS.text)
+      this.doc.setFontSize(20)
       this.doc.setFont("helvetica", "bold")
       this.doc.text("Kredi Turu Dagilimi", this.margin, this.currentY)
-      this.currentY += 25
-
-      // Horizontal line
-      this.doc.setDrawColor(0, 0, 0)
-      this.doc.setLineWidth(0.5)
-      this.doc.line(this.margin, this.currentY, this.pageWidth - this.margin, this.currentY)
-      this.currentY += 20
+      this.currentY += 35
 
       const typeDistribution = data.credits
         .reduce((acc: any[], credit) => {
@@ -420,18 +526,50 @@ class PDFReportGenerator {
         }, [])
         .sort((a, b) => b.amount - a.amount)
 
-      this.doc.setFontSize(12)
-      this.doc.setFont("helvetica", "normal")
-
+      // Create pie chart representation with modern styling
       typeDistribution.forEach((type, index) => {
-        this.checkPageBreak(20)
+        this.checkPageBreak(40)
 
-        const percentage = data.totalDebt > 0 ? ((type.amount / data.totalDebt) * 100).toFixed(1) : "0.0"
+        const percentage = data.totalDebt > 0 ? (type.amount / data.totalDebt) * 100 : 0
 
-        this.doc.text(`${type.name}`, this.margin, this.currentY)
-        this.doc.text(`${formatCurrency(type.amount).replace(" TL", "")} TL`, this.margin + 100, this.currentY)
-        this.doc.text(`%${percentage}`, this.pageWidth - this.margin - 40, this.currentY)
-        this.currentY += 18
+        // Type card
+        this.doc.setFillColor(...COLORS.white)
+        this.doc.setDrawColor(...COLORS.border)
+        this.doc.roundedRect(this.margin, this.currentY, this.pageWidth - 2 * this.margin, 35, 5, 5, "FD")
+
+        // Color indicator
+        const colors = [COLORS.primary, COLORS.accent, COLORS.warning, COLORS.success, COLORS.danger]
+        const color = colors[index % colors.length]
+        this.doc.setFillColor(...color)
+        this.doc.roundedRect(this.margin + 10, this.currentY + 10, 15, 15, 3, 3, "F")
+
+        // Type details
+        this.doc.setTextColor(...COLORS.text)
+        this.doc.setFontSize(12)
+        this.doc.setFont("helvetica", "bold")
+        this.doc.text(type.name, this.margin + 35, this.currentY + 18)
+
+        this.doc.setTextColor(...COLORS.textLight)
+        this.doc.setFontSize(10)
+        this.doc.setFont("helvetica", "normal")
+        this.doc.text(`${type.count} kredi`, this.margin + 35, this.currentY + 28)
+
+        // Amount and percentage
+        this.doc.setTextColor(...COLORS.text)
+        this.doc.setFontSize(12)
+        this.doc.setFont("helvetica", "bold")
+        this.doc.text(formatCurrency(type.amount), this.pageWidth - this.margin - 80, this.currentY + 15, {
+          align: "right",
+        })
+
+        this.doc.setTextColor(...COLORS.textLight)
+        this.doc.setFontSize(10)
+        this.doc.setFont("helvetica", "normal")
+        this.doc.text(`%${percentage.toFixed(1)}`, this.pageWidth - this.margin - 80, this.currentY + 28, {
+          align: "right",
+        })
+
+        this.currentY += 40
       })
 
       this.currentY += 20
@@ -443,19 +581,13 @@ class PDFReportGenerator {
 
   private addInterestAnalysisSection(data: ReportData) {
     try {
-      this.checkPageBreak(150, true)
+      this.checkPageBreak(180, true)
 
-      this.doc.setTextColor(0, 0, 0)
-      this.doc.setFontSize(18)
+      this.doc.setTextColor(...COLORS.text)
+      this.doc.setFontSize(20)
       this.doc.setFont("helvetica", "bold")
       this.doc.text("Faiz Analizi", this.margin, this.currentY)
-      this.currentY += 25
-
-      // Horizontal line
-      this.doc.setDrawColor(0, 0, 0)
-      this.doc.setLineWidth(0.5)
-      this.doc.line(this.margin, this.currentY, this.pageWidth - this.margin, this.currentY)
-      this.currentY += 20
+      this.currentY += 35
 
       const totalInterest = data.credits.reduce((sum, credit) => {
         const monthlyInterest = (safeNumber(credit.remainingDebt, 0) * safeNumber(credit.interestRate, 0)) / 1200
@@ -467,23 +599,101 @@ class PDFReportGenerator {
           ? data.credits.reduce((sum, credit) => sum + safeNumber(credit.interestRate, 0), 0) / data.credits.length
           : 0
 
-      this.doc.setFontSize(12)
+      const highestRate =
+        data.credits.length > 0 ? Math.max(...data.credits.map((credit) => safeNumber(credit.interestRate, 0))) : 0
+
+      const lowestRate =
+        data.credits.length > 0 ? Math.min(...data.credits.map((credit) => safeNumber(credit.interestRate, 0))) : 0
+
+      // Interest metrics cards
+      const cardWidth = (this.pageWidth - 2 * this.margin - 20) / 2
+      const cardHeight = 70
+
+      // Card 1 - Average Rate
+      this.doc.setFillColor(...COLORS.white)
+      this.doc.setDrawColor(...COLORS.border)
+      this.doc.roundedRect(this.margin, this.currentY, cardWidth, cardHeight, 5, 5, "FD")
+
+      this.doc.setTextColor(...COLORS.textLight)
+      this.doc.setFontSize(10)
+      this.doc.text("ORTALAMA FAIZ ORANI", this.margin + 10, this.currentY + 15)
+
+      this.doc.setTextColor(...COLORS.warning)
+      this.doc.setFontSize(24)
+      this.doc.setFont("helvetica", "bold")
+      this.doc.text(`%${averageRate.toFixed(2)}`, this.margin + 10, this.currentY + 40)
+
+      this.doc.setTextColor(...COLORS.textLight)
+      this.doc.setFontSize(9)
       this.doc.setFont("helvetica", "normal")
+      this.doc.text(`En Yuksek: %${highestRate.toFixed(2)}`, this.margin + 10, this.currentY + 55)
+      this.doc.text(`En Dusuk: %${lowestRate.toFixed(2)}`, this.margin + 10, this.currentY + 65)
 
-      this.doc.text(`Ortalama Faiz Orani`, this.margin, this.currentY)
-      this.doc.text(`%${averageRate.toFixed(2)}`, this.margin + 100, this.currentY)
-      this.currentY += 18
+      // Card 2 - Monthly Interest
+      const card2X = this.margin + cardWidth + 10
+      this.doc.setFillColor(...COLORS.white)
+      this.doc.setDrawColor(...COLORS.border)
+      this.doc.roundedRect(card2X, this.currentY, cardWidth, cardHeight, 5, 5, "FD")
 
-      this.doc.text(`Aylik Toplam Faiz`, this.margin, this.currentY)
-      this.doc.text(`${formatCurrency(totalInterest).replace(" TL", "")} TL`, this.margin + 100, this.currentY)
-      this.currentY += 18
+      this.doc.setTextColor(...COLORS.textLight)
+      this.doc.setFontSize(10)
+      this.doc.text("AYLIK TOPLAM FAIZ", card2X + 10, this.currentY + 15)
 
-      this.doc.text(`Yillik Tahmini Faiz`, this.margin, this.currentY)
-      this.doc.text(`${formatCurrency(totalInterest * 12).replace(" TL", "")} TL`, this.margin + 100, this.currentY)
-      this.currentY += 30
+      this.doc.setTextColor(...COLORS.danger)
+      this.doc.setFontSize(18)
+      this.doc.setFont("helvetica", "bold")
+      this.doc.text(formatCurrency(totalInterest), card2X + 10, this.currentY + 35)
+
+      this.doc.setTextColor(...COLORS.textLight)
+      this.doc.setFontSize(9)
+      this.doc.setFont("helvetica", "normal")
+      this.doc.text(`Yillik Tahmini:`, card2X + 10, this.currentY + 50)
+      this.doc.text(formatCurrency(totalInterest * 12), card2X + 10, this.currentY + 62)
+
+      this.currentY += cardHeight + 30
+
+      // Interest breakdown by credit
+      this.doc.setTextColor(...COLORS.text)
+      this.doc.setFontSize(14)
+      this.doc.setFont("helvetica", "bold")
+      this.doc.text("Kredi Bazinda Faiz Dagilimi", this.margin, this.currentY)
+      this.currentY += 25
+
+      data.credits.forEach((credit, index) => {
+        this.checkPageBreak(25)
+
+        const monthlyInterest = (safeNumber(credit.remainingDebt, 0) * safeNumber(credit.interestRate, 0)) / 1200
+        const interestPercentage = totalInterest > 0 ? (monthlyInterest / totalInterest) * 100 : 0
+
+        this.doc.setFillColor(index % 2 === 0 ? COLORS.white : COLORS.background)
+        this.doc.rect(this.margin, this.currentY - 3, this.pageWidth - 2 * this.margin, 20, "F")
+
+        this.doc.setTextColor(...COLORS.text)
+        this.doc.setFontSize(10)
+        this.doc.setFont("helvetica", "normal")
+        this.doc.text(`${safeText(credit.bankName)}`, this.margin + 5, this.currentY + 8)
+
+        this.doc.setTextColor(...COLORS.warning)
+        this.doc.text(`%${safeNumber(credit.interestRate, 0).toFixed(2)}`, this.margin + 100, this.currentY + 8)
+
+        this.doc.setTextColor(...COLORS.danger)
+        this.doc.text(formatCurrency(monthlyInterest), this.pageWidth - this.margin - 80, this.currentY + 8, {
+          align: "right",
+        })
+
+        this.doc.setTextColor(...COLORS.textLight)
+        this.doc.setFontSize(8)
+        this.doc.text(`%${interestPercentage.toFixed(1)}`, this.pageWidth - this.margin - 20, this.currentY + 8, {
+          align: "right",
+        })
+
+        this.currentY += 20
+      })
+
+      this.currentY += 20
     } catch (error) {
       console.error("Error in addInterestAnalysisSection:", error)
-      this.currentY += 150
+      this.currentY += 180
     }
   }
 
@@ -491,20 +701,18 @@ class PDFReportGenerator {
     try {
       this.checkPageBreak(200, true)
 
-      this.doc.setTextColor(0, 0, 0)
-      this.doc.setFontSize(18)
+      this.doc.setTextColor(...COLORS.text)
+      this.doc.setFontSize(20)
       this.doc.setFont("helvetica", "bold")
       this.doc.text("Odeme Tablosu", this.margin, this.currentY)
-      this.currentY += 25
-
-      // Horizontal line
-      this.doc.setDrawColor(0, 0, 0)
-      this.doc.setLineWidth(0.5)
-      this.doc.line(this.margin, this.currentY, this.pageWidth - this.margin, this.currentY)
-      this.currentY += 20
+      this.currentY += 35
 
       const headers = ["Tarih", "Odeme", "Faiz", "Anapara", "Kalan Borc"]
+      const colWidths = [35, 35, 30, 35, 40]
+      const totalWidth = this.pageWidth - 2 * this.margin
+      const actualColWidths = colWidths.map((w) => (w / 175) * totalWidth)
 
+      // Generate realistic payment schedule
       const samplePayments = []
       const monthlyPayment = safeNumber(data.monthlyPayment, 2000)
       let remainingDebt = safeNumber(data.totalDebt, 120000)
@@ -515,7 +723,7 @@ class PDFReportGenerator {
             100
           : 0.015
 
-      for (let i = 0; i < Math.min(12, Math.ceil(remainingDebt / monthlyPayment)); i++) {
+      for (let i = 0; i < Math.min(24, Math.ceil(remainingDebt / monthlyPayment)); i++) {
         const paymentDate = new Date()
         paymentDate.setMonth(paymentDate.getMonth() + i + 1)
 
@@ -525,79 +733,119 @@ class PDFReportGenerator {
 
         samplePayments.push([
           format(paymentDate, "dd.MM.yyyy"),
-          `${formatCurrency(monthlyPayment).replace(" TL", "")} TL`,
-          formatCurrency(interestPayment).replace(" TL", ""),
-          formatCurrency(principalPayment).replace(" TL", ""),
-          formatCurrency(remainingDebt).replace(" TL", ""),
+          formatCurrency(monthlyPayment),
+          formatCurrency(interestPayment),
+          formatCurrency(principalPayment),
+          formatCurrency(remainingDebt),
         ])
 
         if (remainingDebt <= 0) break
       }
 
-      this.addTable(headers, samplePayments)
+      this.addModernTable(headers, samplePayments, actualColWidths)
     } catch (error) {
       console.error("Error in addPaymentScheduleTable:", error)
       this.currentY += 200
     }
   }
 
-  private addTable(headers: string[], rows: string[][]) {
+  private addModernTable(headers: string[], rows: string[][], colWidths: number[]) {
     try {
-      const colWidth = safeNumber((this.pageWidth - 2 * this.margin) / headers.length, 25)
-      const rowHeight = 18
+      const rowHeight = 25
+      const headerHeight = 30
 
-      this.checkPageBreak(rowHeight * (rows.length + 3))
+      this.checkPageBreak(headerHeight + rowHeight * Math.min(rows.length, 10))
 
-      this.doc.setTextColor(0, 0, 0)
-      this.doc.setFontSize(12)
+      // Table header background
+      this.doc.setFillColor(...COLORS.primary)
+      this.doc.roundedRect(this.margin, this.currentY, this.pageWidth - 2 * this.margin, headerHeight, 5, 5, "F")
+
+      // Header text
+      this.doc.setTextColor(...COLORS.white)
+      this.doc.setFontSize(11)
       this.doc.setFont("helvetica", "bold")
 
+      let currentX = this.margin + 10
       headers.forEach((header, i) => {
-        const x = safeCoordinate(this.margin + i * colWidth, this.margin, this.pageWidth)
-        this.doc.text(safeText(header), x, this.currentY + 12)
+        this.doc.text(safeText(header), currentX, this.currentY + 18)
+        currentX += colWidths[i]
       })
 
-      this.currentY += rowHeight
+      this.currentY += headerHeight
 
-      // Header line
-      this.doc.setDrawColor(0, 0, 0)
-      this.doc.setLineWidth(0.5)
-      this.doc.line(this.margin, this.currentY, this.pageWidth - this.margin, this.currentY)
-
+      // Table rows
       rows.forEach((row, rowIndex) => {
-        this.checkPageBreak(rowHeight + 20)
+        this.checkPageBreak(rowHeight + 10)
 
-        this.doc.setTextColor(0, 0, 0)
-        this.doc.setFontSize(11)
+        // Alternating row colors
+        if (rowIndex % 2 === 0) {
+          this.doc.setFillColor(...COLORS.background)
+          this.doc.rect(this.margin, this.currentY, this.pageWidth - 2 * this.margin, rowHeight, "F")
+        }
+
+        // Row border
+        this.doc.setDrawColor(...COLORS.border)
+        this.doc.setLineWidth(0.3)
+        this.doc.line(this.margin, this.currentY + rowHeight, this.pageWidth - this.margin, this.currentY + rowHeight)
+
+        this.doc.setTextColor(...COLORS.text)
+        this.doc.setFontSize(10)
         this.doc.setFont("helvetica", "normal")
 
+        currentX = this.margin + 10
         row.forEach((cell, i) => {
-          const x = safeCoordinate(this.margin + i * colWidth, this.margin, this.pageWidth)
-          this.doc.text(safeText(cell), x, this.currentY + 12)
+          // Highlight amounts in different colors
+          if (i === 1)
+            this.doc.setTextColor(...COLORS.primary) // Payment
+          else if (i === 2)
+            this.doc.setTextColor(...COLORS.warning) // Interest
+          else if (i === 3)
+            this.doc.setTextColor(...COLORS.success) // Principal
+          else if (i === 4)
+            this.doc.setTextColor(...COLORS.danger) // Remaining
+          else this.doc.setTextColor(...COLORS.text)
+
+          this.doc.text(safeText(cell), currentX, this.currentY + 15)
+          currentX += colWidths[i]
         })
 
         this.currentY += rowHeight
       })
 
-      this.currentY += 20
+      this.currentY += 30
     } catch (error) {
-      console.error("Error in addTable:", error)
+      console.error("Error in addModernTable:", error)
       this.currentY += 100
     }
   }
 
   public generateReport(data: ReportData): void {
     try {
+      // Main header
       this.addMainHeader(data)
+
+      // Summary section
       this.addSummarySection(data)
 
       if (data.credits && data.credits.length > 0) {
+        // Credit details
         this.addCreditDetailsSection(data)
+
+        // Bank distribution
         this.addBankDistributionSection(data)
+
+        // Credit type distribution
         this.addCreditTypeDistributionSection(data)
+
+        // Interest analysis
         this.addInterestAnalysisSection(data)
+
+        // Payment schedule
         this.addPaymentScheduleTable(data)
       }
+
+      // Add final footer
+      this.addPageFooter()
 
       // Save with Turkish character safe filename
       const filename = `kredi-odemeleri-raporu-${format(new Date(), "yyyy-MM-dd")}.pdf`
@@ -617,15 +865,4 @@ export const generatePDFReport = (data: ReportData) => {
     console.error("Error in generatePDFReport:", error)
     throw error
   }
-}
-
-const COLORS = {
-  primary: [16, 185, 129],
-  secondary: [59, 130, 246],
-  accent: [245, 158, 11],
-  danger: [239, 68, 68],
-  dark: [30, 41, 59],
-  gray: [107, 114, 128],
-  light: [248, 250, 252],
-  white: [255, 255, 255],
 }
