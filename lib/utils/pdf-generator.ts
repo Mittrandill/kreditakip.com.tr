@@ -1,7 +1,44 @@
-import { COLORS } from "./colors"
-import { safeText } from "./text-utils"
-import { formatCurrency } from "./currency-utils"
-import { format } from "./date-utils"
+import { jsPDF } from "jspdf"
+import { format } from "date-fns"
+
+const COLORS = {
+  primary: [59, 130, 246] as [number, number, number], // Blue
+  secondary: [107, 114, 128] as [number, number, number], // Gray
+  success: [16, 185, 129] as [number, number, number], // Green
+  warning: [245, 158, 11] as [number, number, number], // Amber
+  danger: [239, 68, 68] as [number, number, number], // Red
+  info: [147, 51, 234] as [number, number, number], // Purple
+}
+
+const safeText = (text: string | number | null | undefined): string => {
+  if (text === null || text === undefined) return ""
+  return String(text).replace(/[ıİşŞçÇğĞüÜöÖ]/g, (match) => {
+    const replacements: { [key: string]: string } = {
+      ı: "i",
+      İ: "I",
+      ş: "s",
+      Ş: "S",
+      ç: "c",
+      Ç: "C",
+      ğ: "g",
+      Ğ: "G",
+      ü: "u",
+      Ü: "U",
+      ö: "o",
+      Ö: "O",
+    }
+    return replacements[match] || match
+  })
+}
+
+const formatCurrency = (amount: number): string => {
+  return (
+    new Intl.NumberFormat("tr-TR", {
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 0,
+    }).format(amount) + " TL"
+  )
+}
 
 class PDFGenerator {
   private doc: any
@@ -327,7 +364,26 @@ class PDFGenerator {
   }
 
   private format(date: Date, formatString: string): string {
-    // Placeholder for date formatting
-    return date.toLocaleDateString()
+    return format(date, formatString)
   }
+
+  public async generate() {
+    // Placeholder for generate method
+    // This method should be implemented to generate the PDF content
+  }
+}
+
+export async function generatePDFReport(data: any): Promise<Blob> {
+  const doc = new jsPDF({
+    orientation: "portrait",
+    unit: "pt",
+    format: "a4",
+  })
+
+  const generator = new PDFGenerator(doc, data)
+
+  // Generate the PDF content
+  await generator.generate()
+
+  return doc.output("blob")
 }
