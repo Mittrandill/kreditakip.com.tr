@@ -626,7 +626,6 @@ export default function DashboardPage() {
       <Card className="shadow-lg hover:shadow-xl dark:shadow-gray-900/20 dark:hover:shadow-gray-900/30 transition-shadow duration-300 rounded-xl border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800">
         <CardHeader>
           <CardTitle className="text-gray-900 dark:text-gray-100 flex items-center gap-2">
-            <Banknote className="h-5 w-5 text-emerald-600 dark:text-emerald-400" />
             Aktif Kredilerim
           </CardTitle>
           <CardDescription className="text-gray-600 dark:text-gray-400">
