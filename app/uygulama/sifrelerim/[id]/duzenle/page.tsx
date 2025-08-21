@@ -1,50 +1,47 @@
 "use client"
-import { useState, useEffect } from "react"
-import type React from "react"
 
+import type React from "react"
+import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import { useParams } from "next/navigation"
-import Link from "next/link"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Alert, AlertDescription } from "@/components/ui/alert"
-import { Progress } from "@/components/ui/progress"
-import {
-  ArrowLeft,
-  Save,
-  Loader2,
-  Eye,
-  EyeOff,
-  Shield,
-  Globe,
-  Smartphone,
-  Phone,
-  Settings,
-  RefreshCw,
-  Info,
-  AlertTriangle,
-} from "lucide-react"
+import { ArrowLeft, Eye, EyeOff, Shield, Loader2, Save, Shuffle, AlertCircle, Lock, Clock, Zap } from "lucide-react"
 import { useAuth } from "@/hooks/use-auth"
 import { useToast } from "@/hooks/use-toast"
-import BankSelector from "@/components/bank-selector"
 import {
   getBankingCredential,
   updateBankingCredential,
   decryptPassword,
   type BankingCredential,
-  type BankingCredentialInput,
 } from "@/lib/api/banking-credentials"
-import { createTestPassword, validatePasswordStrength } from "@/lib/utils/encryption"
+import BankSelector from "@/components/bank-selector"
+import Link from "next/link"
 
-const credentialTypeOptions = [
-  { value: "internet_banking", label: "İnternet Bankacılığı", icon: Globe },
-  { value: "mobile_banking", label: "Mobil Bankacılık", icon: Smartphone },
-  { value: "phone_banking", label: "Telefon Bankacılığı", icon: Phone },
-  { value: "other", label: "Diğer", icon: Settings },
+interface Bank {
+  id: string
+  name: string
+  logo_url?: string
+}
+
+const credentialTypes = [
+  { value: "internet_banking", label: "İnternet Bankacılığı" },
+  { value: "mobile_banking", label: "Mobil Bankacılık" },
+  { value: "phone_banking", label: "Telefon Bankacılığı" },
+  { value: "other", label: "Diğer" },
+]
+
+const passwordChangeFrequencies = [
+  { value: 30, label: "30 gün" },
+  { value: 60, label: "60 gün" },
+  { value: 90, label: "90 gün" },
+  { value: 180, label: "6 ay" },
+  { value: 365, label: "1 yıl" },
 ]
 
 export default function SifreDuzenlePage() {
@@ -55,40 +52,29 @@ export default function SifreDuzenlePage() {
   const credentialId = params.id as string
 
   const [credential, setCredential] = useState<BankingCredential | null>(null)
-  const [formData, setFormData] = useState<Partial<BankingCredentialInput>>({
-    bank_id: "",
-    credential_name: "",
-    username: "",
-    password: "",
-    credential_type: "internet_banking",
-    notes: "",
-    password_change_frequency_days: 90,
-  })
-
-  const [showPassword, setShowPassword] = useState(false)
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
-  const [passwordChanged, setPasswordChanged] = useState(false)
-  const [passwordStrength, setPasswordStrength] = useState({
-    score: 0,
-    feedback: [],
-    isStrong: false,
+  const [showPassword, setShowPassword] = useState(false)
+  const [showBankSelector, setShowBankSelector] = useState(false)
+  const [selectedBank, setSelectedBank] = useState<Bank | null>(null)
+
+  const [formData, setFormData] = useState({
+    credentialName: "",
+    bankId: "",
+    credentialType: "",
+    username: "",
+    password: "",
+    notes: "",
+    passwordChangeFrequency: 90,
   })
+
+  const [errors, setErrors] = useState<Record<string, string>>({})
 
   useEffect(() => {
     if (user && credentialId) {
       loadCredential()
     }
   }, [user, credentialId])
-
-  useEffect(() => {
-    if (formData.password) {
-      const strength = validatePasswordStrength(formData.password)
-      setPasswordStrength(strength)
-    } else {
-      setPasswordStrength({ score: 0, feedback: [], isStrong: false })
-    }
-  }, [formData.password])
 
   const loadCredential = async () => {
     if (!user) return
@@ -108,6 +94,11 @@ export default function SifreDuzenlePage() {
       }
 
       setCredential(data)
+      setSelectedBank({
+        id: data.bank_id,
+        name: data.bank_name,
+        logo_url: data.bank_logo_url || undefined,
+      })
 
       // Decrypt password for editing
       let decryptedPassword = ""
@@ -125,13 +116,13 @@ export default function SifreDuzenlePage() {
       }
 
       setFormData({
-        bank_id: data.bank_id,
-        credential_name: data.credential_name,
+        credentialName: data.credential_name,
+        bankId: data.bank_id,
+        credentialType: data.credential_type,
         username: data.username || "",
         password: decryptedPassword,
-        credential_type: data.credential_type,
         notes: data.notes || "",
-        password_change_frequency_days: data.password_change_frequency_days || 90,
+        passwordChangeFrequency: data.password_change_frequency_days || 90,
       })
     } catch (error: any) {
       console.error("Load credential error:", error)
@@ -146,28 +137,39 @@ export default function SifreDuzenlePage() {
     }
   }
 
-  const handleInputChange = (field: keyof BankingCredentialInput, value: string | number) => {
-    setFormData((prev) => ({
-      ...prev,
-      [field]: value,
-    }))
-
-    if (field === "password") {
-      setPasswordChanged(true)
+  const generateRandomPassword = () => {
+    const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*"
+    let password = ""
+    for (let i = 0; i < 12; i++) {
+      password += chars.charAt(Math.floor(Math.random() * chars.length))
     }
+    setFormData((prev) => ({ ...prev, password }))
+    setShowPassword(true)
   }
 
-  const generateTestPassword = () => {
-    const testPassword = createTestPassword()
-    setFormData((prev) => ({
-      ...prev,
-      password: testPassword,
-    }))
-    setPasswordChanged(true)
-    toast({
-      title: "Test Şifre Oluşturuldu",
-      description: "Geliştirme için test şifresi oluşturuldu.",
-    })
+  const validateForm = () => {
+    const newErrors: Record<string, string> = {}
+
+    if (!formData.credentialName.trim()) {
+      newErrors.credentialName = "Şifre adı gereklidir"
+    }
+
+    if (!formData.bankId) {
+      newErrors.bankId = "Banka seçimi gereklidir"
+    }
+
+    if (!formData.credentialType) {
+      newErrors.credentialType = "Şifre türü seçimi gereklidir"
+    }
+
+    if (!formData.password.trim()) {
+      newErrors.password = "Şifre gereklidir"
+    } else if (formData.password.length < 4) {
+      newErrors.password = "Şifre en az 4 karakter olmalıdır"
+    }
+
+    setErrors(newErrors)
+    return Object.keys(newErrors).length === 0
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -176,36 +178,48 @@ export default function SifreDuzenlePage() {
     if (!user || !credential) {
       toast({
         title: "Hata",
-        description: "Gerekli bilgiler eksik.",
+        description: "Lütfen giriş yapınız.",
         variant: "destructive",
       })
       return
     }
 
-    if (!formData.bank_id || !formData.credential_name) {
+    if (!validateForm()) {
       toast({
         title: "Hata",
-        description: "Lütfen gerekli alanları doldurunuz.",
+        description: "Lütfen tüm gerekli alanları doldurunuz.",
         variant: "destructive",
       })
       return
     }
 
+    setSaving(true)
+
     try {
-      setSaving(true)
-      await updateBankingCredential(user.id, credential.id, formData)
+      await updateBankingCredential(user.id, credential.id, {
+        credential_name: formData.credentialName,
+        bank_id: formData.bankId,
+        bank_name: selectedBank?.name || "",
+        bank_logo_url: selectedBank?.logo_url || null,
+        credential_type: formData.credentialType as "internet_banking" | "mobile_banking" | "phone_banking" | "other",
+        username: formData.username || null,
+        password: formData.password,
+        notes: formData.notes || null,
+        password_change_frequency_days: formData.passwordChangeFrequency,
+        last_password_change_date: new Date().toISOString(),
+      })
 
       toast({
         title: "Başarılı",
-        description: "Şifre bilgisi başarıyla güncellendi.",
+        description: "Şifre başarıyla güncellendi.",
       })
 
       router.push("/uygulama/sifrelerim")
     } catch (error: any) {
-      console.error("Update credential error:", error)
+      console.error("Credential update error:", error)
       toast({
         title: "Hata",
-        description: "Şifre güncellenirken bir hata oluştu.",
+        description: error.message || "Şifre güncellenirken bir hata oluştu.",
         variant: "destructive",
       })
     } finally {
@@ -215,8 +229,9 @@ export default function SifreDuzenlePage() {
 
   if (authLoading || loading) {
     return (
-      <div className="flex items-center justify-center min-h-[calc(100vh-150px)]">
-        <Loader2 className="h-8 w-8 animate-spin" />
+      <div className="flex flex-col gap-4 md:gap-6 items-center justify-center min-h-[calc(100vh-150px)]">
+        <Loader2 className="h-12 w-12 animate-spin text-emerald-600" />
+        <p className="text-lg text-gray-600">Yükleniyor...</p>
       </div>
     )
   }
@@ -236,7 +251,7 @@ export default function SifreDuzenlePage() {
   if (!credential) {
     return (
       <div className="flex flex-col items-center justify-center min-h-[calc(100vh-150px)]">
-        <AlertTriangle className="h-12 w-12 text-orange-500 mb-4" />
+        <AlertCircle className="h-12 w-12 text-orange-500 mb-4" />
         <p className="text-lg text-orange-600">Şifre bilgisi bulunamadı.</p>
         <Link href="/uygulama/sifrelerim">
           <Button className="mt-4">Şifrelerime Dön</Button>
@@ -245,243 +260,306 @@ export default function SifreDuzenlePage() {
     )
   }
 
-  const selectedType = credentialTypeOptions.find((option) => option.value === formData.credential_type)
-  const TypeIcon = selectedType?.icon || Settings
-
   return (
-    <div className="flex flex-col gap-6">
-      {/* Header */}
-      <div className="flex items-center gap-4">
-        <Link href="/uygulama/sifrelerim">
-          <Button variant="ghost" size="sm">
-            <ArrowLeft className="h-4 w-4 mr-2" />
-            Geri
-          </Button>
-        </Link>
-        <div>
-          <h1 className="text-2xl font-bold text-gray-900">Şifre Düzenle</h1>
-          <p className="text-gray-600">{credential.credential_name}</p>
-        </div>
-      </div>
+    <div className="space-y-6">
+      {/* Hero Section */}
+      <Card className="overflow-hidden border-0 shadow-xl rounded-2xl">
+        <div className="bg-gradient-to-r from-emerald-600 to-teal-700 p-8 text-white relative">
+          {/* Decorative circles */}
+          <div className="absolute top-0 right-0 w-64 h-64 bg-white opacity-5 rounded-full -mt-32 -mr-32"></div>
+          <div className="absolute bottom-0 left-0 w-40 h-40 bg-white opacity-5 rounded-full -mb-20 -ml-20"></div>
 
-      <form onSubmit={handleSubmit} className="space-y-6">
-        <div className="grid gap-6 lg:grid-cols-2">
-          {/* Sol Kolon - Temel Bilgiler */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <TypeIcon className="h-5 w-5" />
-                Temel Bilgiler
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              {/* Banka Seçimi */}
-              <div className="space-y-2">
-                <Label htmlFor="bank">Banka *</Label>
-                <BankSelector
-                  value={formData.bank_id || ""}
-                  onValueChange={(value) => handleInputChange("bank_id", value)}
-                  placeholder="Banka seçiniz..."
-                />
-              </div>
-
-              {/* Şifre Adı */}
-              <div className="space-y-2">
-                <Label htmlFor="credential_name">Şifre Adı *</Label>
-                <Input
-                  id="credential_name"
-                  value={formData.credential_name || ""}
-                  onChange={(e) => handleInputChange("credential_name", e.target.value)}
-                  placeholder="Örn: İş Bankası İnternet Şifresi"
-                  required
-                />
-              </div>
-
-              {/* Şifre Türü */}
-              <div className="space-y-2">
-                <Label htmlFor="credential_type">Şifre Türü</Label>
-                <Select
-                  value={formData.credential_type || "internet_banking"}
-                  onValueChange={(value) => handleInputChange("credential_type", value)}
+          <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-6 relative z-10">
+            <div className="flex items-center gap-4">
+              <Link href="/uygulama/sifrelerim">
+                <Button
+                  variant="outline"
+                  size="icon"
+                  className="bg-white/20 border-white/30 text-white hover:bg-white/30"
                 >
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {credentialTypeOptions.map((option) => {
-                      const Icon = option.icon
-                      return (
-                        <SelectItem key={option.value} value={option.value}>
-                          <div className="flex items-center gap-2">
-                            <Icon className="h-4 w-4" />
-                            {option.label}
-                          </div>
-                        </SelectItem>
-                      )
-                    })}
-                  </SelectContent>
-                </Select>
+                  <ArrowLeft className="h-4 w-4" />
+                </Button>
+              </Link>
+              <div>
+                <h1 className="text-3xl md:text-4xl font-bold mb-2">Şifre Düzenle</h1>
+                <p className="text-emerald-100 text-lg">
+                  {credential.credential_name} şifresini güvenli bir şekilde güncelleyin
+                </p>
               </div>
-
-              {/* Kullanıcı Adı */}
-              <div className="space-y-2">
-                <Label htmlFor="username">Kullanıcı Adı</Label>
-                <Input
-                  id="username"
-                  value={formData.username || ""}
-                  onChange={(e) => handleInputChange("username", e.target.value)}
-                  placeholder="Kullanıcı adınız (opsiyonel)"
-                />
+            </div>
+            <div className="flex flex-wrap gap-4">
+              <div className="bg-white/10 backdrop-blur-sm p-3 rounded-xl">
+                <div className="flex items-center gap-2 text-emerald-100">
+                  <Shield className="h-5 w-5" />
+                  <span>Güvenli Şifreleme</span>
+                </div>
               </div>
-            </CardContent>
-          </Card>
+              <div className="bg-white/10 backdrop-blur-sm p-3 rounded-xl">
+                <div className="flex items-center gap-2 text-emerald-100">
+                  <Zap className="h-5 w-5" />
+                  <span>Kolay Yönetim</span>
+                </div>
+              </div>
+              <div className="bg-white/10 backdrop-blur-sm p-3 rounded-xl">
+                <div className="flex items-center gap-2 text-emerald-100">
+                  <Clock className="h-5 w-5" />
+                  <span>Otomatik Hatırlatma</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </Card>
 
-          {/* Sağ Kolon - Şifre ve Güvenlik */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Shield className="h-5 w-5" />
-                Şifre ve Güvenlik
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              {/* Şifre */}
-              <div className="space-y-2">
-                <div className="flex items-center justify-between">
-                  <Label htmlFor="password">Şifre</Label>
-                  {process.env.NODE_ENV === "development" && (
+      <form onSubmit={handleSubmit} className="space-y-8">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          {/* Form Content */}
+          <div className="lg:col-span-2 space-y-6">
+            {/* Temel Bilgiler */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Lock className="h-5 w-5 text-emerald-600" />
+                  Temel Şifre Bilgileri
+                </CardTitle>
+                <CardDescription>Şifrenizin temel bilgilerini güncelleyiniz</CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {/* Şifre Adı */}
+                  <div className="md:col-span-2 space-y-2">
+                    <Label htmlFor="credentialName">
+                      Şifre Adı <span className="text-red-500">*</span>
+                    </Label>
+                    <Input
+                      id="credentialName"
+                      placeholder="Örn: QNB Finansbank İnternet Bankacılığı"
+                      value={formData.credentialName}
+                      onChange={(e) => setFormData((prev) => ({ ...prev, credentialName: e.target.value }))}
+                      className={`h-10 ${errors.credentialName ? "border-red-500" : ""}`}
+                    />
+                    {errors.credentialName && <p className="text-sm text-red-600">{errors.credentialName}</p>}
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="bankId">
+                      Banka <span className="text-red-500">*</span>
+                    </Label>
                     <Button
                       type="button"
                       variant="outline"
-                      size="sm"
-                      onClick={generateTestPassword}
-                      className="text-xs bg-transparent"
+                      onClick={() => setShowBankSelector(true)}
+                      className={`w-full h-10 justify-start text-left font-normal ${errors.bankId ? "border-red-500" : ""}`}
                     >
-                      <RefreshCw className="h-3 w-3 mr-1" />
-                      Test Şifre
+                      {selectedBank ? selectedBank.name : "Banka seçiniz"}
                     </Button>
-                  )}
-                </div>
-                <div className="relative">
-                  <Input
-                    id="password"
-                    type={showPassword ? "text" : "password"}
-                    value={formData.password || ""}
-                    onChange={(e) => handleInputChange("password", e.target.value)}
-                    placeholder="Şifrenizi girin"
-                    className="pr-10"
-                  />
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="sm"
-                    className="absolute right-0 top-0 h-full px-3"
-                    onClick={() => setShowPassword(!showPassword)}
-                  >
-                    {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                  </Button>
-                </div>
-
-                {/* Şifre Gücü Göstergesi */}
-                {formData.password && (
-                  <div className="space-y-2">
-                    <div className="flex items-center justify-between text-sm">
-                      <span>Şifre Gücü</span>
-                      <span className={passwordStrength.isStrong ? "text-green-600" : "text-orange-600"}>
-                        {passwordStrength.score}/5
-                      </span>
-                    </div>
-                    <Progress value={(passwordStrength.score / 5) * 100} className="h-2" />
-                    {passwordStrength.feedback.length > 0 && (
-                      <div className="text-xs text-gray-600">
-                        <p>Öneriler:</p>
-                        <ul className="list-disc list-inside space-y-1">
-                          {passwordStrength.feedback.map((feedback, index) => (
-                            <li key={index}>{feedback}</li>
-                          ))}
-                        </ul>
-                      </div>
-                    )}
+                    {errors.bankId && <p className="text-sm text-red-600">{errors.bankId}</p>}
                   </div>
-                )}
 
-                {passwordChanged && (
-                  <Alert className="bg-yellow-50 border-yellow-200">
-                    <Info className="h-4 w-4 text-yellow-600" />
-                    <AlertDescription className="text-yellow-800">
-                      Şifre değiştirildi. Kaydettiğinizde son değiştirme tarihi güncellenecek.
-                    </AlertDescription>
-                  </Alert>
-                )}
-              </div>
+                  {/* Şifre Türü */}
+                  <div className="space-y-2">
+                    <Label htmlFor="credentialType">
+                      Şifre Türü <span className="text-red-500">*</span>
+                    </Label>
+                    <Select
+                      value={formData.credentialType}
+                      onValueChange={(value) => setFormData((prev) => ({ ...prev, credentialType: value }))}
+                    >
+                      <SelectTrigger className={`h-10 ${errors.credentialType ? "border-red-500" : ""}`}>
+                        <SelectValue placeholder="Şifre türü seçiniz" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {credentialTypes.map((type) => (
+                          <SelectItem key={type.value} value={type.value}>
+                            {type.label}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    {errors.credentialType && <p className="text-sm text-red-600">{errors.credentialType}</p>}
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
 
-              {/* Şifre Değiştirme Sıklığı */}
-              <div className="space-y-2">
-                <Label htmlFor="password_change_frequency">Şifre Değiştirme Sıklığı (Gün)</Label>
-                <Select
-                  value={formData.password_change_frequency_days?.toString() || "90"}
-                  onValueChange={(value) => handleInputChange("password_change_frequency_days", Number.parseInt(value))}
-                >
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="30">30 Gün</SelectItem>
-                    <SelectItem value="60">60 Gün</SelectItem>
-                    <SelectItem value="90">90 Gün</SelectItem>
-                    <SelectItem value="180">180 Gün</SelectItem>
-                    <SelectItem value="365">1 Yıl</SelectItem>
-                  </SelectContent>
-                </Select>
-                <p className="text-xs text-gray-500">Bu süre sonunda şifre değiştirme hatırlatması alacaksınız.</p>
-              </div>
+            {/* Giriş Bilgileri */}
+            <Card>
+              <CardHeader>
+                <CardTitle>Giriş Bilgileri</CardTitle>
+                <CardDescription>Kullanıcı adı ve şifre bilgileri</CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {/* Kullanıcı Adı */}
+                  <div className="md:col-span-2 space-y-2">
+                    <Label htmlFor="username">Kullanıcı Adı</Label>
+                    <Input
+                      id="username"
+                      placeholder="Kullanıcı adınız (opsiyonel)"
+                      value={formData.username}
+                      onChange={(e) => setFormData((prev) => ({ ...prev, username: e.target.value }))}
+                      className="h-10"
+                    />
+                  </div>
 
-              {/* Notlar */}
-              <div className="space-y-2">
-                <Label htmlFor="notes">Notlar</Label>
-                <Textarea
-                  id="notes"
-                  value={formData.notes || ""}
-                  onChange={(e) => handleInputChange("notes", e.target.value)}
-                  placeholder="Ek notlarınız (opsiyonel)"
-                  rows={3}
-                />
-              </div>
-            </CardContent>
-          </Card>
-        </div>
+                  {/* Şifre */}
+                  <div className="md:col-span-2 space-y-2">
+                    <Label htmlFor="password">
+                      Şifre <span className="text-red-500">*</span>
+                    </Label>
+                    <div className="flex gap-2">
+                      <div className="relative flex-1">
+                        <Input
+                          id="password"
+                          type={showPassword ? "text" : "password"}
+                          placeholder="Şifrenizi girin"
+                          value={formData.password}
+                          onChange={(e) => setFormData((prev) => ({ ...prev, password: e.target.value }))}
+                          className={`h-10 pr-10 ${errors.password ? "border-red-500" : ""}`}
+                        />
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="sm"
+                          className="absolute right-0 top-0 h-10 w-10 p-0"
+                          onClick={() => setShowPassword(!showPassword)}
+                        >
+                          {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                        </Button>
+                      </div>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={generateRandomPassword}
+                        className="h-10 px-3 bg-transparent"
+                        title="Rastgele şifre oluştur"
+                      >
+                        <Shuffle className="h-4 w-4" />
+                      </Button>
+                    </div>
+                    {errors.password && <p className="text-sm text-red-600">{errors.password}</p>}
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
 
-        {/* Güvenlik Uyarısı */}
-        <Alert className="bg-blue-50 border-blue-200">
-          <Info className="h-4 w-4 text-blue-600" />
-          <AlertDescription className="text-blue-800">
-            <strong>Güvenlik:</strong> Şifreleriniz güçlü şifreleme ile korunmaktadır. Değişiklikler kaydedildikten
-            sonra eski şifre geri alınamaz.
-          </AlertDescription>
-        </Alert>
+            {/* Ek Ayarlar */}
+            <Card>
+              <CardHeader>
+                <CardTitle>Ek Ayarlar</CardTitle>
+                <CardDescription>Şifre yönetimi ve güvenlik ayarları</CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {/* Şifre Değişim Sıklığı */}
+                  <div className="space-y-2">
+                    <Label htmlFor="passwordChangeFrequency">Şifre Değişim Sıklığı</Label>
+                    <Select
+                      value={formData.passwordChangeFrequency.toString()}
+                      onValueChange={(value) =>
+                        setFormData((prev) => ({ ...prev, passwordChangeFrequency: Number.parseInt(value) }))
+                      }
+                    >
+                      <SelectTrigger className="h-10">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {passwordChangeFrequencies.map((freq) => (
+                          <SelectItem key={freq.value} value={freq.value.toString()}>
+                            {freq.label}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
 
-        {/* Form Butonları */}
-        <div className="flex gap-4 pt-4">
-          <Link href="/uygulama/sifrelerim">
-            <Button type="button" variant="outline" disabled={saving}>
-              İptal
-            </Button>
-          </Link>
-          <Button type="submit" disabled={saving || !formData.bank_id || !formData.credential_name}>
-            {saving ? (
-              <>
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                Güncelleniyor...
-              </>
-            ) : (
-              <>
-                <Save className="mr-2 h-4 w-4" />
-                Değişiklikleri Kaydet
-              </>
-            )}
-          </Button>
+                  {/* Notlar */}
+                  <div className="md:col-span-2 space-y-2">
+                    <Label htmlFor="notes">Notlar</Label>
+                    <Textarea
+                      id="notes"
+                      placeholder="Ek notlarınız (opsiyonel)"
+                      value={formData.notes}
+                      onChange={(e) => setFormData((prev) => ({ ...prev, notes: e.target.value }))}
+                      rows={3}
+                    />
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+
+          <div className="space-y-6">
+            <Card className="sticky top-6">
+              <CardHeader>
+                <CardTitle>Güvenlik Bilgileri</CardTitle>
+                <CardDescription>Şifre güvenliği ve yönetimi</CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="space-y-3">
+                  <div className="flex items-start gap-3 text-sm">
+                    <Shield className="h-4 w-4 text-emerald-600 mt-0.5 flex-shrink-0" />
+                    <span className="text-gray-600">Mevcut şifrelerinizi güvenli bir şekilde saklayın</span>
+                  </div>
+                  <div className="flex items-start gap-3 text-sm">
+                    <Lock className="h-4 w-4 text-emerald-600 mt-0.5 flex-shrink-0" />
+                    <span className="text-gray-600">Sayısal şifreler de desteklenmektedir</span>
+                  </div>
+                  <div className="flex items-start gap-3 text-sm">
+                    <Clock className="h-4 w-4 text-emerald-600 mt-0.5 flex-shrink-0" />
+                    <span className="text-gray-600">Otomatik hatırlatmalar ile şifre yönetimi</span>
+                  </div>
+                  <div className="flex items-start gap-3 text-sm">
+                    <AlertCircle className="h-4 w-4 text-amber-600 mt-0.5 flex-shrink-0" />
+                    <span className="text-gray-600">Şifrelerinizi düzenli olarak güncelleyin</span>
+                  </div>
+                </div>
+
+                <Alert className="bg-emerald-50 border-emerald-200">
+                  <Shield className="h-4 w-4 text-emerald-600" />
+                  <AlertDescription className="text-emerald-700">
+                    Tüm şifreleriniz AES-256 şifreleme ile güvenli bir şekilde saklanmaktadır.
+                  </AlertDescription>
+                </Alert>
+
+                <div className="pt-4 space-y-3">
+                  <Button type="submit" className="w-full" disabled={saving}>
+                    {saving ? (
+                      <>
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                        Güncelleniyor...
+                      </>
+                    ) : (
+                      <>
+                        <Save className="mr-2 h-4 w-4" />
+                        Değişiklikleri Kaydet
+                      </>
+                    )}
+                  </Button>
+
+                  <Link href="/uygulama/sifrelerim" className="block">
+                    <Button type="button" variant="outline" className="w-full bg-transparent">
+                      İptal
+                    </Button>
+                  </Link>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
         </div>
       </form>
+
+      {showBankSelector && (
+        <BankSelector
+          onBankSelect={(bank) => {
+            setSelectedBank(bank)
+            setFormData((prev) => ({ ...prev, bankId: bank.id }))
+            setShowBankSelector(false)
+          }}
+          onSkip={() => setShowBankSelector(false)}
+        />
+      )}
     </div>
   )
 }

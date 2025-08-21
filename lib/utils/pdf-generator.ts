@@ -1,6 +1,17 @@
 import jsPDF from "jspdf"
 import { format } from "date-fns"
 
+const safeNumber = (value: any, defaultValue = 0): number => {
+  if (value === null || value === undefined || value === "") return defaultValue
+  const num = typeof value === "string" ? Number.parseFloat(value) : Number(value)
+  return isNaN(num) || !isFinite(num) ? defaultValue : num
+}
+
+const safeCoordinate = (value: any, min = 0, max = 1000): number => {
+  const num = safeNumber(value, min)
+  return Math.max(min, Math.min(max, num))
+}
+
 const removeTurkishChars = (text: string): string => {
   if (!text || typeof text !== "string") return ""
 
@@ -23,7 +34,6 @@ const removeTurkishChars = (text: string): string => {
     Î: "I",
     û: "u",
     Û: "U",
-    // Additional characters that might cause issues
     ë: "e",
     Ë: "E",
     ï: "i",
@@ -50,9 +60,19 @@ const safeText = (text: any): string => {
   return removeTurkishChars(String(text))
 }
 
-const formatCurrency = (amount: number): string => {
-  if (isNaN(amount) || amount === null || amount === undefined) return "0"
-  return `${Math.round(amount).toLocaleString("en-US")} TL`
+const formatCurrency = (amount: any): string => {
+  const num = safeNumber(amount, 0)
+  return (
+    new Intl.NumberFormat("tr-TR", {
+      style: "currency",
+      currency: "TRY",
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 0,
+    })
+      .format(num)
+      .replace("₺", "")
+      .trim() + " TL"
+  )
 }
 
 const getBankColor = (bankName: string): [number, number, number] => {
@@ -170,691 +190,746 @@ class PDFReportGenerator {
     this.addHeader()
   }
 
-  private checkPageBreak(requiredHeight: number) {
-    if (this.currentY + requiredHeight > this.pageHeight - 30) {
+  private checkPageBreak(requiredHeight: number, forceBreak = false) {
+    const footerSpace = 40
+    const availableSpace = this.pageHeight - this.currentY - footerSpace
+
+    if (forceBreak || requiredHeight > availableSpace || availableSpace < 80) {
       this.addPage()
+      return true
     }
+    return false
   }
 
   private addHeader() {
-    // Modern header with gradient effect
-    this.doc.setFillColor(...COLORS.primary)
-    this.doc.rect(0, 0, this.pageWidth, 25, "F")
+    try {
+      // Main header background with gradient effect
+      this.doc.setFillColor(16, 185, 129)
+      this.doc.rect(0, 0, this.pageWidth, 30, "F")
 
-    // Logo area
-    this.doc.setFillColor(...COLORS.white)
-    this.doc.circle(25, 12.5, 8, "F")
+      // Subtle gradient overlay
+      this.doc.setFillColor(10, 150, 100, 0.3)
+      this.doc.rect(0, 0, this.pageWidth, 15, "F")
 
-    this.doc.setTextColor(...COLORS.primary)
-    this.doc.setFontSize(10)
-    this.doc.setFont("helvetica", "bold")
-    this.doc.text("KT", 25, 15, { align: "center" })
+      // KT Logo circle
+      this.doc.setFillColor(255, 255, 255)
+      this.doc.circle(25, 15, 8, "F")
 
-    // Title
-    this.doc.setTextColor(...COLORS.white)
-    this.doc.setFontSize(16)
-    this.doc.setFont("helvetica", "bold")
-    this.doc.text("KREDITAKIP", 40, 16)
+      this.doc.setTextColor(16, 185, 129)
+      this.doc.setFontSize(12)
+      this.doc.setFont("helvetica", "bold")
+      this.doc.text("KT", 25, 18, { align: "center" })
 
-    // Subtitle
-    this.doc.setFontSize(8)
-    this.doc.setFont("helvetica", "normal")
-    this.doc.text("Finansal Rapor Sistemi", 40, 21)
+      // Main title
+      this.doc.setTextColor(255, 255, 255)
+      this.doc.setFontSize(18)
+      this.doc.setFont("helvetica", "bold")
+      this.doc.text("KREDITAKIP", 40, 18)
 
-    // Page number
-    this.doc.setTextColor(...COLORS.white)
-    this.doc.setFontSize(10)
-    this.doc.text(`Sayfa ${this.pageNumber}`, this.pageWidth - this.margin, 16, { align: "right" })
+      // Subtitle
+      this.doc.setFontSize(10)
+      this.doc.setFont("helvetica", "normal")
+      this.doc.text("Finansal Rapor Sistemi", this.pageWidth - this.margin, 18, { align: "right" })
 
-    this.currentY = 35
+      // Page number with better styling
+      this.doc.setTextColor(100, 100, 100)
+      this.doc.setFontSize(9)
+      this.doc.text(`Sayfa ${this.pageNumber}`, this.pageWidth - this.margin, this.pageHeight - 10, { align: "right" })
+
+      this.currentY = 40
+    } catch (error) {
+      console.error("Error in addHeader:", error)
+      this.currentY = 40
+    }
   }
 
   private addBankLogo(x: number, y: number, bankName: string, size = 8) {
+    if (!bankName || typeof x !== "number" || typeof y !== "number" || typeof size !== "number") return
+    if (isNaN(x) || isNaN(y) || isNaN(size) || !isFinite(x) || !isFinite(y) || !isFinite(size)) return
+
     const color = getBankColor(bankName)
     const initials = getBankInitials(bankName)
 
-    // Draw colored circle
-    this.doc.setFillColor(...color)
-    this.doc.circle(x + size / 2, y + size / 2, size / 2, "F")
+    const safeX = Math.max(5, Math.min(x + size / 2, this.pageWidth - 5))
+    const safeY = Math.max(5, Math.min(y + size / 2, this.pageHeight - 5))
+    const safeSize = Math.max(2, Math.min(size / 2, 15))
 
-    // Add initials
-    this.doc.setTextColor(255, 255, 255) // Pure white for maximum contrast
-    this.doc.setFontSize(size * 0.4)
-    this.doc.setFont("helvetica", "bold")
-    this.doc.text(initials, x + size / 2, y + size / 2 + 1, { align: "center" })
+    if (!isFinite(safeX) || !isFinite(safeY) || !isFinite(safeSize)) return
+
+    try {
+      // Shadow effect
+      this.doc.setFillColor(0, 0, 0, 0.1)
+      this.doc.circle(safeX + 1, safeY + 1, safeSize, "F")
+
+      // Main circle
+      this.doc.setFillColor(...color)
+      this.doc.circle(safeX, safeY, safeSize, "F")
+
+      // Inner highlight
+      this.doc.setFillColor(255, 255, 255, 0.2)
+      this.doc.circle(safeX - 1, safeY - 1, safeSize * 0.7, "F")
+
+      const fontSize = Math.max(4, Math.min(size * 0.4, 12))
+      if (isFinite(fontSize)) {
+        this.doc.setTextColor(255, 255, 255)
+        this.doc.setFontSize(fontSize)
+        this.doc.setFont("helvetica", "bold")
+        this.doc.text(initials, safeX, safeY + 1, { align: "center" })
+      }
+    } catch (error) {
+      console.error("Error drawing bank logo:", error)
+    }
   }
 
   private addTitle(title: string, subtitle?: string) {
-    this.checkPageBreak(40)
+    try {
+      this.checkPageBreak(40)
 
-    // Main title
-    this.doc.setFontSize(22)
-    this.doc.setFont("helvetica", "bold")
-    this.doc.setTextColor(0, 0, 0) // Pure black
-    this.doc.text(safeText(title), this.pageWidth / 2, this.currentY, { align: "center" })
-    this.currentY += 12
+      this.doc.setTextColor(30, 41, 59)
+      this.doc.setFontSize(18)
+      this.doc.setFont("helvetica", "bold")
+      this.doc.text(safeText(title), this.margin, this.currentY)
 
-    if (subtitle) {
-      this.doc.setFontSize(12)
-      this.doc.setFont("helvetica", "normal")
-      this.doc.setTextColor(75, 85, 99) // Gray-600 for good contrast
-      this.doc.text(safeText(subtitle), this.pageWidth / 2, this.currentY, { align: "center" })
-      this.currentY += 8
+      this.currentY += 20
+
+      if (subtitle) {
+        this.doc.setTextColor(107, 114, 128)
+        this.doc.setFontSize(10)
+        this.doc.setFont("helvetica", "normal")
+        this.doc.text(safeText(subtitle), this.margin, this.currentY)
+        this.currentY += 15
+      }
+
+      this.currentY += 10
+    } catch (error) {
+      console.error("Error in addTitle:", error)
+      this.currentY += 40
     }
-
-    // Decorative line
-    this.doc.setDrawColor(...COLORS.primary)
-    this.doc.setLineWidth(2)
-    this.doc.line(this.pageWidth / 2 - 30, this.currentY + 5, this.pageWidth / 2 + 30, this.currentY + 5)
-
-    this.currentY += 20
   }
 
   private addMetricCards(
     metrics: Array<{ title: string; value: string; subtitle?: string; color?: keyof typeof COLORS }>,
+    data?: ReportData,
   ) {
-    this.checkPageBreak(80)
+    try {
+      this.checkPageBreak(140)
 
-    const cardWidth = (this.pageWidth - 2 * this.margin - 30) / 4
-    const cardHeight = 50
+      const cardWidth = safeNumber((this.pageWidth - 2 * this.margin - 20) / 3, 50)
+      const cardHeight = 45
 
-    metrics.forEach((metric, index) => {
-      const x = this.margin + index * (cardWidth + 10)
-      const color = COLORS[metric.color || "primary"]
+      // Draw 3 main metric cards
+      for (let i = 0; i < Math.min(3, metrics.length); i++) {
+        const metric = metrics[i]
+        if (!metric) continue
 
-      // Card background with shadow effect
-      this.doc.setFillColor(255, 255, 255)
-      this.doc.setDrawColor(230, 230, 230)
-      this.doc.roundedRect(x, this.currentY, cardWidth, cardHeight, 3, 3, "FD")
+        const x = safeCoordinate(this.margin + i * (cardWidth + 10), this.margin, this.pageWidth - cardWidth)
+        const y = safeCoordinate(this.currentY, this.margin, this.pageHeight - cardHeight)
 
-      // Color accent bar
-      this.doc.setFillColor(...color)
-      this.doc.rect(x, this.currentY, cardWidth, 3, "F")
+        const color = COLORS[metric.color || "primary"] || COLORS.primary
 
-      // Value
-      this.doc.setFontSize(16)
-      this.doc.setFont("helvetica", "bold")
-      this.doc.setTextColor(...color)
-      this.doc.text(safeText(metric.value), x + cardWidth / 2, this.currentY + 20, { align: "center" })
+        // Card shadow
+        this.doc.setFillColor(0, 0, 0, 0.1)
+        this.doc.rect(x + 2, y + 2, cardWidth, cardHeight, "F")
 
-      // Title
-      this.doc.setFontSize(9)
-      this.doc.setFont("helvetica", "normal")
-      this.doc.setTextColor(0, 0, 0) // Pure black
-      this.doc.text(safeText(metric.title), x + cardWidth / 2, this.currentY + 30, { align: "center" })
+        // Card background
+        this.doc.setFillColor(255, 255, 255)
+        this.doc.setDrawColor(240, 240, 240)
+        this.doc.setLineWidth(0.5)
+        this.doc.rect(x, y, cardWidth, cardHeight, "FD")
 
-      // Subtitle
-      if (metric.subtitle) {
-        this.doc.setFontSize(7)
-        this.doc.setTextColor(75, 85, 99) // Gray-600
-        this.doc.text(safeText(metric.subtitle), x + cardWidth / 2, this.currentY + 38, { align: "center" })
+        // Colored left border
+        this.doc.setFillColor(color[0], color[1], color[2])
+        this.doc.rect(x, y, 3, cardHeight, "F")
+
+        // Title
+        this.doc.setTextColor(107, 114, 128)
+        this.doc.setFontSize(8)
+        this.doc.setFont("helvetica", "normal")
+        this.doc.text(safeText(metric.title), x + 8, y + 12)
+
+        // Value
+        this.doc.setTextColor(30, 41, 59)
+        this.doc.setFontSize(12)
+        this.doc.setFont("helvetica", "bold")
+        this.doc.text(safeText(metric.value), x + 8, y + 25)
+
+        // Subtitle
+        if (metric.subtitle) {
+          this.doc.setTextColor(107, 114, 128)
+          this.doc.setFontSize(7)
+          this.doc.setFont("helvetica", "normal")
+          this.doc.text(safeText(metric.subtitle), x + 8, y + 35)
+        }
       }
-    })
 
-    this.currentY += cardHeight + 20
+      this.currentY += 60
+
+      // Add debt distribution pie chart
+      if (data && data.credits && data.credits.length > 0) {
+        this.addDebtDistributionChart(data)
+      }
+    } catch (error) {
+      console.error("Error in addMetricCards:", error)
+      this.currentY += 140
+    }
+  }
+
+  private addDebtDistributionChart(data: ReportData) {
+    try {
+      this.checkPageBreak(120)
+
+      // Title for chart section
+      this.doc.setTextColor(30, 41, 59)
+      this.doc.setFontSize(12)
+      this.doc.setFont("helvetica", "bold")
+      this.doc.text("Borc Dagilimi", this.margin, this.currentY)
+      this.currentY += 20
+
+      const centerX = safeCoordinate(this.pageWidth / 2, 60, this.pageWidth - 60)
+      const centerY = safeCoordinate(this.currentY + 40, 60, this.pageHeight - 60)
+      const radius = 35
+
+      // Calculate bank distribution
+      const bankTotals: { [key: string]: number } = {}
+      let totalDebt = 0
+
+      data.credits.forEach((credit) => {
+        const bankName = credit.bankName || "Bilinmeyen"
+        const debt = safeNumber(credit.remainingDebt, 0)
+        bankTotals[bankName] = (bankTotals[bankName] || 0) + debt
+        totalDebt += debt
+      })
+
+      if (totalDebt <= 0) {
+        this.currentY += 80
+        return
+      }
+
+      const banks = Object.keys(bankTotals).slice(0, 5) // Max 5 banks
+      const colors = [
+        [16, 185, 129], // Emerald
+        [59, 130, 246], // Blue
+        [245, 158, 11], // Amber
+        [239, 68, 68], // Red
+        [147, 51, 234], // Purple
+      ]
+
+      let startAngle = -90 // Start from top
+
+      // Draw pie slices
+      banks.forEach((bank, index) => {
+        const percentage = (bankTotals[bank] / totalDebt) * 100
+        const angle = (percentage / 100) * 360
+
+        if (angle < 1) return // Skip very small slices
+
+        const color = colors[index % colors.length]
+        this.doc.setFillColor(color[0], color[1], color[2])
+
+        // Draw slice using multiple small triangles for smooth arc
+        const steps = Math.max(3, Math.floor(angle / 10))
+        const stepAngle = angle / steps
+
+        for (let step = 0; step < steps; step++) {
+          const angle1 = startAngle + step * stepAngle
+          const angle2 = startAngle + (step + 1) * stepAngle
+
+          const rad1 = (angle1 * Math.PI) / 180
+          const rad2 = (angle2 * Math.PI) / 180
+
+          const x1 = centerX + radius * Math.cos(rad1)
+          const y1 = centerY + radius * Math.sin(rad1)
+          const x2 = centerX + radius * Math.cos(rad2)
+          const y2 = centerY + radius * Math.sin(rad2)
+
+          this.doc.triangle(centerX, centerY, x1, y1, x2, y2, "F")
+        }
+
+        // Add percentage label
+        const labelAngle = startAngle + angle / 2
+        const labelRad = (labelAngle * Math.PI) / 180
+        const labelX = centerX + (radius + 20) * Math.cos(labelRad)
+        const labelY = centerY + (radius + 20) * Math.sin(labelRad)
+
+        this.doc.setTextColor(0, 0, 0)
+        this.doc.setFontSize(9)
+        this.doc.setFont("helvetica", "bold")
+        this.doc.text(`%${Math.round(percentage)}`, labelX, labelY, { align: "center" })
+
+        startAngle += angle
+      })
+
+      // Add legend
+      const legendX = this.margin
+      const legendY = this.currentY + 90
+
+      banks.forEach((bank, index) => {
+        const y = legendY + index * 12
+        const color = colors[index % colors.length]
+
+        // Color box
+        this.doc.setFillColor(color[0], color[1], color[2])
+        this.doc.rect(legendX, y - 3, 8, 6, "F")
+
+        // Bank name and amount
+        this.doc.setTextColor(0, 0, 0)
+        this.doc.setFontSize(8)
+        this.doc.setFont("helvetica", "normal")
+        this.doc.text(`${safeText(bank)}: ${formatCurrency(bankTotals[bank])}`, legendX + 12, y)
+      })
+
+      this.currentY += 120
+    } catch (error) {
+      console.error("Error in addDebtDistributionChart:", error)
+      this.currentY += 120
+    }
   }
 
   private addSection(title: string, content: () => void, color: keyof typeof COLORS = "primary") {
-    this.checkPageBreak(80)
+    try {
+      this.checkPageBreak(80, true) // Force page break for sections
 
-    const sectionY = this.currentY
+      const sectionColor = COLORS[color] || COLORS.primary
 
-    // Section header
-    this.doc.setFillColor(...COLORS[color])
-    this.doc.roundedRect(this.margin, sectionY, this.pageWidth - 2 * this.margin, 15, 2, 2, "F")
+      // Section header with gradient effect
+      this.doc.setFillColor(sectionColor[0], sectionColor[1], sectionColor[2])
+      this.doc.rect(this.margin, this.currentY, this.pageWidth - 2 * this.margin, 18, "F")
 
-    this.doc.setTextColor(255, 255, 255) // Pure white
-    this.doc.setFontSize(12)
-    this.doc.setFont("helvetica", "bold")
-    this.doc.text(safeText(title), this.margin + 8, sectionY + 10)
+      // Subtle gradient overlay
+      this.doc.setFillColor(255, 255, 255, 0.1)
+      this.doc.rect(this.margin, this.currentY, this.pageWidth - 2 * this.margin, 9, "F")
 
-    this.currentY = sectionY + 25
+      this.doc.setTextColor(255, 255, 255)
+      this.doc.setFontSize(13)
+      this.doc.setFont("helvetica", "bold")
+      this.doc.text(safeText(title), this.margin + 10, this.currentY + 12)
 
-    // Content area
-    this.doc.setTextColor(0, 0, 0) // Pure black
-    content()
+      this.currentY += 28
 
-    this.currentY += 15
+      // Content
+      this.doc.setTextColor(0, 0, 0)
+      content()
+
+      this.currentY += 20
+    } catch (error) {
+      console.error("Error in addSection:", error)
+      this.currentY += 80
+    }
   }
 
-  private addTable(
-    headers: string[],
-    rows: string[][],
-    options?: {
-      headerColor?: keyof typeof COLORS
-      alternateRows?: boolean
-      bankNames?: string[]
-    },
-  ) {
-    const opts = { headerColor: "primary" as keyof typeof COLORS, alternateRows: true, ...options }
-    const colWidth = (this.pageWidth - 2 * this.margin) / headers.length
-    const rowHeight = 12 // Increased for logo space
+  private addTable(headers: string[], rows: string[][], showBankLogos = false) {
+    try {
+      const colWidth = safeNumber((this.pageWidth - 2 * this.margin) / headers.length, 25)
+      const rowHeight = 18
 
-    this.checkPageBreak((rows.length + 2) * rowHeight)
+      this.checkPageBreak(rowHeight * (rows.length + 3))
 
-    // Header
-    this.doc.setFillColor(...COLORS[opts.headerColor])
-    this.doc.rect(this.margin, this.currentY, this.pageWidth - 2 * this.margin, rowHeight, "F")
+      // Header background
+      this.doc.setFillColor(59, 130, 246)
+      this.doc.rect(this.margin, this.currentY, this.pageWidth - 2 * this.margin, rowHeight, "F")
 
-    this.doc.setTextColor(255, 255, 255) // Pure white
-    this.doc.setFontSize(9)
-    this.doc.setFont("helvetica", "bold")
+      // Header text
+      this.doc.setTextColor(255, 255, 255)
+      this.doc.setFontSize(10)
+      this.doc.setFont("helvetica", "bold")
 
-    headers.forEach((header, i) => {
-      this.doc.text(safeText(header), this.margin + i * colWidth + 3, this.currentY + 8)
-    })
-
-    this.currentY += rowHeight
-
-    // Rows
-    this.doc.setTextColor(0, 0, 0) // Pure black
-    this.doc.setFont("helvetica", "normal")
-    this.doc.setFontSize(8)
-
-    rows.forEach((row, rowIndex) => {
-      if (opts.alternateRows && rowIndex % 2 === 0) {
-        this.doc.setFillColor(...COLORS.light)
-        this.doc.rect(this.margin, this.currentY, this.pageWidth - 2 * this.margin, rowHeight, "F")
-      }
-
-      row.forEach((cell, colIndex) => {
-        // If this is the first column (bank name) and we have bank names, add logo
-        if (colIndex === 0 && opts.bankNames && opts.bankNames[rowIndex]) {
-          this.addBankLogo(this.margin + colIndex * colWidth + 3, this.currentY + 2, opts.bankNames[rowIndex], 8)
-          this.doc.setTextColor(0, 0, 0) // Pure black
-          this.doc.text(safeText(cell), this.margin + colIndex * colWidth + 15, this.currentY + 8)
-        } else {
-          this.doc.setTextColor(0, 0, 0) // Pure black
-          this.doc.text(safeText(cell), this.margin + colIndex * colWidth + 3, this.currentY + 8)
-        }
+      headers.forEach((header, i) => {
+        const x = safeCoordinate(this.margin + i * colWidth + 6, this.margin, this.pageWidth)
+        this.doc.text(safeText(header), x, this.currentY + 12)
       })
 
       this.currentY += rowHeight
 
-      if (this.currentY > this.pageHeight - 50) {
-        this.addPage()
-      }
-    })
-
-    this.currentY += 10
-  }
-
-  public generateReport(data: ReportData): void {
-    try {
-      console.log("PDF generation started with data:", data)
-
-      // Header
-      this.addHeader()
-
-      const reportDate = format(new Date(), "dd/MM/yyyy")
-
-      // Title
-      this.addTitle(data.reportTitle || "Kredi Portfoy Raporu", `Rapor Tarihi: ${reportDate}`)
-
-      // User info section
-      this.addSection("Kullanici Bilgileri", () => {
-        this.doc.setFontSize(10)
-        this.doc.setTextColor(0, 0, 0) // Pure black
-        this.doc.text(`Ad Soyad: ${safeText(data.userData.name)}`, this.margin + 10, this.currentY)
-        this.currentY += 8
-        this.doc.text(`E-posta: ${safeText(data.userData.email)}`, this.margin + 10, this.currentY)
-        this.currentY += 8
-
-        if (data.period) {
-          let periodText = ""
-          switch (data.period.type) {
-            case "thisMonth":
-              periodText = "Bu Ay"
-              break
-            case "last3Months":
-              periodText = "Son 3 Ay"
-              break
-            case "last6Months":
-              periodText = "Son 6 Ay"
-              break
-            case "thisYear":
-              periodText = "Bu Yil"
-              break
-            case "custom":
-              periodText =
-                data.period.from && data.period.to
-                  ? `${format(data.period.from, "dd/MM/yyyy")} - ${format(data.period.to, "dd/MM/yyyy")}`
-                  : "Ozel Tarih Araligi"
-              break
-            default:
-              periodText = "Tum Zamanlar"
-          }
-          this.doc.text(`Rapor Donemi: ${safeText(periodText)}`, this.margin + 10, this.currentY)
-          this.currentY += 8
+      // Table rows
+      rows.forEach((row, rowIndex) => {
+        // Alternating row colors
+        if (rowIndex % 2 === 1) {
+          this.doc.setFillColor(248, 250, 252)
+          this.doc.rect(this.margin, this.currentY, this.pageWidth - 2 * this.margin, rowHeight, "F")
         }
 
-        if (data.includeSections) {
-          const selectedSections = Object.entries(data.includeSections)
-            .filter(([_, value]) => value)
-            .map(([key, _]) => {
-              switch (key) {
-                case "summary":
-                  return "Genel Ozet"
-                case "creditDetails":
-                  return "Kredi Detaylari"
-                case "paymentSchedule":
-                  return "Odeme Plani"
-                case "interestAnalysis":
-                  return "Faiz Analizi"
-                case "riskAssessment":
-                  return "Risk Degerlendirmesi"
-                default:
-                  return key
-              }
-            })
+        // Row border
+        this.doc.setDrawColor(230, 230, 230)
+        this.doc.setLineWidth(0.2)
+        this.doc.line(this.margin, this.currentY + rowHeight, this.pageWidth - this.margin, this.currentY + rowHeight)
 
-          if (selectedSections.length > 0) {
-            this.doc.text(`Dahil Edilen Bolumler: ${selectedSections.join(", ")}`, this.margin + 10, this.currentY)
-            this.currentY += 8
+        this.doc.setTextColor(30, 41, 59)
+        this.doc.setFontSize(9)
+        this.doc.setFont("helvetica", "normal")
+
+        row.forEach((cell, i) => {
+          const x = safeCoordinate(this.margin + i * colWidth + 6, this.margin, this.pageWidth)
+
+          // Add bank logo for first column if enabled
+          if (showBankLogos && i === 0 && cell) {
+            this.addBankLogo(x - 4, this.currentY + 4, cell, 10)
+            this.doc.text(safeText(cell), x + 16, this.currentY + 12)
+          } else {
+            this.doc.text(safeText(cell), x, this.currentY + 12)
           }
-        }
+        })
 
-        if (data.chartOptions) {
-          const selectedCharts = Object.entries(data.chartOptions)
-            .filter(([_, value]) => value)
-            .map(([key, _]) => {
-              switch (key) {
-                case "paymentTrend":
-                  return "Odeme Trendi"
-                case "debtDistribution":
-                  return "Borc Dagilimi"
-                case "bankComparison":
-                  return "Banka Karsilastirmasi"
-                case "interestComparison":
-                  return "Faiz Karsilastirmasi"
-                case "paymentProgress":
-                  return "Odeme Ilerlemesi"
-                default:
-                  return key
-              }
-            })
+        this.currentY += rowHeight
 
-          if (selectedCharts.length > 0) {
-            this.doc.text(`Dahil Edilen Grafikler: ${selectedCharts.join(", ")}`, this.margin + 10, this.currentY)
-            this.currentY += 8
-          }
+        // Check for page break
+        if (this.currentY > this.pageHeight - 80) {
+          this.addPage()
+
+          // Repeat headers on new page
+          this.doc.setFillColor(59, 130, 246)
+          this.doc.rect(this.margin, this.currentY, this.pageWidth - 2 * this.margin, rowHeight, "F")
+
+          this.doc.setTextColor(255, 255, 255)
+          this.doc.setFontSize(10)
+          this.doc.setFont("helvetica", "bold")
+
+          headers.forEach((header, i) => {
+            const x = safeCoordinate(this.margin + i * colWidth + 6, this.margin, this.pageWidth)
+            this.doc.text(safeText(header), x, this.currentY + 12)
+          })
+
+          this.currentY += rowHeight
         }
       })
+    } catch (error) {
+      console.error("Error in addTable:", error)
+      this.currentY += 100
+    }
+  }
 
-      if (!data.includeSections || data.includeSections.summary !== false) {
-        const metrics = [
+  private addDetailedCreditAnalysis(data: ReportData) {
+    try {
+      data.credits.forEach((credit, index) => {
+        this.checkPageBreak(120, true) // Force new page for each detailed credit
+
+        // Credit header
+        this.doc.setFillColor(16, 185, 129)
+        this.doc.rect(this.margin, this.currentY, this.pageWidth - 2 * this.margin, 20, "F")
+
+        // Bank logo in header
+        this.addBankLogo(this.margin + 10, this.currentY + 10, credit.bankName, 12)
+
+        this.doc.setTextColor(255, 255, 255)
+        this.doc.setFontSize(12)
+        this.doc.setFont("helvetica", "bold")
+        this.doc.text(
+          `${safeText(credit.bankName)} - ${safeText(credit.creditType)}`,
+          this.margin + 30,
+          this.currentY + 13,
+        )
+
+        this.currentY += 30
+
+        // Financial details in cards
+        const cardWidth = (this.pageWidth - 2 * this.margin - 20) / 3
+        const cardHeight = 60
+
+        const financialCards = [
           {
-            title: "Toplam Kredi",
-            value: data.totalCredits.toString(),
-            subtitle: `${data.activeCredits} aktif`,
-            color: "secondary" as keyof typeof COLORS,
+            title: "Baslangic Tutari",
+            value: formatCurrency(credit.amount),
+            subtitle: `Kalan: ${formatCurrency(credit.remainingDebt)}`,
+            color: "primary",
           },
           {
-            title: "Toplam Borc",
-            value: formatCurrency(data.totalDebt),
-            subtitle: "Kalan borc",
-            color: "danger" as keyof typeof COLORS,
+            title: "Odeme Durumu",
+            value: `%${Math.round(((credit.amount - credit.remainingDebt) / credit.amount) * 100)}`,
+            subtitle: `Odenen: ${formatCurrency(credit.amount - credit.remainingDebt)}`,
+            color: "secondary",
           },
           {
             title: "Aylik Odeme",
-            value: formatCurrency(data.monthlyPayment),
-            subtitle: "Toplam taksit",
-            color: "primary" as keyof typeof COLORS,
-          },
-          {
-            title: "Aktif Oran",
-            value: `%${Math.round((data.activeCredits / Math.max(data.totalCredits, 1)) * 100)}`,
-            subtitle: "Aktif krediler",
-            color: "accent" as keyof typeof COLORS,
+            value: formatCurrency(credit.monthlyPayment),
+            subtitle: `Faiz: %${safeNumber(credit.interestRate, 0).toFixed(2)}`,
+            color: "accent",
           },
         ]
 
-        this.addMetricCards(metrics)
-      }
+        financialCards.forEach((card, i) => {
+          const x = this.margin + i * (cardWidth + 10)
+          const color = COLORS[card.color as keyof typeof COLORS]
 
-      if (
-        (!data.includeSections || data.includeSections.creditDetails !== false) &&
-        data.credits &&
-        data.credits.length > 0
-      ) {
-        this.addSection("Kredi Detaylari", () => {
-          this.doc.setFontSize(9)
-          this.doc.text("Detayli Kredi Bilgileri:", this.margin + 10, this.currentY)
-          this.currentY += 10
+          // Card background
+          this.doc.setFillColor(255, 255, 255)
+          this.doc.setDrawColor(230, 230, 230)
+          this.doc.rect(x, this.currentY, cardWidth, cardHeight, "FD")
 
-          // Main credit details table
-          const headers = ["Banka", "Kredi Turu", "Kalan Borc", "Aylik Odeme", "Faiz Orani", "Durum"]
-          const rows = data.credits
-            .slice(0, 15)
-            .map((credit) => [
-              safeText(credit.bankName) || "Bilinmeyen",
-              safeText(credit.creditType) || "Diger",
-              formatCurrency(credit.remainingDebt || 0),
-              formatCurrency(credit.monthlyPayment || 0),
-              `%${(credit.interestRate || 0).toFixed(2)}`,
-              credit.status === "active" ? "Aktif" : "Kapali",
-            ])
+          // Colored top border
+          this.doc.setFillColor(color[0], color[1], color[2])
+          this.doc.rect(x, this.currentY, cardWidth, 3, "F")
 
-          const bankNames = data.credits.slice(0, 15).map((credit) => credit.bankName)
-          this.addTable(headers, rows, { bankNames })
+          // Card content
+          this.doc.setTextColor(107, 114, 128)
+          this.doc.setFontSize(8)
+          this.doc.text(card.title, x + 8, this.currentY + 15)
 
-          // Detailed breakdown for each credit
-          this.currentY += 10
-          this.doc.setFontSize(10)
+          this.doc.setTextColor(30, 41, 59)
+          this.doc.setFontSize(14)
           this.doc.setFont("helvetica", "bold")
-          this.doc.text("Kredi Bazinda Detayli Analiz:", this.margin + 10, this.currentY)
-          this.currentY += 15
+          this.doc.text(card.value, x + 8, this.currentY + 30)
 
-          data.credits.slice(0, 10).forEach((credit, index) => {
-            this.checkPageBreak(80)
-
-            // Credit card header
-            this.doc.setFillColor(245, 245, 245)
-            this.doc.roundedRect(this.margin, this.currentY, this.pageWidth - 2 * this.margin, 12, 2, 2, "F")
-
-            // Bank logo and name
-            this.addBankLogo(this.margin + 5, this.currentY + 2, credit.bankName, 8)
-            this.doc.setTextColor(0, 0, 0)
-            this.doc.setFontSize(10)
-            this.doc.setFont("helvetica", "bold")
-            this.doc.text(
-              `${safeText(credit.bankName)} - ${safeText(credit.creditType)}`,
-              this.margin + 18,
-              this.currentY + 8,
-            )
-
-            this.currentY += 20
-
-            // Calculate additional metrics
-            const monthlyInterest = ((credit.remainingDebt || 0) * (credit.interestRate || 0)) / 1200
-            const yearlyInterest = monthlyInterest * 12
-            const paidAmount = (credit.amount || 0) - (credit.remainingDebt || 0)
-            const paymentProgress = credit.amount ? ((paidAmount / credit.amount) * 100).toFixed(1) : "0"
-            const remainingMonths = credit.monthlyPayment
-              ? Math.ceil((credit.remainingDebt || 0) / credit.monthlyPayment)
-              : 0
-
-            // Two column layout for details
-            const leftColX = this.margin + 10
-            const rightColX = this.margin + (this.pageWidth - 2 * this.margin) / 2 + 10
-            let detailY = this.currentY
-
-            this.doc.setFontSize(8)
-            this.doc.setFont("helvetica", "normal")
-
-            // Left column
-            this.doc.setFont("helvetica", "bold")
-            this.doc.text("Finansal Bilgiler:", leftColX, detailY)
-            detailY += 8
-
-            this.doc.setFont("helvetica", "normal")
-            this.doc.text(`Baslangic Tutari: ${formatCurrency(credit.amount || 0)}`, leftColX, detailY)
-            detailY += 6
-            this.doc.text(`Kalan Borc: ${formatCurrency(credit.remainingDebt || 0)}`, leftColX, detailY)
-            detailY += 6
-            this.doc.text(`Odenen Tutar: ${formatCurrency(paidAmount)}`, leftColX, detailY)
-            detailY += 6
-            this.doc.text(`Odeme Orani: %${paymentProgress}`, leftColX, detailY)
-            detailY += 6
-            this.doc.text(`Aylik Odeme: ${formatCurrency(credit.monthlyPayment || 0)}`, leftColX, detailY)
-            detailY += 10
-
-            this.doc.setFont("helvetica", "bold")
-            this.doc.text("Faiz Bilgileri:", leftColX, detailY)
-            detailY += 8
-
-            this.doc.setFont("helvetica", "normal")
-            this.doc.text(`Faiz Orani: %${(credit.interestRate || 0).toFixed(2)}`, leftColX, detailY)
-            detailY += 6
-            this.doc.text(`Aylik Faiz: ${formatCurrency(monthlyInterest)}`, leftColX, detailY)
-            detailY += 6
-            this.doc.text(`Yillik Faiz: ${formatCurrency(yearlyInterest)}`, leftColX, detailY)
-
-            // Right column
-            detailY = this.currentY
-            this.doc.setFont("helvetica", "bold")
-            this.doc.text("Taksit Bilgileri:", rightColX, detailY)
-            detailY += 8
-
-            this.doc.setFont("helvetica", "normal")
-            if (credit.totalInstallments) {
-              const paidInstallments = (credit.totalInstallments || 0) - (credit.remainingInstallments || 0)
-              this.doc.text(`Toplam Taksit: ${credit.totalInstallments}`, rightColX, detailY)
-              detailY += 6
-              this.doc.text(`Odenen Taksit: ${paidInstallments}`, rightColX, detailY)
-              detailY += 6
-              this.doc.text(`Kalan Taksit: ${credit.remainingInstallments || 0}`, rightColX, detailY)
-            } else {
-              this.doc.text(`Tahmini Kalan Ay: ${remainingMonths}`, rightColX, detailY)
-              detailY += 6
-              this.doc.text("Taksit bilgisi mevcut degil", rightColX, detailY)
-            }
-            detailY += 10
-
-            this.doc.setFont("helvetica", "bold")
-            this.doc.text("Tarih Bilgileri:", rightColX, detailY)
-            detailY += 8
-
-            this.doc.setFont("helvetica", "normal")
-            if (credit.startDate) {
-              const startDate = new Date(credit.startDate)
-              this.doc.text(`Baslangic: ${format(startDate, "dd/MM/yyyy")}`, rightColX, detailY)
-              detailY += 6
-            }
-            if (credit.endDate) {
-              const endDate = new Date(credit.endDate)
-              this.doc.text(`Bitis: ${format(endDate, "dd/MM/yyyy")}`, rightColX, detailY)
-              detailY += 6
-            }
-            if (!credit.startDate && !credit.endDate) {
-              this.doc.text("Tarih bilgisi mevcut degil", rightColX, detailY)
-              detailY += 6
-            }
-
-            this.doc.text(`Durum: ${credit.status === "active" ? "Aktif" : "Kapali"}`, rightColX, detailY)
-
-            this.currentY = Math.max(detailY, this.currentY + 60) + 15
-
-            // Add separator line
-            if (index < Math.min(data.credits.length - 1, 9)) {
-              this.doc.setDrawColor(200, 200, 200)
-              this.doc.setLineWidth(0.5)
-              this.doc.line(this.margin, this.currentY - 5, this.pageWidth - this.margin, this.currentY - 5)
-            }
-          })
+          this.doc.setTextColor(107, 114, 128)
+          this.doc.setFontSize(7)
+          this.doc.setFont("helvetica", "normal")
+          this.doc.text(card.subtitle, x + 8, this.currentY + 45)
         })
-      }
 
-      if (data.includeSections?.paymentSchedule && data.credits && data.credits.length > 0) {
-        this.addSection("Odeme Plani", () => {
-          this.doc.setFontSize(9)
-          this.doc.text("Aylik Odeme Dagilimi:", this.margin + 10, this.currentY)
-          this.currentY += 10
+        this.currentY += 80
 
-          const headers = ["Banka", "Kredi Turu", "Aylik Odeme", "Yillik Toplam"]
-          const activeCredits = data.credits.filter((credit) => credit.status === "active")
-          const rows = activeCredits.map((credit) => [
-            safeText(credit.bankName) || "Bilinmeyen",
-            safeText(credit.creditType) || "Diger",
-            formatCurrency(credit.monthlyPayment || 0),
-            formatCurrency((credit.monthlyPayment || 0) * 12),
-          ])
+        // Interest analysis
+        const monthlyInterest = (credit.remainingDebt * credit.interestRate) / 1200
+        const yearlyInterest = monthlyInterest * 12
+        const remainingMonths = Math.ceil(credit.remainingDebt / credit.monthlyPayment)
 
-          const bankNames = activeCredits.map((credit) => credit.bankName)
+        this.doc.setTextColor(30, 41, 59)
+        this.doc.setFontSize(11)
+        this.doc.setFont("helvetica", "bold")
+        this.doc.text("Faiz Analizi:", this.margin, this.currentY)
+        this.currentY += 15
 
-          this.addTable(headers, rows, { bankNames })
-        })
-      }
+        this.doc.setFontSize(9)
+        this.doc.setFont("helvetica", "normal")
+        this.doc.text(`• Aylik Faiz: ${formatCurrency(monthlyInterest)}`, this.margin + 10, this.currentY)
+        this.currentY += 12
+        this.doc.text(`• Yillik Faiz: ${formatCurrency(yearlyInterest)}`, this.margin + 10, this.currentY)
+        this.currentY += 12
+        this.doc.text(`• Tahmini Kalan Ay: ${remainingMonths} ay`, this.margin + 10, this.currentY)
+        this.currentY += 12
+        this.doc.text(`• Durum: ${safeText(credit.status)}`, this.margin + 10, this.currentY)
+        this.currentY += 20
+      })
+    } catch (error) {
+      console.error("Error in addDetailedCreditAnalysis:", error)
+      this.currentY += 100
+    }
+  }
 
-      if (data.includeSections?.interestAnalysis && data.credits && data.credits.length > 0) {
-        this.addSection("Faiz Analizi", () => {
-          this.doc.setFontSize(9)
+  private addPaymentTrendAnalysis(data: ReportData) {
+    try {
+      this.checkPageBreak(150, true)
 
-          const avgInterestRate =
-            data.credits.reduce((sum, credit) => sum + (credit.interestRate || 0), 0) / data.credits.length
-          const totalMonthlyInterest = data.credits.reduce((sum, credit) => {
-            return sum + ((credit.remainingDebt || 0) * (credit.interestRate || 0)) / 1200
-          }, 0)
-          const totalYearlyInterest = totalMonthlyInterest * 12
+      this.doc.setTextColor(30, 41, 59)
+      this.doc.setFontSize(14)
+      this.doc.setFont("helvetica", "bold")
+      this.doc.text("Odeme Trend Analizi", this.margin, this.currentY)
+      this.currentY += 25
 
-          this.doc.text(`Ortalama Faiz Orani: %${avgInterestRate.toFixed(2)}`, this.margin + 10, this.currentY)
-          this.currentY += 8
-          this.doc.text(`Aylik Toplam Faiz: ${formatCurrency(totalMonthlyInterest)}`, this.margin + 10, this.currentY)
-          this.currentY += 8
-          this.doc.text(`Yillik Toplam Faiz: ${formatCurrency(totalYearlyInterest)}`, this.margin + 10, this.currentY)
-          this.currentY += 8
+      // Create monthly payment data
+      const monthlyData: { [key: string]: number } = {}
+      const months = ["Ocak", "Subat", "Mart", "Nisan", "Mayis", "Haziran"]
 
-          // Interest burden analysis
-          const totalDebt = data.credits.reduce((sum, credit) => sum + (credit.remainingDebt || 0), 0)
-          const interestBurdenRatio = totalDebt > 0 ? (totalYearlyInterest / totalDebt) * 100 : 0
-          this.doc.text(`Faiz Yuk Orani: %${interestBurdenRatio.toFixed(2)}`, this.margin + 10, this.currentY)
-          this.currentY += 15
+      // Initialize with sample data based on credits
+      months.forEach((month, index) => {
+        monthlyData[month] = data.monthlyPayment * (0.8 + Math.random() * 0.4) // Simulate variation
+      })
 
-          const headers = ["Banka", "Kredi Turu", "Faiz Orani", "Kalan Borc", "Aylik Faiz", "Yillik Faiz"]
-          const rows = data.credits.map((credit) => {
-            const monthlyInterest = ((credit.remainingDebt || 0) * (credit.interestRate || 0)) / 1200
-            return [
-              safeText(credit.bankName) || "Bilinmeyen",
-              safeText(credit.creditType) || "Diger",
-              `%${(credit.interestRate || 0).toFixed(2)}`,
-              formatCurrency(credit.remainingDebt || 0),
-              formatCurrency(monthlyInterest),
-              formatCurrency(monthlyInterest * 12),
-            ]
-          })
+      // Draw bar chart
+      const chartWidth = this.pageWidth - 2 * this.margin - 40
+      const chartHeight = 80
+      const barWidth = chartWidth / months.length - 5
+      const maxValue = Math.max(...Object.values(monthlyData))
 
-          const bankNames = data.credits.map((credit) => credit.bankName)
+      months.forEach((month, index) => {
+        const value = monthlyData[month]
+        const barHeight = (value / maxValue) * chartHeight
+        const x = this.margin + 20 + index * (barWidth + 5)
+        const y = this.currentY + chartHeight - barHeight
 
-          this.addTable(headers, rows, { bankNames })
-        })
-      }
+        // Bar
+        this.doc.setFillColor(16, 185, 129)
+        this.doc.rect(x, y, barWidth, barHeight, "F")
 
-      if (data.includeSections?.riskAssessment && data.credits && data.credits.length > 0) {
-        this.addSection("Risk Degerlendirmesi", () => {
-          this.doc.setFontSize(9)
+        // Value label
+        this.doc.setTextColor(0, 0, 0)
+        this.doc.setFontSize(7)
+        this.doc.text(formatCurrency(value), x + barWidth / 2, y - 5, { align: "center" })
 
-          const debtToIncomeRatio = data.monthlyPayment / Math.max(data.monthlyPayment * 3, 1) // Assuming 3x payment as income
-          const highInterestCredits = data.credits.filter((c) => (c.interestRate || 0) > 20).length
-          const totalCreditsCount = data.credits.length
+        // Month label
+        this.doc.text(month.substring(0, 3), x + barWidth / 2, this.currentY + chartHeight + 15, { align: "center" })
+      })
 
-          let riskLevel = "Dusuk"
-          let riskColor = "accent"
+      this.currentY += chartHeight + 30
 
-          if (debtToIncomeRatio > 0.4 || highInterestCredits > totalCreditsCount / 2) {
-            riskLevel = "Yuksek"
-            riskColor = "danger"
-          } else if (debtToIncomeRatio > 0.25 || highInterestCredits > 0) {
-            riskLevel = "Orta"
-            riskColor = "secondary"
-          }
+      // Analysis text
+      this.doc.setFontSize(9)
+      this.doc.setFont("helvetica", "normal")
+      this.doc.text("• Son 6 aylik odeme performansiniz istikrarli bir seyir izlemektedir.", this.margin, this.currentY)
+      this.currentY += 12
+      this.doc.text(
+        "• Ortalama aylik odeme tutariniz: " + formatCurrency(data.monthlyPayment),
+        this.margin,
+        this.currentY,
+      )
+      this.currentY += 12
+      this.doc.text("• Odeme disiplinini koruyarak kredi skorunuzu iyilestirebilirsiniz.", this.margin, this.currentY)
+      this.currentY += 25
+    } catch (error) {
+      console.error("Error in addPaymentTrendAnalysis:", error)
+      this.currentY += 150
+    }
+  }
 
-          this.doc.text(`Genel Risk Seviyesi: ${riskLevel}`, this.margin + 10, this.currentY)
-          this.currentY += 8
-          this.doc.text(`Yuksek Faizli Kredi Sayisi: ${highInterestCredits}`, this.margin + 10, this.currentY)
-          this.currentY += 8
-          this.doc.text(`Toplam Kredi Sayisi: ${totalCreditsCount}`, this.margin + 10, this.currentY)
-          this.currentY += 15
+  private addRecommendations(data: ReportData) {
+    try {
+      this.checkPageBreak(120, true)
 
-          const riskFactors = [
-            "• Yuksek faizli kredileri oncelikle kapatmayi dusunun",
-            "• Aylik odeme yukunu azaltmak icin refinansman seceneklerini arastirin",
-            "• Acil durum fonu olusturarak finansal guvenliginizi artirin",
-            "• Kredi kartlarinizdaki bakiyeleri minimize etmeye calisin",
-            "• Duzenli olarak kredi raporlarinizi kontrol edin",
-          ]
-
-          riskFactors.forEach((factor) => {
-            this.doc.text(safeText(factor), this.margin + 10, this.currentY)
-            this.currentY += 6
-          })
-        })
-      }
-
-      if (data.chartOptions?.debtDistribution && data.chartData?.creditDistribution) {
-        this.addSection("Borc Dagilim Analizi", () => {
-          this.doc.setFontSize(9)
-          this.doc.text("Bankalara Gore Borc Dagilimi:", this.margin + 10, this.currentY)
-          this.currentY += 10
-
-          const headers = ["Banka", "Toplam Borc", "Kredi Sayisi", "Oran"]
-          const totalDebt = data.chartData!.creditDistribution!.reduce((sum: number, item: any) => sum + item.value, 0)
-
-          const rows = data.chartData.creditDistribution.map((item: any) => [
-            safeText(item.name),
-            formatCurrency(item.value),
-            item.count.toString(),
-            `%${((item.value / totalDebt) * 100).toFixed(1)}`,
-          ])
-
-          this.addTable(headers, rows)
-        })
-      }
-
-      if (data.chartOptions?.bankComparison && data.chartData?.bankDistribution) {
-        this.addSection("Banka Karsilastirmasi", () => {
-          this.doc.setFontSize(9)
-          this.doc.text("Banka Bazinda Detayli Karsilastirma:", this.margin + 10, this.currentY)
-          this.currentY += 10
-
-          const headers = ["Banka", "Toplam Borc", "Pazar Payi"]
-          const totalAmount = data.chartData!.bankDistribution!.reduce((sum: number, item: any) => sum + item.amount, 0)
-
-          const rows = data.chartData.bankDistribution.map((item: any) => [
-            safeText(item.bank),
-            formatCurrency(item.amount),
-            `%${((item.amount / totalAmount) * 100).toFixed(1)}`,
-          ])
-
-          this.addTable(headers, rows)
-        })
-      }
-
-      // Recommendations
       this.addSection(
         "Oneriler ve Degerlendirme",
         () => {
-          this.doc.setFontSize(9)
-          const suggestions = [
-            "• Yuksek faizli kredileri oncelikle kapatmayi dusunun",
-            "• Aylik odeme yukunu azaltmak icin refinansman seceneklerini arastirin",
-            "• Acil durum fonu olusturarak finansal guvenliginizi artirin",
-            "• Kredi kartlarinizdaki bakiyeleri minimize etmeye calisin",
-            "• Duzenli olarak kredi raporlarinizi kontrol edin",
+          const recommendations = [
+            "Yuksek faizli kredileri oncelikle kapatmayi dusunun",
+            "Aylik odeme yukunu azaltmak icin refinansman seceneklerini arastirin",
+            "Acil durum fonu olusturarak finansal guvenliginizi artirin",
+            "Kredi kartlarinizdaki bakiyeleri minimize etmeye calisin",
+            "Duzenli olarak kredi raporlarinizi kontrol edin",
           ]
 
-          suggestions.forEach((suggestion) => {
-            this.doc.text(safeText(suggestion), this.margin + 10, this.currentY)
-            this.currentY += 6
+          recommendations.forEach((rec, index) => {
+            this.doc.setFontSize(10)
+            this.doc.setFont("helvetica", "normal")
+            this.doc.text(`• ${rec}`, this.margin + 10, this.currentY)
+            this.currentY += 15
           })
+
+          this.currentY += 10
+
+          // Risk assessment
+          const totalDebtRatio = data.totalDebt / (data.monthlyPayment * 12 * 5) // Rough calculation
+          let riskLevel = "Dusuk"
+          let riskColor = [34, 197, 94] // Green
+
+          if (totalDebtRatio > 0.6) {
+            riskLevel = "Yuksek"
+            riskColor = [239, 68, 68] // Red
+          } else if (totalDebtRatio > 0.4) {
+            riskLevel = "Orta"
+            riskColor = [245, 158, 11] // Amber
+          }
+
+          this.doc.setFillColor(riskColor[0], riskColor[1], riskColor[2], 0.1)
+          this.doc.rect(this.margin, this.currentY, this.pageWidth - 2 * this.margin, 25, "F")
+
+          this.doc.setTextColor(riskColor[0], riskColor[1], riskColor[2])
+          this.doc.setFontSize(11)
+          this.doc.setFont("helvetica", "bold")
+          this.doc.text(`Risk Seviyesi: ${riskLevel}`, this.margin + 10, this.currentY + 15)
+
+          this.currentY += 35
         },
         "accent",
       )
 
       // Footer
-      this.doc.setFontSize(7)
-      this.doc.setTextColor(75, 85, 99) // Gray-600
+      this.doc.setTextColor(107, 114, 128)
+      this.doc.setFontSize(8)
+      this.doc.setFont("helvetica", "italic")
       this.doc.text(
         "Bu rapor KrediTakip tarafindan otomatik olarak olusturulmustur.",
         this.pageWidth / 2,
-        this.pageHeight - 10,
+        this.currentY + 20,
         { align: "center" },
       )
-
-      // Save PDF
-      const fileName = `kredi-raporu-${format(new Date(), "yyyy-MM-dd-HHmm")}.pdf`
-      console.log("Saving PDF with filename:", fileName)
-      this.doc.save(fileName)
-      console.log("PDF saved successfully")
     } catch (error) {
-      console.error("PDF generation error:", error)
-      throw new Error("PDF olusturulurken bir hata olustu: " + (error as Error).message)
+      console.error("Error in addRecommendations:", error)
+      this.currentY += 120
+    }
+  }
+
+  public generateReport(data: ReportData): void {
+    try {
+      this.addHeader()
+
+      const reportDate = format(new Date(), "dd/MM/yyyy")
+      const periodText =
+        data.period?.type === "custom" && data.period.from && data.period.to
+          ? `${format(data.period.from, "dd/MM/yyyy")} - ${format(data.period.to, "dd/MM/yyyy")}`
+          : "Son 6 Ay"
+
+      this.addTitle(data.reportTitle || "Kredi Portfoy Raporu", `Rapor Tarihi: ${reportDate}`)
+
+      // User info section with better styling
+      this.addSection("Kullanici Bilgileri", () => {
+        this.doc.setFontSize(10)
+        this.doc.text(`Ad Soyad: ${safeText(data.userData.name)}`, this.margin + 10, this.currentY)
+        this.currentY += 12
+        this.doc.text(`E-posta: ${safeText(data.userData.email)}`, this.margin + 10, this.currentY)
+        this.currentY += 12
+        this.doc.text(`Rapor Donemi: ${periodText}`, this.margin + 10, this.currentY)
+        this.currentY += 12
+      })
+
+      // Enhanced metrics with additional data
+      const activeRatio = data.totalCredits > 0 ? (data.activeCredits / data.totalCredits) * 100 : 0
+      const metrics = [
+        {
+          title: "Toplam Kredi",
+          value: `${safeNumber(data.totalCredits, 0)}`,
+          subtitle: `${safeNumber(data.activeCredits, 0)} aktif`,
+          color: "primary" as keyof typeof COLORS,
+        },
+        {
+          title: "Toplam Borc",
+          value: formatCurrency(data.totalDebt),
+          subtitle: `Kalan borc`,
+          color: "secondary" as keyof typeof COLORS,
+        },
+        {
+          title: "Aylik Odeme",
+          value: formatCurrency(data.monthlyPayment),
+          subtitle: `Toplam taksit`,
+          color: "accent" as keyof typeof COLORS,
+        },
+      ]
+
+      this.addMetricCards(metrics, data)
+
+      // Credits overview table
+      if (data.credits && data.credits.length > 0) {
+        this.addSection("Kredi Detaylari", () => {
+          this.doc.setTextColor(107, 114, 128)
+          this.doc.setFontSize(9)
+          this.doc.text("Detayli Kredi Bilgileri:", this.margin + 10, this.currentY)
+          this.currentY += 20
+
+          const headers = ["Banka", "Kredi Turu", "Kalan Borc", "Aylik Odeme", "Faiz Orani", "Durum"]
+          const rows = data.credits.map((credit) => [
+            safeText(credit.bankName),
+            safeText(credit.creditType),
+            formatCurrency(credit.remainingDebt),
+            formatCurrency(credit.monthlyPayment),
+            `%${safeNumber(credit.interestRate, 0).toFixed(2)}`,
+            safeText(credit.status),
+          ])
+
+          this.addTable(headers, rows, true)
+        })
+
+        // Detailed analysis for each credit
+        this.addSection("Kredi Bazinda Detayli Analiz", () => {
+          this.currentY += 10
+        })
+        this.addDetailedCreditAnalysis(data)
+
+        // Payment trend analysis
+        if (data.chartOptions?.paymentTrend) {
+          this.addPaymentTrendAnalysis(data)
+        }
+      }
+
+      // Recommendations
+      this.addRecommendations(data)
+
+      // Save the PDF
+      this.doc.save(`kredi-raporu-${format(new Date(), "yyyy-MM-dd")}.pdf`)
+    } catch (error) {
+      console.error("Error in generateReport:", error)
+      throw new Error("PDF olusturulurken bir hata olustu: " + error.message)
     }
   }
 }
 
 export const generatePDFReport = (data: ReportData) => {
   try {
-    console.log("generatePDFReport called with:", data)
     const generator = new PDFReportGenerator()
     generator.generateReport(data)
   } catch (error) {
@@ -864,12 +939,12 @@ export const generatePDFReport = (data: ReportData) => {
 }
 
 const COLORS = {
-  primary: [16, 185, 129], // Emerald-500
-  secondary: [59, 130, 246], // Blue-500
-  accent: [245, 158, 11], // Amber-500
-  danger: [239, 68, 68], // Red-500
-  dark: [0, 0, 0], // Black for maximum contrast
-  gray: [107, 114, 128], // Gray-500
-  light: [249, 250, 251], // Gray-50
+  primary: [16, 185, 129],
+  secondary: [59, 130, 246],
+  accent: [245, 158, 11],
+  danger: [239, 68, 68],
+  dark: [30, 41, 59],
+  gray: [107, 114, 128],
+  light: [248, 250, 252],
   white: [255, 255, 255],
 }

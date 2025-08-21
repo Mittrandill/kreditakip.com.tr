@@ -128,7 +128,6 @@ export default function PDFOdemePlaniPage() {
       }
 
       const data = await response.json()
-      console.log(`Analiz tamamlandı: ${processingTimeMs}ms`)
 
       if (data.success && data.paymentPlan) {
         setAnalysisResult(data.paymentPlan)
@@ -306,7 +305,7 @@ export default function PDFOdemePlaniPage() {
           {isAnalyzing && (
             <div className="space-y-4 mt-6">
               <div className="flex items-center gap-2">
-                <Loader2 className="h-5 w-5 animate-spin text-purple-600" />
+                <Loader2 className="mr-2 h-5 w-5 animate-spin text-purple-600" />
                 <span className="text-sm font-medium">PDF hızlı analiz ediliyor...</span>
               </div>
               <Progress value={progress} className="h-3" />
