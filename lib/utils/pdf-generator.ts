@@ -278,13 +278,16 @@ class PDFGenerator {
     metrics: Array<{
       title: string
       value: string
-      subtitle?: string
-      color?: keyof typeof COLORS
-      trend?: number
       icon?: string
+      trend?: "up" | "down" | "neutral"
+      trendValue?: string
     }>,
   ) {
     this.checkPageBreak(140) // Increased height for premium layout
+
+    if (!metrics || metrics.length === 0) {
+      return
+    }
 
     const topRowMetrics = metrics.slice(0, 2)
     const bottomRowMetrics = metrics.slice(2, 4)
@@ -1160,12 +1163,14 @@ class PDFGenerator {
     this.addSection(
       this.isPremium ? "Gelişmiş Faiz ve Maliyet Analizi" : "Faiz Analizi",
       () => {
+        const creditsToAnalyze =
+          this.data.credits && this.data.credits.length > 0 ? this.data.credits.slice(0, this.isPremium ? 20 : 15) : []
+
         if (this.data.credits && this.data.credits.length > 0) {
           const headers = this.isPremium
             ? ["Banka", "Kredi Turu", "Faiz Orani", "Aylik Faiz", "Yillik Faiz", "Risk"]
             : ["Banka", "Kredi Turu", "Faiz Orani", "Aylik Faiz", "Yillik Faiz"]
 
-          const creditsToAnalyze = this.data.credits.slice(0, this.isPremium ? 20 : 15)
           const rows = creditsToAnalyze.map((credit: any) => {
             const monthlyInterest = ((credit.remainingDebt || 0) * (credit.interestRate || 0)) / 1200
             const yearlyInterest = monthlyInterest * 12
@@ -1193,7 +1198,7 @@ class PDFGenerator {
             highlightBest: this.isPremium,
           })
 
-          if (this.data.credits.length > (this.isPremium ? 20 : 15)) {
+          if (this.data.credits && this.data.credits.length > (this.isPremium ? 20 : 15)) {
             this.doc.setFontSize(10)
             this.doc.setTextColor(107, 114, 128)
             this.doc.text(
