@@ -639,589 +639,520 @@ class PDFGenerator {
     this.currentY += this.isPremium ? 25 : 20
   }
 
-  private checkPageBreak(height: number) {
-    if (this.currentY + height > this.pageHeight - (this.isPremium ? 60 : 50)) {
-      this.addPage()
-    }
-  }
+  private addChart(chartData: any, chartType: string, title: string) {
+    this.checkPageBreak(200)
 
-  private addPage() {
-    this.doc.addPage()
-    this.currentY = this.margin
-
-    if (this.isPremium) {
-      this.addPremiumWatermark()
-    }
-  }
-
-  private addBankLogo(x: number, y: number, bankName: string, size: number) {
-    if (this.isPremium) {
-      // Premium logo with gradient and shadow
-      this.doc.setFillColor(0, 0, 0, 0.1)
-      this.doc.roundedRect(x + 1, y + 1, size, size, 3, 3, "F")
-
-      const gradient = GRADIENTS.primary
-      this.doc.setFillColor(...gradient.start)
-      this.doc.roundedRect(x, y, size, size, 3, 3, "F")
-    } else {
-      this.doc.setFillColor(59, 130, 246)
-      this.doc.roundedRect(x, y, size, size, 2, 2, "F")
-    }
-
-    this.doc.setTextColor(255, 255, 255)
-    this.doc.setFontSize(this.isPremium ? 7 : 6)
-    this.doc.setFont("helvetica", "bold")
-    const initials = bankName
-      .split(" ")
-      .map((word) => word.charAt(0))
-      .join("")
-      .substring(0, 2)
-    this.doc.text(initials, x + size / 2, y + size / 2 + 1, { align: "center" })
-  }
-
-  private addPremiumWatermark() {
-    this.doc.setTextColor(240, 240, 240)
-    this.doc.setFontSize(60)
-    this.doc.setFont("helvetica", "bold")
-
-    // Rotate and add watermark
-    this.doc.text("PREMIUM", this.pageWidth / 2, this.pageHeight / 2, {
-      align: "center",
-      angle: -45,
-    })
-  }
-
-  private format(date: Date, formatString: string): string {
-    return format(date, formatString)
-  }
-
-  private addHeader() {
-    if (this.isPremium) {
-      // Premium gradient header
-      const gradient = GRADIENTS.premium
-      this.doc.setFillColor(...gradient.start)
-      this.doc.rect(0, 0, this.pageWidth, 70, "F")
-
-      // Accent stripe
-      this.doc.setFillColor(...gradient.end)
-      this.doc.rect(0, 65, this.pageWidth, 5, "F")
-    } else {
-      this.doc.setFillColor(248, 250, 252)
-      this.doc.rect(0, 0, this.pageWidth, 60, "F")
-    }
-
-    if (this.isPremium && this.customLogo) {
-      // Add custom logo (placeholder for now)
-      this.doc.setFillColor(255, 255, 255)
-      this.doc.roundedRect(this.margin, 15, 40, 30, 3, 3, "F")
-      this.doc.setTextColor(100, 100, 100)
-      this.doc.setFontSize(8)
-      this.doc.text("LOGO", this.margin + 20, 32, { align: "center" })
-    }
-
-    this.doc.setTextColor(this.isPremium ? 255 : 0, this.isPremium ? 255 : 0, this.isPremium ? 255 : 0)
-    this.doc.setFontSize(this.isPremium ? 28 : 24)
-    this.doc.setFont("helvetica", "bold")
-
-    const titleX = this.isPremium && this.customLogo ? this.margin + 50 : this.margin
-    this.doc.text(safeText(this.data.reportTitle || "Kredi Portfoy Raporu"), titleX, this.isPremium ? 40 : 35)
-
-    if (this.isPremium) {
-      this.doc.setFillColor(...COLORS.gold)
-      this.doc.roundedRect(this.pageWidth - this.margin - 80, 15, 70, 20, 10, 10, "F")
-      this.doc.setTextColor(255, 255, 255)
-      this.doc.setFontSize(10)
-      this.doc.setFont("helvetica", "bold")
-      this.doc.text("PREMIUM", this.pageWidth - this.margin - 45, 27, { align: "center" })
-    }
-
+    // Add chart title
     this.doc.setFontSize(this.isPremium ? 14 : 12)
-    this.doc.setFont("helvetica", "normal")
-    this.doc.setTextColor(this.isPremium ? 200 : 107, this.isPremium ? 200 : 114, this.isPremium ? 200 : 128)
-    const reportDate = format(new Date(), "dd MMMM yyyy")
-    this.doc.text(`Rapor Tarihi: ${reportDate}`, this.pageWidth - this.margin - 120, this.isPremium ? 40 : 35)
+    this.doc.setFont("helvetica", "bold")
+    this.doc.setTextColor(0, 0, 0)
+    this.doc.text(safeText(title), this.margin + 12, this.currentY)
+    this.currentY += 20
 
-    if (this.data.userData?.name) {
-      this.doc.text(`Hazirlayan: ${safeText(this.data.userData.name)}`, titleX, this.isPremium ? 55 : 50)
+    const chartWidth = this.pageWidth - 2 * this.margin - 24
+    const chartHeight = 120
+    const chartX = this.margin + 12
+    const chartY = this.currentY
+
+    // Draw chart background
+    this.doc.setFillColor(248, 250, 252)
+    this.doc.setDrawColor(229, 231, 235)
+    this.doc.roundedRect(chartX, chartY, chartWidth, chartHeight, 4, 4, "FD")
+
+    if (chartType === "bar" && chartData) {
+      this.drawBarChart(chartData, chartX, chartY, chartWidth, chartHeight)
+    } else if (chartType === "pie" && chartData) {
+      this.drawPieChart(chartData, chartX, chartY, chartWidth, chartHeight)
+    } else if (chartType === "line" && chartData) {
+      this.drawLineChart(chartData, chartX, chartY, chartWidth, chartHeight)
     }
 
-    this.currentY = this.isPremium ? 90 : 80
+    this.currentY += chartHeight + 30
   }
 
-  private addFooter() {
-    const pageCount = this.doc.internal.getNumberOfPages()
-    for (let i = 1; i <= pageCount; i++) {
-      this.doc.setPage(i)
+  private drawBarChart(data: any[], x: number, y: number, width: number, height: number) {
+    if (!data || data.length === 0) return
 
-      if (this.isPremium) {
-        // Premium footer with gradient
-        this.doc.setFillColor(248, 250, 252)
-        this.doc.rect(0, this.pageHeight - 30, this.pageWidth, 30, "F")
+    const maxValue = Math.max(...data.map((d) => d.value || d.amount || 0))
+    const barWidth = (width - 40) / data.length - 10
+    const chartHeight = height - 60
 
-        this.doc.setFontSize(11)
-        this.doc.setTextColor(75, 85, 99)
-        this.doc.text(`Sayfa ${i} / ${pageCount}`, this.pageWidth - this.margin - 40, this.pageHeight - 15)
-        this.doc.text("KrediTakip.com.tr - Premium Rapor", this.margin, this.pageHeight - 15)
+    data.forEach((item, index) => {
+      const value = item.value || item.amount || 0
+      const barHeight = (value / maxValue) * chartHeight
+      const barX = x + 20 + index * (barWidth + 10)
+      const barY = y + height - 40 - barHeight
 
-        // Premium footer accent
-        this.doc.setFillColor(...COLORS.premium)
-        this.doc.rect(0, this.pageHeight - 30, this.pageWidth, 2, "F")
-      } else {
-        this.doc.setFontSize(10)
-        this.doc.setTextColor(107, 114, 128)
-        this.doc.text(`Sayfa ${i} / ${pageCount}`, this.pageWidth - this.margin - 30, this.pageHeight - 20)
-        this.doc.text("KrediTakip.com.tr", this.margin, this.pageHeight - 20)
-      }
+      // Draw bar
+      this.doc.setFillColor(16, 185, 129)
+      this.doc.roundedRect(barX, barY, barWidth, barHeight, 2, 2, "F")
+
+      // Draw value label
+      this.doc.setFontSize(8)
+      this.doc.setTextColor(0, 0, 0)
+      this.doc.text(`₺${(value / 1000).toFixed(0)}K`, barX + barWidth / 2, barY - 5, { align: "center" })
+
+      // Draw category label
+      const label = safeText(item.name || item.bank || `Item ${index + 1}`)
+      const truncatedLabel = label.length > 8 ? label.substring(0, 8) + "..." : label
+      this.doc.text(truncatedLabel, barX + barWidth / 2, y + height - 25, { align: "center" })
+    })
+  }
+
+  private drawPieChart(data: any[], x: number, y: number, width: number, height: number) {
+    if (!data || data.length === 0) return
+
+    const centerX = x + width / 2
+    const centerY = y + height / 2 - 10
+    const radius = Math.min(width, height) / 4
+
+    const total = data.reduce((sum, item) => sum + (item.value || item.amount || 0), 0)
+    let currentAngle = 0
+
+    const colors = [
+      [16, 185, 129], // emerald
+      [59, 130, 246], // blue
+      [139, 92, 246], // violet
+      [236, 72, 153], // pink
+      [245, 158, 11], // amber
+      [239, 68, 68], // red
+    ]
+
+    data.forEach((item, index) => {
+      const value = item.value || item.amount || 0
+      const sliceAngle = (value / total) * 2 * Math.PI
+      const color = colors[index % colors.length]
+
+      // Draw pie slice
+      this.doc.setFillColor(...color)
+      this.doc.circle(centerX, centerY, radius, "F")
+
+      // Draw label
+      const labelAngle = currentAngle + sliceAngle / 2
+      const labelX = centerX + Math.cos(labelAngle) * (radius + 20)
+      const labelY = centerY + Math.sin(labelAngle) * (radius + 20)
+
+      this.doc.setFontSize(8)
+      this.doc.setTextColor(0, 0, 0)
+      const percentage = ((value / total) * 100).toFixed(1)
+      this.doc.text(`${percentage}%`, labelX, labelY, { align: "center" })
+
+      currentAngle += sliceAngle
+    })
+
+    // Draw legend
+    let legendY = y + height - 40
+    data.forEach((item, index) => {
+      const color = colors[index % colors.length]
+      this.doc.setFillColor(...color)
+      this.doc.rect(x + 20, legendY, 8, 8, "F")
+
+      this.doc.setFontSize(8)
+      this.doc.setTextColor(0, 0, 0)
+      const label = safeText(item.name || item.bank || `Item ${index + 1}`)
+      this.doc.text(label, x + 35, legendY + 6)
+
+      legendY += 12
+    })
+  }
+
+  private drawLineChart(data: any[], x: number, y: number, width: number, height: number) {
+    if (!data || data.length === 0) return
+
+    const maxValue = Math.max(...data.map((d) => d.amount || d.value || 0))
+    const chartWidth = width - 40
+    const chartHeight = height - 60
+    const stepX = chartWidth / (data.length - 1)
+
+    // Draw axes
+    this.doc.setDrawColor(156, 163, 175)
+    this.doc.line(x + 20, y + height - 40, x + width - 20, y + height - 40) // X axis
+    this.doc.line(x + 20, y + 20, x + 20, y + height - 40) // Y axis
+
+    // Draw line
+    this.doc.setDrawColor(16, 185, 129)
+    for (let i = 0; i < data.length - 1; i++) {
+      const value1 = data[i].amount || data[i].value || 0
+      const value2 = data[i + 1].amount || data[i + 1].value || 0
+
+      const x1 = x + 20 + i * stepX
+      const y1 = y + height - 40 - (value1 / maxValue) * chartHeight
+      const x2 = x + 20 + (i + 1) * stepX
+      const y2 = y + height - 40 - (value2 / maxValue) * chartHeight
+
+      this.doc.line(x1, y1, x2, y2)
+
+      // Draw points
+      this.doc.setFillColor(16, 185, 129)
+      this.doc.circle(x1, y1, 2, "F")
+    }
+
+    // Draw last point
+    if (data.length > 0) {
+      const lastValue = data[data.length - 1].amount || data[data.length - 1].value || 0
+      const lastX = x + 20 + (data.length - 1) * stepX
+      const lastY = y + height - 40 - (lastValue / maxValue) * chartHeight
+      this.doc.setFillColor(16, 185, 129)
+      this.doc.circle(lastX, lastY, 2, "F")
     }
   }
 
-  private calculateBankDistribution() {
-    if (!this.data.credits || this.data.credits.length === 0) return []
+  generate() {
+    this.addHeader()
+    this.addFooter()
 
-    const bankMap = new Map()
-    let totalAmount = 0
+    // Enhanced summary with premium features
+    this.addSection(
+      this.isPremium ? "Yönetici Özeti" : "Genel Özet",
+      () => {
+        this.addMetricCards()
 
-    this.data.credits.forEach((credit: any) => {
-      const bankName = credit.bankName || "Bilinmeyen Banka"
-      const amount = credit.remainingDebt || 0
-      totalAmount += amount
+        if (this.isPremium) {
+          this.currentY += 15
+          this.doc.setFontSize(12)
+          this.doc.setFont("helvetica", "bold")
+          this.doc.setTextColor(16, 185, 129)
+          this.doc.text("💡 Önemli Bulgular:", this.margin + 20, this.currentY)
+          this.currentY += 15
 
-      if (bankMap.has(bankName)) {
-        const existing = bankMap.get(bankName)
-        existing.count += 1
-        existing.amount += amount
-      } else {
-        bankMap.set(bankName, { name: bankName, count: 1, amount })
-      }
-    })
+          this.doc.setFont("helvetica", "normal")
+          this.doc.setTextColor(0, 0, 0)
+          this.doc.setFontSize(10)
 
-    return Array.from(bankMap.values())
-      .map((bank) => ({
-        ...bank,
-        percentage: totalAmount > 0 ? (bank.amount / totalAmount) * 100 : 0,
-      }))
-      .sort((a, b) => b.amount - a.amount)
-  }
+          const insights = this.generateInsights()
+          insights.forEach((insight) => {
+            this.doc.text(`• ${safeText(insight)}`, this.margin + 30, this.currentY)
+            this.currentY += 12
+          })
+        }
+      },
+      "primary",
+    )
 
-  private calculateCreditTypeDistribution() {
-    if (!this.data.credits || this.data.credits.length === 0) return []
-
-    const typeMap = new Map()
-    let totalAmount = 0
-
-    this.data.credits.forEach((credit: any) => {
-      const creditType = credit.creditType || "Diger"
-      const amount = credit.remainingDebt || 0
-      totalAmount += amount
-
-      if (typeMap.has(creditType)) {
-        const existing = typeMap.get(creditType)
-        existing.count += 1
-        existing.amount += amount
-      } else {
-        typeMap.set(creditType, { type: creditType, count: 1, amount })
-      }
-    })
-
-    return Array.from(typeMap.values())
-      .map((type) => ({
-        ...type,
-        percentage: totalAmount > 0 ? (type.amount / totalAmount) * 100 : 0,
-      }))
-      .sort((a, b) => b.amount - a.amount)
-  }
-
-  public async generate() {
-    console.log("[v0] Starting premium PDF generation with data:", this.data)
-
-    try {
-      // Add premium header
-      this.addHeader()
-
-      console.log("[v0] Adding premium summary metrics")
-      const totalInterest =
-        this.data.credits?.reduce((sum: number, credit: any) => {
-          const monthlyInterest = ((credit.remainingDebt || 0) * (credit.interestRate || 0)) / 1200
-          return sum + monthlyInterest * 12
-        }, 0) || 0
-
-      const avgRiskScore =
-        this.isPremium && this.data.credits?.length > 0
-          ? this.data.credits.reduce((sum: number, credit: any) => sum + this.calculateRiskScore(credit), 0) /
-            this.data.credits.length
-          : 0
-
-      const summaryMetrics = [
-        {
-          title: "Toplam Kredi",
-          value: this.data.totalCredits?.toString() || "0",
-          subtitle: `${this.data.activeCredits || 0} aktif, ${this.data.closedCredits || 0} kapali`,
-          color: "primary" as keyof typeof COLORS,
-          trend: this.isPremium ? 5.2 : undefined,
-          icon: this.isPremium ? "₺" : undefined,
-        },
-        {
-          title: "Toplam Borc",
-          value: formatCurrency(this.data.totalDebt || 0),
-          subtitle: "Kalan borc miktari",
-          color: "danger" as keyof typeof COLORS,
-          trend: this.isPremium ? -2.1 : undefined,
-          icon: this.isPremium ? "⚠" : undefined,
-        },
-        {
-          title: "Aylik Odeme",
-          value: formatCurrency(this.data.monthlyPayment || 0),
-          subtitle: "Toplam aylik taksit",
-          color: "warning" as keyof typeof COLORS,
-          trend: this.isPremium ? 1.8 : undefined,
-          icon: this.isPremium ? "📅" : undefined,
-        },
-        {
-          title: this.isPremium ? "Risk Skoru" : "Toplam Odeme",
-          value: this.isPremium ? `${avgRiskScore.toFixed(0)}/100` : formatCurrency(this.data.totalPayment || 0),
-          subtitle: this.isPremium ? "Ortalama risk seviyesi" : "Baslangic kredi tutari",
-          color: this.isPremium
-            ? avgRiskScore > 70
-              ? "danger"
-              : avgRiskScore > 40
-                ? "warning"
-                : "success"
-            : ("success" as keyof typeof COLORS),
-          trend: this.isPremium ? -3.5 : undefined,
-          icon: this.isPremium ? "🎯" : undefined,
-        },
-      ]
-
-      this.addMetricCards(summaryMetrics)
-
-      if (this.isPremium) {
-        this.addSection(
-          "Premium Finansal Öngörüler",
-          () => {
-            this.doc.setFontSize(12)
-            this.doc.setTextColor(0, 0, 0)
-
-            const potentialSavings =
-              this.data.credits?.reduce((sum: number, credit: any) => {
-                return sum + this.calculateRefinancingPotential(credit)
-              }, 0) || 0
-
-            const earlyPayoffSavings =
-              this.data.credits?.reduce((sum: number, credit: any) => {
-                return sum + this.calculateEarlyPayoffSavings(credit)
-              }, 0) || 0
-
-            // Premium insights with enhanced formatting
-            this.doc.setFillColor(254, 249, 195) // Light gold background
-            this.doc.roundedRect(this.margin + 10, this.currentY, this.pageWidth - 2 * this.margin - 20, 80, 4, 4, "F")
-
-            this.doc.setTextColor(146, 64, 14) // Dark gold text
-            this.doc.setFont("helvetica", "bold")
-            this.doc.text("💡 Akıllı Öneriler:", this.margin + 20, this.currentY + 15)
-
-            this.doc.setFont("helvetica", "normal")
-            this.doc.setTextColor(0, 0, 0)
-            this.doc.text(
-              `• Yeniden yapilandirma ile yillik ${formatCurrency(potentialSavings)} tasarruf potansiyeli`,
-              this.margin + 20,
-              this.currentY + 30,
-            )
-            this.doc.text(
-              `• Erken odeme ile toplam ${formatCurrency(earlyPayoffSavings)} faiz tasarrufu`,
-              this.margin + 20,
-              this.currentY + 45,
-            )
-            this.doc.text(
-              `• Ortalama risk skorunuz: ${avgRiskScore.toFixed(0)}/100 - ${avgRiskScore > 70 ? "Dikkat gerekli" : avgRiskScore > 40 ? "Orta seviye" : "İyi durumda"}`,
-              this.margin + 20,
-              this.currentY + 60,
-            )
-
-            this.currentY += 100
-          },
-          "gold",
-        )
-      }
-
-      // Enhanced credit details section
-      if (this.data.credits && this.data.credits.length > 0) {
-        console.log("[v0] Adding premium credit details for", this.data.credits.length, "credits")
-        this.addSection(
-          this.isPremium ? "Detaylı Kredi Analizi" : "Kredi Detaylari",
-          () => {
-            const creditsToShow = this.data.credits.slice(0, this.isPremium ? 15 : 10)
-            creditsToShow.forEach((credit: any, index: number) => {
-              this.addCreditDetails(credit, index)
-            })
-
-            if (this.data.credits.length > (this.isPremium ? 15 : 10)) {
-              this.doc.setFontSize(10)
-              this.doc.setTextColor(107, 114, 128)
-              this.doc.text(
-                `... ve ${this.data.credits.length - (this.isPremium ? 15 : 10)} kredi daha`,
-                this.margin + 20,
-                this.currentY,
-              )
-              this.currentY += 20
-            }
-          },
-          "primary",
-        )
-      }
-
-      // Enhanced bank distribution analysis
-      console.log("[v0] Adding premium bank distribution analysis")
+    if (this.data.selectedReports && this.data.selectedReports.length > 0) {
       this.addSection(
-        this.isPremium ? "Gelişmiş Banka Dağılım Analizi" : "Banka Dagilimi",
+        "Grafikler ve Analizler",
         () => {
-          const bankDistribution = this.calculateBankDistribution()
-          if (bankDistribution.length > 0) {
-            const headers = this.isPremium
-              ? ["Banka", "Kredi Sayisi", "Toplam Borc", "Oran", "Risk Skoru"]
-              : ["Banka", "Kredi Sayisi", "Toplam Borc", "Oran"]
-
-            const rows = bankDistribution.map((bank) => {
-              const bankCredits = this.data.credits?.filter((c: any) => c.bankName === bank.name) || []
-              const avgRisk =
-                this.isPremium && bankCredits.length > 0
-                  ? bankCredits.reduce((sum: number, credit: any) => sum + this.calculateRiskScore(credit), 0) /
-                    bankCredits.length
-                  : 0
-
-              const row = [
-                bank.name,
-                bank.count.toString(),
-                formatCurrency(bank.amount),
-                `%${bank.percentage.toFixed(1)}`,
-              ]
-
-              if (this.isPremium) {
-                row.push(`${avgRisk.toFixed(0)}/100`)
-              }
-
-              return row
-            })
-
-            const bankNames = bankDistribution.map((bank) => bank.name)
-            this.addTable(headers, rows, {
-              headerColor: "info",
-              alternateRows: true,
-              bankNames,
-              showTotals: this.isPremium,
-              highlightBest: this.isPremium,
-            })
-          } else {
-            this.doc.setFontSize(11)
-            this.doc.text("Banka dagilim verisi bulunamadi.", this.margin + 20, this.currentY + 15)
-            this.currentY += 35
+          if (this.data.selectedReports.includes("debtDistribution") && this.data.chartData?.creditDistribution) {
+            this.addChart(this.data.chartData.creditDistribution, "pie", "Borç Dağılımı")
           }
-        },
-        "info",
-      )
 
-      // Enhanced credit type distribution
-      console.log("[v0] Adding premium credit type distribution")
-      this.addSection(
-        this.isPremium ? "Kredi Türü Risk Analizi" : "Kredi Turu Dagilimi",
-        () => {
-          const typeDistribution = this.calculateCreditTypeDistribution()
-          if (typeDistribution.length > 0) {
-            const headers = this.isPremium
-              ? ["Kredi Turu", "Adet", "Toplam Tutar", "Oran", "Ort. Faiz"]
-              : ["Kredi Turu", "Adet", "Toplam Tutar", "Oran"]
+          if (this.data.selectedReports.includes("bankComparison") && this.data.chartData?.bankDistribution) {
+            this.addChart(this.data.chartData.bankDistribution, "bar", "Banka Karşılaştırması")
+          }
 
-            const rows = typeDistribution.map((type) => {
-              const typeCredits = this.data.credits?.filter((c: any) => c.creditType === type.type) || []
-              const avgInterest =
-                this.isPremium && typeCredits.length > 0
-                  ? typeCredits.reduce((sum: number, credit: any) => sum + (credit.interestRate || 0), 0) /
-                    typeCredits.length
-                  : 0
+          if (this.data.selectedReports.includes("paymentTrend") && this.data.chartData?.monthlyPayments) {
+            this.addChart(this.data.chartData.monthlyPayments, "line", "Ödeme Trendi")
+          }
 
-              const row = [
-                type.type,
-                type.count.toString(),
-                formatCurrency(type.amount),
-                `%${type.percentage.toFixed(1)}`,
-              ]
-
-              if (this.isPremium) {
-                row.push(formatPercentage(avgInterest))
-              }
-
-              return row
-            })
-
-            this.addTable(headers, rows, {
-              headerColor: "secondary",
-              alternateRows: true,
-              showTotals: this.isPremium,
-              highlightBest: this.isPremium,
-            })
-          } else {
-            this.doc.setFontSize(11)
-            this.doc.text("Kredi turu dagilim verisi bulunamadi.", this.margin + 20, this.currentY + 15)
-            this.currentY += 35
+          if (this.data.selectedReports.includes("interestComparison") && this.data.chartData?.interestAnalysis) {
+            this.addChart(this.data.chartData.interestAnalysis, "bar", "Faiz Oranları Analizi")
           }
         },
         "secondary",
       )
-
-      // Enhanced interest analysis
-      console.log("[v0] Adding premium interest analysis")
-      this.addSection(
-        this.isPremium ? "Gelişmiş Faiz ve Maliyet Analizi" : "Faiz Analizi",
-        () => {
-          if (this.data.credits && this.data.credits.length > 0) {
-            const headers = this.isPremium
-              ? ["Banka", "Kredi Turu", "Faiz Orani", "Aylik Faiz", "Yillik Faiz", "Risk"]
-              : ["Banka", "Kredi Turu", "Faiz Orani", "Aylik Faiz", "Yillik Faiz"]
-
-            const creditsToAnalyze = this.data.credits.slice(0, this.isPremium ? 20 : 15)
-            const rows = creditsToAnalyze.map((credit: any) => {
-              const monthlyInterest = ((credit.remainingDebt || 0) * (credit.interestRate || 0)) / 1200
-              const yearlyInterest = monthlyInterest * 12
-              const riskScore = this.isPremium ? this.calculateRiskScore(credit) : 0
-
-              const row = [
-                credit.bankName || "Bilinmeyen",
-                credit.creditType || "Diger",
-                `%${(credit.interestRate || 0).toFixed(2)}`,
-                formatCurrency(monthlyInterest),
-                formatCurrency(yearlyInterest),
-              ]
-
-              if (this.isPremium) {
-                row.push(`${riskScore.toFixed(0)}/100`)
-              }
-
-              return row
-            })
-
-            this.addTable(headers, rows, {
-              headerColor: "warning",
-              alternateRows: true,
-              showTotals: this.isPremium,
-              highlightBest: this.isPremium,
-            })
-
-            if (this.data.credits.length > (this.isPremium ? 20 : 15)) {
-              this.doc.setFontSize(10)
-              this.doc.setTextColor(107, 114, 128)
-              this.doc.text(
-                `... ve ${this.data.credits.length - (this.isPremium ? 20 : 15)} kredi daha`,
-                this.margin + 20,
-                this.currentY,
-              )
-              this.currentY += 20
-            }
-          }
-        },
-        "warning",
-      )
-
-      // Enhanced report summary section
-      console.log("[v0] Adding premium report summary")
-      this.addSection(
-        this.isPremium ? "Kapsamlı Finansal Özet ve Öneriler" : "Rapor Ozeti",
-        () => {
-          this.doc.setFontSize(this.isPremium ? 12 : 11)
-          this.doc.setTextColor(0, 0, 0)
-
-          const avgInterestRate =
-            this.data.credits?.length > 0
-              ? this.data.credits.reduce((sum: number, credit: any) => sum + (credit.interestRate || 0), 0) /
-                this.data.credits.length
-              : 0
-
-          if (this.isPremium) {
-            // Executive summary box
-            this.doc.setFillColor(239, 246, 255) // Light blue background
-            this.doc.roundedRect(this.margin + 10, this.currentY, this.pageWidth - 2 * this.margin - 20, 120, 4, 4, "F")
-
-            this.doc.setTextColor(29, 78, 216) // Dark blue text
-            this.doc.setFont("helvetica", "bold")
-            this.doc.text("📊 Yönetici Özeti:", this.margin + 20, this.currentY + 15)
-
-            this.doc.setFont("helvetica", "normal")
-            this.doc.setTextColor(0, 0, 0)
-            this.doc.text(
-              `• Portföy Büyüklüğü: ${this.data.totalCredits || 0} kredi ile ${formatCurrency(this.data.totalDebt || 0)} toplam borç`,
-              this.margin + 20,
-              this.currentY + 30,
-            )
-            this.doc.text(
-              `• Ortalama Faiz Oranı: ${formatPercentage(avgInterestRate)} (Piyasa ortalaması: %2.15)`,
-              this.margin + 20,
-              this.currentY + 45,
-            )
-            this.doc.text(
-              `• Yıllık Faiz Maliyeti: ${formatCurrency(totalInterest)} (Aylık ${formatCurrency(totalInterest / 12)})`,
-              this.margin + 20,
-              this.currentY + 60,
-            )
-            this.doc.text(
-              `• Aylık Ödeme Yükü: ${formatCurrency(this.data.monthlyPayment || 0)} (Gelir oranı: ${this.data.monthlyIncome ? (((this.data.monthlyPayment || 0) / this.data.monthlyIncome) * 100).toFixed(1) + "%" : "Bilinmiyor"})`,
-              this.margin + 20,
-              this.currentY + 75,
-            )
-            this.doc.text(
-              `• Ortalama Risk Skoru: ${avgRiskScore.toFixed(0)}/100 - ${this.getRiskAssessment(avgRiskScore)}`,
-              this.margin + 20,
-              this.currentY + 90,
-            )
-            this.doc.text(
-              `• Optimizasyon Potansiyeli: Yüksek - Detaylar aşağıda`,
-              this.margin + 20,
-              this.currentY + 105,
-            )
-
-            this.currentY += 140
-          } else {
-            // Standard summary
-            this.doc.text(
-              `• Toplam ${this.data.totalCredits || 0} kredi ile ${formatCurrency(this.data.totalDebt || 0)} borc`,
-              this.margin + 20,
-              this.currentY,
-            )
-            this.currentY += 15
-            this.doc.text(
-              `• Ortalama faiz orani: ${formatPercentage(avgInterestRate)}`,
-              this.margin + 20,
-              this.currentY,
-            )
-            this.currentY += 15
-            this.doc.text(
-              `• Yillik toplam faiz maliyeti: ${formatCurrency(totalInterest)}`,
-              this.margin + 20,
-              this.currentY,
-            )
-            this.currentY += 15
-            this.doc.text(
-              `• Aylik toplam odeme yukumlulugu: ${formatCurrency(this.data.monthlyPayment || 0)}`,
-              this.margin + 20,
-              this.currentY,
-            )
-            this.currentY += 25
-          }
-        },
-        "success",
-      )
-
-      // Add premium footer
-      this.addFooter()
-
-      console.log("[v0] Premium PDF generation completed successfully")
-    } catch (error) {
-      console.error("[v0] Error during premium PDF generation:", error)
-      throw error
     }
+
+    // Credit details with all selected credits
+    if (this.data.credits && this.data.credits.length > 0) {
+      this.addSection(
+        this.isPremium ? "Detaylı Kredi Analizi" : "Kredi Detayları",
+        () => {
+          this.data.credits.forEach((credit: any, index: number) => {
+            this.addCreditDetails(credit, index)
+          })
+        },
+        "primary",
+      )
+    }
+
+    // Enhanced bank distribution analysis
+    console.log("[v0] Adding premium bank distribution analysis")
+    this.addSection(
+      this.isPremium ? "Gelişmiş Banka Dağılım Analizi" : "Banka Dagilimi",
+      () => {
+        const bankDistribution = this.calculateBankDistribution()
+        if (bankDistribution.length > 0) {
+          const headers = this.isPremium
+            ? ["Banka", "Kredi Sayisi", "Toplam Borc", "Oran", "Risk Skoru"]
+            : ["Banka", "Kredi Sayisi", "Toplam Borc", "Oran"]
+
+          const rows = bankDistribution.map((bank) => {
+            const bankCredits = this.data.credits?.filter((c: any) => c.bankName === bank.name) || []
+            const avgRisk =
+              this.isPremium && bankCredits.length > 0
+                ? bankCredits.reduce((sum: number, credit: any) => sum + this.calculateRiskScore(credit), 0) /
+                  bankCredits.length
+                : 0
+
+            const row = [
+              bank.name,
+              bank.count.toString(),
+              formatCurrency(bank.amount),
+              `%${bank.percentage.toFixed(1)}`,
+            ]
+
+            if (this.isPremium) {
+              row.push(`${avgRisk.toFixed(0)}/100`)
+            }
+
+            return row
+          })
+
+          const bankNames = bankDistribution.map((bank) => bank.name)
+          this.addTable(headers, rows, {
+            headerColor: "info",
+            alternateRows: true,
+            bankNames,
+            showTotals: this.isPremium,
+            highlightBest: this.isPremium,
+          })
+        } else {
+          this.doc.setFontSize(11)
+          this.doc.text("Banka dagilim verisi bulunamadi.", this.margin + 20, this.currentY + 15)
+          this.currentY += 35
+        }
+      },
+      "info",
+    )
+
+    // Enhanced credit type distribution
+    console.log("[v0] Adding premium credit type distribution")
+    this.addSection(
+      this.isPremium ? "Kredi Türü Risk Analizi" : "Kredi Turu Dagilimi",
+      () => {
+        const typeDistribution = this.calculateCreditTypeDistribution()
+        if (typeDistribution.length > 0) {
+          const headers = this.isPremium
+            ? ["Kredi Turu", "Adet", "Toplam Tutar", "Oran", "Ort. Faiz"]
+            : ["Kredi Turu", "Adet", "Toplam Tutar", "Oran"]
+
+          const rows = typeDistribution.map((type) => {
+            const typeCredits = this.data.credits?.filter((c: any) => c.creditType === type.type) || []
+            const avgInterest =
+              this.isPremium && typeCredits.length > 0
+                ? typeCredits.reduce((sum: number, credit: any) => sum + (credit.interestRate || 0), 0) /
+                  typeCredits.length
+                : 0
+
+            const row = [
+              type.type,
+              type.count.toString(),
+              formatCurrency(type.amount),
+              `%${type.percentage.toFixed(1)}`,
+            ]
+
+            if (this.isPremium) {
+              row.push(formatPercentage(avgInterest))
+            }
+
+            return row
+          })
+
+          this.addTable(headers, rows, {
+            headerColor: "secondary",
+            alternateRows: true,
+            showTotals: this.isPremium,
+            highlightBest: this.isPremium,
+          })
+        } else {
+          this.doc.setFontSize(11)
+          this.doc.text("Kredi turu dagilim verisi bulunamadi.", this.margin + 20, this.currentY + 15)
+          this.currentY += 35
+        }
+      },
+      "secondary",
+    )
+
+    // Enhanced interest analysis
+    console.log("[v0] Adding premium interest analysis")
+    this.addSection(
+      this.isPremium ? "Gelişmiş Faiz ve Maliyet Analizi" : "Faiz Analizi",
+      () => {
+        if (this.data.credits && this.data.credits.length > 0) {
+          const headers = this.isPremium
+            ? ["Banka", "Kredi Turu", "Faiz Orani", "Aylik Faiz", "Yillik Faiz", "Risk"]
+            : ["Banka", "Kredi Turu", "Faiz Orani", "Aylik Faiz", "Yillik Faiz"]
+
+          const creditsToAnalyze = this.data.credits.slice(0, this.isPremium ? 20 : 15)
+          const rows = creditsToAnalyze.map((credit: any) => {
+            const monthlyInterest = ((credit.remainingDebt || 0) * (credit.interestRate || 0)) / 1200
+            const yearlyInterest = monthlyInterest * 12
+            const riskScore = this.isPremium ? this.calculateRiskScore(credit) : 0
+
+            const row = [
+              credit.bankName || "Bilinmeyen",
+              credit.creditType || "Diger",
+              `%${(credit.interestRate || 0).toFixed(2)}`,
+              formatCurrency(monthlyInterest),
+              formatCurrency(yearlyInterest),
+            ]
+
+            if (this.isPremium) {
+              row.push(`${riskScore.toFixed(0)}/100`)
+            }
+
+            return row
+          })
+
+          this.addTable(headers, rows, {
+            headerColor: "warning",
+            alternateRows: true,
+            showTotals: this.isPremium,
+            highlightBest: this.isPremium,
+          })
+
+          if (this.data.credits.length > (this.isPremium ? 20 : 15)) {
+            this.doc.setFontSize(10)
+            this.doc.setTextColor(107, 114, 128)
+            this.doc.text(
+              `... ve ${this.data.credits.length - (this.isPremium ? 20 : 15)} kredi daha`,
+              this.margin + 20,
+              this.currentY,
+            )
+            this.currentY += 20
+          }
+        }
+      },
+      "warning",
+    )
+
+    // Enhanced report summary section
+    console.log("[v0] Adding premium report summary")
+    this.addSection(
+      this.isPremium ? "Kapsamlı Finansal Özet ve Öneriler" : "Rapor Ozeti",
+      () => {
+        this.doc.setFontSize(this.isPremium ? 12 : 11)
+        this.doc.setTextColor(0, 0, 0)
+
+        const avgInterestRate =
+          this.data.credits?.length > 0
+            ? this.data.credits.reduce((sum: number, credit: any) => sum + (credit.interestRate || 0), 0) /
+              this.data.credits.length
+            : 0
+
+        const totalInterest = this.data.credits.reduce((sum: number, credit: any) => {
+          const monthlyInterest = ((credit.remainingDebt || 0) * (credit.interestRate || 0)) / 1200
+          return sum + monthlyInterest * 12
+        }, 0)
+
+        const avgRiskScore =
+          this.data.credits.reduce((sum: number, credit: any) => {
+            return sum + this.calculateRiskScore(credit)
+          }, 0) / (this.data.credits.length || 1)
+
+        if (this.isPremium) {
+          // Executive summary box
+          this.doc.setFillColor(239, 246, 255) // Light blue background
+          this.doc.roundedRect(this.margin + 10, this.currentY, this.pageWidth - 2 * this.margin - 20, 120, 4, 4, "F")
+
+          this.doc.setTextColor(29, 78, 216) // Dark blue text
+          this.doc.setFont("helvetica", "bold")
+          this.doc.text("📊 Yönetici Özeti:", this.margin + 20, this.currentY + 15)
+
+          this.doc.setFont("helvetica", "normal")
+          this.doc.setTextColor(0, 0, 0)
+          this.doc.text(
+            `• Portföy Büyüklüğü: ${this.data.totalCredits || 0} kredi ile ${formatCurrency(this.data.totalDebt || 0)} toplam borç`,
+            this.margin + 20,
+            this.currentY + 30,
+          )
+          this.doc.text(
+            `• Ortalama Faiz Oranı: ${formatPercentage(avgInterestRate)} (Piyasa ortalaması: %2.15)`,
+            this.margin + 20,
+            this.currentY + 45,
+          )
+          this.doc.text(
+            `• Yıllık Faiz Maliyeti: ${formatCurrency(totalInterest)} (Aylık ${formatCurrency(totalInterest / 12)})`,
+            this.margin + 20,
+            this.currentY + 60,
+          )
+          this.doc.text(
+            `• Aylık Ödeme Yükü: ${formatCurrency(this.data.monthlyPayment || 0)} (Gelir oranı: ${this.data.monthlyIncome ? (((this.data.monthlyPayment || 0) / this.data.monthlyIncome) * 100).toFixed(1) + "%" : "Bilinmiyor"})`,
+            this.margin + 20,
+            this.currentY + 75,
+          )
+          this.doc.text(
+            `• Ortalama Risk Skoru: ${avgRiskScore.toFixed(0)}/100 - ${this.getRiskAssessment(avgRiskScore)}`,
+            this.margin + 20,
+            this.currentY + 90,
+          )
+          this.doc.text(`• Optimizasyon Potansiyeli: Yüksek - Detaylar aşağıda`, this.margin + 20, this.currentY + 105)
+
+          this.currentY += 140
+        } else {
+          // Standard summary
+          this.doc.text(
+            `• Toplam ${this.data.totalCredits || 0} kredi ile ${formatCurrency(this.data.totalDebt || 0)} borc`,
+            this.margin + 20,
+            this.currentY,
+          )
+          this.currentY += 15
+          this.doc.text(`• Ortalama faiz orani: ${formatPercentage(avgInterestRate)}`, this.margin + 20, this.currentY)
+          this.currentY += 15
+          this.doc.text(
+            `• Yillik toplam faiz maliyeti: ${formatCurrency(totalInterest)}`,
+            this.margin + 20,
+            this.currentY,
+          )
+          this.currentY += 15
+          this.doc.text(
+            `• Aylik toplam odeme yukumlulugu: ${formatCurrency(this.data.monthlyPayment || 0)}`,
+            this.margin + 20,
+            this.currentY,
+          )
+          this.currentY += 25
+        }
+      },
+      "success",
+    )
+
+    // Add premium footer
+    this.addFooter()
+
+    console.log("[v0] Premium PDF generation completed successfully")
   }
 
   private getRiskAssessment(riskScore: number): string {
     if (riskScore > 70) return "Yüksek risk - Acil önlem gerekli"
     if (riskScore > 40) return "Orta risk - İzleme öneriliyor"
     return "Düşük risk - Sağlıklı portföy"
+  }
+
+  private generateInsights(): string[] {
+    const insights: string[] = []
+
+    if (!this.data.credits || this.data.credits.length === 0) {
+      insights.push("Kredi verisi bulunamadı.")
+      return insights
+    }
+
+    const totalDebt = this.data.totalDebt || 0
+    const monthlyPayment = this.data.monthlyPayment || 0
+    const avgInterestRate =
+      this.data.credits.reduce((sum: number, credit: any) => sum + (credit.interestRate || 0), 0) /
+      this.data.credits.length
+
+    if (totalDebt > 500000) {
+      insights.push("Toplam borcunuz yüksek seviyede. Borçlarınızı yapılandırmayı düşünebilirsiniz.")
+    }
+
+    if (monthlyPayment > this.data.monthlyIncome * 0.4) {
+      insights.push("Aylık ödeme yükümlülüğünüz gelirinizin %40'ından fazla. Bütçenizi gözden geçirin.")
+    }
+
+    if (avgInterestRate > 2.5) {
+      insights.push(
+        "Ortalama faiz oranınız piyasa ortalamasının üzerinde. Yeniden finansman seçeneklerini değerlendirin.",
+      )
+    }
+
+    const highRiskCredits = this.data.credits.filter((credit: any) => this.calculateRiskScore(credit) > 70)
+    if (highRiskCredits.length > 0) {
+      insights.push(`${highRiskCredits.length} adet yüksek riskli krediniz bulunmaktadır. Bu kredilere öncelik verin.`)
+    }
+
+    return insights
   }
 }
 
