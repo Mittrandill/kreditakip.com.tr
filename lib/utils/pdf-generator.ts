@@ -200,17 +200,19 @@ class PDFGenerator {
   }
 
   private addCreditDetails(credit: any, index: number) {
-    this.doc.setFillColor(248, 250, 252) // Lighter background
-    this.doc.roundedRect(this.margin, this.currentY, this.pageWidth - 2 * this.margin, 15, 3, 3, "F")
+    this.checkPageBreak(120) // Ensure enough space for credit details
+
+    this.doc.setFillColor(248, 250, 252)
+    this.doc.roundedRect(this.margin, this.currentY, this.pageWidth - 2 * this.margin, 18, 3, 3, "F")
 
     // Bank logo and name with better positioning
-    this.addBankLogo(this.margin + 8, this.currentY + 3, credit.bankName, 10) // Larger logo
+    this.addBankLogo(this.margin + 10, this.currentY + 4, credit.bankName, 12)
     this.doc.setTextColor(0, 0, 0)
-    this.doc.setFontSize(12) // Increased from 10 to 12
+    this.doc.setFontSize(12)
     this.doc.setFont("helvetica", "bold")
-    this.doc.text(`${safeText(credit.bankName)} - ${safeText(credit.creditType)}`, this.margin + 25, this.currentY + 10)
+    this.doc.text(`${safeText(credit.bankName)} - ${safeText(credit.creditType)}`, this.margin + 30, this.currentY + 12)
 
-    this.currentY += 25 // More space
+    this.currentY += 28
 
     // Calculate additional metrics
     const monthlyInterest = ((credit.remainingDebt || 0) * (credit.interestRate || 0)) / 1200
@@ -219,108 +221,109 @@ class PDFGenerator {
     const paymentProgress = credit.amount ? ((paidAmount / credit.amount) * 100).toFixed(1) : "0"
     const remainingMonths = credit.monthlyPayment ? Math.ceil((credit.remainingDebt || 0) / credit.monthlyPayment) : 0
 
-    // Two column layout for details with better spacing
-    const leftColX = this.margin + 15 // Better margins
-    const rightColX = this.margin + (this.pageWidth - 2 * this.margin) / 2 + 15
+    const leftColX = this.margin + 20
+    const rightColX = this.margin + (this.pageWidth - 2 * this.margin) / 2 + 20
     let detailY = this.currentY
 
-    this.doc.setFontSize(10) // Increased from 8 to 10
+    this.doc.setFontSize(11)
     this.doc.setFont("helvetica", "normal")
 
-    // Left column with enhanced formatting
+    // Left column - Financial Information
     this.doc.setFont("helvetica", "bold")
-    this.doc.setTextColor(16, 185, 129) // Color for section headers
+    this.doc.setTextColor(16, 185, 129)
     this.doc.text("Finansal Bilgiler:", leftColX, detailY)
-    detailY += 10 // More space
+    detailY += 12
 
     this.doc.setFont("helvetica", "normal")
     this.doc.setTextColor(0, 0, 0)
     this.doc.text(`Baslangic Tutari: ${formatCurrency(credit.amount || 0)}`, leftColX, detailY)
-    detailY += 8 // Increased spacing
-    this.doc.text(`Kalan Borc: ${formatCurrency(credit.remainingDebt || 0)}`, leftColX, detailY)
-    detailY += 8
-    this.doc.text(`Odenen Tutar: ${formatCurrency(paidAmount)}`, leftColX, detailY)
-    detailY += 8
-    this.doc.text(`Odeme Orani: %${paymentProgress}`, leftColX, detailY)
-    detailY += 8
-    this.doc.text(`Aylik Odeme: ${formatCurrency(credit.monthlyPayment || 0)}`, leftColX, detailY)
-    detailY += 15 // More space between sections
-
-    this.doc.setFont("helvetica", "bold")
-    this.doc.setTextColor(59, 130, 246) // Different color for interest section
-    this.doc.text("Faiz Bilgileri:", leftColX, detailY)
     detailY += 10
+    this.doc.text(`Kalan Borc: ${formatCurrency(credit.remainingDebt || 0)}`, leftColX, detailY)
+    detailY += 10
+    this.doc.text(`Odenen Tutar: ${formatCurrency(paidAmount)}`, leftColX, detailY)
+    detailY += 10
+    this.doc.text(`Odeme Orani: %${paymentProgress}`, leftColX, detailY)
+    detailY += 10
+    this.doc.text(`Aylik Odeme: ${formatCurrency(credit.monthlyPayment || 0)}`, leftColX, detailY)
+    detailY += 18
+
+    // Interest Information
+    this.doc.setFont("helvetica", "bold")
+    this.doc.setTextColor(59, 130, 246)
+    this.doc.text("Faiz Bilgileri:", leftColX, detailY)
+    detailY += 12
 
     this.doc.setFont("helvetica", "normal")
     this.doc.setTextColor(0, 0, 0)
     this.doc.text(`Faiz Orani: %${(credit.interestRate || 0).toFixed(2)}`, leftColX, detailY)
-    detailY += 8
+    detailY += 10
     this.doc.text(`Aylik Faiz: ${formatCurrency(monthlyInterest)}`, leftColX, detailY)
-    detailY += 8
+    detailY += 10
     this.doc.text(`Yillik Faiz: ${formatCurrency(yearlyInterest)}`, leftColX, detailY)
 
-    // Right column with enhanced formatting
+    // Right column - Installment and Date Information
     detailY = this.currentY
     this.doc.setFont("helvetica", "bold")
-    this.doc.setTextColor(147, 51, 234) // Purple for installment section
+    this.doc.setTextColor(147, 51, 234)
     this.doc.text("Taksit Bilgileri:", rightColX, detailY)
-    detailY += 10
+    detailY += 12
 
     this.doc.setFont("helvetica", "normal")
     this.doc.setTextColor(0, 0, 0)
     if (credit.totalInstallments) {
       const paidInstallments = (credit.totalInstallments || 0) - (credit.remainingInstallments || 0)
       this.doc.text(`Toplam Taksit: ${credit.totalInstallments}`, rightColX, detailY)
-      detailY += 8
+      detailY += 10
       this.doc.text(`Odenen Taksit: ${paidInstallments}`, rightColX, detailY)
-      detailY += 8
+      detailY += 10
       this.doc.text(`Kalan Taksit: ${credit.remainingInstallments || 0}`, rightColX, detailY)
     } else {
       this.doc.text(`Tahmini Kalan Ay: ${remainingMonths}`, rightColX, detailY)
-      detailY += 8
+      detailY += 10
       this.doc.text("Taksit bilgisi mevcut degil", rightColX, detailY)
     }
-    detailY += 15
+    detailY += 18
 
+    // Date Information
     this.doc.setFont("helvetica", "bold")
-    this.doc.setTextColor(245, 158, 11) // Amber for date section
+    this.doc.setTextColor(245, 158, 11)
     this.doc.text("Tarih Bilgileri:", rightColX, detailY)
-    detailY += 10
+    detailY += 12
 
     this.doc.setFont("helvetica", "normal")
     this.doc.setTextColor(0, 0, 0)
     if (credit.startDate) {
       const startDate = new Date(credit.startDate)
       this.doc.text(`Baslangic: ${format(startDate, "dd/MM/yyyy")}`, rightColX, detailY)
-      detailY += 8
+      detailY += 10
     }
     if (credit.endDate) {
       const endDate = new Date(credit.endDate)
       this.doc.text(`Bitis: ${format(endDate, "dd/MM/yyyy")}`, rightColX, detailY)
-      detailY += 8
+      detailY += 10
     }
     if (!credit.startDate && !credit.endDate) {
       this.doc.text("Tarih bilgisi mevcut degil", rightColX, detailY)
-      detailY += 8
+      detailY += 10
     }
 
     // Status with color coding
     this.doc.setFont("helvetica", "bold")
     if (credit.status === "active") {
-      this.doc.setTextColor(16, 185, 129) // Green for active
+      this.doc.setTextColor(16, 185, 129)
       this.doc.text("Durum: Aktif", rightColX, detailY)
     } else {
-      this.doc.setTextColor(107, 114, 128) // Gray for closed
+      this.doc.setTextColor(107, 114, 128)
       this.doc.text("Durum: Kapali", rightColX, detailY)
     }
 
-    this.currentY = Math.max(detailY, this.currentY + 80) + 20 // More space
+    this.currentY = Math.max(detailY, this.currentY + 90) + 25
 
     // Enhanced separator line
     if (index < Math.min(this.data.credits.length - 1, 9)) {
       this.doc.setDrawColor(200, 200, 200)
-      this.doc.setLineWidth(1) // Slightly thicker line
-      this.doc.line(this.margin + 10, this.currentY - 10, this.pageWidth - this.margin - 10, this.currentY - 10)
+      this.doc.setLineWidth(0.5)
+      this.doc.line(this.margin + 15, this.currentY - 15, this.pageWidth - this.margin - 15, this.currentY - 15)
     }
   }
 
@@ -359,8 +362,18 @@ class PDFGenerator {
   }
 
   private addBankLogo(x: number, y: number, bankName: string, size: number) {
-    // Placeholder for bank logo addition
-    this.doc.text(bankName, x, y)
+    this.doc.setFillColor(59, 130, 246)
+    this.doc.roundedRect(x, y, size, size, 2, 2, "F")
+
+    this.doc.setTextColor(255, 255, 255)
+    this.doc.setFontSize(6)
+    this.doc.setFont("helvetica", "bold")
+    const initials = bankName
+      .split(" ")
+      .map((word) => word.charAt(0))
+      .join("")
+      .substring(0, 2)
+    this.doc.text(initials, x + size / 2, y + size / 2 + 1, { align: "center" })
   }
 
   private format(date: Date, formatString: string): string {
@@ -383,7 +396,7 @@ class PDFGenerator {
     this.doc.text(`Rapor Tarihi: ${reportDate}`, this.pageWidth - this.margin - 100, 35)
 
     if (this.data.userData?.name) {
-      this.doc.text(`Hazırlayan: ${safeText(this.data.userData.name)}`, this.margin, 50)
+      this.doc.text(`Hazirlayan: ${safeText(this.data.userData.name)}`, this.margin, 50)
     }
 
     this.currentY = 80
@@ -424,6 +437,34 @@ class PDFGenerator {
       .map((bank) => ({
         ...bank,
         percentage: totalAmount > 0 ? (bank.amount / totalAmount) * 100 : 0,
+      }))
+      .sort((a, b) => b.amount - a.amount)
+  }
+
+  private calculateCreditTypeDistribution() {
+    if (!this.data.credits || this.data.credits.length === 0) return []
+
+    const typeMap = new Map()
+    let totalAmount = 0
+
+    this.data.credits.forEach((credit: any) => {
+      const creditType = credit.creditType || "Diger"
+      const amount = credit.remainingDebt || 0
+      totalAmount += amount
+
+      if (typeMap.has(creditType)) {
+        const existing = typeMap.get(creditType)
+        existing.count += 1
+        existing.amount += amount
+      } else {
+        typeMap.set(creditType, { type: creditType, count: 1, amount })
+      }
+    })
+
+    return Array.from(typeMap.values())
+      .map((type) => ({
+        ...type,
+        percentage: totalAmount > 0 ? (type.amount / totalAmount) * 100 : 0,
       }))
       .sort((a, b) => b.amount - a.amount)
   }
@@ -472,9 +513,17 @@ class PDFGenerator {
         this.addSection(
           "Kredi Detaylari",
           () => {
-            this.data.credits.forEach((credit: any, index: number) => {
+            const creditsToShow = this.data.credits.slice(0, 10)
+            creditsToShow.forEach((credit: any, index: number) => {
               this.addCreditDetails(credit, index)
             })
+
+            if (this.data.credits.length > 10) {
+              this.doc.setFontSize(10)
+              this.doc.setTextColor(107, 114, 128)
+              this.doc.text(`... ve ${this.data.credits.length - 10} kredi daha`, this.margin + 20, this.currentY)
+              this.currentY += 20
+            }
           },
           "primary",
         )
@@ -494,14 +543,38 @@ class PDFGenerator {
               formatCurrency(bank.amount),
               `%${bank.percentage.toFixed(1)}`,
             ])
-            this.addTable(headers, rows, { headerColor: "info", alternateRows: true })
+            const bankNames = bankDistribution.map((bank) => bank.name)
+            this.addTable(headers, rows, { headerColor: "info", alternateRows: true, bankNames })
           } else {
-            this.doc.setFontSize(10)
-            this.doc.text("Banka dagilim verisi bulunamadi.", this.margin + 10, this.currentY + 10)
-            this.currentY += 30
+            this.doc.setFontSize(11)
+            this.doc.text("Banka dagilim verisi bulunamadi.", this.margin + 20, this.currentY + 15)
+            this.currentY += 35
           }
         },
         "info",
+      )
+
+      console.log("[v0] Adding credit type distribution")
+      this.addSection(
+        "Kredi Turu Dagilimi",
+        () => {
+          const typeDistribution = this.calculateCreditTypeDistribution()
+          if (typeDistribution.length > 0) {
+            const headers = ["Kredi Turu", "Adet", "Toplam Tutar", "Oran"]
+            const rows = typeDistribution.map((type) => [
+              type.type,
+              type.count.toString(),
+              formatCurrency(type.amount),
+              `%${type.percentage.toFixed(1)}`,
+            ])
+            this.addTable(headers, rows, { headerColor: "secondary", alternateRows: true })
+          } else {
+            this.doc.setFontSize(11)
+            this.doc.text("Kredi turu dagilim verisi bulunamadi.", this.margin + 20, this.currentY + 15)
+            this.currentY += 35
+          }
+        },
+        "secondary",
       )
 
       // Add interest analysis
@@ -511,7 +584,8 @@ class PDFGenerator {
         () => {
           if (this.data.credits && this.data.credits.length > 0) {
             const headers = ["Banka", "Kredi Turu", "Faiz Orani", "Aylik Faiz", "Yillik Faiz"]
-            const rows = this.data.credits.map((credit: any) => {
+            const creditsToAnalyze = this.data.credits.slice(0, 15)
+            const rows = creditsToAnalyze.map((credit: any) => {
               const monthlyInterest = ((credit.remainingDebt || 0) * (credit.interestRate || 0)) / 1200
               const yearlyInterest = monthlyInterest * 12
               return [
@@ -523,31 +597,61 @@ class PDFGenerator {
               ]
             })
             this.addTable(headers, rows, { headerColor: "warning", alternateRows: true })
+
+            if (this.data.credits.length > 15) {
+              this.doc.setFontSize(10)
+              this.doc.setTextColor(107, 114, 128)
+              this.doc.text(`... ve ${this.data.credits.length - 15} kredi daha`, this.margin + 20, this.currentY)
+              this.currentY += 20
+            }
           }
         },
         "warning",
       )
 
-      // Add payment schedule if available
-      if (this.data.chartData?.monthlyPayments && this.data.chartData.monthlyPayments.length > 0) {
-        console.log("[v0] Adding payment schedule")
-        this.addSection(
-          "Odeme Gecmisi",
-          () => {
-            const headers = ["Tarih", "Tutar", "Banka", "Durum"]
-            const rows = this.data.chartData.monthlyPayments
-              .slice(0, 10)
-              .map((payment: any) => [
-                payment.month || "Bilinmeyen",
-                formatCurrency(payment.amount || 0),
-                payment.bank || "Bilinmeyen",
-                "Odendi",
-              ])
-            this.addTable(headers, rows, { headerColor: "success", alternateRows: true })
-          },
-          "success",
-        )
-      }
+      // Add report summary section
+      console.log("[v0] Adding report summary")
+      this.addSection(
+        "Rapor Ozeti",
+        () => {
+          this.doc.setFontSize(11)
+          this.doc.setTextColor(0, 0, 0)
+
+          const totalInterest =
+            this.data.credits?.reduce((sum: number, credit: any) => {
+              const monthlyInterest = ((credit.remainingDebt || 0) * (credit.interestRate || 0)) / 1200
+              return sum + monthlyInterest * 12
+            }, 0) || 0
+
+          const avgInterestRate =
+            this.data.credits?.length > 0
+              ? this.data.credits.reduce((sum: number, credit: any) => sum + (credit.interestRate || 0), 0) /
+                this.data.credits.length
+              : 0
+
+          this.doc.text(
+            `• Toplam ${this.data.totalCredits || 0} kredi ile ${formatCurrency(this.data.totalDebt || 0)} borc`,
+            this.margin + 20,
+            this.currentY,
+          )
+          this.currentY += 15
+          this.doc.text(`• Ortalama faiz orani: %${avgInterestRate.toFixed(2)}`, this.margin + 20, this.currentY)
+          this.currentY += 15
+          this.doc.text(
+            `• Yillik toplam faiz maliyeti: ${formatCurrency(totalInterest)}`,
+            this.margin + 20,
+            this.currentY,
+          )
+          this.currentY += 15
+          this.doc.text(
+            `• Aylik toplam odeme yukumlulugu: ${formatCurrency(this.data.monthlyPayment || 0)}`,
+            this.margin + 20,
+            this.currentY,
+          )
+          this.currentY += 25
+        },
+        "success",
+      )
 
       // Add footer
       this.addFooter()
