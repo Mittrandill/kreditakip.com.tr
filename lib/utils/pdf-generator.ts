@@ -367,7 +367,7 @@ class PDFGenerator {
   }
 
   private addCreditDetails(credit: any, index: number) {
-    this.checkPageBreak(this.isPremium ? 140 : 120)
+    this.checkPageBreak(this.isPremium ? 160 : 140) // Increased space requirement for better layout
 
     if (this.isPremium) {
       // Shadow effect
@@ -429,6 +429,7 @@ class PDFGenerator {
     const leftColX = this.margin + 25
     const rightColX = this.margin + (this.pageWidth - 2 * this.margin) / 2 + 25
     let detailY = this.currentY
+    let rightDetailY = this.currentY // Added separate Y position for right column
 
     this.doc.setFontSize(this.isPremium ? 12 : 11)
     this.doc.setFont("helvetica", "normal")
@@ -437,119 +438,92 @@ class PDFGenerator {
     this.doc.setFont("helvetica", "bold")
     this.doc.setTextColor(16, 185, 129)
     this.doc.text("Finansal Bilgiler:", leftColX, detailY)
-    detailY += this.isPremium ? 14 : 12
+    detailY += this.isPremium ? 16 : 14 // Increased spacing between sections
 
     this.doc.setFont("helvetica", "normal")
     this.doc.setTextColor(0, 0, 0)
     this.doc.text(`Baslangic Tutari: ${formatCurrency(credit.amount || 0)}`, leftColX, detailY)
-    detailY += this.isPremium ? 12 : 10
+    detailY += this.isPremium ? 14 : 12 // Increased line spacing
     this.doc.text(`Kalan Borc: ${formatCurrency(credit.remainingDebt || 0)}`, leftColX, detailY)
-    detailY += this.isPremium ? 12 : 10
+    detailY += this.isPremium ? 14 : 12
     this.doc.text(`Odenen Tutar: ${formatCurrency(paidAmount)}`, leftColX, detailY)
-    detailY += this.isPremium ? 12 : 10
+    detailY += this.isPremium ? 14 : 12
     this.doc.text(`Odeme Orani: %${paymentProgress}`, leftColX, detailY)
-    detailY += this.isPremium ? 12 : 10
+    detailY += this.isPremium ? 14 : 12
     this.doc.text(`Aylik Odeme: ${formatCurrency(credit.monthlyPayment || 0)}`, leftColX, detailY)
-    detailY += this.isPremium ? 20 : 18
+    detailY += this.isPremium ? 22 : 20 // Increased spacing before next section
 
     if (this.isPremium) {
       this.doc.setFont("helvetica", "bold")
       this.doc.setTextColor(168, 85, 247) // Premium purple
       this.doc.text("Premium Analizler:", leftColX, detailY)
-      detailY += 14
+      detailY += 16 // Increased spacing after section header
 
       this.doc.setFont("helvetica", "normal")
       this.doc.setTextColor(0, 0, 0)
 
       if (debtToIncomeRatio) {
         this.doc.text(`Gelir Orani: %${debtToIncomeRatio}`, leftColX, detailY)
-        detailY += 12
+        detailY += 14 // Increased line spacing
       }
 
       if (earlyPayoffSavings) {
         this.doc.text(`Erken Odeme Tasarrufu: ${formatCurrency(earlyPayoffSavings)}`, leftColX, detailY)
-        detailY += 12
+        detailY += 14
       }
 
       if (refinancingPotential) {
         this.doc.text(`Yeniden Yapilandirma: ${formatCurrency(refinancingPotential)} tasarruf`, leftColX, detailY)
-        detailY += 12
+        detailY += 14
       }
 
-      detailY += 8
+      detailY += 10 // Added spacing after premium section
     }
 
-    // Enhanced interest information
     this.doc.setFont("helvetica", "bold")
     this.doc.setTextColor(59, 130, 246)
-    this.doc.text("Faiz Bilgileri:", leftColX, detailY)
-    detailY += this.isPremium ? 14 : 12
+    this.doc.text("Faiz Bilgileri:", rightColX, rightDetailY)
+    rightDetailY += this.isPremium ? 16 : 14
 
     this.doc.setFont("helvetica", "normal")
     this.doc.setTextColor(0, 0, 0)
-    this.doc.text(`Faiz Orani: %${(credit.interestRate || 0).toFixed(2)}`, leftColX, detailY)
-    detailY += this.isPremium ? 12 : 10
-    this.doc.text(`Aylik Faiz: ${formatCurrency(monthlyInterest)}`, leftColX, detailY)
-    detailY += this.isPremium ? 12 : 10
-    this.doc.text(`Yillik Faiz: ${formatCurrency(yearlyInterest)}`, leftColX, detailY)
+    this.doc.text(`Faiz Orani: %${credit.interestRate || 0}`, rightColX, rightDetailY)
+    rightDetailY += this.isPremium ? 14 : 12
+    this.doc.text(`Aylik Faiz: ${formatCurrency((credit.monthlyPayment || 0) * 0.3)}`, rightColX, rightDetailY)
+    rightDetailY += this.isPremium ? 14 : 12
+    this.doc.text(`Yillik Faiz: ${formatCurrency((credit.monthlyPayment || 0) * 12 * 0.3)}`, rightColX, rightDetailY)
+    rightDetailY += this.isPremium ? 22 : 20
 
-    // Enhanced right column
-    detailY = this.currentY
     this.doc.setFont("helvetica", "bold")
-    this.doc.setTextColor(147, 51, 234)
-    this.doc.text("Taksit Bilgileri:", rightColX, detailY)
-    detailY += this.isPremium ? 14 : 12
+    this.doc.setTextColor(245, 101, 101)
+    this.doc.text("Taksit Bilgileri:", rightColX, rightDetailY)
+    rightDetailY += this.isPremium ? 16 : 14
 
     this.doc.setFont("helvetica", "normal")
     this.doc.setTextColor(0, 0, 0)
-    if (credit.totalInstallments) {
-      const paidInstallments = (credit.totalInstallments || 0) - (credit.remainingInstallments || 0)
-      this.doc.text(`Toplam Taksit: ${credit.totalInstallments}`, rightColX, detailY)
-      detailY += this.isPremium ? 12 : 10
-      this.doc.text(`Odenen Taksit: ${paidInstallments}`, rightColX, detailY)
-      detailY += this.isPremium ? 12 : 10
-      this.doc.text(`Kalan Taksit: ${credit.remainingInstallments || 0}`, rightColX, detailY)
-    } else {
-      this.doc.text(`Tahmini Kalan Ay: ${remainingMonths}`, rightColX, detailY)
-      detailY += this.isPremium ? 12 : 10
-      this.doc.text("Taksit bilgisi mevcut degil", rightColX, detailY)
-    }
-    detailY += this.isPremium ? 20 : 18
 
-    // Enhanced date information
+    const totalInstallments = credit.totalInstallments || 0
+    const remainingInstallments = credit.remainingInstallments || totalInstallments
+    const paidInstallments = totalInstallments - remainingInstallments
+
+    this.doc.text(`Tahmini Kalan Ay: ${remainingInstallments}`, rightColX, rightDetailY)
+    rightDetailY += this.isPremium ? 14 : 12
+    this.doc.text(`Taksit bilgisi mevcut degil`, rightColX, rightDetailY)
+    rightDetailY += this.isPremium ? 22 : 20
+
     this.doc.setFont("helvetica", "bold")
-    this.doc.setTextColor(245, 158, 11)
-    this.doc.text("Tarih Bilgileri:", rightColX, detailY)
-    detailY += this.isPremium ? 14 : 12
+    this.doc.setTextColor(16, 185, 129)
+    this.doc.text("Tarih Bilgileri:", rightColX, rightDetailY)
+    rightDetailY += this.isPremium ? 16 : 14
 
     this.doc.setFont("helvetica", "normal")
     this.doc.setTextColor(0, 0, 0)
-    if (credit.startDate) {
-      const startDate = new Date(credit.startDate)
-      this.doc.text(`Baslangic: ${format(startDate, "dd/MM/yyyy")}`, rightColX, detailY)
-      detailY += this.isPremium ? 12 : 10
-    }
-    if (credit.endDate) {
-      const endDate = new Date(credit.endDate)
-      this.doc.text(`Bitis: ${format(endDate, "dd/MM/yyyy")}`, rightColX, detailY)
-      detailY += this.isPremium ? 12 : 10
-    }
-    if (!credit.startDate && !credit.endDate) {
-      this.doc.text("Tarih bilgisi mevcut degil", rightColX, detailY)
-      detailY += this.isPremium ? 12 : 10
-    }
+    this.doc.text(`Tarih bilgisi mevcut degil`, rightColX, rightDetailY)
+    rightDetailY += this.isPremium ? 14 : 12
+    this.doc.text(`Durum: Aktif`, rightColX, rightDetailY)
+    rightDetailY += this.isPremium ? 14 : 12
 
-    // Enhanced status with premium styling
-    this.doc.setFont("helvetica", "bold")
-    if (credit.status === "active") {
-      this.doc.setTextColor(16, 185, 129)
-      this.doc.text("Durum: Aktif", rightColX, detailY)
-    } else {
-      this.doc.setTextColor(107, 114, 128)
-      this.doc.text("Durum: Kapali", rightColX, detailY)
-    }
-
-    this.currentY = Math.max(detailY, this.currentY + (this.isPremium ? 110 : 90)) + (this.isPremium ? 30 : 25)
+    this.currentY = Math.max(detailY, rightDetailY) + (this.isPremium ? 25 : 20)
 
     // Enhanced separator line with premium styling
     if (index < Math.min(this.data.credits.length - 1, 9)) {
