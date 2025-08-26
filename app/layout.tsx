@@ -3,6 +3,8 @@ import type { Metadata } from "next"
 import { Poppins } from "next/font/google"
 import "./globals.css"
 import { cn } from "@/lib/utils"
+import { ErrorBoundary } from "@/components/error-boundary"
+import { Toaster } from "sonner"
 
 const poppins = Poppins({
   subsets: ["latin"],
@@ -16,7 +18,7 @@ export const metadata: Metadata = {
   icons: {
     icon: "/favicon.svg",
   },
-    generator: 'v0.dev'
+  generator: "v0.dev",
 }
 
 export default function RootLayout({
@@ -26,7 +28,25 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className={cn("font-sans antialiased", poppins.variable)}>{children}</body>
+      <body className={cn("font-sans antialiased", poppins.variable)}>
+        <ErrorBoundary>
+          {children}
+          <Toaster
+            position="top-right"
+            expand={true}
+            richColors={true}
+            closeButton={true}
+            toastOptions={{
+              duration: 4000,
+              style: {
+                background: "hsl(var(--background))",
+                color: "hsl(var(--foreground))",
+                border: "1px solid hsl(var(--border))",
+              },
+            }}
+          />
+        </ErrorBoundary>
+      </body>
     </html>
   )
 }

@@ -1,5 +1,7 @@
 import { supabase } from "@/lib/supabase"
 import type { PaymentPlan, PaymentHistory } from "@/lib/types"
+import { cacheManager } from "@/lib/cacheManager"
+import { requestBatcher } from "@/lib/requestBatcher"
 
 export async function getPaymentPlans(creditId: string) {
   const { data, error } = await supabase
@@ -63,6 +65,34 @@ export async function getPaymentHistory(creditId: string) {
   return data
 }
 
+export async function getPaymentHistoryOptimized(creditId: string, useCache = true) {
+  const cacheKey = `payment-history-${creditId}`
+
+  if (useCache) {
+    const cached = cacheManager.get(cacheKey)
+    if (cached) return cached
+  }
+
+  return requestBatcher.batch(cacheKey, async () => {
+    const { data, error } = await supabase
+      .from("payment_history")
+      .select("*")
+      .eq("credit_id", creditId)
+      .order("payment_date", { ascending: false })
+
+    if (error) {
+      console.error("Error fetching payment history:", error)
+      throw error
+    }
+
+    if (useCache) {
+      cacheManager.set(cacheKey, data || [], 300000) // 5 minutes cache
+    }
+
+    return data || []
+  })
+}
+
 export async function createPaymentHistory(paymentData: Omit<PaymentHistory, "id" | "created_at">) {
   const { data, error } = await supabase.from("payment_history").insert(paymentData).select().single()
 
@@ -105,7 +135,39 @@ export async function getUpcomingPayments(userId: string, days = 30) {
   return data
 }
 
-// Yeni fonksiyon: Tüm ödemeleri çek (geçmiş + gelecek)
+export async function getBatchUpcomingPayments(userIds: string[], days = 30) {
+  const batchKey = `batch-upcoming-${userIds.join("-")}-${days}`
+
+  return requestBatcher.batch(batchKey, async () => {
+    const futureDate = new Date()
+    futureDate.setDate(futureDate.getDate() + days)
+
+    const { data, error } = await supabase
+      .from("payment_plans")
+      .select(`
+        *,
+        credits!inner (
+          id,
+          credit_code,
+          user_id,
+          banks (name, logo_url)
+        )
+      `)
+      .in("credits.user_id", userIds)
+      .eq("status", "pending")
+      .lte("due_date", futureDate.toISOString().split("T")[0])
+      .order("due_date")
+
+    if (error) {
+      console.error("Error fetching batch upcoming payments:", error)
+      throw error
+    }
+
+    return data || []
+  })
+}
+
+// Tüm ödemeleri çek (geçmiş + gelecek)
 export async function getAllPayments(userId: string, monthsBack = 12, monthsForward = 12) {
   const pastDate = new Date()
   pastDate.setMonth(pastDate.getMonth() - monthsBack)
@@ -121,10 +183,7 @@ export async function getAllPayments(userId: string, monthsBack = 12, monthsForw
         id,
         credit_code,
         user_id,
-        banks (
-          name,
-          logo_url
-        )
+        banks (name, logo_url)
       )
     `)
     .eq("credits.user_id", userId)
@@ -160,13 +219,8 @@ export async function getPaymentHistoryById(paymentId: string) {
         id,
         credit_code,
         user_id,
-        banks (
-          name,
-          logo_url
-        ),
-        credit_types (
-          name
-        )
+        banks (name, logo_url),
+        credit_types (name)
       )
     `)
     .eq("id", paymentId)

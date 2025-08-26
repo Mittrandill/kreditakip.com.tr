@@ -1,18 +1,30 @@
 import { supabase } from "@/lib/supabase"
 import type { Credit } from "@/lib/types"
 import { createPaymentPlansForCredit } from "./payment-plans"
+import { createError, ErrorType, ErrorSeverity, errorLogger } from "@/lib/utils/error-handling"
 
 /* ------------------------------------------------------------------ */
 /*  CRUD UTILS                                                        */
 /* ------------------------------------------------------------------ */
 
 export async function getCredits(userId: string) {
-  if (!userId) throw new Error("User ID is required")
+  if (!userId) {
+    const error = createError(
+      ErrorType.VALIDATION,
+      "User ID is required",
+      "Kullanıcı kimliği gerekli",
+      ErrorSeverity.HIGH,
+      { function: "getCredits" },
+    )
+    errorLogger.log(error)
+    throw new Error(error.message)
+  }
 
-  const { data, error } = await supabase
-    .from("credits")
-    .select(
-      `
+  try {
+    const { data, error } = await supabase
+      .from("credits")
+      .select(
+        `
         *,
         banks (
           id,
@@ -27,23 +39,46 @@ export async function getCredits(userId: string) {
           description
         )
       `,
+      )
+      .eq("user_id", userId)
+      .order("created_at", { ascending: false })
+
+    if (error) {
+      const appError = createError(
+        ErrorType.SERVER,
+        `Database error: ${error.message}`,
+        "Krediler yüklenirken hata oluştu",
+        ErrorSeverity.HIGH,
+        { function: "getCredits", userId, supabaseError: error },
+      )
+      errorLogger.log(appError)
+      throw new Error(appError.message)
+    }
+
+    return data || []
+  } catch (error: any) {
+    if (error.message.includes("Database error")) {
+      throw error // Re-throw our custom error
+    }
+
+    const appError = createError(
+      ErrorType.UNKNOWN,
+      error.message || "Unknown error in getCredits",
+      "Krediler yüklenirken beklenmeyen hata oluştu",
+      ErrorSeverity.MEDIUM,
+      { function: "getCredits", userId, originalError: error },
     )
-    .eq("user_id", userId)
-    .order("created_at", { ascending: false })
-
-  if (error) {
-    console.error("Error fetching credits:", error)
-    throw error
+    errorLogger.log(appError)
+    throw new Error(appError.message)
   }
-
-  return data || []
 }
 
 export async function getCreditById(creditId: string, userId: string) {
-  const { data, error } = await supabase
-    .from("credits")
-    .select(
-      `
+  try {
+    const { data, error } = await supabase
+      .from("credits")
+      .select(
+        `
         *,
         banks (
           id,
@@ -59,28 +94,73 @@ export async function getCreditById(creditId: string, userId: string) {
           description
         )
       `,
+      )
+      .eq("id", creditId)
+      .eq("user_id", userId)
+      .single()
+
+    if (error) {
+      const appError = createError(
+        ErrorType.SERVER,
+        `Database error: ${error.message}`,
+        "Kredi detayları yüklenirken hata oluştu",
+        ErrorSeverity.HIGH,
+        { function: "getCreditById", creditId, userId, supabaseError: error },
+      )
+      errorLogger.log(appError)
+      throw new Error(appError.message)
+    }
+
+    return data
+  } catch (error: any) {
+    if (error.message.includes("Database error")) {
+      throw error
+    }
+
+    const appError = createError(
+      ErrorType.UNKNOWN,
+      error.message || "Unknown error in getCreditById",
+      "Kredi detayları yüklenirken beklenmeyen hata oluştu",
+      ErrorSeverity.MEDIUM,
+      { function: "getCreditById", creditId, userId, originalError: error },
     )
-    .eq("id", creditId)
-    .eq("user_id", userId)
-    .single()
-
-  if (error) {
-    console.error("Error fetching credit:", error)
-    throw error
+    errorLogger.log(appError)
+    throw new Error(appError.message)
   }
-
-  return data
 }
 
 export async function createCredit(creditData: Omit<Credit, "id" | "created_at" | "updated_at">) {
-  const { data, error } = await supabase.from("credits").insert(creditData).select().single()
+  try {
+    const { data, error } = await supabase.from("credits").insert(creditData).select().single()
 
-  if (error) {
-    console.error("Error creating credit:", error)
-    throw error
+    if (error) {
+      const appError = createError(
+        ErrorType.SERVER,
+        `Database error: ${error.message}`,
+        "Kredi oluşturulurken hata oluştu",
+        ErrorSeverity.HIGH,
+        { function: "createCredit", creditData, supabaseError: error },
+      )
+      errorLogger.log(appError)
+      throw new Error(appError.message)
+    }
+
+    return data
+  } catch (error: any) {
+    if (error.message.includes("Database error")) {
+      throw error
+    }
+
+    const appError = createError(
+      ErrorType.UNKNOWN,
+      error.message || "Unknown error in createCredit",
+      "Kredi oluşturulurken beklenmeyen hata oluştu",
+      ErrorSeverity.MEDIUM,
+      { function: "createCredit", creditData, originalError: error },
+    )
+    errorLogger.log(appError)
+    throw new Error(appError.message)
   }
-
-  return data
 }
 
 // New function to create credit with payment plans
@@ -116,19 +196,42 @@ export async function createCreditWithPaymentPlans(
 }
 
 export async function updateCredit(creditId: string, updates: Partial<Credit>) {
-  const { data, error } = await supabase
-    .from("credits")
-    .update({ ...updates, updated_at: new Date().toISOString() })
-    .eq("id", creditId)
-    .select()
-    .single()
+  try {
+    const { data, error } = await supabase
+      .from("credits")
+      .update({ ...updates, updated_at: new Date().toISOString() })
+      .eq("id", creditId)
+      .select()
+      .single()
 
-  if (error) {
-    console.error("Error updating credit:", error)
-    throw error
+    if (error) {
+      const appError = createError(
+        ErrorType.SERVER,
+        `Database error: ${error.message}`,
+        "Kredi güncellenirken hata oluştu",
+        ErrorSeverity.HIGH,
+        { function: "updateCredit", creditId, updates, supabaseError: error },
+      )
+      errorLogger.log(appError)
+      throw new Error(appError.message)
+    }
+
+    return data
+  } catch (error: any) {
+    if (error.message.includes("Database error")) {
+      throw error
+    }
+
+    const appError = createError(
+      ErrorType.UNKNOWN,
+      error.message || "Unknown error in updateCredit",
+      "Kredi güncellenirken beklenmeyen hata oluştu",
+      ErrorSeverity.MEDIUM,
+      { function: "updateCredit", creditId, updates, originalError: error },
+    )
+    errorLogger.log(appError)
+    throw new Error(appError.message)
   }
-
-  return data
 }
 
 export async function deleteCredit(creditId: string) {

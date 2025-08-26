@@ -5,6 +5,7 @@ import type { User, Session } from "@supabase/supabase-js"
 import { supabase } from "@/lib/supabase"
 import { getProfile } from "@/lib/auth"
 import type { Profile } from "@/lib/types"
+import { useErrorHandler } from "@/lib/utils/error-handling"
 
 interface AuthState {
   user: User | null
@@ -27,40 +28,44 @@ export function useAuth() {
   const mountedRef = useRef(true)
   const profileCacheRef = useRef<Map<string, Profile>>(new Map())
   const loadingProfileRef = useRef<Set<string>>(new Set())
+  const { handleError } = useErrorHandler()
 
   // Optimized profile loader with caching
-  const loadProfile = useCallback(async (userId: string) => {
-    if (!mountedRef.current) return null
+  const loadProfile = useCallback(
+    async (userId: string) => {
+      if (!mountedRef.current) return null
 
-    // Check cache first
-    const cachedProfile = profileCacheRef.current.get(userId)
-    if (cachedProfile) {
-      return cachedProfile
-    }
-
-    // Prevent duplicate requests
-    if (loadingProfileRef.current.has(userId)) {
-      return null
-    }
-
-    loadingProfileRef.current.add(userId)
-
-    try {
-      const profileData = await getProfile(userId)
-
-      if (profileData && mountedRef.current) {
-        // Cache the profile
-        profileCacheRef.current.set(userId, profileData)
-        return profileData
+      // Check cache first
+      const cachedProfile = profileCacheRef.current.get(userId)
+      if (cachedProfile) {
+        return cachedProfile
       }
-    } catch (error) {
-      console.error("Error loading profile:", error)
-    } finally {
-      loadingProfileRef.current.delete(userId)
-    }
 
-    return null
-  }, [])
+      // Prevent duplicate requests
+      if (loadingProfileRef.current.has(userId)) {
+        return null
+      }
+
+      loadingProfileRef.current.add(userId)
+
+      try {
+        const profileData = await getProfile(userId)
+
+        if (profileData && mountedRef.current) {
+          // Cache the profile
+          profileCacheRef.current.set(userId, profileData)
+          return profileData
+        }
+      } catch (error) {
+        handleError(error, { context: "loadProfile", userId })
+      } finally {
+        loadingProfileRef.current.delete(userId)
+      }
+
+      return null
+    },
+    [handleError],
+  )
 
   // Optimized state updater
   const updateAuthState = useCallback((updates: Partial<AuthState>) => {
@@ -129,7 +134,7 @@ export function useAuth() {
         } = await supabase.auth.getSession()
 
         if (error) {
-          console.error("Error getting session:", error)
+          handleError(error, { context: "getSession" })
           updateAuthState({ loading: false })
           return
         }
@@ -144,7 +149,7 @@ export function useAuth() {
 
         subscription = authSubscription
       } catch (error) {
-        console.error("Error initializing auth:", error)
+        handleError(error, { context: "initializeAuth" })
         updateAuthState({ loading: false })
       }
     }
@@ -160,7 +165,7 @@ export function useAuth() {
       // Clear any pending profile loads
       loadingProfileRef.current.clear()
     }
-  }, [handleAuthStateChange, updateAuthState])
+  }, [handleAuthStateChange, updateAuthState, handleError])
 
   // Cleanup on unmount
   useEffect(() => {

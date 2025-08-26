@@ -1,4 +1,18 @@
 // Simple and reliable encryption utilities
+const validateEnvironment = () => {
+  if (process.env.NODE_ENV === "production") {
+    if (!process.env.ENCRYPTION_KEY || process.env.ENCRYPTION_KEY === "default-encryption-key-32-chars") {
+      throw new Error("ENCRYPTION_KEY must be set in production environment")
+    }
+    if (process.env.ENCRYPTION_KEY.length < 32) {
+      throw new Error("ENCRYPTION_KEY must be at least 32 characters long")
+    }
+  }
+}
+
+// Validate environment on module load
+validateEnvironment()
+
 const ENCRYPTION_KEY =
   process.env.ENCRYPTION_KEY || process.env.NEXT_PUBLIC_ENCRYPTION_KEY || "default-encryption-key-32-chars"
 
@@ -44,7 +58,9 @@ export async function encryptSensitiveData(data: string): Promise<string> {
       return ""
     }
 
-    console.log(`🔐 Encrypting password: ${data.substring(0, 2)}***`)
+    if (process.env.NODE_ENV !== "production") {
+      console.log(`🔐 Encrypting password: ${data.substring(0, 2)}***`)
+    }
 
     // Step 1: XOR encrypt with key
     const encrypted = xorEncrypt(data, ENCRYPTION_KEY)
@@ -52,7 +68,9 @@ export async function encryptSensitiveData(data: string): Promise<string> {
     // Step 2: Base64 encode for safe storage
     const encoded = safeBase64Encode(encrypted)
 
-    console.log(`✅ Password encrypted successfully`)
+    if (process.env.NODE_ENV !== "production") {
+      console.log(`✅ Password encrypted successfully`)
+    }
     return encoded
   } catch (error) {
     console.error("Encryption error:", error)
@@ -66,7 +84,9 @@ export async function decryptSensitiveData(encryptedData: string): Promise<strin
       return ""
     }
 
-    console.log(`🔓 Decrypting password...`)
+    if (process.env.NODE_ENV !== "production") {
+      console.log(`🔓 Decrypting password...`)
+    }
 
     // Step 1: Base64 decode
     const decoded = safeBase64Decode(encryptedData)
@@ -74,7 +94,9 @@ export async function decryptSensitiveData(encryptedData: string): Promise<strin
     // Step 2: XOR decrypt with key
     const decrypted = xorDecrypt(decoded, ENCRYPTION_KEY)
 
-    console.log(`✅ Password decrypted successfully`)
+    if (process.env.NODE_ENV !== "production") {
+      console.log(`✅ Password decrypted successfully`)
+    }
     return decrypted
   } catch (error) {
     console.error("Decryption error:", error)

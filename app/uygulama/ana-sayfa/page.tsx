@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useState } from "react"
+import { useEffect, useState, useMemo, useCallback } from "react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Button } from "@/components/ui/button"
@@ -10,22 +10,19 @@ import type { Credit, Bank, CreditType, PaymentPlan } from "@/lib/types"
 import { formatCurrency, formatPercent } from "@/lib/format"
 import Link from "next/link"
 import { useAuth } from "@/hooks/use-auth"
-import { getCredits } from "@/lib/api/credits"
-import { getUpcomingPayments } from "@/lib/api/payments"
+import { getDashboardDataOptimized } from "@/lib/api/optimized-credits"
+import { cacheManager } from "@/lib/utils/performance"
 import {
   Home,
   Settings,
   Bell,
   MoreHorizontal,
   ArrowUpRight,
-  Banknote,
   Target,
   DollarSign,
   TrendingUp,
   Clock,
   Wallet,
-  Building2,
-  CreditCard,
 } from "lucide-react"
 import { Doughnut } from "react-chartjs-2"
 import { Chart as ChartJS, ArcElement, Tooltip, Legend } from "chart.js"
@@ -71,222 +68,170 @@ const defaultBarChartData = [
 
 export default function DashboardPage() {
   const { user, profile, loading: authLoading } = useAuth()
-  const [credits, setCredits] = useState<any[]>([])
-  const [upcomingPayments, setUpcomingPayments] = useState<any[]>([])
+  const [dashboardData, setDashboardData] = useState<any>(null)
   const [loadingData, setLoadingData] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
-  // Metrik state'leri
-  const [totalCredits, setTotalCredits] = useState(0)
-  const [totalDebt, setTotalDebt] = useState(0)
-  const [monthlyPayment, setMonthlyPayment] = useState(0)
-  const [averageInterestRate, setAverageInterestRate] = useState(0)
-  const [upcomingPaymentCount, setUpcomingPaymentCount] = useState(0)
-
-  // Grafik state'leri
-  const [lineChartData, setLineChartData] = useState(defaultLineChartData)
-  const [barChartData, setBarChartData] = useState(defaultBarChartData)
-  const [bankChartData, setBankChartData] = useState<any>(null)
-  const [creditTypeChartData, setCreditTypeChartData] = useState<any>(null)
-
-  useEffect(() => {
-    let isMounted = true
-
-    async function fetchData() {
-      if (user && isMounted) {
-        setLoadingData(true)
-        setError(null)
-        try {
-          // Önce bildirim kontrolü yap
-          try {
-            await fetch("/api/notifications/auto-create", {
-              method: "POST",
-              headers: {
-                "Content-Type": "application/json",
-              },
-              body: JSON.stringify({ userId: user.id }),
-            })
-          } catch (notificationError) {
-            console.error("Bildirim oluşturma hatası:", notificationError)
-            // Bildirim hatası ana veri yüklemeyi engellemez
-          }
-
-          const [creditsData, upcomingPaymentsData] = await Promise.all([
-            getCredits(user.id) as Promise<any[]>,
-            getUpcomingPayments(user.id, 30) as Promise<any[]>,
-          ])
-
-          if (isMounted) {
-            setCredits(creditsData || [])
-            setUpcomingPayments(upcomingPaymentsData || [])
-
-            // Kredi metrikleri
-            const activeCredits = creditsData?.filter((c) => c.status === "active") || []
-            setTotalCredits(activeCredits.length)
-            const currentTotalDebt = activeCredits.reduce((sum, c) => sum + c.remaining_debt, 0)
-            setTotalDebt(currentTotalDebt)
-            const currentMonthlyPayment = activeCredits.reduce((sum, c) => sum + c.monthly_payment, 0)
-            setMonthlyPayment(currentMonthlyPayment)
-
-            if (activeCredits.length > 0 && currentTotalDebt > 0) {
-              const weightedInterestSum = activeCredits.reduce((sum, c) => sum + c.interest_rate * c.remaining_debt, 0)
-              setAverageInterestRate(weightedInterestSum / currentTotalDebt)
-            } else {
-              setAverageInterestRate(0)
-            }
-
-            setUpcomingPaymentCount(upcomingPaymentsData?.length || 0)
-
-            // Line Chart verisi - Finansal trend
-            if (activeCredits.length > 0) {
-              const now = new Date()
-              const months = []
-
-              for (let i = 5; i >= 0; i--) {
-                const date = new Date(now.getFullYear(), now.getMonth() - i, 1)
-                const monthName = date.toLocaleDateString("tr-TR", { month: "short" })
-
-                // Basit simülasyon
-                const totalDebtAtMonth = activeCredits.reduce((sum, credit) => {
-                  const monthlyReduction = credit.monthly_payment * 0.7
-                  const remainingAtMonth = credit.remaining_debt + monthlyReduction * i
-                  return sum + remainingAtMonth
-                }, 0)
-
-                const totalPaidAtMonth = activeCredits.reduce((sum, credit) => {
-                  const monthlyPayment = credit.monthly_payment
-                  return sum + monthlyPayment * (6 - i)
-                }, 0)
-
-                months.push({
-                  month: monthName,
-                  anaParaBorcu: Math.max(0, totalDebtAtMonth),
-                  toplamOdenen: totalPaidAtMonth,
-                })
-              }
-
-              setLineChartData(months)
-            } else {
-              setLineChartData(defaultLineChartData)
-            }
-
-            // Bar Chart verisi - Nakit akış
-            if (activeCredits.length > 0) {
-              const now = new Date()
-              const cashFlowMonths = []
-
-              for (let i = 0; i < 6; i++) {
-                const date = new Date(now.getFullYear(), now.getMonth() + i, 1)
-                const monthName = date.toLocaleDateString("tr-TR", { month: "short" })
-
-                const monthlyKrediPayment = activeCredits.reduce((sum, credit) => sum + credit.monthly_payment, 0)
-                const estimatedIncome = monthlyKrediPayment + 5000
-
-                cashFlowMonths.push({
-                  name: monthName,
-                  krediOdeme: monthlyKrediPayment,
-                  gelir: estimatedIncome,
-                })
-              }
-
-              setBarChartData(cashFlowMonths)
-            } else {
-              setBarChartData(defaultBarChartData)
-            }
-
-            if (activeCredits.length > 0) {
-              // Banka dağılımı
-              const bankDistribution = activeCredits.reduce((acc: any, credit) => {
-                const bankName = credit.banks?.name || "Diğer Bankalar"
-                const existing = acc.find((item: any) => item.name === bankName)
-
-                if (existing) {
-                  existing.value += credit.remaining_debt
-                } else {
-                  acc.push({
-                    name: bankName,
-                    value: credit.remaining_debt,
-                    color: getBankColor(bankName),
-                    logoUrl: credit.banks?.logo_url,
-                  })
-                }
-                return acc
-              }, [])
-
-              const sortedBankData = bankDistribution.sort((a: any, b: any) => b.value - a.value).slice(0, 5)
-
-              setBankChartData({
-                labels: sortedBankData.map((item: any) => item.name),
-                datasets: [
-                  {
-                    data: sortedBankData.map((item: any) => item.value),
-                    backgroundColor: sortedBankData.map((item: any) => item.color),
-                    borderWidth: 2,
-                    borderColor: "#ffffff",
-                    cutout: "70%",
-                  },
-                ],
-              })
-
-              // Kredi türü dağılımı
-              const creditTypeDistribution = activeCredits.reduce((acc: any, credit) => {
-                const typeName = credit.credit_types?.name || "Diğer Krediler"
-                const existing = acc.find((item: any) => item.name === typeName)
-
-                if (existing) {
-                  existing.value += credit.remaining_debt
-                } else {
-                  acc.push({
-                    name: typeName,
-                    value: credit.remaining_debt,
-                    color: getColorForCreditType(typeName),
-                  })
-                }
-                return acc
-              }, [])
-
-              const sortedCreditTypeData = creditTypeDistribution
-                .sort((a: any, b: any) => b.value - a.value)
-                .slice(0, 5)
-
-              setCreditTypeChartData({
-                labels: sortedCreditTypeData.map((item: any) => item.name),
-                datasets: [
-                  {
-                    data: sortedCreditTypeData.map((item: any) => item.value),
-                    backgroundColor: sortedCreditTypeData.map((item: any) => item.color),
-                    borderWidth: 2,
-                    borderColor: "#ffffff",
-                    cutout: "70%",
-                  },
-                ],
-              })
-            } else {
-              setBankChartData(null)
-              setCreditTypeChartData(null)
-            }
-          }
-        } catch (err) {
-          console.error("Dashboard data fetch error:", err)
-          if (isMounted) {
-            setError("Veriler yüklenirken bir hata oluştu.")
-          }
-        } finally {
-          if (isMounted) {
-            setLoadingData(false)
-          }
-        }
-      } else if (!authLoading && !user && isMounted) {
-        setLoadingData(false)
-        setError("Lütfen giriş yapınız.")
+  const metrics = useMemo(() => {
+    if (!dashboardData?.credits) {
+      return {
+        totalCredits: 0,
+        totalDebt: 0,
+        monthlyPayment: 0,
+        averageInterestRate: 0,
+        upcomingPaymentCount: 0,
+        creditPerformancePercentage: 0,
       }
     }
-    fetchData()
 
-    return () => {
-      isMounted = false
+    const activeCredits = dashboardData.credits.filter((c: any) => c.status === "active")
+    const totalCredits = activeCredits.length
+    const totalDebt = activeCredits.reduce((sum: number, c: any) => sum + c.remaining_debt, 0)
+    const monthlyPayment = activeCredits.reduce((sum: number, c: any) => sum + c.monthly_payment, 0)
+
+    let averageInterestRate = 0
+    if (activeCredits.length > 0 && totalDebt > 0) {
+      const weightedInterestSum = activeCredits.reduce(
+        (sum: number, c: any) => sum + c.interest_rate * c.remaining_debt,
+        0,
+      )
+      averageInterestRate = weightedInterestSum / totalDebt
     }
-  }, [user, authLoading])
+
+    const creditPerformancePercentage =
+      activeCredits.length > 0
+        ? Math.round(
+            activeCredits.reduce((sum: number, c: any) => sum + (c.payment_progress || 0), 0) / activeCredits.length,
+          )
+        : 0
+
+    return {
+      totalCredits,
+      totalDebt,
+      monthlyPayment,
+      averageInterestRate,
+      upcomingPaymentCount: dashboardData.upcomingPayments?.length || 0,
+      creditPerformancePercentage,
+    }
+  }, [dashboardData])
+
+  const fetchDashboardData = useCallback(async () => {
+    if (!user?.id) return
+
+    setLoadingData(true)
+    setError(null)
+
+    try {
+      // Try notification creation but don't block on failure
+      fetch("/api/notifications/auto-create", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ userId: user.id }),
+      }).catch((err) => console.error("Notification creation failed:", err))
+
+      const data = await getDashboardDataOptimized(user.id)
+      setDashboardData(data)
+    } catch (err) {
+      console.error("Dashboard data fetch error:", err)
+      setError("Veriler yüklenirken bir hata oluştu.")
+    } finally {
+      setLoadingData(false)
+    }
+  }, [user?.id])
+
+  useEffect(() => {
+    if (user && !authLoading) {
+      fetchDashboardData()
+    } else if (!authLoading && !user) {
+      setLoadingData(false)
+      setError("Lütfen giriş yapınız.")
+    }
+  }, [user, authLoading, fetchDashboardData])
+
+  const chartData = useMemo(() => {
+    if (!dashboardData?.credits) return { bankChartData: null, creditTypeChartData: null }
+
+    const activeCredits = dashboardData.credits.filter((c: any) => c.status === "active")
+
+    if (activeCredits.length === 0) {
+      return { bankChartData: null, creditTypeChartData: null }
+    }
+
+    // Bank distribution
+    const bankDistribution = activeCredits.reduce((acc: any, credit: any) => {
+      const bankName = credit.banks?.name || "Diğer Bankalar"
+      const existing = acc.find((item: any) => item.name === bankName)
+
+      if (existing) {
+        existing.value += credit.remaining_debt
+      } else {
+        acc.push({
+          name: bankName,
+          value: credit.remaining_debt,
+          color: getBankColor(bankName),
+          logoUrl: credit.banks?.logo_url,
+        })
+      }
+      return acc
+    }, [])
+
+    const sortedBankData = bankDistribution.sort((a: any, b: any) => b.value - a.value).slice(0, 5)
+
+    const bankChartData = {
+      labels: sortedBankData.map((item: any) => item.name),
+      datasets: [
+        {
+          data: sortedBankData.map((item: any) => item.value),
+          backgroundColor: sortedBankData.map((item: any) => item.color),
+          borderWidth: 2,
+          borderColor: "#ffffff",
+          cutout: "70%",
+        },
+      ],
+    }
+
+    // Credit type distribution
+    const creditTypeDistribution = activeCredits.reduce((acc: any, credit: any) => {
+      const typeName = credit.credit_types?.name || "Diğer Krediler"
+      const existing = acc.find((item: any) => item.name === typeName)
+
+      if (existing) {
+        existing.value += credit.remaining_debt
+      } else {
+        acc.push({
+          name: typeName,
+          value: credit.remaining_debt,
+          color: getColorForCreditType(typeName),
+        })
+      }
+      return acc
+    }, [])
+
+    const sortedCreditTypeData = creditTypeDistribution.sort((a: any, b: any) => b.value - a.value).slice(0, 5)
+
+    const creditTypeChartData = {
+      labels: sortedCreditTypeData.map((item: any) => item.name),
+      datasets: [
+        {
+          data: sortedCreditTypeData.map((item: any) => item.value),
+          backgroundColor: sortedCreditTypeData.map((item: any) => item.color),
+          borderWidth: 2,
+          borderColor: "#ffffff",
+          cutout: "70%",
+        },
+      ],
+    }
+
+    return { bankChartData, creditTypeChartData }
+  }, [dashboardData])
+
+  useEffect(() => {
+    return () => {
+      if (user?.id) {
+        cacheManager.delete(`dashboard-${user.id}`)
+      }
+    }
+  }, [user?.id])
 
   const getBankColor = (bankName: string): string => {
     const colorMap: { [key: string]: string } = {
@@ -378,15 +323,6 @@ export default function DashboardPage() {
 
   const displayName = profile?.first_name || user?.email?.split("@")[0] || "Kullanıcı"
 
-  // Kredi performansı hesaplama
-  const creditPerformancePercentage =
-    credits.filter((c) => c.status === "active").length > 0
-      ? Math.round(
-          credits.filter((c) => c.status === "active").reduce((sum, c) => sum + (c.payment_progress || 0), 0) /
-            credits.filter((c) => c.status === "active").length,
-        )
-      : 0
-
   return (
     <div className="flex flex-col gap-4 md:gap-6">
       <div className="relative overflow-hidden rounded-3xl">
@@ -418,17 +354,17 @@ export default function DashboardPage() {
 
               <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
                 <div className="bg-white/15 dark:bg-white/10 rounded-xl p-4 backdrop-blur-sm border border-white/20 dark:border-white/15 hover:bg-white/20 dark:hover:bg-white/15 transition-all duration-200">
-                  <div className="text-3xl font-bold mb-1 text-white drop-shadow-md">{totalCredits}</div>
+                  <div className="text-3xl font-bold mb-1 text-white drop-shadow-md">{metrics.totalCredits}</div>
                   <div className="text-sm text-emerald-100 dark:text-emerald-50">Toplam Kredi</div>
                   <div className="flex items-center gap-1 mt-2">
                     <ArrowUpRight className="h-3 w-3 text-emerald-200 dark:text-emerald-100" />
-                    <span className="text-xs text-emerald-200 dark:text-emerald-100">
-                      {credits.filter((c) => c.status === "active").length} aktif
-                    </span>
+                    <span className="text-xs text-emerald-200 dark:text-emerald-100">{metrics.totalCredits} aktif</span>
                   </div>
                 </div>
                 <div className="bg-white/15 dark:bg-white/10 rounded-xl p-4 backdrop-blur-sm border border-white/20 dark:border-white/15 hover:bg-white/20 dark:hover:bg-white/15 transition-all duration-200">
-                  <div className="text-3xl font-bold mb-1 text-white drop-shadow-md">{formatCurrency(totalDebt)}</div>
+                  <div className="text-3xl font-bold mb-1 text-white drop-shadow-md">
+                    {formatCurrency(metrics.totalDebt)}
+                  </div>
                   <div className="text-sm text-emerald-100 dark:text-emerald-50">Toplam Borç</div>
                   <div className="flex items-center gap-1 mt-2">
                     <ArrowUpRight className="h-3 w-3 text-red-300 dark:text-red-200" />
@@ -437,7 +373,7 @@ export default function DashboardPage() {
                 </div>
                 <div className="bg-white/15 dark:bg-white/10 rounded-xl p-4 backdrop-blur-sm border border-white/20 dark:border-white/15 hover:bg-white/20 dark:hover:bg-white/15 transition-all duration-200">
                   <div className="text-3xl font-bold mb-1 text-white drop-shadow-md">
-                    {formatPercent(creditPerformancePercentage / 100)}
+                    {formatPercent(metrics.creditPerformancePercentage / 100)}
                   </div>
                   <div className="text-sm text-emerald-100 dark:text-emerald-50">Performans</div>
                   <div className="flex items-center gap-1 mt-2">
@@ -446,7 +382,9 @@ export default function DashboardPage() {
                   </div>
                 </div>
                 <div className="bg-white/15 dark:bg-white/10 rounded-xl p-4 backdrop-blur-sm border border-white/20 dark:border-white/15 hover:bg-white/20 dark:hover:bg-white/15 transition-all duration-200">
-                  <div className="text-3xl font-bold mb-1 text-white drop-shadow-md">{upcomingPaymentCount}</div>
+                  <div className="text-3xl font-bold mb-1 text-white drop-shadow-md">
+                    {metrics.upcomingPaymentCount}
+                  </div>
                   <div className="text-sm text-emerald-100 dark:text-emerald-50">Yaklaşan</div>
                   <div className="flex items-center gap-1 mt-2">
                     <Clock className="h-3 w-3 text-yellow-300 dark:text-yellow-200" />
@@ -493,22 +431,21 @@ export default function DashboardPage() {
                 <TrendingUp className="h-8 w-8 text-white" />
               </div>
               <Badge className="bg-white/20 dark:bg-white/15 text-white border-white/30 dark:border-white/20 backdrop-blur-sm px-3 py-1">
-                {creditPerformancePercentage > 70 ? "Pozitif" : "Gelişim"}
+                {metrics.creditPerformancePercentage > 70 ? "Pozitif" : "Gelişim"}
               </Badge>
             </div>
             <h3 className="font-bold text-2xl mb-3 drop-shadow-md">Ödeme Performansı</h3>
             <p className="text-4xl font-black mb-4 drop-shadow-lg">
-              {formatPercent(creditPerformancePercentage / 100)}
+              {formatPercent(metrics.creditPerformancePercentage / 100)}
             </p>
             <p className="text-sm text-emerald-100 dark:text-emerald-50 leading-relaxed">
-              Aktif kredilerinizde{" "}
-              <span className="font-semibold text-white">{credits.filter((c) => c.status === "active").length}</span>{" "}
-              kredi takip ediliyor
+              Aktif kredilerinizde <span className="font-semibold text-white">{metrics.totalCredits}</span> kredi takip
+              ediliyor
             </p>
             <div className="mt-6 w-full h-2 bg-white/20 dark:bg-white/15 rounded-full overflow-hidden">
               <div
                 className="h-2 bg-white dark:bg-white/90 rounded-full transition-all duration-1000 ease-out shadow-sm"
-                style={{ width: `${creditPerformancePercentage}%` }}
+                style={{ width: `${metrics.creditPerformancePercentage}%` }}
               ></div>
             </div>
           </CardContent>
@@ -522,17 +459,17 @@ export default function DashboardPage() {
                 <DollarSign className="h-8 w-8 text-white" />
               </div>
               <Badge className="bg-white/20 dark:bg-white/15 text-white border-white/30 dark:border-white/20 backdrop-blur-sm px-3 py-1">
-                {averageInterestRate > 15 ? "Yüksek" : "Stabil"}
+                {metrics.averageInterestRate > 15 ? "Yüksek" : "Stabil"}
               </Badge>
             </div>
             <h3 className="font-bold text-2xl mb-3 drop-shadow-md">Ortalama Faiz</h3>
-            <p className="text-4xl font-black mb-4 drop-shadow-lg">{formatPercent(averageInterestRate)}</p>
+            <p className="text-4xl font-black mb-4 drop-shadow-lg">{formatPercent(metrics.averageInterestRate)}</p>
             <p className="text-sm text-blue-100 dark:text-blue-50 leading-relaxed">
               Piyasa ortalamasının{" "}
               <span
-                className={`font-semibold ${averageInterestRate > 15 ? "text-red-200 dark:text-red-100" : "text-green-200 dark:text-green-100"}`}
+                className={`font-semibold ${metrics.averageInterestRate > 15 ? "text-red-200 dark:text-red-100" : "text-green-200 dark:text-green-100"}`}
               >
-                {averageInterestRate > 15 ? "üzerinde" : "altında"}
+                {metrics.averageInterestRate > 15 ? "üzerinde" : "altında"}
               </span>
             </p>
             <div className="mt-6 flex items-center gap-2">
@@ -554,10 +491,9 @@ export default function DashboardPage() {
               </Badge>
             </div>
             <h3 className="font-bold text-2xl mb-3 drop-shadow-md">Aylık Yük</h3>
-            <p className="text-4xl font-black mb-4 drop-shadow-lg">{formatCurrency(monthlyPayment)}</p>
+            <p className="text-4xl font-black mb-4 drop-shadow-lg">{formatCurrency(metrics.monthlyPayment)}</p>
             <p className="text-sm text-purple-100 dark:text-purple-50 leading-relaxed">
-              <span className="font-semibold text-white">{credits.filter((c) => c.status === "active").length}</span>{" "}
-              aktif krediden toplam aylık ödeme
+              <span className="font-semibold text-white">{metrics.totalCredits}</span> aktif krediden toplam aylık ödeme
             </p>
             <div className="mt-6 grid grid-cols-3 gap-2">
               <div className="text-center">
@@ -589,8 +525,8 @@ export default function DashboardPage() {
           </CardHeader>
           <CardContent>
             <div className="h-80">
-              {bankChartData ? (
-                <Doughnut data={bankChartData} options={chartOptions} />
+              {chartData.bankChartData ? (
+                <Doughnut data={chartData.bankChartData} options={chartOptions} />
               ) : (
                 <div className="flex items-center justify-center h-full text-gray-500 dark:text-gray-400">
                   Veri bulunmamaktadır
@@ -611,8 +547,8 @@ export default function DashboardPage() {
           </CardHeader>
           <CardContent>
             <div className="h-80">
-              {creditTypeChartData ? (
-                <Doughnut data={creditTypeChartData} options={chartOptions} />
+              {chartData.creditTypeChartData ? (
+                <Doughnut data={chartData.creditTypeChartData} options={chartOptions} />
               ) : (
                 <div className="flex items-center justify-center h-full text-gray-500 dark:text-gray-400">
                   Veri bulunmamaktadır
@@ -625,9 +561,7 @@ export default function DashboardPage() {
 
       <Card className="shadow-lg hover:shadow-xl dark:shadow-gray-900/20 dark:hover:shadow-gray-900/30 transition-shadow duration-300 rounded-xl border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800">
         <CardHeader>
-          <CardTitle className="text-gray-900 dark:text-gray-100 flex items-center gap-2">
-            Aktif Kredilerim
-          </CardTitle>
+          <CardTitle className="text-gray-900 dark:text-gray-100 flex items-center gap-2">Aktif Kredilerim</CardTitle>
           <CardDescription className="text-gray-600 dark:text-gray-400">
             Güncel kredi durumunuz ve ödeme bilgileri.
           </CardDescription>
@@ -650,10 +584,10 @@ export default function DashboardPage() {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {credits
-                  .filter((c) => c.status === "active")
+                {dashboardData?.credits
+                  .filter((c: any) => c.status === "active")
                   .slice(0, 5)
-                  .map((kredi, index) => {
+                  .map((kredi: any, index: number) => {
                     const progressPercentage = kredi.payment_progress || 0
                     return (
                       <TableRow
@@ -728,7 +662,7 @@ export default function DashboardPage() {
                   })}
               </TableBody>
             </Table>
-            {credits.filter((c) => c.status === "active").length === 0 && (
+            {dashboardData?.credits.filter((c: any) => c.status === "active").length === 0 && (
               <div className="text-center py-8 text-gray-500 dark:text-gray-400">
                 Aktif kredi bulunmamaktadır.
                 <div className="mt-4">
@@ -741,14 +675,16 @@ export default function DashboardPage() {
                 </div>
               </div>
             )}
-            {credits.filter((c) => c.status === "active").length > 5 && (
+            {dashboardData?.credits.filter((c: any) => c.status === "active").length > 5 && (
               <div className="mt-4 text-center">
                 <Link
                   href="/uygulama/krediler"
                   className="inline-flex items-center justify-center gap-2 px-4 py-2 bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 dark:from-emerald-400 dark:to-teal-500 dark:hover:from-emerald-500 dark:hover:to-teal-600 text-white font-medium rounded-lg shadow-md hover:shadow-lg dark:shadow-emerald-900/20 transition-all duration-200 text-sm"
                 >
                   <ArrowUpRight className="h-4 w-4" />
-                  <span>Tüm Kredileri Gör ({credits.filter((c) => c.status === "active").length})</span>
+                  <span>
+                    Tüm Kredileri Gör ({dashboardData?.credits.filter((c: any) => c.status === "active").length})
+                  </span>
                 </Link>
               </div>
             )}

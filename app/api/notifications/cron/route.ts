@@ -3,10 +3,25 @@ import { supabase } from "@/lib/supabase"
 
 export async function GET(request: NextRequest) {
   try {
-    // Cron job güvenlik kontrolü (isteğe bağlı)
     const authHeader = request.headers.get("authorization")
-    if (authHeader !== `Bearer ${process.env.CRON_SECRET}`) {
+    const expectedAuth = `Bearer ${process.env.CRON_SECRET}`
+
+    if (!process.env.CRON_SECRET) {
+      console.error("CRON_SECRET not configured")
+      return NextResponse.json({ error: "Server configuration error" }, { status: 500 })
+    }
+
+    if (!authHeader || authHeader !== expectedAuth) {
+      console.error("Unauthorized cron access attempt")
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
+    }
+
+    if (process.env.NODE_ENV === "production") {
+      const origin = request.headers.get("origin")
+      const userAgent = request.headers.get("user-agent")
+
+      // Log for monitoring
+      console.log(`Cron job triggered - Origin: ${origin}, User-Agent: ${userAgent}`)
     }
 
     // Aktif kullanıcıları al (e-posta bildirimleri açık olanlar)
@@ -38,7 +53,10 @@ export async function GET(request: NextRequest) {
         if (user.email_3_days_before) {
           const response = await fetch(`${process.env.NEXT_PUBLIC_SITE_URL}/api/notifications/send-reminders`, {
             method: "POST",
-            headers: { "Content-Type": "application/json" },
+            headers: {
+              "Content-Type": "application/json",
+              "User-Agent": "KrediTakip-Cron/1.0",
+            },
             body: JSON.stringify({ userId: user.user_id, type: "3_days_before" }),
           })
 
@@ -52,7 +70,10 @@ export async function GET(request: NextRequest) {
         if (user.email_1_day_before) {
           const response = await fetch(`${process.env.NEXT_PUBLIC_SITE_URL}/api/notifications/send-reminders`, {
             method: "POST",
-            headers: { "Content-Type": "application/json" },
+            headers: {
+              "Content-Type": "application/json",
+              "User-Agent": "KrediTakip-Cron/1.0",
+            },
             body: JSON.stringify({ userId: user.user_id, type: "1_day_before" }),
           })
 
@@ -66,7 +87,10 @@ export async function GET(request: NextRequest) {
         if (user.email_on_due_date) {
           const response = await fetch(`${process.env.NEXT_PUBLIC_SITE_URL}/api/notifications/send-reminders`, {
             method: "POST",
-            headers: { "Content-Type": "application/json" },
+            headers: {
+              "Content-Type": "application/json",
+              "User-Agent": "KrediTakip-Cron/1.0",
+            },
             body: JSON.stringify({ userId: user.user_id, type: "due_date" }),
           })
 
@@ -80,7 +104,10 @@ export async function GET(request: NextRequest) {
         if (user.email_overdue) {
           const response = await fetch(`${process.env.NEXT_PUBLIC_SITE_URL}/api/notifications/send-reminders`, {
             method: "POST",
-            headers: { "Content-Type": "application/json" },
+            headers: {
+              "Content-Type": "application/json",
+              "User-Agent": "KrediTakip-Cron/1.0",
+            },
             body: JSON.stringify({ userId: user.user_id, type: "overdue" }),
           })
 
@@ -90,8 +117,8 @@ export async function GET(request: NextRequest) {
           }
         }
 
-        // Rate limiting için kısa bekleme
-        await new Promise((resolve) => setTimeout(resolve, 100))
+        const delay = Math.min(100 * Math.pow(1.1, results.errors.length), 1000)
+        await new Promise((resolve) => setTimeout(resolve, delay))
       } catch (error) {
         console.error(`Error processing user ${user.user_id}:`, error)
         results.errors.push({
