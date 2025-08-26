@@ -83,6 +83,197 @@ class PDFGenerator {
     this.customLogo = options?.customLogo || null
   }
 
+  private addHeader() {
+    // Premium header with gradient background
+    if (this.isPremium) {
+      this.doc.setFillColor(59, 130, 246)
+      this.doc.rect(0, 0, this.pageWidth, 60, "F")
+
+      // Gradient effect
+      this.doc.setFillColor(37, 99, 235)
+      this.doc.rect(0, 0, this.pageWidth, 30, "F")
+    } else {
+      this.doc.setFillColor(59, 130, 246)
+      this.doc.rect(0, 0, this.pageWidth, 50, "F")
+    }
+
+    // Logo placeholder
+    if (this.customLogo) {
+      // Custom logo would be added here
+      this.doc.setFillColor(255, 255, 255)
+      this.doc.circle(this.margin + 20, 25, 15, "F")
+    }
+
+    // Title
+    this.doc.setTextColor(255, 255, 255)
+    this.doc.setFontSize(this.isPremium ? 24 : 20)
+    this.doc.setFont("helvetica", "bold")
+    this.doc.text("KREDİ TAKİP RAPORU", this.margin + (this.customLogo ? 50 : 20), this.isPremium ? 35 : 30)
+
+    // Subtitle
+    this.doc.setFontSize(this.isPremium ? 12 : 10)
+    this.doc.setFont("helvetica", "normal")
+    const reportDate = format(new Date(), "dd/MM/yyyy HH:mm")
+    this.doc.text(`Rapor Tarihi: ${reportDate}`, this.margin + (this.customLogo ? 50 : 20), this.isPremium ? 50 : 42)
+
+    // Premium badge
+    if (this.isPremium) {
+      this.doc.setFillColor(251, 191, 36)
+      this.doc.roundedRect(this.pageWidth - this.margin - 80, 15, 70, 20, 10, 10, "F")
+      this.doc.setTextColor(0, 0, 0)
+      this.doc.setFontSize(10)
+      this.doc.setFont("helvetica", "bold")
+      this.doc.text("PREMIUM", this.pageWidth - this.margin - 45, 27, { align: "center" })
+    }
+
+    this.currentY = this.isPremium ? 80 : 70
+  }
+
+  private addFooter() {
+    const footerY = this.pageHeight - 40
+
+    // Footer background
+    this.doc.setFillColor(248, 250, 252)
+    this.doc.rect(0, footerY, this.pageWidth, 40, "F")
+
+    // Footer line
+    this.doc.setDrawColor(229, 231, 235)
+    this.doc.setLineWidth(1)
+    this.doc.line(this.margin, footerY, this.pageWidth - this.margin, footerY)
+
+    // Footer text
+    this.doc.setTextColor(107, 114, 128)
+    this.doc.setFontSize(8)
+    this.doc.setFont("helvetica", "normal")
+
+    // Left side - Company info
+    this.doc.text("KrediTakip.com.tr", this.margin, footerY + 20)
+    this.doc.text("Profesyonel Kredi Yönetim Sistemi", this.margin, footerY + 30)
+
+    // Right side - Page number
+    const pageNum = this.doc.internal.getCurrentPageInfo().pageNumber
+    this.doc.text(`Sayfa ${pageNum}`, this.pageWidth - this.margin - 40, footerY + 20)
+
+    // Premium watermark
+    if (this.isPremium) {
+      this.doc.setTextColor(251, 191, 36)
+      this.doc.setFont("helvetica", "bold")
+      this.doc.text("PREMIUM RAPOR", this.pageWidth - this.margin - 80, footerY + 30)
+    }
+  }
+
+  private checkPageBreak(requiredHeight: number) {
+    if (this.currentY + requiredHeight > this.pageHeight - 80) {
+      this.addPage()
+    }
+  }
+
+  private addPage() {
+    this.doc.addPage()
+    this.currentY = this.margin + 20
+    this.addHeader()
+    this.addFooter()
+  }
+
+  private addBankLogo(x: number, y: number, bankName: string, size: number) {
+    // Simple colored circle as bank logo placeholder
+    const bankColors: { [key: string]: [number, number, number] } = {
+      "Ziraat Bankası": [0, 128, 0],
+      "İş Bankası": [0, 0, 255],
+      "Garanti BBVA": [255, 165, 0],
+      Akbank: [255, 0, 0],
+      "Yapı Kredi": [128, 0, 128],
+      Halkbank: [255, 215, 0],
+      VakıfBank: [139, 69, 19],
+      TEB: [0, 191, 255],
+      "ING Bank": [255, 140, 0],
+      "QNB Finansbank": [128, 0, 0],
+    }
+
+    const color = bankColors[bankName] || [107, 114, 128]
+    this.doc.setFillColor(...color)
+    this.doc.circle(x + size / 2, y + size / 2, size / 2, "F")
+
+    // Bank initial
+    this.doc.setTextColor(255, 255, 255)
+    this.doc.setFontSize(size * 0.6)
+    this.doc.setFont("helvetica", "bold")
+    const initial = bankName.charAt(0).toUpperCase()
+    this.doc.text(initial, x + size / 2, y + size / 2 + 2, { align: "center" })
+  }
+
+  private calculateBankDistribution() {
+    if (!this.data.credits || this.data.credits.length === 0) return []
+
+    const bankMap = new Map()
+    let totalAmount = 0
+
+    this.data.credits.forEach((credit: any) => {
+      const bankName = credit.bankName || "Bilinmeyen"
+      const amount = credit.remainingDebt || 0
+
+      if (bankMap.has(bankName)) {
+        const existing = bankMap.get(bankName)
+        bankMap.set(bankName, {
+          name: bankName,
+          count: existing.count + 1,
+          amount: existing.amount + amount,
+        })
+      } else {
+        bankMap.set(bankName, {
+          name: bankName,
+          count: 1,
+          amount: amount,
+        })
+      }
+
+      totalAmount += amount
+    })
+
+    return Array.from(bankMap.values())
+      .map((bank) => ({
+        ...bank,
+        percentage: totalAmount > 0 ? (bank.amount / totalAmount) * 100 : 0,
+      }))
+      .sort((a, b) => b.amount - a.amount)
+  }
+
+  private calculateCreditTypeDistribution() {
+    if (!this.data.credits || this.data.credits.length === 0) return []
+
+    const typeMap = new Map()
+    let totalAmount = 0
+
+    this.data.credits.forEach((credit: any) => {
+      const creditType = credit.creditType || "Diğer"
+      const amount = credit.remainingDebt || 0
+
+      if (typeMap.has(creditType)) {
+        const existing = typeMap.get(creditType)
+        typeMap.set(creditType, {
+          type: creditType,
+          count: existing.count + 1,
+          amount: existing.amount + amount,
+        })
+      } else {
+        typeMap.set(creditType, {
+          type: creditType,
+          count: 1,
+          amount: amount,
+        })
+      }
+
+      totalAmount += amount
+    })
+
+    return Array.from(typeMap.values())
+      .map((type) => ({
+        ...type,
+        percentage: totalAmount > 0 ? (type.amount / totalAmount) * 100 : 0,
+      }))
+      .sort((a, b) => b.amount - a.amount)
+  }
+
   private addMetricCards(
     metrics: Array<{
       title: string
