@@ -525,8 +525,7 @@ class PDFGenerator {
 
     this.currentY = Math.max(detailY, rightDetailY) + (this.isPremium ? 25 : 20)
 
-    // Enhanced separator line with premium styling
-    if (index < Math.min(this.data.credits.length - 1, 9)) {
+    if (index < this.data.credits.length - 1) {
       if (this.isPremium) {
         // Gradient separator line
         this.doc.setDrawColor(200, 200, 200)
@@ -1048,7 +1047,7 @@ class PDFGenerator {
             ? ["Banka", "Kredi Turu", "Faiz Orani", "Aylik Faiz", "Yillik Faiz", "Risk"]
             : ["Banka", "Kredi Turu", "Faiz Orani", "Aylik Faiz", "Yillik Faiz"]
 
-          const creditsToAnalyze = this.data.credits.slice(0, this.isPremium ? 20 : 15)
+          const creditsToAnalyze = this.data.credits
           const rows = creditsToAnalyze.map((credit: any) => {
             const monthlyInterest = ((credit.remainingDebt || 0) * (credit.interestRate || 0)) / 1200
             const yearlyInterest = monthlyInterest * 12
@@ -1075,17 +1074,6 @@ class PDFGenerator {
             showTotals: this.isPremium,
             highlightBest: this.isPremium,
           })
-
-          if (this.data.credits.length > (this.isPremium ? 20 : 15)) {
-            this.doc.setFontSize(10)
-            this.doc.setTextColor(107, 114, 128)
-            this.doc.text(
-              `... ve ${this.data.credits.length - (this.isPremium ? 20 : 15)} kredi daha`,
-              this.margin + 20,
-              this.currentY,
-            )
-            this.currentY += 20
-          }
         }
       },
       "warning",
