@@ -4,7 +4,7 @@ import type React from "react"
 import { useState } from "react"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
 import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Card, CardContent } from "@/components/ui/card"
 import { Label } from "@/components/ui/label"
 import { Input } from "@/components/ui/input"
 import { Checkbox } from "@/components/ui/checkbox"
@@ -16,8 +16,6 @@ import {
   CalendarIcon,
   Download,
   FileText,
-  Settings,
-  BarChart3,
   CreditCard,
   Loader2,
   X,
@@ -51,30 +49,12 @@ export default function PDFReportModal({ userData, trigger }: PDFReportModalProp
   const [currentStep, setCurrentStep] = useState(1)
   const { toast } = useToast()
 
-  // Form state
   const [reportTitle, setReportTitle] = useState("Kredi Portfoy Raporu")
   const [dateFrom, setDateFrom] = useState<Date>()
   const [dateTo, setDateTo] = useState<Date>(new Date())
   const [reportPeriod, setReportPeriod] = useState("last6Months")
-
-  // Credit selection
   const [selectedCredits, setSelectedCredits] = useState<string[]>([])
-  const [includeSections, setIncludeSections] = useState({
-    summary: true,
-    creditDetails: true,
-    paymentSchedule: true,
-    interestAnalysis: true,
-    riskAssessment: false,
-  })
-
-  // Chart options
-  const [chartOptions, setChartOptions] = useState({
-    paymentTrend: true,
-    debtDistribution: true,
-    bankComparison: true,
-    interestComparison: true,
-    paymentProgress: true,
-  })
+  const [reportType, setReportType] = useState("comprehensive")
 
   const handlePeriodChange = (period: string) => {
     setReportPeriod(period)
@@ -106,28 +86,16 @@ export default function PDFReportModal({ userData, trigger }: PDFReportModalProp
     setSelectedCredits((prev) => (checked ? [...prev, creditId] : prev.filter((id) => id !== creditId)))
   }
 
-  const handleSectionToggle = (section: string, checked: boolean) => {
-    setIncludeSections((prev) => ({ ...prev, [section]: checked }))
-  }
-
-  const handleChartToggle = (chart: string, checked: boolean) => {
-    setChartOptions((prev) => ({ ...prev, [chart]: checked }))
-  }
-
   const handleGenerateReport = async () => {
     setIsGenerating(true)
 
     try {
-      // Safely get credits array
       const creditsArray = userData.credits || []
-
-      // Filter selected credits
       const filteredCredits =
         selectedCredits.length === 0
           ? creditsArray
           : creditsArray.filter((credit) => selectedCredits.includes(credit.id))
 
-      // Calculate summary metrics safely
       const totalCredits = filteredCredits.length
       const activeCredits = filteredCredits.filter((c) => c.status === "active").length
       const closedCredits = totalCredits - activeCredits
@@ -136,76 +104,6 @@ export default function PDFReportModal({ userData, trigger }: PDFReportModalProp
       const monthlyPayment = filteredCredits
         .filter((c) => c.status === "active")
         .reduce((sum, c) => sum + (c.monthlyPayment || c.monthly_payment || 0), 0)
-
-      // Prepare chart data
-      const chartData: any = {}
-
-      if (chartOptions.paymentTrend && userData.payments) {
-        const monthlyData = userData.payments
-          .filter((payment) => payment.status === "paid")
-          .map((payment) => ({
-            month: payment.date ? format(new Date(payment.date), "MMMM", { locale: tr }) : "",
-            amount: payment.amount || 0,
-            bank: payment.bankName || "",
-            type: "payment",
-          }))
-        chartData.monthlyPayments = monthlyData
-      }
-
-      if (chartOptions.debtDistribution) {
-        const distributionData = filteredCredits.reduce((acc: any[], credit) => {
-          const bankName = credit.bankName || credit.banks?.name || "Bilinmeyen Banka"
-          const existing = acc.find((item) => item.name === bankName)
-          const debtAmount = credit.remainingDebt || credit.remaining_debt || 0
-
-          if (existing) {
-            existing.value += debtAmount
-            existing.count += 1
-          } else {
-            acc.push({
-              name: bankName,
-              value: debtAmount,
-              count: 1,
-            })
-          }
-          return acc
-        }, [])
-        chartData.creditDistribution = distributionData
-      }
-
-      if (chartOptions.interestComparison) {
-        const interestData = filteredCredits.map((credit) => ({
-          bank: credit.bankName || credit.banks?.name || "Bilinmeyen",
-          creditType: credit.creditType || credit.credit_types?.name || "Diger",
-          rate: credit.interestRate || credit.interest_rate || 0,
-          amount: credit.remainingDebt || credit.remaining_debt || 0,
-          monthlyInterest:
-            ((credit.remainingDebt || credit.remaining_debt || 0) *
-              (credit.interestRate || credit.interest_rate || 0)) /
-            1200,
-        }))
-        chartData.interestAnalysis = interestData
-      }
-
-      // Bank distribution for charts
-      if (chartOptions.bankComparison) {
-        const bankData = filteredCredits.reduce((acc: any[], credit) => {
-          const bankName = credit.bankName || credit.banks?.name || "Bilinmeyen Banka"
-          const existing = acc.find((item) => item.bank === bankName)
-          const debtAmount = credit.remainingDebt || credit.remaining_debt || 0
-
-          if (existing) {
-            existing.amount += debtAmount
-          } else {
-            acc.push({
-              bank: bankName,
-              amount: debtAmount,
-            })
-          }
-          return acc
-        }, [])
-        chartData.bankDistribution = bankData
-      }
 
       const sanitizeText = (text: string) => {
         return text
@@ -223,9 +121,9 @@ export default function PDFReportModal({ userData, trigger }: PDFReportModalProp
           .replace(/Ç/g, "C")
       }
 
-      // Generate PDF report data with safe defaults
       const reportData = {
         reportTitle: sanitizeText(reportTitle),
+        reportType,
         period: {
           from: dateFrom,
           to: dateTo,
@@ -251,14 +149,11 @@ export default function PDFReportModal({ userData, trigger }: PDFReportModalProp
           status: credit.status || "unknown",
           amount: credit.amount || credit.initial_amount || 0,
         })),
-        selectedReports: Object.keys(chartOptions).filter((key) => chartOptions[key as keyof typeof chartOptions]),
-        chartData,
         selectedBanks: [
           ...new Set(filteredCredits.map((c) => sanitizeText(c.bankName || c.banks?.name || "")).filter(Boolean)),
         ],
       }
 
-      // Call PDF generator
       await generatePDFReport(reportData)
 
       toast({
@@ -280,33 +175,16 @@ export default function PDFReportModal({ userData, trigger }: PDFReportModalProp
     }
   }
 
-  const selectedSectionsCount = Object.values(includeSections).filter(Boolean).length
-  const selectedChartsCount = Object.values(chartOptions).filter(Boolean).length
-
   const resetModal = () => {
     setReportTitle("Kredi Portfoy Raporu")
     setDateFrom(undefined)
     setDateTo(new Date())
     setReportPeriod("last6Months")
     setSelectedCredits([])
-    setIncludeSections({
-      summary: true,
-      creditDetails: true,
-      paymentSchedule: true,
-      interestAnalysis: true,
-      riskAssessment: false,
-    })
-    setChartOptions({
-      paymentTrend: true,
-      debtDistribution: true,
-      bankComparison: true,
-      interestComparison: true,
-      paymentProgress: true,
-    })
+    setReportType("comprehensive")
     setCurrentStep(1)
   }
 
-  // Safe calculations for display
   const creditsArray = userData.credits || []
   const totalCreditsCount = creditsArray.length
   const totalDebtAmount = creditsArray.reduce((sum, c) => sum + (c.remainingDebt || c.remaining_debt || 0), 0)
@@ -315,7 +193,7 @@ export default function PDFReportModal({ userData, trigger }: PDFReportModalProp
     .reduce((sum, c) => sum + (c.monthlyPayment || c.monthly_payment || 0), 0)
 
   const nextStep = () => {
-    if (currentStep < 4) {
+    if (currentStep < 3) {
       setCurrentStep(currentStep + 1)
     }
   }
@@ -331,10 +209,8 @@ export default function PDFReportModal({ userData, trigger }: PDFReportModalProp
       case 1:
         return reportTitle.trim() !== ""
       case 2:
-        return true // Can proceed even with no credits selected (will use all)
+        return true
       case 3:
-        return selectedSectionsCount > 0 || selectedChartsCount > 0
-      case 4:
         return true
       default:
         return false
@@ -370,14 +246,14 @@ export default function PDFReportModal({ userData, trigger }: PDFReportModalProp
             <div>
               <div>PDF Rapor Olustur</div>
               <div className="text-sm font-normal text-gray-500 mt-1">
-                Kredi portfoyunuz icin detayli rapor hazirlayın - Adim {currentStep}/4
+                Kredi portfoyunuz icin detayli rapor hazirlayın - Adim {currentStep}/3
               </div>
             </div>
           </DialogTitle>
         </DialogHeader>
 
         <div className="flex items-center justify-between py-4 px-2">
-          {[1, 2, 3, 4].map((step) => (
+          {[1, 2, 3].map((step) => (
             <div key={step} className="flex items-center">
               <div
                 className={cn(
@@ -391,7 +267,7 @@ export default function PDFReportModal({ userData, trigger }: PDFReportModalProp
               >
                 {step < currentStep ? <Check className="h-4 w-4" /> : step}
               </div>
-              {step < 4 && (
+              {step < 3 && (
                 <div
                   className={cn(
                     "w-16 h-0.5 mx-2 transition-colors",
@@ -429,6 +305,22 @@ export default function PDFReportModal({ userData, trigger }: PDFReportModalProp
                       />
                     </div>
 
+                    <div className="space-y-2">
+                      <Label className="text-sm font-medium text-gray-700">Rapor Tipi</Label>
+                      <Select value={reportType} onValueChange={setReportType}>
+                        <SelectTrigger className="h-11 border-gray-300 focus:border-emerald-500">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="comprehensive">Kapsamli Rapor</SelectItem>
+                          <SelectItem value="summary">Ozet Rapor</SelectItem>
+                          <SelectItem value="detailed">Detayli Analiz</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div className="space-y-2">
                       <Label className="text-sm font-medium text-gray-700">Rapor Donemi</Label>
                       <Select value={reportPeriod} onValueChange={handlePeriodChange}>
@@ -507,7 +399,7 @@ export default function PDFReportModal({ userData, trigger }: PDFReportModalProp
                 <div className="w-8 h-8 bg-emerald-600 text-white rounded-full flex items-center justify-center text-sm font-semibold">
                   2
                 </div>
-                <h3 className="text-lg font-semibold text-gray-900">Kredi Secimi</h3>
+                <h3 className="text-lg font-semibold text-gray-900">Banka ve Kredi Secimi</h3>
               </div>
 
               <Card className="border border-gray-200 shadow-sm">
@@ -582,86 +474,6 @@ export default function PDFReportModal({ userData, trigger }: PDFReportModalProp
                 <div className="w-8 h-8 bg-emerald-600 text-white rounded-full flex items-center justify-center text-sm font-semibold">
                   3
                 </div>
-                <h3 className="text-lg font-semibold text-gray-900">Icerik Secimi</h3>
-              </div>
-
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                {/* Report Sections */}
-                <Card className="border border-gray-200 shadow-sm">
-                  <CardHeader className="pb-4">
-                    <CardTitle className="flex items-center gap-2 text-base">
-                      <Settings className="h-5 w-5 text-gray-600" />
-                      Rapor Bolumleri
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent className="space-y-3">
-                    {Object.entries(includeSections).map(([key, value]) => (
-                      <div key={key} className="flex items-center space-x-3 p-3 bg-gray-50 rounded-lg">
-                        <Checkbox
-                          id={key}
-                          checked={value}
-                          onCheckedChange={(checked) => handleSectionToggle(key, checked as boolean)}
-                          className="border-gray-400"
-                        />
-                        <Label htmlFor={key} className="cursor-pointer text-sm font-medium text-gray-900 flex-1">
-                          {key === "summary" && "Genel Ozet"}
-                          {key === "creditDetails" && "Kredi Detaylari"}
-                          {key === "paymentSchedule" && "Odeme Plani"}
-                          {key === "interestAnalysis" && "Faiz Analizi"}
-                          {key === "riskAssessment" && "Risk Degerlendirmesi"}
-                        </Label>
-                      </div>
-                    ))}
-                  </CardContent>
-                </Card>
-
-                {/* Chart Options */}
-                <Card className="border border-gray-200 shadow-sm">
-                  <CardHeader className="pb-4">
-                    <CardTitle className="flex items-center gap-2 text-base">
-                      <BarChart3 className="h-5 w-5 text-gray-600" />
-                      Grafik Secimi
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent className="space-y-3">
-                    {Object.entries(chartOptions).map(([key, value]) => (
-                      <div key={key} className="flex items-start space-x-3 p-3 bg-gray-50 rounded-lg">
-                        <Checkbox
-                          id={key}
-                          checked={value}
-                          onCheckedChange={(checked) => handleChartToggle(key, checked as boolean)}
-                          className="mt-0.5 border-gray-400"
-                        />
-                        <div className="flex-1">
-                          <Label htmlFor={key} className="cursor-pointer font-medium text-sm text-gray-900 block mb-1">
-                            {key === "paymentTrend" && "Odeme Trendi"}
-                            {key === "debtDistribution" && "Borc Dagilimi"}
-                            {key === "bankComparison" && "Banka Karsilastirmasi"}
-                            {key === "interestComparison" && "Faiz oranlari ve maliyet analizi"}
-                            {key === "paymentProgress" && "Odeme Ilerleme durumu takibi"}
-                          </Label>
-                          <p className="text-xs text-gray-500">
-                            {key === "paymentTrend" && "Aylik odeme miktarlarinin trend analizi"}
-                            {key === "debtDistribution" && "Bankalara gore borc dagilim grafigi"}
-                            {key === "bankComparison" && "Bankalar arasi detayli karsilastirma"}
-                            {key === "interestComparison" && "Faiz oranlari ve maliyet analizi"}
-                            {key === "paymentProgress" && "Odeme ilerleme durumu takibi"}
-                          </p>
-                        </div>
-                      </div>
-                    ))}
-                  </CardContent>
-                </Card>
-              </div>
-            </div>
-          )}
-
-          {currentStep === 4 && (
-            <div className="space-y-6">
-              <div className="flex items-center gap-3">
-                <div className="w-8 h-8 bg-emerald-600 text-white rounded-full flex items-center justify-center text-sm font-semibold">
-                  4
-                </div>
                 <h3 className="text-lg font-semibold text-gray-900">Ozet ve Olustur</h3>
               </div>
 
@@ -687,7 +499,7 @@ export default function PDFReportModal({ userData, trigger }: PDFReportModalProp
                         <div className="absolute bottom-0 left-0 w-16 h-16 bg-white/5 rounded-full translate-y-8 -translate-x-8"></div>
                         <div className="relative z-10">
                           <div className="flex items-center justify-between mb-3">
-                            <BarChart3 className="h-8 w-8 text-white/80" />
+                            <FileText className="h-8 w-8 text-white/80" />
                             <div className="w-2 h-2 bg-white/40 rounded-full"></div>
                           </div>
                           <div className="text-3xl font-bold mb-1">₺{Math.round(totalDebtAmount / 1000)}K</div>
@@ -716,20 +528,32 @@ export default function PDFReportModal({ userData, trigger }: PDFReportModalProp
                           <div className="flex items-center gap-8">
                             <div className="flex items-center gap-3">
                               <div className="w-10 h-10 bg-emerald-100 rounded-xl flex items-center justify-center">
-                                <Settings className="h-5 w-5 text-emerald-600" />
+                                <FileText className="h-5 w-5 text-emerald-600" />
                               </div>
                               <div>
-                                <div className="font-semibold text-gray-900">{selectedSectionsCount}</div>
-                                <div className="text-sm text-gray-600">Icerik Bolumu</div>
+                                <div className="font-semibold text-gray-900">
+                                  {reportType === "comprehensive"
+                                    ? "Kapsamli"
+                                    : reportType === "summary"
+                                      ? "Ozet"
+                                      : "Detayli"}
+                                </div>
+                                <div className="text-sm text-gray-600">Rapor Tipi</div>
                               </div>
                             </div>
                             <div className="flex items-center gap-3">
                               <div className="w-10 h-10 bg-blue-100 rounded-xl flex items-center justify-center">
-                                <BarChart3 className="h-5 w-5 text-blue-600" />
+                                <CalendarIcon className="h-5 w-5 text-blue-600" />
                               </div>
                               <div>
-                                <div className="font-semibold text-gray-900">{selectedChartsCount}</div>
-                                <div className="text-sm text-gray-600">Grafik</div>
+                                <div className="font-semibold text-gray-900">
+                                  {reportPeriod === "last6Months"
+                                    ? "6 Ay"
+                                    : reportPeriod === "thisYear"
+                                      ? "Bu Yil"
+                                      : "Ozel"}
+                                </div>
+                                <div className="text-sm text-gray-600">Donem</div>
                               </div>
                             </div>
                           </div>
@@ -786,7 +610,7 @@ export default function PDFReportModal({ userData, trigger }: PDFReportModalProp
           </Button>
 
           <div className="flex items-center gap-3">
-            {currentStep < 4 ? (
+            {currentStep < 3 ? (
               <Button
                 onClick={nextStep}
                 disabled={!canProceedToNextStep()}
