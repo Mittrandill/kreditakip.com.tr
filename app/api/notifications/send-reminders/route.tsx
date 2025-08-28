@@ -8,7 +8,6 @@ const mailerSend = new MailerSend({
   apiKey: process.env.MAILERSEND_API_KEY || "",
 })
 
-// E-posta template'i
 function createEmailTemplate(
   firstName: string,
   bankName: string,
@@ -20,40 +19,50 @@ function createEmailTemplate(
   let subject = ""
   let title = ""
   let message = ""
-  let urgencyColor = "#3b82f6" // blue
+  let urgencyColor = "#10b981"
+  let urgencyBg = "#10b981"
   let urgencyText = "Bilgilendirme"
+  let iconEmoji = "ℹ️"
 
   switch (type) {
     case "3_days_before":
       subject = `Ödeme Hatırlatması - 3 Gün Kaldı`
       title = "Ödeme Hatırlatması"
       message = `${bankName} bankasından ${installmentNumber}. taksit ödemenizin vadesi 3 gün sonra (${dueDate}) dolacak.`
-      urgencyColor = "#f59e0b" // amber
+      urgencyColor = "#f59e0b"
+      urgencyBg = "#f59e0b"
       urgencyText = "3 Gün Kaldı"
+      iconEmoji = "⏰"
       break
 
     case "1_day_before":
       subject = `Ödeme Hatırlatması - Yarın Vade`
       title = "Ödeme Hatırlatması"
       message = `${bankName} bankasından ${installmentNumber}. taksit ödemenizin vadesi yarın (${dueDate}) dolacak.`
-      urgencyColor = "#f97316" // orange
+      urgencyColor = "#f97316"
+      urgencyBg = "#f97316"
       urgencyText = "Yarın Vade"
+      iconEmoji = "⚡"
       break
 
     case "due_date":
       subject = `Ödeme Hatırlatması - Bugün Vade`
       title = "Ödeme Hatırlatması"
       message = `${bankName} bankasından ${installmentNumber}. taksit ödemenizin vadesi bugün (${dueDate}) doluyor.`
-      urgencyColor = "#dc2626" // red
+      urgencyColor = "#dc2626"
+      urgencyBg = "#dc2626"
       urgencyText = "Bugün Vade"
+      iconEmoji = "🚨"
       break
 
     case "overdue":
       subject = `Gecikmiş Ödeme Bildirimi`
       title = "Gecikmiş Ödeme"
       message = `${bankName} bankasından ${installmentNumber}. taksit ödemenizin vadesi (${dueDate}) geçmiş durumda.`
-      urgencyColor = "#dc2626" // red
+      urgencyColor = "#dc2626"
+      urgencyBg = "#dc2626"
       urgencyText = "Vade Geçti"
+      iconEmoji = "❌"
       break
   }
 
@@ -63,202 +72,608 @@ function createEmailTemplate(
       <!DOCTYPE html>
       <html lang="tr">
       <head>
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>${subject}</title>
-        <style>
-          body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
-            line-height: 1.6;
-            color: #333;
-            max-width: 600px;
-            margin: 0 auto;
-            padding: 20px;
-            background-color: #f8fafc;
-          }
-          .container {
-            background: white;
-            border-radius: 12px;
-            padding: 32px;
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
-          }
-          .header {
-            text-align: center;
-            margin-bottom: 32px;
-          }
-          .logo {
-            font-size: 24px;
-            font-weight: bold;
-            color: #1f2937;
-            margin-bottom: 8px;
-          }
-          .urgency-badge {
-            display: inline-block;
-            padding: 6px 12px;
-            border-radius: 20px;
-            font-size: 12px;
-            font-weight: 600;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-            color: white;
-            margin-bottom: 16px;
-          }
-          .title {
-            font-size: 28px;
-            font-weight: bold;
-            color: #1f2937;
-            margin-bottom: 16px;
-          }
-          .greeting {
-            font-size: 16px;
-            color: #6b7280;
-            margin-bottom: 24px;
-          }
-          .payment-card {
-            background: #f8fafc;
-            border: 2px solid #e5e7eb;
-            border-radius: 12px;
-            padding: 24px;
-            margin: 24px 0;
-          }
-          .bank-name {
-            font-size: 18px;
-            font-weight: 600;
-            color: #1f2937;
-            margin-bottom: 8px;
-          }
-          .payment-details {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin: 12px 0;
-          }
-          .detail-label {
-            font-size: 14px;
-            color: #6b7280;
-          }
-          .detail-value {
-            font-size: 16px;
-            font-weight: 600;
-            color: #1f2937;
-          }
-          .amount {
-            font-size: 24px;
-            font-weight: bold;
-            color: #059669;
-          }
-          .message {
-            font-size: 16px;
-            color: #374151;
-            margin: 24px 0;
-            line-height: 1.7;
-          }
-          .cta-button {
-            display: inline-block;
-            background: linear-gradient(135deg, #3b82f6, #1d4ed8);
-            color: white;
-            padding: 12px 24px;
-            border-radius: 8px;
-            text-decoration: none;
-            font-weight: 600;
-            margin: 24px 0;
-            transition: transform 0.2s;
-          }
-          .cta-button:hover {
-            transform: translateY(-1px);
-          }
-          .footer {
-            margin-top: 32px;
-            padding-top: 24px;
-            border-top: 1px solid #e5e7eb;
-            text-align: center;
-            color: #6b7280;
-            font-size: 14px;
-          }
-          .footer-links {
-            margin-top: 16px;
-          }
-          .footer-links a {
-            color: #3b82f6;
-            text-decoration: none;
-            margin: 0 8px;
-          }
-          @media (max-width: 600px) {
-            body {
-              padding: 10px;
-            }
-            .container {
-              padding: 20px;
-            }
-            .payment-details {
-              flex-direction: column;
-              align-items: flex-start;
-              gap: 8px;
-            }
-          }
-        </style>
+          <meta charset="UTF-8">
+          <meta name="viewport" content="width=device-width, initial-scale=1.0">
+          <title>${subject}</title>
+          [if mso]>
+          <noscript>
+              <xml>
+                  <o:OfficeDocumentSettings>
+                      <o:PixelsPerInch>96</o:PixelsPerInch>
+                  </o:OfficeDocumentSettings>
+              </xml>
+          </noscript>
+          <![endif]
+          <style>
+              * {
+                  margin: 0;
+                  padding: 0;
+                  box-sizing: border-box;
+              }
+              
+              body {
+                  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+                  line-height: 1.6;
+                  color: #1e293b;
+                  background-color: #f8fafc;
+                  margin: 0;
+                  padding: 0;
+                  -webkit-font-smoothing: antialiased;
+                  -moz-osx-font-smoothing: grayscale;
+              }
+              
+              .wrapper {
+                  width: 100%;
+                  table-layout: fixed;
+                  background-color: #f1f5f9;
+                  padding: 60px 0;
+              }
+              
+              .main {
+                  width: 100%;
+                  max-width: 600px;
+                  margin: 0 auto;
+                  background-color: #ffffff;
+                  border-radius: 16px;
+                  overflow: hidden;
+                  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.08), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+              }
+              
+              /* Header with Gradient */
+              .header {
+                  background: linear-gradient(135deg, #10b981 0%, #14b8a6 50%, #0d9488 100%);
+                  padding: 48px 40px;
+                  text-align: center;
+                  position: relative;
+                  overflow: hidden;
+              }
+              
+              .header::before {
+                  content: '';
+                  position: absolute;
+                  top: -50%;
+                  right: -50%;
+                  width: 200%;
+                  height: 200%;
+                  background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%);
+                  animation: shimmer 3s ease-in-out infinite;
+              }
+              
+              @keyframes shimmer {
+                  0%, 100% { transform: translateX(-50%) translateY(-50%); }
+                  50% { transform: translateX(-30%) translateY(-30%); }
+              }
+              
+              .logo-wrapper {
+                  position: relative;
+                  z-index: 1;
+                  margin-bottom: 20px;
+              }
+              
+              .logo {
+                  max-width: 150px;
+                  height: auto;
+                  filter: brightness(0) invert(1);
+              }
+              
+              .header-title {
+                  font-size: 28px;
+                  font-weight: 700;
+                  color: #ffffff;
+                  letter-spacing: -0.5px;
+                  margin: 0;
+                  position: relative;
+                  z-index: 1;
+              }
+              
+              .header-subtitle {
+                  font-size: 16px;
+                  color: rgba(255, 255, 255, 0.9);
+                  margin-top: 8px;
+                  font-weight: 400;
+                  position: relative;
+                  z-index: 1;
+              }
+              
+              /* Content Section */
+              .content {
+                  padding: 48px 40px;
+              }
+              
+              .greeting {
+                  font-size: 18px;
+                  color: #475569;
+                  margin-bottom: 32px;
+                  font-weight: 400;
+              }
+              
+              .greeting strong {
+                  color: #1e293b;
+                  font-weight: 600;
+              }
+              
+              /* Modern Payment Card */
+              .payment-card {
+                  background: linear-gradient(145deg, #ffffff 0%, #f8fafc 100%);
+                  border: 1px solid #e2e8f0;
+                  border-radius: 12px;
+                  padding: 32px;
+                  margin-bottom: 32px;
+                  position: relative;
+                  overflow: hidden;
+              }
+              
+              .payment-card::before {
+                  content: '';
+                  position: absolute;
+                  top: 0;
+                  left: 0;
+                  right: 0;
+                  height: 4px;
+                  background: linear-gradient(90deg, ${urgencyColor} 0%, ${urgencyColor} 50%, ${urgencyColor} 100%);
+              }
+              
+              .bank-section {
+                  display: flex;
+                  align-items: center;
+                  margin-bottom: 24px;
+                  padding-bottom: 20px;
+                  border-bottom: 1px solid #f1f5f9;
+              }
+              
+              .bank-icon {
+                  width: 48px;
+                  height: 48px;
+                  background: linear-gradient(135deg, ${urgencyColor} 0%, ${urgencyColor}dd 100%);
+                  border-radius: 12px;
+                  display: flex;
+                  align-items: center;
+                  justify-content: center;
+                  margin-right: 16px;
+                  font-size: 24px;
+                  color: white;
+                  flex-shrink: 0;
+              }
+              
+              .bank-info {
+                  flex: 1;
+              }
+              
+              .bank-label {
+                  font-size: 12px;
+                  color: #94a3b8;
+                  text-transform: uppercase;
+                  letter-spacing: 0.8px;
+                  font-weight: 600;
+                  margin-bottom: 4px;
+              }
+              
+              .bank-name {
+                  font-size: 16px;
+                  color: #1e293b;
+                  font-weight: 600;
+              }
+              
+              /* Amount Display */
+              .amount-section {
+                  text-align: center;
+                  margin: 32px 0;
+              }
+              
+              .amount-label {
+                  font-size: 12px;
+                  color: #94a3b8;
+                  text-transform: uppercase;
+                  letter-spacing: 0.8px;
+                  font-weight: 600;
+                  margin-bottom: 12px;
+              }
+              
+              .amount-wrapper {
+                  display: inline-flex;
+                  align-items: baseline;
+                  gap: 8px;
+              }
+              
+              .amount {
+                  font-size: 42px;
+                  font-weight: 800;
+                  background: linear-gradient(135deg, ${urgencyColor} 0%, ${urgencyColor}dd 100%);
+                  -webkit-background-clip: text;
+                  -webkit-text-fill-color: transparent;
+                  background-clip: text;
+                  letter-spacing: -1px;
+              }
+              
+              .currency {
+                  font-size: 24px;
+                  color: #64748b;
+                  font-weight: 500;
+              }
+              
+              /* Info Grid */
+              .info-grid {
+                  display: table;
+                  width: 100%;
+                  margin-top: 24px;
+              }
+              
+              .info-row {
+                  display: table-row;
+              }
+              
+              .info-item {
+                  display: table-cell;
+                  width: 50%;
+                  padding: 12px;
+                  text-align: center;
+                  background: #f8fafc;
+                  border: 1px solid #f1f5f9;
+              }
+              
+              .info-item:first-child {
+                  border-radius: 8px 0 0 8px;
+                  border-right: none;
+              }
+              
+              .info-item:last-child {
+                  border-radius: 0 8px 8px 0;
+              }
+              
+              .info-label {
+                  font-size: 11px;
+                  color: #94a3b8;
+                  text-transform: uppercase;
+                  letter-spacing: 0.8px;
+                  font-weight: 600;
+                  margin-bottom: 6px;
+              }
+              
+              .info-value {
+                  font-size: 16px;
+                  color: #1e293b;
+                  font-weight: 700;
+              }
+              
+              /* Alert Message Box */
+              .alert-box {
+                  background: #f8fafc;
+                  border: 1px solid #e2e8f0;
+                  border-radius: 12px;
+                  padding: 20px;
+                  margin-bottom: 32px;
+                  position: relative;
+              }
+              
+              .alert-content {
+                  display: flex;
+                  align-items: center;
+                  gap: 16px;
+              }
+              
+              .alert-icon {
+                  width: 40px;
+                  height: 40px;
+                  background: linear-gradient(135deg, ${urgencyColor} 0%, ${urgencyColor}dd 100%);
+                  border-radius: 10px;
+                  display: flex;
+                  align-items: center;
+                  justify-content: center;
+                  flex-shrink: 0;
+                  font-size: 20px;
+                  color: white;
+              }
+              
+              .alert-text-wrapper {
+                  flex: 1;
+              }
+              
+              .alert-title {
+                  font-size: 14px;
+                  font-weight: 600;
+                  color: #1e293b;
+                  margin-bottom: 4px;
+              }
+              
+              .alert-message {
+                  font-size: 14px;
+                  color: #64748b;
+                  line-height: 1.5;
+              }
+              
+              /* CTA Button */
+              .cta-wrapper {
+                  text-align: center;
+                  margin: 40px 0 32px;
+              }
+              
+              .cta-button {
+                  display: inline-block;
+                  padding: 16px 40px;
+                  background: linear-gradient(135deg, ${urgencyColor} 0%, ${urgencyColor}dd 100%);
+                  color: #ffffff;
+                  text-decoration: none;
+                  border-radius: 12px;
+                  font-weight: 600;
+                  font-size: 15px;
+                  letter-spacing: 0.3px;
+                  box-shadow: 0 4px 14px 0 rgba(16, 185, 129, 0.25);
+                  transition: all 0.3s ease;
+                  position: relative;
+                  overflow: hidden;
+              }
+              
+              .cta-button:before {
+                  content: '';
+                  position: absolute;
+                  top: 0;
+                  left: -100%;
+                  width: 100%;
+                  height: 100%;
+                  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+                  transition: left 0.5s ease;
+              }
+              
+              .cta-button:hover {
+                  transform: translateY(-2px);
+                  box-shadow: 0 6px 20px 0 rgba(16, 185, 129, 0.35);
+              }
+              
+              .cta-button:hover:before {
+                  left: 100%;
+              }
+              
+              /* Secondary Links */
+              .secondary-links {
+                  text-align: center;
+                  margin-top: 24px;
+              }
+              
+              .secondary-link {
+                  display: inline-block;
+                  color: ${urgencyColor};
+                  text-decoration: none;
+                  font-size: 14px;
+                  font-weight: 500;
+                  margin: 0 16px;
+                  transition: color 0.2s;
+              }
+              
+              .secondary-link:hover {
+                  color: ${urgencyColor}dd;
+                  text-decoration: underline;
+              }
+              
+              /* Footer */
+              .footer {
+                  padding: 40px;
+                  background: #f8fafc;
+                  border-top: 1px solid #e2e8f0;
+                  text-align: center;
+              }
+              
+              .footer-logo {
+                  width: 32px;
+                  height: 32px;
+                  margin: 0 auto 16px;
+                  opacity: 0.4;
+              }
+              
+              .footer-links {
+                  margin-bottom: 24px;
+              }
+              
+              .footer-link {
+                  display: inline-block;
+                  color: #64748b;
+                  text-decoration: none;
+                  font-size: 13px;
+                  margin: 0 12px;
+                  transition: color 0.2s;
+              }
+              
+              .footer-link:hover {
+                  color: ${urgencyColor};
+              }
+              
+              .footer-divider {
+                  color: #cbd5e1;
+                  margin: 0 8px;
+                  font-size: 10px;
+              }
+              
+              .footer-text {
+                  font-size: 12px;
+                  color: #94a3b8;
+                  line-height: 1.6;
+                  margin-bottom: 16px;
+              }
+              
+              .copyright {
+                  font-size: 11px;
+                  color: #cbd5e1;
+                  margin-top: 20px;
+                  padding-top: 20px;
+                  border-top: 1px solid #e2e8f0;
+              }
+              
+              /* Responsive Design */
+              @media screen and (max-width: 600px) {
+                  .wrapper {
+                      padding: 20px 0;
+                  }
+                  
+                  .main {
+                      border-radius: 0;
+                  }
+                  
+                  .header {
+                      padding: 32px 24px;
+                  }
+                  
+                  .header-title {
+                      font-size: 24px;
+                  }
+                  
+                  .content {
+                      padding: 32px 24px;
+                  }
+                  
+                  .payment-card {
+                      padding: 24px;
+                  }
+                  
+                  .bank-section {
+                      flex-direction: column;
+                      text-align: center;
+                  }
+                  
+                  .bank-icon {
+                      margin: 0 auto 12px;
+                  }
+                  
+                  .amount {
+                      font-size: 36px;
+                  }
+                  
+                  .info-item {
+                      display: block;
+                      width: 100%;
+                      margin-bottom: 8px;
+                      border-radius: 8px !important;
+                      border: 1px solid #f1f5f9 !important;
+                  }
+                  
+                  .footer {
+                      padding: 32px 24px;
+                  }
+                  
+                  .secondary-link {
+                      display: block;
+                      margin: 8px 0;
+                  }
+                  
+                  .footer-link {
+                      display: block;
+                      margin: 8px 0;
+                  }
+                  
+                  .footer-divider {
+                      display: none;
+                  }
+              }
+          </style>
       </head>
       <body>
-        <div class="container">
-          <div class="header">
-            <div class="logo">💳 Kredi Takip</div>
-            <div class="urgency-badge" style="background-color: ${urgencyColor};">
-              ${urgencyText}
-            </div>
-            <h1 class="title">${title}</h1>
+          <div class="wrapper">
+              <table class="main" cellpadding="0" cellspacing="0" role="presentation">
+                  <tr>
+                      <td>
+                           Header with Gradient Background 
+                          <div class="header">
+                              <div class="logo-wrapper">
+                                  <img src="/logo-white.png" alt="Kredi Takip" class="logo">
+                              </div>
+                              <h1 class="header-title">${title}</h1>
+                              <p class="header-subtitle">Finansal takibiniz bizimle güvende</p>
+                          </div>
+                          
+                           Main Content 
+                          <div class="content">
+                              <p class="greeting">
+                                  Merhaba <strong>${firstName || "Değerli Müşterimiz"}</strong>,
+                              </p>
+                              
+                               Modern Payment Card 
+                              <div class="payment-card">
+                                  <div class="bank-section">
+                                      <div class="bank-icon">🏦</div>
+                                      <div class="bank-info">
+                                          <div class="bank-label">Banka</div>
+                                          <div class="bank-name">${bankName}</div>
+                                      </div>
+                                  </div>
+                                  
+                                  <div class="amount-section">
+                                      <div class="amount-label">Ödeme Tutarı</div>
+                                      <div class="amount-wrapper">
+                                          <span class="amount">${amount}</span>
+                                          <span class="currency">₺</span>
+                                      </div>
+                                  </div>
+                                  
+                                  <div class="info-grid">
+                                      <div class="info-row">
+                                          <div class="info-item">
+                                              <div class="info-label">Taksit</div>
+                                              <div class="info-value">${installmentNumber}</div>
+                                          </div>
+                                          <div class="info-item">
+                                              <div class="info-label">Vade Tarihi</div>
+                                              <div class="info-value">${dueDate}</div>
+                                          </div>
+                                      </div>
+                                  </div>
+                              </div>
+                              
+                               Alert Message 
+                              <div class="alert-box">
+                                  <div class="alert-content">
+                                      <div class="alert-icon">${iconEmoji}</div>
+                                      <div class="alert-text-wrapper">
+                                          <div class="alert-title">${urgencyText}</div>
+                                          <div class="alert-message">
+                                              ${message} ${
+                                                type === "overdue"
+                                                  ? "Lütfen en kısa sürede ödemenizi yaparak gecikme faizinden kaçının."
+                                                  : "Zamanında ödeme yaparak kredi notunuzu koruyabilir ve gecikme faizinden kaçınabilirsiniz."
+                                              }
+                                          </div>
+                                      </div>
+                                  </div>
+                              </div>
+                              
+                               CTA Button 
+                              <div class="cta-wrapper">
+                                  <a href="https://kreditakip.com.tr/uygulama/odeme-plani" class="cta-button">
+                                      Ödeme Planını Görüntüle
+                                  </a>
+                              </div>
+                              
+                               Secondary Links 
+                              <div class="secondary-links">
+                                  <a href="https://kreditakip.com.tr/uygulama/hatirlatici" class="secondary-link">Hatırlatıcı Kur</a>
+                                  <a href="https://kreditakip.com.tr/uygulama/odeme-yap" class="secondary-link">Hızlı Ödeme</a>
+                              </div>
+                          </div>
+                          
+                           Footer 
+                          <div class="footer">
+                              <img src="/logo.png" alt="Kredi Takip" class="footer-logo" style="width: 80px; height: auto; opacity: 1; margin-bottom: 20px;">
+                              
+                              <div class="footer-links">
+                                  <a href="https://kreditakip.com.tr/uygulama/ayarlar" class="footer-link">Bildirim Ayarları</a>
+                                  <span class="footer-divider">•</span>
+                                  <a href="https://kreditakip.com.tr/uygulama" class="footer-link">Uygulama</a>
+                                  <span class="footer-divider">•</span>
+                                  <a href="https://kreditakip.com.tr/destek" class="footer-link">Destek</a>
+                                  <span class="footer-divider">•</span>
+                                  <a href="https://kreditakip.com.tr/gizlilik" class="footer-link">Gizlilik</a>
+                              </div>
+                              
+                              <p class="footer-text">
+                                  Bu e-posta otomatik olarak gönderilmiştir.<br>
+                                  E-posta bildirimlerini almak istemiyorsanız, ayarlar sayfasından kapatabilirsiniz.
+                              </p>
+                              
+                              <div class="copyright">
+                                  © 2024 kreditakip.com.tr • Tüm hakları saklıdır
+                              </div>
+                          </div>
+                      </td>
+                  </tr>
+              </table>
           </div>
-
-          <div class="greeting">
-            Merhaba ${firstName || "Değerli Müşterimiz"},
-          </div>
-
-          <div class="payment-card">
-            <div class="bank-name">${bankName}</div>
-            <div class="payment-details">
-              <div>
-                <div class="detail-label">Taksit Numarası</div>
-                <div class="detail-value">#${installmentNumber}</div>
-              </div>
-              <div>
-                <div class="detail-label">Vade Tarihi</div>
-                <div class="detail-value">${dueDate}</div>
-              </div>
-            </div>
-            <div class="payment-details">
-              <div>
-                <div class="detail-label">Ödeme Tutarı</div>
-                <div class="amount">${amount} ₺</div>
-              </div>
-            </div>
-          </div>
-
-          <div class="message">
-            ${message}
-            <br><br>
-            ${
-              type === "overdue"
-                ? "Lütfen en kısa sürede ödemenizi yaparak gecikme faizinden kaçının."
-                : "Lütfen ödemenizi zamanında yapmayı unutmayın."
-            }
-          </div>
-
-          <div style="text-align: center;">
-            <a href="https://kreditakip.com.tr/uygulama/odeme-plani" class="cta-button">
-              Ödeme Planını Görüntüle
-            </a>
-          </div>
-
-          <div class="footer">
-            <p>Bu e-posta Kredi Takip sistemi tarafından otomatik olarak gönderilmiştir.</p>
-            <p>Bildirim tercihlerinizi değiştirmek için uygulamaya giriş yapın.</p>
-            
-            <div class="footer-links">
-              <a href="https://kreditakip.com.tr/uygulama/ayarlar">Ayarlar</a>
-              <a href="https://kreditakip.com.tr/iletisim">İletişim</a>
-              <a href="https://kreditakip.com.tr/gizlilik-politikasi">Gizlilik</a>
-            </div>
-          </div>
-        </div>
       </body>
       </html>
     `,
@@ -267,7 +682,69 @@ function createEmailTemplate(
 
 export async function POST(request: NextRequest) {
   try {
-    const { userId, type } = await request.json()
+    const { userId, type, testMode, testEmail } = await request.json()
+
+    if (testMode && testEmail) {
+      if (!process.env.MAILERSEND_API_KEY) {
+        console.error("MAILERSEND_API_KEY environment variable is not set")
+        return NextResponse.json({ error: "Email service not configured" }, { status: 500 })
+      }
+
+      // Mock data for testing
+      const mockBankName = "Test Bankası A.Ş."
+      const mockAmount = "1.250"
+      const mockDueDate = new Date().toLocaleDateString("tr-TR")
+      const mockInstallmentNumber = 5
+      const mockFirstName = "Test Kullanıcısı"
+
+      try {
+        const emailTemplate = createEmailTemplate(
+          mockFirstName,
+          mockBankName,
+          mockInstallmentNumber,
+          mockAmount,
+          mockDueDate,
+          type,
+        )
+
+        const sentFrom = new Sender("bildirim@kreditakip.com.tr", "Kredi Takip")
+        const recipients = [new Recipient(testEmail, mockFirstName)]
+
+        const emailParams = new EmailParams()
+          .setFrom(sentFrom)
+          .setTo(recipients)
+          .setSubject(`[TEST] ${emailTemplate.subject}`)
+          .setHtml(emailTemplate.html)
+
+        const response = await mailerSend.email.send(emailParams)
+
+        if (response.statusCode !== 202) {
+          console.error(`MailerSend test error:`, response)
+          return NextResponse.json(
+            {
+              success: false,
+              error: `HTTP ${response.statusCode}`,
+            },
+            { status: 500 },
+          )
+        }
+
+        return NextResponse.json({
+          success: true,
+          message: "Test e-postası başarıyla gönderildi",
+          messageId: response.headers?.["x-message-id"] || "unknown",
+        })
+      } catch (error) {
+        console.error("Error sending test email:", error)
+        return NextResponse.json(
+          {
+            success: false,
+            error: error.message,
+          },
+          { status: 500 },
+        )
+      }
+    }
 
     if (!userId) {
       return NextResponse.json({ error: "User ID is required" }, { status: 400 })
