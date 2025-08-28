@@ -654,7 +654,7 @@ class ModernPDFGenerator {
   }
 }
 
-export async function generatePDFReport(data: any): Promise<void> {
+export async function generateModernPDF(data: any): Promise<void> {
   try {
     const doc = new jsPDF({
       orientation: "portrait",
