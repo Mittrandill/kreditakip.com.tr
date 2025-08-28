@@ -75,7 +75,7 @@ function createEmailTemplate(
           <meta charset="UTF-8">
           <meta name="viewport" content="width=device-width, initial-scale=1.0">
           <title>${subject}</title>
-          [if mso]>
+          <!--[if mso]>
           <noscript>
               <xml>
                   <o:OfficeDocumentSettings>
@@ -83,7 +83,7 @@ function createEmailTemplate(
                   </o:OfficeDocumentSettings>
               </xml>
           </noscript>
-          <![endif]
+          <![endif]-->
           <style>
               * {
                   margin: 0;
@@ -569,22 +569,20 @@ function createEmailTemplate(
               <table class="main" cellpadding="0" cellspacing="0" role="presentation">
                   <tr>
                       <td>
-                           Header with Gradient Background 
+                           
                           <div class="header">
                               <div class="logo-wrapper">
-                                  <img src="/logo-white.png" alt="Kredi Takip" class="logo">
+                                  <img src="https://kreditakip.com.tr/logo-white.png" alt="Kredi Takip" class="logo">
                               </div>
                               <h1 class="header-title">${title}</h1>
                               <p class="header-subtitle">Finansal takibiniz bizimle güvende</p>
                           </div>
                           
-                           Main Content 
                           <div class="content">
                               <p class="greeting">
                                   Merhaba <strong>${firstName || "Değerli Müşterimiz"}</strong>,
                               </p>
                               
-                               Modern Payment Card 
                               <div class="payment-card">
                                   <div class="bank-section">
                                       <div class="bank-icon">🏦</div>
@@ -616,7 +614,6 @@ function createEmailTemplate(
                                   </div>
                               </div>
                               
-                               Alert Message 
                               <div class="alert-box">
                                   <div class="alert-content">
                                       <div class="alert-icon">${iconEmoji}</div>
@@ -633,23 +630,21 @@ function createEmailTemplate(
                                   </div>
                               </div>
                               
-                               CTA Button 
                               <div class="cta-wrapper">
                                   <a href="https://kreditakip.com.tr/uygulama/odeme-plani" class="cta-button">
                                       Ödeme Planını Görüntüle
                                   </a>
                               </div>
                               
-                               Secondary Links 
                               <div class="secondary-links">
                                   <a href="https://kreditakip.com.tr/uygulama/hatirlatici" class="secondary-link">Hatırlatıcı Kur</a>
                                   <a href="https://kreditakip.com.tr/uygulama/odeme-yap" class="secondary-link">Hızlı Ödeme</a>
                               </div>
                           </div>
                           
-                           Footer 
                           <div class="footer">
-                              <img src="/logo.png" alt="Kredi Takip" class="footer-logo" style="width: 80px; height: auto; opacity: 1; margin-bottom: 20px;">
+                               
+                              <img src="https://kreditakip.com.tr/logo.png" alt="Kredi Takip" class="footer-logo" style="width: 80px; height: auto; opacity: 1; margin-bottom: 20px;">
                               
                               <div class="footer-links">
                                   <a href="https://kreditakip.com.tr/uygulama/ayarlar" class="footer-link">Bildirim Ayarları</a>
