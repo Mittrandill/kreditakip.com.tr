@@ -8,7 +8,6 @@ const mailerSend = new MailerSend({
   apiKey: process.env.MAILERSEND_API_KEY || "",
 })
 
-// E-posta template'i
 function createEmailTemplate(
   firstName: string,
   bankName: string,
@@ -20,40 +19,50 @@ function createEmailTemplate(
   let subject = ""
   let title = ""
   let message = ""
-  let urgencyColor = "#3b82f6" // blue
+  let urgencyColor = "#10b981"
+  let urgencyBg = "#10b981"
   let urgencyText = "Bilgilendirme"
+  let iconEmoji = "ℹ️"
 
   switch (type) {
     case "3_days_before":
       subject = `Ödeme Hatırlatması - 3 Gün Kaldı`
       title = "Ödeme Hatırlatması"
       message = `${bankName} bankasından ${installmentNumber}. taksit ödemenizin vadesi 3 gün sonra (${dueDate}) dolacak.`
-      urgencyColor = "#f59e0b" // amber
+      urgencyColor = "#f59e0b"
+      urgencyBg = "#f59e0b"
       urgencyText = "3 Gün Kaldı"
+      iconEmoji = "⏰"
       break
 
     case "1_day_before":
       subject = `Ödeme Hatırlatması - Yarın Vade`
       title = "Ödeme Hatırlatması"
       message = `${bankName} bankasından ${installmentNumber}. taksit ödemenizin vadesi yarın (${dueDate}) dolacak.`
-      urgencyColor = "#f97316" // orange
+      urgencyColor = "#f97316"
+      urgencyBg = "#f97316"
       urgencyText = "Yarın Vade"
+      iconEmoji = "⚡"
       break
 
     case "due_date":
       subject = `Ödeme Hatırlatması - Bugün Vade`
       title = "Ödeme Hatırlatması"
       message = `${bankName} bankasından ${installmentNumber}. taksit ödemenizin vadesi bugün (${dueDate}) doluyor.`
-      urgencyColor = "#dc2626" // red
+      urgencyColor = "#dc2626"
+      urgencyBg = "#dc2626"
       urgencyText = "Bugün Vade"
+      iconEmoji = "🚨"
       break
 
     case "overdue":
       subject = `Gecikmiş Ödeme Bildirimi`
       title = "Gecikmiş Ödeme"
       message = `${bankName} bankasından ${installmentNumber}. taksit ödemenizin vadesi (${dueDate}) geçmiş durumda.`
-      urgencyColor = "#dc2626" // red
+      urgencyColor = "#dc2626"
+      urgencyBg = "#dc2626"
       urgencyText = "Vade Geçti"
+      iconEmoji = "❌"
       break
   }
 
@@ -67,195 +76,468 @@ function createEmailTemplate(
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <title>${subject}</title>
         <style>
+          * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+          }
+          
           body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
             line-height: 1.6;
-            color: #333;
+            color: #1f2937;
+            background-color: #f8fafc;
+            margin: 0;
+            padding: 20px 0;
+          }
+          
+          .email-container {
             max-width: 600px;
             margin: 0 auto;
-            padding: 20px;
-            background-color: #f8fafc;
+            background: #ffffff;
+            border-radius: 16px;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+            overflow: hidden;
           }
-          .container {
-            background: white;
-            border-radius: 12px;
-            padding: 32px;
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
-          }
+          
+          /* Professional Header */
           .header {
+            background: linear-gradient(135deg, #1e293b 0%, #334155 100%);
+            padding: 32px;
             text-align: center;
-            margin-bottom: 32px;
+            position: relative;
           }
-          .logo {
-            font-size: 24px;
-            font-weight: bold;
-            color: #1f2937;
-            margin-bottom: 8px;
+          
+          .header::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, #10b981, #0d9488, #06b6d4);
           }
-          .urgency-badge {
-            display: inline-block;
-            padding: 6px 12px;
-            border-radius: 20px;
-            font-size: 12px;
-            font-weight: 600;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-            color: white;
-            margin-bottom: 16px;
-          }
-          .title {
-            font-size: 28px;
-            font-weight: bold;
-            color: #1f2937;
-            margin-bottom: 16px;
-          }
-          .greeting {
-            font-size: 16px;
-            color: #6b7280;
+          
+          .logo-section {
             margin-bottom: 24px;
           }
-          .payment-card {
-            background: #f8fafc;
-            border: 2px solid #e5e7eb;
-            border-radius: 12px;
-            padding: 24px;
-            margin: 24px 0;
+          
+          .logo {
+            max-width: 180px;
+            height: auto;
+            margin: 0 auto 16px;
+            display: block;
           }
-          .bank-name {
-            font-size: 18px;
-            font-weight: 600;
-            color: #1f2937;
+          
+          .brand-name {
+            font-size: 24px;
+            font-weight: 700;
+            color: #ffffff;
+            letter-spacing: -0.5px;
             margin-bottom: 8px;
           }
-          .payment-details {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin: 12px 0;
+          
+          .brand-tagline {
+            font-size: 14px;
+            color: #94a3b8;
+            font-weight: 400;
           }
-          .detail-label {
+          
+          /* Urgency Badge */
+          .urgency-section {
+            margin: 24px 0;
+          }
+          
+          .urgency-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 12px 24px;
+            border-radius: 50px;
+            font-size: 14px;
+            font-weight: 600;
+            color: white;
+            background: ${urgencyBg};
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+          }
+          
+          .title {
+            font-size: 28px;
+            font-weight: 700;
+            color: #ffffff;
+            margin-top: 16px;
+            letter-spacing: -0.5px;
+          }
+          
+          /* Main Content */
+          .main-content {
+            padding: 40px 32px;
+          }
+          
+          .greeting {
+            font-size: 18px;
+            color: #374151;
+            margin-bottom: 32px;
+            font-weight: 500;
+          }
+          
+          /* Premium Payment Card */
+          .payment-card {
+            background: #ffffff;
+            border: 2px solid #e5e7eb;
+            border-radius: 16px;
+            padding: 32px;
+            margin: 32px 0;
+            position: relative;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+          }
+          
+          .payment-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 6px;
+            background: linear-gradient(90deg, ${urgencyColor}, ${urgencyColor}dd);
+            border-radius: 16px 16px 0 0;
+          }
+          
+          .bank-header {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            margin-bottom: 24px;
+            padding-bottom: 16px;
+            border-bottom: 1px solid #e5e7eb;
+          }
+          
+          .bank-icon {
+            width: 56px;
+            height: 56px;
+            background: linear-gradient(135deg, #10b981, #0d9488);
+            border-radius: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            color: white;
+            box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+          }
+          
+          .bank-info h3 {
+            font-size: 20px;
+            font-weight: 700;
+            color: #1f2937;
+            margin-bottom: 4px;
+          }
+          
+          .bank-info p {
             font-size: 14px;
             color: #6b7280;
+            font-weight: 500;
           }
-          .detail-value {
-            font-size: 16px;
+          
+          /* Payment Details Grid */
+          .payment-details {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 20px;
+            margin: 24px 0;
+          }
+          
+          .detail-item {
+            text-align: center;
+            padding: 20px;
+            background: #f8fafc;
+            border-radius: 12px;
+            border: 1px solid #e5e7eb;
+          }
+          
+          .detail-label {
+            font-size: 12px;
+            color: #6b7280;
+            text-transform: uppercase;
+            letter-spacing: 1px;
             font-weight: 600;
+            margin-bottom: 8px;
+          }
+          
+          .detail-value {
+            font-size: 18px;
+            font-weight: 700;
             color: #1f2937;
           }
-          .amount {
-            font-size: 24px;
-            font-weight: bold;
-            color: #059669;
+          
+          /* Amount Highlight */
+          .amount-section {
+            text-align: center;
+            margin: 32px 0;
+            padding: 32px;
+            background: linear-gradient(135deg, #f0fdf4, #ecfdf5);
+            border-radius: 16px;
+            border: 2px solid #10b981;
+            position: relative;
           }
+          
+          .amount-section::before {
+            content: '💰';
+            position: absolute;
+            top: -15px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #ffffff;
+            padding: 8px;
+            border-radius: 50%;
+            font-size: 20px;
+            border: 2px solid #10b981;
+          }
+          
+          .amount {
+            font-size: 36px;
+            font-weight: 800;
+            color: #059669;
+            margin-bottom: 8px;
+            letter-spacing: -1px;
+          }
+          
+          .amount-label {
+            font-size: 16px;
+            color: #065f46;
+            font-weight: 600;
+          }
+          
+          /* Message Section */
+          .message-section {
+            background: #f8fafc;
+            border-left: 6px solid ${urgencyColor};
+            border-radius: 0 12px 12px 0;
+            padding: 24px;
+            margin: 32px 0;
+          }
+          
+          .message-icon {
+            font-size: 24px;
+            margin-bottom: 12px;
+          }
+          
           .message {
             font-size: 16px;
             color: #374151;
-            margin: 24px 0;
             line-height: 1.7;
+            margin-bottom: 16px;
           }
+          
+          .message-tip {
+            font-size: 14px;
+            color: #6b7280;
+            font-style: italic;
+            padding: 12px;
+            background: #ffffff;
+            border-radius: 8px;
+            border: 1px solid #e5e7eb;
+          }
+          
+          /* CTA Button */
+          .cta-section {
+            text-align: center;
+            margin: 40px 0;
+          }
+          
           .cta-button {
             display: inline-block;
-            background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+            background: linear-gradient(135deg, #10b981, #0d9488);
             color: white;
-            padding: 12px 24px;
-            border-radius: 8px;
+            padding: 16px 32px;
+            border-radius: 12px;
             text-decoration: none;
             font-weight: 600;
-            margin: 24px 0;
-            transition: transform 0.2s;
+            font-size: 16px;
+            box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+            transition: all 0.3s ease;
+            border: none;
           }
+          
           .cta-button:hover {
-            transform: translateY(-1px);
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(16, 185, 129, 0.4);
           }
+          
+          /* Professional Footer */
           .footer {
-            margin-top: 32px;
-            padding-top: 24px;
+            background: #f8fafc;
+            padding: 32px;
             border-top: 1px solid #e5e7eb;
+          }
+          
+          .footer-content {
             text-align: center;
+          }
+          
+          .footer-text {
             color: #6b7280;
             font-size: 14px;
+            margin-bottom: 16px;
+            line-height: 1.6;
           }
+          
           .footer-links {
-            margin-top: 16px;
+            display: flex;
+            justify-content: center;
+            gap: 24px;
+            margin: 20px 0;
+            flex-wrap: wrap;
           }
+          
           .footer-links a {
-            color: #3b82f6;
+            color: #10b981;
             text-decoration: none;
-            margin: 0 8px;
+            font-size: 14px;
+            font-weight: 500;
+            transition: color 0.2s;
           }
+          
+          .footer-links a:hover {
+            color: #059669;
+          }
+          
+          .footer-brand {
+            margin-top: 24px;
+            padding-top: 20px;
+            border-top: 1px solid #e5e7eb;
+            color: #9ca3af;
+            font-size: 12px;
+            font-weight: 500;
+          }
+          
+          /* Mobile Responsive */
           @media (max-width: 600px) {
             body {
-              padding: 10px;
+              padding: 10px 0;
             }
-            .container {
-              padding: 20px;
+            
+            .email-container {
+              margin: 0 10px;
+              border-radius: 12px;
             }
+            
+            .header, .main-content, .footer {
+              padding: 24px 20px;
+            }
+            
+            .title {
+              font-size: 24px;
+            }
+            
             .payment-details {
+              grid-template-columns: 1fr;
+              gap: 16px;
+            }
+            
+            .amount {
+              font-size: 28px;
+            }
+            
+            .footer-links {
               flex-direction: column;
-              align-items: flex-start;
-              gap: 8px;
+              gap: 12px;
+            }
+            
+            .bank-header {
+              flex-direction: column;
+              text-align: center;
+              gap: 12px;
             }
           }
         </style>
       </head>
       <body>
-        <div class="container">
+        <div class="email-container">
           <div class="header">
-            <div class="logo">💳 Kredi Takip</div>
-            <div class="urgency-badge" style="background-color: ${urgencyColor};">
-              ${urgencyText}
+            <div class="logo-section">
+              <img src="https://kreditakip.com.tr/logo-email.png" alt="Kredi Takip" class="logo" />
+              <div class="brand-name">kreditakip.com.tr</div>
+              <div class="brand-tagline">Finansal özgürlüğünüze giden yol</div>
             </div>
-            <h1 class="title">${title}</h1>
+            
+            <div class="urgency-section">
+              <div class="urgency-badge">
+                <span>${iconEmoji}</span>
+                <span>${urgencyText}</span>
+              </div>
+              <h1 class="title">${title}</h1>
+            </div>
           </div>
 
-          <div class="greeting">
-            Merhaba ${firstName || "Değerli Müşterimiz"},
-          </div>
-
-          <div class="payment-card">
-            <div class="bank-name">${bankName}</div>
-            <div class="payment-details">
-              <div>
-                <div class="detail-label">Taksit Numarası</div>
-                <div class="detail-value">#${installmentNumber}</div>
-              </div>
-              <div>
-                <div class="detail-label">Vade Tarihi</div>
-                <div class="detail-value">${dueDate}</div>
-              </div>
+          <div class="main-content">
+            <div class="greeting">
+              Merhaba <strong>${firstName || "Değerli Müşterimiz"}</strong>,
             </div>
-            <div class="payment-details">
-              <div>
-                <div class="detail-label">Ödeme Tutarı</div>
+
+            <div class="payment-card">
+              <div class="bank-header">
+                <div class="bank-icon">🏦</div>
+                <div class="bank-info">
+                  <h3>${bankName}</h3>
+                  <p>Kredi Taksit Ödemesi</p>
+                </div>
+              </div>
+              
+              <div class="payment-details">
+                <div class="detail-item">
+                  <div class="detail-label">Taksit No</div>
+                  <div class="detail-value">#${installmentNumber}</div>
+                </div>
+                <div class="detail-item">
+                  <div class="detail-label">Vade Tarihi</div>
+                  <div class="detail-value">${dueDate}</div>
+                </div>
+              </div>
+              
+              <div class="amount-section">
                 <div class="amount">${amount} ₺</div>
+                <div class="amount-label">Ödeme Tutarı</div>
               </div>
             </div>
-          </div>
 
-          <div class="message">
-            ${message}
-            <br><br>
-            ${
-              type === "overdue"
-                ? "Lütfen en kısa sürede ödemenizi yaparak gecikme faizinden kaçının."
-                : "Lütfen ödemenizi zamanında yapmayı unutmayın."
-            }
-          </div>
+            <div class="message-section">
+              <div class="message-icon">${iconEmoji}</div>
+              <div class="message">
+                ${message}
+              </div>
+              <div class="message-tip">
+                ${
+                  type === "overdue"
+                    ? "⚠️ Lütfen en kısa sürede ödemenizi yaparak gecikme faizinden kaçının."
+                    : "💡 Zamanında ödeme yaparak kredi notunuzu koruyun ve finansal sağlığınızı güçlendirin."
+                }
+              </div>
+            </div>
 
-          <div style="text-align: center;">
-            <a href="https://kreditakip.com.tr/uygulama/odeme-plani" class="cta-button">
-              Ödeme Planını Görüntüle
-            </a>
+            <div class="cta-section">
+              <a href="https://kreditakip.com.tr/uygulama/odeme-plani" class="cta-button">
+                📊 Ödeme Planını Görüntüle
+              </a>
+            </div>
           </div>
 
           <div class="footer">
-            <p>Bu e-posta Kredi Takip sistemi tarafından otomatik olarak gönderilmiştir.</p>
-            <p>Bildirim tercihlerinizi değiştirmek için uygulamaya giriş yapın.</p>
-            
-            <div class="footer-links">
-              <a href="https://kreditakip.com.tr/uygulama/ayarlar">Ayarlar</a>
-              <a href="https://kreditakip.com.tr/iletisim">İletişim</a>
-              <a href="https://kreditakip.com.tr/gizlilik-politikasi">Gizlilik</a>
+            <div class="footer-content">
+              <p class="footer-text">
+                Bu e-posta <strong>kreditakip.com.tr</strong> sistemi tarafından otomatik olarak gönderilmiştir.<br>
+                Bildirim tercihlerinizi uygulamadan değiştirebilirsiniz.
+              </p>
+              
+              <div class="footer-links">
+                <a href="https://kreditakip.com.tr/uygulama/ayarlar">⚙️ Bildirim Ayarları</a>
+                <a href="https://kreditakip.com.tr/uygulama">🏠 Uygulamaya Git</a>
+                <a href="https://kreditakip.com.tr/iletisim">📞 Destek</a>
+                <a href="https://kreditakip.com.tr/gizlilik-politikasi">🔒 Gizlilik</a>
+              </div>
+              
+              <div class="footer-brand">
+                © 2024 kreditakip.com.tr - Tüm hakları saklıdır.
+              </div>
             </div>
           </div>
         </div>
@@ -267,7 +549,69 @@ function createEmailTemplate(
 
 export async function POST(request: NextRequest) {
   try {
-    const { userId, type } = await request.json()
+    const { userId, type, testMode, testEmail } = await request.json()
+
+    if (testMode && testEmail) {
+      if (!process.env.MAILERSEND_API_KEY) {
+        console.error("MAILERSEND_API_KEY environment variable is not set")
+        return NextResponse.json({ error: "Email service not configured" }, { status: 500 })
+      }
+
+      // Mock data for testing
+      const mockBankName = "Test Bankası A.Ş."
+      const mockAmount = "1.250"
+      const mockDueDate = new Date().toLocaleDateString("tr-TR")
+      const mockInstallmentNumber = 5
+      const mockFirstName = "Test Kullanıcısı"
+
+      try {
+        const emailTemplate = createEmailTemplate(
+          mockFirstName,
+          mockBankName,
+          mockInstallmentNumber,
+          mockAmount,
+          mockDueDate,
+          type,
+        )
+
+        const sentFrom = new Sender("bildirim@kreditakip.com.tr", "Kredi Takip")
+        const recipients = [new Recipient(testEmail, mockFirstName)]
+
+        const emailParams = new EmailParams()
+          .setFrom(sentFrom)
+          .setTo(recipients)
+          .setSubject(`[TEST] ${emailTemplate.subject}`)
+          .setHtml(emailTemplate.html)
+
+        const response = await mailerSend.email.send(emailParams)
+
+        if (response.statusCode !== 202) {
+          console.error(`MailerSend test error:`, response)
+          return NextResponse.json(
+            {
+              success: false,
+              error: `HTTP ${response.statusCode}`,
+            },
+            { status: 500 },
+          )
+        }
+
+        return NextResponse.json({
+          success: true,
+          message: "Test e-postası başarıyla gönderildi",
+          messageId: response.headers?.["x-message-id"] || "unknown",
+        })
+      } catch (error) {
+        console.error("Error sending test email:", error)
+        return NextResponse.json(
+          {
+            success: false,
+            error: error.message,
+          },
+          { status: 500 },
+        )
+      }
+    }
 
     if (!userId) {
       return NextResponse.json({ error: "User ID is required" }, { status: 400 })
