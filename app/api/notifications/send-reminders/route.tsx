@@ -19,10 +19,10 @@ function createEmailTemplate(
   let subject = ""
   let title = ""
   let message = ""
-  let urgencyColor = "#10b981"
+  let urgencyColor = "#10b981" // Default green from original template
   let urgencyBg = "#10b981"
   let urgencyText = "Bilgilendirme"
-  let iconEmoji = "ℹ️"
+  let iconEmoji = "⏰" // Default to clock icon from original template
 
   switch (type) {
     case "3_days_before":
@@ -32,7 +32,7 @@ function createEmailTemplate(
       urgencyColor = "#f59e0b"
       urgencyBg = "#f59e0b"
       urgencyText = "3 Gün Kaldı"
-      iconEmoji = "⏰"
+      iconEmoji = "⏰" // Clock icon for 3 days before
       break
 
     case "1_day_before":
@@ -42,7 +42,7 @@ function createEmailTemplate(
       urgencyColor = "#f97316"
       urgencyBg = "#f97316"
       urgencyText = "Yarın Vade"
-      iconEmoji = "⚡"
+      iconEmoji = "⏰" // Clock icon for 1 day before
       break
 
     case "due_date":
@@ -52,7 +52,7 @@ function createEmailTemplate(
       urgencyColor = "#dc2626"
       urgencyBg = "#dc2626"
       urgencyText = "Bugün Vade"
-      iconEmoji = "🚨"
+      iconEmoji = "🚨" // Alert icon for due date
       break
 
     case "overdue":
@@ -62,7 +62,7 @@ function createEmailTemplate(
       urgencyColor = "#dc2626"
       urgencyBg = "#dc2626"
       urgencyText = "Vade Geçti"
-      iconEmoji = "❌"
+      iconEmoji = "❌" // X icon for overdue
       break
   }
 
@@ -75,7 +75,7 @@ function createEmailTemplate(
           <meta charset="UTF-8">
           <meta name="viewport" content="width=device-width, initial-scale=1.0">
           <title>${subject}</title>
-          <!--[if mso]>
+          [if mso]>
           <noscript>
               <xml>
                   <o:OfficeDocumentSettings>
@@ -83,7 +83,7 @@ function createEmailTemplate(
                   </o:OfficeDocumentSettings>
               </xml>
           </noscript>
-          <![endif]-->
+          <![endif]
           <style>
               * {
                   margin: 0;
@@ -224,7 +224,7 @@ function createEmailTemplate(
               .bank-icon {
                   width: 48px;
                   height: 48px;
-                  background: linear-gradient(135deg, ${urgencyColor} 0%, ${urgencyColor}dd 100%);
+                  background: linear-gradient(135deg, #10b981 0%, #0d9488 100%);
                   border-radius: 12px;
                   display: flex;
                   align-items: center;
@@ -278,7 +278,7 @@ function createEmailTemplate(
               .amount {
                   font-size: 42px;
                   font-weight: 800;
-                  background: linear-gradient(135deg, ${urgencyColor} 0%, ${urgencyColor}dd 100%);
+                  background: linear-gradient(135deg, #10b981 0%, #0d9488 100%);
                   -webkit-background-clip: text;
                   -webkit-text-fill-color: transparent;
                   background-clip: text;
@@ -390,7 +390,7 @@ function createEmailTemplate(
               .cta-button {
                   display: inline-block;
                   padding: 16px 40px;
-                  background: linear-gradient(135deg, ${urgencyColor} 0%, ${urgencyColor}dd 100%);
+                  background: linear-gradient(135deg, #10b981 0%, #0d9488 100%);
                   color: #ffffff;
                   text-decoration: none;
                   border-radius: 12px;
@@ -431,7 +431,7 @@ function createEmailTemplate(
               
               .secondary-link {
                   display: inline-block;
-                  color: ${urgencyColor};
+                  color: #10b981;
                   text-decoration: none;
                   font-size: 14px;
                   font-weight: 500;
@@ -440,7 +440,7 @@ function createEmailTemplate(
               }
               
               .secondary-link:hover {
-                  color: ${urgencyColor}dd;
+                  color: #0d9488;
                   text-decoration: underline;
               }
               
@@ -473,7 +473,7 @@ function createEmailTemplate(
               }
               
               .footer-link:hover {
-                  color: ${urgencyColor};
+                  color: #10b981;
               }
               
               .footer-divider {
@@ -569,7 +569,6 @@ function createEmailTemplate(
               <table class="main" cellpadding="0" cellspacing="0" role="presentation">
                   <tr>
                       <td>
-                           
                           <div class="header">
                               <div class="logo-wrapper">
                                   <img src="https://kreditakip.com.tr/logo-white.png" alt="Kredi Takip" class="logo">
@@ -643,7 +642,6 @@ function createEmailTemplate(
                           </div>
                           
                           <div class="footer">
-                               
                               <img src="https://kreditakip.com.tr/logo.png" alt="Kredi Takip" class="footer-logo" style="width: 80px; height: auto; opacity: 1; margin-bottom: 20px;">
                               
                               <div class="footer-links">
