@@ -36,7 +36,7 @@ export async function GET(request: NextRequest) {
       try {
         // 3 gün önceden bildirim
         if (user.email_3_days_before) {
-          const response = await fetch(`${process.env.NEXT_PUBLIC_SITE_URL}/api/notifications/send-reminders`, {
+          const response = await fetch(`${process.env.NEXT_PUBLIC_MAILERSEND_URL}/api/notifications/send-reminders`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ userId: user.user_id, type: "3_days_before" }),
@@ -50,7 +50,7 @@ export async function GET(request: NextRequest) {
 
         // 1 gün önceden bildirim
         if (user.email_1_day_before) {
-          const response = await fetch(`${process.env.NEXT_PUBLIC_SITE_URL}/api/notifications/send-reminders`, {
+          const response = await fetch(`${process.env.NEXT_PUBLIC_MAILERSEND_URL}/api/notifications/send-reminders`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ userId: user.user_id, type: "1_day_before" }),
@@ -64,7 +64,7 @@ export async function GET(request: NextRequest) {
 
         // Vade günü bildirim
         if (user.email_on_due_date) {
-          const response = await fetch(`${process.env.NEXT_PUBLIC_SITE_URL}/api/notifications/send-reminders`, {
+          const response = await fetch(`${process.env.NEXT_PUBLIC_MAILERSEND_URL}/api/notifications/send-reminders`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ userId: user.user_id, type: "due_date" }),
@@ -78,7 +78,7 @@ export async function GET(request: NextRequest) {
 
         // Gecikme bildirim
         if (user.email_overdue) {
-          const response = await fetch(`${process.env.NEXT_PUBLIC_SITE_URL}/api/notifications/send-reminders`, {
+          const response = await fetch(`${process.env.NEXT_PUBLIC_MAILERSEND_URL}/api/notifications/send-reminders`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ userId: user.user_id, type: "overdue" }),

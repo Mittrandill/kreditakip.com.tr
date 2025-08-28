@@ -1,11 +1,12 @@
 import { type NextRequest, NextResponse } from "next/server"
-import { Resend } from "resend"
+import { MailerSend, EmailParams, Sender, Recipient } from "mailersend"
 import { supabase } from "@/lib/supabase"
 import { getNotificationPreferences } from "@/lib/api/notification-preferences"
 import { getAllPayments } from "@/lib/api/payments"
 
-// Resend client'ı başlat
-const resend = new Resend(process.env.RESEND_API_KEY)
+const mailerSend = new MailerSend({
+  apiKey: process.env.MAILERSEND_API_KEY || "",
+})
 
 // E-posta template'i
 function createEmailTemplate(
@@ -272,9 +273,8 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "User ID is required" }, { status: 400 })
     }
 
-    // Resend API key kontrolü
-    if (!process.env.RESEND_API_KEY) {
-      console.error("RESEND_API_KEY environment variable is not set")
+    if (!process.env.MAILERSEND_API_KEY) {
+      console.error("MAILERSEND_API_KEY environment variable is not set")
       return NextResponse.json({ error: "Email service not configured" }, { status: 500 })
     }
 
@@ -369,22 +369,26 @@ export async function POST(request: NextRequest) {
           type,
         )
 
-        const { data, error } = await resend.emails.send({
-          from: "Kredi Takip <bildirim@kreditakip.com.tr>",
-          to: [profile.email],
-          subject: emailTemplate.subject,
-          html: emailTemplate.html,
-        })
+        const sentFrom = new Sender("bildirim@kreditakip.com.tr", "Kredi Takip")
+        const recipients = [new Recipient(profile.email, profile.first_name || "")]
 
-        if (error) {
-          console.error(`Resend error for payment ${payment.id}:`, error)
+        const emailParams = new EmailParams()
+          .setFrom(sentFrom)
+          .setTo(recipients)
+          .setSubject(emailTemplate.subject)
+          .setHtml(emailTemplate.html)
+
+        const response = await mailerSend.email.send(emailParams)
+
+        if (response.statusCode !== 202) {
+          console.error(`MailerSend error for payment ${payment.id}:`, response)
           results.push({
             paymentId: payment.id,
             bankName,
             amount,
             dueDate,
             success: false,
-            error: error.message,
+            error: `HTTP ${response.statusCode}`,
           })
         } else {
           results.push({
@@ -393,7 +397,7 @@ export async function POST(request: NextRequest) {
             amount,
             dueDate,
             success: true,
-            messageId: data?.id,
+            messageId: response.headers?.["x-message-id"] || "unknown",
           })
           emailsSent++
         }
