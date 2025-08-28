@@ -1,5 +1,8 @@
 "use client"
 
+import type React from "react"
+import type { Credit } from "@/lib/types"
+
 import Link from "next/link"
 import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
@@ -45,6 +48,9 @@ import { useState, useEffect, useRef, useMemo } from "react"
 import { getNotifications, markNotificationAsRead } from "@/lib/api/notifications"
 import { formatDistanceToNow } from "date-fns"
 import { tr } from "date-fns/locale"
+import { getCredits } from "@/lib/api/credits"
+import BankLogo from "@/components/bank-logo"
+import { Badge } from "@/components/ui/badge"
 
 interface HeaderProps {
   pageTitle?: string
@@ -199,6 +205,13 @@ export default function Header({ pageTitle }: HeaderProps) {
   const [notificationOpen, setNotificationOpen] = useState(false)
   const dropdownRef = useRef<HTMLDivElement>(null)
 
+  const [searchQuery, setSearchQuery] = useState("")
+  const [searchResults, setSearchResults] = useState<any[]>([])
+  const [searchOpen, setSearchOpen] = useState(false)
+  const [searchLoading, setSearchLoading] = useState(false)
+  const [allCredits, setAllCredits] = useState<Credit[]>([])
+  const searchRef = useRef<HTMLDivElement>(null)
+
   // Dinamik sayfa başlığı ve açıklama belirleme
   const pageInfo = useMemo(() => {
     if (pageTitle) return { title: pageTitle, description: "", parent: null }
@@ -208,6 +221,12 @@ export default function Header({ pageTitle }: HeaderProps) {
         title: "Kredi Detayı",
         description: "Seçilen kredinin detaylı bilgileri ve ödeme planı",
         parent: "Kredilerim",
+      }
+    if (pathname.includes("/odeme-detay/"))
+      return {
+        title: "Ödeme Makbuzu",
+        description: "Seçilen ödemenin detaylı bilgilerini görebilir ve yazdırabilirsiniz.",
+        parent: "Kredilerim > Kredi Detayı",
       }
     if (pathname.includes("/kredi-duzenle/"))
       return {
@@ -387,19 +406,142 @@ export default function Header({ pageTitle }: HeaderProps) {
     return "KT"
   }
 
+  const performSearch = useMemo(() => {
+    if (!searchQuery.trim() || searchQuery.length < 2) {
+      setSearchResults([])
+      return
+    }
+
+    const query = searchQuery.toLowerCase()
+    const results: any[] = []
+
+    // Search through credits
+    allCredits.forEach((credit) => {
+      const bankName = credit.banks?.name?.toLowerCase() || ""
+      const creditType = credit.credit_types?.name?.toLowerCase() || ""
+      const creditCode = credit.credit_code?.toLowerCase() || ""
+
+      if (bankName.includes(query) || creditType.includes(query) || creditCode.includes(query)) {
+        results.push({
+          type: "credit",
+          id: credit.id,
+          title: credit.banks?.name || "Bilinmeyen Banka",
+          subtitle: `${credit.credit_types?.name || "Kredi"} - ${credit.credit_code || ""}`,
+          description: `Kalan Borç: ${new Intl.NumberFormat("tr-TR", { style: "currency", currency: "TRY" }).format(credit.remaining_debt)}`,
+          href: `/uygulama/kredi-detay/${credit.id}`,
+          icon: credit.banks?.logo_url,
+          status: credit.status,
+        })
+      }
+    })
+
+    // Search through navigation items
+    navItems.forEach((item) => {
+      if (item.label.toLowerCase().includes(query)) {
+        results.push({
+          type: "page",
+          id: item.href,
+          title: item.label,
+          subtitle: "Sayfa",
+          description: "Uygulama sayfası",
+          href: item.href,
+          icon: item.icon,
+        })
+      }
+    })
+
+    // Search through settings items
+    settingsItems.forEach((item) => {
+      if (item.label.toLowerCase().includes(query)) {
+        results.push({
+          type: "page",
+          id: item.href,
+          title: item.label,
+          subtitle: "Ayarlar",
+          description: "Ayarlar sayfası",
+          href: item.href,
+          icon: item.icon,
+        })
+      }
+    })
+
+    setSearchResults(results.slice(0, 8)) // Limit to 8 results
+  }, [searchQuery, allCredits])
+
+  useEffect(() => {
+    performSearch
+  }, [performSearch])
+
+  useEffect(() => {
+    const loadCreditsForSearch = async () => {
+      if (!user?.id) return
+
+      try {
+        const creditsData = await getCredits(user.id)
+        setAllCredits(creditsData || [])
+      } catch (error) {
+        console.error("Error loading credits for search:", error)
+      }
+    }
+
+    loadCreditsForSearch()
+  }, [user?.id])
+
+  const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value
+    setSearchQuery(value)
+    setSearchOpen(value.length >= 2)
+  }
+
+  const handleSearchResultClick = (result: any) => {
+    setSearchQuery("")
+    setSearchOpen(false)
+    router.push(result.href)
+  }
+
+  const handleSearchKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === "Escape") {
+      setSearchQuery("")
+      setSearchOpen(false)
+    }
+  }
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (searchRef.current && !searchRef.current.contains(event.target as Node)) {
+        setSearchOpen(false)
+      }
+    }
+
+    if (searchOpen) {
+      document.addEventListener("mousedown", handleClickOutside)
+    }
+
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside)
+    }
+  }, [searchOpen])
+
   return (
-    <header className="sticky top-0 z-50 flex h-16 items-center gap-4 border-b bg-white/80 dark:bg-gray-900/80 backdrop-blur-md supports-[backdrop-filter]:bg-white/60 dark:supports-[backdrop-filter]:bg-gray-900/60 px-4 sm:px-6 md:px-8 shadow-sm border-emerald-100 dark:border-gray-800">
+    <header className="sticky top-0 z-50 flex h-16 items-center gap-4 border-b bg-white/80 dark:bg-gray-900/80 backdrop-blur-md supports-[backdrop-filter]:bg-white/60 dark:supports-[backdrop-filter]:bg-gray-900/60 px-4 sm:px-6 md:px-8 shadow-sm border-emerald-100 dark:border-gray-700">
       {isMobile ? (
         <Sheet>
           <SheetTrigger asChild>
-            <Button variant="outline" size="icon" className="shrink-0 md:hidden bg-transparent">
-              <Menu className="h-5 w-5" />
+            <Button
+              variant="outline"
+              size="icon"
+              className="shrink-0 md:hidden bg-transparent border-gray-200 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-800"
+            >
+              <Menu className="h-5 w-5 text-gray-700 dark:text-gray-300" />
               <span className="sr-only">Toggle navigation menu</span>
             </Button>
           </SheetTrigger>
-          <SheetContent side="left" className="flex flex-col p-0 w-80 bg-white dark:bg-gray-900">
+          <SheetContent
+            side="left"
+            className="flex flex-col p-0 w-80 bg-white dark:bg-gray-900 border-gray-200 dark:border-gray-700"
+          >
             {/* Mobile Header */}
-            <div className="p-4 border-b border-gray-200 dark:border-gray-800">
+            <div className="p-4 border-b border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900">
               <Link
                 href="/uygulama/ana-sayfa"
                 className="flex items-center gap-2 text-lg font-semibold text-gray-900 dark:text-white"
@@ -410,7 +552,7 @@ export default function Header({ pageTitle }: HeaderProps) {
             </div>
 
             {/* Mobile Navigation */}
-            <div className="flex-1 p-2 space-y-1">
+            <div className="flex-1 p-2 space-y-1 bg-white dark:bg-gray-900">
               {navItems.map((item) => {
                 const isActive = pathname === item.href
                 return (
@@ -419,8 +561,8 @@ export default function Header({ pageTitle }: HeaderProps) {
                     href={item.href}
                     className={`flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-all duration-200 ${
                       isActive
-                        ? "bg-gradient-to-r from-emerald-600 to-teal-700 text-white shadow-sm"
-                        : "hover:bg-emerald-50 dark:hover:bg-emerald-900/20 text-gray-700 dark:text-gray-300 hover:text-emerald-700 dark:hover:text-emerald-400"
+                        ? "bg-gradient-to-r from-emerald-600 to-teal-700 dark:from-emerald-500 dark:to-teal-600 text-white shadow-sm"
+                        : "hover:bg-emerald-50 dark:hover:bg-emerald-900/30 text-gray-700 dark:text-gray-300 hover:text-emerald-700 dark:hover:text-emerald-400"
                     }`}
                   >
                     <item.icon className="h-5 w-5 flex-shrink-0" />
@@ -431,7 +573,7 @@ export default function Header({ pageTitle }: HeaderProps) {
             </div>
 
             {/* Mobile Footer */}
-            <div className="p-2 border-t border-gray-200 dark:border-gray-800 space-y-1">
+            <div className="p-2 border-t border-gray-200 dark:border-gray-700 space-y-1 bg-white dark:bg-gray-900">
               {settingsItems.map((item) => {
                 const isActive = pathname === item.href
                 return (
@@ -440,8 +582,8 @@ export default function Header({ pageTitle }: HeaderProps) {
                     href={item.href}
                     className={`flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-all duration-200 ${
                       isActive
-                        ? "bg-gradient-to-r from-emerald-600 to-teal-700 text-white shadow-sm"
-                        : "hover:bg-emerald-50 dark:hover:bg-emerald-900/20 text-gray-700 dark:text-gray-300 hover:text-emerald-700 dark:hover:text-emerald-400"
+                        ? "bg-gradient-to-r from-emerald-600 to-teal-700 dark:from-emerald-500 dark:to-teal-600 text-white shadow-sm"
+                        : "hover:bg-emerald-50 dark:hover:bg-emerald-900/30 text-gray-700 dark:text-gray-300 hover:text-emerald-700 dark:hover:text-emerald-400"
                     }`}
                   >
                     <item.icon className="h-5 w-5 flex-shrink-0" />
@@ -451,14 +593,16 @@ export default function Header({ pageTitle }: HeaderProps) {
               })}
 
               {/* Mobile User Section */}
-              <div className="pt-2 border-t border-gray-200 dark:border-gray-800">
+              <div className="pt-2 border-t border-gray-200 dark:border-gray-700">
                 <div className="flex items-center gap-3 px-3 py-2">
                   <Avatar className="h-8 w-8">
                     <AvatarImage
                       src={profile?.avatar_url || "/placeholder.svg?height=32&width=32&text=User"}
                       alt="User Avatar"
                     />
-                    <AvatarFallback>{loading ? "..." : getAvatarFallback()}</AvatarFallback>
+                    <AvatarFallback className="bg-emerald-100 dark:bg-emerald-900 text-emerald-700 dark:text-emerald-300">
+                      {loading ? "..." : getAvatarFallback()}
+                    </AvatarFallback>
                   </Avatar>
                   <span className="text-sm font-medium truncate text-gray-900 dark:text-white">
                     {loading
@@ -519,16 +663,97 @@ export default function Header({ pageTitle }: HeaderProps) {
         </div>
 
         <form className="ml-auto flex-1 sm:flex-initial">
-          <div className="relative">
+          <div className="relative" ref={searchRef}>
             <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-gray-400 dark:text-gray-500 pointer-events-none" />
             <Input
               type="search"
               placeholder="Ara..."
-              className="pl-8 sm:w-[300px] md:w-[200px] lg:w-[300px] rounded-lg bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 focus-visible:border-emerald-500 focus-visible:shadow-[0_0_0_0.5px_rgb(16,185,129)] transition-all duration-200"
+              value={searchQuery}
+              onChange={handleSearchChange}
+              onKeyDown={handleSearchKeyDown}
+              className="pl-8 sm:w-[300px] md:w-[200px] lg:w-[300px] rounded-lg bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 focus-visible:border-emerald-500 dark:focus-visible:border-emerald-400 focus-visible:shadow-[0_0_0_0.5px_rgb(16,185,129)] dark:focus-visible:shadow-[0_0_0_0.5px_rgb(52,211,153)] transition-all duration-200 text-gray-900 dark:text-white placeholder:text-gray-500 dark:placeholder:text-gray-400"
               aria-label="Search"
               autoComplete="off"
               spellCheck="false"
             />
+
+            {searchOpen && searchQuery.length >= 2 && (
+              <div className="absolute top-full left-0 right-0 mt-2 bg-white dark:bg-gray-800 rounded-lg shadow-2xl border border-gray-200 dark:border-gray-700 z-50 max-h-96 overflow-y-auto">
+                {searchLoading ? (
+                  <div className="p-4 text-center">
+                    <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-emerald-600 mx-auto"></div>
+                    <p className="text-sm text-gray-500 dark:text-gray-400 mt-2">Aranıyor...</p>
+                  </div>
+                ) : searchResults.length > 0 ? (
+                  <div className="py-2">
+                    {searchResults.map((result) => (
+                      <button
+                        key={`${result.type}-${result.id}`}
+                        onClick={() => handleSearchResultClick(result)}
+                        className="w-full px-4 py-3 text-left hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors duration-150 flex items-center gap-3"
+                      >
+                        <div className="flex-shrink-0">
+                          {result.type === "credit" && result.icon ? (
+                            <BankLogo
+                              bankName={result.title}
+                              logoUrl={result.icon}
+                              size="sm"
+                              className="ring-1 ring-gray-200 dark:ring-gray-600"
+                            />
+                          ) : (
+                            <div className="w-8 h-8 bg-emerald-100 dark:bg-emerald-900 rounded-lg flex items-center justify-center">
+                              {result.icon ? (
+                                <result.icon className="h-4 w-4 text-emerald-600 dark:text-emerald-400" />
+                              ) : (
+                                <Search className="h-4 w-4 text-emerald-600 dark:text-emerald-400" />
+                              )}
+                            </div>
+                          )}
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center gap-2">
+                            <p className="font-medium text-gray-900 dark:text-white truncate">{result.title}</p>
+                            {result.status && (
+                              <Badge
+                                variant={
+                                  result.status === "active"
+                                    ? "default"
+                                    : result.status === "overdue"
+                                      ? "destructive"
+                                      : "secondary"
+                                }
+                                className="text-xs"
+                              >
+                                {result.status === "active"
+                                  ? "Aktif"
+                                  : result.status === "overdue"
+                                    ? "Gecikmiş"
+                                    : result.status === "closed"
+                                      ? "Kapalı"
+                                      : result.status}
+                              </Badge>
+                            )}
+                          </div>
+                          <p className="text-sm text-gray-500 dark:text-gray-400 truncate">{result.subtitle}</p>
+                          {result.description && (
+                            <p className="text-xs text-gray-400 dark:text-gray-500 truncate">{result.description}</p>
+                          )}
+                        </div>
+                        <ArrowRight className="h-4 w-4 text-gray-400 dark:text-gray-500 flex-shrink-0" />
+                      </button>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="p-4 text-center">
+                    <Search className="h-8 w-8 text-gray-400 dark:text-gray-500 mx-auto mb-2" />
+                    <p className="text-sm text-gray-500 dark:text-gray-400">"{searchQuery}" için sonuç bulunamadı</p>
+                    <p className="text-xs text-gray-400 dark:text-gray-500 mt-1">
+                      Kredi, banka adı veya sayfa adı arayın
+                    </p>
+                  </div>
+                )}
+              </div>
+            )}
           </div>
         </form>
 
@@ -549,11 +774,10 @@ export default function Header({ pageTitle }: HeaderProps) {
             )}
           </Button>
 
-          {/* Notification Dropdown */}
           {notificationOpen && (
-            <div className="absolute right-0 top-full mt-3 w-80 bg-white dark:bg-gray-900 rounded-2xl shadow-2xl border border-gray-100 dark:border-gray-800 z-50 overflow-hidden backdrop-blur-sm">
+            <div className="absolute right-0 top-full mt-3 w-80 bg-white dark:bg-gray-800 rounded-2xl shadow-2xl border border-gray-100 dark:border-gray-700 z-50 overflow-hidden backdrop-blur-sm">
               {/* Header */}
-              <div className="bg-gradient-to-r from-emerald-600 to-blue-600 p-4 text-white">
+              <div className="bg-gradient-to-r from-emerald-600 to-blue-600 dark:from-emerald-500 dark:to-blue-500 p-4 text-white">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-3">
                     <div className="p-2 bg-white/20 rounded-xl backdrop-blur-sm">
@@ -590,7 +814,7 @@ export default function Header({ pageTitle }: HeaderProps) {
               </div>
 
               {/* Notifications List */}
-              <div className="max-h-80 overflow-y-auto">
+              <div className="max-h-80 overflow-y-auto bg-white dark:bg-gray-800">
                 {notifications.length === 0 ? (
                   <div className="p-6 text-center">
                     <div className="w-12 h-12 bg-gray-100 dark:bg-gray-800 rounded-full flex items-center justify-center mx-auto mb-3">
@@ -670,9 +894,9 @@ export default function Header({ pageTitle }: HeaderProps) {
 
               {/* Footer */}
               {notifications.length > 0 && (
-                <div className="p-3 bg-gray-50 dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700">
+                <div className="p-3 bg-gray-50 dark:bg-gray-700 border-t border-gray-200 dark:border-gray-600">
                   <Link href="/uygulama/bildirimler" onClick={() => setNotificationOpen(false)}>
-                    <Button className="w-full bg-gradient-to-r from-emerald-600 to-blue-600 hover:from-emerald-700 hover:to-blue-700 text-white rounded-lg gap-2 transition-all duration-300 text-sm py-2">
+                    <Button className="w-full bg-gradient-to-r from-emerald-600 to-blue-600 dark:from-emerald-500 dark:to-blue-500 hover:from-emerald-700 hover:to-blue-700 dark:hover:from-emerald-600 dark:hover:to-blue-600 text-white rounded-lg gap-2 transition-all duration-300 text-sm py-2">
                       Tüm Bildirimleri Görüntüle
                       <ArrowRight className="h-4 w-4" />
                     </Button>
@@ -685,20 +909,27 @@ export default function Header({ pageTitle }: HeaderProps) {
 
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button variant="ghost" size="icon" className="rounded-full h-9 w-9" disabled={loading}>
+            <Button
+              variant="ghost"
+              size="icon"
+              className="rounded-full h-9 w-9 hover:bg-gray-100 dark:hover:bg-gray-800"
+              disabled={loading}
+            >
               <Avatar className="h-8 w-8">
                 <AvatarImage
                   src={profile?.avatar_url || "/placeholder.svg?height=32&width=32&text=User"}
                   alt="User Avatar"
                 />
-                <AvatarFallback>{loading ? "..." : getAvatarFallback()}</AvatarFallback>
+                <AvatarFallback className="bg-emerald-100 dark:bg-emerald-900 text-emerald-700 dark:text-emerald-300">
+                  {loading ? "..." : getAvatarFallback()}
+                </AvatarFallback>
               </Avatar>
               <span className="sr-only">Toggle user menu</span>
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent
             align="end"
-            className="w-56 bg-white dark:bg-gray-900 border-gray-200 dark:border-gray-800"
+            className="w-56 bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700 shadow-lg"
           >
             <DropdownMenuLabel className="text-gray-900 dark:text-white">
               {loading
@@ -707,33 +938,33 @@ export default function Header({ pageTitle }: HeaderProps) {
                   ? `${profile.first_name} ${profile.last_name}`
                   : user?.email || "Hesabım"}
             </DropdownMenuLabel>
-            <DropdownMenuSeparator className="bg-gray-200 dark:bg-gray-800" />
+            <DropdownMenuSeparator className="bg-gray-200 dark:bg-gray-700" />
             <DropdownMenuItem
               onClick={() => router.push("/uygulama/ayarlar")}
-              className="text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800"
+              className="text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 focus:bg-gray-100 dark:focus:bg-gray-700"
             >
               <UserIcon className="mr-2 h-4 w-4" />
               <span>Profil</span>
             </DropdownMenuItem>
             <DropdownMenuItem
               onClick={() => router.push("/uygulama/ayarlar")}
-              className="text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800"
+              className="text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 focus:bg-gray-100 dark:focus:bg-gray-700"
             >
               <Settings className="mr-2 h-4 w-4" />
               <span>Ayarlar</span>
             </DropdownMenuItem>
-            <DropdownMenuItem className="text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800">
+            <DropdownMenuItem className="text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 focus:bg-gray-100 dark:focus:bg-gray-700">
               <Briefcase className="mr-2 h-4 w-4" />
               <span>Faturalama</span>
             </DropdownMenuItem>
-            <DropdownMenuItem className="text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800">
+            <DropdownMenuItem className="text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 focus:bg-gray-100 dark:focus:bg-gray-700">
               <HelpCircle className="mr-2 h-4 w-4" />
               <span>Destek</span>
             </DropdownMenuItem>
-            <DropdownMenuSeparator className="bg-gray-200 dark:bg-gray-800" />
+            <DropdownMenuSeparator className="bg-gray-200 dark:bg-gray-700" />
             <DropdownMenuItem
               onClick={handleSignOut}
-              className="text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800"
+              className="text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 focus:bg-gray-100 dark:focus:bg-gray-700"
             >
               <LogOut className="mr-2 h-4 w-4" />
               <span>Çıkış Yap</span>
