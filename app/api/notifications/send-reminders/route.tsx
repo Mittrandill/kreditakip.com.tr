@@ -267,7 +267,69 @@ function createEmailTemplate(
 
 export async function POST(request: NextRequest) {
   try {
-    const { userId, type } = await request.json()
+    const { userId, type, testMode, testEmail } = await request.json()
+
+    if (testMode && testEmail) {
+      if (!process.env.MAILERSEND_API_KEY) {
+        console.error("MAILERSEND_API_KEY environment variable is not set")
+        return NextResponse.json({ error: "Email service not configured" }, { status: 500 })
+      }
+
+      // Mock data for testing
+      const mockBankName = "Test Bankası A.Ş."
+      const mockAmount = "1.250"
+      const mockDueDate = new Date().toLocaleDateString("tr-TR")
+      const mockInstallmentNumber = 5
+      const mockFirstName = "Test Kullanıcısı"
+
+      try {
+        const emailTemplate = createEmailTemplate(
+          mockFirstName,
+          mockBankName,
+          mockInstallmentNumber,
+          mockAmount,
+          mockDueDate,
+          type,
+        )
+
+        const sentFrom = new Sender("bildirim@kreditakip.com.tr", "Kredi Takip")
+        const recipients = [new Recipient(testEmail, mockFirstName)]
+
+        const emailParams = new EmailParams()
+          .setFrom(sentFrom)
+          .setTo(recipients)
+          .setSubject(`[TEST] ${emailTemplate.subject}`)
+          .setHtml(emailTemplate.html)
+
+        const response = await mailerSend.email.send(emailParams)
+
+        if (response.statusCode !== 202) {
+          console.error(`MailerSend test error:`, response)
+          return NextResponse.json(
+            {
+              success: false,
+              error: `HTTP ${response.statusCode}`,
+            },
+            { status: 500 },
+          )
+        }
+
+        return NextResponse.json({
+          success: true,
+          message: "Test e-postası başarıyla gönderildi",
+          messageId: response.headers?.["x-message-id"] || "unknown",
+        })
+      } catch (error) {
+        console.error("Error sending test email:", error)
+        return NextResponse.json(
+          {
+            success: false,
+            error: error.message,
+          },
+          { status: 500 },
+        )
+      }
+    }
 
     if (!userId) {
       return NextResponse.json({ error: "User ID is required" }, { status: 400 })
