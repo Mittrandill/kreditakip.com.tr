@@ -629,7 +629,11 @@ export default function PDFAnalysisPage() {
               <div className="flex items-center gap-3">
                 {paymentPlan.bankName ? (
                   <>
-                    <BankLogo bankName={paymentPlan.bankName} size="sm" />
+                    <BankLogo
+                      bankName={paymentPlan.bankName}
+                      logoUrl={banks.find((bank) => bank.name === paymentPlan.bankName)?.logo_url}
+                      size="sm"
+                    />
                     <span className="font-medium">{paymentPlan.bankName}</span>
                   </>
                 ) : (

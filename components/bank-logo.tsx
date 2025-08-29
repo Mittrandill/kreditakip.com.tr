@@ -113,10 +113,10 @@ const getBankLogoPath = (bankName: string): string => {
     Denizbank: "/bank-icons/denizbank.png",
 
     // Enpara Bank variations
-    "Enpara Bank": "/bank-icons/enpara.png",
-    "Enpara Bank A.Ş.": "/bank-icons/enpara.png",
-    "Enpara.com": "/bank-icons/enpara.png",
-    Enpara: "/bank-icons/enpara.png",
+    "Enpara Bank": "/bank-icons/enpara-bank.png",
+    "Enpara Bank A.Ş.": "/bank-icons/enpara-bank.png",
+    "Enpara.com": "/bank-icons/enpara-bank.png",
+    Enpara: "/bank-icons/enpara-bank.png",
 
     // Fibabanka variations
     Fibabanka: "/bank-icons/fibabanka.png",
