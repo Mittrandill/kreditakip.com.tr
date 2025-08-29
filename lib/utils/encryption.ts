@@ -44,15 +44,12 @@ export async function encryptSensitiveData(data: string): Promise<string> {
       return ""
     }
 
-    console.log(`🔐 Encrypting password: ${data.substring(0, 2)}***`)
-
     // Step 1: XOR encrypt with key
     const encrypted = xorEncrypt(data, ENCRYPTION_KEY)
 
     // Step 2: Base64 encode for safe storage
     const encoded = safeBase64Encode(encrypted)
 
-    console.log(`✅ Password encrypted successfully`)
     return encoded
   } catch (error) {
     console.error("Encryption error:", error)
@@ -66,15 +63,12 @@ export async function decryptSensitiveData(encryptedData: string): Promise<strin
       return ""
     }
 
-    console.log(`🔓 Decrypting password...`)
-
     // Step 1: Base64 decode
     const decoded = safeBase64Decode(encryptedData)
 
     // Step 2: XOR decrypt with key
     const decrypted = xorDecrypt(decoded, ENCRYPTION_KEY)
 
-    console.log(`✅ Password decrypted successfully`)
     return decrypted
   } catch (error) {
     console.error("Decryption error:", error)
@@ -108,16 +102,6 @@ export function getCardBrand(cardNumber: string): string {
   return "Bilinmeyen"
 }
 
-const TEST_CARD_NUMBERS = [
-  "1111111111111111",
-  "4111111111111111",
-  "5555555555554444",
-  "378282246310005",
-  "6011111111111117",
-  "4242424242424242",
-  "1234567890123456",
-]
-
 export function validateCardNumber(cardNumber: string): boolean {
   if (!cardNumber) return false
 
@@ -126,9 +110,6 @@ export function validateCardNumber(cardNumber: string): boolean {
   if (!/^\d{13,19}$/.test(cleanNumber)) return false
 
   if (process.env.NODE_ENV === "development") {
-    if (TEST_CARD_NUMBERS.includes(cleanNumber)) {
-      return true
-    }
     return true // Allow any format in development
   }
 
@@ -198,36 +179,6 @@ export function sanitizeForLog(data: string): string {
   if (!data) return "[BOŞ]"
   if (data.length <= 4) return "[KISA_VERİ]"
   return data.substring(0, 2) + "***" + data.substring(data.length - 2)
-}
-
-export function getTestCardNumbers(): string[] {
-  return TEST_CARD_NUMBERS.map((num) => formatCardNumber(num))
-}
-
-export function getCardNumberSuggestions(): Array<{ number: string; brand: string; description: string }> {
-  return [
-    { number: "4111 1111 1111 1111", brand: "Visa", description: "Visa Test Kartı" },
-    { number: "5555 5555 5555 4444", brand: "Mastercard", description: "Mastercard Test Kartı" },
-    { number: "3782 8224 6310 005", brand: "American Express", description: "Amex Test Kartı" },
-    { number: "6011 1111 1111 1117", brand: "Discover", description: "Discover Test Kartı" },
-    { number: "4242 4242 4242 4242", brand: "Visa", description: "Stripe Test Kartı" },
-    { number: "1111 1111 1111 1111", brand: "Test", description: "Basit Test Kartı" },
-    { number: "1234 5678 9012 3456", brand: "Test", description: "Demo Kartı" },
-  ]
-}
-
-export function createTestPassword(): string {
-  const testPasswords = [
-    "123456",
-    "password123",
-    "test123",
-    "demo456",
-    "sample789",
-    "bankpass456",
-    "secure789",
-    "mypassword",
-  ]
-  return testPasswords[Math.floor(Math.random() * testPasswords.length)]
 }
 
 export function validatePasswordStrength(password: string): {
