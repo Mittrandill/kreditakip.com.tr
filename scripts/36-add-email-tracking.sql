@@ -13,6 +13,7 @@ CREATE INDEX IF NOT EXISTS idx_notifications_type ON notifications(notification_
 CREATE INDEX IF NOT EXISTS idx_notifications_scheduled ON notifications(scheduled_for);
 CREATE INDEX IF NOT EXISTS idx_notifications_user_payment_email ON notifications(user_id, payment_plan_id, notification_type, email_sent_at);
 
+-- DATE() fonksiyonu yerine ::date cast kullanarak IMMUTABLE hatası düzeltildi
 -- E-posta tracking için composite index (duplicate kontrolü için)
-CREATE INDEX IF NOT EXISTS idx_notifications_duplicate_check ON notifications(user_id, payment_plan_id, notification_type, DATE(scheduled_for)) 
+CREATE INDEX IF NOT EXISTS idx_notifications_duplicate_check ON notifications(user_id, payment_plan_id, notification_type, (scheduled_for::date)) 
 WHERE notification_type = 'email' AND email_sent_at IS NOT NULL;
