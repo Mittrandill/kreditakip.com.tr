@@ -1377,7 +1377,11 @@ function ReminderSettings({ payments }: { payments: PaymentWithCredit[] }) {
                 return (
                   <div key={payment.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
                     <div className="flex items-center gap-3">
-                      <BankLogo bankName={payment.credits.banks.name} size="sm" />
+                      <BankLogo
+                        bankName={payment.credits.banks.name}
+                        logoUrl={payment.credits.banks.logo_url}
+                        size="sm"
+                      />
                       <div>
                         <div className="font-medium">{payment.credits.banks.name}</div>
                         <div className="text-sm text-gray-600">

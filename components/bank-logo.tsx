@@ -337,16 +337,18 @@ export default function BankLogo({ bankName, logoUrl, size = "md", className = "
   // Logo yolu belirleme - Önce logoUrl prop'u, sonra fallback mapping
   const logoPath = logoUrl && logoUrl.trim() !== "" ? logoUrl : getBankLogoPath(bankName)
 
-  // Test için logo yolunu konsola yazdır
+  // Test için logo yolunu konsola yazdır - sadece development'ta
   useEffect(() => {
-    console.log("🏦 BankLogo Debug:", {
-      bankName,
-      logoUrl: logoUrl || "YOK",
-      logoPath: logoPath || "YOK",
-      imageLoaded,
-      imageError,
-      source: logoUrl && logoUrl.trim() !== "" ? "SUPABASE" : "FALLBACK",
-    })
+    if (process.env.NODE_ENV === "development") {
+      console.log("🏦 BankLogo Debug:", {
+        bankName,
+        logoUrl: logoUrl || "YOK",
+        logoPath: logoPath || "YOK",
+        imageLoaded,
+        imageError,
+        source: logoUrl && logoUrl.trim() !== "" ? "SUPABASE" : "FALLBACK",
+      })
+    }
   }, [bankName, logoUrl, logoPath, imageLoaded, imageError])
 
   // Fallback göster
@@ -372,12 +374,16 @@ export default function BankLogo({ bankName, logoUrl, size = "md", className = "
         alt={`${bankName} logosu`}
         className="w-full h-full object-cover scale-110"
         onLoad={() => {
-          console.log("✅ Logo yüklendi:", logoPath)
+          if (process.env.NODE_ENV === "development") {
+            console.log("✅ Logo yüklendi:", logoPath)
+          }
           setImageLoaded(true)
           setImageError(false)
         }}
         onError={() => {
-          console.log("❌ Logo yüklenemedi:", logoPath)
+          if (process.env.NODE_ENV === "development") {
+            console.log("❌ Logo yüklenemedi:", logoPath)
+          }
           setImageError(true)
           setImageLoaded(false)
         }}
