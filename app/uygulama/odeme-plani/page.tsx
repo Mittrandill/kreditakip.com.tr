@@ -588,7 +588,11 @@ function PaymentsList({
                 >
                   <td className="p-4">
                     <div className="flex items-center gap-3">
-                      <BankLogo bankName={payment.credits.banks.name} size="sm" />
+                      <BankLogo
+                        bankName={payment.credits.banks.name}
+                        logoUrl={payment.credits.banks.logo_url}
+                        size="sm"
+                      />
                       <div>
                         <div className="font-medium text-gray-900 dark:text-white">{payment.credits.banks.name}</div>
                         <div className="text-xs text-gray-500">{payment.credits.credit_code}</div>
