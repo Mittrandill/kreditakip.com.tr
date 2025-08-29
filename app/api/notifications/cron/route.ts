@@ -3,22 +3,9 @@ import { supabase } from "@/lib/supabase"
 
 export async function GET(request: NextRequest) {
   try {
-    console.log("[v0] Cron job started at:", new Date().toISOString())
-
     const authHeader = request.headers.get("authorization")
     if (authHeader !== `Bearer ${process.env.CRON_SECRET}`) {
-      console.log("[v0] Cron job unauthorized access attempt")
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
-    }
-
-    if (!process.env.CRON_SECRET) {
-      console.error("[v0] CRON_SECRET environment variable not set")
-      return NextResponse.json({ error: "CRON_SECRET not configured" }, { status: 500 })
-    }
-
-    if (!process.env.MAILERSEND_API_KEY) {
-      console.error("[v0] MAILERSEND_API_KEY environment variable not set")
-      return NextResponse.json({ error: "MAILERSEND_API_KEY not configured" }, { status: 500 })
     }
 
     // Get base URL for API calls
@@ -125,12 +112,11 @@ export async function GET(request: NextRequest) {
 
     const totalSent = Object.values(results.notifications).reduce((sum, count) => sum + count, 0)
 
-    console.log(`[v0] Cron job completed successfully:`, {
+    console.log(`Cron job completed successfully:`, {
       totalUsers: results.totalUsers,
       totalEmailsSent: totalSent,
       breakdown: results.notifications,
       errors: results.errors.length,
-      timestamp: new Date().toISOString(),
     })
 
     return NextResponse.json({
@@ -139,7 +125,7 @@ export async function GET(request: NextRequest) {
       results,
     })
   } catch (error) {
-    console.error("[v0] Cron job error:", error)
+    console.error("Cron job error:", error)
     return NextResponse.json({ error: "Cron job failed" }, { status: 500 })
   }
 }

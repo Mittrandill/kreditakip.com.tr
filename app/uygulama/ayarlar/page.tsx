@@ -34,6 +34,8 @@ import {
   Key,
   Smartphone,
   Monitor,
+  Moon,
+  Sun,
   Globe,
   Download,
   Trash2,
@@ -579,7 +581,6 @@ export default function AyarlarPage() {
                             "/placeholder.svg?height=80&width=80&text=User" ||
                             "/placeholder.svg" ||
                             "/placeholder.svg" ||
-                            "/placeholder.svg" ||
                             "/placeholder.svg"
                           }
                           alt="Profil"
@@ -676,6 +677,40 @@ export default function AyarlarPage() {
                           placeholder="Tam adresinizi girin..."
                         />
                       </div>
+                    </div>
+                  </CardContent>
+                </Card>
+
+                {/* Bildirim Ayarları */}
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                      <Bell className="h-5 w-5 text-emerald-600" />
+                      Bildirim Tercihleri
+                    </CardTitle>
+                    <CardDescription>Hangi bildirimleri almak istediğinizi seçin</CardDescription>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <p className="font-medium">E-posta Bildirimleri</p>
+                        <p className="text-sm text-gray-500">Önemli güncellemeler için e-posta alın</p>
+                      </div>
+                      <Switch checked={emailNotifications} onCheckedChange={setEmailNotifications} />
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <p className="font-medium">SMS Bildirimleri</p>
+                        <p className="text-sm text-gray-500">Ödeme hatırlatmaları için SMS alın</p>
+                      </div>
+                      <Switch checked={smsNotifications} onCheckedChange={setSmsNotifications} />
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <p className="font-medium">Push Bildirimleri</p>
+                        <p className="text-sm text-gray-500">Mobil uygulama bildirimleri</p>
+                      </div>
+                      <Switch checked={pushNotifications} onCheckedChange={setPushNotifications} />
                     </div>
                   </CardContent>
                 </Card>
@@ -1110,13 +1145,16 @@ export default function AyarlarPage() {
                       <Monitor className="h-5 w-5 text-emerald-600" />
                       Görünüm Ayarları
                     </CardTitle>
-                    <CardDescription>Uygulama görünümünü özelleştirin</CardDescription>
+                    <CardDescription>Uygulama görünümünü kişiselleştirin</CardDescription>
                   </CardHeader>
                   <CardContent className="space-y-4">
                     <div className="flex items-center justify-between">
-                      <div>
-                        <p className="font-medium">Koyu Tema</p>
-                        <p className="text-sm text-gray-500">Gözlerinizi yormaması için koyu tema kullanın</p>
+                      <div className="flex items-center gap-3">
+                        {darkMode ? <Moon className="h-5 w-5" /> : <Sun className="h-5 w-5" />}
+                        <div>
+                          <p className="font-medium">Koyu Tema</p>
+                          <p className="text-sm text-gray-500">Karanlık görünümü etkinleştir</p>
+                        </div>
                       </div>
                       <Switch checked={darkMode} onCheckedChange={handleDarkModeToggle} />
                     </div>
@@ -1124,7 +1162,7 @@ export default function AyarlarPage() {
                     <div className="flex items-center justify-between">
                       <div>
                         <p className="font-medium">Kompakt Görünüm</p>
-                        <p className="text-sm text-gray-500">Daha fazla bilgiyi aynı alanda görün</p>
+                        <p className="text-sm text-gray-500">Daha az boşluk ile sıkışık görünüm</p>
                       </div>
                       <Switch checked={compactView} onCheckedChange={handleCompactViewToggle} />
                     </div>
@@ -1132,7 +1170,7 @@ export default function AyarlarPage() {
                     <div className="flex items-center justify-between">
                       <div>
                         <p className="font-medium">Animasyonlar</p>
-                        <p className="text-sm text-gray-500">Geçiş animasyonlarını etkinleştirin</p>
+                        <p className="text-sm text-gray-500">Geçiş animasyonlarını etkinleştir</p>
                       </div>
                       <Switch checked={animationsEnabled} onCheckedChange={handleAnimationsToggle} />
                     </div>
@@ -1146,11 +1184,11 @@ export default function AyarlarPage() {
                       <Globe className="h-5 w-5 text-emerald-600" />
                       Dil ve Bölge
                     </CardTitle>
-                    <CardDescription>Dil ve para birimi tercihlerinizi ayarlayın</CardDescription>
+                    <CardDescription>Dil ve bölgesel ayarlarınızı yapılandırın</CardDescription>
                   </CardHeader>
                   <CardContent className="space-y-4">
                     <div className="space-y-2">
-                      <Label>Dil</Label>
+                      <Label htmlFor="language">Dil</Label>
                       <Select value={language} onValueChange={handleLanguageChange}>
                         <SelectTrigger>
                           <SelectValue />
@@ -1179,35 +1217,38 @@ export default function AyarlarPage() {
                   </CardContent>
                 </Card>
 
+                {/* Bildirim Ayarları */}
                 <Card>
                   <CardHeader>
                     <CardTitle className="flex items-center gap-2">
                       <Bell className="h-5 w-5 text-emerald-600" />
                       Bildirim Ayarları
                     </CardTitle>
-                    <CardDescription>Detaylı bildirim tercihlerinizi yönetin</CardDescription>
+                    <CardDescription>Bildirim tercihlerinizi yönetin</CardDescription>
                   </CardHeader>
                   <CardContent className="space-y-4">
-                    <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg">
-                      <div className="flex items-start gap-3">
-                        <Info className="h-5 w-5 text-blue-600 mt-0.5" />
-                        <div>
-                          <p className="font-medium text-blue-900">Gelişmiş Bildirim Ayarları</p>
-                          <p className="text-sm text-blue-700 mt-1">
-                            E-posta hatırlatıcıları, zaman ayarları ve test fonksiyonları için ödeme planı sayfasındaki
-                            hatırlatıcı sekmesini kullanın.
-                          </p>
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            className="mt-3 border-blue-300 text-blue-700 hover:bg-blue-100 bg-transparent"
-                            onClick={() => router.push("/uygulama/odeme-plani?tab=hatirlatici")}
-                          >
-                            <Bell className="h-4 w-4 mr-2" />
-                            Bildirim Ayarlarına Git
-                          </Button>
-                        </div>
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <p className="font-medium">E-posta Bildirimleri</p>
+                        <p className="text-sm text-gray-500">Önemli güncellemeler için e-posta alın</p>
                       </div>
+                      <Switch checked={emailNotifications} onCheckedChange={setEmailNotifications} />
+                    </div>
+                    <Separator />
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <p className="font-medium">SMS Bildirimleri</p>
+                        <p className="text-sm text-gray-500">Ödeme hatırlatmaları için SMS alın</p>
+                      </div>
+                      <Switch checked={smsNotifications} onCheckedChange={setSmsNotifications} />
+                    </div>
+                    <Separator />
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <p className="font-medium">Push Bildirimleri</p>
+                        <p className="text-sm text-gray-500">Mobil uygulama bildirimleri</p>
+                      </div>
+                      <Switch checked={pushNotifications} onCheckedChange={setPushNotifications} />
                     </div>
                   </CardContent>
                 </Card>
