@@ -5,13 +5,6 @@ import type { Profile } from "@/lib/types"
 const profileCache = new Map<string, { profile: Profile; timestamp: number }>()
 const CACHE_DURATION = 5 * 60 * 1000 // 5 minutes
 
-/**
- * Auth helper functions using optimized Supabase client
- */
-
-/**
- * Register a new user and store first/last name via metadata
- */
 export async function signUp(email: string, password: string, userData: Partial<Profile>) {
   try {
     const { data, error } = await supabase.auth.signUp({
@@ -26,20 +19,15 @@ export async function signUp(email: string, password: string, userData: Partial<
     })
 
     if (error) {
-      console.error("Error signing up user:", error)
       throw error
     }
 
     return data
   } catch (error) {
-    console.error("SignUp error:", error)
     throw error
   }
 }
 
-/**
- * Sign in an existing user with email and password
- */
 export async function signIn(email: string, password: string) {
   try {
     const { data, error } = await supabase.auth.signInWithPassword({
@@ -48,28 +36,21 @@ export async function signIn(email: string, password: string) {
     })
 
     if (error) {
-      console.error("Error signing in:", error)
       throw error
     }
 
     return data
   } catch (error) {
-    console.error("SignIn error:", error)
     throw error
   }
 }
 
-/**
- * Sign in with Google OAuth
- */
 export async function signInWithGoogle() {
   try {
     // Development için local URL kullan, production için origin
-    const isDev = window.location.hostname === 'localhost'
-    const redirectUrl = isDev 
-      ? `http://localhost:3001/auth/callback`
-      : `${window.location.origin}/auth/callback`
-    
+    const isDev = window.location.hostname === "localhost"
+    const redirectUrl = isDev ? `http://localhost:3001/auth/callback` : `${window.location.origin}/auth/callback`
+
     const { data, error } = await supabase.auth.signInWithOAuth({
       provider: "google",
       options: {
@@ -82,20 +63,15 @@ export async function signInWithGoogle() {
     })
 
     if (error) {
-      console.error("Error signing in with Google:", error)
       throw error
     }
 
     return data
   } catch (error) {
-    console.error("GoogleSignIn error:", error)
     throw error
   }
 }
 
-/**
- * Sign out the current user
- */
 export async function signOut() {
   try {
     // Clear profile cache
@@ -104,18 +80,13 @@ export async function signOut() {
     const { error } = await supabase.auth.signOut()
 
     if (error) {
-      console.error("Error signing out:", error)
       throw error
     }
   } catch (error) {
-    console.error("SignOut error:", error)
     throw error
   }
 }
 
-/**
- * Get details of the currently authenticated user
- */
 export async function getCurrentUser() {
   try {
     const {
@@ -124,20 +95,15 @@ export async function getCurrentUser() {
     } = await supabase.auth.getUser()
 
     if (error) {
-      console.error("Error getting current user:", error)
       return null
     }
 
     return user
   } catch (error) {
-    console.error("GetCurrentUser error:", error)
     return null
   }
 }
 
-/**
- * Fetch a user's profile by their ID with caching
- */
 export async function getProfile(userId: string): Promise<Profile | null> {
   try {
     // Check cache first
@@ -149,7 +115,6 @@ export async function getProfile(userId: string): Promise<Profile | null> {
     const { data, error } = await supabase.from("profiles").select("*").eq("id", userId).maybeSingle()
 
     if (error) {
-      console.error("Error fetching profile:", error)
       throw error
     }
 
@@ -163,14 +128,10 @@ export async function getProfile(userId: string): Promise<Profile | null> {
 
     return data
   } catch (error) {
-    console.error("GetProfile error:", error)
     throw error
   }
 }
 
-/**
- * Update a user's profile fields
- */
 export async function updateProfile(userId: string, updates: Partial<Profile>): Promise<Profile | null> {
   try {
     const { data, error } = await supabase
@@ -181,7 +142,6 @@ export async function updateProfile(userId: string, updates: Partial<Profile>): 
       .single()
 
     if (error) {
-      console.error("Error updating profile:", error)
       throw error
     }
 
@@ -195,14 +155,10 @@ export async function updateProfile(userId: string, updates: Partial<Profile>): 
 
     return data
   } catch (error) {
-    console.error("UpdateProfile error:", error)
     throw error
   }
 }
 
-/**
- * Clear profile cache for a specific user or all users
- */
 export function clearProfileCache(userId?: string) {
   if (userId) {
     profileCache.delete(userId)
@@ -211,13 +167,10 @@ export function clearProfileCache(userId?: string) {
   }
 }
 
-/**
- * Preload profile for better UX
- */
 export async function preloadProfile(userId: string) {
   try {
     await getProfile(userId)
   } catch (error) {
-    console.error("Error preloading profile:", error)
+    // Silent fail for preloading
   }
 }

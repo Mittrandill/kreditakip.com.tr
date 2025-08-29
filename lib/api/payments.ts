@@ -9,7 +9,6 @@ export async function getPaymentPlans(creditId: string) {
     .order("installment_number")
 
   if (error) {
-    console.error("Error fetching payment plans:", error)
     throw error
   }
 
@@ -25,7 +24,6 @@ export async function updatePaymentPlan(planId: string, updates: Partial<Payment
     .single()
 
   if (error) {
-    console.error("Error updating payment plan:", error)
     throw error
   }
 
@@ -33,8 +31,6 @@ export async function updatePaymentPlan(planId: string, updates: Partial<Payment
 }
 
 export async function getPaymentHistory(creditId: string) {
-  console.log("[v0] Fetching payment history for credit:", creditId)
-
   const { data, error } = await supabase
     .from("payment_history")
     .select("*")
@@ -42,22 +38,7 @@ export async function getPaymentHistory(creditId: string) {
     .order("payment_date", { ascending: false })
 
   if (error) {
-    console.error("Error fetching payment history:", error)
     throw error
-  }
-
-  console.log("[v0] Payment history data returned:", data)
-  console.log("[v0] Number of payment records:", data?.length || 0)
-
-  if (data && data.length > 0) {
-    const uniqueMonths = [
-      ...new Set(
-        data.map((payment) =>
-          new Date(payment.payment_date).toLocaleDateString("tr-TR", { month: "long", year: "numeric" }),
-        ),
-      ),
-    ]
-    console.log("[v0] Unique months in payment history:", uniqueMonths)
   }
 
   return data
@@ -67,7 +48,6 @@ export async function createPaymentHistory(paymentData: Omit<PaymentHistory, "id
   const { data, error } = await supabase.from("payment_history").insert(paymentData).select().single()
 
   if (error) {
-    console.error("Error creating payment history:", error)
     throw error
   }
 
@@ -98,7 +78,6 @@ export async function getUpcomingPayments(userId: string, days = 30) {
     .order("due_date")
 
   if (error) {
-    console.error("Error fetching upcoming payments:", error)
     throw error
   }
 
@@ -133,7 +112,6 @@ export async function getAllPayments(userId: string, monthsBack = 12, monthsForw
     .order("due_date")
 
   if (error) {
-    console.error("Error fetching all payments:", error)
     throw error
   }
 
@@ -141,14 +119,13 @@ export async function getAllPayments(userId: string, monthsBack = 12, monthsForw
 }
 
 export async function deletePaymentHistory(paymentId: string) {
-  const { data, error } = await supabase.from("payment_history").delete().eq("id", paymentId).select().maybeSingle() // allow 0-or-1 rows without raising an error
+  const { data, error } = await supabase.from("payment_history").delete().eq("id", paymentId).select().maybeSingle()
 
   if (error) {
-    console.error("Error deleting payment history:", error)
     throw error
   }
 
-  return data // can be null if the row didn't exist
+  return data
 }
 
 export async function getPaymentHistoryById(paymentId: string) {
@@ -173,7 +150,6 @@ export async function getPaymentHistoryById(paymentId: string) {
     .single()
 
   if (error) {
-    console.error("Error fetching payment history by id:", error)
     throw error
   }
 

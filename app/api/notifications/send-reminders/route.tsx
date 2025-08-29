@@ -8,6 +8,76 @@ const mailerSend = new MailerSend({
   apiKey: process.env.MAILERSEND_API_KEY || "",
 })
 
+async function checkEmailAlreadySent(
+  userId: string,
+  paymentPlanId: string,
+  notificationType: string,
+  scheduledDate: Date,
+): Promise<boolean> {
+  const startOfDay = new Date(scheduledDate)
+  startOfDay.setHours(0, 0, 0, 0)
+
+  const endOfDay = new Date(scheduledDate)
+  endOfDay.setHours(23, 59, 59, 999)
+
+  const { data, error } = await supabase
+    .from("notifications")
+    .select("id")
+    .eq("user_id", userId)
+    .eq("payment_plan_id", paymentPlanId)
+    .eq("notification_type", "email")
+    .gte("scheduled_for", startOfDay.toISOString())
+    .lte("scheduled_for", endOfDay.toISOString())
+    .not("email_sent_at", "is", null)
+    .limit(1)
+
+  if (error) {
+    console.error("Error checking duplicate email:", error)
+    return false // Hata durumunda e-posta gönderilmesine izin ver
+  }
+
+  return data && data.length > 0
+}
+
+async function createEmailNotificationRecord(
+  userId: string,
+  paymentPlanId: string,
+  creditId: string,
+  title: string,
+  message: string,
+  scheduledFor: Date,
+  emailSentAt?: Date,
+  emailProviderId?: string,
+  emailStatus = "pending",
+  errorMessage?: string,
+) {
+  const { data, error } = await supabase
+    .from("notifications")
+    .insert({
+      user_id: userId,
+      payment_plan_id: paymentPlanId,
+      credit_id: creditId,
+      title,
+      message,
+      notification_type: "email",
+      scheduled_for: scheduledFor.toISOString(),
+      email_sent_at: emailSentAt?.toISOString(),
+      email_provider_id: emailProviderId,
+      email_delivery_status: emailStatus,
+      email_error_message: errorMessage,
+      retry_count: 0,
+      is_read: false,
+    })
+    .select()
+    .single()
+
+  if (error) {
+    console.error("Error creating email notification record:", error)
+  }
+
+  return { data, error }
+}
+
 function createEmailTemplate(
   firstName: string,
   bankName: string,
@@ -83,7 +153,7 @@ function createEmailTemplate(
                   </o:OfficeDocumentSettings>
               </xml>
           </noscript>
-          <![endif]
+          <![endif]>
           <style>
               * {
                   margin: 0;
@@ -776,6 +846,7 @@ export async function POST(request: NextRequest) {
     threeDaysLater.setDate(threeDaysLater.getDate() + 3)
 
     let emailsSent = 0
+    let emailsSkipped = 0
     const results = []
 
     // Bildirim tipine göre filtreleme
@@ -828,6 +899,22 @@ export async function POST(request: NextRequest) {
       const amount = payment.total_payment.toLocaleString("tr-TR")
       const dueDate = new Date(payment.due_date).toLocaleDateString("tr-TR")
       const installmentNumber = payment.installment_number
+      const scheduledFor = new Date()
+
+      const alreadySent = await checkEmailAlreadySent(userId, payment.id, type, scheduledFor)
+      if (alreadySent) {
+        results.push({
+          paymentId: payment.id,
+          bankName,
+          amount,
+          dueDate,
+          success: false,
+          skipped: true,
+          reason: "Email already sent today",
+        })
+        emailsSkipped++
+        continue
+      }
 
       try {
         const emailTemplate = createEmailTemplate(
@@ -852,6 +939,20 @@ export async function POST(request: NextRequest) {
 
         if (response.statusCode !== 202) {
           console.error(`MailerSend error for payment ${payment.id}:`, response)
+
+          await createEmailNotificationRecord(
+            userId,
+            payment.id,
+            payment.credit_id,
+            emailTemplate.subject,
+            `${bankName} bankasından ${installmentNumber}. taksit ödeme hatırlatması`,
+            scheduledFor,
+            undefined,
+            undefined,
+            "failed",
+            `HTTP ${response.statusCode}`,
+          )
+
           results.push({
             paymentId: payment.id,
             bankName,
@@ -861,18 +962,47 @@ export async function POST(request: NextRequest) {
             error: `HTTP ${response.statusCode}`,
           })
         } else {
+          const emailSentAt = new Date()
+          const messageId = response.headers?.["x-message-id"] || "unknown"
+
+          await createEmailNotificationRecord(
+            userId,
+            payment.id,
+            payment.credit_id,
+            emailTemplate.subject,
+            `${bankName} bankasından ${installmentNumber}. taksit ödeme hatırlatması`,
+            scheduledFor,
+            emailSentAt,
+            messageId,
+            "sent",
+          )
+
           results.push({
             paymentId: payment.id,
             bankName,
             amount,
             dueDate,
             success: true,
-            messageId: response.headers?.["x-message-id"] || "unknown",
+            messageId,
           })
           emailsSent++
         }
       } catch (error) {
         console.error(`Error sending email for payment ${payment.id}:`, error)
+
+        await createEmailNotificationRecord(
+          userId,
+          payment.id,
+          payment.credit_id,
+          `Ödeme Hatırlatması - ${type}`,
+          `${bankName} bankasından ${installmentNumber}. taksit ödeme hatırlatması`,
+          scheduledFor,
+          undefined,
+          undefined,
+          "failed",
+          error.message,
+        )
+
         results.push({
           paymentId: payment.id,
           bankName,
@@ -886,8 +1016,9 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json({
       success: true,
-      message: `${emailsSent} e-posta gönderildi`,
+      message: `${emailsSent} e-posta gönderildi, ${emailsSkipped} e-posta atlandı (zaten gönderilmiş)`,
       emailsSent,
+      emailsSkipped,
       totalPayments: paymentsToNotify.length,
       results,
     })
