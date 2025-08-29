@@ -300,7 +300,6 @@ const getBankLogoPath = (bankName: string): string => {
 
   // Önce tam eşleşme ara
   if (bankMappings[bankName]) {
-    console.log("🎯 Fallback tam eşleşme:", bankName, "->", bankMappings[bankName])
     return bankMappings[bankName]
   }
 
@@ -309,12 +308,10 @@ const getBankLogoPath = (bankName: string): string => {
   for (const [key, value] of Object.entries(bankMappings)) {
     const normalizedKey = key.toLowerCase().trim()
     if (normalizedBankName.includes(normalizedKey) || normalizedKey.includes(normalizedBankName)) {
-      console.log("🔍 Fallback kısmi eşleşme:", bankName, "->", key, "->", value)
       return value
     }
   }
 
-  console.log("❌ Fallback eşleşme bulunamadı:", bankName)
   return ""
 }
 
@@ -337,18 +334,8 @@ export default function BankLogo({ bankName, logoUrl, size = "md", className = "
   // Logo yolu belirleme - Önce logoUrl prop'u, sonra fallback mapping
   const logoPath = logoUrl && logoUrl.trim() !== "" ? logoUrl : getBankLogoPath(bankName)
 
-  // Test için logo yolunu konsola yazdır - sadece development'ta
   useEffect(() => {
-    if (process.env.NODE_ENV === "development") {
-      console.log("🏦 BankLogo Debug:", {
-        bankName,
-        logoUrl: logoUrl || "YOK",
-        logoPath: logoPath || "YOK",
-        imageLoaded,
-        imageError,
-        source: logoUrl && logoUrl.trim() !== "" ? "SUPABASE" : "FALLBACK",
-      })
-    }
+    // Debug logları kaldırıldı
   }, [bankName, logoUrl, logoPath, imageLoaded, imageError])
 
   // Fallback göster
@@ -374,16 +361,10 @@ export default function BankLogo({ bankName, logoUrl, size = "md", className = "
         alt={`${bankName} logosu`}
         className="w-full h-full object-cover scale-110"
         onLoad={() => {
-          if (process.env.NODE_ENV === "development") {
-            console.log("✅ Logo yüklendi:", logoPath)
-          }
           setImageLoaded(true)
           setImageError(false)
         }}
         onError={() => {
-          if (process.env.NODE_ENV === "development") {
-            console.log("❌ Logo yüklenemedi:", logoPath)
-          }
           setImageError(true)
           setImageLoaded(false)
         }}

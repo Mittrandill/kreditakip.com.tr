@@ -1097,39 +1097,7 @@ function ReminderSettings({ payments }: { payments: PaymentWithCredit[] }) {
     }
   }
 
-  const sendTestReminder = async (type: string) => {
-    setUpdating(`test_${type}`)
-    try {
-      const response = await fetch("/api/notifications/send-reminders", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ userId: user!.id, type }),
-      })
-
-      const result = await response.json()
-
-      if (result.success) {
-        toast({
-          title: "Test bildirimi gönderildi! 📧",
-          description:
-            result.emailsSent > 0
-              ? `${result.emailsSent} e-posta başarıyla gönderildi`
-              : "Gönderilecek ödeme bulunamadı",
-        })
-      } else {
-        throw new Error(result.error)
-      }
-    } catch (error) {
-      console.error("Error sending test reminder:", error)
-      toast({
-        title: "Hata ❌",
-        description: "Test bildirimi gönderilemedi. Lütfen tekrar deneyin.",
-        variant: "destructive",
-      })
-    } finally {
-      setUpdating(null)
-    }
-  }
+  // sendTestReminder fonksiyonu tamamen kaldırıldı
 
   if (loading) {
     return (
@@ -1192,19 +1160,6 @@ function ReminderSettings({ payments }: { payments: PaymentWithCredit[] }) {
                     "Pasif"
                   )}
                 </Button>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => sendTestReminder("3_days_before")}
-                  disabled={updating === "test_3_days_before" || !preferences.email_3_days_before}
-                  title="Test bildirimi gönder"
-                >
-                  {updating === "test_3_days_before" ? (
-                    <div className="animate-spin rounded-full h-4 w-4 border-2 border-gray-400 border-t-transparent"></div>
-                  ) : (
-                    "Test"
-                  )}
-                </Button>
               </div>
             </div>
 
@@ -1226,19 +1181,6 @@ function ReminderSettings({ payments }: { payments: PaymentWithCredit[] }) {
                     "Aktif"
                   ) : (
                     "Pasif"
-                  )}
-                </Button>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => sendTestReminder("1_day_before")}
-                  disabled={updating === "test_1_day_before" || !preferences.email_1_day_before}
-                  title="Test bildirimi gönder"
-                >
-                  {updating === "test_1_day_before" ? (
-                    <div className="animate-spin rounded-full h-4 w-4 border-2 border-gray-400 border-t-transparent"></div>
-                  ) : (
-                    "Test"
                   )}
                 </Button>
               </div>
@@ -1264,19 +1206,6 @@ function ReminderSettings({ payments }: { payments: PaymentWithCredit[] }) {
                     "Pasif"
                   )}
                 </Button>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => sendTestReminder("due_date")}
-                  disabled={updating === "test_due_date" || !preferences.email_on_due_date}
-                  title="Test bildirimi gönder"
-                >
-                  {updating === "test_due_date" ? (
-                    <div className="animate-spin rounded-full h-4 w-4 border-2 border-gray-400 border-t-transparent"></div>
-                  ) : (
-                    "Test"
-                  )}
-                </Button>
               </div>
             </div>
 
@@ -1298,19 +1227,6 @@ function ReminderSettings({ payments }: { payments: PaymentWithCredit[] }) {
                     "Aktif"
                   ) : (
                     "Pasif"
-                  )}
-                </Button>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => sendTestReminder("overdue")}
-                  disabled={updating === "test_overdue" || !preferences.email_overdue}
-                  title="Test bildirimi gönder"
-                >
-                  {updating === "test_overdue" ? (
-                    <div className="animate-spin rounded-full h-4 w-4 border-2 border-gray-400 border-t-transparent"></div>
-                  ) : (
-                    "Test"
                   )}
                 </Button>
               </div>
