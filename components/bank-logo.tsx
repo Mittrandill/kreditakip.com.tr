@@ -64,109 +64,146 @@ const getIconSize = (size: "sm" | "md" | "lg") => {
 // SÜPER KAPSAMLI BANKA LOGO EŞLEŞTİRMESİ - FALLBACK İÇİN
 const getBankLogoPath = (bankName: string): string => {
   const bankMappings: Record<string, string> = {
-    // Devlet Bankaları
-    "T.C. Ziraat Bankası A.Ş.": "/bank-icons/ziraat-bankasi.png",
-    "Ziraat Bankası": "/bank-icons/ziraat-bankasi.png",
-    "TC Ziraat Bankası": "/bank-icons/ziraat-bankasi.png",
-    Ziraat: "/bank-icons/ziraat-bankasi.png",
+    // Yapı Kredi variations
+    "Yapı Kredi": "/bank-icons/yapi-kredi.png",
+    "Yapı Kredi Bankası": "/bank-icons/yapi-kredi.png",
+    "Yapı ve Kredi Bankası A.Ş.": "/bank-icons/yapi-kredi.png",
+    "Yapı ve Kredi": "/bank-icons/yapi-kredi.png",
+    YapıKredi: "/bank-icons/yapi-kredi.png",
 
-    "Türkiye Halk Bankası A.Ş.": "/bank-icons/turkiye-halk-bankasi.png",
-    "Halk Bankası": "/bank-icons/turkiye-halk-bankasi.png",
-    Halkbank: "/bank-icons/turkiye-halk-bankasi.png",
-    "T. Halk Bankası A.Ş.": "/bank-icons/turkiye-halk-bankasi.png",
+    // Garanti variations
+    Garanti: "/bank-icons/garanti.png",
+    "Garanti BBVA": "/bank-icons/garanti.png",
+    "Türkiye Garanti Bankası": "/bank-icons/garanti.png",
+    "Türkiye Garanti Bankası A.Ş.": "/bank-icons/garanti.png",
+    "Garanti Bankası": "/bank-icons/garanti.png",
 
+    // Akbank variations
+    Akbank: "/bank-icons/akbank.png",
+    "Akbank T.A.Ş.": "/bank-icons/akbank.png",
+
+    // İş Bankası variations
+    "İş Bankası": "/bank-icons/is-bankasi.png",
+    "Türkiye İş Bankası": "/bank-icons/is-bankasi.png",
+    "Türkiye İş Bankası A.Ş.": "/bank-icons/is-bankasi.png",
+    İşbank: "/bank-icons/is-bankasi.png",
+
+    // Ziraat Bankası variations
+    "Ziraat Bankası": "/bank-icons/ziraat.png",
+    "T.C. Ziraat Bankası A.Ş.": "/bank-icons/ziraat.png",
+    "TC Ziraat Bankası": "/bank-icons/ziraat.png",
+    Ziraat: "/bank-icons/ziraat.png",
+
+    // VakıfBank variations
+    VakıfBank: "/bank-icons/vakifbank.png",
+    "Türkiye Vakıflar Bankası": "/bank-icons/vakifbank.png",
     "Türkiye Vakıflar Bankası T.A.O.": "/bank-icons/vakifbank.png",
     "Vakıflar Bankası": "/bank-icons/vakifbank.png",
-    Vakıfbank: "/bank-icons/vakifbank.png",
     "Vakıf Bankası": "/bank-icons/vakifbank.png",
 
-    // Özel Sermayeli Bankalar
-    "Akbank T.A.Ş.": "/bank-icons/akbank.png",
-    Akbank: "/bank-icons/akbank.png",
+    // Halkbank variations
+    Halkbank: "/bank-icons/halkbank.png",
+    "Türkiye Halk Bankası A.Ş.": "/bank-icons/halkbank.png",
+    "Halk Bankası": "/bank-icons/halkbank.png",
+    "T. Halk Bankası A.Ş.": "/bank-icons/halkbank.png",
 
-    "Türkiye İş Bankası A.Ş.": "/bank-icons/turkiye-is-bankasi.png",
-    "İş Bankası": "/bank-icons/turkiye-is-bankasi.png",
-    İşbank: "/bank-icons/turkiye-is-bankasi.png",
-
-    "Türkiye Garanti Bankası A.Ş.": "/bank-icons/turkiye-garanti-bankasi.png",
-    "Garanti Bankası": "/bank-icons/turkiye-garanti-bankasi.png",
-    "Garanti BBVA": "/bank-icons/turkiye-garanti-bankasi.png",
-    Garanti: "/bank-icons/turkiye-garanti-bankasi.png",
-
-    "Yapı ve Kredi Bankası A.Ş.": "/bank-icons/yapi-kredi-bankasi.png",
-    "Yapı Kredi": "/bank-icons/yapi-kredi-bankasi.png",
-    "Yapı ve Kredi": "/bank-icons/yapi-kredi-bankasi.png",
-    YapıKredi: "/bank-icons/yapi-kredi-bankasi.png",
-
-    "QNB Finansbank A.Ş.": "/bank-icons/qnb-finansbank.png",
-    "QNB Finansbank": "/bank-icons/qnb-finansbank.png",
-    Finansbank: "/bank-icons/qnb-finansbank.png",
-
-    "Türkiye Ekonomi Bankası A.Ş.": "/bank-icons/turkiye-ekonomi-bankasi.png",
-    "Türk Ekonomi Bankası": "/bank-icons/turkiye-ekonomi-bankasi.png",
-    TEB: "/bank-icons/turkiye-ekonomi-bankasi.png",
-
-    "Şekerbank T.A.Ş.": "/bank-icons/sekerbank.png",
-    Şekerbank: "/bank-icons/sekerbank.png",
-
-    "Anadolubank A.Ş.": "/bank-icons/anadolubank.png",
-    Anadolubank: "/bank-icons/anadolubank.png",
-
-    "Fibabanka A.Ş.": "/bank-icons/fibabanka.png",
-    Fibabanka: "/bank-icons/fibabanka.png",
-
-    "Turkish Bank A.Ş.": "/bank-icons/turkish-bank.png",
-    "Turkish Bank": "/bank-icons/turkish-bank.png",
-
+    // DenizBank variations
+    DenizBank: "/bank-icons/denizbank.png",
     "DenizBank A.Ş.": "/bank-icons/denizbank.png",
     Denizbank: "/bank-icons/denizbank.png",
 
-    "ING Bank A.Ş.": "/bank-icons/ing-bank.png",
-    "ING Bank": "/bank-icons/ing-bank.png",
-    ING: "/bank-icons/ing-bank.png",
+    // Enpara Bank variations
+    "Enpara Bank": "/bank-icons/enpara.png",
+    "Enpara Bank A.Ş.": "/bank-icons/enpara.png",
+    "Enpara.com": "/bank-icons/enpara.png",
+    Enpara: "/bank-icons/enpara.png",
 
+    // Fibabanka variations
+    Fibabanka: "/bank-icons/fibabanka.png",
+    "Fibabanka A.Ş.": "/bank-icons/fibabanka.png",
+
+    // QNB Finansbank variations
+    "QNB Finansbank": "/bank-icons/qnb.png",
+    "QNB Finansbank A.Ş.": "/bank-icons/qnb.png",
+    Finansbank: "/bank-icons/qnb.png",
+
+    // TEB variations
+    TEB: "/bank-icons/teb.png",
+    "Türkiye Ekonomi Bankası A.Ş.": "/bank-icons/teb.png",
+    "Türk Ekonomi Bankası": "/bank-icons/teb.png",
+
+    // ING variations
+    ING: "/bank-icons/ing.png",
+    "ING Bank A.Ş.": "/bank-icons/ing.png",
+    "ING Bank": "/bank-icons/ing.png",
+
+    // Şekerbank variations
+    "Şekerbank T.A.Ş.": "/bank-icons/sekerbank.png",
+    Şekerbank: "/bank-icons/sekerbank.png",
+
+    // Anadolubank variations
+    "Anadolubank A.Ş.": "/bank-icons/anadolubank.png",
+    Anadolubank: "/bank-icons/anadolubank.png",
+
+    // Turkish Bank variations
+    "Turkish Bank A.Ş.": "/bank-icons/turkish-bank.png",
+    "Turkish Bank": "/bank-icons/turkish-bank.png",
+
+    // Citibank variations
     "Citibank A.Ş.": "/bank-icons/citibank.png",
     Citibank: "/bank-icons/citibank.png",
 
+    // Deutsche Bank variations
     "Deutsche Bank A.Ş.": "/bank-icons/deutsche-bank.png",
     "Deutsche Bank": "/bank-icons/deutsche-bank.png",
 
+    // Alternatif Bank variations
     "Alternatif Bank A.Ş.": "/bank-icons/alternatif-bank.png",
     "Alternatif Bank": "/bank-icons/alternatif-bank.png",
 
+    // Burgan Bank variations
     "Burgan Bank A.Ş.": "/bank-icons/burgan-bank.png",
     "Burgan Bank": "/bank-icons/burgan-bank.png",
 
+    // ICBC Turkey Bank variations
     "ICBC Turkey Bank A.Ş.": "/bank-icons/icbc-turkey-bank.png",
     "ICBC Turkey Bank": "/bank-icons/icbc-turkey-bank.png",
 
+    // MUFG Bank Turkey variations
     "MUFG Bank Turkey A.Ş.": "/bank-icons/mufg-bank-turkey.png",
     "MUFG Bank Turkey": "/bank-icons/mufg-bank-turkey.png",
 
+    // Odeabank variations
     "Odeabank A.Ş.": "/bank-icons/odeabank.png",
     Odeabank: "/bank-icons/odeabank.png",
 
+    // Rabobank variations
     "Rabobank A.Ş.": "/bank-icons/rabobank.png",
     Rabobank: "/bank-icons/rabobank.png",
 
-    // Yabancı Şubeler
+    // HSBC variations
     "HSBC Bank A.Ş.": "/bank-icons/hsbc-bank.png",
     "HSBC Bank": "/bank-icons/hsbc-bank.png",
     HSBC: "/bank-icons/hsbc-bank.png",
 
+    // Intesa Sanpaolo variations
     "Intesa Sanpaolo S.p.A.": "/bank-icons/intesa-sanpaolo.png",
     "Intesa Sanpaolo": "/bank-icons/intesa-sanpaolo.png",
 
+    // Habib Bank variations
     "Habib Bank Limited": "/bank-icons/habib-bank-limited.png",
     "Habib Bank": "/bank-icons/habib-bank-limited.png",
 
+    // Bank Mellat variations
     "Bank Mellat": "/bank-icons/bank-mellat.png",
     Mellat: "/bank-icons/bank-mellat.png",
 
+    // JPMorgan Chase variations
     "JPMorgan Chase Bank N.A.": "/bank-icons/jpmorgan-chase-bank.png",
     "JPMorgan Chase": "/bank-icons/jpmorgan-chase-bank.png",
     JPMorgan: "/bank-icons/jpmorgan-chase-bank.png",
 
+    // Société Générale variations
     "Société Générale (SA)": "/bank-icons/societe-generale.png",
     "Société Générale": "/bank-icons/societe-generale.png",
 
@@ -246,10 +283,6 @@ const getBankLogoPath = (bankName: string): string => {
     "Standard Chartered": "/bank-icons/standard-chartered-yatirim-bankasi-turk.png",
 
     // Dijital Bankalar
-    "Enpara.com": "/bank-icons/enpara-bank.png",
-    "Enpara Bank A.Ş.": "/bank-icons/enpara-bank.png",
-    Enpara: "/bank-icons/enpara-bank.png",
-
     "Colendi Bank A.Ş.": "/bank-icons/colendi-bank.png",
     "Colendi Bank": "/bank-icons/colendi-bank.png",
     Colendi: "/bank-icons/colendi-bank.png",
