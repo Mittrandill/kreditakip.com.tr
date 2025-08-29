@@ -896,7 +896,11 @@ function PaymentAnalysis({ payments, credits }: { payments: PaymentWithCredit[];
                   className="flex items-center justify-between text-sm bg-purple-500/20 p-2 rounded-lg"
                 >
                   <div className="flex items-center gap-2">
-                    <BankLogo bankName={payment.credits.banks.name} size="sm" />
+                    <BankLogo
+                      bankName={payment.credits.banks.name}
+                      logoUrl={payment.credits.banks.logo_url}
+                      size="sm"
+                    />
                     <span className="font-medium text-white">{payment.credits.banks.name}</span>
                   </div>
                   <div className="text-right">
@@ -924,29 +928,34 @@ function PaymentAnalysis({ payments, credits }: { payments: PaymentWithCredit[];
               {Object.entries(bankDistribution)
                 .sort(([, a], [, b]) => b.total - a.total)
                 .slice(0, 5)
-                .map(([bankName, data]) => (
-                  <div key={bankName} className="space-y-2">
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-2">
-                        <BankLogo bankName={bankName} size="sm" />
-                        <span className="font-medium text-sm">{bankName}</span>
+                .map(([bankName, data]) => {
+                  // Find a payment associated with this bank to get the logo URL
+                  const bankPayments = payments.filter((payment) => payment.credits.banks.name === bankName)
+
+                  return (
+                    <div key={bankName} className="space-y-2">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-2">
+                          <BankLogo bankName={bankName} logoUrl={bankPayments[0]?.credits.banks.logo_url} size="sm" />
+                          <span className="font-medium text-sm">{bankName}</span>
+                        </div>
+                        <span className="text-sm font-semibold">{formatCurrency(data.total)}</span>
                       </div>
-                      <span className="text-sm font-semibold">{formatCurrency(data.total)}</span>
+                      <div className="w-full bg-gray-200 rounded-full h-2">
+                        <div
+                          className="bg-gradient-to-r from-blue-500 to-blue-600 h-2 rounded-full transition-all duration-300"
+                          style={{
+                            width: `${Math.max(5, (data.total / Math.max(...Object.values(bankDistribution).map((d) => d.total))) * 100)}%`,
+                          }}
+                        ></div>
+                      </div>
+                      <div className="flex justify-between text-xs text-gray-600">
+                        <span>{data.count} taksit</span>
+                        <span>Bekleyen: {formatCurrency(data.pending)}</span>
+                      </div>
                     </div>
-                    <div className="w-full bg-gray-200 rounded-full h-2">
-                      <div
-                        className="bg-gradient-to-r from-blue-500 to-blue-600 h-2 rounded-full transition-all duration-300"
-                        style={{
-                          width: `${Math.max(5, (data.total / Math.max(...Object.values(bankDistribution).map((d) => d.total))) * 100)}%`,
-                        }}
-                      ></div>
-                    </div>
-                    <div className="flex justify-between text-xs text-gray-600">
-                      <span>{data.count} taksit</span>
-                      <span>Bekleyen: {formatCurrency(data.pending)}</span>
-                    </div>
-                  </div>
-                ))}
+                  )
+                })}
             </div>
           </CardContent>
         </Card>
