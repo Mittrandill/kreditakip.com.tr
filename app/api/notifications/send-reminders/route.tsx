@@ -19,10 +19,10 @@ function createEmailTemplate(
   let subject = ""
   let title = ""
   let message = ""
-  let urgencyColor = "#10b981"
+  let urgencyColor = "#10b981" // Default green from original template
   let urgencyBg = "#10b981"
   let urgencyText = "Bilgilendirme"
-  let iconEmoji = "ℹ️"
+  let iconEmoji = "⏰" // Default to clock icon from original template
 
   switch (type) {
     case "3_days_before":
@@ -32,7 +32,7 @@ function createEmailTemplate(
       urgencyColor = "#f59e0b"
       urgencyBg = "#f59e0b"
       urgencyText = "3 Gün Kaldı"
-      iconEmoji = "⏰"
+      iconEmoji = "⏰" // Clock icon for 3 days before
       break
 
     case "1_day_before":
@@ -42,7 +42,7 @@ function createEmailTemplate(
       urgencyColor = "#f97316"
       urgencyBg = "#f97316"
       urgencyText = "Yarın Vade"
-      iconEmoji = "⚡"
+      iconEmoji = "⏰" // Clock icon for 1 day before
       break
 
     case "due_date":
@@ -52,7 +52,7 @@ function createEmailTemplate(
       urgencyColor = "#dc2626"
       urgencyBg = "#dc2626"
       urgencyText = "Bugün Vade"
-      iconEmoji = "🚨"
+      iconEmoji = "🚨" // Alert icon for due date
       break
 
     case "overdue":
@@ -62,7 +62,7 @@ function createEmailTemplate(
       urgencyColor = "#dc2626"
       urgencyBg = "#dc2626"
       urgencyText = "Vade Geçti"
-      iconEmoji = "❌"
+      iconEmoji = "❌" // X icon for overdue
       break
   }
 
@@ -224,7 +224,7 @@ function createEmailTemplate(
               .bank-icon {
                   width: 48px;
                   height: 48px;
-                  background: linear-gradient(135deg, ${urgencyColor} 0%, ${urgencyColor}dd 100%);
+                  background: linear-gradient(135deg, #10b981 0%, #0d9488 100%);
                   border-radius: 12px;
                   display: flex;
                   align-items: center;
@@ -278,7 +278,7 @@ function createEmailTemplate(
               .amount {
                   font-size: 42px;
                   font-weight: 800;
-                  background: linear-gradient(135deg, ${urgencyColor} 0%, ${urgencyColor}dd 100%);
+                  background: linear-gradient(135deg, #10b981 0%, #0d9488 100%);
                   -webkit-background-clip: text;
                   -webkit-text-fill-color: transparent;
                   background-clip: text;
@@ -390,7 +390,7 @@ function createEmailTemplate(
               .cta-button {
                   display: inline-block;
                   padding: 16px 40px;
-                  background: linear-gradient(135deg, ${urgencyColor} 0%, ${urgencyColor}dd 100%);
+                  background: linear-gradient(135deg, #10b981 0%, #0d9488 100%);
                   color: #ffffff;
                   text-decoration: none;
                   border-radius: 12px;
@@ -431,7 +431,7 @@ function createEmailTemplate(
               
               .secondary-link {
                   display: inline-block;
-                  color: ${urgencyColor};
+                  color: #10b981;
                   text-decoration: none;
                   font-size: 14px;
                   font-weight: 500;
@@ -440,7 +440,7 @@ function createEmailTemplate(
               }
               
               .secondary-link:hover {
-                  color: ${urgencyColor}dd;
+                  color: #0d9488;
                   text-decoration: underline;
               }
               
@@ -473,7 +473,7 @@ function createEmailTemplate(
               }
               
               .footer-link:hover {
-                  color: ${urgencyColor};
+                  color: #10b981;
               }
               
               .footer-divider {
@@ -569,22 +569,19 @@ function createEmailTemplate(
               <table class="main" cellpadding="0" cellspacing="0" role="presentation">
                   <tr>
                       <td>
-                           Header with Gradient Background 
                           <div class="header">
                               <div class="logo-wrapper">
-                                  <img src="/logo-white.png" alt="Kredi Takip" class="logo">
+                                  <img src="https://kreditakip.com.tr/logo-white.png" alt="Kredi Takip" class="logo">
                               </div>
                               <h1 class="header-title">${title}</h1>
                               <p class="header-subtitle">Finansal takibiniz bizimle güvende</p>
                           </div>
                           
-                           Main Content 
                           <div class="content">
                               <p class="greeting">
                                   Merhaba <strong>${firstName || "Değerli Müşterimiz"}</strong>,
                               </p>
                               
-                               Modern Payment Card 
                               <div class="payment-card">
                                   <div class="bank-section">
                                       <div class="bank-icon">🏦</div>
@@ -616,7 +613,6 @@ function createEmailTemplate(
                                   </div>
                               </div>
                               
-                               Alert Message 
                               <div class="alert-box">
                                   <div class="alert-content">
                                       <div class="alert-icon">${iconEmoji}</div>
@@ -633,23 +629,20 @@ function createEmailTemplate(
                                   </div>
                               </div>
                               
-                               CTA Button 
                               <div class="cta-wrapper">
                                   <a href="https://kreditakip.com.tr/uygulama/odeme-plani" class="cta-button">
                                       Ödeme Planını Görüntüle
                                   </a>
                               </div>
                               
-                               Secondary Links 
                               <div class="secondary-links">
                                   <a href="https://kreditakip.com.tr/uygulama/hatirlatici" class="secondary-link">Hatırlatıcı Kur</a>
                                   <a href="https://kreditakip.com.tr/uygulama/odeme-yap" class="secondary-link">Hızlı Ödeme</a>
                               </div>
                           </div>
                           
-                           Footer 
                           <div class="footer">
-                              <img src="/logo.png" alt="Kredi Takip" class="footer-logo" style="width: 80px; height: auto; opacity: 1; margin-bottom: 20px;">
+                              <img src="https://kreditakip.com.tr/logo.png" alt="Kredi Takip" class="footer-logo" style="width: 80px; height: auto; opacity: 1; margin-bottom: 20px;">
                               
                               <div class="footer-links">
                                   <a href="https://kreditakip.com.tr/uygulama/ayarlar" class="footer-link">Bildirim Ayarları</a>
