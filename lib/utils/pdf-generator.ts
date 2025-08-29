@@ -4,49 +4,70 @@ import { tr } from "date-fns/locale"
 
 // Modern renk paleti
 const COLORS = {
-  primary: [16, 185, 129] as [number, number, number], // Emerald
-  secondary: [20, 184, 166] as [number, number, number], // Teal
-  accent: [13, 148, 136] as [number, number, number], // Dark Teal
-  success: [34, 197, 94] as [number, number, number], // Green
-  warning: [251, 146, 60] as [number, number, number], // Orange
-  danger: [239, 68, 68] as [number, number, number], // Red
-  info: [59, 130, 246] as [number, number, number], // Blue
-  dark: [30, 41, 59] as [number, number, number], // Slate-800
-  gray: [100, 116, 139] as [number, number, number], // Slate-500
-  lightGray: [241, 245, 249] as [number, number, number], // Slate-100
+  primary: [16, 185, 129] as [number, number, number],     // Emerald
+  secondary: [20, 184, 166] as [number, number, number],    // Teal
+  accent: [13, 148, 136] as [number, number, number],       // Dark Teal
+  success: [34, 197, 94] as [number, number, number],       // Green
+  warning: [251, 146, 60] as [number, number, number],      // Orange
+  danger: [239, 68, 68] as [number, number, number],        // Red
+  info: [59, 130, 246] as [number, number, number],         // Blue
+  dark: [30, 41, 59] as [number, number, number],           // Slate-800
+  gray: [100, 116, 139] as [number, number, number],        // Slate-500
+  lightGray: [241, 245, 249] as [number, number, number],   // Slate-100
   white: [255, 255, 255] as [number, number, number],
 }
 
 // Banka logo yolları mapping
 const BANK_LOGO_PATHS: Record<string, string> = {
-  "Yapı Kredi": "/public/bank-icons/yapi-kredi.png",
-  "Yapı Kredi Bankası": "/public/bank-icons/yapi-kredi.png",
-  Garanti: "/public/bank-icons/garanti.png",
-  "Garanti BBVA": "/public/bank-icons/garanti.png",
-  Akbank: "/public/bank-icons/akbank.png",
-  "İş Bankası": "/public/bank-icons/is-bankasi.png",
-  "Türkiye İş Bankası": "/public/bank-icons/is-bankasi.png",
-  "Ziraat Bankası": "/public/bank-icons/ziraat.png",
-  VakıfBank: "/public/bank-icons/vakifbank.png",
-  Halkbank: "/public/bank-icons/halkbank.png",
-  DenizBank: "/public/bank-icons/denizbank.png",
-  "QNB Finansbank": "/public/bank-icons/qnb.png",
-  TEB: "/public/bank-icons/teb.png",
-  ING: "/public/bank-icons/ing.png",
+  "Yapı Kredi": "/bank-icons/yapi-kredi.png",
+  "Yapı Kredi Bankası": "/bank-icons/yapi-kredi.png",
+  "Garanti": "/bank-icons/garanti.png",
+  "Garanti BBVA": "/bank-icons/garanti.png",
+  "Türkiye Garanti Bankası": "/bank-icons/garanti.png",
+  "Türkiye Garanti Bankası A.Ş.": "/bank-icons/garanti.png",
+  "Akbank": "/bank-icons/akbank.png",
+  "İş Bankası": "/bank-icons/is-bankasi.png",
+  "Türkiye İş Bankası": "/bank-icons/is-bankasi.png",
+  "Türkiye İş Bankası A.Ş.": "/bank-icons/is-bankasi.png",
+  "Ziraat Bankası": "/bank-icons/ziraat.png",
+  "VakıfBank": "/bank-icons/vakifbank.png",
+  "Türkiye Vakıflar Bankası": "/bank-icons/vakifbank.png",
+  "Türkiye Vakıflar Bankası T.A.O.": "/bank-icons/vakifbank.png",
+  "Halkbank": "/bank-icons/halkbank.png",
+  "DenizBank": "/bank-icons/denizbank.png",
+  "Enpara Bank": "/bank-icons/enpara.png",
+  "Enpara Bank A.Ş.": "/bank-icons/enpara.png",
+  "Fibabanka": "/bank-icons/fibabanka.png",
+  "Fibabanka A.Ş.": "/bank-icons/fibabanka.png",
+  "QNB Finansbank": "/bank-icons/qnb.png",
+  "TEB": "/bank-icons/teb.png",
+  "ING": "/bank-icons/ing.png",
 }
 
+// Türkçe karakterleri güvenli hale getir
 const safeText = (text: string | number | null | undefined): string => {
   if (text === null || text === undefined) return ""
+  // jsPDF Türkçe karakterleri desteklemediği için Latin karşılıklarını kullan
   return String(text)
+    .replace(/ğ/g, "g")
+    .replace(/Ğ/g, "G")
+    .replace(/ü/g, "u")
+    .replace(/Ü/g, "U")
+    .replace(/ş/g, "s")
+    .replace(/Ş/g, "S")
+    .replace(/ı/g, "i")
+    .replace(/İ/g, "I")
+    .replace(/ö/g, "o")
+    .replace(/Ö/g, "O")
+    .replace(/ç/g, "c")
+    .replace(/Ç/g, "C")
 }
 
 const formatCurrency = (amount: number): string => {
-  return (
-    new Intl.NumberFormat("tr-TR", {
-      minimumFractionDigits: 0,
-      maximumFractionDigits: 0,
-    }).format(amount) + " TL"
-  )
+  return new Intl.NumberFormat("tr-TR", {
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 0,
+  }).format(amount) + " TL"
 }
 
 class ModernPDFGenerator {
@@ -56,191 +77,229 @@ class ModernPDFGenerator {
   private margin: number
   private currentY: number
   private data: any
-  private pageNumber = 1
+  private pageNumber: number = 1
 
   constructor(doc: jsPDF, data: any) {
     this.doc = doc
     this.pageWidth = doc.internal.pageSize.getWidth()
     this.pageHeight = doc.internal.pageSize.getHeight()
-    this.margin = 20 // Reduced margin for better space utilization
+    this.margin = 25
     this.currentY = this.margin
     this.data = data
   }
 
-  private addGradientRect(
-    x: number,
-    y: number,
-    width: number,
-    height: number,
-    startColor: [number, number, number],
-    endColor: [number, number, number],
-  ) {
-    // Use solid color instead of gradient for better compatibility
-    this.doc.setFillColor(...startColor)
-    this.doc.rect(x, y, width, height, "F")
+  private addGradientRect(x: number, y: number, width: number, height: number, startColor: [number, number, number], endColor: [number, number, number]) {
+    const steps = 20
+    const stepHeight = height / steps
+    
+    for (let i = 0; i < steps; i++) {
+      const ratio = i / steps
+      const r = Math.round(startColor[0] + (endColor[0] - startColor[0]) * ratio)
+      const g = Math.round(startColor[1] + (endColor[1] - startColor[1]) * ratio)
+      const b = Math.round(startColor[2] + (endColor[2] - startColor[2]) * ratio)
+      
+      this.doc.setFillColor(r, g, b)
+      this.doc.rect(x, y + i * stepHeight, width, stepHeight + 0.5, "F")
+    }
   }
 
-  private async addModernHeader() {
-    this.addGradientRect(0, 0, this.pageWidth, 60, COLORS.primary, COLORS.accent)
-
-    // Logo placeholder - simplified
+  private addModernHeader() {
+    // Gradient arka plan
+    this.addGradientRect(0, 0, this.pageWidth, 80, COLORS.primary, COLORS.accent)
+    
+    // Dekoratif daireler
+    this.doc.setFillColor(255, 255, 255)
+    this.doc.setGState(this.doc.GState({ opacity: 0.1 }))
+    for (let i = 0; i < 5; i++) {
+      this.doc.circle(this.pageWidth - 50 - i * 30, 40, 60, "F")
+    }
+    this.doc.setGState(this.doc.GState({ opacity: 1 }))
+    
+    // Logo placeholder
     this.doc.setFillColor(...COLORS.white)
-    this.doc.rect(this.margin, 15, 25, 25, "F")
+    this.doc.roundedRect(this.margin, 25, 30, 30, 3, 3, "F")
     this.doc.setTextColor(...COLORS.primary)
-    this.doc.setFontSize(12)
+    this.doc.setFontSize(14)
     this.doc.setFont("helvetica", "bold")
-    this.doc.text("KT", this.margin + 12.5, 30, { align: "center" })
-
+    this.doc.text("KT", this.margin + 15, 43, { align: "center" })
+    
+    // Başlık
     this.doc.setTextColor(...COLORS.white)
-    this.doc.setFontSize(18)
+    this.doc.setFontSize(22)
     this.doc.setFont("helvetica", "bold")
-    this.doc.text("KREDI PORTFOY RAPORU", this.margin + 35, 25)
-
-    this.doc.setFontSize(10)
+    this.doc.text(safeText("KREDI PORTFOY RAPORU"), this.margin + 45, 40)
+    
+    this.doc.setFontSize(11)
     this.doc.setFont("helvetica", "normal")
-    this.doc.text("Detaylı Finansal Analiz", this.margin + 35, 40)
-
-    const rightX = this.pageWidth - this.margin - 80
-    this.doc.setFontSize(9)
+    this.doc.text(safeText("Detaylı Finansal Analiz"), this.margin + 45, 55)
+    
+    // Sağ taraf bilgileri
+    const rightX = this.pageWidth - this.margin - 100
+    this.doc.setFontSize(10)
     this.doc.setTextColor(...COLORS.white)
-    this.doc.text(format(new Date(), "dd MMMM yyyy", { locale: tr }), rightX, 25)
-
+    const dateStr = format(new Date(), "dd MMMM yyyy", { locale: tr })
+    this.doc.text(safeText(dateStr), rightX, 35)
+    
     if (this.data.userData?.name) {
       this.doc.setFont("helvetica", "bold")
-      this.doc.text(safeText(this.data.userData.name), rightX, 40)
+      this.doc.text(safeText(this.data.userData.name), rightX, 50)
     }
-
-    this.currentY = 80 // Fixed starting Y position
+    
+    this.currentY = 100
   }
 
   private addModernMetricCards(
-    metrics: Array<{
-      title: string
-      value: string
-      subtitle?: string
-      color?: keyof typeof COLORS
-      icon?: string
-    }>,
+    metrics: Array<{ 
+      title: string; 
+      value: string; 
+      subtitle?: string; 
+      color?: keyof typeof COLORS;
+      icon?: string;
+    }>
   ) {
-    this.checkPageBreak(60)
-
-    const cardWidth = (this.pageWidth - 2 * this.margin - 15) / 4 // Fixed card width calculation
-    const cardHeight = 50 // Reduced height to prevent overlaps
-
+    this.checkPageBreak(80)
+    
+    const cardWidth = (this.pageWidth - 2 * this.margin - 30) / 4
+    const cardHeight = 70
+    
     metrics.forEach((metric, index) => {
-      const x = this.margin + index * (cardWidth + 5) // Reduced spacing between cards
+      const x = this.margin + index * (cardWidth + 10)
       const color = COLORS[metric.color || "primary"]
-
+      
       // Kart arka planı
       this.doc.setFillColor(...COLORS.white)
       this.doc.setDrawColor(230, 230, 230)
-      this.doc.rect(x, this.currentY, cardWidth, cardHeight, "FD")
-
+      this.doc.roundedRect(x, this.currentY, cardWidth, cardHeight, 4, 4, "FD")
+      
       // Üst renkli çizgi
       this.doc.setFillColor(...color)
-      this.doc.rect(x, this.currentY, cardWidth, 2, "F")
-
-      this.doc.setFontSize(7)
+      this.doc.rect(x, this.currentY, cardWidth, 3, "F")
+      
+      // İkon arka planı
+      if (metric.icon) {
+        this.doc.setFillColor(...color)
+        this.doc.setGState(this.doc.GState({ opacity: 0.1 }))
+        this.doc.circle(x + cardWidth - 20, this.currentY + 25, 15, "F")
+        this.doc.setGState(this.doc.GState({ opacity: 1 }))
+        
+        this.doc.setTextColor(...color)
+        this.doc.setFontSize(16)
+        this.doc.text(metric.icon, x + cardWidth - 20, this.currentY + 30, { align: "center" })
+      }
+      
+      // Başlık
+      this.doc.setFontSize(9)
       this.doc.setFont("helvetica", "normal")
       this.doc.setTextColor(...COLORS.gray)
-      this.doc.text(safeText(metric.title).toUpperCase(), x + 5, this.currentY + 12)
-
-      this.doc.setFontSize(12)
+      this.doc.text(safeText(metric.title).toUpperCase(), x + 10, this.currentY + 20)
+      
+      // Değer
+      this.doc.setFontSize(18)
       this.doc.setFont("helvetica", "bold")
       this.doc.setTextColor(...COLORS.dark)
-      this.doc.text(safeText(metric.value), x + 5, this.currentY + 28)
-
+      this.doc.text(safeText(metric.value), x + 10, this.currentY + 40)
+      
+      // Alt başlık
       if (metric.subtitle) {
-        this.doc.setFontSize(6)
+        this.doc.setFontSize(8)
         this.doc.setFont("helvetica", "normal")
         this.doc.setTextColor(...COLORS.gray)
-        this.doc.text(safeText(metric.subtitle), x + 5, this.currentY + 40)
+        this.doc.text(safeText(metric.subtitle), x + 10, this.currentY + 55)
       }
     })
-
-    this.currentY += cardHeight + 20 // Fixed Y position increment
+    
+    this.currentY += cardHeight + 30
   }
 
-  private addModernSection(title: string, icon = "", color: keyof typeof COLORS = "primary") {
-    this.checkPageBreak(30)
-
+  private addModernSection(title: string, icon: string = "", color: keyof typeof COLORS = "primary") {
+    this.checkPageBreak(40)
+    
+    // Bölüm başlığı
     this.doc.setFillColor(...COLORS.lightGray)
-    this.doc.rect(this.margin, this.currentY, this.pageWidth - 2 * this.margin, 25, "F")
-
+    this.doc.roundedRect(this.margin, this.currentY, this.pageWidth - 2 * this.margin, 35, 5, 5, "F")
+    
+    // Renkli vurgu çizgisi
     this.doc.setFillColor(...COLORS[color])
-    this.doc.rect(this.margin, this.currentY, 3, 25, "F")
-
+    this.doc.roundedRect(this.margin, this.currentY, 4, 35, 2, 2, "F")
+    
+    // İkon
     if (icon) {
       this.doc.setTextColor(...COLORS[color])
-      this.doc.setFontSize(14)
-      this.doc.text(icon, this.margin + 10, this.currentY + 17)
+      this.doc.setFontSize(18)
+      this.doc.text(icon, this.margin + 15, this.currentY + 22)
     }
-
+    
+    // Başlık
     this.doc.setTextColor(...COLORS.dark)
-    this.doc.setFontSize(12)
+    this.doc.setFontSize(14)
     this.doc.setFont("helvetica", "bold")
-    this.doc.text(safeText(title), this.margin + (icon ? 25 : 10), this.currentY + 17)
-
-    this.currentY += 35 // Fixed Y increment
+    this.doc.text(safeText(title), this.margin + (icon ? 35 : 15), this.currentY + 22)
+    
+    this.currentY += 45
   }
 
   private addModernTable(
     headers: string[],
     rows: string[][],
-    options?: {
-      headerColor?: keyof typeof COLORS
-      alternateRows?: boolean
-      columnWidths?: number[]
-    },
-  ) {
-    const opts = {
-      headerColor: "primary" as keyof typeof COLORS,
-      alternateRows: true,
-      ...options,
+    options?: { 
+      headerColor?: keyof typeof COLORS; 
+      alternateRows?: boolean;
+      columnWidths?: number[];
     }
-
+  ) {
+    const opts = { 
+      headerColor: "primary" as keyof typeof COLORS, 
+      alternateRows: true,
+      ...options 
+    }
+    
     const totalWidth = this.pageWidth - 2 * this.margin
     const colWidths = opts.columnWidths || headers.map(() => totalWidth / headers.length)
-    const rowHeight = 25 // Fixed row height
-    const headerHeight = 30 // Fixed header height
+    const rowHeight = 35
+    const headerHeight = 40
 
-    this.checkPageBreak(headerHeight + Math.min(rows.length, 10) * rowHeight)
-
-    this.doc.setFillColor(...COLORS[opts.headerColor])
-    this.doc.rect(this.margin, this.currentY, totalWidth, headerHeight, "F")
-
-    // Header text
+this.checkPageBreak(headerHeight + rows.length * rowHeight)
+    
+    // Tablo başlığı gradient
+    this.addGradientRect(
+      this.margin, 
+      this.currentY, 
+      totalWidth, 
+      headerHeight, 
+      COLORS[opts.headerColor], 
+      COLORS.accent
+    )
+    
+    // Başlık metinleri
     this.doc.setTextColor(...COLORS.white)
-    this.doc.setFontSize(9)
+    this.doc.setFontSize(11)
     this.doc.setFont("helvetica", "bold")
-
+    
     let xPos = this.margin
     headers.forEach((header, i) => {
-      this.doc.text(safeText(header).toUpperCase(), xPos + 5, this.currentY + 20)
+      this.doc.text(safeText(header).toUpperCase(), xPos + 15, this.currentY + 25)
       xPos += colWidths[i]
     })
-
+    
     this.currentY += headerHeight
-
+    
+    // Tablo satırları
     rows.forEach((row, rowIndex) => {
-      // Check for page break every 5 rows
-      if (rowIndex > 0 && rowIndex % 5 === 0) {
-        this.checkPageBreak(rowHeight * 5)
-      }
-
+      // Alternatif satır renkleri
       if (opts.alternateRows && rowIndex % 2 === 0) {
         this.doc.setFillColor(248, 250, 252)
         this.doc.rect(this.margin, this.currentY, totalWidth, rowHeight, "F")
       }
-
-      // Border line
+      
+      // Alt çizgi
       this.doc.setDrawColor(230, 230, 230)
-      this.doc.setLineWidth(0.3)
+      this.doc.setLineWidth(0.5)
       this.doc.line(this.margin, this.currentY + rowHeight, this.pageWidth - this.margin, this.currentY + rowHeight)
-
-      // Row content
+      
+      // Satır içeriği
       xPos = this.margin
       row.forEach((cell, colIndex) => {
+        // Tutar sütunu için özel renklendirme
         if (cell.includes("TL")) {
           this.doc.setTextColor(...COLORS.primary)
           this.doc.setFont("helvetica", "bold")
@@ -248,221 +307,260 @@ class ModernPDFGenerator {
           this.doc.setTextColor(...COLORS.dark)
           this.doc.setFont("helvetica", "normal")
         }
-
-        this.doc.setFontSize(8)
-        const maxWidth = colWidths[colIndex] - 10
-        const lines = this.doc.splitTextToSize(safeText(cell), maxWidth)
-        this.doc.text(lines[0] || "", xPos + 5, this.currentY + 15)
+        
+        this.doc.setFontSize(10)
+        this.doc.text(safeText(cell), xPos + 15, this.currentY + 22)
         xPos += colWidths[colIndex]
       })
-
+      
       this.currentY += rowHeight
     })
-
-    this.currentY += 15 // Fixed spacing after table
+    
+    this.currentY += 20
   }
 
-  private async addCreditCard(credit: any, index: number) {
-    this.checkPageBreak(120)
-
-    const cardHeight = 100 // Reduced card height
-
-    // Card container
+  private addCreditCard(credit: any, index: number) {
+    this.checkPageBreak(180)
+    
+    // Kart konteyneri
     this.doc.setFillColor(...COLORS.white)
     this.doc.setDrawColor(220, 220, 220)
-    this.doc.rect(this.margin, this.currentY, this.pageWidth - 2 * this.margin, cardHeight, "FD")
-
-    // Header
+    this.doc.roundedRect(this.margin, this.currentY, this.pageWidth - 2 * this.margin, 160, 8, 8, "FD")
+    
+    // Gradient başlık
     this.addGradientRect(
       this.margin,
       this.currentY,
       this.pageWidth - 2 * this.margin,
-      25,
+      35,
       COLORS.primary,
-      COLORS.secondary,
+      COLORS.secondary
     )
-
-    // Bank initials (simplified)
-    this.doc.setFillColor(...COLORS.white)
-    this.doc.circle(this.margin + 15, this.currentY + 12.5, 8, "F")
-    this.doc.setTextColor(...COLORS.primary)
-    this.doc.setFontSize(8)
-    this.doc.setFont("helvetica", "bold")
+    
+    // Banka logosu yerine baş harfler
     const bankName = credit.bankName || "Bilinmeyen Banka"
-    const initials = bankName
-      .split(" ")
-      .map((w: string) => w[0])
-      .join("")
-      .substring(0, 2)
-      .toUpperCase()
-    this.doc.text(initials, this.margin + 15, this.currentY + 15, { align: "center" })
-
-    // Bank name and credit type
+    this.addBankInitials(bankName, this.margin + 25, this.currentY + 18)
+    
+    // Banka adı ve kredi türü
     this.doc.setTextColor(...COLORS.white)
-    this.doc.setFontSize(10)
+    this.doc.setFontSize(12)
     this.doc.setFont("helvetica", "bold")
     this.doc.text(
-      `${safeText(bankName)} - ${safeText(credit.creditType || "Kredi")}`,
-      this.margin + 30,
-      this.currentY + 16,
+      safeText(`${bankName} - ${credit.creditType || "Kredi"}`),
+      this.margin + 45,
+      this.currentY + 22
     )
-
-    // Status badge
-    const statusX = this.pageWidth - this.margin - 50
+    
+    // Durum rozeti
+    const statusX = this.pageWidth - this.margin - 60
     if (credit.status === "active") {
       this.doc.setFillColor(236, 253, 245)
-      this.doc.rect(statusX, this.currentY + 5, 40, 15, "F")
+      this.doc.roundedRect(statusX, this.currentY + 10, 50, 18, 9, 9, "F")
       this.doc.setTextColor(...COLORS.success)
-      this.doc.setFontSize(7)
-      this.doc.text("AKTIF", statusX + 20, this.currentY + 15, { align: "center" })
+      this.doc.setFontSize(9)
+      this.doc.text("AKTIF", statusX + 25, this.currentY + 21, { align: "center" })
+    } else {
+      this.doc.setFillColor(243, 244, 246)
+      this.doc.roundedRect(statusX, this.currentY + 10, 50, 18, 9, 9, "F")
+      this.doc.setTextColor(...COLORS.gray)
+      this.doc.text("KAPALI", statusX + 25, this.currentY + 21, { align: "center" })
     }
-
-    const contentY = this.currentY + 35
-    const leftX = this.margin + 10
+    
+    this.currentY += 45
+    
+    // İçerik alanı
+    const contentY = this.currentY
+    const leftX = this.margin + 20
     const centerX = this.margin + (this.pageWidth - 2 * this.margin) / 3
-    const rightX = this.margin + (2 * (this.pageWidth - 2 * this.margin)) / 3
-
-    // Progress bar
+    const rightX = this.margin + 2 * (this.pageWidth - 2 * this.margin) / 3
+    
+    // Hesaplamalar
     const paidAmount = (credit.amount || 0) - (credit.remainingDebt || 0)
-    const progressPercentage = credit.amount ? (paidAmount / credit.amount) * 100 : 0
-
+    const progressPercentage = credit.amount ? (paidAmount / credit.amount * 100) : 0
+    const monthlyInterest = ((credit.remainingDebt || 0) * (credit.interestRate || 0)) / 1200
+    
+    // İlerleme çubuğu - genişlik hesaplaması düzeltildi
+    const progressBarWidth = this.pageWidth - 2 * this.margin - 40
     this.doc.setFillColor(...COLORS.lightGray)
-    this.doc.rect(leftX, contentY, this.pageWidth - 2 * this.margin - 20, 5, "F")
-    this.doc.setFillColor(...COLORS.primary)
-    this.doc.rect(leftX, contentY, ((this.pageWidth - 2 * this.margin - 20) * progressPercentage) / 100, 5, "F")
-
-    // Content in three columns
-    const textY = contentY + 20
-
-    // Left column
-    this.doc.setTextColor(...COLORS.gray)
-    this.doc.setFontSize(7)
-    this.doc.text("KREDI TUTARI", leftX, textY)
+    this.doc.roundedRect(leftX, contentY, progressBarWidth, 8, 4, 4, "F")
+    
+    if (progressPercentage > 0) {
+      this.doc.setFillColor(...COLORS.primary)
+      const fillWidth = Math.min((progressBarWidth * progressPercentage) / 100, progressBarWidth)
+      this.doc.roundedRect(leftX, contentY, fillWidth, 8, 4, 4, "F")
+    }
+    
+    // İlerleme metni
     this.doc.setTextColor(...COLORS.dark)
-    this.doc.setFontSize(10)
-    this.doc.setFont("helvetica", "bold")
-    this.doc.text(formatCurrency(credit.amount || 0), leftX, textY + 12)
-
+    this.doc.setFontSize(9)
+    this.doc.text(safeText(`%${progressPercentage.toFixed(1)} Odendi`), leftX, contentY - 5)
+    
+    this.currentY = contentY + 20
+    
+    // Sol sütun - tutarlar
     this.doc.setTextColor(...COLORS.gray)
-    this.doc.setFontSize(7)
+    this.doc.setFontSize(9)
+    this.doc.text("KREDI TUTARI", leftX, this.currentY)
+    this.doc.setTextColor(...COLORS.dark)
+    this.doc.setFontSize(14)
+    this.doc.setFont("helvetica", "bold")
+    this.doc.text(safeText(formatCurrency(credit.amount || 0)), leftX, this.currentY + 15)
+    
+    this.doc.setTextColor(...COLORS.gray)
+    this.doc.setFontSize(9)
     this.doc.setFont("helvetica", "normal")
-    this.doc.text("KALAN BORÇ", leftX, textY + 25)
+    this.doc.text("KALAN BORC", leftX, this.currentY + 35)
     this.doc.setTextColor(...COLORS.danger)
-    this.doc.setFontSize(10)
+    this.doc.setFontSize(14)
     this.doc.setFont("helvetica", "bold")
-    this.doc.text(formatCurrency(credit.remainingDebt || 0), leftX, textY + 37)
-
-    // Center column
+    this.doc.text(safeText(formatCurrency(credit.remainingDebt || 0)), leftX, this.currentY + 50)
+    
+    // Orta sütun - taksitler
     this.doc.setTextColor(...COLORS.gray)
-    this.doc.setFontSize(7)
+    this.doc.setFontSize(9)
     this.doc.setFont("helvetica", "normal")
-    this.doc.text("AYLIK ÖDEME", centerX, textY)
+    this.doc.text("AYLIK ODEME", centerX, this.currentY)
     this.doc.setTextColor(...COLORS.warning)
-    this.doc.setFontSize(10)
+    this.doc.setFontSize(14)
     this.doc.setFont("helvetica", "bold")
-    this.doc.text(formatCurrency(credit.monthlyPayment || 0), centerX, textY + 12)
-
-    // Right column
+    this.doc.text(safeText(formatCurrency(credit.monthlyPayment || 0)), centerX, this.currentY + 15)
+    
+    if (credit.totalInstallments) {
+      this.doc.setTextColor(...COLORS.gray)
+      this.doc.setFontSize(9)
+      this.doc.setFont("helvetica", "normal")
+      this.doc.text("TAKSIT", centerX, this.currentY + 35)
+      this.doc.setTextColor(...COLORS.dark)
+      this.doc.setFontSize(14)
+      this.doc.setFont("helvetica", "bold")
+      const paidInstallments = credit.totalInstallments - (credit.remainingInstallments || 0)
+      this.doc.text(`${paidInstallments} / ${credit.totalInstallments}`, centerX, this.currentY + 50)
+    }
+    
+    // Sağ sütun - faiz ve tarihler
     this.doc.setTextColor(...COLORS.gray)
-    this.doc.setFontSize(7)
+    this.doc.setFontSize(9)
     this.doc.setFont("helvetica", "normal")
-    this.doc.text("FAİZ ORANI", rightX, textY)
+    this.doc.text("FAIZ ORANI", rightX, this.currentY)
     this.doc.setTextColor(...COLORS.info)
+    this.doc.setFontSize(14)
+    this.doc.setFont("helvetica", "bold")
+    this.doc.text(`%${(credit.interestRate || 0).toFixed(2)}`, rightX, this.currentY + 15)
+    
+    this.doc.setTextColor(...COLORS.gray)
+    this.doc.setFontSize(9)
+    this.doc.setFont("helvetica", "normal")
+    this.doc.text("AYLIK FAIZ", rightX, this.currentY + 35)
+    this.doc.setTextColor(...COLORS.dark)
+    this.doc.setFontSize(14)
+    this.doc.setFont("helvetica", "bold")
+    this.doc.text(safeText(formatCurrency(monthlyInterest)), rightX, this.currentY + 50)
+    
+    this.currentY = contentY + 115
+  }
+
+  private addBankInitials(bankName: string, x: number, y: number) {
+    this.doc.setFillColor(...COLORS.white)
+    this.doc.circle(x, y, 12, "F")
+    this.doc.setTextColor(...COLORS.primary)
     this.doc.setFontSize(10)
     this.doc.setFont("helvetica", "bold")
-    this.doc.text(`%${(credit.interestRate || 0).toFixed(2)}`, rightX, textY + 12)
-
-    this.currentY += cardHeight + 15 // Fixed Y increment
+    const initials = bankName.split(" ").map(w => w[0]).join("").substring(0, 2).toUpperCase()
+    this.doc.text(initials, x, y + 4, { align: "center" })
   }
 
   private addSummarySection() {
-    this.checkPageBreak(80)
-
+    this.checkPageBreak(120)
+    
+    // Özet kutusu
     this.doc.setFillColor(248, 250, 252)
-    this.doc.rect(this.margin, this.currentY, this.pageWidth - 2 * this.margin, 70, "F")
-
+    this.doc.roundedRect(this.margin, this.currentY, this.pageWidth - 2 * this.margin, 100, 8, 8, "F")
+    
+    // İkon ve başlık
     this.doc.setTextColor(...COLORS.primary)
-    this.doc.setFontSize(16)
-    this.doc.text("📊", this.margin + 15, this.currentY + 20)
-
+    this.doc.setFontSize(20)
+    this.doc.text("📊", this.margin + 20, this.currentY + 25)
+    
     this.doc.setTextColor(...COLORS.dark)
-    this.doc.setFontSize(12)
+    this.doc.setFontSize(14)
     this.doc.setFont("helvetica", "bold")
-    this.doc.text("Özet Bilgiler", this.margin + 35, this.currentY + 20)
-
-    const summaryY = this.currentY + 35
-    const leftCol = this.margin + 20
+    this.doc.text(safeText("Ozet Bilgiler"), this.margin + 45, this.currentY + 25)
+    
+    // Özet bilgiler
+    const summaryY = this.currentY + 45
+    const leftCol = this.margin + 30
     const rightCol = this.pageWidth / 2
-
-    const totalInterest =
-      this.data.credits?.reduce((sum: number, credit: any) => {
-        const monthly = ((credit.remainingDebt || 0) * (credit.interestRate || 0)) / 1200
-        return sum + monthly * 12
-      }, 0) || 0
-
-    const avgRate =
-      this.data.credits?.length > 0
-        ? this.data.credits.reduce((sum: number, c: any) => sum + (c.interestRate || 0), 0) / this.data.credits.length
-        : 0
-
-    // Left column
+    
+    const totalInterest = this.data.credits?.reduce((sum: number, credit: any) => {
+      const monthly = ((credit.remainingDebt || 0) * (credit.interestRate || 0)) / 1200
+      return sum + monthly * 12
+    }, 0) || 0
+    
+    const avgRate = this.data.credits?.length > 0
+      ? this.data.credits.reduce((sum: number, c: any) => sum + (c.interestRate || 0), 0) / this.data.credits.length
+      : 0
+    
+    // Sol sütun
     this.doc.setTextColor(...COLORS.gray)
-    this.doc.setFontSize(8)
+    this.doc.setFontSize(10)
     this.doc.setFont("helvetica", "normal")
-    this.doc.text("• Toplam Kredi Sayısı:", leftCol, summaryY)
+    this.doc.text(safeText("• Toplam Kredi Sayisi:"), leftCol, summaryY)
     this.doc.setTextColor(...COLORS.dark)
     this.doc.setFont("helvetica", "bold")
-    this.doc.text(`${this.data.totalCredits || 0} adet`, leftCol + 70, summaryY)
-
+    this.doc.text(` ${this.data.totalCredits || 0} adet`, leftCol + 80, summaryY)
+    
     this.doc.setTextColor(...COLORS.gray)
     this.doc.setFont("helvetica", "normal")
-    this.doc.text("• Ortalama Faiz Oranı:", leftCol, summaryY + 15)
+    this.doc.text(safeText("• Ortalama Faiz Orani:"), leftCol, summaryY + 20)
     this.doc.setTextColor(...COLORS.dark)
     this.doc.setFont("helvetica", "bold")
-    this.doc.text(`%${avgRate.toFixed(2)}`, leftCol + 70, summaryY + 15)
-
-    // Right column
+    this.doc.text(` %${avgRate.toFixed(2)}`, leftCol + 80, summaryY + 20)
+    
+    // Sağ sütun
     this.doc.setTextColor(...COLORS.gray)
     this.doc.setFont("helvetica", "normal")
-    this.doc.text("• Yıllık Toplam Faiz:", rightCol, summaryY)
+    this.doc.text(safeText("• Yillik Toplam Faiz:"), rightCol, summaryY)
     this.doc.setTextColor(...COLORS.dark)
     this.doc.setFont("helvetica", "bold")
-    this.doc.text(formatCurrency(totalInterest), rightCol + 60, summaryY)
-
+    this.doc.text(safeText(` ${formatCurrency(totalInterest)}`), rightCol + 70, summaryY)
+    
     this.doc.setTextColor(...COLORS.gray)
     this.doc.setFont("helvetica", "normal")
-    this.doc.text("• Aylık Ödeme Yükü:", rightCol, summaryY + 15)
+    this.doc.text(safeText("• Aylik Odeme Yuku:"), rightCol, summaryY + 20)
     this.doc.setTextColor(...COLORS.dark)
     this.doc.setFont("helvetica", "bold")
-    this.doc.text(formatCurrency(this.data.monthlyPayment || 0), rightCol + 60, summaryY + 15)
-
-    this.currentY += 90
+    this.doc.text(safeText(` ${formatCurrency(this.data.monthlyPayment || 0)}`), rightCol + 70, summaryY + 20)
+    
+    this.currentY += 120
   }
 
   private addModernFooter() {
     const pageCount = this.doc.internal.getNumberOfPages()
-
+    
     for (let i = 1; i <= pageCount; i++) {
       this.doc.setPage(i)
-
-      this.addGradientRect(0, this.pageHeight - 25, this.pageWidth, 25, COLORS.primary, COLORS.accent)
-
+      
+      // Footer gradient
+      this.addGradientRect(0, this.pageHeight - 30, this.pageWidth, 30, COLORS.primary, COLORS.accent)
+      
+      // Sol - marka
       this.doc.setTextColor(...COLORS.white)
-      this.doc.setFontSize(8)
+      this.doc.setFontSize(9)
       this.doc.setFont("helvetica", "bold")
-      this.doc.text("kreditakip.com.tr", this.margin, this.pageHeight - 10)
-
+      this.doc.text("kreditakip.com.tr", this.margin, this.pageHeight - 12)
+      
+      // Orta - slogan
       this.doc.setFont("helvetica", "normal")
-      this.doc.text("Finansal özgürlüğünüze giden yol", this.pageWidth / 2, this.pageHeight - 10, { align: "center" })
-
+      this.doc.text(safeText("Finansal ozgurlugunuze giden yol"), this.pageWidth / 2, this.pageHeight - 12, { align: "center" })
+      
+      // Sağ - sayfa numarası
       this.doc.setFont("helvetica", "bold")
-      this.doc.text(`${i} / ${pageCount}`, this.pageWidth - this.margin, this.pageHeight - 10, { align: "right" })
+      this.doc.text(`${i} / ${pageCount}`, this.pageWidth - this.margin, this.pageHeight - 12, { align: "right" })
     }
   }
 
   private checkPageBreak(height: number) {
-    if (this.currentY + height > this.pageHeight - 50) {
-      // Increased footer margin
+    if (this.currentY + height > this.pageHeight - 40) {
       this.addPage()
     }
   }
@@ -470,20 +568,20 @@ class ModernPDFGenerator {
   private addPage() {
     this.doc.addPage()
     this.pageNumber++
-    this.currentY = this.margin + 15 // Fixed starting position for new pages
+    this.currentY = this.margin + 20
   }
 
   private calculateBankDistribution() {
     if (!this.data.credits || this.data.credits.length === 0) return []
-
+    
     const bankMap = new Map()
     let totalAmount = 0
-
+    
     this.data.credits.forEach((credit: any) => {
       const bankName = credit.bankName || "Bilinmeyen"
       const amount = credit.remainingDebt || 0
       totalAmount += amount
-
+      
       if (bankMap.has(bankName)) {
         const existing = bankMap.get(bankName)
         existing.count += 1
@@ -492,9 +590,9 @@ class ModernPDFGenerator {
         bankMap.set(bankName, { name: bankName, count: 1, amount })
       }
     })
-
+    
     return Array.from(bankMap.values())
-      .map((bank) => ({
+      .map(bank => ({
         ...bank,
         percentage: totalAmount > 0 ? (bank.amount / totalAmount) * 100 : 0,
       }))
@@ -503,15 +601,15 @@ class ModernPDFGenerator {
 
   private calculateCreditTypeDistribution() {
     if (!this.data.credits || this.data.credits.length === 0) return []
-
+    
     const typeMap = new Map()
     let totalAmount = 0
-
+    
     this.data.credits.forEach((credit: any) => {
-      const creditType = credit.creditType || "Diğer"
+      const creditType = credit.creditType || "Diger"
       const amount = credit.remainingDebt || 0
       totalAmount += amount
-
+      
       if (typeMap.has(creditType)) {
         const existing = typeMap.get(creditType)
         existing.count += 1
@@ -520,9 +618,9 @@ class ModernPDFGenerator {
         typeMap.set(creditType, { type: creditType, count: 1, amount })
       }
     })
-
+    
     return Array.from(typeMap.values())
-      .map((type) => ({
+      .map(type => ({
         ...type,
         percentage: totalAmount > 0 ? (type.amount / totalAmount) * 100 : 0,
       }))
@@ -531,90 +629,97 @@ class ModernPDFGenerator {
 
   public async generate() {
     try {
-      await this.addModernHeader()
-
+      // Modern header
+      this.addModernHeader()
+      
+      // Özet metrikleri
       const metrics = [
         {
           title: "Toplam Kredi",
           value: this.data.totalCredits?.toString() || "0",
           subtitle: `${this.data.activeCredits || 0} aktif`,
           color: "primary" as keyof typeof COLORS,
-          icon: "📋",
+          icon: "📋"
         },
         {
-          title: "Toplam Borç",
-          value: formatCurrency(this.data.totalDebt || 0),
+          title: "Toplam Borc",
+          value: safeText(formatCurrency(this.data.totalDebt || 0)),
           subtitle: "Kalan",
           color: "danger" as keyof typeof COLORS,
-          icon: "💰",
+          icon: "💰"
         },
         {
-          title: "Aylık Ödeme",
-          value: formatCurrency(this.data.monthlyPayment || 0),
+          title: "Aylik Odeme",
+          value: safeText(formatCurrency(this.data.monthlyPayment || 0)),
           subtitle: "Taksit",
           color: "warning" as keyof typeof COLORS,
-          icon: "📅",
+          icon: "📅"
         },
         {
           title: "Toplam Kredi",
-          value: formatCurrency(this.data.totalPayment || 0),
-          subtitle: "Başlangıç",
+          value: safeText(formatCurrency(this.data.totalPayment || 0)),
+          subtitle: "Baslangic",
           color: "success" as keyof typeof COLORS,
-          icon: "✓",
+          icon: "✓"
         },
       ]
-
+      
       this.addModernMetricCards(metrics)
-
+      
+      // Kredi detayları
       if (this.data.credits && this.data.credits.length > 0) {
-        this.addModernSection("Kredi Detayları", "💳", "primary")
-
+        this.addModernSection("Kredi Detaylari", "💳", "primary")
+        
         for (const [index, credit] of this.data.credits.entries()) {
-          await this.addCreditCard(credit, index)
+          this.addCreditCard(credit, index)
+          this.currentY += 20
         }
       }
-
-      this.addModernSection("Banka Dağılımı", "🏦", "info")
+      
+      // Banka dağılımı
+      this.addModernSection("Banka Dagilimi", "🏦", "info")
       const bankDist = this.calculateBankDistribution()
       if (bankDist.length > 0) {
-        const headers = ["Banka", "Adet", "Toplam Borç", "Oran"]
-        const rows = bankDist.map((b) => [
+        const headers = ["Banka", "Adet", "Toplam Borc", "Oran"]
+        const rows = bankDist.map(b => [
           b.name,
           b.count.toString(),
           formatCurrency(b.amount),
-          `%${b.percentage.toFixed(1)}`,
+          `%${b.percentage.toFixed(1)}`
         ])
         this.addModernTable(headers, rows, {
           headerColor: "info",
-          columnWidths: [140, 50, 120, 70],
+          columnWidths: [180, 60, 140, 80]
         })
       }
-
-      this.addModernSection("Kredi Türü Dağılımı", "📊", "secondary")
+      
+      // Kredi türü dağılımı
+      this.addModernSection("Kredi Turu Dagilimi", "📊", "secondary")
       const typeDist = this.calculateCreditTypeDistribution()
       if (typeDist.length > 0) {
-        const headers = ["Kredi Türü", "Adet", "Toplam Tutar", "Oran"]
-        const rows = typeDist.map((t) => [
+        const headers = ["Kredi Turu", "Adet", "Toplam Tutar", "Oran"]
+        const rows = typeDist.map(t => [
           t.type,
           t.count.toString(),
           formatCurrency(t.amount),
-          `%${t.percentage.toFixed(1)}`,
+          `%${t.percentage.toFixed(1)}`
         ])
         this.addModernTable(headers, rows, {
           headerColor: "secondary",
-          columnWidths: [140, 50, 120, 70],
+          columnWidths: [180, 60, 140, 80]
         })
       }
-
+      
+      // Faiz analizi
       if (this.data.credits && this.data.credits.length > 0) {
         this.addModernSection("Faiz Analizi", "💸", "warning")
-        const headers = ["Banka", "Kredi Türü", "Faiz Oranı", "Aylık Faiz", "Yıllık Faiz"]
+        const headers = ["Banka", "Kredi Turu", "Faiz Orani", "Aylik Faiz", "Yillik Faiz"]
         const rows = this.data.credits.map((credit: any) => {
           const monthlyInterest = ((credit.remainingDebt || 0) * (credit.interestRate || 0)) / 1200
           const yearlyInterest = monthlyInterest * 12
           return [
             credit.bankName || "Bilinmeyen",
-            credit.creditType || "Diğer",
+            credit.creditType || "Diger",
             `%${(credit.interestRate || 0).toFixed(2)}`,
             formatCurrency(monthlyInterest),
             formatCurrency(yearlyInterest),
@@ -622,40 +727,44 @@ class ModernPDFGenerator {
         })
         this.addModernTable(headers, rows, {
           headerColor: "warning",
-          columnWidths: [100, 80, 60, 75, 75],
+          columnWidths: [120, 100, 70, 85, 85]
         })
       }
-
-      this.addModernSection("Rapor Özeti", "📊", "success")
+      
+      // Özet bölümü
+      this.addModernSection("Rapor Ozeti", "📊", "success")
       this.addSummarySection()
-
+      
+      // Footer ekle
       this.addModernFooter()
+      
     } catch (error) {
-      console.error("PDF oluşturma hatası:", error)
+      console.error("PDF olusturma hatasi:", error)
       throw error
     }
   }
 }
 
-export async function generatePDFReport(data: any): Promise<void> {
+// Ana export fonksiyonu
+export async function generateModernPDF(data: any): Promise<void> {
   try {
     const doc = new jsPDF({
       orientation: "portrait",
       unit: "pt",
       format: "a4",
     })
-
+    
     const generator = new ModernPDFGenerator(doc, data)
     await generator.generate()
-
+    
     const timestamp = format(new Date(), "yyyy-MM-dd_HH-mm", { locale: tr })
     const filename = `kredi-raporu-${timestamp}.pdf`
-
+    
     doc.save(filename)
-
-    console.log("PDF başarıyla oluşturuldu:", filename)
+    
+    console.log("PDF basariyla olusturuldu:", filename)
   } catch (error) {
-    console.error("PDF oluşturma hatası:", error)
+    console.error("PDF olusturma hatasi:", error)
     throw error
   }
 }
