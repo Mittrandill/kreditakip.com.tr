@@ -19,24 +19,49 @@ jobs:
           # Get the site URL from environment or use default
           SITE_URL="${{ vars.NEXT_PUBLIC_SITE_URL || 'https://kreditakip.com.tr' }}"
           
-          # Call the cron endpoint
-          response=$(curl -s -w "%{http_code}" \
+          # Remove trailing slash if present
+          SITE_URL="${SITE_URL%/}"
+          
+          echo "Using site URL: $SITE_URL"
+          echo "Calling endpoint: $SITE_URL/api/notifications/cron"
+          
+          # Call the cron endpoint with redirect following and better error handling
+          response=$(curl -s -w "HTTPSTATUS:%{http_code};REDIRECT_URL:%{redirect_url}" \
+            -L \
             -H "Authorization: Bearer ${{ secrets.CRON_SECRET }}" \
             -H "Content-Type: application/json" \
+            -H "User-Agent: GitHub-Actions-Cron/1.0" \
             "$SITE_URL/api/notifications/cron")
           
-          http_code="${response: -3}"
-          response_body="${response%???}"
+          # Extract HTTP status and response body
+          http_code=$(echo "$response" | grep -o "HTTPSTATUS:[0-9]*" | cut -d: -f2)
+          redirect_url=$(echo "$response" | grep -o "REDIRECT_URL:[^;]*" | cut -d: -f2-)
+          response_body=$(echo "$response" | sed -E 's/HTTPSTATUS:[0-9]*;REDIRECT_URL:[^;]*$//')
           
           echo "HTTP Status: $http_code"
+          if [ ! -z "$redirect_url" ]; then
+            echo "Redirect URL: $redirect_url"
+          fi
           echo "Response: $response_body"
           
-          if [ "$http_code" -ne 200 ]; then
-            echo "❌ Cron job failed with status $http_code"
+          if [ "$http_code" -eq 200 ]; then
+            echo "✅ Cron job completed successfully"
+            echo "$response_body" | jq '.' 2>/dev/null || echo "$response_body"
+          elif [ "$http_code" -eq 401 ]; then
+            echo "❌ Cron job failed: Unauthorized (401)"
+            echo "Please check that CRON_SECRET is properly set in repository secrets"
+            exit 1
+          elif [ "$http_code" -eq 307 ] || [ "$http_code" -eq 308 ]; then
+            echo "❌ Cron job failed: Redirect ($http_code)"
+            echo "The URL is being redirected. Please check the correct domain."
+            exit 1
+          elif [ "$http_code" -eq 404 ]; then
+            echo "❌ Cron job failed: Not Found (404)"
+            echo "The API endpoint does not exist. Please check the deployment."
             exit 1
           else
-            echo "✅ Cron job completed successfully"
-            echo "$response_body" | jq '.' || echo "$response_body"
+            echo "❌ Cron job failed with status $http_code"
+            exit 1
           fi
 
       - name: Notify on failure
@@ -46,4 +71,5 @@ jobs:
           echo "Please check the logs and verify:"
           echo "1. CRON_SECRET is properly set in repository secrets"
           echo "2. MAILERSEND_API_KEY is configured in Vercel"
-          echo "3. The API endpoint is accessible"
+          echo "3. The API endpoint is accessible and deployed"
+          echo "4. The domain is not redirecting (check www vs non-www)"
