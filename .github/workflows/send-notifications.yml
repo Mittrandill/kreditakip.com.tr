@@ -16,6 +16,10 @@ jobs:
         run: |
           echo "Sending payment notifications..."
           
+          echo "Debug: Checking environment variables..."
+          echo "CRON_SECRET length: ${#CRON_SECRET}"
+          echo "Site URL from vars: ${{ vars.NEXT_PUBLIC_SITE_URL }}"
+          
           # Get the site URL from environment or use default
           SITE_URL="${{ vars.NEXT_PUBLIC_SITE_URL || 'https://kreditakip.com.tr' }}"
           
@@ -25,21 +29,26 @@ jobs:
           echo "Using site URL: $SITE_URL"
           echo "Calling endpoint: $SITE_URL/api/notifications/cron"
           
-          # Call the cron endpoint with redirect following and better error handling
-          response=$(curl -s -w "HTTPSTATUS:%{http_code};REDIRECT_URL:%{redirect_url}" \
+          echo "Debug: Making API call with authentication..."
+          response=$(curl -s -w "HTTPSTATUS:%{http_code};REDIRECT_URL:%{redirect_url};TIME_TOTAL:%{time_total}" \
             -L \
+            --max-time 30 \
+            --connect-timeout 10 \
             -H "Authorization: Bearer ${{ secrets.CRON_SECRET }}" \
             -H "Content-Type: application/json" \
             -H "User-Agent: GitHub-Actions-Cron/1.0" \
+            -H "Accept: application/json" \
             "$SITE_URL/api/notifications/cron")
           
-          # Extract HTTP status and response body
+          # Extract HTTP status, redirect URL, time, and response body
           http_code=$(echo "$response" | grep -o "HTTPSTATUS:[0-9]*" | cut -d: -f2)
           redirect_url=$(echo "$response" | grep -o "REDIRECT_URL:[^;]*" | cut -d: -f2-)
-          response_body=$(echo "$response" | sed -E 's/HTTPSTATUS:[0-9]*;REDIRECT_URL:[^;]*$//')
+          time_total=$(echo "$response" | grep -o "TIME_TOTAL:[^;]*" | cut -d: -f2)
+          response_body=$(echo "$response" | sed -E 's/HTTPSTATUS:[0-9]*;REDIRECT_URL:[^;]*;TIME_TOTAL:[^;]*$//')
           
           echo "HTTP Status: $http_code"
-          if [ ! -z "$redirect_url" ]; then
+          echo "Request Time: ${time_total}s"
+          if [ ! -z "$redirect_url" ] && [ "$redirect_url" != "" ]; then
             echo "Redirect URL: $redirect_url"
           fi
           echo "Response: $response_body"
@@ -49,20 +58,38 @@ jobs:
             echo "$response_body" | jq '.' 2>/dev/null || echo "$response_body"
           elif [ "$http_code" -eq 401 ]; then
             echo "❌ Cron job failed: Unauthorized (401)"
-            echo "Please check that CRON_SECRET is properly set in repository secrets"
+            echo "🔍 Debug: CRON_SECRET is set but authentication failed"
+            echo "Please verify that:"
+            echo "  - CRON_SECRET in GitHub secrets matches the one in Vercel"
+            echo "  - The secret doesn't contain extra spaces or characters"
+            echo "  - The API endpoint authentication logic is correct"
             exit 1
           elif [ "$http_code" -eq 307 ] || [ "$http_code" -eq 308 ]; then
             echo "❌ Cron job failed: Redirect ($http_code)"
-            echo "The URL is being redirected. Please check the correct domain."
+            echo "The URL is being redirected to: $redirect_url"
+            echo "Please check if you need www. prefix or different domain"
             exit 1
           elif [ "$http_code" -eq 404 ]; then
             echo "❌ Cron job failed: Not Found (404)"
-            echo "The API endpoint does not exist. Please check the deployment."
+            echo "The API endpoint /api/notifications/cron does not exist"
+            echo "Please check that the route is deployed correctly"
+            exit 1
+          elif [ "$http_code" -eq 500 ]; then
+            echo "❌ Cron job failed: Internal Server Error (500)"
+            echo "There's an error in the API endpoint code"
+            echo "Response: $response_body"
+            exit 1
+          elif [ -z "$http_code" ] || [ "$http_code" -eq 000 ]; then
+            echo "❌ Cron job failed: No response (connection timeout or DNS issue)"
+            echo "Please check that the domain is accessible and deployed"
             exit 1
           else
             echo "❌ Cron job failed with status $http_code"
+            echo "Unexpected error occurred"
             exit 1
           fi
+        env:
+          CRON_SECRET: ${{ secrets.CRON_SECRET }}
 
       - name: Notify on failure
         if: failure()
@@ -70,6 +97,8 @@ jobs:
           echo "🚨 Payment notification workflow failed!"
           echo "Please check the logs and verify:"
           echo "1. CRON_SECRET is properly set in repository secrets"
-          echo "2. MAILERSEND_API_KEY is configured in Vercel"
-          echo "3. The API endpoint is accessible and deployed"
-          echo "4. The domain is not redirecting (check www vs non-www)"
+          echo "2. CRON_SECRET in GitHub matches the one in Vercel exactly"
+          echo "3. MAILERSEND_API_KEY is configured in Vercel"
+          echo "4. The API endpoint is accessible and deployed"
+          echo "5. The domain is not redirecting (check www vs non-www)"
+          echo "6. The Vercel deployment is successful and live"
