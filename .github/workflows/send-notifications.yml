@@ -1,0 +1,49 @@
+name: Send Payment Notifications
+
+on:
+  schedule:
+    # Run twice daily: 09:00 UTC (12:00 Turkey) and 18:00 UTC (21:00 Turkey)
+    - cron: '0 9 * * *'
+    - cron: '0 18 * * *'
+  workflow_dispatch: # Allow manual triggering
+
+jobs:
+  send-notifications:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Send Payment Reminders
+        run: |
+          echo "Sending payment notifications..."
+          
+          # Get the site URL from environment or use default
+          SITE_URL="${{ vars.NEXT_PUBLIC_SITE_URL || 'https://kreditakip.com.tr' }}"
+          
+          # Call the cron endpoint
+          response=$(curl -s -w "%{http_code}" \
+            -H "Authorization: Bearer ${{ secrets.CRON_SECRET }}" \
+            -H "Content-Type: application/json" \
+            "$SITE_URL/api/notifications/cron")
+          
+          http_code="${response: -3}"
+          response_body="${response%???}"
+          
+          echo "HTTP Status: $http_code"
+          echo "Response: $response_body"
+          
+          if [ "$http_code" -ne 200 ]; then
+            echo "❌ Cron job failed with status $http_code"
+            exit 1
+          else
+            echo "✅ Cron job completed successfully"
+            echo "$response_body" | jq '.' || echo "$response_body"
+          fi
+
+      - name: Notify on failure
+        if: failure()
+        run: |
+          echo "🚨 Payment notification workflow failed!"
+          echo "Please check the logs and verify:"
+          echo "1. CRON_SECRET is properly set in repository secrets"
+          echo "2. MAILERSEND_API_KEY is configured in Vercel"
+          echo "3. The API endpoint is accessible"
