@@ -7,10 +7,13 @@ export async function GET(request: NextRequest) {
   try {
     console.log("[v0] Cron job started at:", new Date().toISOString())
 
-    const authHeader = request.headers.get("authorization")
     const cronSecret = process.env.CRON_SECRET
+    const authHeader = request.headers.get("authorization")
+    const { searchParams } = new URL(request.url)
+    const secretParam = searchParams.get("secret")
 
     console.log("[v0] Auth header present:", !!authHeader)
+    console.log("[v0] Secret param present:", !!secretParam)
     console.log("[v0] CRON_SECRET present:", !!cronSecret)
     console.log("[v0] CRON_SECRET length:", cronSecret?.length || 0)
 
@@ -19,16 +22,26 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: "CRON_SECRET not configured" }, { status: 500 })
     }
 
-    if (!authHeader) {
-      console.log("[v0] No authorization header provided")
-      return NextResponse.json({ error: "Authorization header required" }, { status: 401 })
+    // Check authentication - either Bearer token or secret query param
+    let isAuthenticated = false
+
+    if (authHeader) {
+      const expectedAuth = `Bearer ${cronSecret}`
+      isAuthenticated = authHeader === expectedAuth
+    } else if (secretParam) {
+      isAuthenticated = secretParam === cronSecret
     }
 
-    const expectedAuth = `Bearer ${cronSecret}`
-    if (authHeader !== expectedAuth) {
-      console.log("[v0] Auth header mismatch")
-      console.log("[v0] Expected format: Bearer [SECRET]")
-      console.log("[v0] Received format:", authHeader.substring(0, 20) + "...")
+    if (!isAuthenticated) {
+      console.log("[v0] Authentication failed")
+      if (authHeader) {
+        console.log("[v0] Auth header mismatch")
+        console.log("[v0] Expected format: Bearer [SECRET]")
+        console.log("[v0] Received format:", authHeader.substring(0, 20) + "...")
+      }
+      if (secretParam) {
+        console.log("[v0] Secret param mismatch")
+      }
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
     }
 
