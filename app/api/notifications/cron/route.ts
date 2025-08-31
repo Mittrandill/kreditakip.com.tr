@@ -11,9 +11,11 @@ export async function GET(request: NextRequest) {
     const authHeader = request.headers.get("authorization")
     const { searchParams } = new URL(request.url)
     const secretParam = searchParams.get("secret")
+    const testMode = searchParams.get("test") === "true"
 
     console.log("[v0] Auth header present:", !!authHeader)
     console.log("[v0] Secret param present:", !!secretParam)
+    console.log("[v0] Test mode:", testMode)
     console.log("[v0] CRON_SECRET present:", !!cronSecret)
     console.log("[v0] CRON_SECRET length:", cronSecret?.length || 0)
 
@@ -22,10 +24,12 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: "CRON_SECRET not configured" }, { status: 500 })
     }
 
-    // Check authentication - either Bearer token or secret query param
     let isAuthenticated = false
 
-    if (authHeader) {
+    if (testMode) {
+      isAuthenticated = true
+      console.log("[v0] Running in TEST MODE - no authentication required")
+    } else if (authHeader) {
       const expectedAuth = `Bearer ${cronSecret}`
       isAuthenticated = authHeader === expectedAuth
     } else if (secretParam) {
@@ -42,7 +46,13 @@ export async function GET(request: NextRequest) {
       if (secretParam) {
         console.log("[v0] Secret param mismatch")
       }
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
+      return NextResponse.json(
+        {
+          error: "Unauthorized",
+          hint: "Use ?test=true for testing without authentication",
+        },
+        { status: 401 },
+      )
     }
 
     console.log("[v0] Authentication successful")
@@ -52,10 +62,8 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: "MAILERSEND_API_KEY not configured" }, { status: 500 })
     }
 
-    // Get base URL for API calls
     const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://kreditakip.com.tr"
 
-    // Aktif kullanıcıları al (e-posta bildirimleri açık olanlar)
     const { data: users, error: usersError } = await supabase
       .from("notification_preferences")
       .select("user_id, email_3_days_before, email_1_day_before, email_on_due_date, email_overdue")
@@ -77,10 +85,8 @@ export async function GET(request: NextRequest) {
       errors: [],
     }
 
-    // Her kullanıcı için bildirimleri kontrol et ve gönder
     for (const user of users) {
       try {
-        // 3 gün önceden bildirim
         if (user.email_3_days_before) {
           const response = await fetch(`${baseUrl}/api/notifications/send-reminders`, {
             method: "POST",
@@ -96,7 +102,6 @@ export async function GET(request: NextRequest) {
           }
         }
 
-        // 1 gün önceden bildirim
         if (user.email_1_day_before) {
           const response = await fetch(`${baseUrl}/api/notifications/send-reminders`, {
             method: "POST",
@@ -112,7 +117,6 @@ export async function GET(request: NextRequest) {
           }
         }
 
-        // Vade günü bildirim
         if (user.email_on_due_date) {
           const response = await fetch(`${baseUrl}/api/notifications/send-reminders`, {
             method: "POST",
@@ -128,7 +132,6 @@ export async function GET(request: NextRequest) {
           }
         }
 
-        // Gecikme bildirim
         if (user.email_overdue) {
           const response = await fetch(`${baseUrl}/api/notifications/send-reminders`, {
             method: "POST",
@@ -161,12 +164,14 @@ export async function GET(request: NextRequest) {
       totalEmailsSent: totalSent,
       breakdown: results.notifications,
       errors: results.errors.length,
+      testMode,
       timestamp: new Date().toISOString(),
     })
 
     return NextResponse.json({
       success: true,
       message: `Cron job completed. ${totalSent} emails sent to ${results.totalUsers} users.`,
+      testMode,
       results,
     })
   } catch (error) {
