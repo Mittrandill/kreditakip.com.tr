@@ -8,15 +8,31 @@ export async function GET(request: NextRequest) {
     console.log("[v0] Cron job started at:", new Date().toISOString())
 
     const authHeader = request.headers.get("authorization")
-    if (authHeader !== `Bearer ${process.env.CRON_SECRET}`) {
-      console.log("[v0] Cron job unauthorized access attempt")
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
-    }
+    const cronSecret = process.env.CRON_SECRET
 
-    if (!process.env.CRON_SECRET) {
+    console.log("[v0] Auth header present:", !!authHeader)
+    console.log("[v0] CRON_SECRET present:", !!cronSecret)
+    console.log("[v0] CRON_SECRET length:", cronSecret?.length || 0)
+
+    if (!cronSecret) {
       console.error("[v0] CRON_SECRET environment variable not set")
       return NextResponse.json({ error: "CRON_SECRET not configured" }, { status: 500 })
     }
+
+    if (!authHeader) {
+      console.log("[v0] No authorization header provided")
+      return NextResponse.json({ error: "Authorization header required" }, { status: 401 })
+    }
+
+    const expectedAuth = `Bearer ${cronSecret}`
+    if (authHeader !== expectedAuth) {
+      console.log("[v0] Auth header mismatch")
+      console.log("[v0] Expected format: Bearer [SECRET]")
+      console.log("[v0] Received format:", authHeader.substring(0, 20) + "...")
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
+    }
+
+    console.log("[v0] Authentication successful")
 
     if (!process.env.MAILERSEND_API_KEY) {
       console.error("[v0] MAILERSEND_API_KEY environment variable not set")
