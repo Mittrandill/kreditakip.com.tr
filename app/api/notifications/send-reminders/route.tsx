@@ -538,7 +538,6 @@ function createEmailTemplate(
                   color: #64748b;
                   text-decoration: none;
                   font-size: 13px;
-                  font-weight: 500;
                   margin: 0 12px;
                   transition: color 0.2s;
               }
@@ -837,7 +836,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Kullanıcının ödemelerini al
-    const payments = await getAllPayments(userId, 3, 3) // 3 ay geçmiş + 3 ay gelecek
+    const payments = await getAllPayments(userId, 1, 1) // 1 ay geçmiş + 1 ay gelecek
 
     const today = new Date()
     const tomorrow = new Date(today)

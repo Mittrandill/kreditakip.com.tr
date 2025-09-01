@@ -329,10 +329,10 @@ export async function createUpcomingPaymentNotifications(userId: string) {
 
 export async function createWeeklyPaymentNotifications(userId: string) {
   try {
-    // 1 hafta sonraki tarihi hesapla
-    const oneWeekLater = new Date()
-    oneWeekLater.setDate(oneWeekLater.getDate() + 7)
-    const oneWeekDate = oneWeekLater.toISOString().split("T")[0]
+    // 3 gün sonraki tarihi hesapla
+    const threeDaysLater = new Date()
+    threeDaysLater.setDate(threeDaysLater.getDate() + 3)
+    const threeDaysDate = threeDaysLater.toISOString().split("T")[0]
 
     // Bugünün tarihi
     const today = new Date().toISOString().split("T")[0]
@@ -346,7 +346,7 @@ export async function createWeeklyPaymentNotifications(userId: string) {
 
     const existingPaymentPlanIds = new Set(existingNotifications?.map((n) => n.payment_plan_id) || [])
 
-    // 1 hafta içinde vadesi gelen ödemeleri getir
+    // 3 gün içinde vadesi gelen ödemeleri getir
     const { data: upcomingPayments } = await supabase
       .from("payment_plans")
       .select(`
@@ -361,13 +361,12 @@ export async function createWeeklyPaymentNotifications(userId: string) {
       .eq("credits.user_id", userId)
       .eq("status", "pending")
       .gte("due_date", today)
-      .lte("due_date", oneWeekDate)
+      .lte("due_date", threeDaysDate)
 
     if (!upcomingPayments || upcomingPayments.length === 0) {
       return []
     }
 
-    // Daha önce bildirim oluşturulmamış ödemeler için bildirim oluştur
     const notifications = upcomingPayments
       .filter((payment) => !existingPaymentPlanIds.has(payment.id))
       .map((payment) => {
