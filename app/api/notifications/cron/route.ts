@@ -64,15 +64,14 @@ export async function GET(request: NextRequest) {
 
     const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://kreditakip.com.tr"
 
-    const { data: users, error: usersError } = await supabase
-      .from("notification_preferences")
-      .select("user_id, email_3_days_before, email_1_day_before, email_on_due_date, email_overdue")
-      .eq("email_enabled", true)
+    const { data: users, error: usersError } = await supabase.from("profiles").select("id").not("email", "is", null)
 
     if (usersError) {
       console.error("Error fetching users:", usersError)
       return NextResponse.json({ error: "Failed to fetch users" }, { status: 500 })
     }
+
+    console.log(`[v0] Found ${users.length} users with email addresses`)
 
     const results = {
       totalUsers: users.length,
@@ -87,71 +86,28 @@ export async function GET(request: NextRequest) {
 
     for (const user of users) {
       try {
-        if (user.email_3_days_before) {
+        const notificationTypes = ["3_days_before", "1_day_before", "due_date", "overdue"]
+
+        for (const type of notificationTypes) {
           const response = await fetch(`${baseUrl}/api/notifications/send-reminders`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ userId: user.user_id, type: "3_days_before" }),
+            body: JSON.stringify({ userId: user.id, type }),
           })
 
           if (response.ok) {
             const result = await response.json()
-            results.notifications["3_days_before"] += result.emailsSent || 0
+            results.notifications[type] += result.emailsSent || 0
           } else {
-            console.error(`Failed to send 3_days_before notification for user ${user.user_id}:`, await response.text())
-          }
-        }
-
-        if (user.email_1_day_before) {
-          const response = await fetch(`${baseUrl}/api/notifications/send-reminders`, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ userId: user.user_id, type: "1_day_before" }),
-          })
-
-          if (response.ok) {
-            const result = await response.json()
-            results.notifications["1_day_before"] += result.emailsSent || 0
-          } else {
-            console.error(`Failed to send 1_day_before notification for user ${user.user_id}:`, await response.text())
-          }
-        }
-
-        if (user.email_on_due_date) {
-          const response = await fetch(`${baseUrl}/api/notifications/send-reminders`, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ userId: user.user_id, type: "due_date" }),
-          })
-
-          if (response.ok) {
-            const result = await response.json()
-            results.notifications["due_date"] += result.emailsSent || 0
-          } else {
-            console.error(`Failed to send due_date notification for user ${user.user_id}:`, await response.text())
-          }
-        }
-
-        if (user.email_overdue) {
-          const response = await fetch(`${baseUrl}/api/notifications/send-reminders`, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ userId: user.user_id, type: "overdue" }),
-          })
-
-          if (response.ok) {
-            const result = await response.json()
-            results.notifications["overdue"] += result.emailsSent || 0
-          } else {
-            console.error(`Failed to send overdue notification for user ${user.user_id}:`, await response.text())
+            console.error(`Failed to send ${type} notification for user ${user.id}:`, await response.text())
           }
         }
 
         await new Promise((resolve) => setTimeout(resolve, 200))
       } catch (error) {
-        console.error(`Error processing user ${user.user_id}:`, error)
+        console.error(`Error processing user ${user.id}:`, error)
         results.errors.push({
-          userId: user.user_id,
+          userId: user.id,
           error: error.message,
         })
       }
