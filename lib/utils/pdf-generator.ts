@@ -1050,8 +1050,8 @@ class ModernPDFGenerator {
 
   public async generate() {
     try {
-      // Logo'yu yüklemeyi dene
-      this.logoBase64 = await loadImageAsBase64("/logo-white.png")
+      // Logo'yu yüklemeyi dene - boyut bilgileriyle birlikte
+      this.logoData = await loadImageAsBase64("/logo-white.png")
       
       await this.addModernHeader()
 
