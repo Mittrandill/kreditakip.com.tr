@@ -41,6 +41,21 @@ jobs:
         TEST_MODE: ${{ github.event.inputs.test_mode || 'false' }}
         TEST_EMAIL: ${{ github.event.inputs.test_email }}
       run: |
+        echo "📂 Current working directory: $(pwd)"
+        echo "📋 Listing repository contents:"
+        ls -la
+        echo "📁 Checking scripts directory:"
+        ls -la scripts/
+        echo "🔍 Verifying script file exists:"
+        if [ -f "scripts/send-email-notifications.js" ]; then
+          echo "✅ Script file found"
+          echo "📄 Script file details:"
+          ls -la scripts/send-email-notifications.js
+        else
+          echo "❌ Script file not found"
+          exit 1
+        fi
+        echo "🚀 Running email notification script..."
         node scripts/send-email-notifications.js
         
     - name: Workflow Summary
