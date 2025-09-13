@@ -128,23 +128,37 @@ async function sendNotifications() {
     }
 
     // Bildirim tercihli kullanıcıları al
-    const { data: users, error: usersError } = await supabase
+    const { data: notificationPrefs, error: prefsError } = await supabase
       .from("notification_preferences")
-      .select(`
-        user_id,
-        profiles!inner(email, first_name, last_name)
-      `)
+      .select("user_id")
       .eq("email_enabled", true)
 
-    if (usersError) {
-      throw new Error(`Users fetch error: ${usersError.message}`)
+    if (prefsError) {
+      throw new Error(`Notification preferences fetch error: ${prefsError.message}`)
     }
 
-    console.log(`📋 Found ${users?.length || 0} users with email notifications enabled`)
+    console.log(`📋 Found ${notificationPrefs?.length || 0} users with email notifications enabled`)
+
+    // Kullanıcı bilgilerini ayrı sorgu ile al
+    const userIds = notificationPrefs?.map((pref) => pref.user_id) || []
+
+    if (userIds.length === 0) {
+      console.log("📭 No users with email notifications enabled")
+      return
+    }
+
+    const { data: profiles, error: profilesError } = await supabase
+      .from("profiles")
+      .select("id, email, first_name, last_name")
+      .in("id", userIds)
+
+    if (profilesError) {
+      throw new Error(`Profiles fetch error: ${profilesError.message}`)
+    }
 
     let totalSent = 0
 
-    for (const user of users || []) {
+    for (const profile of profiles || []) {
       try {
         // Kullanıcının ödemelerini al
         const { data: payments, error: paymentsError } = await supabase
@@ -156,11 +170,11 @@ async function sendNotifications() {
               credit_amount
             )
           `)
-          .eq("user_id", user.user_id)
+          .eq("user_id", profile.id)
           .gte("due_date", new Date().toISOString().split("T")[0])
 
         if (paymentsError) {
-          console.error(`❌ Payments fetch error for user ${user.user_id}:`, paymentsError)
+          console.error(`❌ Payments fetch error for user ${profile.id}:`, paymentsError)
           continue
         }
 
@@ -195,7 +209,7 @@ async function sendNotifications() {
             const { data: existingEmail } = await supabase
               .from("email_notifications")
               .select("id")
-              .eq("user_id", user.user_id)
+              .eq("user_id", profile.id)
               .eq("payment_plan_id", payment.id)
               .eq("notification_type", notificationType)
               .gte("sent_at", today.toISOString().split("T")[0])
@@ -207,7 +221,7 @@ async function sendNotifications() {
             }
 
             const emailTemplate = await createEmailTemplate(
-              user.profiles.first_name || "",
+              profile.first_name || "",
               payment.credits.bank_name,
               payment.installment_number,
               payment.amount.toLocaleString("tr-TR"),
@@ -216,7 +230,7 @@ async function sendNotifications() {
             )
 
             const sentFrom = new Sender("bildirim@kreditakip.com.tr", "Kredi Takip")
-            const recipients = [new Recipient(user.profiles.email, user.profiles.first_name || "")]
+            const recipients = [new Recipient(profile.email, profile.first_name || "")]
 
             const emailParams = new EmailParams()
               .setFrom(sentFrom)
@@ -229,7 +243,7 @@ async function sendNotifications() {
             if (response.statusCode === 202) {
               // Email gönderim kaydı oluştur
               await supabase.from("email_notifications").insert({
-                user_id: user.user_id,
+                user_id: profile.id,
                 payment_plan_id: payment.id,
                 credit_id: payment.credit_id,
                 subject: emailTemplate.subject,
@@ -240,13 +254,13 @@ async function sendNotifications() {
               })
 
               totalSent++
-              console.log(`✅ Email sent to ${user.profiles.email} for payment ${payment.id}`)
+              console.log(`✅ Email sent to ${profile.email} for payment ${payment.id}`)
             } else {
               console.error(`❌ Email failed for payment ${payment.id}:`, response)
 
               // Hata kaydı oluştur
               await supabase.from("email_notifications").insert({
-                user_id: user.user_id,
+                user_id: profile.id,
                 payment_plan_id: payment.id,
                 credit_id: payment.credit_id,
                 subject: emailTemplate.subject,
@@ -260,7 +274,7 @@ async function sendNotifications() {
           }
         }
       } catch (userError) {
-        console.error(`❌ Error processing user ${user.user_id}:`, userError)
+        console.error(`❌ Error processing user ${profile.id}:`, userError)
       }
     }
 
