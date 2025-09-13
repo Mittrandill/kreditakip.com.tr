@@ -168,11 +168,14 @@ async function sendNotifications() {
           .select(`
             *,
             credits!inner(
-              branch_name,
-              credit_amount
+              id,
+              bank_id,
+              banks!inner(
+                name
+              )
             )
           `)
-          .eq("user_id", profile.id)
+          .eq("credits.user_id", profile.id)
           .gte("due_date", new Date().toISOString().split("T")[0])
 
         if (paymentsError) {
@@ -190,8 +193,13 @@ async function sendNotifications() {
           let shouldSend = false
           let notificationType = ""
 
+          // Bugün vadesi gelenler
+          if (diffDays === 0) {
+            shouldSend = true
+            notificationType = "reminder"
+          }
           // Yarın vadesi gelenler
-          if (diffDays === 1) {
+          else if (diffDays === 1) {
             shouldSend = true
             notificationType = "reminder"
           }
@@ -224,9 +232,9 @@ async function sendNotifications() {
 
             const emailTemplate = await createEmailTemplate(
               profile.first_name || "",
-              payment.credits.branch_name,
+              payment.credits.banks.name,
               payment.installment_number,
-              payment.amount.toLocaleString("tr-TR"),
+              payment.total_payment.toLocaleString("tr-TR"),
               dueDate.toLocaleDateString("tr-TR"),
               notificationType,
             )
@@ -249,7 +257,7 @@ async function sendNotifications() {
                 payment_plan_id: payment.id,
                 credit_id: payment.credit_id,
                 subject: emailTemplate.subject,
-                content: `${payment.credits.branch_name} bankasından ${payment.installment_number}. taksit ödeme hatırlatması`,
+                content: `${payment.credits.banks.name} bankasından ${payment.installment_number}. taksit ödeme hatırlatması`,
                 notification_type: notificationType,
                 sent_at: new Date().toISOString(),
                 status: "sent",
@@ -266,7 +274,7 @@ async function sendNotifications() {
                 payment_plan_id: payment.id,
                 credit_id: payment.credit_id,
                 subject: emailTemplate.subject,
-                content: `${payment.credits.branch_name} bankasından ${payment.installment_number}. taksit ödeme hatırlatması`,
+                content: `${payment.credits.banks.name} bankasından ${payment.installment_number}. taksit ödeme hatırlatması`,
                 notification_type: notificationType,
                 sent_at: new Date().toISOString(),
                 status: "failed",
