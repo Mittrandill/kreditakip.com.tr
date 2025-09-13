@@ -7,11 +7,9 @@ const mailerSend = new MailerSend({
 
 const supabase = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL, process.env.SERVICE_ROLE_KEY)
 
-async function createEmailTemplate(firstName, branchName, installmentNumber, amount, dueDate, type) {
+async function createEmailTemplate(firstName, bankName, installmentNumber, amount, dueDate, type) {
   const isReminder = type === "reminder"
-  const subject = isReminder
-    ? `💳 Kredi Taksit Hatırlatması - ${branchName}`
-    : `⚠️ Geciken Ödeme Bildirimi - ${branchName}`
+  const subject = isReminder ? `💳 Kredi Taksit Hatırlatması - ${bankName}` : `⚠️ Geciken Ödeme Bildirimi - ${bankName}`
 
   const html = `
     <!DOCTYPE html>
@@ -34,15 +32,15 @@ async function createEmailTemplate(firstName, branchName, installmentNumber, amo
           <p style="color: #475569; line-height: 1.6; margin: 0 0 24px 0;">
             ${
               isReminder
-                ? `${branchName} bankanızdan ${installmentNumber}. taksit ödemenizin vadesi yaklaşıyor.`
-                : `${branchName} bankanızdan ${installmentNumber}. taksit ödemenizin vadesi geçmiş.`
+                ? `${bankName} bankanızdan ${installmentNumber}. taksit ödemenizin vadesi yaklaşıyor.`
+                : `${bankName} bankanızdan ${installmentNumber}. taksit ödemenizin vadesi geçmiş.`
             }
           </p>
           
           <div style="background-color: #f1f5f9; border-radius: 8px; padding: 20px; margin: 24px 0;">
             <div style="display: flex; justify-content: space-between; margin-bottom: 12px;">
               <span style="color: #64748b; font-weight: 500;">Banka:</span>
-              <span style="color: #1e293b; font-weight: 600;">${branchName}</span>
+              <span style="color: #1e293b; font-weight: 600;">${bankName}</span>
             </div>
             <div style="display: flex; justify-content: space-between; margin-bottom: 12px;">
               <span style="color: #64748b; font-weight: 500;">Taksit No:</span>
@@ -160,32 +158,46 @@ async function sendNotifications() {
 
     let totalSent = 0
 
+    const today = new Date()
+    const todayStr = today.toISOString().split("T")[0]
+    const oneDayLater = new Date(today.getTime() + 24 * 60 * 60 * 1000).toISOString().split("T")[0]
+    const threeDaysLater = new Date(today.getTime() + 3 * 24 * 60 * 60 * 1000).toISOString().split("T")[0]
+
+    // Get all payment plans for today, 1 day, and 3 days from now
+    const { data: paymentPlans, error: paymentsError } = await supabase
+      .from("payment_plans")
+      .select(`
+        id,
+        credit_id,
+        installment_number,
+        due_date,
+        total_payment,
+        status,
+        credits!inner(
+          id,
+          user_id,
+          bank_id,
+          banks!inner(
+            id,
+            name
+          )
+        )
+      `)
+      .in("due_date", [todayStr, oneDayLater, threeDaysLater])
+      .eq("status", "pending")
+
+    if (paymentsError) {
+      throw new Error(`Payment plans fetch error: ${paymentsError.message}`)
+    }
+
+    console.log(`💳 Found ${paymentPlans?.length || 0} payment plans for notification dates`)
+
     for (const profile of profiles || []) {
       try {
-        // Kullanıcının ödemelerini al
-        const { data: payments, error: paymentsError } = await supabase
-          .from("payment_plans")
-          .select(`
-            *,
-            credits!inner(
-              id,
-              bank_id,
-              banks!inner(
-                name
-              )
-            )
-          `)
-          .eq("credits.user_id", profile.id)
-          .gte("due_date", new Date().toISOString().split("T")[0])
+        // Filter payment plans for this user
+        const userPayments = paymentPlans?.filter((payment) => payment.credits.user_id === profile.id) || []
 
-        if (paymentsError) {
-          console.error(`❌ Payments fetch error for user ${profile.id}:`, paymentsError)
-          continue
-        }
-
-        const today = new Date()
-
-        for (const payment of payments || []) {
+        for (const payment of userPayments) {
           const dueDate = new Date(payment.due_date)
           const diffTime = dueDate.getTime() - today.getTime()
           const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24))
@@ -196,7 +208,7 @@ async function sendNotifications() {
           // Bugün vadesi gelenler
           if (diffDays === 0) {
             shouldSend = true
-            notificationType = "reminder"
+            notificationType = "due_today"
           }
           // Yarın vadesi gelenler
           else if (diffDays === 1) {
@@ -208,35 +220,31 @@ async function sendNotifications() {
             shouldSend = true
             notificationType = "reminder"
           }
-          // Vadesi geçenler
-          else if (diffDays < 0) {
-            shouldSend = true
-            notificationType = "overdue"
-          }
 
           if (shouldSend) {
             // Bugün aynı ödeme için email gönderilmiş mi kontrol et
-            const { data: existingEmail } = await supabase
-              .from("email_notifications")
+            const { data: existingNotification } = await supabase
+              .from("notifications")
               .select("id")
               .eq("user_id", profile.id)
               .eq("payment_plan_id", payment.id)
-              .eq("notification_type", notificationType)
-              .gte("sent_at", today.toISOString().split("T")[0])
+              .eq("notification_type", "email")
+              .gte("created_at", todayStr)
               .single()
 
-            if (existingEmail) {
+            if (existingNotification) {
               console.log(`⏭️ Email already sent today for payment ${payment.id}`)
               continue
             }
 
+            const bankName = payment.credits.banks.name
             const emailTemplate = await createEmailTemplate(
               profile.first_name || "",
-              payment.credits.banks.name,
+              bankName,
               payment.installment_number,
               payment.total_payment.toLocaleString("tr-TR"),
               dueDate.toLocaleDateString("tr-TR"),
-              notificationType,
+              notificationType === "due_today" ? "overdue" : "reminder",
             )
 
             const sentFrom = new Sender("bildirim@kreditakip.com.tr", "Kredi Takip")
@@ -251,16 +259,16 @@ async function sendNotifications() {
             const response = await mailerSend.email.send(emailParams)
 
             if (response.statusCode === 202) {
-              // Email gönderim kaydı oluştur
-              await supabase.from("email_notifications").insert({
+              // Notification kaydı oluştur
+              await supabase.from("notifications").insert({
                 user_id: profile.id,
                 payment_plan_id: payment.id,
                 credit_id: payment.credit_id,
-                subject: emailTemplate.subject,
-                content: `${payment.credits.banks.name} bankasından ${payment.installment_number}. taksit ödeme hatırlatması`,
-                notification_type: notificationType,
-                sent_at: new Date().toISOString(),
-                status: "sent",
+                title: emailTemplate.subject,
+                message: `${bankName} bankasından ${payment.installment_number}. taksit ödeme hatırlatması`,
+                notification_type: "email",
+                email_sent_at: new Date().toISOString(),
+                email_delivery_status: "sent",
               })
 
               totalSent++
@@ -269,16 +277,16 @@ async function sendNotifications() {
               console.error(`❌ Email failed for payment ${payment.id}:`, response)
 
               // Hata kaydı oluştur
-              await supabase.from("email_notifications").insert({
+              await supabase.from("notifications").insert({
                 user_id: profile.id,
                 payment_plan_id: payment.id,
                 credit_id: payment.credit_id,
-                subject: emailTemplate.subject,
-                content: `${payment.credits.banks.name} bankasından ${payment.installment_number}. taksit ödeme hatırlatması`,
-                notification_type: notificationType,
-                sent_at: new Date().toISOString(),
-                status: "failed",
-                error_message: `HTTP ${response.statusCode}`,
+                title: emailTemplate.subject,
+                message: `${bankName} bankasından ${payment.installment_number}. taksit ödeme hatırlatması`,
+                notification_type: "email",
+                email_sent_at: new Date().toISOString(),
+                email_delivery_status: "failed",
+                email_error_message: `HTTP ${response.statusCode}`,
               })
             }
           }
