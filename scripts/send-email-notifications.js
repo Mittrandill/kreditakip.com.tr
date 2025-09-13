@@ -7,9 +7,11 @@ const mailerSend = new MailerSend({
 
 const supabase = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL, process.env.SERVICE_ROLE_KEY)
 
-async function createEmailTemplate(firstName, bankName, installmentNumber, amount, dueDate, type) {
+async function createEmailTemplate(firstName, branchName, installmentNumber, amount, dueDate, type) {
   const isReminder = type === "reminder"
-  const subject = isReminder ? `💳 Kredi Taksit Hatırlatması - ${bankName}` : `⚠️ Geciken Ödeme Bildirimi - ${bankName}`
+  const subject = isReminder
+    ? `💳 Kredi Taksit Hatırlatması - ${branchName}`
+    : `⚠️ Geciken Ödeme Bildirimi - ${branchName}`
 
   const html = `
     <!DOCTYPE html>
@@ -32,15 +34,15 @@ async function createEmailTemplate(firstName, bankName, installmentNumber, amoun
           <p style="color: #475569; line-height: 1.6; margin: 0 0 24px 0;">
             ${
               isReminder
-                ? `${bankName} bankanızdan ${installmentNumber}. taksit ödemenizin vadesi yaklaşıyor.`
-                : `${bankName} bankanızdan ${installmentNumber}. taksit ödemenizin vadesi geçmiş.`
+                ? `${branchName} bankanızdan ${installmentNumber}. taksit ödemenizin vadesi yaklaşıyor.`
+                : `${branchName} bankanızdan ${installmentNumber}. taksit ödemenizin vadesi geçmiş.`
             }
           </p>
           
           <div style="background-color: #f1f5f9; border-radius: 8px; padding: 20px; margin: 24px 0;">
             <div style="display: flex; justify-content: space-between; margin-bottom: 12px;">
               <span style="color: #64748b; font-weight: 500;">Banka:</span>
-              <span style="color: #1e293b; font-weight: 600;">${bankName}</span>
+              <span style="color: #1e293b; font-weight: 600;">${branchName}</span>
             </div>
             <div style="display: flex; justify-content: space-between; margin-bottom: 12px;">
               <span style="color: #64748b; font-weight: 500;">Taksit No:</span>
@@ -166,7 +168,7 @@ async function sendNotifications() {
           .select(`
             *,
             credits!inner(
-              bank_name,
+              branch_name,
               credit_amount
             )
           `)
@@ -222,7 +224,7 @@ async function sendNotifications() {
 
             const emailTemplate = await createEmailTemplate(
               profile.first_name || "",
-              payment.credits.bank_name,
+              payment.credits.branch_name,
               payment.installment_number,
               payment.amount.toLocaleString("tr-TR"),
               dueDate.toLocaleDateString("tr-TR"),
@@ -247,7 +249,7 @@ async function sendNotifications() {
                 payment_plan_id: payment.id,
                 credit_id: payment.credit_id,
                 subject: emailTemplate.subject,
-                content: `${payment.credits.bank_name} bankasından ${payment.installment_number}. taksit ödeme hatırlatması`,
+                content: `${payment.credits.branch_name} bankasından ${payment.installment_number}. taksit ödeme hatırlatması`,
                 notification_type: notificationType,
                 sent_at: new Date().toISOString(),
                 status: "sent",
@@ -264,7 +266,7 @@ async function sendNotifications() {
                 payment_plan_id: payment.id,
                 credit_id: payment.credit_id,
                 subject: emailTemplate.subject,
-                content: `${payment.credits.bank_name} bankasından ${payment.installment_number}. taksit ödeme hatırlatması`,
+                content: `${payment.credits.branch_name} bankasından ${payment.installment_number}. taksit ödeme hatırlatması`,
                 notification_type: notificationType,
                 sent_at: new Date().toISOString(),
                 status: "failed",
