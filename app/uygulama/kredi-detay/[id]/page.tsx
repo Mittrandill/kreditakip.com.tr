@@ -626,6 +626,7 @@ export default function KrediDetayPage() {
               <div className="flex items-center gap-4">
                 <BankLogo
                   bankName={krediDetay.banks?.name || "Bilinmeyen Banka"}
+                  logoUrl={krediDetay.banks?.logo_url}
                   size="lg"
                   className="bg-white/20 border-2 border-white"
                 />
@@ -850,7 +851,11 @@ export default function KrediDetayPage() {
                     </CardHeader>
                     <CardContent className="space-y-4">
                       <div className="flex items-center gap-4 mb-4">
-                        <BankLogo bankName={krediDetay.banks?.name || "Bilinmeyen Banka"} size="md" />
+                        <BankLogo
+                          bankName={krediDetay.banks?.name || "Bilinmeyen Banka"}
+                          logoUrl={krediDetay.banks?.logo_url}
+                          size="md"
+                        />
                         <div>
                           <p className="font-semibold text-gray-900">{krediDetay.banks?.name || "N/A"}</p>
                           <p className="text-sm text-gray-500">{krediDetay.branch_name || "N/A"}</p>
@@ -946,7 +951,7 @@ export default function KrediDetayPage() {
                       Toplam {odemePlani.length} taksit • Sayfa {currentPage} / {totalPages}
                     </p>
                   </div>
-                  <Button variant="outline" size="sm" className="gap-2 w-fit">
+                  <Button variant="outline" size="sm" className="gap-2 w-fit bg-transparent">
                     <Download className="h-4 w-4" />
                     Planı İndir
                   </Button>
@@ -1132,7 +1137,7 @@ export default function KrediDetayPage() {
                       Toplam {odemeGecmisi.length} ödeme • Sayfa {currentPageHistory} / {totalHistoryPages}
                     </p>
                   </div>
-                  <Button variant="outline" size="sm" className="gap-2 w-fit">
+                  <Button variant="outline" size="sm" className="gap-2 w-fit bg-transparent">
                     <Download className="h-4 w-4" />
                     Geçmişi İndir
                   </Button>
@@ -1193,7 +1198,7 @@ export default function KrediDetayPage() {
                               <Button
                                 variant="outline"
                                 size="sm"
-                                className="h-8 px-3 text-xs"
+                                className="h-8 px-3 text-xs bg-transparent"
                                 onClick={() => router.push(`/uygulama/odeme-detay/${odeme.id}`)}
                               >
                                 Detay
@@ -1203,7 +1208,7 @@ export default function KrediDetayPage() {
                                   <Button
                                     variant="outline"
                                     size="sm"
-                                    className="h-8 px-3 text-xs text-red-600 border-red-200 hover:bg-red-50"
+                                    className="h-8 px-3 text-xs text-red-600 border-red-200 hover:bg-red-50 bg-transparent"
                                   >
                                     <Trash2 className="h-3 w-3" />
                                   </Button>
@@ -1715,19 +1720,19 @@ export default function KrediDetayPage() {
                         <Banknote className="mr-2 h-4 w-4" />
                         Ödeme Yap
                       </Button>
-                      <Button variant="outline" className="w-full justify-start" onClick={handleDuzenle}>
+                      <Button variant="outline" className="w-full justify-start bg-transparent" onClick={handleDuzenle}>
                         <Settings className="mr-2 h-4 w-4" />
                         Kredi Bilgilerini Düzenle
                       </Button>
-                      <Button variant="outline" className="w-full justify-start" onClick={handleHesapla}>
+                      <Button variant="outline" className="w-full justify-start bg-transparent" onClick={handleHesapla}>
                         <Calculator className="mr-2 h-4 w-4" />
                         Erken Ödeme Hesapla
                       </Button>
-                      <Button variant="outline" className="w-full justify-start">
+                      <Button variant="outline" className="w-full justify-start bg-transparent">
                         <FileText className="mr-2 h-4 w-4" />
                         Kredi Sözleşmesi
                       </Button>
-                      <Button variant="outline" className="w-full justify-start">
+                      <Button variant="outline" className="w-full justify-start bg-transparent">
                         <Download className="mr-2 h-4 w-4" />
                         Ödeme Planını İndir
                       </Button>
@@ -1840,7 +1845,7 @@ export default function KrediDetayPage() {
                   </div>
 
                   <div className="flex gap-2">
-                    <Button onClick={handleHesaplamaPDFIndir} className="flex-1" variant="outline">
+                    <Button onClick={handleHesaplamaPDFIndir} className="flex-1 bg-transparent" variant="outline">
                       <Download className="mr-2 h-4 w-4" />
                       PDF Indir
                     </Button>
