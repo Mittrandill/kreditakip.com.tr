@@ -24,7 +24,6 @@ import {
   Mail,
   Phone,
   MapPin,
-  Camera,
   Save,
   Loader2,
   AlertCircle,
@@ -38,10 +37,10 @@ import {
   Download,
   Trash2,
   AlertTriangle,
-  Check,
   X,
   Clock,
   LocateIcon as Location,
+  Upload,
 } from "lucide-react"
 import { useAuth } from "@/hooks/use-auth"
 import { getProfile, updateProfile } from "@/lib/auth"
@@ -266,20 +265,78 @@ export default function AyarlarPage() {
     }
   }
 
+  const compressImage = (file: File, maxWidth = 400, quality = 0.8): Promise<File> => {
+    return new Promise((resolve) => {
+      const canvas = document.createElement("canvas")
+      const ctx = canvas.getContext("2d")!
+      const img = new Image()
+
+      img.onload = () => {
+        // Calculate new dimensions while maintaining aspect ratio
+        let { width, height } = img
+        if (width > height) {
+          if (width > maxWidth) {
+            height = (height * maxWidth) / width
+            width = maxWidth
+          }
+        } else {
+          if (height > maxWidth) {
+            width = (width * maxWidth) / height
+            height = maxWidth
+          }
+        }
+
+        canvas.width = width
+        canvas.height = height
+
+        // Draw and compress
+        ctx.drawImage(img, 0, 0, width, height)
+        canvas.toBlob(
+          (blob) => {
+            if (blob) {
+              const compressedFile = new File([blob], file.name, {
+                type: "image/jpeg",
+                lastModified: Date.now(),
+              })
+              resolve(compressedFile)
+            }
+          },
+          "image/jpeg",
+          quality,
+        )
+      }
+
+      img.src = URL.createObjectURL(file)
+    })
+  }
+
   // Avatar upload handler
-  const handleAvatarChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleAvatarChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
     if (file) {
-      if (file.size > 2 * 1024 * 1024) {
-        toast({ title: "Hata", description: "Dosya boyutu 2MB'dan büyük olamaz.", variant: "destructive" })
+      if (file.size > 10 * 1024 * 1024) {
+        // Increased initial limit to 10MB before compression
+        toast({ title: "Hata", description: "Dosya boyutu 10MB'dan büyük olamaz.", variant: "destructive" })
         return
       }
-      setAvatarFile(file)
-      const reader = new FileReader()
-      reader.onload = (e) => {
-        setAvatarPreview(e.target?.result as string)
+
+      try {
+        const compressedFile = await compressImage(file, 400, 0.8)
+        setAvatarFile(compressedFile)
+
+        const reader = new FileReader()
+        reader.onload = (e) => {
+          setAvatarPreview(e.target?.result as string)
+        }
+        reader.readAsDataURL(compressedFile)
+
+        toast({
+          title: "Resim hazırlandı",
+          description: `Dosya boyutu: ${(compressedFile.size / 1024).toFixed(0)}KB`,
+        })
+      } catch (error) {
+        toast({ title: "Hata", description: "Resim işlenirken bir hata oluştu.", variant: "destructive" })
       }
-      reader.readAsDataURL(file)
     }
   }
 
@@ -570,51 +627,61 @@ export default function AyarlarPage() {
                   </CardHeader>
                   <CardContent className="space-y-6">
                     {/* Profil Fotoğrafı */}
-                    <div className="flex items-center gap-4">
+                    <div className="flex items-center space-x-4">
                       <Avatar className="h-20 w-20">
-                        <AvatarImage
-                          src={
-                            avatarPreview ||
-                            profileData.avatar_url ||
-                            "/placeholder.svg?height=80&width=80&text=User" ||
-                            "/placeholder.svg" ||
-                            "/placeholder.svg" ||
-                            "/placeholder.svg" ||
-                            "/placeholder.svg"
-                          }
-                          alt="Profil"
-                        />
-                        <AvatarFallback>{getAvatarFallbackText()}</AvatarFallback>
+                        <AvatarImage src={avatarPreview || profileData.avatar_url || ""} />
+                        <AvatarFallback className="text-lg">
+                          {profileData.full_name?.charAt(0) || user?.email?.charAt(0) || "U"}
+                        </AvatarFallback>
                       </Avatar>
                       <div className="space-y-2">
-                        <div className="flex gap-2">
-                          <Button variant="outline" size="sm" asChild>
-                            <label htmlFor="avatar-upload" className="cursor-pointer">
-                              <Camera className="mr-2 h-4 w-4" />
-                              Fotoğraf Seç
-                            </label>
-                          </Button>
-                          {avatarFile && (
-                            <Button size="sm" onClick={handleAvatarUpload} disabled={isUploadingAvatar}>
-                              {isUploadingAvatar ? (
-                                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                              ) : (
-                                <Check className="mr-2 h-4 w-4" />
-                              )}
-                              {isUploadingAvatar ? "Yükleniyor..." : "Kaydet"}
-                            </Button>
-                          )}
-                        </div>
-                        <input
-                          id="avatar-upload"
+                        <Label htmlFor="avatar" className="cursor-pointer">
+                          <div className="flex items-center space-x-2 px-4 py-2 bg-primary text-primary-foreground rounded-md hover:bg-primary/90 transition-colors">
+                            <Upload className="h-4 w-4" />
+                            <span>Fotoğraf Seç</span>
+                          </div>
+                        </Label>
+                        <Input
+                          id="avatar"
                           type="file"
                           accept="image/*"
                           onChange={handleAvatarChange}
                           className="hidden"
                         />
-                        <p className="text-sm text-gray-500">JPG, PNG veya GIF. Maksimum 2MB.</p>
+                        <p className="text-xs text-muted-foreground">
+                          JPG, PNG, GIF veya WebP. Maksimum 10MB.
+                          <br />
+                          Resim otomatik olarak optimize edilecek.
+                        </p>
                       </div>
                     </div>
+                    {avatarFile && (
+                      <div className="flex space-x-2">
+                        <Button onClick={handleAvatarUpload} disabled={isUploadingAvatar} size="sm">
+                          {isUploadingAvatar ? (
+                            <>
+                              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                              Yükleniyor...
+                            </>
+                          ) : (
+                            <>
+                              <Upload className="mr-2 h-4 w-4" />
+                              Fotoğrafı Yükle
+                            </>
+                          )}
+                        </Button>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => {
+                            setAvatarFile(null)
+                            setAvatarPreview(null)
+                          }}
+                        >
+                          İptal
+                        </Button>
+                      </div>
+                    )}
 
                     {/* Form Alanları */}
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
