@@ -67,7 +67,7 @@ export default function FeaturesPage() {
                 variant="outline"
                 size="lg"
                 className="h-12 bg-transparent border-white/20 text-white hover:bg-white/10 hover:border-transparent hover:text-white"
-                >
+              >
                 Demo İzle
               </Button>
             </div>
@@ -294,7 +294,7 @@ export default function FeaturesPage() {
                 <CardContent className="p-8">
                   <div className="relative mb-6">
                     <Image
-                      src="/placeholder-nmdc3.png"
+                      src="/multi-bank-support.jpg"
                       alt="Çoklu Banka Desteği"
                       width={280}
                       height={150}
@@ -489,7 +489,7 @@ export default function FeaturesPage() {
               </div>
               <div className="bg-gradient-to-br from-emerald-500/10 to-teal-500/10 rounded-3xl p-8 border border-white/10 backdrop-blur-xl">
                 <Image
-                  src="/placeholder.svg?height=300&width=400"
+                  src="/responsive-mobile-design.jpg"
                   alt="Mobil Uyumluluk"
                   width={400}
                   height={300}
@@ -513,7 +513,7 @@ export default function FeaturesPage() {
             <div className="grid md:grid-cols-2 gap-8 mb-16">
               <div className="bg-black/20 border border-white/10 rounded-3xl p-8 backdrop-blur-xl">
                 <Image
-                  src="/placeholder.svg?height=250&width=400"
+                  src="/ai-machine-learning-tech.jpg"
                   alt="AI Teknolojisi"
                   width={400}
                   height={250}
@@ -527,7 +527,7 @@ export default function FeaturesPage() {
               </div>
               <div className="bg-black/20 border border-white/10 rounded-3xl p-8 backdrop-blur-xl">
                 <Image
-                  src="/placeholder.svg?height=250&width=400"
+                  src="/aws-cloud-infrastructure.jpg"
                   alt="Bulut Teknolojisi"
                   width={400}
                   height={250}
@@ -744,12 +744,12 @@ export default function FeaturesPage() {
                       <ArrowRight className="ml-2 w-5 h-5" />
                     </Button>
                   </Link>
-              <Button
-                variant="outline"
-                size="lg"
-                className="h-12 bg-transparent border-white/20 text-white hover:bg-white/10 hover:border-transparent hover:text-white"
-                >
-                Demo Talep Et
+                  <Button
+                    variant="outline"
+                    size="lg"
+                    className="h-12 bg-transparent border-white/20 text-white hover:bg-white/10 hover:border-transparent hover:text-white"
+                  >
+                    Demo Talep Et
                   </Button>
                 </div>
               </div>

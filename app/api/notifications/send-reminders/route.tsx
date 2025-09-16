@@ -145,7 +145,7 @@ function createEmailTemplate(
           <meta charset="UTF-8">
           <meta name="viewport" content="width=device-width, initial-scale=1.0">
           <title>${subject}</title>
-          [if mso]>
+          <!--[if mso]>
           <noscript>
               <xml>
                   <o:OfficeDocumentSettings>
@@ -153,7 +153,7 @@ function createEmailTemplate(
                   </o:OfficeDocumentSettings>
               </xml>
           </noscript>
-          <![endif]>
+          <![endif]-->
           <style>
               * {
                   margin: 0;
@@ -164,8 +164,8 @@ function createEmailTemplate(
               body {
                   font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
                   line-height: 1.6;
-                  color: #1e293b;
-                  background-color: #f8fafc;
+                  color: #e2e8f0;
+                  background-color: #0f172a;
                   margin: 0;
                   padding: 0;
                   -webkit-font-smoothing: antialiased;
@@ -175,7 +175,7 @@ function createEmailTemplate(
               .wrapper {
                   width: 100%;
                   table-layout: fixed;
-                  background-color: #f1f5f9;
+                  background-color: #0f172a;
                   padding: 60px 0;
               }
               
@@ -183,10 +183,11 @@ function createEmailTemplate(
                   width: 100%;
                   max-width: 600px;
                   margin: 0 auto;
-                  background-color: #ffffff;
+                  background-color: #1e293b;
                   border-radius: 16px;
                   overflow: hidden;
-                  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.08), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+                  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+                  border: 1px solid #334155;
               }
               
               /* Header with Gradient */
@@ -248,24 +249,25 @@ function createEmailTemplate(
               /* Content Section */
               .content {
                   padding: 48px 40px;
+                  background-color: #1e293b;
               }
               
               .greeting {
                   font-size: 18px;
-                  color: #475569;
+                  color: #cbd5e1;
                   margin-bottom: 32px;
                   font-weight: 400;
               }
               
               .greeting strong {
-                  color: #1e293b;
+                  color: #f1f5f9;
                   font-weight: 600;
               }
               
               /* Modern Payment Card */
               .payment-card {
-                  background: linear-gradient(145deg, #ffffff 0%, #f8fafc 100%);
-                  border: 1px solid #e2e8f0;
+                  background: linear-gradient(145deg, #334155 0%, #475569 100%);
+                  border: 1px solid #475569;
                   border-radius: 12px;
                   padding: 32px;
                   margin-bottom: 32px;
@@ -288,7 +290,7 @@ function createEmailTemplate(
                   align-items: center;
                   margin-bottom: 24px;
                   padding-bottom: 20px;
-                  border-bottom: 1px solid #f1f5f9;
+                  border-bottom: 1px solid #475569;
               }
               
               .bank-icon {
@@ -320,7 +322,7 @@ function createEmailTemplate(
               
               .bank-name {
                   font-size: 16px;
-                  color: #1e293b;
+                  color: #f1f5f9;
                   font-weight: 600;
               }
               
@@ -377,8 +379,8 @@ function createEmailTemplate(
                   width: 50%;
                   padding: 12px;
                   text-align: center;
-                  background: #f8fafc;
-                  border: 1px solid #f1f5f9;
+                  background: #475569;
+                  border: 1px solid #64748b;
               }
               
               .info-item:first-child {
@@ -401,14 +403,14 @@ function createEmailTemplate(
               
               .info-value {
                   font-size: 16px;
-                  color: #1e293b;
+                  color: #f1f5f9;
                   font-weight: 700;
               }
               
               /* Alert Message Box */
               .alert-box {
-                  background: #f8fafc;
-                  border: 1px solid #e2e8f0;
+                  background: #334155;
+                  border: 1px solid #475569;
                   border-radius: 12px;
                   padding: 20px;
                   margin-bottom: 32px;
@@ -441,13 +443,13 @@ function createEmailTemplate(
               .alert-title {
                   font-size: 14px;
                   font-weight: 600;
-                  color: #1e293b;
+                  color: #f1f5f9;
                   margin-bottom: 4px;
               }
               
               .alert-message {
                   font-size: 14px;
-                  color: #64748b;
+                  color: #cbd5e1;
                   line-height: 1.5;
               }
               
@@ -517,16 +519,16 @@ function createEmailTemplate(
               /* Footer */
               .footer {
                   padding: 40px;
-                  background: #f8fafc;
-                  border-top: 1px solid #e2e8f0;
+                  background: #0f172a;
+                  border-top: 1px solid #334155;
                   text-align: center;
               }
               
               .footer-logo {
-                  width: 32px;
-                  height: 32px;
-                  margin: 0 auto 16px;
-                  opacity: 0.4;
+                  width: 80px;
+                  height: auto;
+                  margin: 0 auto 20px;
+                  opacity: 0.8;
               }
               
               .footer-links {
@@ -547,24 +549,24 @@ function createEmailTemplate(
               }
               
               .footer-divider {
-                  color: #cbd5e1;
+                  color: #475569;
                   margin: 0 8px;
                   font-size: 10px;
               }
               
               .footer-text {
                   font-size: 12px;
-                  color: #94a3b8;
+                  color: #64748b;
                   line-height: 1.6;
                   margin-bottom: 16px;
               }
               
               .copyright {
                   font-size: 11px;
-                  color: #cbd5e1;
+                  color: #475569;
                   margin-top: 20px;
                   padding-top: 20px;
-                  border-top: 1px solid #e2e8f0;
+                  border-top: 1px solid #334155;
               }
               
               /* Responsive Design */
@@ -611,7 +613,7 @@ function createEmailTemplate(
                       width: 100%;
                       margin-bottom: 8px;
                       border-radius: 8px !important;
-                      border: 1px solid #f1f5f9 !important;
+                      border: 1px solid #64748b !important;
                   }
                   
                   .footer {
@@ -641,7 +643,7 @@ function createEmailTemplate(
                       <td>
                           <div class="header">
                               <div class="logo-wrapper">
-                                  <img src="https://kreditakip.com.tr/logo-white.png" alt="Kredi Takip" class="logo">
+                                  <img src="https://kreditakip.com.tr/logo.png" alt="Kredi Takip" class="logo">
                               </div>
                               <h1 class="header-title">${title}</h1>
                               <p class="header-subtitle">Finansal takibiniz bizimle güvende</p>
@@ -712,7 +714,7 @@ function createEmailTemplate(
                           </div>
                           
                           <div class="footer">
-                              <img src="https://kreditakip.com.tr/logo.png" alt="Kredi Takip" class="footer-logo" style="width: 80px; height: auto; opacity: 1; margin-bottom: 20px;">
+                              <img src="https://kreditakip.com.tr/logo.png" alt="Kredi Takip" class="footer-logo">
                               
                               <div class="footer-links">
                                   <a href="https://kreditakip.com.tr/uygulama/ayarlar" class="footer-link">Bildirim Ayarları</a>

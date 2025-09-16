@@ -211,7 +211,10 @@ export default function LoginPage() {
                             <Label htmlFor="password" className="text-white/80">
                               Şifre
                             </Label>
-                            <Link href="#" className="text-sm text-teal-400 hover:text-emerald-400 transition-colors">
+                            <Link
+                              href="/sifremi-unuttum"
+                              className="text-sm text-teal-400 hover:text-emerald-400 transition-colors"
+                            >
                               Şifremi Unuttum?
                             </Link>
                           </div>

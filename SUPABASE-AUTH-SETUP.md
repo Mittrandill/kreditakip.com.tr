@@ -22,16 +22,14 @@ Aşağıdaki URL'leri ekleyin:
 #### Production URLs:
 \`\`\`
 https://your-domain.com/auth/callback
-https://your-domain.com/auth/verify-email
-https://your-domain.com/auth/reset-password
+https://your-domain.com/yeni-sifre
 https://your-domain.com/uygulama/ana-sayfa
 \`\`\`
 
 #### Development URLs:
 \`\`\`
 http://localhost:3000/auth/callback
-http://localhost:3000/auth/verify-email
-http://localhost:3000/auth/reset-password
+http://localhost:3000/yeni-sifre
 http://localhost:3000/uygulama/ana-sayfa
 \`\`\`
 
