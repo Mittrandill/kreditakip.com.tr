@@ -13,61 +13,291 @@ async function createEmailTemplate(firstName, bankName, installmentNumber, amoun
 
   const html = `
     <!DOCTYPE html>
-    <html>
+    <html lang="tr">
     <head>
       <meta charset="utf-8">
       <meta name="viewport" content="width=device-width, initial-scale=1.0">
       <title>${subject}</title>
+      <style>
+        * {
+          margin: 0;
+          padding: 0;
+          box-sizing: border-box;
+        }
+        
+        body {
+          font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+          background-color: #0f172a;
+          color: #e2e8f0;
+          line-height: 1.6;
+          -webkit-font-smoothing: antialiased;
+        }
+        
+        .wrapper {
+          width: 100%;
+          background-color: #0f172a;
+          padding: 60px 0;
+        }
+        
+        .main {
+          max-width: 600px;
+          margin: 0 auto;
+          background-color: #1e293b;
+          border-radius: 16px;
+          overflow: hidden;
+          box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+          border: 1px solid #334155;
+        }
+        
+        .header {
+          background: linear-gradient(135deg, #10b981 0%, #14b8a6 50%, #0d9488 100%);
+          padding: 48px 40px;
+          text-align: center;
+          position: relative;
+        }
+        
+        .logo {
+          max-width: 150px;
+          height: auto;
+          margin-bottom: 20px;
+          filter: brightness(0) invert(1);
+        }
+        
+        .header-title {
+          font-size: 28px;
+          font-weight: 700;
+          color: #ffffff;
+          margin: 0;
+        }
+        
+        .header-subtitle {
+          font-size: 16px;
+          color: rgba(255, 255, 255, 0.9);
+          margin-top: 8px;
+        }
+        
+        .content {
+          padding: 48px 40px;
+          background-color: #1e293b;
+        }
+        
+        .greeting {
+          font-size: 18px;
+          color: #cbd5e1;
+          margin-bottom: 32px;
+        }
+        
+        .greeting strong {
+          color: #f1f5f9;
+          font-weight: 600;
+        }
+        
+        .payment-card {
+          background: linear-gradient(145deg, #334155 0%, #475569 100%);
+          border: 1px solid #475569;
+          border-radius: 12px;
+          padding: 32px;
+          margin-bottom: 32px;
+          position: relative;
+        }
+        
+        .payment-card::before {
+          content: '';
+          position: absolute;
+          top: 0;
+          left: 0;
+          right: 0;
+          height: 4px;
+          background: ${isReminder ? "#10b981" : "#dc2626"};
+        }
+        
+        .bank-section {
+          display: flex;
+          align-items: center;
+          margin-bottom: 24px;
+          padding-bottom: 20px;
+          border-bottom: 1px solid #475569;
+        }
+        
+        .bank-icon {
+          width: 48px;
+          height: 48px;
+          background: linear-gradient(135deg, #10b981 0%, #0d9488 100%);
+          border-radius: 12px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          margin-right: 16px;
+          font-size: 24px;
+          color: white;
+        }
+        
+        .bank-name {
+          font-size: 16px;
+          color: #f1f5f9;
+          font-weight: 600;
+        }
+        
+        .amount-section {
+          text-align: center;
+          margin: 32px 0;
+        }
+        
+        .amount {
+          font-size: 42px;
+          font-weight: 800;
+          background: linear-gradient(135deg, #10b981 0%, #0d9488 100%);
+          -webkit-background-clip: text;
+          -webkit-text-fill-color: transparent;
+          background-clip: text;
+        }
+        
+        .info-grid {
+          display: flex;
+          gap: 16px;
+          margin-top: 24px;
+        }
+        
+        .info-item {
+          flex: 1;
+          padding: 16px;
+          background: #475569;
+          border-radius: 8px;
+          text-align: center;
+        }
+        
+        .info-label {
+          font-size: 12px;
+          color: #94a3b8;
+          text-transform: uppercase;
+          margin-bottom: 8px;
+        }
+        
+        .info-value {
+          font-size: 16px;
+          color: #f1f5f9;
+          font-weight: 700;
+        }
+        
+        .cta-button {
+          display: inline-block;
+          padding: 16px 40px;
+          background: linear-gradient(135deg, #10b981 0%, #0d9488 100%);
+          color: #ffffff;
+          text-decoration: none;
+          border-radius: 12px;
+          font-weight: 600;
+          margin: 32px 0;
+        }
+        
+        .footer {
+          padding: 40px;
+          background: #0f172a;
+          border-top: 1px solid #334155;
+          text-align: center;
+        }
+        
+        .footer-logo {
+          width: 80px;
+          height: auto;
+          margin-bottom: 20px;
+          opacity: 0.8;
+        }
+        
+        .footer-text {
+          font-size: 12px;
+          color: #64748b;
+          margin-bottom: 16px;
+        }
+        
+        .copyright {
+          font-size: 11px;
+          color: #475569;
+          border-top: 1px solid #334155;
+          padding-top: 20px;
+        }
+        
+        @media screen and (max-width: 600px) {
+          .header, .content, .footer {
+            padding: 32px 24px;
+          }
+          
+          .payment-card {
+            padding: 24px;
+          }
+          
+          .bank-section {
+            flex-direction: column;
+            text-align: center;
+          }
+          
+          .bank-icon {
+            margin: 0 auto 12px;
+          }
+          
+          .info-grid {
+            flex-direction: column;
+          }
+        }
+      </style>
     </head>
-    <body style="margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background-color: #f8fafc;">
-      <div style="max-width: 600px; margin: 0 auto; background-color: white; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);">
-        <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 32px; text-align: center;">
-          <h1 style="color: white; margin: 0; font-size: 24px; font-weight: 600;">Kredi Takip</h1>
-          <p style="color: rgba(255, 255, 255, 0.9); margin: 8px 0 0 0; font-size: 16px;">Ödeme Bildirimi</p>
-        </div>
-        
-        <div style="padding: 32px;">
-          <h2 style="color: #1e293b; margin: 0 0 16px 0; font-size: 20px;">Merhaba ${firstName},</h2>
+    <body>
+      <div class="wrapper">
+        <div class="main">
+          <div class="header">
+            <img src="https://kreditakip.com.tr/logo.png" alt="Kredi Takip" class="logo">
+            <h1 class="header-title">${isReminder ? "Ödeme Hatırlatması" : "Gecikmiş Ödeme"}</h1>
+            <p class="header-subtitle">Finansal takibiniz bizimle güvende</p>
+          </div>
           
-          <p style="color: #475569; line-height: 1.6; margin: 0 0 24px 0;">
-            ${
-              isReminder
-                ? `${bankName} bankanızdan ${installmentNumber}. taksit ödemenizin vadesi yaklaşıyor.`
-                : `${bankName} bankanızdan ${installmentNumber}. taksit ödemenizin vadesi geçmiş.`
-            }
-          </p>
-          
-          <div style="background-color: #f1f5f9; border-radius: 8px; padding: 20px; margin: 24px 0;">
-            <div style="display: flex; justify-content: space-between; margin-bottom: 12px;">
-              <span style="color: #64748b; font-weight: 500;">Banka:</span>
-              <span style="color: #1e293b; font-weight: 600;">${bankName}</span>
+          <div class="content">
+            <p class="greeting">
+              Merhaba <strong>${firstName}</strong>,
+            </p>
+            
+            <div class="payment-card">
+              <div class="bank-section">
+                <div class="bank-icon">🏦</div>
+                <div>
+                  <div class="bank-name">${bankName}</div>
+                </div>
+              </div>
+              
+              <div class="amount-section">
+                <div class="amount">${amount} ₺</div>
+              </div>
+              
+              <div class="info-grid">
+                <div class="info-item">
+                  <div class="info-label">Taksit</div>
+                  <div class="info-value">${installmentNumber}</div>
+                </div>
+                <div class="info-item">
+                  <div class="info-label">Vade Tarihi</div>
+                  <div class="info-value">${dueDate}</div>
+                </div>
+              </div>
             </div>
-            <div style="display: flex; justify-content: space-between; margin-bottom: 12px;">
-              <span style="color: #64748b; font-weight: 500;">Taksit No:</span>
-              <span style="color: #1e293b; font-weight: 600;">${installmentNumber}</span>
-            </div>
-            <div style="display: flex; justify-content: space-between; margin-bottom: 12px;">
-              <span style="color: #64748b; font-weight: 500;">Tutar:</span>
-              <span style="color: #1e293b; font-weight: 600;">${amount} ₺</span>
-            </div>
-            <div style="display: flex; justify-content: space-between;">
-              <span style="color: #64748b; font-weight: 500;">Vade Tarihi:</span>
-              <span style="color: ${isReminder ? "#059669" : "#dc2626"}; font-weight: 600;">${dueDate}</span>
+            
+            <div style="text-align: center;">
+              <a href="https://kreditakip.com.tr/uygulama/odeme-plani" class="cta-button">
+                Ödeme Planını Görüntüle
+              </a>
             </div>
           </div>
           
-          <div style="text-align: center; margin: 32px 0;">
-            <a href="https://kreditakip.com.tr/dashboard" 
-               style="display: inline-block; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; text-decoration: none; padding: 12px 24px; border-radius: 8px; font-weight: 600;">
-              Detayları Görüntüle
-            </a>
+          <div class="footer">
+            <img src="https://kreditakip.com.tr/logo.png" alt="Kredi Takip" class="footer-logo">
+            
+            <p class="footer-text">
+              Bu e-posta otomatik olarak gönderilmiştir.<br>
+              E-posta bildirimlerini almak istemiyorsanız, ayarlar sayfasından kapatabilirsiniz.
+            </p>
+            
+            <div class="copyright">
+              © 2024 kreditakip.com.tr • Tüm hakları saklıdır
+            </div>
           </div>
-        </div>
-        
-        <div style="background-color: #f8fafc; padding: 24px; text-align: center; border-top: 1px solid #e2e8f0;">
-          <p style="color: #64748b; margin: 0; font-size: 14px;">
-            Bu e-posta Kredi Takip sistemi tarafından otomatik olarak gönderilmiştir.
-          </p>
         </div>
       </div>
     </body>
