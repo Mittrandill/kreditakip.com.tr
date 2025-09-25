@@ -7,13 +7,22 @@ const CACHE_DURATION = 5 * 60 * 1000 // 5 minutes
 
 export async function signUp(email: string, password: string, userData: Partial<Profile>) {
   try {
+    const isDev = typeof window !== "undefined" && window.location.hostname === "localhost"
+    const redirectUrl = isDev
+      ? process.env.NEXT_PUBLIC_DEV_SUPABASE_REDIRECT_URL || "http://localhost:3000/auth/callback"
+      : typeof window !== "undefined"
+        ? `${window.location.origin}/auth/callback`
+        : "https://kreditakip.com.tr/auth/callback"
+
     const { data, error } = await supabase.auth.signUp({
       email,
       password,
       options: {
+        emailRedirectTo: redirectUrl,
         data: {
           first_name: userData.first_name,
           last_name: userData.last_name,
+          phone: userData.phone,
         },
       },
     })

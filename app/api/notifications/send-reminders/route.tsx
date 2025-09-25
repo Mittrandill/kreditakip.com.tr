@@ -350,16 +350,14 @@ function createEmailTemplate(
               .amount {
                   font-size: 42px;
                   font-weight: 800;
-                  background: linear-gradient(135deg, #10b981 0%, #0d9488 100%);
-                  -webkit-background-clip: text;
-                  -webkit-text-fill-color: transparent;
-                  background-clip: text;
+                  color: #ffffff;
+                  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
                   letter-spacing: -1px;
               }
               
               .currency {
                   font-size: 24px;
-                  color: #64748b;
+                  color: #f1f5f9;
                   font-weight: 500;
               }
               
