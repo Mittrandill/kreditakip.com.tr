@@ -16,6 +16,56 @@ import { Checkbox } from "@/components/ui/checkbox"
 import Header from "@/components/layout/header"
 import Footer from "@/components/footer"
 
+const getErrorMessage = (error: any): string => {
+  if (!error?.message) return "Beklenmeyen bir hata oluştu. Lütfen tekrar deneyin."
+
+  const message = error.message.toLowerCase()
+
+  // Supabase hata mesajlarını Türkçeye çevir
+  if (message.includes("invalid login credentials") || message.includes("invalid credentials")) {
+    return "E-posta adresi veya şifre hatalı. Lütfen bilgilerinizi kontrol edin."
+  }
+
+  if (message.includes("email not confirmed") || message.includes("email_not_confirmed")) {
+    return "E-posta adresiniz henüz doğrulanmamış. Lütfen e-postanızı kontrol ederek doğrulama linkine tıklayın."
+  }
+
+  if (message.includes("user not found")) {
+    return "Bu e-posta adresi ile kayıtlı bir hesap bulunamadı. Lütfen kayıt olmayı deneyin."
+  }
+
+  if (message.includes("user already registered") || message.includes("email already registered")) {
+    return "Bu e-posta adresi ile zaten bir hesap mevcut. Giriş yapmayı deneyin."
+  }
+
+  if (message.includes("password") && message.includes("weak")) {
+    return "Şifreniz çok zayıf. Lütfen en az 8 karakter, büyük-küçük harf ve rakam içeren bir şifre seçin."
+  }
+
+  if (message.includes("password") && message.includes("short")) {
+    return "Şifre en az 6 karakter olmalıdır."
+  }
+
+  if (message.includes("email") && message.includes("invalid")) {
+    return "Geçersiz e-posta adresi formatı. Lütfen doğru bir e-posta adresi girin."
+  }
+
+  if (message.includes("network") || message.includes("fetch")) {
+    return "İnternet bağlantınızı kontrol edin ve tekrar deneyin."
+  }
+
+  if (message.includes("rate limit") || message.includes("too many")) {
+    return "Çok fazla deneme yaptınız. Lütfen birkaç dakika bekleyip tekrar deneyin."
+  }
+
+  if (message.includes("signup disabled")) {
+    return "Yeni kayıtlar şu anda kapalı. Lütfen daha sonra tekrar deneyin."
+  }
+
+  // Eğer bilinen bir hata değilse, orijinal mesajı döndür
+  return error.message
+}
+
 export default function LoginPage() {
   const [showPassword, setShowPassword] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
@@ -48,31 +98,39 @@ export default function LoginPage() {
       if (data?.user && data?.session) {
         toast({
           title: "Giriş Başarılı",
-          description: "Yönlendiriliyorsunuz...",
+          description: "Ana sayfaya yönlendiriliyorsunuz...",
         })
         router.push("/uygulama/ana-sayfa")
       } else if (data?.user && !data?.session) {
-        setError("Giriş başarısız. Lütfen e-postanızı doğrulayın.")
+        const errorMsg =
+          "E-posta adresiniz henüz doğrulanmamış. Lütfen e-postanızı kontrol ederek doğrulama linkine tıklayın."
+        setError(errorMsg)
         toast({
           variant: "destructive",
           title: "E-posta Doğrulaması Gerekli",
           description: "Giriş yapmadan önce lütfen e-postanızı doğrulayın.",
+          duration: 8000,
         })
       } else {
-        setError("Giriş başarısız. Lütfen bilgilerinizi kontrol edin.")
+        const errorMsg = "E-posta adresi veya şifre hatalı. Lütfen bilgilerinizi kontrol edin."
+        setError(errorMsg)
+        toast({
+          variant: "destructive",
+          title: "Giriş Başarısız",
+          description: errorMsg,
+        })
       }
     } catch (err: any) {
       console.error("Login error:", err)
-      if (err.message && err.message.toLowerCase().includes("email not confirmed")) {
-        setError("Giriş başarısız. Lütfen e-postanızı doğrulayın.")
-        toast({
-          variant: "destructive",
-          title: "E-posta Doğrulaması Gerekli",
-          description: "Giriş yapmadan önce lütfen e-postanızı doğrulayın.",
-        })
-      } else {
-        setError(err.message || "Bir hata oluştu. Lütfen tekrar deneyin.")
-      }
+      const errorMessage = getErrorMessage(err)
+      setError(errorMessage)
+
+      toast({
+        variant: "destructive",
+        title: "Giriş Hatası",
+        description: errorMessage,
+        duration: 6000,
+      })
     } finally {
       setIsLoading(false)
     }
@@ -81,14 +139,27 @@ export default function LoginPage() {
   const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault()
     if (!termsAccepted) {
-      setError("Lütfen kullanım şartlarını ve gizlilik politikasını kabul edin.")
+      const errorMsg = "Lütfen kullanım şartlarını ve gizlilik politikasını kabul edin."
+      setError(errorMsg)
       toast({
         variant: "destructive",
         title: "Kayıt Hatası",
-        description: "Lütfen kullanım şartlarını ve gizlilik politikasını kabul edin.",
+        description: errorMsg,
       })
       return
     }
+
+    if (registerPassword.length < 6) {
+      const errorMsg = "Şifre en az 6 karakter olmalıdır."
+      setError(errorMsg)
+      toast({
+        variant: "destructive",
+        title: "Şifre Hatası",
+        description: errorMsg,
+      })
+      return
+    }
+
     setIsLoading(true)
     setError(null)
 
@@ -102,20 +173,35 @@ export default function LoginPage() {
         toast({
           title: "Kayıt Başarılı!",
           description: "Lütfen e-postanızı kontrol ederek hesabınızı doğrulayın. Doğrulama e-postası gönderildi.",
-          duration: 7000,
+          duration: 8000,
         })
         setRegisterFirstName("")
         setRegisterLastName("")
         setRegisterEmail("")
         setRegisterPassword("")
         setTermsAccepted(false)
+        setError(null)
         setActiveTab("login")
       } else {
-        setError("Kayıt başarısız. Lütfen bilgilerinizi kontrol edin.")
+        const errorMsg = "Kayıt işlemi tamamlanamadı. Lütfen bilgilerinizi kontrol edin ve tekrar deneyin."
+        setError(errorMsg)
+        toast({
+          variant: "destructive",
+          title: "Kayıt Başarısız",
+          description: errorMsg,
+        })
       }
     } catch (err: any) {
       console.error("Register error:", err)
-      setError(err.message || "Bir hata oluştu. Lütfen tekrar deneyin.")
+      const errorMessage = getErrorMessage(err)
+      setError(errorMessage)
+
+      toast({
+        variant: "destructive",
+        title: "Kayıt Hatası",
+        description: errorMessage,
+        duration: 6000,
+      })
     } finally {
       setIsLoading(false)
     }
@@ -134,11 +220,13 @@ export default function LoginPage() {
       })
     } catch (err: any) {
       console.error("Google sign-in error:", err)
-      setError(err.message || "Google ile giriş yapılırken bir hata oluştu.")
+      const errorMessage = err?.message || "Google ile giriş yapılırken bir hata oluştu. Lütfen tekrar deneyin."
+      setError(errorMessage)
       toast({
         variant: "destructive",
         title: "Google Giriş Hatası",
-        description: err.message || "Google ile giriş yapılırken bir hata oluştu.",
+        description: errorMessage,
+        duration: 6000,
       })
       setIsLoading(false)
     }
@@ -169,7 +257,7 @@ export default function LoginPage() {
                     <Alert variant="destructive" className="mb-4 bg-red-500/10 border-red-500/20">
                       <AlertCircle className="h-4 w-4" />
                       <AlertTitle>Hata</AlertTitle>
-                      <AlertDescription>{error}</AlertDescription>
+                      <AlertDescription className="text-sm leading-relaxed">{error}</AlertDescription>
                     </Alert>
                   )}
 
@@ -251,7 +339,7 @@ export default function LoginPage() {
                         <Button
                           type="submit"
                           disabled={isLoading}
-                          className="w-full bg-gradient-to-r from-emerald-500 to-teal-500 text-white font-bold h-12 text-base hover:from-emerald-600 hover:to-teal-600"
+                          className="w-full bg-gradient-to-r from-emerald-500 to-teal-500 text-white font-bold h-12 text-base hover:from-emerald-600 hover:to-teal-600 disabled:opacity-50 disabled:cursor-not-allowed"
                         >
                           {isLoading ? "Giriş yapılıyor..." : "Giriş Yap"}
                         </Button>
@@ -310,8 +398,9 @@ export default function LoginPage() {
                             <Input
                               id="registerPassword"
                               type={showPassword ? "text" : "password"}
-                              placeholder="••••••••"
+                              placeholder="En az 6 karakter"
                               required
+                              minLength={6}
                               className="bg-white/5 border-white/20 text-white placeholder:text-white/40 focus:border-emerald-500 focus:ring-emerald-500/20 pr-10"
                               value={registerPassword}
                               onChange={(e) => setRegisterPassword(e.target.value)}
@@ -327,6 +416,7 @@ export default function LoginPage() {
                               {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                             </Button>
                           </div>
+                          <p className="text-xs text-white/50">En az 6 karakter içermelidir</p>
                         </div>
                         <div className="flex items-start space-x-2">
                           <Checkbox
@@ -360,8 +450,8 @@ export default function LoginPage() {
                         </div>
                         <Button
                           type="submit"
-                          className="w-full bg-gradient-to-r from-emerald-500 to-teal-500 text-white font-bold h-12 text-base hover:from-emerald-600 hover:to-teal-600"
-                          disabled={isLoading}
+                          className="w-full bg-gradient-to-r from-emerald-500 to-teal-500 text-white font-bold h-12 text-base hover:from-emerald-600 hover:to-teal-600 disabled:opacity-50 disabled:cursor-not-allowed"
+                          disabled={isLoading || !termsAccepted}
                         >
                           {isLoading ? "Hesap oluşturuluyor..." : "Hesap Oluştur"}
                         </Button>
