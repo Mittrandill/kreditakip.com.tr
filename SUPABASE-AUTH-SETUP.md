@@ -124,9 +124,34 @@ NEXT_PUBLIC_SITE_URL=https://your-domain.com
 ## Sorun Giderme
 
 ### E-posta Gelmiyor
-- Spam klasörünü kontrol edin
-- Supabase Dashboard'da "Logs" sekmesinden hata mesajlarını kontrol edin
-- SMTP ayarlarının doğru olduğundan emin olun
+
+**1. Supabase Dashboard Kontrolleri:**
+- Authentication > Settings > "Enable email confirmations" seçeneğinin AÇIK olduğundan emin olun
+- Authentication > Settings > "Confirm email" seçeneğinin AÇIK olduğundan emin olun
+- Authentication > Email Templates > "Confirm signup" şablonunun doğru ayarlandığından emin olun
+
+**2. SMTP Ayarları:**
+- Authentication > Settings > SMTP Settings bölümünde ayarların doğru olduğunu kontrol edin
+- Test email göndermeyi deneyin
+
+**3. Rate Limiting:**
+- Çok fazla deneme yapıldıysa, birkaç dakika bekleyin
+- Supabase'in rate limit'lerine takılmış olabilirsiniz
+
+**4. Debug Adımları:**
+\`\`\`javascript
+// Browser console'da şu komutları çalıştırın:
+// 1. Network sekmesini açın
+// 2. Kayıt işlemini gerçekleştirin  
+// 3. /auth/v1/signup isteğini bulun
+// 4. Response'u kontrol edin
+\`\`\`
+
+**5. Yaygın Sorunlar:**
+- **"Error sending confirmation email"**: SMTP ayarları yanlış veya e-posta servisi çalışmıyor
+- **"Email already registered"**: Bu e-posta zaten kayıtlı, giriş yapmayı deneyin
+- **"Signup is disabled"**: Supabase'de signup kapalı, Authentication > Settings'den açın
+- **Rate limit exceeded**: Çok fazla deneme, birkaç dakika bekleyin
 
 ### Redirect Çalışmıyor
 - URL'lerin tam olarak eşleştiğinden emin olun

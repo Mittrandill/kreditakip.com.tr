@@ -97,25 +97,55 @@ export default function RegisterPage() {
     setError(null)
 
     try {
+      console.log("[v0] SignUp attempt with:", {
+        email: formData.email,
+        hasPassword: !!formData.password,
+        userData: {
+          first_name: formData.firstName,
+          last_name: formData.lastName,
+          phone: formData.phone,
+        },
+      })
+
       const data = await signUp(formData.email, formData.password, {
         first_name: formData.firstName,
         last_name: formData.lastName,
         phone: formData.phone,
       })
 
+      console.log("[v0] SignUp response:", {
+        user: data?.user
+          ? { id: data.user.id, email: data.user.email, email_confirmed_at: data.user.email_confirmed_at }
+          : null,
+        session: data?.session ? "exists" : "null",
+      })
+
       if (data?.user) {
-        toast({
-          title: "Kayıt Başarılı!",
-          description:
-            "Lütfen e-postanızı kontrol ederek hesabınızı doğrulayın. E-posta gelmezse spam klasörünü kontrol edin.",
-          duration: 10000,
-        })
+        if (data.user.email_confirmed_at) {
+          toast({
+            title: "Kayıt Başarılı!",
+            description: "Hesabınız başarıyla oluşturuldu ve doğrulandı.",
+            duration: 5000,
+          })
+        } else {
+          toast({
+            title: "Kayıt Başarılı!",
+            description:
+              "Lütfen e-postanızı kontrol ederek hesabınızı doğrulayın. E-posta gelmezse spam klasörünü kontrol edin.",
+            duration: 10000,
+          })
+        }
         router.push("/giris")
       } else {
         setError("Kayıt başarısız. Lütfen bilgilerinizi kontrol edin.")
       }
     } catch (err: any) {
-      console.error("Register error:", err)
+      console.error("[v0] Register error details:", {
+        message: err.message,
+        status: err.status,
+        statusText: err.statusText,
+        fullError: err,
+      })
       setError(getErrorMessage(err))
     } finally {
       setIsLoading(false)
