@@ -14,6 +14,13 @@ export async function signUp(email: string, password: string, userData: Partial<
         ? `${window.location.origin}/auth/callback`
         : "https://kreditakip.com.tr/auth/callback"
 
+    console.log("[v0] SignUp parameters:", {
+      email,
+      redirectUrl,
+      isDev,
+      userData,
+    })
+
     const { data, error } = await supabase.auth.signUp({
       email,
       password,
@@ -27,12 +34,32 @@ export async function signUp(email: string, password: string, userData: Partial<
       },
     })
 
+    console.log("[v0] Supabase signUp response:", {
+      user: data?.user
+        ? {
+            id: data.user.id,
+            email: data.user.email,
+            email_confirmed_at: data.user.email_confirmed_at,
+            created_at: data.user.created_at,
+          }
+        : null,
+      session: data?.session ? "exists" : "null",
+      error: error
+        ? {
+            message: error.message,
+            status: error.status,
+            details: error,
+          }
+        : null,
+    })
+
     if (error) {
       throw error
     }
 
     return data
   } catch (error) {
+    console.error("[v0] SignUp error:", error)
     throw error
   }
 }
