@@ -11,6 +11,60 @@ async function createEmailTemplate(firstName, bankName, installmentNumber, amoun
   const isReminder = type === "reminder"
   const subject = isReminder ? `💳 Kredi Taksit Hatırlatması - ${bankName}` : `⚠️ Geciken Ödeme Bildirimi - ${bankName}`
 
+  const getBankLogoUrl = (bankName) => {
+    const bankMappings = {
+      "Yapı Kredi": "yapi-kredi-bankasi.png",
+      "Yapı Kredi Bankası": "yapi-kredi-bankasi.png",
+      "Yapı ve Kredi Bankası A.Ş.": "yapi-kredi-bankasi.png",
+      Garanti: "turkiye-garanti-bankasi.png",
+      "Garanti BBVA": "turkiye-garanti-bankasi.png",
+      "Türkiye Garanti Bankası": "turkiye-garanti-bankasi.png",
+      "Türkiye Garanti Bankası A.Ş.": "turkiye-garanti-bankasi.png",
+      Akbank: "akbank.png",
+      "Akbank T.A.Ş.": "akbank.png",
+      "İş Bankası": "turkiye-is-bankasi.png",
+      "Türkiye İş Bankası": "turkiye-is-bankasi.png",
+      "Türkiye İş Bankası A.Ş.": "turkiye-is-bankasi.png",
+      "Ziraat Bankası": "ziraat-bankasi.png",
+      "T.C. Ziraat Bankası A.Ş.": "ziraat-bankasi.png",
+      VakıfBank: "vakifbank.png",
+      "Türkiye Vakıflar Bankası": "vakifbank.png",
+      "Türkiye Vakıflar Bankası T.A.O.": "vakifbank.png",
+      Halkbank: "turkiye-halk-bankasi.png",
+      "Türkiye Halk Bankası A.Ş.": "turkiye-halk-bankasi.png",
+      DenizBank: "denizbank.png",
+      "DenizBank A.Ş.": "denizbank.png",
+      "QNB Finansbank": "qnb-finansbank.png",
+      "QNB Finansbank A.Ş.": "qnb-finansbank.png",
+      TEB: "turkiye-ekonomi-bankasi.png",
+      "Türkiye Ekonomi Bankası A.Ş.": "turkiye-ekonomi-bankasi.png",
+      ING: "ing-bank.png",
+      "ING Bank A.Ş.": "ing-bank.png",
+      Şekerbank: "sekerbank.png",
+      "Şekerbank T.A.Ş.": "sekerbank.png",
+      Fibabanka: "fibabanka.png",
+      "Fibabanka A.Ş.": "fibabanka.png",
+      "Enpara.com": "enpara-bank.png",
+      HSBC: "hsbc-bank.png",
+      "HSBC Bank A.Ş.": "hsbc-bank.png",
+      Citibank: "citibank.png",
+      "Citibank A.Ş.": "citibank.png",
+      "Ziraat Katılım": "ziraat-katilim-bankasi.png",
+      "Ziraat Katılım Bankası A.Ş.": "ziraat-katilim-bankasi.png",
+      "Vakıf Katılım": "vakif-katilim-bankasi.png",
+      "Vakıf Katılım Bankası A.Ş.": "vakif-katilim-bankasi.png",
+      "Kuveyt Türk": "kuveyt-turk-katilim-bankasi.png",
+      "Kuveyt Türk Katılım Bankası A.Ş.": "kuveyt-turk-katilim-bankasi.png",
+      "Albaraka Türk": "albaraka-turk-katilim-bankasi.png",
+      "Albaraka Türk Katılım Bankası A.Ş.": "albaraka-turk-katilim-bankasi.png",
+      "Türkiye Finans": "turkiye-finans-katilim-bankasi.png",
+      "Türkiye Finans Katılım Bankası A.Ş.": "turkiye-finans-katilim-bankasi.png",
+    }
+
+    const logoFileName = bankMappings[bankName] || "default-bank.png"
+    return `https://oymjjceuiotxfbpwsdym.supabase.co/storage/v1/object/public/bank-logos/${logoFileName}`
+  }
+
   const html = `
     <!DOCTYPE html>
     <html lang="tr">
@@ -28,7 +82,7 @@ async function createEmailTemplate(firstName, bankName, installmentNumber, amoun
         body {
           font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
           background-color: #0f172a;
-          color: #e2e8f0;
+          color: #ffffff;
           line-height: 1.6;
           -webkit-font-smoothing: antialiased;
         }
@@ -83,12 +137,12 @@ async function createEmailTemplate(firstName, bankName, installmentNumber, amoun
         
         .greeting {
           font-size: 18px;
-          color: #cbd5e1;
+          color: #ffffff;
           margin-bottom: 32px;
         }
         
         .greeting strong {
-          color: #f1f5f9;
+          color: #ffffff;
           font-weight: 600;
         }
         
@@ -122,19 +176,24 @@ async function createEmailTemplate(firstName, bankName, installmentNumber, amoun
         .bank-icon {
           width: 48px;
           height: 48px;
-          background: linear-gradient(135deg, #10b981 0%, #0d9488 100%);
+          background: #ffffff;
           border-radius: 12px;
           display: flex;
           align-items: center;
           justify-content: center;
           margin-right: 16px;
-          font-size: 24px;
-          color: white;
+          overflow: hidden;
+        }
+        
+        .bank-logo {
+          width: 100%;
+          height: 100%;
+          object-fit: contain;
         }
         
         .bank-name {
           font-size: 16px;
-          color: #f1f5f9;
+          color: #ffffff;
           font-weight: 600;
         }
         
@@ -146,10 +205,7 @@ async function createEmailTemplate(firstName, bankName, installmentNumber, amoun
         .amount {
           font-size: 42px;
           font-weight: 800;
-          background: linear-gradient(135deg, #10b981 0%, #0d9488 100%);
-          -webkit-background-clip: text;
-          -webkit-text-fill-color: transparent;
-          background-clip: text;
+          color: #ffffff;
         }
         
         .info-grid {
@@ -175,7 +231,7 @@ async function createEmailTemplate(firstName, bankName, installmentNumber, amoun
         
         .info-value {
           font-size: 16px;
-          color: #f1f5f9;
+          color: #ffffff;
           font-weight: 700;
         }
         
@@ -245,7 +301,7 @@ async function createEmailTemplate(firstName, bankName, installmentNumber, amoun
       <div class="wrapper">
         <div class="main">
           <div class="header">
-            <img src="https://kreditakip.com.tr/logo.png" alt="Kredi Takip" class="logo">
+            <img src="https://oymjjceuiotxfbpwsdym.supabase.co/storage/v1/object/public/Logo/logo-white.png" alt="Kredi Takip" class="logo">
             <h1 class="header-title">${isReminder ? "Ödeme Hatırlatması" : "Gecikmiş Ödeme"}</h1>
             <p class="header-subtitle">Finansal takibiniz bizimle güvende</p>
           </div>
@@ -257,7 +313,9 @@ async function createEmailTemplate(firstName, bankName, installmentNumber, amoun
             
             <div class="payment-card">
               <div class="bank-section">
-                <div class="bank-icon">🏦</div>
+                <div class="bank-icon">
+                  <img src="${getBankLogoUrl(bankName)}" alt="${bankName} logosu" class="bank-logo" onerror="this.style.display='none'; this.parentNode.innerHTML='🏦'; this.parentNode.style.fontSize='24px'; this.parentNode.style.color='#10b981';">
+                </div>
                 <div>
                   <div class="bank-name">${bankName}</div>
                 </div>
@@ -287,7 +345,7 @@ async function createEmailTemplate(firstName, bankName, installmentNumber, amoun
           </div>
           
           <div class="footer">
-            <img src="https://kreditakip.com.tr/logo.png" alt="Kredi Takip" class="footer-logo">
+            <img src="https://oymjjceuiotxfbpwsdym.supabase.co/storage/v1/object/public/Logo/logo-white.png" alt="Kredi Takip" class="footer-logo">
             
             <p class="footer-text">
               Bu e-posta otomatik olarak gönderilmiştir.<br>
@@ -295,7 +353,7 @@ async function createEmailTemplate(firstName, bankName, installmentNumber, amoun
             </p>
             
             <div class="copyright">
-              © 2024 kreditakip.com.tr • Tüm hakları saklıdır
+              © 2025 kreditakip.com.tr • Tüm hakları saklıdır
             </div>
           </div>
         </div>

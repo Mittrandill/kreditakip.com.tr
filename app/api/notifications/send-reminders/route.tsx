@@ -136,6 +136,61 @@ function createEmailTemplate(
       break
   }
 
+  const getBankLogoUrl = (bankName: string): string => {
+    // Banka adına göre logo URL'ini oluştur
+    const bankMappings: Record<string, string> = {
+      "Yapı Kredi": "yapi-kredi-bankasi.png",
+      "Yapı Kredi Bankası": "yapi-kredi-bankasi.png",
+      "Yapı ve Kredi Bankası A.Ş.": "yapi-kredi-bankasi.png",
+      Garanti: "turkiye-garanti-bankasi.png",
+      "Garanti BBVA": "turkiye-garanti-bankasi.png",
+      "Türkiye Garanti Bankası": "turkiye-garanti-bankasi.png",
+      "Türkiye Garanti Bankası A.Ş.": "turkiye-garanti-bankasi.png",
+      Akbank: "akbank.png",
+      "Akbank T.A.Ş.": "akbank.png",
+      "İş Bankası": "turkiye-is-bankasi.png",
+      "Türkiye İş Bankası": "turkiye-is-bankasi.png",
+      "Türkiye İş Bankası A.Ş.": "turkiye-is-bankasi.png",
+      "Ziraat Bankası": "ziraat-bankasi.png",
+      "T.C. Ziraat Bankası A.Ş.": "ziraat-bankasi.png",
+      VakıfBank: "vakifbank.png",
+      "Türkiye Vakıflar Bankası": "vakifbank.png",
+      "Türkiye Vakıflar Bankası T.A.O.": "vakifbank.png",
+      Halkbank: "turkiye-halk-bankasi.png",
+      "Türkiye Halk Bankası A.Ş.": "turkiye-halk-bankasi.png",
+      DenizBank: "denizbank.png",
+      "DenizBank A.Ş.": "denizbank.png",
+      "QNB Finansbank": "qnb-finansbank.png",
+      "QNB Finansbank A.Ş.": "qnb-finansbank.png",
+      TEB: "turkiye-ekonomi-bankasi.png",
+      "Türkiye Ekonomi Bankası A.Ş.": "turkiye-ekonomi-bankasi.png",
+      ING: "ing-bank.png",
+      "ING Bank A.Ş.": "ing-bank.png",
+      Şekerbank: "sekerbank.png",
+      "Şekerbank T.A.Ş.": "sekerbank.png",
+      Fibabanka: "fibabanka.png",
+      "Fibabanka A.Ş.": "fibabanka.png",
+      "Enpara.com": "enpara-bank.png",
+      HSBC: "hsbc-bank.png",
+      "HSBC Bank A.Ş.": "hsbc-bank.png",
+      Citibank: "citibank.png",
+      "Citibank A.Ş.": "citibank.png",
+      "Ziraat Katılım": "ziraat-katilim-bankasi.png",
+      "Ziraat Katılım Bankası A.Ş.": "ziraat-katilim-bankasi.png",
+      "Vakıf Katılım": "vakif-katilim-bankasi.png",
+      "Vakıf Katılım Bankası A.Ş.": "vakif-katilim-bankasi.png",
+      "Kuveyt Türk": "kuveyt-turk-katilim-bankasi.png",
+      "Kuveyt Türk Katılım Bankası A.Ş.": "kuveyt-turk-katilim-bankasi.png",
+      "Albaraka Türk": "albaraka-turk-katilim-bankasi.png",
+      "Albaraka Türk Katılım Bankası A.Ş.": "albaraka-turk-katilim-bankasi.png",
+      "Türkiye Finans": "turkiye-finans-katilim-bankasi.png",
+      "Türkiye Finans Katılım Bankası A.Ş.": "turkiye-finans-katilim-bankasi.png",
+    }
+
+    const logoFileName = bankMappings[bankName] || "default-bank.png"
+    return `https://oymjjceuiotxfbpwsdym.supabase.co/storage/v1/object/public/bank-logos/${logoFileName}`
+  }
+
   return {
     subject,
     html: `
@@ -164,7 +219,7 @@ function createEmailTemplate(
               body {
                   font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
                   line-height: 1.6;
-                  color: #e2e8f0;
+                  color: #ffffff;
                   background-color: #0f172a;
                   margin: 0;
                   padding: 0;
@@ -254,13 +309,13 @@ function createEmailTemplate(
               
               .greeting {
                   font-size: 18px;
-                  color: #cbd5e1;
+                  color: #ffffff;
                   margin-bottom: 32px;
                   font-weight: 400;
               }
               
               .greeting strong {
-                  color: #f1f5f9;
+                  color: #ffffff;
                   font-weight: 600;
               }
               
@@ -296,15 +351,21 @@ function createEmailTemplate(
               .bank-icon {
                   width: 48px;
                   height: 48px;
-                  background: linear-gradient(135deg, #10b981 0%, #0d9488 100%);
+                  background: #ffffff;
                   border-radius: 12px;
                   display: flex;
                   align-items: center;
                   justify-content: center;
                   margin-right: 16px;
-                  font-size: 24px;
-                  color: white;
                   flex-shrink: 0;
+                  overflow: hidden;
+              }
+              
+              .bank-logo {
+                  width: 100%;
+                  height: 100%;
+                  object-fit: contain;
+                  border-radius: 8px;
               }
               
               .bank-info {
@@ -322,7 +383,7 @@ function createEmailTemplate(
               
               .bank-name {
                   font-size: 16px;
-                  color: #f1f5f9;
+                  color: #ffffff;
                   font-weight: 600;
               }
               
@@ -357,7 +418,7 @@ function createEmailTemplate(
               
               .currency {
                   font-size: 24px;
-                  color: #f1f5f9;
+                  color: #ffffff;
                   font-weight: 500;
               }
               
@@ -401,7 +462,7 @@ function createEmailTemplate(
               
               .info-value {
                   font-size: 16px;
-                  color: #f1f5f9;
+                  color: #ffffff;
                   font-weight: 700;
               }
               
@@ -441,13 +502,13 @@ function createEmailTemplate(
               .alert-title {
                   font-size: 14px;
                   font-weight: 600;
-                  color: #f1f5f9;
+                  color: #ffffff;
                   margin-bottom: 4px;
               }
               
               .alert-message {
                   font-size: 14px;
-                  color: #cbd5e1;
+                  color: #e2e8f0;
                   line-height: 1.5;
               }
               
@@ -641,7 +702,7 @@ function createEmailTemplate(
                       <td>
                           <div class="header">
                               <div class="logo-wrapper">
-                                  <img src="https://kreditakip.com.tr/logo.png" alt="Kredi Takip" class="logo">
+                                  <img src="https://oymjjceuiotxfbpwsdym.supabase.co/storage/v1/object/public/Logo/logo-white.png" alt="Kredi Takip" class="logo">
                               </div>
                               <h1 class="header-title">${title}</h1>
                               <p class="header-subtitle">Finansal takibiniz bizimle güvende</p>
@@ -654,7 +715,9 @@ function createEmailTemplate(
                               
                               <div class="payment-card">
                                   <div class="bank-section">
-                                      <div class="bank-icon">🏦</div>
+                                      <div class="bank-icon">
+                                          <img src="${getBankLogoUrl(bankName)}" alt="${bankName} logosu" class="bank-logo" onerror="this.style.display='none'; this.parentNode.innerHTML='🏦'; this.parentNode.style.fontSize='24px'; this.parentNode.style.color='#10b981';">
+                                      </div>
                                       <div class="bank-info">
                                           <div class="bank-label">Banka</div>
                                           <div class="bank-name">${bankName}</div>
@@ -712,7 +775,7 @@ function createEmailTemplate(
                           </div>
                           
                           <div class="footer">
-                              <img src="https://kreditakip.com.tr/logo.png" alt="Kredi Takip" class="footer-logo">
+                              <img src="https://oymjjceuiotxfbpwsdym.supabase.co/storage/v1/object/public/Logo/logo-white.png" alt="Kredi Takip" class="footer-logo">
                               
                               <div class="footer-links">
                                   <a href="https://kreditakip.com.tr/uygulama/ayarlar" class="footer-link">Bildirim Ayarları</a>
@@ -730,7 +793,7 @@ function createEmailTemplate(
                               </p>
                               
                               <div class="copyright">
-                                  © 2024 kreditakip.com.tr • Tüm hakları saklıdır
+                                  © 2025 kreditakip.com.tr • Tüm hakları saklıdır
                               </div>
                           </div>
                       </td>
