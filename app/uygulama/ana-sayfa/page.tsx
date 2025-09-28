@@ -1,7 +1,8 @@
 "use client"
 
 import { useEffect, useState } from "react"
-import { Card, CardContent } from "@/components/ui/card"
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import BankLogo from "@/components/bank-logo"
@@ -11,7 +12,19 @@ import Link from "next/link"
 import { useAuth } from "@/hooks/use-auth"
 import { getCredits } from "@/lib/api/credits"
 import { getUpcomingPayments } from "@/lib/api/payments"
-import { Home, Settings, Bell, ArrowUpRight, Target, DollarSign, TrendingUp, Clock, Wallet } from "lucide-react"
+import {
+  Home,
+  Settings,
+  Bell,
+  MoreHorizontal,
+  ArrowUpRight,
+  Target,
+  DollarSign,
+  TrendingUp,
+  Clock,
+  Wallet,
+  CreditCard,
+} from "lucide-react"
 import { Chart as ChartJS, ArcElement, Tooltip, Legend } from "chart.js"
 
 ChartJS.register(ArcElement, Tooltip, Legend)
@@ -561,265 +574,267 @@ export default function DashboardPage() {
         </Card>
       </div>
 
-      <div className="space-y-4">
-        <div className="flex items-center justify-between">
-          <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100">Yaklaşan Ödemeler</h2>
-          <Link
-            href="/uygulama/odemeler"
-            className="text-sm text-emerald-600 dark:text-emerald-400 hover:text-emerald-700 dark:hover:text-emerald-300 font-medium"
-          >
-            Tümünü Gör
-          </Link>
-        </div>
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <Card className="shadow-lg hover:shadow-xl dark:shadow-gray-900/20 dark:hover:shadow-gray-900/30 transition-shadow duration-300 rounded-xl border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800">
+          <CardHeader className="pb-4">
+            <CardTitle className="text-gray-900 dark:text-gray-100 flex items-center gap-2 text-lg">
+              <Clock className="h-5 w-5 text-orange-500" />
+              Yaklaşan Ödemeler
+            </CardTitle>
+            <CardDescription className="text-gray-600 dark:text-gray-400">
+              Önümüzdeki 30 gün içindeki ödeme planınız
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-4 max-h-80 overflow-y-auto">
+              {upcomingPayments.length > 0 ? (
+                upcomingPayments.slice(0, 6).map((payment: UpcomingPayment, index) => (
+                  <div
+                    key={payment.id}
+                    className="flex items-center justify-between p-3 rounded-lg bg-gray-50 dark:bg-gray-700/50 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+                  >
+                    <div className="flex items-center gap-3">
+                      <BankLogo
+                        bankName={payment.credits?.banks?.name || "Bilinmeyen Banka"}
+                        logoUrl={payment.credits?.banks?.logo_url || undefined}
+                        size="sm"
+                        className="flex-shrink-0"
+                      />
+                      <div className="flex flex-col">
+                        <span className="font-medium text-gray-900 dark:text-gray-100 text-sm">
+                          {payment.credits?.banks?.name || "N/A"}
+                        </span>
+                        <span className="text-xs text-gray-500 dark:text-gray-400">{payment.credits?.credit_code}</span>
+                      </div>
+                    </div>
+                    <div className="text-right">
+                      <div className="font-semibold text-gray-900 dark:text-gray-100">
+                        {formatCurrency(payment.amount)}
+                      </div>
+                      <div className="text-xs text-gray-500 dark:text-gray-400">
+                        {new Date(payment.due_date).toLocaleDateString("tr-TR", {
+                          day: "numeric",
+                          month: "short",
+                        })}
+                      </div>
+                    </div>
+                  </div>
+                ))
+              ) : (
+                <div className="flex flex-col items-center justify-center py-8 text-gray-500 dark:text-gray-400">
+                  <Clock className="h-12 w-12 mb-3 text-gray-300 dark:text-gray-600" />
+                  <p className="text-center">Yaklaşan ödeme bulunmamaktadır</p>
+                  <p className="text-sm text-center mt-1">Tüm ödemeleriniz güncel görünüyor</p>
+                </div>
+              )}
+            </div>
+            {upcomingPayments.length > 6 && (
+              <div className="mt-4 pt-4 border-t border-gray-200 dark:border-gray-600">
+                <Button variant="outline" size="sm" className="w-full bg-transparent" asChild>
+                  <Link href="/uygulama/odemeler">{upcomingPayments.length - 6} ödeme daha görüntüle</Link>
+                </Button>
+              </div>
+            )}
+          </CardContent>
+        </Card>
 
-        <div className="overflow-x-auto pb-4">
-          <div className="flex gap-6 min-w-max">
-            {upcomingPayments.length > 0
-              ? upcomingPayments.slice(0, 5).map((payment, index) => {
-                  const daysUntilDue = Math.ceil(
-                    (new Date(payment.due_date).getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24),
-                  )
-                  const isUrgent = daysUntilDue <= 3
-                  const isOverdue = daysUntilDue < 0
+        <Card className="shadow-lg hover:shadow-xl dark:shadow-gray-900/20 dark:hover:shadow-gray-900/30 transition-shadow duration-300 rounded-xl border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800">
+          <CardHeader className="pb-4">
+            <CardTitle className="text-gray-900 dark:text-gray-100 flex items-center gap-2 text-lg">
+              <CreditCard className="h-5 w-5 text-blue-500" />
+              Ödeme Özeti
+            </CardTitle>
+            <CardDescription className="text-gray-600 dark:text-gray-400">
+              Bu ay yapılacak toplam ödemeler
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-6">
+              <div className="text-center">
+                <div className="text-3xl font-bold text-gray-900 dark:text-gray-100 mb-2">
+                  {formatCurrency(monthlyPayment)}
+                </div>
+                <p className="text-sm text-gray-600 dark:text-gray-400">Bu ay toplam ödeme tutarı</p>
+              </div>
 
-                  return (
-                    <Card
-                      key={payment.id}
-                      className={`relative overflow-hidden border-0 text-white shadow-2xl min-w-[320px] flex-shrink-0 ${
-                        isOverdue
-                          ? "bg-gradient-to-br from-red-500 via-red-600 to-red-700 dark:from-red-600 dark:via-red-700 dark:to-red-800 dark:shadow-red-900/20"
-                          : isUrgent
-                            ? "bg-gradient-to-br from-orange-500 via-orange-600 to-red-700 dark:from-orange-600 dark:via-orange-700 dark:to-red-800 dark:shadow-orange-900/20"
-                            : "bg-gradient-to-br from-blue-500 via-indigo-600 to-purple-700 dark:from-blue-600 dark:via-indigo-700 dark:to-purple-800 dark:shadow-blue-900/20"
-                      }`}
-                    >
-                      <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 dark:bg-white/5 rounded-full -translate-y-16 translate-x-16"></div>
-                      <CardContent className="relative p-8">
-                        <div className="flex items-center justify-between mb-6">
-                          <div className="p-4 bg-white/20 dark:bg-white/15 rounded-2xl backdrop-blur-sm">
-                            <Clock className="h-8 w-8 text-white" />
-                          </div>
-                          <Badge className="bg-white/20 dark:bg-white/15 text-white border-white/30 dark:border-white/20 backdrop-blur-sm px-3 py-1">
-                            {isOverdue ? "Gecikmiş" : isUrgent ? "Acil" : "Yaklaşan"}
-                          </Badge>
-                        </div>
-                        <h3 className="font-bold text-2xl mb-3 drop-shadow-md">Yaklaşan Ödeme</h3>
-                        <p className="text-4xl font-black mb-4 drop-shadow-lg">{formatCurrency(payment.amount)}</p>
-                        <div className="space-y-2">
+              <div className="grid grid-cols-2 gap-4">
+                <div className="text-center p-4 bg-emerald-50 dark:bg-emerald-900/20 rounded-lg">
+                  <div className="text-lg font-semibold text-emerald-600 dark:text-emerald-400">
+                    {
+                      upcomingPayments.filter((p) => {
+                        const dueDate = new Date(p.due_date)
+                        const today = new Date()
+                        const diffTime = dueDate.getTime() - today.getTime()
+                        const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24))
+                        return diffDays <= 7
+                      }).length
+                    }
+                  </div>
+                  <p className="text-xs text-emerald-600 dark:text-emerald-400">7 gün içinde</p>
+                </div>
+
+                <div className="text-center p-4 bg-orange-50 dark:bg-orange-900/20 rounded-lg">
+                  <div className="text-lg font-semibold text-orange-600 dark:text-orange-400">
+                    {
+                      upcomingPayments.filter((p) => {
+                        const dueDate = new Date(p.due_date)
+                        const today = new Date()
+                        const diffTime = dueDate.getTime() - today.getTime()
+                        const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24))
+                        return diffDays > 7 && diffDays <= 30
+                      }).length
+                    }
+                  </div>
+                  <p className="text-xs text-orange-600 dark:text-orange-400">30 gün içinde</p>
+                </div>
+              </div>
+
+              <div className="pt-4 border-t border-gray-200 dark:border-gray-600">
+                <Button
+                  className="w-full bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 dark:from-emerald-400 dark:to-teal-500 dark:hover:from-emerald-500 dark:hover:to-teal-600"
+                  asChild
+                >
+                  <Link href="/uygulama/odemeler">
+                    <Wallet className="h-4 w-4 mr-2" />
+                    Tüm Ödemeleri Görüntüle
+                  </Link>
+                </Button>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+
+      <Card className="shadow-lg hover:shadow-xl dark:shadow-gray-900/20 dark:hover:shadow-gray-900/30 transition-shadow duration-300 rounded-xl border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800">
+        <CardHeader>
+          <CardTitle className="text-gray-900 dark:text-gray-100 flex items-center gap-2">Aktif Kredilerim</CardTitle>
+          <CardDescription className="text-gray-600 dark:text-gray-400">
+            Güncel kredi durumunuz ve ödeme bilgileri.
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="overflow-x-auto">
+            <Table>
+              <TableHeader>
+                <TableRow className="bg-gray-50 dark:bg-gray-700/50 border-gray-200 dark:border-gray-600 hover:bg-gray-100 dark:hover:bg-gray-700">
+                  <TableHead className="font-semibold text-gray-700 dark:text-gray-200">Banka</TableHead>
+                  <TableHead className="font-semibold text-gray-700 dark:text-gray-200">Tür</TableHead>
+                  <TableHead className="font-semibold text-gray-700 dark:text-gray-200">Kalan Borç</TableHead>
+                  <TableHead className="font-semibold text-gray-700 dark:text-gray-200">Aylık Ödeme</TableHead>
+                  <TableHead className="font-semibold text-gray-700 dark:text-gray-200">Faiz Oranı</TableHead>
+                  <TableHead className="font-semibold text-gray-700 dark:text-gray-200">İlerleme</TableHead>
+                  <TableHead className="font-semibold text-gray-700 dark:text-gray-200">Durum</TableHead>
+                  <TableHead className="w-[50px] text-right font-semibold text-gray-700 dark:text-gray-200">
+                    İşlemler
+                  </TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {credits
+                  .filter((c) => c.status === "active")
+                  .slice(0, 5)
+                  .map((kredi, index) => {
+                    const progressPercentage = kredi.payment_progress || 0
+                    return (
+                      <TableRow
+                        key={kredi.id}
+                        className={`hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors duration-150 ease-in-out ${
+                          index % 2 === 0 ? "bg-white dark:bg-gray-800" : "bg-gray-50/50 dark:bg-gray-700/30"
+                        } border-gray-200 dark:border-gray-600`}
+                      >
+                        <TableCell>
                           <div className="flex items-center gap-3">
                             <BankLogo
-                              bankName={payment.credits?.banks?.name || "Bilinmeyen Banka"}
-                              logoUrl={payment.credits?.banks?.logo_url || undefined}
+                              bankName={kredi.banks?.name || "Bilinmeyen Banka"}
+                              logoUrl={kredi.banks?.logo_url || undefined}
                               size="sm"
                               className="flex-shrink-0"
                             />
                             <div className="flex flex-col">
-                              <span className="font-medium text-white text-sm drop-shadow-sm">
-                                {payment.credits?.banks?.name || "N/A"}
+                              <span className="font-medium text-gray-900 dark:text-gray-100 text-sm">
+                                {kredi.banks?.name || "N/A"}
                               </span>
-                              <span className="text-xs text-white/80">{payment.credits?.credit_code}</span>
+                              <span className="text-xs text-gray-500 dark:text-gray-400">{kredi.credit_code}</span>
                             </div>
                           </div>
-                          <p className="text-sm text-white/90 leading-relaxed">
-                            Vade tarihi:{" "}
-                            <span className="font-semibold text-white">
-                              {new Date(payment.due_date).toLocaleDateString("tr-TR")}
-                            </span>{" "}
-                            <span
-                              className={`font-semibold ${isOverdue ? "text-red-200" : isUrgent ? "text-orange-200" : "text-blue-200"}`}
-                            >
-                              ({isOverdue ? `${Math.abs(daysUntilDue)} gün gecikmiş` : `${daysUntilDue} gün kaldı`})
+                        </TableCell>
+                        <TableCell className="text-gray-600 dark:text-gray-300">
+                          {kredi.credit_types?.name || "N/A"}
+                        </TableCell>
+                        <TableCell className="font-semibold text-gray-900 dark:text-gray-100">
+                          {formatCurrency(kredi.remaining_debt)}
+                        </TableCell>
+                        <TableCell className="text-gray-600 dark:text-gray-300">
+                          {formatCurrency(kredi.monthly_payment)}
+                        </TableCell>
+                        <TableCell className="font-medium text-orange-600 dark:text-orange-400">
+                          {formatPercent(kredi.interest_rate)}
+                        </TableCell>
+                        <TableCell>
+                          <div className="flex items-center gap-2">
+                            <div className="flex-1 bg-gray-200 dark:bg-gray-600 rounded-full h-2 w-16">
+                              <div
+                                className="bg-gradient-to-r from-emerald-500 to-teal-600 dark:from-emerald-400 dark:to-teal-500 h-2 rounded-full transition-all duration-300"
+                                style={{
+                                  width: `${Math.max(5, Math.min(95, progressPercentage))}%`,
+                                }}
+                              ></div>
+                            </div>
+                            <span className="text-sm font-medium text-gray-600 dark:text-gray-300 min-w-[35px]">
+                              {Math.round(progressPercentage)}%
                             </span>
-                          </p>
-                        </div>
-                        <div className="mt-6 flex items-center gap-2">
-                          <div className="flex-1 h-2 bg-white/30 dark:bg-white/20 rounded-full overflow-hidden">
-                            <div
-                              className={`h-2 rounded-full transition-all duration-1000 ease-out shadow-sm ${
-                                isOverdue
-                                  ? "bg-red-200 dark:bg-red-100"
-                                  : isUrgent
-                                    ? "bg-orange-200 dark:bg-orange-100"
-                                    : "bg-white dark:bg-white/90"
-                              }`}
-                              style={{ width: `${Math.max(10, Math.min(100, 100 - (daysUntilDue / 30) * 100))}%` }}
-                            ></div>
                           </div>
-                          <span className="text-xs text-white/80 min-w-[60px]">
-                            {payment.installment_number}. taksit
-                          </span>
-                        </div>
-                      </CardContent>
-                    </Card>
-                  )
-                })
-              : Array.from({ length: 5 }).map((_, index) => (
-                  <Card
-                    key={index}
-                    className="relative overflow-hidden border-0 bg-gradient-to-br from-gray-500 via-gray-600 to-gray-700 dark:from-gray-600 dark:via-gray-700 dark:to-gray-800 text-white shadow-2xl dark:shadow-gray-900/20 min-w-[320px] flex-shrink-0"
-                  >
-                    <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 dark:bg-white/5 rounded-full -translate-y-16 translate-x-16"></div>
-                    <CardContent className="relative p-8">
-                      <div className="flex items-center justify-between mb-6">
-                        <div className="p-4 bg-white/20 dark:bg-white/15 rounded-2xl backdrop-blur-sm">
-                          <Clock className="h-8 w-8 text-white" />
-                        </div>
-                        <Badge className="bg-white/20 dark:bg-white/15 text-white border-white/30 dark:border-white/20 backdrop-blur-sm px-3 py-1">
-                          Boş
-                        </Badge>
-                      </div>
-                      <h3 className="font-bold text-2xl mb-3 drop-shadow-md">Yaklaşan Ödeme</h3>
-                      <p className="text-4xl font-black mb-4 drop-shadow-lg">-</p>
-                      <p className="text-sm text-white/80 leading-relaxed">
-                        Yaklaşan 30 gün içinde ödeme bulunmamaktadır.
-                      </p>
-                      <div className="mt-6 h-2 bg-white/30 dark:bg-white/20 rounded-full"></div>
-                    </CardContent>
-                  </Card>
-                ))}
-          </div>
-        </div>
-      </div>
-
-      <div className="space-y-4">
-        <div className="flex items-center justify-between">
-          <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100">Aktif Kredilerim</h2>
-          {credits.filter((c) => c.status === "active").length > 5 && (
-            <Link
-              href="/uygulama/krediler"
-              className="text-sm text-emerald-600 dark:text-emerald-400 hover:text-emerald-700 dark:hover:text-emerald-300 font-medium"
-            >
-              Tümünü Gör ({credits.filter((c) => c.status === "active").length})
-            </Link>
-          )}
-        </div>
-
-        {credits.filter((c) => c.status === "active").length === 0 ? (
-          <Card className="relative overflow-hidden border-0 bg-gradient-to-br from-gray-500 via-gray-600 to-gray-700 dark:from-gray-600 dark:via-gray-700 dark:to-gray-800 text-white shadow-2xl dark:shadow-gray-900/20">
-            <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 dark:bg-white/5 rounded-full -translate-y-16 translate-x-16"></div>
-            <CardContent className="relative p-8 text-center">
-              <div className="flex justify-center mb-6">
-                <div className="p-4 bg-white/20 dark:bg-white/15 rounded-2xl backdrop-blur-sm">
-                  <Wallet className="h-8 w-8 text-white" />
-                </div>
-              </div>
-              <h3 className="font-bold text-2xl mb-3 drop-shadow-md">Aktif Kredi Bulunmuyor</h3>
-              <p className="text-white/80 leading-relaxed mb-6">
-                Henüz aktif krediniz bulunmamaktadır. İlk kredinizi ekleyerek takibe başlayın.
-              </p>
-              <Button
-                asChild
-                className="bg-white/20 dark:bg-white/15 text-white border-white/30 dark:border-white/20 hover:bg-white/30 dark:hover:bg-white/25 backdrop-blur-sm transition-all duration-200"
-              >
-                <Link href="/uygulama/krediler/kredi-ekle">İlk Kredinizi Ekleyin</Link>
-              </Button>
-            </CardContent>
-          </Card>
-        ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {credits
-              .filter((c) => c.status === "active")
-              .slice(0, 6)
-              .map((kredi, index) => {
-                const progressPercentage = kredi.payment_progress || 0
-                const gradients = [
-                  "bg-gradient-to-br from-emerald-500 via-teal-600 to-cyan-700 dark:from-emerald-600 dark:via-teal-700 dark:to-cyan-800",
-                  "bg-gradient-to-br from-blue-500 via-indigo-600 to-purple-700 dark:from-blue-600 dark:via-indigo-700 dark:to-purple-800",
-                  "bg-gradient-to-br from-purple-500 via-pink-600 to-rose-700 dark:from-purple-600 dark:via-pink-700 dark:to-rose-800",
-                  "bg-gradient-to-br from-orange-500 via-red-600 to-pink-700 dark:from-orange-600 dark:via-red-700 dark:to-pink-800",
-                  "bg-gradient-to-br from-teal-500 via-cyan-600 to-blue-700 dark:from-teal-600 dark:via-cyan-700 dark:to-blue-800",
-                  "bg-gradient-to-br from-indigo-500 via-purple-600 to-pink-700 dark:from-indigo-600 dark:via-purple-700 dark:to-pink-800",
-                ]
-                const gradientClass = gradients[index % gradients.length]
-
-                return (
-                  <Card
-                    key={kredi.id}
-                    className={`relative overflow-hidden border-0 text-white shadow-2xl ${gradientClass} hover:scale-105 transition-transform duration-200`}
-                  >
-                    <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 dark:bg-white/5 rounded-full -translate-y-16 translate-x-16"></div>
-                    <CardContent className="relative p-6">
-                      <div className="flex items-center justify-between mb-4">
-                        <div className="flex items-center gap-3">
-                          <BankLogo
-                            bankName={kredi.banks?.name || "Bilinmeyen Banka"}
-                            logoUrl={kredi.banks?.logo_url || undefined}
-                            size="sm"
-                            className="flex-shrink-0"
-                          />
-                          <div className="flex flex-col">
-                            <span className="font-medium text-white text-sm drop-shadow-sm">
-                              {kredi.banks?.name || "N/A"}
-                            </span>
-                            <span className="text-xs text-white/80">{kredi.credit_code}</span>
-                          </div>
-                        </div>
-                        <Badge className="bg-white/20 dark:bg-white/15 text-white border-white/30 dark:border-white/20 backdrop-blur-sm px-2 py-1 text-xs">
-                          Aktif
-                        </Badge>
-                      </div>
-
-                      <div className="space-y-3">
-                        <div>
-                          <p className="text-xs text-white/80 mb-1">Kredi Türü</p>
-                          <p className="font-medium text-white text-sm drop-shadow-sm">
-                            {kredi.credit_types?.name || "N/A"}
-                          </p>
-                        </div>
-
-                        <div>
-                          <p className="text-xs text-white/80 mb-1">Kalan Borç</p>
-                          <p className="text-2xl font-bold text-white drop-shadow-md">
-                            {formatCurrency(kredi.remaining_debt)}
-                          </p>
-                        </div>
-
-                        <div className="grid grid-cols-2 gap-3">
-                          <div>
-                            <p className="text-xs text-white/80 mb-1">Aylık Ödeme</p>
-                            <p className="font-semibold text-white text-sm drop-shadow-sm">
-                              {formatCurrency(kredi.monthly_payment)}
-                            </p>
-                          </div>
-                          <div>
-                            <p className="text-xs text-white/80 mb-1">Faiz Oranı</p>
-                            <p className="font-semibold text-white text-sm drop-shadow-sm">
-                              {formatPercent(kredi.interest_rate)}
-                            </p>
-                          </div>
-                        </div>
-
-                        <div>
-                          <div className="flex items-center justify-between mb-2">
-                            <p className="text-xs text-white/80">İlerleme</p>
-                            <p className="text-xs text-white font-medium">{Math.round(progressPercentage)}%</p>
-                          </div>
-                          <div className="w-full h-2 bg-white/30 dark:bg-white/20 rounded-full overflow-hidden">
-                            <div
-                              className="h-2 bg-white dark:bg-white/90 rounded-full transition-all duration-1000 ease-out shadow-sm"
-                              style={{ width: `${Math.max(5, Math.min(95, progressPercentage))}%` }}
-                            ></div>
-                          </div>
-                        </div>
-
-                        <div className="pt-2">
+                        </TableCell>
+                        <TableCell>
+                          <Badge className="bg-gradient-to-r from-emerald-600 to-teal-700 dark:from-emerald-500 dark:to-teal-600 text-white border-transparent hover:from-emerald-700 hover:to-teal-800 dark:hover:from-emerald-600 dark:hover:to-teal-700">
+                            Aktif
+                          </Badge>
+                        </TableCell>
+                        <TableCell className="text-right">
                           <Button
-                            variant="outline"
-                            size="sm"
-                            className="w-full bg-white/20 dark:bg-white/15 text-white border-white/30 dark:border-white/20 hover:bg-white/30 dark:hover:bg-white/25 backdrop-blur-sm transition-all duration-200"
+                            variant="ghost"
+                            size="icon"
+                            className="h-8 w-8 hover:bg-emerald-50 hover:text-emerald-600 dark:hover:bg-emerald-900/30 dark:hover:text-emerald-400"
                             asChild
                           >
-                            <Link href={`/uygulama/kredi-detay/${kredi.id}`}>Detayları Gör</Link>
+                            <Link href={`/uygulama/kredi-detay/${kredi.id}`}>
+                              <MoreHorizontal className="h-4 w-4" />
+                              <span className="sr-only">Actions</span>
+                            </Link>
                           </Button>
-                        </div>
-                      </div>
-                    </CardContent>
-                  </Card>
-                )
-              })}
+                        </TableCell>
+                      </TableRow>
+                    )
+                  })}
+              </TableBody>
+            </Table>
+            {credits.filter((c) => c.status === "active").length === 0 && (
+              <div className="text-center py-8 text-gray-500 dark:text-gray-400">
+                Aktif kredi bulunmamaktadır.
+                <div className="mt-4">
+                  <Button
+                    asChild
+                    className="bg-emerald-600 hover:bg-emerald-700 dark:bg-emerald-500 dark:hover:bg-emerald-600"
+                  >
+                    <Link href="/uygulama/krediler/kredi-ekle">İlk Kredinizi Ekleyin</Link>
+                  </Button>
+                </div>
+              </div>
+            )}
+            {credits.filter((c) => c.status === "active").length > 5 && (
+              <div className="mt-4 text-center">
+                <Link
+                  href="/uygulama/krediler"
+                  className="inline-flex items-center justify-center gap-2 px-4 py-2 bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 dark:from-emerald-400 dark:to-teal-500 dark:hover:from-emerald-500 dark:hover:to-teal-600 text-white font-medium rounded-lg shadow-md hover:shadow-lg dark:shadow-emerald-900/20 transition-all duration-200 text-sm"
+                >
+                  <ArrowUpRight className="h-4 w-4" />
+                  <span>Tüm Kredileri Gör ({credits.filter((c) => c.status === "active").length})</span>
+                </Link>
+              </div>
+            )}
           </div>
-        )}
-      </div>
+        </CardContent>
+      </Card>
     </div>
   )
 }
