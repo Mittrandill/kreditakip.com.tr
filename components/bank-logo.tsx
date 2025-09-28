@@ -4,7 +4,7 @@ import { Building2 } from "lucide-react"
 import { useState, useEffect } from "react"
 
 interface BankLogoProps {
-  bankName: string
+  bankName: string | null | undefined
   logoUrl?: string
   size?: "sm" | "md" | "lg"
   className?: string
@@ -62,7 +62,11 @@ const getIconSize = (size: "sm" | "md" | "lg") => {
 }
 
 // SÜPER KAPSAMLI BANKA LOGO EŞLEŞTİRMESİ - FALLBACK İÇİN
-const getBankLogoPath = (bankName: string): string => {
+const getBankLogoPath = (bankName: string | null | undefined): string => {
+  if (!bankName || typeof bankName !== "string" || bankName.trim() === "") {
+    return ""
+  }
+
   const bankMappings: Record<string, string> = {
     // Yapı Kredi variations
     "Yapı Kredi": "/bank-icons/yapi-kredi.png",
@@ -319,24 +323,41 @@ export default function BankLogo({ bankName, logoUrl, size = "md", className = "
   const [imageLoaded, setImageLoaded] = useState(false)
   const [imageError, setImageError] = useState(false)
 
-  const colorClass = getBankColor(bankName)
+  const safeBankName = bankName && typeof bankName === "string" && bankName.trim() !== "" ? bankName.trim() : "Banka"
+
+  const colorClass = getBankColor(safeBankName)
   const sizeClass = getSizeClasses(size)
   const iconSizeClass = getIconSize(size)
 
-  // Banka adının ilk 2 harfini al
-  const initials = bankName
-    .split(" ")
-    .map((word) => word[0])
-    .join("")
-    .substring(0, 2)
-    .toUpperCase()
+  const initials = (() => {
+    if (!safeBankName || typeof safeBankName !== "string" || safeBankName.trim() === "") {
+      return "BK"
+    }
+
+    try {
+      const words = safeBankName
+        .trim()
+        .split(" ")
+        .filter((word) => word.length > 0)
+      if (words.length === 0) return "BK"
+
+      return words
+        .map((word) => word[0])
+        .join("")
+        .substring(0, 2)
+        .toUpperCase()
+    } catch (error) {
+      console.warn("[v0] Error generating initials for bank name:", safeBankName, error)
+      return "BK"
+    }
+  })()
 
   // Logo yolu belirleme - Önce logoUrl prop'u, sonra fallback mapping
-  const logoPath = logoUrl && logoUrl.trim() !== "" ? logoUrl : getBankLogoPath(bankName)
+  const logoPath = logoUrl && logoUrl.trim() !== "" ? logoUrl : getBankLogoPath(safeBankName)
 
   useEffect(() => {
     // Debug logları kaldırıldı
-  }, [bankName, logoUrl, logoPath, imageLoaded, imageError])
+  }, [safeBankName, logoUrl, logoPath, imageLoaded, imageError])
 
   // Fallback göster
   const renderFallback = () => (
@@ -358,7 +379,7 @@ export default function BankLogo({ bankName, logoUrl, size = "md", className = "
     <div className={`${sizeClass} rounded-lg overflow-hidden shadow-lg ${className} relative`}>
       <img
         src={logoPath || "/placeholder.svg"}
-        alt={`${bankName} logosu`}
+        alt={`${safeBankName} logosu`}
         className="w-full h-full object-cover scale-110"
         onLoad={() => {
           setImageLoaded(true)

@@ -55,12 +55,16 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Finansal profil ve kredi bilgileri gereklidir" }, { status: 400 })
     }
 
-    const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" })
+    const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash-exp" })
 
     const prompt = `
 Sen Türkiye'nin en deneyimli finansal danışmanısın. Kullanıcının mevcut kredilerini analiz edip, güncel piyasa koşullarıyla karşılaştırarak en iyi refinansman önerilerini sunacaksın.
 
-ÖNEMLİ: Mevcut kredileri güncel piyasa oranlarıyla MUTLAKA karşılaştır ve hangi bankadan hangi koşullarda yeni kredi alınabileceğini NET olarak belirt.
+ÖNEMLİ: 
+1. Mevcut kredileri güncel piyasa oranlarıyla MUTLAKA karşılaştır
+2. Hangi bankadan hangi koşullarda yeni kredi alınabileceğini NET olarak belirt
+3. Banka adlarını doğru eşleştir ve gerçek banka isimlerini kullan
+4. Sadece Türkiye'de faaliyet gösteren bankaları öner
 
 Finansal Profil:
 - Aylık Gelir: ${financialProfile.monthly_income} TL
@@ -72,21 +76,27 @@ Mevcut Krediler (${credits.length} adet):
 ${credits
   .map(
     (c: any, i: number) => `
-${i + 1}. ${c.credit_type_name || "Kredi"} - ${c.bank_name}
-   - Kalan Borç: ${c.remaining_debt} TL
-   - Aylık Ödeme: ${c.monthly_payment} TL
-   - Faiz Oranı: ${c.interest_rate}%
-   - Kalan Taksit: ${c.remaining_installments}
-   - Vade: ${c.remaining_installments} ay
+${i + 1}. ${c.credit_type_name || "Kredi"} - ${c.bank_name || "Bilinmeyen Banka"}
+   - Kalan Borç: ${c.remaining_debt || 0} TL
+   - Aylık Ödeme: ${c.monthly_payment || 0} TL
+   - Faiz Oranı: ${c.interest_rate || 0}%
+   - Kalan Taksit: ${c.remaining_installments || 0}
+   - Vade: ${c.remaining_installments || 0} ay
 `,
   )
   .join("")}
 
 Güncel Piyasa Oranları (2024):
-- İhtiyaç Kredisi: %2.8-3.2 (Ziraat, İş Bankası, Garanti)
-- Konut Kredisi: %1.9-2.3 (Vakıfbank, Akbank, QNB Finansbank)
-- Taşıt Kredisi: %2.2-2.8 (Denizbank, İNG, TEB)
+- İhtiyaç Kredisi: %2.8-3.2 (Ziraat Bankası, İş Bankası, Garanti BBVA)
+- Konut Kredisi: %1.9-2.3 (VakıfBank, Akbank, QNB Finansbank)
+- Taşıt Kredisi: %2.2-2.8 (DenizBank, ING Bank, TEB)
 - Ticari Kredi: %3.1-3.8 (Halkbank, Yapı Kredi, HSBC)
+
+TÜRK BANKALARI LİSTESİ (sadece bunları kullan):
+- Ziraat Bankası, İş Bankası, Garanti BBVA, VakıfBank, Halkbank, Akbank
+- DenizBank, ING Bank, TEB, QNB Finansbank, Yapı Kredi, HSBC
+- Fibabanka, Enpara.com, Şekerbank, Anadolubank, Turkish Bank
+- Kuveyt Türk, Albaraka Türk, Ziraat Katılım, Vakıf Katılım
 
 GÖREV: Her kredi için mevcut koşulları piyasa ile karşılaştır ve SOMUT öneriler sun.
 
@@ -153,7 +163,10 @@ Sadece JSON formatında yanıt ver (yorum satırı kullanma):
   }]
 }
 
-UNUTMA: Her öneride hangi bankadan hangi koşullarda kredi alınacağını NET belirt ve gerçekçi değerlendirmeler yap!
+UNUTMA: 
+- Her öneride hangi bankadan hangi koşullarda kredi alınacağını NET belirt
+- Sadece yukarıdaki Türk bankalarını kullan
+- Gerçekçi değerlendirmeler yap ve banka adlarını doğru eşleştir!
 `
 
     const result = await model.generateContent(prompt)
@@ -168,31 +181,88 @@ UNUTMA: Her öneride hangi bankadan hangi koşullarda kredi alınacağını NET 
         throw new Error("overallAssessment field missing")
       }
 
+      if (analysisData.individualCreditAnalysis) {
+        analysisData.individualCreditAnalysis = analysisData.individualCreditAnalysis.map((analysis: any) => {
+          // Ensure bank names are properly formatted
+          if (analysis.refinancingOptions) {
+            analysis.refinancingOptions = analysis.refinancingOptions.map((option: any) => {
+              // Validate and correct bank names
+              const validBanks = [
+                "Ziraat Bankası",
+                "İş Bankası",
+                "Garanti BBVA",
+                "VakıfBank",
+                "Halkbank",
+                "Akbank",
+                "DenizBank",
+                "ING Bank",
+                "TEB",
+                "QNB Finansbank",
+                "Yapı Kredi",
+                "HSBC",
+                "Fibabanka",
+                "Enpara.com",
+                "Şekerbank",
+                "Anadolubank",
+                "Turkish Bank",
+                "Kuveyt Türk",
+                "Albaraka Türk",
+                "Ziraat Katılım",
+                "Vakıf Katılım",
+              ]
+
+              if (option.recommendedBank && !validBanks.includes(option.recommendedBank)) {
+                // Try to find a close match
+                const normalizedRecommended = option.recommendedBank.toLowerCase()
+                const matchedBank = validBanks.find(
+                  (bank) =>
+                    bank.toLowerCase().includes(normalizedRecommended) ||
+                    normalizedRecommended.includes(bank.toLowerCase()),
+                )
+                if (matchedBank) {
+                  option.recommendedBank = matchedBank
+                } else {
+                  option.recommendedBank = "Ziraat Bankası" // Default fallback
+                }
+              }
+
+              return option
+            })
+          }
+          return analysis
+        })
+      }
+
       return NextResponse.json(analysisData)
     } catch (parseError: any) {
       console.error("[SERVER] JSON Parse Error:", parseError)
 
-      // Return a more realistic fallback response with actual analysis
       const totalCurrentPayment = credits.reduce((sum: number, c: any) => sum + (c.monthly_payment || 0), 0)
       const totalDebt = credits.reduce((sum: number, c: any) => sum + (c.remaining_debt || 0), 0)
       const avgCurrentRate = credits.reduce((sum: number, c: any) => sum + (c.interest_rate || 0), 0) / credits.length
 
+      const getBestBankForRate = (rate: number) => {
+        if (rate > 3.5) return "Ziraat Bankası"
+        if (rate > 2.8) return "İş Bankası"
+        return "Garanti BBVA"
+      }
+
       const fallbackResponse = {
         overallAssessment: {
           refinancingPotential: avgCurrentRate > 3.5 ? "Yüksek" : avgCurrentRate > 2.5 ? "Orta" : "Düşük",
-          totalPotentialSavings: Math.floor(totalCurrentPayment * 12 * 0.15), // %15 tasarruf varsayımı
+          totalPotentialSavings: Math.floor(totalCurrentPayment * 12 * 0.15),
           recommendedStrategy: `Mevcut kredilerinizin ortalama faiz oranı %${avgCurrentRate.toFixed(1)} seviyesinde. Güncel piyasa koşullarında ${avgCurrentRate > 3.0 ? "önemli tasarruf fırsatları" : "sınırlı tasarruf imkanları"} bulunmaktadır. ${credits.length > 1 ? "Kredilerinizi konsolide ederek" : "Mevcut kredinizi refinanse ederek"} aylık ödemelerinizi azaltabilir ve toplam faiz yükünüzü düşürebilirsiniz.`,
           urgencyLevel: avgCurrentRate > 4.0 ? "Yüksek" : avgCurrentRate > 3.0 ? "Orta" : "Düşük",
           summary: `${credits.length} adet kredinizin toplam borcu ${new Intl.NumberFormat("tr-TR").format(totalDebt)} TL ve aylık ödemeniz ${new Intl.NumberFormat("tr-TR").format(totalCurrentPayment)} TL. Mevcut ortalama faiz oranınız %${avgCurrentRate.toFixed(1)} iken, piyasa ortalaması %2.5-3.2 arasında değişmektedir. ${avgCurrentRate > 3.2 ? "Refinansman ile önemli tasarruf sağlayabilirsiniz." : "Mevcut koşullarınız piyasa ortalamasına yakın seviyede."}`,
         },
         individualCreditAnalysis: credits.map((credit: any) => {
           const currentRate = credit.interest_rate || 3.0
-          const newRate = Math.max(1.8, currentRate - 0.8) // Daha gerçekçi oran düşüşü
+          const newRate = Math.max(1.8, currentRate - 0.8)
           const monthlySavings = Math.floor(((credit.monthly_payment || 1000) * (currentRate - newRate)) / currentRate)
 
           return {
             creditId: credit.id,
-            bankName: credit.bank_name || "Mevcut Banka",
+            bankName: credit.bank_name || "Bilinmeyen Banka",
             creditType: credit.credit_type_name || "Kredi",
             currentSituation: {
               remainingDebt: credit.remaining_debt || 0,
@@ -203,8 +273,7 @@ UNUTMA: Her öneride hangi bankadan hangi koşullarda kredi alınacağını NET 
             refinancingOptions: [
               {
                 optionName: "Düşük Faizli Refinansman",
-                recommendedBank:
-                  currentRate > 3.5 ? "Ziraat Bankası" : currentRate > 2.8 ? "İş Bankası" : "Garanti BBVA",
+                recommendedBank: getBestBankForRate(currentRate),
                 newRate: newRate,
                 newTerm: credit.remaining_installments || 36,
                 newMonthlyPayment: (credit.monthly_payment || 1000) - monthlySavings,
@@ -237,7 +306,7 @@ UNUTMA: Her öneride hangi bankadan hangi koşullarda kredi alınacağını NET 
         },
         actionPlan: {
           immediate: [
-            `${avgCurrentRate > 3.5 ? "Ziraat Bankası" : "İş Bankası"}'ndan refinansman teklifi alın`,
+            `${getBestBankForRate(avgCurrentRate)}'ndan refinansman teklifi alın`,
             "Mevcut bankanızla koşul iyileştirme görüşmesi yapın",
             "Kredi notunuzu kontrol edin",
           ],
@@ -263,7 +332,7 @@ UNUTMA: Her öneride hangi bankadan hangi koşullarda kredi alınacağını NET 
       return NextResponse.json(fallbackResponse)
     }
   } catch (error: any) {
-    console.error("[SERVER] Refinancing analysis error:", error)
+    console.error("[SERVER] Refinansman analysis error:", error)
     return NextResponse.json(
       {
         error: "Refinansman analizi oluşturulurken bir hata oluştu",

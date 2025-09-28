@@ -231,13 +231,19 @@ export default function PDFAnalysisPage() {
     })
   }
 
-  const handleBankSelect = (bankName: string) => {
-    console.log("Manuel banka seçimi:", bankName)
-    handleGeneralEdit("bankName", bankName)
+  const handleBankSelect = (bank: any) => {
+    console.log("Manuel banka seçimi:", bank)
+    if (typeof bank === "string") {
+      // Legacy support for string parameter
+      handleGeneralEdit("bankName", bank)
+    } else if (bank && bank.name) {
+      // Handle bank object
+      handleGeneralEdit("bankName", bank.name)
+    }
     setShowBankSelector(false)
 
     // Seçilen bankayı kaydetme işlemi için hazırla
-    const selectedBankForSave = banks.find((bank) => bank.name === bankName)
+    const selectedBankForSave = typeof bank === "string" ? banks.find((b) => b.name === bank) : bank
     if (selectedBankForSave) {
       console.log("Manuel seçilen banka ID:", selectedBankForSave.id)
     }
@@ -631,7 +637,16 @@ export default function PDFAnalysisPage() {
                   <>
                     <BankLogo
                       bankName={paymentPlan.bankName}
-                      logoUrl={banks.find((bank) => bank.name === paymentPlan.bankName)?.logo_url}
+                      logoUrl={(() => {
+                        // Try to find the bank in the banks array using the improved matching
+                        const matchedBank = findBestBankMatch(paymentPlan.bankName, banks)
+                        console.log("[v0] Bank matching for logo:", {
+                          originalName: paymentPlan.bankName,
+                          matchedBank: matchedBank?.name,
+                          logoUrl: matchedBank?.logo_url,
+                        })
+                        return matchedBank?.logo_url
+                      })()}
                       size="sm"
                     />
                     <span className="font-medium">{paymentPlan.bankName}</span>

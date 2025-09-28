@@ -147,25 +147,77 @@ function findMatchingBank(
   registeredBanks: Array<{ id: string; name: string; logo_url?: string }>,
 ): string {
   if (!cardBankName || !registeredBanks || registeredBanks.length === 0) {
-    return cardBankName
+    return cardBankName || "Bilinmeyen Banka"
   }
 
-  // Önce tam eşleşme ara
-  const exactMatch = registeredBanks.find((bank) => bank.name.toLowerCase() === cardBankName.toLowerCase())
+  // Normalize the input bank name
+  const normalizeString = (str: string) => {
+    return str
+      .toLowerCase()
+      .trim()
+      .replace(/[^\w\s]/g, "") // Remove special characters
+      .replace(/\s+/g, " ") // Normalize whitespace
+  }
+
+  const normalizedCardBank = normalizeString(cardBankName)
+
+  // 1. Exact match
+  const exactMatch = registeredBanks.find((bank) => normalizeString(bank.name) === normalizedCardBank)
   if (exactMatch) {
     return exactMatch.name
   }
 
-  // Kısmi eşleşme ara
-  const partialMatch = registeredBanks.find(
-    (bank) =>
-      bank.name.toLowerCase().includes(cardBankName.toLowerCase()) ||
-      cardBankName.toLowerCase().includes(bank.name.toLowerCase()),
-  )
-  if (partialMatch) {
-    return partialMatch.name
+  // 2. Contains match (either direction)
+  const containsMatch = registeredBanks.find((bank) => {
+    const normalizedBankName = normalizeString(bank.name)
+    return normalizedBankName.includes(normalizedCardBank) || normalizedCardBank.includes(normalizedBankName)
+  })
+  if (containsMatch) {
+    return containsMatch.name
   }
 
+  // 3. Word-based matching (check if any significant words match)
+  const cardWords = normalizedCardBank.split(" ").filter((word) => word.length > 2)
+  const wordMatch = registeredBanks.find((bank) => {
+    const bankWords = normalizeString(bank.name)
+      .split(" ")
+      .filter((word) => word.length > 2)
+    return cardWords.some((cardWord) =>
+      bankWords.some((bankWord) => cardWord.includes(bankWord) || bankWord.includes(cardWord)),
+    )
+  })
+  if (wordMatch) {
+    return wordMatch.name
+  }
+
+  // 4. Common bank name variations mapping
+  const bankVariations: Record<string, string[]> = {
+    garanti: ["garanti", "bbva", "garantibbva"],
+    yapi: ["yapi", "kredi", "yapikredi"],
+    is: ["is", "bankasi", "isbankasi", "turkiye"],
+    ziraat: ["ziraat", "tc", "turkiye"],
+    vakif: ["vakif", "vakifbank", "vakiflar"],
+    halk: ["halk", "halkbank", "turkiye"],
+    akbank: ["akbank", "ak"],
+    deniz: ["deniz", "denizbank"],
+    qnb: ["qnb", "finansbank", "finans"],
+    teb: ["teb", "ekonomi", "turkiye"],
+    ing: ["ing"],
+    hsbc: ["hsbc"],
+  }
+
+  for (const [key, variations] of Object.entries(bankVariations)) {
+    if (variations.some((variation) => normalizedCardBank.includes(variation))) {
+      const matchingBank = registeredBanks.find((bank) =>
+        variations.some((variation) => normalizeString(bank.name).includes(variation)),
+      )
+      if (matchingBank) {
+        return matchingBank.name
+      }
+    }
+  }
+
+  // Return original name if no match found
   return cardBankName
 }
 

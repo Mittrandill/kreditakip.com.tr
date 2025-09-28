@@ -7,192 +7,231 @@ export function mapBankName(detectedName: string): string {
   // Banka eşleştirme haritası - daha kapsamlı
   const bankMappings: Record<string, string> = {
     // Devlet Bankaları
-    ziraat: "Ziraat Bankası",
-    "ziraat bankası": "Ziraat Bankası",
-    "ziraat bank": "Ziraat Bankası",
-    "tc ziraat bankası": "Ziraat Bankası",
-    "türkiye cumhuriyeti ziraat bankası": "Ziraat Bankası",
+    ziraat: "T.C. Ziraat Bankası A.Ş.",
+    "ziraat bankası": "T.C. Ziraat Bankası A.Ş.",
+    "ziraat bank": "T.C. Ziraat Bankası A.Ş.",
+    "tc ziraat bankası": "T.C. Ziraat Bankası A.Ş.",
+    "t.c. ziraat bankası": "T.C. Ziraat Bankası A.Ş.",
+    "t.c. ziraat bankası a.ş.": "T.C. Ziraat Bankası A.Ş.",
+    "türkiye cumhuriyeti ziraat bankası": "T.C. Ziraat Bankası A.Ş.",
 
-    halk: "Türkiye Halk Bankası",
-    halkbank: "Türkiye Halk Bankası",
-    "halk bankası": "Türkiye Halk Bankası",
-    "türkiye halk bankası": "Türkiye Halk Bankası",
-    "t. halk bankası": "Türkiye Halk Bankası",
+    halk: "Türkiye Halk Bankası A.Ş.",
+    halkbank: "Türkiye Halk Bankası A.Ş.",
+    "halk bankası": "Türkiye Halk Bankası A.Ş.",
+    "türkiye halk bankası": "Türkiye Halk Bankası A.Ş.",
+    "türkiye halk bankası a.ş.": "Türkiye Halk Bankası A.Ş.",
+    "t. halk bankası": "Türkiye Halk Bankası A.Ş.",
 
-    vakıf: "Vakıfbank",
-    vakif: "Vakıfbank",
-    vakıfbank: "Vakıfbank",
-    "vakıf bankası": "Vakıfbank",
-    "vakif bankasi": "Vakıfbank",
-    "türkiye vakıflar bankası": "Vakıfbank",
-    "turkiye vakiflar bankasi": "Vakıfbank",
-    "vakıflar bankası": "Vakıfbank",
-    "vakiflar bankasi": "Vakıfbank",
-    "t. vakıflar bankası": "Vakıfbank",
-    "türkiye vakıflar bankası t.a.o.": "Vakıfbank",
-    "turkiye vakiflar bankasi t.a.o.": "Vakıfbank",
+    vakıf: "Türkiye Vakıflar Bankası T.A.O.",
+    vakif: "Türkiye Vakıflar Bankası T.A.O.",
+    vakıfbank: "Türkiye Vakıflar Bankası T.A.O.",
+    "vakıf bankası": "Türkiye Vakıflar Bankası T.A.O.",
+    "vakif bankasi": "Türkiye Vakıflar Bankası T.A.O.",
+    "türkiye vakıflar bankası": "Türkiye Vakıflar Bankası T.A.O.",
+    "turkiye vakiflar bankasi": "Türkiye Vakıflar Bankası T.A.O.",
+    "vakıflar bankası": "Türkiye Vakıflar Bankası T.A.O.",
+    "vakiflar bankasi": "Türkiye Vakıflar Bankası T.A.O.",
+    "t. vakıflar bankası": "Türkiye Vakıflar Bankası T.A.O.",
+    "türkiye vakıflar bankası t.a.o.": "Türkiye Vakıflar Bankası T.A.O.",
+    "turkiye vakiflar bankasi t.a.o.": "Türkiye Vakıflar Bankası T.A.O.",
 
     // Özel Sektör Bankaları
-    akbank: "Akbank",
-    "ak bank": "Akbank",
-    "akbank t.a.ş.": "Akbank",
-    "akbank t.a.s.": "Akbank",
+    akbank: "Akbank T.A.Ş.",
+    "ak bank": "Akbank T.A.Ş.",
+    "akbank t.a.ş.": "Akbank T.A.Ş.",
+    "akbank t.a.s.": "Akbank T.A.Ş.",
 
-    "iş bankası": "Türkiye İş Bankası",
-    "is bankasi": "Türkiye İş Bankası",
-    işbank: "Türkiye İş Bankası",
-    isbank: "Türkiye İş Bankası",
-    "türkiye iş bankası": "Türkiye İş Bankası",
-    "turkiye is bankasi": "Türkiye İş Bankası",
-    "t. iş bankası": "Türkiye İş Bankası",
-    "türkiye iş bankası a.ş.": "Türkiye İş Bankası",
+    "iş bankası": "Türkiye İş Bankası A.Ş.",
+    "is bankasi": "Türkiye İş Bankası A.Ş.",
+    işbank: "Türkiye İş Bankası A.Ş.",
+    isbank: "Türkiye İş Bankası A.Ş.",
+    "türkiye iş bankası": "Türkiye İş Bankası A.Ş.",
+    "turkiye is bankasi": "Türkiye İş Bankası A.Ş.",
+    "t. iş bankası": "Türkiye İş Bankası A.Ş.",
+    "türkiye iş bankası a.ş.": "Türkiye İş Bankası A.Ş.",
 
-    "yapı kredi": "Yapı ve Kredi Bankası",
-    "yapi kredi": "Yapı ve Kredi Bankası",
-    yapıkredi: "Yapı ve Kredi Bankası",
-    yapikredi: "Yapı ve Kredi Bankası",
-    "yapı ve kredi bankası": "Yapı ve Kredi Bankası",
-    "yapi ve kredi bankasi": "Yapı ve Kredi Bankası",
-    "yapı kredi bankası": "Yapı ve Kredi Bankası",
-    "yapi kredi bankasi": "Yapı ve Kredi Bankası",
+    "yapı kredi": "Yapı ve Kredi Bankası A.Ş.",
+    "yapi kredi": "Yapı ve Kredi Bankası A.Ş.",
+    yapıkredi: "Yapı ve Kredi Bankası A.Ş.",
+    yapikredi: "Yapı ve Kredi Bankası A.Ş.",
+    "yapı ve kredi bankası": "Yapı ve Kredi Bankası A.Ş.",
+    "yapi ve kredi bankasi": "Yapı ve Kredi Bankası A.Ş.",
+    "yapı kredi bankası": "Yapı ve Kredi Bankası A.Ş.",
+    "yapi kredi bankasi": "Yapı ve Kredi Bankası A.Ş.",
+    "yapı ve kredi bankası a.ş.": "Yapı ve Kredi Bankası A.Ş.",
 
-    teb: "Türk Ekonomi Bankası",
-    "türk ekonomi bankası": "Türk Ekonomi Bankası",
-    "turk ekonomi bankasi": "Türk Ekonomi Bankası",
-    "t.e.b.": "Türk Ekonomi Bankası",
+    teb: "Türkiye Ekonomi Bankası A.Ş.",
+    "türk ekonomi bankası": "Türkiye Ekonomi Bankası A.Ş.",
+    "turk ekonomi bankasi": "Türkiye Ekonomi Bankası A.Ş.",
+    "türkiye ekonomi bankası": "Türkiye Ekonomi Bankası A.Ş.",
+    "türkiye ekonomi bankası a.ş.": "Türkiye Ekonomi Bankası A.Ş.",
+    "t.e.b.": "Türkiye Ekonomi Bankası A.Ş.",
 
-    şekerbank: "Şekerbank",
-    sekerbank: "Şekerbank",
-    "şeker bank": "Şekerbank",
-    "seker bank": "Şekerbank",
+    şekerbank: "Şekerbank T.A.Ş.",
+    sekerbank: "Şekerbank T.A.Ş.",
+    "şeker bank": "Şekerbank T.A.Ş.",
+    "seker bank": "Şekerbank T.A.Ş.",
+    "şekerbank t.a.ş.": "Şekerbank T.A.Ş.",
 
-    anadolubank: "Anadolubank",
-    "anadolu bank": "Anadolubank",
+    anadolubank: "Anadolubank A.Ş.",
+    "anadolu bank": "Anadolubank A.Ş.",
+    "anadolubank a.ş.": "Anadolubank A.Ş.",
 
-    fibabanka: "Fibabanka",
-    "fiba bank": "Fibabanka",
-    "fiba banka": "Fibabanka",
+    fibabanka: "Fibabanka A.Ş.",
+    "fiba bank": "Fibabanka A.Ş.",
+    "fiba banka": "Fibabanka A.Ş.",
+    "fibabanka a.ş.": "Fibabanka A.Ş.",
 
-    "turkish bank": "Turkish Bank",
-    turkishbank: "Turkish Bank",
+    "turkish bank": "Turkish Bank A.Ş.",
+    turkishbank: "Turkish Bank A.Ş.",
+    "turkish bank a.ş.": "Turkish Bank A.Ş.",
 
-    adabank: "Adabank",
-    "ada bank": "Adabank",
+    adabank: "Adabank A.Ş.",
+    "ada bank": "Adabank A.Ş.",
+    "adabank a.ş.": "Adabank A.Ş.",
 
     // Yabancı Bankalar
-    garanti: "Türkiye Garanti Bankası",
-    "garanti bbva": "Türkiye Garanti Bankası",
-    garantibbva: "Türkiye Garanti Bankası",
-    "türkiye garanti bankası": "Türkiye Garanti Bankası",
-    "turkiye garanti bankasi": "Türkiye Garanti Bankası",
-    "garanti bankası": "Türkiye Garanti Bankası",
-    "garanti bankasi": "Türkiye Garanti Bankası",
+    garanti: "Türkiye Garanti Bankası A.Ş.",
+    "garanti bbva": "Türkiye Garanti Bankası A.Ş.",
+    garantibbva: "Türkiye Garanti Bankası A.Ş.",
+    "türkiye garanti bankası": "Türkiye Garanti Bankası A.Ş.",
+    "turkiye garanti bankasi": "Türkiye Garanti Bankası A.Ş.",
+    "garanti bankası": "Türkiye Garanti Bankası A.Ş.",
+    "garanti bankasi": "Türkiye Garanti Bankası A.Ş.",
+    "türkiye garanti bankası a.ş.": "Türkiye Garanti Bankası A.Ş.",
 
-    denizbank: "Denizbank",
-    "deniz bank": "Denizbank",
+    denizbank: "DenizBank A.Ş.",
+    "deniz bank": "DenizBank A.Ş.",
+    "denizbank a.ş.": "DenizBank A.Ş.",
 
-    "qnb finansbank": "QNB Finansbank",
-    "qnb finans": "QNB Finansbank",
-    finansbank: "QNB Finansbank",
-    "finans bank": "QNB Finansbank",
+    "qnb finansbank": "QNB Finansbank A.Ş.",
+    "qnb finans": "QNB Finansbank A.Ş.",
+    finansbank: "QNB Finansbank A.Ş.",
+    "finans bank": "QNB Finansbank A.Ş.",
+    "qnb finansbank a.ş.": "QNB Finansbank A.Ş.",
 
-    ing: "ING Bank",
-    "ing bank": "ING Bank",
-    "ing bankası": "ING Bank",
-    "ing bankasi": "ING Bank",
+    ing: "ING Bank A.Ş.",
+    "ing bank": "ING Bank A.Ş.",
+    "ing bankası": "ING Bank A.Ş.",
+    "ing bankasi": "ING Bank A.Ş.",
+    "ing bank a.ş.": "ING Bank A.Ş.",
 
-    hsbc: "HSBC Bank",
-    "hsbc bank": "HSBC Bank",
-    "hsbc bankası": "HSBC Bank",
-    "hsbc bankasi": "HSBC Bank",
+    hsbc: "HSBC Bank A.Ş.",
+    "hsbc bank": "HSBC Bank A.Ş.",
+    "hsbc bankası": "HSBC Bank A.Ş.",
+    "hsbc bankasi": "HSBC Bank A.Ş.",
+    "hsbc bank a.ş.": "HSBC Bank A.Ş.",
 
-    "deutsche bank": "Deutsche Bank",
-    deutsche: "Deutsche Bank",
+    "deutsche bank": "Deutsche Bank A.Ş.",
+    deutsche: "Deutsche Bank A.Ş.",
+    "deutsche bank a.ş.": "Deutsche Bank A.Ş.",
 
-    citibank: "Citibank",
-    "citi bank": "Citibank",
-    citi: "Citibank",
+    citibank: "Citibank A.Ş.",
+    "citi bank": "Citibank A.Ş.",
+    citi: "Citibank A.Ş.",
+    "citibank a.ş.": "Citibank A.Ş.",
 
-    "alternatif bank": "Alternatif Bank",
-    alternatifbank: "Alternatif Bank",
+    "alternatif bank": "Alternatif Bank A.Ş.",
+    alternatifbank: "Alternatif Bank A.Ş.",
+    "alternatif bank a.ş.": "Alternatif Bank A.Ş.",
 
-    "burgan bank": "Burgan Bank",
-    burganbank: "Burgan Bank",
+    "burgan bank": "Burgan Bank A.Ş.",
+    burganbank: "Burgan Bank A.Ş.",
+    "burgan bank a.ş.": "Burgan Bank A.Ş.",
 
-    icbc: "ICBC Turkey Bank",
-    "icbc turkey": "ICBC Turkey Bank",
-    "icbc turkey bank": "ICBC Turkey Bank",
+    icbc: "ICBC Turkey Bank A.Ş.",
+    "icbc turkey": "ICBC Turkey Bank A.Ş.",
+    "icbc turkey bank": "ICBC Turkey Bank A.Ş.",
+    "icbc turkey bank a.ş.": "ICBC Turkey Bank A.Ş.",
 
-    "bank of china": "Bank of China Turkey",
-    "bank of china turkey": "Bank of China Turkey",
+    "bank of china": "Bank of China Turkey A.Ş.",
+    "bank of china turkey": "Bank of China Turkey A.Ş.",
+    "bank of china turkey a.ş.": "Bank of China Turkey A.Ş.",
 
-    "arap türk bankası": "Arap Türk Bankası",
-    "arap turk bankasi": "Arap Türk Bankası",
+    "arap türk bankası": "Arap Türk Bankası A.Ş.",
+    "arap turk bankasi": "Arap Türk Bankası A.Ş.",
+    "arap türk bankası a.ş.": "Arap Türk Bankası A.Ş.",
 
-    "turkland bank": "Turkland Bank",
-    turklandbank: "Turkland Bank",
+    "turkland bank": "Turkland Bank A.Ş.",
+    turklandbank: "Turkland Bank A.Ş.",
+    "turkland bank a.ş.": "Turkland Bank A.Ş.",
 
-    "odea bank": "Odea Bank",
-    odeabank: "Odea Bank",
+    "odea bank": "Odeabank A.Ş.",
+    odeabank: "Odeabank A.Ş.",
+    "odeabank a.ş.": "Odeabank A.Ş.",
 
-    rabobank: "Rabobank",
-    "rabo bank": "Rabobank",
+    rabobank: "Rabobank A.Ş.",
+    "rabo bank": "Rabobank A.Ş.",
+    "rabobank a.ş.": "Rabobank A.Ş.",
 
-    mufg: "MUFG Bank Turkey",
-    "mufg bank": "MUFG Bank Turkey",
-    "mufg bank turkey": "MUFG Bank Turkey",
+    mufg: "MUFG Bank Turkey A.Ş.",
+    "mufg bank": "MUFG Bank Turkey A.Ş.",
+    "mufg bank turkey": "MUFG Bank Turkey A.Ş.",
+    "mufg bank turkey a.ş.": "MUFG Bank Turkey A.Ş.",
 
     // Katılım Bankaları
-    "ziraat katılım": "Ziraat Katılım Bankası",
-    "ziraat katilim": "Ziraat Katılım Bankası",
-    "ziraat katılım bankası": "Ziraat Katılım Bankası",
+    "ziraat katılım": "Ziraat Katılım Bankası A.Ş.",
+    "ziraat katilim": "Ziraat Katılım Bankası A.Ş.",
+    "ziraat katılım bankası": "Ziraat Katılım Bankası A.Ş.",
+    "ziraat katılım bankası a.ş.": "Ziraat Katılım Bankası A.Ş.",
 
-    "vakıf katılım": "Vakıf Katılım Bankası",
-    "vakif katilim": "Vakıf Katılım Bankası",
-    "vakıf katılım bankası": "Vakıf Katılım Bankası",
+    "vakıf katılım": "Vakıf Katılım Bankası A.Ş.",
+    "vakif katilim": "Vakıf Katılım Bankası A.Ş.",
+    "vakıf katılım bankası": "Vakıf Katılım Bankası A.Ş.",
+    "vakıf katılım bankası a.ş.": "Vakıf Katılım Bankası A.Ş.",
 
-    "emlak katılım": "Türkiye Emlak Katılım Bankası",
-    "emlak katilim": "Türkiye Emlak Katılım Bankası",
-    "türkiye emlak katılım": "Türkiye Emlak Katılım Bankası",
+    "emlak katılım": "Türkiye Emlak Katılım Bankası A.Ş.",
+    "emlak katilim": "Türkiye Emlak Katılım Bankası A.Ş.",
+    "türkiye emlak katılım": "Türkiye Emlak Katılım Bankası A.Ş.",
+    "türkiye emlak katılım bankası a.ş.": "Türkiye Emlak Katılım Bankası A.Ş.",
 
-    "türkiye finans": "Türkiye Finans Katılım Bankası",
-    "turkiye finans": "Türkiye Finans Katılım Bankası",
-    "finans katılım": "Türkiye Finans Katılım Bankası",
+    "türkiye finans": "Türkiye Finans Katılım Bankası A.Ş.",
+    "turkiye finans": "Türkiye Finans Katılım Bankası A.Ş.",
+    "finans katılım": "Türkiye Finans Katılım Bankası A.Ş.",
+    "türkiye finans katılım bankası a.ş.": "Türkiye Finans Katılım Bankası A.Ş.",
 
-    albaraka: "Albaraka Türk Katılım Bankası",
-    "albaraka türk": "Albaraka Türk Katılım Bankası",
-    "albaraka turk": "Albaraka Türk Katılım Bankası",
+    albaraka: "Albaraka Türk Katılım Bankası A.Ş.",
+    "albaraka türk": "Albaraka Türk Katılım Bankası A.Ş.",
+    "albaraka turk": "Albaraka Türk Katılım Bankası A.Ş.",
+    "albaraka türk katılım bankası a.ş.": "Albaraka Türk Katılım Bankası A.Ş.",
 
-    "kuveyt türk": "Kuveyt Türk Katılım Bankası",
-    "kuveyt turk": "Kuveyt Türk Katılım Bankası",
-    kuveytturk: "Kuveyt Türk Katılım Bankası",
+    "kuveyt türk": "Kuveyt Türk Katılım Bankası A.Ş.",
+    "kuveyt turk": "Kuveyt Türk Katılım Bankası A.Ş.",
+    kuveytturk: "Kuveyt Türk Katılım Bankası A.Ş.",
+    "kuveyt türk katılım bankası a.ş.": "Kuveyt Türk Katılım Bankası A.Ş.",
 
     // Kalkınma ve Yatırım Bankaları
-    "iller bankası": "İller Bankası",
-    "iller bank": "İller Bankası",
-    ilbank: "İller Bankası",
+    "iller bankası": "İller Bankası A.Ş.",
+    "iller bank": "İller Bankası A.Ş.",
+    ilbank: "İller Bankası A.Ş.",
+    "iller bankası a.ş.": "İller Bankası A.Ş.",
 
     eximbank: "Türk Eximbank",
     "türk eximbank": "Türk Eximbank",
     "turk eximbank": "Türk Eximbank",
 
-    "kalkınma bankası": "Türkiye Kalkınma ve Yatırım Bankası",
-    "kalkinma bankasi": "Türkiye Kalkınma ve Yatırım Bankası",
-    tkyb: "Türkiye Kalkınma ve Yatırım Bankası",
+    "kalkınma bankası": "Türkiye Kalkınma ve Yatırım Bankası A.Ş.",
+    "kalkinma bankasi": "Türkiye Kalkınma ve Yatırım Bankası A.Ş.",
+    tkyb: "Türkiye Kalkınma ve Yatırım Bankası A.Ş.",
+    "türkiye kalkınma ve yatırım bankası a.ş.": "Türkiye Kalkınma ve Yatırım Bankası A.Ş.",
 
-    tskb: "Türkiye Sınai Kalkınma Bankası",
-    "sınai kalkınma": "Türkiye Sınai Kalkınma Bankası",
-    "sinai kalkinma": "Türkiye Sınai Kalkınma Bankası",
+    tskb: "Türkiye Sınai Kalkınma Bankası A.Ş.",
+    "sınai kalkınma": "Türkiye Sınai Kalkınma Bankası A.Ş.",
+    "sinai kalkinma": "Türkiye Sınai Kalkınma Bankası A.Ş.",
+    "türkiye sınai kalkınma bankası a.ş.": "Türkiye Sınai Kalkınma Bankası A.Ş.",
 
-    "aktif yatırım": "Aktif Yatırım Bankası",
-    "aktif yatirim": "Aktif Yatırım Bankası",
+    "aktif yatırım": "Aktif Yatırım Bankası A.Ş.",
+    "aktif yatirim": "Aktif Yatırım Bankası A.Ş.",
+    "aktif yatırım bankası a.ş.": "Aktif Yatırım Bankası A.Ş.",
 
-    jpmorgan: "JPMorgan Chase Bank",
-    "jp morgan": "JPMorgan Chase Bank",
-    "jpmorgan chase": "JPMorgan Chase Bank",
+    jpmorgan: "JPMorgan Chase Bank N.A.",
+    "jp morgan": "JPMorgan Chase Bank N.A.",
+    "jpmorgan chase": "JPMorgan Chase Bank N.A.",
+    "jpmorgan chase bank n.a.": "JPMorgan Chase Bank N.A.",
 
-    "société générale": "Société Générale",
-    "societe generale": "Société Générale",
+    "société générale": "Sociét Générale (SA)",
+    "societe generale": "Sociét Générale (SA)",
+    "sociét générale (sa)": "Sociét Générale (SA)",
   }
 
   // Önce tam eşleşme ara
@@ -235,14 +274,42 @@ export function findBestBankMatch(detectedBankName: string, availableBanks: any[
     return match
   }
 
-  // 3. Kısmi eşleşme ara - daha akıllı
+  // 3. A.Ş., T.A.Ş., T.A.O. gibi ekleri kaldırarak ara
+  const cleanDetected = normalizedDetected
+    .replace(/\s*a\.ş\.?\s*$/i, "")
+    .replace(/\s*t\.a\.ş\.?\s*$/i, "")
+    .replace(/\s*t\.a\.o\.?\s*$/i, "")
+    .replace(/\s*n\.a\.?\s*$/i, "")
+    .replace(/\s*s\.p\.a\.?\s*$/i, "")
+    .replace(/\s*$$sa$$\s*$/i, "")
+    .trim()
+
+  match = availableBanks.find((bank) => {
+    const cleanBankName = bank.name
+      .toLowerCase()
+      .replace(/\s*a\.ş\.?\s*$/i, "")
+      .replace(/\s*t\.a\.ş\.?\s*$/i, "")
+      .replace(/\s*t\.a\.o\.?\s*$/i, "")
+      .replace(/\s*n\.a\.?\s*$/i, "")
+      .replace(/\s*s\.p\.a\.?\s*$/i, "")
+      .replace(/\s*$$sa$$\s*$/i, "")
+      .trim()
+
+    return cleanBankName === cleanDetected
+  })
+
+  if (match) {
+    return match
+  }
+
+  // 4. Kısmi eşleşme ara - daha akıllı
   const bankKeywords = [
     { keywords: ["vakif", "vakıf"], target: "vakıf" },
     { keywords: ["ziraat"], target: "ziraat" },
     { keywords: ["garanti"], target: "garanti" },
     { keywords: ["akbank", "ak bank"], target: "akbank" },
     { keywords: ["halk", "halkbank"], target: "halk" },
-    { keywords: ["is bank", "iş bank", "işbank", "isbank"], target: "iş" },
+    { keywords: ["is bank", "iş bank", "işbank", "isbank", "türkiye iş", "turkiye is"], target: "iş" },
     { keywords: ["yapi", "yapı", "kredi"], target: "yapı" },
     { keywords: ["teb", "ekonomi"], target: "ekonomi" },
     { keywords: ["deniz"], target: "deniz" },
@@ -253,7 +320,7 @@ export function findBestBankMatch(detectedBankName: string, availableBanks: any[
   ]
 
   for (const { keywords, target } of bankKeywords) {
-    const hasKeyword = keywords.some((keyword) => normalizedDetected.includes(keyword.toLowerCase()))
+    const hasKeyword = keywords.some((keyword) => cleanDetected.includes(keyword.toLowerCase()))
 
     if (hasKeyword) {
       match = availableBanks.find((bank) => bank.name.toLowerCase().includes(target))
@@ -264,10 +331,16 @@ export function findBestBankMatch(detectedBankName: string, availableBanks: any[
     }
   }
 
-  // 4. Genel kısmi eşleşme
+  // 5. Genel kısmi eşleşme
   match = availableBanks.find((bank) => {
     const bankNameLower = bank.name.toLowerCase()
-    return bankNameLower.includes(normalizedDetected) || normalizedDetected.includes(bankNameLower)
+    const cleanBankName = bankNameLower
+      .replace(/\s*a\.ş\.?\s*$/i, "")
+      .replace(/\s*t\.a\.ş\.?\s*$/i, "")
+      .replace(/\s*t\.a\.o\.?\s*$/i, "")
+      .trim()
+
+    return cleanBankName.includes(cleanDetected) || cleanDetected.includes(cleanBankName)
   })
 
   if (match) {
