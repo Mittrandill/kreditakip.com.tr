@@ -92,16 +92,8 @@ export default function LoginPage() {
     setIsLoading(true)
     setError(null)
 
-    console.log("[v0] Login attempt started for email:", loginEmail)
-
     try {
       const data = await signIn(loginEmail, loginPassword)
-
-      console.log("[v0] Login response:", {
-        hasUser: !!data?.user,
-        hasSession: !!data?.session,
-        userEmailConfirmed: data?.user?.email_confirmed_at,
-      })
 
       if (data?.user && data?.session) {
         toast({
@@ -129,7 +121,7 @@ export default function LoginPage() {
         })
       }
     } catch (err: any) {
-      console.error("[v0] Login error:", err)
+      console.error("Login error:", err)
       const errorMessage = getErrorMessage(err)
       setError(errorMessage)
 
@@ -219,8 +211,6 @@ export default function LoginPage() {
     setIsLoading(true)
     setError(null)
 
-    console.log("[v0] Google sign-in attempt started")
-
     try {
       await signInWithGoogle()
       // OAuth akışı callback sayfasında işlenecek
@@ -229,7 +219,7 @@ export default function LoginPage() {
         description: "Google ile giriş için yönlendiriliyorsunuz.",
       })
     } catch (err: any) {
-      console.error("[v0] Google sign-in error:", err)
+      console.error("Google sign-in error:", err)
       const errorMessage = err?.message || "Google ile giriş yapılırken bir hata oluştu. Lütfen tekrar deneyin."
       setError(errorMessage)
       toast({

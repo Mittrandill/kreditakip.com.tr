@@ -25,9 +25,7 @@ import {
   Wallet,
   CreditCard,
 } from "lucide-react"
-import { Chart as ChartJS, ArcElement, Tooltip, Legend } from "chart.js"
-
-ChartJS.register(ArcElement, Tooltip, Legend)
+// Removed chart-related imports
 
 // Kredi verisi için genişletilmiş tip (ilişkili tablolarla)
 interface PopulatedCredit extends Credit {
@@ -47,24 +45,7 @@ interface UpcomingPayment extends PaymentPlan {
   } | null
 }
 
-// Grafik verileri için varsayılanlar
-const defaultLineChartData = [
-  { month: "Oca", anaParaBorcu: 0, toplamOdenen: 0 },
-  { month: "Şub", anaParaBorcu: 0, toplamOdenen: 0 },
-  { month: "Mar", anaParaBorcu: 0, toplamOdenen: 0 },
-  { month: "Nis", anaParaBorcu: 0, toplamOdenen: 0 },
-  { month: "May", anaParaBorcu: 0, toplamOdenen: 0 },
-  { month: "Haz", anaParaBorcu: 0, toplamOdenen: 0 },
-]
-
-const defaultBarChartData = [
-  { name: "Oca", krediOdeme: 0, gelir: 0 },
-  { name: "Şub", krediOdeme: 0, gelir: 0 },
-  { name: "Mar", krediOdeme: 0, gelir: 0 },
-  { name: "Nis", krediOdeme: 0, gelir: 0 },
-  { name: "May", krediOdeme: 0, gelir: 0 },
-  { name: "Haz", krediOdeme: 0, gelir: 0 },
-]
+// Removed chart-related default data
 
 export default function DashboardPage() {
   const { user, profile, loading: authLoading } = useAuth()
@@ -79,12 +60,6 @@ export default function DashboardPage() {
   const [monthlyPayment, setMonthlyPayment] = useState(0)
   const [averageInterestRate, setAverageInterestRate] = useState(0)
   const [upcomingPaymentCount, setUpcomingPaymentCount] = useState(0)
-
-  // Grafik state'leri
-  const [lineChartData, setLineChartData] = useState(defaultLineChartData)
-  const [barChartData, setBarChartData] = useState(defaultBarChartData)
-  const [bankChartData, setBankChartData] = useState<any>(null)
-  const [creditTypeChartData, setCreditTypeChartData] = useState<any>(null)
 
   useEffect(() => {
     let isMounted = true
@@ -133,135 +108,6 @@ export default function DashboardPage() {
             }
 
             setUpcomingPaymentCount(upcomingPaymentsData?.length || 0)
-
-            // Line Chart verisi - Finansal trend
-            if (activeCredits.length > 0) {
-              const now = new Date()
-              const months = []
-
-              for (let i = 5; i >= 0; i--) {
-                const date = new Date(now.getFullYear(), now.getMonth() - i, 1)
-                const monthName = date.toLocaleDateString("tr-TR", { month: "short" })
-
-                // Basit simülasyon
-                const totalDebtAtMonth = activeCredits.reduce((sum, credit) => {
-                  const monthlyReduction = credit.monthly_payment * 0.7
-                  const remainingAtMonth = credit.remaining_debt + monthlyReduction * i
-                  return sum + remainingAtMonth
-                }, 0)
-
-                const totalPaidAtMonth = activeCredits.reduce((sum, credit) => {
-                  const monthlyPayment = credit.monthly_payment
-                  return sum + monthlyPayment * (6 - i)
-                }, 0)
-
-                months.push({
-                  month: monthName,
-                  anaParaBorcu: Math.max(0, totalDebtAtMonth),
-                  toplamOdenen: totalPaidAtMonth,
-                })
-              }
-
-              setLineChartData(months)
-            } else {
-              setLineChartData(defaultLineChartData)
-            }
-
-            // Bar Chart verisi - Nakit akış
-            if (activeCredits.length > 0) {
-              const now = new Date()
-              const cashFlowMonths = []
-
-              for (let i = 0; i < 6; i++) {
-                const date = new Date(now.getFullYear(), now.getMonth() + i, 1)
-                const monthName = date.toLocaleDateString("tr-TR", { month: "short" })
-
-                const monthlyKrediPayment = activeCredits.reduce((sum, credit) => sum + credit.monthly_payment, 0)
-                const estimatedIncome = monthlyKrediPayment + 5000
-
-                cashFlowMonths.push({
-                  name: monthName,
-                  krediOdeme: monthlyKrediPayment,
-                  gelir: estimatedIncome,
-                })
-              }
-
-              setBarChartData(cashFlowMonths)
-            } else {
-              setBarChartData(defaultBarChartData)
-            }
-
-            if (activeCredits.length > 0) {
-              // Banka dağılımı
-              const bankDistribution = activeCredits.reduce((acc: any, credit) => {
-                const bankName = credit.banks?.name || "Diğer Bankalar"
-                const existing = acc.find((item: any) => item.name === bankName)
-
-                if (existing) {
-                  existing.value += credit.remaining_debt
-                } else {
-                  acc.push({
-                    name: bankName,
-                    value: credit.remaining_debt,
-                    color: getBankColor(bankName),
-                    logoUrl: credit.banks?.logo_url,
-                  })
-                }
-                return acc
-              }, [])
-
-              const sortedBankData = bankDistribution.sort((a: any, b: any) => b.value - a.value).slice(0, 5)
-
-              setBankChartData({
-                labels: sortedBankData.map((item: any) => item.name),
-                datasets: [
-                  {
-                    data: sortedBankData.map((item: any) => item.value),
-                    backgroundColor: sortedBankData.map((item: any) => item.color),
-                    borderWidth: 2,
-                    borderColor: "#ffffff",
-                    cutout: "70%",
-                  },
-                ],
-              })
-
-              // Kredi türü dağılımı
-              const creditTypeDistribution = activeCredits.reduce((acc: any, credit) => {
-                const typeName = credit.credit_types?.name || "Diğer Krediler"
-                const existing = acc.find((item: any) => item.name === typeName)
-
-                if (existing) {
-                  existing.value += credit.remaining_debt
-                } else {
-                  acc.push({
-                    name: typeName,
-                    value: credit.remaining_debt,
-                    color: getColorForCreditType(typeName),
-                  })
-                }
-                return acc
-              }, [])
-
-              const sortedCreditTypeData = creditTypeDistribution
-                .sort((a: any, b: any) => b.value - a.value)
-                .slice(0, 5)
-
-              setCreditTypeChartData({
-                labels: sortedCreditTypeData.map((item: any) => item.name),
-                datasets: [
-                  {
-                    data: sortedCreditTypeData.map((item: any) => item.value),
-                    backgroundColor: sortedCreditTypeData.map((item: any) => item.color),
-                    borderWidth: 2,
-                    borderColor: "#ffffff",
-                    cutout: "70%",
-                  },
-                ],
-              })
-            } else {
-              setBankChartData(null)
-              setCreditTypeChartData(null)
-            }
           }
         } catch (err) {
           console.error("Dashboard data fetch error:", err)
@@ -284,94 +130,6 @@ export default function DashboardPage() {
       isMounted = false
     }
   }, [user, authLoading])
-
-  const getBankColor = (bankName: string): string => {
-    const colorMap: { [key: string]: string } = {
-      "Türkiye İş Bankası A.Ş.": "#1e40af",
-      "Türkiye Garanti Bankası A.Ş.": "#059669",
-      "Türkiye Vakıflar Bankası T.A.O.": "#dc2626",
-      "Türkiye Halk Bankası A.Ş.": "#7c3aed",
-      "Akbank T.A.Ş.": "#ea580c",
-      "Yapı ve Kredi Bankası A.Ş.": "#0891b2",
-      "Türk Ekonomi Bankası A.Ş.": "#f59e0b",
-      "Enpara Bank A.S.": "#10b981",
-      "Fibabanka A.S.": "#8b5cf6",
-      "Diğer Bankalar": "#6b7280",
-    }
-    return colorMap[bankName] || "#6b7280"
-  }
-
-  const getColorForCreditType = (typeName: string): string => {
-    const colorMap: { [key: string]: string } = {
-      "İhtiyaç Kredisi": "#3b82f6",
-      "Konut Kredisi": "#10b981",
-      "Taşıt Kredisi": "#f59e0b",
-      "Ticari Kredi": "#8b5cf6",
-      "Ticari Finansman": "#06b6d4",
-      "İşletme Kredisi": "#ef4444",
-      "Taksitli Nakit Avans": "#84cc16",
-      "Kredi Kartı": "#ef4444",
-      "Diğer Krediler": "#6b7280",
-      Diğer: "#94a3b8",
-    }
-    return colorMap[typeName] || "#6b7280"
-  }
-
-  const chartOptions = {
-    responsive: true,
-    maintainAspectRatio: false,
-    plugins: {
-      legend: {
-        position: "bottom" as const,
-        labels: {
-          padding: 20,
-          usePointStyle: true,
-          font: {
-            size: 12,
-            family: "Inter, sans-serif",
-          },
-          color: (context: any) => (document.documentElement.classList.contains("dark") ? "#e5e7eb" : "#374151"),
-          generateLabels: (chart: any) => {
-            const data = chart.data
-            if (data.labels.length && data.datasets.length) {
-              return data.labels.map((label: string, i: number) => {
-                const value = data.datasets[0].data[i]
-                const total = data.datasets[0].data.reduce((sum: number, val: number) => sum + val, 0)
-                const percentage = ((value / total) * 100).toFixed(1)
-                return {
-                  text: `${label} (${percentage}%)`,
-                  fillStyle: data.datasets[0].backgroundColor[i],
-                  strokeStyle: data.datasets[0].backgroundColor[i],
-                  lineWidth: 0,
-                  pointStyle: "circle",
-                  hidden: false,
-                  index: i,
-                }
-              })
-            }
-            return []
-          },
-        },
-      },
-      tooltip: {
-        callbacks: {
-          label: (context: any) => {
-            const value = context.parsed
-            const total = context.dataset.data.reduce((sum: number, val: number) => sum + val, 0)
-            const percentage = ((value / total) * 100).toFixed(1)
-            return `${context.label}: ${formatCurrency(value)} (${percentage}%)`
-          },
-        },
-        backgroundColor: (context: any) =>
-          document.documentElement.classList.contains("dark") ? "rgba(17, 24, 39, 0.95)" : "rgba(0, 0, 0, 0.8)",
-        titleColor: "white",
-        bodyColor: "white",
-        borderColor: (context: any) =>
-          document.documentElement.classList.contains("dark") ? "rgba(75, 85, 99, 0.3)" : "rgba(255, 255, 255, 0.1)",
-        borderWidth: 1,
-      },
-    },
-  }
 
   const displayName = profile?.first_name || user?.email?.split("@")[0] || "Kullanıcı"
 
