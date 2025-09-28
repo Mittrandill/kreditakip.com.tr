@@ -637,7 +637,16 @@ export default function PDFAnalysisPage() {
                   <>
                     <BankLogo
                       bankName={paymentPlan.bankName}
-                      logoUrl={banks.find((bank) => bank.name === paymentPlan.bankName)?.logo_url}
+                      logoUrl={(() => {
+                        // Try to find the bank in the banks array using the improved matching
+                        const matchedBank = findBestBankMatch(paymentPlan.bankName, banks)
+                        console.log("[v0] Bank matching for logo:", {
+                          originalName: paymentPlan.bankName,
+                          matchedBank: matchedBank?.name,
+                          logoUrl: matchedBank?.logo_url,
+                        })
+                        return matchedBank?.logo_url
+                      })()}
                       size="sm"
                     />
                     <span className="font-medium">{paymentPlan.bankName}</span>
