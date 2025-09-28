@@ -55,7 +55,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Finansal profil ve kredi bilgileri gereklidir" }, { status: 400 })
     }
 
-    const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" })
+    const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash-exp" })
 
     const prompt = `
 Sen Türkiye'nin en deneyimli finansal danışmanısın. Kullanıcının mevcut kredilerini analiz edip, güncel piyasa koşullarıyla karşılaştırarak en iyi refinansman önerilerini sunacaksın.
