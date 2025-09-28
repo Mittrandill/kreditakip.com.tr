@@ -85,7 +85,11 @@ export async function signInWithGoogle() {
   try {
     // Development için local URL kullan, production için origin
     const isDev = window.location.hostname === "localhost"
-    const redirectUrl = isDev ? `http://localhost:3001/auth/callback` : `${window.location.origin}/auth/callback`
+    const redirectUrl = isDev
+      ? `${window.location.origin}/auth/callback` // Use current origin instead of hardcoded port
+      : `${window.location.origin}/auth/callback`
+
+    console.log("[v0] Google OAuth redirect URL:", redirectUrl)
 
     const { data, error } = await supabase.auth.signInWithOAuth({
       provider: "google",
