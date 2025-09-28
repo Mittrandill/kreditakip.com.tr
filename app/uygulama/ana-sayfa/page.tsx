@@ -18,16 +18,12 @@ import {
   Bell,
   MoreHorizontal,
   ArrowUpRight,
-  Banknote,
   Target,
   DollarSign,
   TrendingUp,
   Clock,
   Wallet,
-  Building2,
-  CreditCard,
 } from "lucide-react"
-import { Doughnut } from "react-chartjs-2"
 import { Chart as ChartJS, ArcElement, Tooltip, Legend } from "chart.js"
 
 ChartJS.register(ArcElement, Tooltip, Legend)
@@ -578,56 +574,126 @@ export default function DashboardPage() {
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <Card className="shadow-lg hover:shadow-xl dark:shadow-gray-900/20 dark:hover:shadow-gray-900/30 transition-shadow duration-300 rounded-xl border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800">
-          <CardHeader className="pb-4">
-            <CardTitle className="text-gray-900 dark:text-gray-100 flex items-center gap-2 text-lg">
-              Banka Dağılımı
-            </CardTitle>
-            <CardDescription className="text-gray-600 dark:text-gray-400">
-              Borç tutarına göre banka dağılımı
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="h-80">
-              {bankChartData ? (
-                <Doughnut data={bankChartData} options={chartOptions} />
-              ) : (
-                <div className="flex items-center justify-center h-full text-gray-500 dark:text-gray-400">
-                  Veri bulunmamaktadır
-                </div>
-              )}
-            </div>
-          </CardContent>
-        </Card>
+        {upcomingPayments.length > 0 ? (
+          upcomingPayments.slice(0, 2).map((payment, index) => {
+            const daysUntilDue = Math.ceil(
+              (new Date(payment.due_date).getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24),
+            )
+            const isUrgent = daysUntilDue <= 3
+            const isOverdue = daysUntilDue < 0
 
-        <Card className="shadow-lg hover:shadow-xl dark:shadow-gray-900/20 dark:hover:shadow-gray-900/30 transition-shadow duration-300 rounded-xl border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800">
-          <CardHeader className="pb-4">
-            <CardTitle className="text-gray-900 dark:text-gray-100 flex items-center gap-2 text-lg">
-              Kredi Türü Dağılımı
-            </CardTitle>
-            <CardDescription className="text-gray-600 dark:text-gray-400">
-              Borç tutarına göre kredi türü dağılımı
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="h-80">
-              {creditTypeChartData ? (
-                <Doughnut data={creditTypeChartData} options={chartOptions} />
-              ) : (
-                <div className="flex items-center justify-center h-full text-gray-500 dark:text-gray-400">
-                  Veri bulunmamaktadır
+            return (
+              <Card
+                key={payment.id}
+                className={`relative overflow-hidden border-0 text-white shadow-2xl ${
+                  isOverdue
+                    ? "bg-gradient-to-br from-red-500 via-red-600 to-red-700 dark:from-red-600 dark:via-red-700 dark:to-red-800 dark:shadow-red-900/20"
+                    : isUrgent
+                      ? "bg-gradient-to-br from-orange-500 via-orange-600 to-red-700 dark:from-orange-600 dark:via-orange-700 dark:to-red-800 dark:shadow-orange-900/20"
+                      : "bg-gradient-to-br from-blue-500 via-indigo-600 to-purple-700 dark:from-blue-600 dark:via-indigo-700 dark:to-purple-800 dark:shadow-blue-900/20"
+                }`}
+              >
+                <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 dark:bg-white/5 rounded-full -translate-y-16 translate-x-16"></div>
+                <CardContent className="relative p-8">
+                  <div className="flex items-center justify-between mb-6">
+                    <div className="p-4 bg-white/20 dark:bg-white/15 rounded-2xl backdrop-blur-sm">
+                      <Clock className="h-8 w-8 text-white" />
+                    </div>
+                    <Badge className="bg-white/20 dark:bg-white/15 text-white border-white/30 dark:border-white/20 backdrop-blur-sm px-3 py-1">
+                      {isOverdue ? "Gecikmiş" : isUrgent ? "Acil" : "Yaklaşan"}
+                    </Badge>
+                  </div>
+                  <h3 className="font-bold text-2xl mb-3 drop-shadow-md">Yaklaşan Ödeme</h3>
+                  <p className="text-4xl font-black mb-4 drop-shadow-lg">{formatCurrency(payment.amount)}</p>
+                  <div className="space-y-2">
+                    <div className="flex items-center gap-3">
+                      <BankLogo
+                        bankName={payment.credits?.banks?.name || "Bilinmeyen Banka"}
+                        logoUrl={payment.credits?.banks?.logo_url || undefined}
+                        size="sm"
+                        className="flex-shrink-0"
+                      />
+                      <div className="flex flex-col">
+                        <span className="font-medium text-white text-sm drop-shadow-sm">
+                          {payment.credits?.banks?.name || "N/A"}
+                        </span>
+                        <span className="text-xs text-white/80">{payment.credits?.credit_code}</span>
+                      </div>
+                    </div>
+                    <p className="text-sm text-white/90 leading-relaxed">
+                      Vade tarihi:{" "}
+                      <span className="font-semibold text-white">
+                        {new Date(payment.due_date).toLocaleDateString("tr-TR")}
+                      </span>{" "}
+                      <span
+                        className={`font-semibold ${isOverdue ? "text-red-200" : isUrgent ? "text-orange-200" : "text-blue-200"}`}
+                      >
+                        ({isOverdue ? `${Math.abs(daysUntilDue)} gün gecikmiş` : `${daysUntilDue} gün kaldı`})
+                      </span>
+                    </p>
+                  </div>
+                  <div className="mt-6 flex items-center gap-2">
+                    <div className="flex-1 h-2 bg-white/30 dark:bg-white/20 rounded-full overflow-hidden">
+                      <div
+                        className={`h-2 rounded-full transition-all duration-1000 ease-out shadow-sm ${
+                          isOverdue
+                            ? "bg-red-200 dark:bg-red-100"
+                            : isUrgent
+                              ? "bg-orange-200 dark:bg-orange-100"
+                              : "bg-white dark:bg-white/90"
+                        }`}
+                        style={{ width: `${Math.max(10, Math.min(100, 100 - (daysUntilDue / 30) * 100))}%` }}
+                      ></div>
+                    </div>
+                    <span className="text-xs text-white/80 min-w-[60px]">{payment.installment_number}. taksit</span>
+                  </div>
+                </CardContent>
+              </Card>
+            )
+          })
+        ) : (
+          <>
+            <Card className="relative overflow-hidden border-0 bg-gradient-to-br from-gray-500 via-gray-600 to-gray-700 dark:from-gray-600 dark:via-gray-700 dark:to-gray-800 text-white shadow-2xl dark:shadow-gray-900/20">
+              <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 dark:bg-white/5 rounded-full -translate-y-16 translate-x-16"></div>
+              <CardContent className="relative p-8">
+                <div className="flex items-center justify-between mb-6">
+                  <div className="p-4 bg-white/20 dark:bg-white/15 rounded-2xl backdrop-blur-sm">
+                    <Clock className="h-8 w-8 text-white" />
+                  </div>
+                  <Badge className="bg-white/20 dark:bg-white/15 text-white border-white/30 dark:border-white/20 backdrop-blur-sm px-3 py-1">
+                    Boş
+                  </Badge>
                 </div>
-              )}
-            </div>
-          </CardContent>
-        </Card>
+                <h3 className="font-bold text-2xl mb-3 drop-shadow-md">Yaklaşan Ödeme</h3>
+                <p className="text-4xl font-black mb-4 drop-shadow-lg">-</p>
+                <p className="text-sm text-white/80 leading-relaxed">Yaklaşan 30 gün içinde ödeme bulunmamaktadır.</p>
+                <div className="mt-6 h-2 bg-white/30 dark:bg-white/20 rounded-full"></div>
+              </CardContent>
+            </Card>
+            <Card className="relative overflow-hidden border-0 bg-gradient-to-br from-gray-500 via-gray-600 to-gray-700 dark:from-gray-600 dark:via-gray-700 dark:to-gray-800 text-white shadow-2xl dark:shadow-gray-900/20">
+              <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 dark:bg-white/5 rounded-full -translate-y-16 translate-x-16"></div>
+              <CardContent className="relative p-8">
+                <div className="flex items-center justify-between mb-6">
+                  <div className="p-4 bg-white/20 dark:bg-white/15 rounded-2xl backdrop-blur-sm">
+                    <Clock className="h-8 w-8 text-white" />
+                  </div>
+                  <Badge className="bg-white/20 dark:bg-white/15 text-white border-white/30 dark:border-white/20 backdrop-blur-sm px-3 py-1">
+                    Boş
+                  </Badge>
+                </div>
+                <h3 className="font-bold text-2xl mb-3 drop-shadow-md">Yaklaşan Ödeme</h3>
+                <p className="text-4xl font-black mb-4 drop-shadow-lg">-</p>
+                <p className="text-sm text-white/80 leading-relaxed">Yaklaşan 30 gün içinde ödeme bulunmamaktadır.</p>
+                <div className="mt-6 h-2 bg-white/30 dark:bg-white/20 rounded-full"></div>
+              </CardContent>
+            </Card>
+          </>
+        )}
       </div>
 
       <Card className="shadow-lg hover:shadow-xl dark:shadow-gray-900/20 dark:hover:shadow-gray-900/30 transition-shadow duration-300 rounded-xl border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800">
         <CardHeader>
-          <CardTitle className="text-gray-900 dark:text-gray-100 flex items-center gap-2">
-            Aktif Kredilerim
-          </CardTitle>
+          <CardTitle className="text-gray-900 dark:text-gray-100 flex items-center gap-2">Aktif Kredilerim</CardTitle>
           <CardDescription className="text-gray-600 dark:text-gray-400">
             Güncel kredi durumunuz ve ödeme bilgileri.
           </CardDescription>
