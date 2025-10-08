@@ -55,6 +55,8 @@
     "cmdk": "latest",
     "date-fns": "latest",
     "embla-carousel-react": "latest",
+    "expo": "latest",
+    "expo-crypto": "latest",
     "framer-motion": "latest",
     "input-otp": "latest",
     "json5": "latest",

@@ -382,13 +382,13 @@ export default function KredilerPage() {
       </div>
 
       {/* Modern Tabs */}
-      <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+      <div className="bg-white dark:bg-gray-900 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-800 overflow-hidden">
         <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full">
-          <div className="border-b border-gray-100 bg-gray-50/50">
+          <div className="border-b border-gray-100 dark:border-gray-800 bg-gray-50/50 dark:bg-gray-800/50">
             <TabsList className="grid grid-cols-4 bg-transparent h-auto p-2 gap-2">
               <TabsTrigger
                 value="tumKrediler"
-                className="flex items-center gap-2 py-3 px-4 data-[state=active]:text-emerald-600 rounded-xl transition-all duration-200 hover:bg-gray-100"
+                className="flex items-center gap-2 py-3 px-4 data-[state=active]:text-emerald-600 dark:data-[state=active]:text-emerald-400 rounded-xl transition-all duration-200 hover:bg-gray-100 dark:hover:bg-gray-700"
               >
                 <CreditCard className="h-4 w-4" />
                 <span className="hidden sm:inline font-medium">Tüm Krediler</span>
@@ -396,7 +396,7 @@ export default function KredilerPage() {
               </TabsTrigger>
               <TabsTrigger
                 value="aktifKrediler"
-                className="flex items-center gap-2 py-3 px-4 data-[state=active]:text-emerald-600 rounded-xl transition-all duration-200 hover:bg-gray-100"
+                className="flex items-center gap-2 py-3 px-4 data-[state=active]:text-emerald-600 dark:data-[state=active]:text-emerald-400 rounded-xl transition-all duration-200 hover:bg-gray-100 dark:hover:bg-gray-700"
               >
                 <CheckCircle className="h-4 w-4" />
                 <span className="hidden sm:inline font-medium">Aktif</span>
@@ -404,7 +404,7 @@ export default function KredilerPage() {
               </TabsTrigger>
               <TabsTrigger
                 value="gecikmisKrediler"
-                className="flex items-center gap-2 py-3 px-4 data-[state=active]:text-emerald-600 rounded-xl transition-all duration-200 hover:bg-gray-100"
+                className="flex items-center gap-2 py-3 px-4 data-[state=active]:text-emerald-600 dark:data-[state=active]:text-emerald-400 rounded-xl transition-all duration-200 hover:bg-gray-100 dark:hover:bg-gray-700"
               >
                 <AlertCircle className="h-4 w-4" />
                 <span className="hidden sm:inline font-medium">Gecikmiş</span>
@@ -412,7 +412,7 @@ export default function KredilerPage() {
               </TabsTrigger>
               <TabsTrigger
                 value="kapaliKrediler"
-                className="flex items-center gap-2 py-3 px-4 data-[state=active]:text-emerald-600 rounded-xl transition-all duration-200 hover:bg-gray-100"
+                className="flex items-center gap-2 py-3 px-4 data-[state=active]:text-emerald-600 dark:data-[state=active]:text-emerald-400 rounded-xl transition-all duration-200 hover:bg-gray-100 dark:hover:bg-gray-700"
               >
                 <Archive className="h-4 w-4" />
                 <span className="hidden sm:inline font-medium">Kapalı</span>
@@ -422,7 +422,7 @@ export default function KredilerPage() {
           </div>
 
           {/* Search, Sort and View Toggle */}
-          <div className="p-4 border-b border-gray-100 bg-white">
+          <div className="p-4 border-b border-gray-100 dark:border-gray-800 bg-white dark:bg-gray-900">
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
               <div className="flex gap-2">
                 <div className="relative">
@@ -431,20 +431,31 @@ export default function KredilerPage() {
                     placeholder="Kredi ara..."
                     value={searchTerm}
                     onChange={(e) => handleSearchChange(e.target.value)}
-                    className="pl-8 w-[250px]"
+                    className="pl-8 w-[250px] dark:bg-gray-800 dark:border-gray-700 dark:text-white"
                   />
                 </div>
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
-                    <Button variant="outline" className="flex items-center gap-2 bg-transparent">
+                    <Button
+                      variant="outline"
+                      className="flex items-center gap-2 bg-transparent dark:bg-gray-800 dark:border-gray-700 dark:text-white"
+                    >
                       <ArrowUpDown className="h-4 w-4" />
                       Sırala: {sortBy === "kalanBorc" ? "Kalan Borç" : "Son Ödeme Tarihi"} (
                       {sortOrder === "asc" ? "Artan" : "Azalan"})
                     </Button>
                   </DropdownMenuTrigger>
-                  <DropdownMenuContent align="start">
-                    <DropdownMenuItem onClick={() => handleSort("kalanBorc")}>Kalan Borca Göre</DropdownMenuItem>
-                    <DropdownMenuItem onClick={() => handleSort("sonOdemeTarihi")}>
+                  <DropdownMenuContent align="start" className="dark:bg-gray-800 dark:border-gray-700">
+                    <DropdownMenuItem
+                      onClick={() => handleSort("kalanBorc")}
+                      className="dark:text-white dark:hover:bg-gray-700"
+                    >
+                      Kalan Borca Göre
+                    </DropdownMenuItem>
+                    <DropdownMenuItem
+                      onClick={() => handleSort("sonOdemeTarihi")}
+                      className="dark:text-white dark:hover:bg-gray-700"
+                    >
                       Son Ödeme Tarihine Göre
                     </DropdownMenuItem>
                   </DropdownMenuContent>
@@ -452,12 +463,12 @@ export default function KredilerPage() {
               </div>
 
               {/* View Mode Toggle */}
-              <div className="flex border rounded-lg">
+              <div className="flex border rounded-lg dark:border-gray-700">
                 <Button
                   variant={viewMode === "cards" ? "default" : "ghost"}
                   size="sm"
                   onClick={() => handleViewModeChange("cards")}
-                  className={`rounded-r-none ${viewMode === "cards" ? "bg-gradient-to-r from-emerald-600 to-teal-700 hover:from-emerald-700 hover:to-teal-800" : ""}`}
+                  className={`rounded-r-none ${viewMode === "cards" ? "bg-gradient-to-r from-emerald-600 to-teal-700 hover:from-emerald-700 hover:to-teal-800" : "dark:text-white dark:hover:bg-gray-700"}`}
                 >
                   <BsFillGrid3X3GapFill className="h-4 w-4" />
                 </Button>
@@ -465,7 +476,7 @@ export default function KredilerPage() {
                   variant={viewMode === "table" ? "default" : "ghost"}
                   size="sm"
                   onClick={() => handleViewModeChange("table")}
-                  className={`rounded-l-none ${viewMode === "table" ? "bg-gradient-to-r from-emerald-600 to-teal-700 hover:from-emerald-700 hover:to-teal-800" : ""}`}
+                  className={`rounded-l-none ${viewMode === "table" ? "bg-gradient-to-r from-emerald-600 to-teal-700 hover:from-emerald-700 hover:to-teal-800" : "dark:text-white dark:hover:bg-gray-700"}`}
                 >
                   <List className="h-4 w-4" />
                 </Button>
@@ -474,12 +485,12 @@ export default function KredilerPage() {
           </div>
 
           {/* Content */}
-          <div className="p-6">
+          <div className="p-6 dark:bg-gray-900">
             {currentItems.length === 0 && !loadingData && (
               <div className="text-center py-10">
-                <CreditCard className="mx-auto h-12 w-12 text-gray-400" />
-                <h3 className="mt-2 text-sm font-medium text-gray-900">Kredi Bulunamadı</h3>
-                <p className="mt-1 text-sm text-gray-500">
+                <CreditCard className="mx-auto h-12 w-12 text-gray-400 dark:text-gray-600" />
+                <h3 className="mt-2 text-sm font-medium text-gray-900 dark:text-white">Kredi Bulunamadı</h3>
+                <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
                   {activeTab === "tumKrediler" ? "Hiç kredi eklenmemiş." : "Bu filtreye uygun kredi bulunamadı."}
                 </p>
                 <div className="mt-6">
@@ -494,15 +505,15 @@ export default function KredilerPage() {
               </div>
             )}
             {viewMode === "cards" && currentItems.length > 0 ? (
-              /* Cards View - Geliştirilmiş logo gösterimi */
+              /* Cards View */
               <div className="space-y-6">
                 <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
                   {currentItems.map((kredi) => (
                     <Card
                       key={kredi.id}
-                      className="shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 rounded-xl border-gray-200 overflow-hidden"
+                      className="shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 rounded-xl border-gray-200 dark:border-gray-700 overflow-hidden dark:bg-gray-800"
                     >
-                      <CardHeader className="pb-3 bg-gradient-to-r from-gray-50 to-gray-100">
+                      <CardHeader className="pb-3 bg-gradient-to-r from-gray-50 to-gray-100 dark:from-gray-800 dark:to-gray-700">
                         <div className="flex items-center justify-between">
                           <div className="flex items-center gap-3">
                             <div className="relative">
@@ -510,7 +521,7 @@ export default function KredilerPage() {
                                 bankName={kredi.banks?.name || "Bilinmeyen Banka"}
                                 logoUrl={kredi.banks?.logo_url}
                                 size="md"
-                                className="ring-2 ring-white shadow-lg"
+                                className="ring-2 ring-white dark:ring-gray-600 shadow-lg"
                               />
                               <div className="absolute -bottom-1 -right-1 w-4 h-4 bg-emerald-500 rounded-full flex items-center justify-center">
                                 <CheckCircle className="h-2.5 w-2.5 text-white" />
@@ -520,7 +531,7 @@ export default function KredilerPage() {
                               <CardTitle className="text-lg text-gray-900 dark:text-white">
                                 {kredi.banks?.name || "N/A"}
                               </CardTitle>
-                              <CardDescription className="text-emerald-600 font-medium">
+                              <CardDescription className="text-emerald-600 dark:text-emerald-400 font-medium">
                                 {kredi.credit_types?.name || "N/A"}
                               </CardDescription>
                             </div>
@@ -531,7 +542,7 @@ export default function KredilerPage() {
                           </Badge>
                         </div>
                       </CardHeader>
-                      <CardContent className="space-y-5 pt-4">
+                      <CardContent className="space-y-5 pt-4 dark:bg-gray-800">
                         <div className="grid grid-cols-2 gap-4">
                           <div>
                             <p className="text-sm text-gray-500 dark:text-gray-400">Kalan Borç</p>
@@ -560,7 +571,9 @@ export default function KredilerPage() {
                         <div className="grid grid-cols-2 gap-4 text-sm">
                           <div>
                             <p className="text-gray-500 dark:text-gray-400">Faiz Oranı</p>
-                            <p className="font-medium text-orange-600">{formatPercent(kredi.interest_rate)}</p>
+                            <p className="font-medium text-orange-600 dark:text-orange-400">
+                              {formatPercent(kredi.interest_rate)}
+                            </p>
                           </div>
                           <div>
                             <p className="text-gray-500 dark:text-gray-400">Kalan Taksit</p>
@@ -574,7 +587,7 @@ export default function KredilerPage() {
                           <Button
                             size="sm"
                             variant="outline"
-                            className="flex-1 border-gray-300 text-gray-700 hover:bg-gray-50 hover:border-gray-400 bg-transparent"
+                            className="flex-1 border-gray-300 dark:border-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 hover:border-gray-400 bg-transparent"
                             onClick={() => router.push(`/uygulama/kredi-detay/${kredi.id}`)}
                           >
                             <Eye className="mr-2 h-4 w-4" />
@@ -583,7 +596,7 @@ export default function KredilerPage() {
                           <Button
                             size="sm"
                             variant="outline"
-                            className="border-gray-300 text-gray-700 hover:bg-gray-50 hover:border-gray-400 bg-transparent"
+                            className="border-gray-300 dark:border-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 hover:border-gray-400 bg-transparent"
                             onClick={() => router.push(`/uygulama/kredi-duzenle/${kredi.id}`)}
                           >
                             <Edit className="h-4 w-4" />
@@ -593,19 +606,25 @@ export default function KredilerPage() {
                               <Button
                                 size="sm"
                                 variant="outline"
-                                className="border-gray-300 text-gray-700 hover:bg-gray-50 hover:border-gray-400 bg-transparent"
+                                className="border-gray-300 dark:border-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 hover:border-gray-400 bg-transparent"
                               >
                                 <MoreHorizontal className="h-4 w-4" />
                               </Button>
                             </DropdownMenuTrigger>
-                            <DropdownMenuContent align="end">
+                            <DropdownMenuContent align="end" className="dark:bg-gray-800 dark:border-gray-700">
                               <DropdownMenuItem
                                 onClick={() => router.push(`/uygulama/kredi-detay/${kredi.id}/odeme-plani`)}
+                                className="dark:text-white dark:hover:bg-gray-700"
                               >
                                 Ödeme Planı
                               </DropdownMenuItem>
-                              <DropdownMenuItem>Rapor Al</DropdownMenuItem>
-                              <DropdownMenuItem className="text-red-600" onClick={() => handleDeleteCredit(kredi.id)}>
+                              <DropdownMenuItem className="dark:text-white dark:hover:bg-gray-700">
+                                Rapor Al
+                              </DropdownMenuItem>
+                              <DropdownMenuItem
+                                className="text-red-600 dark:text-red-400"
+                                onClick={() => handleDeleteCredit(kredi.id)}
+                              >
                                 <Trash2 className="mr-2 h-4 w-4" />
                                 Sil
                               </DropdownMenuItem>
@@ -628,12 +647,12 @@ export default function KredilerPage() {
                 )}
               </div>
             ) : viewMode === "table" && currentItems.length > 0 ? (
-              /* Table View - Geliştirilmiş logo gösterimi */
+              /* Table View */
               <div className="space-y-6">
                 <div className="overflow-x-auto">
                   <Table>
                     <TableHeader>
-                      <TableRow className="bg-white dark:bg-gray-900">
+                      <TableRow className="bg-white dark:bg-gray-900 border-b dark:border-gray-800">
                         <TableHead className="font-semibold text-gray-700 dark:text-gray-300">Banka</TableHead>
                         <TableHead className="font-semibold text-gray-700 dark:text-gray-300">Tür</TableHead>
                         <TableHead className="font-semibold text-gray-700 dark:text-gray-300">Kalan Borç</TableHead>
@@ -650,7 +669,8 @@ export default function KredilerPage() {
                       {currentItems.map((kredi, index) => (
                         <TableRow
                           key={kredi.id}
-                          className={`hover:bg-emerald-50 dark:hover:bg-gray-800 transition-colors duration-150 ease-in-out ${
+                          onClick={() => router.push(`/uygulama/kredi-detay/${kredi.id}`)}
+                          className={`cursor-pointer hover:bg-emerald-50 dark:hover:bg-gray-800 transition-colors duration-150 ease-in-out ${
                             index % 2 === 0 ? "bg-white dark:bg-gray-900" : "bg-gray-50/50 dark:bg-gray-800/50"
                           }`}
                         >
@@ -660,13 +680,15 @@ export default function KredilerPage() {
                                 bankName={kredi.banks?.name || "Bilinmeyen Banka"}
                                 logoUrl={kredi.banks?.logo_url}
                                 size="md"
-                                className="ring-1 ring-emerald-200 bg-white"
+                                className="ring-1 ring-emerald-200 dark:ring-gray-700 bg-white dark:bg-gray-800"
                               />
                               <div>
                                 <span className="font-medium text-gray-900 dark:text-white block">
                                   {kredi.banks?.name || "N/A"}
                                 </span>
-                                <span className="text-xs text-emerald-600 font-medium">{kredi.credit_code}</span>
+                                <span className="text-xs text-emerald-600 dark:text-emerald-400 font-medium">
+                                  {kredi.credit_code}
+                                </span>
                               </div>
                             </div>
                           </TableCell>
@@ -679,7 +701,7 @@ export default function KredilerPage() {
                           <TableCell className="text-gray-600 dark:text-gray-300">
                             {formatCurrency(kredi.nextPaymentAmount || kredi.monthly_payment)}
                           </TableCell>
-                          <TableCell className="font-medium text-orange-600">
+                          <TableCell className="font-medium text-orange-600 dark:text-orange-400">
                             {formatPercent(kredi.interest_rate)}
                           </TableCell>
                           <TableCell>
@@ -698,28 +720,37 @@ export default function KredilerPage() {
                               {getStatusBadgeText(kredi.status, kredi.overdue_days || 0)}
                             </Badge>
                           </TableCell>
-                          <TableCell className="text-right">
+                          <TableCell className="text-right" onClick={(e) => e.stopPropagation()}>
                             <DropdownMenu>
                               <DropdownMenuTrigger asChild>
                                 <Button
                                   variant="ghost"
                                   size="icon"
-                                  className="h-8 w-8 hover:bg-emerald-50 hover:text-emerald-600 dark:hover:bg-teal-900/20"
+                                  className="h-8 w-8 hover:bg-emerald-50 hover:text-emerald-600 dark:hover:bg-teal-900/20 dark:text-gray-300"
                                 >
                                   <MoreHorizontal className="h-4 w-4" />
                                   <span className="sr-only">Actions</span>
                                 </Button>
                               </DropdownMenuTrigger>
-                              <DropdownMenuContent align="end">
-                                <DropdownMenuItem onClick={() => router.push(`/uygulama/kredi-detay/${kredi.id}`)}>
+                              <DropdownMenuContent align="end" className="dark:bg-gray-800 dark:border-gray-700">
+                                <DropdownMenuItem
+                                  onClick={() => router.push(`/uygulama/kredi-detay/${kredi.id}`)}
+                                  className="dark:text-white dark:hover:bg-gray-700"
+                                >
                                   <Eye className="mr-2 h-4 w-4" />
                                   Detayları Gör
                                 </DropdownMenuItem>
-                                <DropdownMenuItem onClick={() => router.push(`/uygulama/kredi-duzenle/${kredi.id}`)}>
+                                <DropdownMenuItem
+                                  onClick={() => router.push(`/uygulama/kredi-duzenle/${kredi.id}`)}
+                                  className="dark:text-white dark:hover:bg-gray-700"
+                                >
                                   <Edit className="mr-2 h-4 w-4" />
                                   Düzenle
                                 </DropdownMenuItem>
-                                <DropdownMenuItem className="text-red-600" onClick={() => handleDeleteCredit(kredi.id)}>
+                                <DropdownMenuItem
+                                  className="text-red-600 dark:text-red-400 dark:hover:bg-gray-700"
+                                  onClick={() => handleDeleteCredit(kredi.id)}
+                                >
                                   <Trash2 className="mr-2 h-4 w-4" />
                                   Sil
                                 </DropdownMenuItem>
@@ -748,10 +779,10 @@ export default function KredilerPage() {
       </div>
       {/* Delete Confirmation Dialog */}
       <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
-        <AlertDialogContent>
+        <AlertDialogContent className="dark:bg-gray-800 dark:border-gray-700">
           <AlertDialogHeader>
-            <AlertDialogTitle>Krediyi Sil</AlertDialogTitle>
-            <AlertDialogDescription>
+            <AlertDialogTitle className="dark:text-white">Krediyi Sil</AlertDialogTitle>
+            <AlertDialogDescription className="dark:text-gray-300">
               Bu hesabı silmek istediğinizden emin misiniz? Bu işlem geri alınamaz.
             </AlertDialogDescription>
           </AlertDialogHeader>
@@ -761,7 +792,7 @@ export default function KredilerPage() {
                 setShowDeleteDialog(false)
                 setCreditToDelete(null)
               }}
-              className="border-gray-300 text-gray-700 hover:bg-gray-50"
+              className="border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700"
             >
               İptal
             </AlertDialogCancel>
