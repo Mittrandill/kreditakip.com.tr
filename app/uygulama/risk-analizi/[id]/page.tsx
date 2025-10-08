@@ -335,7 +335,7 @@ export default function RiskAnalysisDetailPage() {
                 variant="outline"
                 size="icon"
                 onClick={() => router.push("/uygulama/risk-analizi")}
-                className="bg-white/20 dark:bg-white/15 border-white/30 dark:border-white/20 text-white hover:bg-white/30 dark:hover:bg-white/25 h-10 w-10 shrink-0"
+                className="bg-white/20 dark:bg-white/15 border-white/30 dark:border-white/20 text-white hover:bg-white/30 dark:hover:bg-white/25 backdrop-blur-sm h-10 w-10 shrink-0"
               >
                 <ArrowLeft className="h-5 w-5" />
               </Button>
