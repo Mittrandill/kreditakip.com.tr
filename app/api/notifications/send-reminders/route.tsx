@@ -359,13 +359,13 @@ function createEmailTemplate(
                   margin-right: 16px;
                   flex-shrink: 0;
                   overflow: hidden;
+                  padding: 4px;
               }
               
               .bank-logo {
                   width: 100%;
                   height: 100%;
                   object-fit: contain;
-                  border-radius: 8px;
               }
               
               .bank-info {
@@ -716,7 +716,12 @@ function createEmailTemplate(
                               <div class="payment-card">
                                   <div class="bank-section">
                                       <div class="bank-icon">
-                                          <img src="${getBankLogoUrl(bankName)}" alt="${bankName} logosu" class="bank-logo" onerror="this.style.display='none'; this.parentNode.innerHTML='🏦'; this.parentNode.style.fontSize='24px'; this.parentNode.style.color='#10b981';">
+                                          <img 
+                                            src="${getBankLogoUrl(bankName)}" 
+                                            alt="${bankName}" 
+                                            class="bank-logo"
+                                            style="display: block; max-width: 100%; height: auto;"
+                                          />
                                       </div>
                                       <div class="bank-info">
                                           <div class="bank-label">Banka</div>
