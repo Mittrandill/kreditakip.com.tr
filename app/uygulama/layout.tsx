@@ -13,7 +13,7 @@ export default function UygulamaLayout({
   return (
     <AuthGuard requireAuth={true}>
       <SidebarProvider defaultOpen={true}>
-        <div className="min-h-screen flex w-full bg-gray-50/50 dark:bg-gray-950/50 relative">
+        <div className="min-h-screen flex w-full bg-gray-50 dark:bg-gray-950 relative">
           {/* Desktop Sidebar */}
           <Sidebar collapsible="icon" className="border-r hidden md:flex z-30">
             <SidebarContent>

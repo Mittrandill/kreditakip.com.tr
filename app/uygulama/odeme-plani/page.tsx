@@ -104,7 +104,7 @@ function CalendarView({ payments }: { payments: PaymentWithCredit[] }) {
             variant="outline"
             size="sm"
             onClick={handlePrevMonth}
-            className="flex items-center gap-2 bg-transparent dark:border-gray-700 dark:text-gray-300 dark:hover:bg-gray-800"
+            className="flex items-center gap-2 bg-white/20 dark:bg-white/15 text-white border-white/30 dark:border-white/20 hover:bg-white/30 dark:hover:bg-white/25 backdrop-blur-sm"
           >
             <ChevronLeft className="h-4 w-4" />
             Önceki
@@ -118,7 +118,7 @@ function CalendarView({ payments }: { payments: PaymentWithCredit[] }) {
             variant="outline"
             size="sm"
             onClick={handleNextMonth}
-            className="flex items-center gap-2 bg-transparent dark:border-gray-700 dark:text-gray-300 dark:hover:bg-gray-800"
+            className="flex items-center gap-2 bg-white/20 dark:bg-white/15 text-white border-white/30 dark:border-white/20 hover:bg-white/30 dark:hover:bg-white/25 backdrop-blur-sm"
           >
             Sonraki
             <ChevronRight className="h-4 w-4" />
@@ -129,7 +129,7 @@ function CalendarView({ payments }: { payments: PaymentWithCredit[] }) {
           <Button
             variant="outline"
             size="sm"
-            className="dark:border-gray-700 dark:text-gray-300 dark:hover:bg-gray-800 bg-transparent"
+            className="bg-white/20 dark:bg-white/15 text-white border-white/30 dark:border-white/20 hover:bg-white/30 dark:hover:bg-white/25 backdrop-blur-sm"
           >
             <Filter className="h-4 w-4 mr-2" />
             Filtrele
@@ -1525,7 +1525,7 @@ export default function OdemePlaniPage() {
               <Button
                 variant="outline"
                 size="lg"
-                className="bg-white text-orange-600 hover:bg-orange-50 border-white"
+                className="bg-white/20 dark:bg-white/15 text-white border-white/30 dark:border-white/20 hover:bg-white/30 dark:hover:bg-white/25 backdrop-blur-sm"
                 onClick={() => {
                   // PDF export functionality
                   const data = allPayments.map((payment) => ({
@@ -1568,7 +1568,7 @@ export default function OdemePlaniPage() {
               <Button
                 variant="outline"
                 size="lg"
-                className="bg-white text-orange-600 hover:bg-orange-50 border-white"
+                className="bg-white/20 dark:bg-white/15 text-white border-white/30 dark:border-white/20 hover:bg-white/30 dark:hover:bg-white/25 backdrop-blur-sm"
                 onClick={() => {
                   setSelectedTab("hatirlatici")
                   toast({

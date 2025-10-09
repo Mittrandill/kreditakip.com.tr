@@ -702,7 +702,7 @@ function createEmailTemplate(
                       <td>
                           <div class="header">
                               <div class="logo-wrapper">
-                                  <img src="https://oymjjceuiotxfbpwsdym.supabase.co/storage/v1/object/public/Logo/logo-white.png" alt="Kredi Takip" class="logo">
+                                  <img src="/images/design-mode/logo-white.png" alt="Kredi Takip" class="logo">
                               </div>
                               <h1 class="header-title">${title}</h1>
                               <p class="header-subtitle">Finansal takibiniz bizimle güvende</p>
@@ -775,7 +775,7 @@ function createEmailTemplate(
                           </div>
                           
                           <div class="footer">
-                              <img src="https://oymjjceuiotxfbpwsdym.supabase.co/storage/v1/object/public/Logo/logo-white.png" alt="Kredi Takip" class="footer-logo">
+                              <img src="/images/design-mode/logo-white.png" alt="Kredi Takip" class="footer-logo">
                               
                               <div class="footer-links">
                                   <a href="https://kreditakip.com.tr/uygulama/ayarlar" class="footer-link">Bildirim Ayarları</a>

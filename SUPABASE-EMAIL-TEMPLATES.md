@@ -328,7 +328,7 @@ Bu rehber, KrediTakip uygulaması için Supabase e-posta şablonlarının kurulu
         <div class="header">
             <div class="logo-container">
                 <div class="logo">
-                    <img src="https://kreditakip.com.tr/logo.png" alt="Platform Logo" />
+                    <img src="/images/design-mode/logo.png" alt="Platform Logo" />
                 </div>
                 <div class="brand-name">Finansal Takip</div>
                 <div class="brand-tagline">Borç Yönetiminin Geleceği</div>
@@ -682,7 +682,7 @@ Bu rehber, KrediTakip uygulaması için Supabase e-posta şablonlarının kurulu
         <div class="header">
             <div class="logo-container">
                 <div class="logo">
-                    <img src="https://kreditakip.com.tr/logo.png" alt="Platform Logo" />
+                    <img src="/images/design-mode/logo.png" alt="Platform Logo" />
                 </div>
                 <div class="brand-name">Finansal Takip</div>
                 <div class="brand-tagline">Borç Yönetiminin Geleceği</div>

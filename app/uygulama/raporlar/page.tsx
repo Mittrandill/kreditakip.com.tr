@@ -558,7 +558,7 @@ export default function RaporlarPage() {
               <Button
                 variant="outline"
                 size="lg"
-                className="bg-white/10 hover:bg-white/20 text-white border-white/30 backdrop-blur-sm h-12 px-6"
+                className="bg-white/20 dark:bg-white/15 text-white border-white/30 dark:border-white/20 hover:bg-white/30 dark:hover:bg-white/25 backdrop-blur-sm h-12 px-6"
               >
                 <Settings className="h-5 w-5 mr-2" />
                 Rapor Ayarları
