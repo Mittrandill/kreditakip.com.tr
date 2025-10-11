@@ -383,7 +383,7 @@ export default function BankaciSifrelerimPage() {
               </p>
             </div>
             <div className="flex flex-col sm:flex-row gap-3">
-              <Button variant="outline-white" size="lg" onClick={() => router.push("/uygulama/sifrelerim/ekle")}>
+              <Button size="lg" onClick={() => router.push("/uygulama/sifrelerim/ekle")}>
                 <Plus className="h-5 w-5 mr-2" />
                 Yeni Şifre Ekle
               </Button>
@@ -487,7 +487,7 @@ export default function BankaciSifrelerimPage() {
                 </div>
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
-                    <Button variant="outline" className="flex items-center gap-2 bg-transparent">
+                    <Button className="flex items-center gap-2">
                       <ArrowUpDown className="h-4 w-4" />
                       Sırala: {sortBy === "sonKullanim" ? "Son Kullanım" : "Banka Adı"} (
                       {sortOrder === "asc" ? "Artan" : "Azalan"})
@@ -639,8 +639,7 @@ export default function BankaciSifrelerimPage() {
                           <div className="flex gap-2 pt-2">
                             <Button
                               size="sm"
-                              variant="outline"
-                              className="flex-1 border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 hover:border-gray-400 dark:hover:border-gray-500 bg-transparent"
+                              className="flex-1"
                               onClick={() => router.push(`/uygulama/sifrelerim/${credential.id}/duzenle`)}
                             >
                               <Edit className="mr-2 h-4 w-4" />
@@ -648,11 +647,7 @@ export default function BankaciSifrelerimPage() {
                             </Button>
                             <DropdownMenu>
                               <DropdownMenuTrigger asChild>
-                                <Button
-                                  size="sm"
-                                  variant="outline"
-                                  className="border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 hover:border-gray-400 dark:hover:border-gray-500 bg-transparent"
-                                >
+                                <Button size="sm">
                                   <MoreHorizontal className="h-4 w-4" />
                                 </Button>
                               </DropdownMenuTrigger>
@@ -831,7 +826,6 @@ export default function BankaciSifrelerimPage() {
                 setShowDeleteDialog(false)
                 setCredentialToDelete(null)
               }}
-              className="border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800"
             >
               İptal
             </AlertDialogCancel>

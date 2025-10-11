@@ -76,7 +76,7 @@ export default function PaymentDetailPage({ params }: { params: { id: string } }
             <p className="text-gray-600 dark:text-gray-400 mb-4">
               {error || "Aradığınız ödeme detayı bulunamadı veya erişim izniniz bulunmuyor."}
             </p>
-            <Button onClick={() => router.back()} variant="outline">
+            <Button onClick={() => router.back()}>
               <ArrowLeft className="h-4 w-4 mr-2" />
               Geri Dön
             </Button>
@@ -95,7 +95,6 @@ export default function PaymentDetailPage({ params }: { params: { id: string } }
             <div className="flex-1">
               <h2 className="text-3xl font-bold mb-2 flex items-center gap-3">
                 <Button
-                  variant="outline"
                   size="icon"
                   onClick={() => router.back()}
                   className="bg-white/20 border-white/30 text-white hover:bg-white/30"
@@ -110,11 +109,11 @@ export default function PaymentDetailPage({ params }: { params: { id: string } }
               </p>
             </div>
             <div className="flex flex-col sm:flex-row gap-3">
-              <Button variant="outline-white" size="lg" onClick={handlePrint}>
+              <Button size="lg" onClick={handlePrint}>
                 <Printer className="h-5 w-5 mr-2" />
                 Yazdır
               </Button>
-              <Button variant="outline-white" size="lg" onClick={handleDownload}>
+              <Button size="lg" onClick={handleDownload}>
                 <Download className="h-5 w-5 mr-2" />
                 İndir
               </Button>
@@ -281,15 +280,11 @@ export default function PaymentDetailPage({ params }: { params: { id: string } }
 
       {/* Additional Actions */}
       <div className="flex justify-center gap-4 print:hidden">
-        <Button
-          variant="outline"
-          onClick={() => router.push(`/uygulama/kredi-detay/${payment.credit_id}`)}
-          className="gap-2"
-        >
+        <Button onClick={() => router.push(`/uygulama/kredi-detay/${payment.credit_id}`)} className="gap-2">
           <CreditCard className="h-4 w-4" />
           Kredi Detayına Git
         </Button>
-        <Button variant="outline" onClick={() => router.push("/uygulama/krediler")} className="gap-2">
+        <Button onClick={() => router.push("/uygulama/krediler")} className="gap-2">
           <Building2 className="h-4 w-4" />
           Tüm Krediler
         </Button>

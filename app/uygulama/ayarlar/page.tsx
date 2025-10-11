@@ -539,12 +539,16 @@ export default function AyarlarPage() {
               </p>
             </div>
             <div className="flex flex-col sm:flex-row gap-3">
-              <Button variant="outline-white" size="lg" onClick={() => router.push("/uygulama/bildirimler")}>
+              <Button
+                variant="outline"
+                size="lg"
+                className="bg-white/20 dark:bg-white/15 text-white border-white/30 dark:border-white/20 hover:bg-white/30 dark:hover:bg-white/25 backdrop-blur-sm"
+                onClick={() => router.push("/uygulama/bildirimler")}
+              >
                 <Bell className="h-5 w-5" />
                 Bildirimler
               </Button>
               <Button
-                variant="outline"
                 size="lg"
                 className="bg-white text-slate-600 hover:bg-slate-50 border-white"
                 onClick={() => {
@@ -621,7 +625,7 @@ export default function AyarlarPage() {
                       </Avatar>
                       <div className="space-y-2">
                         <Label htmlFor="avatar" className="cursor-pointer">
-                          <div className="flex items-center space-x-2 px-4 py-2 bg-primary text-primary-foreground rounded-md hover:bg-primary/90 transition-colors">
+                          <div className="flex items-center space-x-2 px-4 py-2 border border-gray-300 dark:border-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 hover:border-gray-400 bg-transparent rounded-md transition-colors">
                             <Upload className="h-4 w-4" />
                             <span>Fotoğraf Seç</span>
                           </div>
@@ -642,7 +646,13 @@ export default function AyarlarPage() {
                     </div>
                     {avatarFile && (
                       <div className="flex space-x-2">
-                        <Button onClick={handleAvatarUpload} disabled={isUploadingAvatar} size="sm">
+                        <Button
+                          variant="outline"
+                          className="border-gray-300 dark:border-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 hover:border-gray-400 bg-transparent"
+                          onClick={handleAvatarUpload}
+                          disabled={isUploadingAvatar}
+                          size="sm"
+                        >
                           {isUploadingAvatar ? (
                             <>
                               <Loader2 className="mr-2 h-4 w-4 animate-spin" />
@@ -657,6 +667,7 @@ export default function AyarlarPage() {
                         </Button>
                         <Button
                           variant="outline"
+                          className="border-gray-300 dark:border-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 hover:border-gray-400 bg-transparent"
                           size="sm"
                           onClick={() => {
                             setAvatarFile(null)
@@ -1011,7 +1022,12 @@ export default function AyarlarPage() {
                         </Select>
                       </div>
                       <div className="pt-4">
-                        <Button onClick={handleSaveFinancialProfile} disabled={isSavingFinancial}>
+                        <Button
+                          variant="outline"
+                          className="border-gray-300 dark:border-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 hover:border-gray-400 bg-transparent"
+                          onClick={handleSaveFinancialProfile}
+                          disabled={isSavingFinancial}
+                        >
                           {isSavingFinancial ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
                           {isSavingFinancial ? "Kaydediliyor..." : "Finansal Bilgileri Kaydet"}
                         </Button>
@@ -1196,7 +1212,11 @@ export default function AyarlarPage() {
                             </div>
                           </div>
                           {!session.current && (
-                            <Button variant="outline" size="sm">
+                            <Button
+                              variant="outline"
+                              className="border-gray-300 dark:border-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 hover:border-gray-400 bg-transparent"
+                              size="sm"
+                            >
                               <X className="h-4 w-4 mr-1" />
                               Sonlandır
                             </Button>
@@ -1341,7 +1361,7 @@ export default function AyarlarPage() {
                           <Button
                             variant="outline"
                             size="sm"
-                            className="mt-3 border-blue-300 dark:border-blue-600 text-blue-700 dark:text-blue-300 hover:bg-blue-100 dark:hover:bg-blue-900/50 bg-transparent"
+                            className="mt-3 border-gray-300 dark:border-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 hover:border-gray-400 bg-transparent"
                             onClick={() => router.push("/uygulama/odeme-plani?tab=hatirlatici")}
                           >
                             <Bell className="h-4 w-4 mr-2" />
@@ -1372,7 +1392,7 @@ export default function AyarlarPage() {
                           Tüm verilerinizi JSON formatında indirin
                         </p>
                       </div>
-                      <Button variant="outline" onClick={handleDataExport}>
+                      <Button onClick={handleDataExport}>
                         <Download className="h-4 w-4 mr-2" />
                         Dışa Aktar
                       </Button>
