@@ -47,17 +47,28 @@ export async function POST() {
     }
 
     // Create payment request
-    const paymentRequest = iyzicoClient.createPremiumSubscriptionRequest(
-      user.id,
-      profile.email || user.email || "",
-      profile.first_name || "Kullanıcı",
-      profile.last_name || "Adı",
-    )
+    let paymentRequest
+    try {
+      paymentRequest = iyzicoClient.createPremiumSubscriptionRequest(
+        user.id,
+        profile.email || user.email || "",
+        profile.first_name || "Kullanıcı",
+        profile.last_name || "Adı",
+      )
 
-    console.log("[v0] Payment request created:", {
-      conversationId: paymentRequest.conversationId,
-      price: paymentRequest.price,
-    })
+      console.log("[v0] Payment request created:", {
+        conversationId: paymentRequest.conversationId,
+        price: paymentRequest.price,
+      })
+    } catch (requestError) {
+      console.error("[v0] Payment request creation error:", requestError)
+      return NextResponse.json(
+        {
+          error: requestError instanceof Error ? requestError.message : "Ödeme isteği oluşturulamadı",
+        },
+        { status: 500 },
+      )
+    }
 
     let paymentResponse
     try {
@@ -71,7 +82,10 @@ export async function POST() {
       console.error("[v0] iyzico API error:", iyzicoError)
       return NextResponse.json(
         {
-          error: "iyzico ödeme sistemi ile bağlantı kurulamadı. Lütfen daha sonra tekrar deneyin.",
+          error:
+            iyzicoError instanceof Error
+              ? iyzicoError.message
+              : "iyzico ödeme sistemi ile bağlantı kurulamadı. Lütfen daha sonra tekrar deneyin.",
         },
         { status: 500 },
       )
@@ -112,7 +126,7 @@ export async function POST() {
       paymentPageUrl: paymentResponse.paymentPageUrl,
     })
   } catch (error) {
-    console.error("[v0] Payment initialization error:", error)
+    console.error("[v0] Payment initialization error (top-level catch):", error)
     return NextResponse.json(
       {
         error: error instanceof Error ? error.message : "Ödeme işlemi başlatılırken bir hata oluştu",
