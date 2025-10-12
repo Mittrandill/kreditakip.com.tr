@@ -74,9 +74,9 @@ class IyzicoClient {
     }
   }
 
-  private generateAuthString(uri: string, body: string): string {
-    const randomString = this.generateRandomString()
-    const dataToEncrypt = `${randomString}${uri}${body}`
+  private generateAuthString(randomString: string, uri: string, body: string): string {
+    // iyzico expects: randomString + uri + requestBody
+    const dataToEncrypt = randomString + uri + body
 
     const hash = crypto.createHmac("sha256", this.config.secretKey).update(dataToEncrypt).digest("base64")
 
@@ -84,7 +84,7 @@ class IyzicoClient {
   }
 
   private generateRandomString(): string {
-    return Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15)
+    return crypto.randomBytes(16).toString("hex")
   }
 
   async initializeCheckoutForm(request: IyzicoPaymentRequest): Promise<IyzicoPaymentResponse> {
@@ -96,18 +96,30 @@ class IyzicoClient {
       baseUrl: this.config.baseUrl,
       hasApiKey: !!this.config.apiKey,
       hasSecretKey: !!this.config.secretKey,
+      apiKeyLength: this.config.apiKey.length,
+      secretKeyLength: this.config.secretKey.length,
     })
+
+    if (!this.config.apiKey || !this.config.secretKey) {
+      throw new Error("iyzico API credentials are not configured")
+    }
 
     try {
       const response = await fetch(`${this.config.baseUrl}${uri}`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          Authorization: this.generateAuthString(uri, body),
+          Authorization: this.generateAuthString(randomString, uri, body),
           "x-iyzi-rnd": randomString,
         },
         body: body,
       })
+
+      if (!response.ok) {
+        const errorText = await response.text()
+        console.error("[v0] iyzico HTTP error:", response.status, errorText)
+        throw new Error(`iyzico API returned ${response.status}: ${errorText}`)
+      }
 
       const data = await response.json()
 
@@ -120,7 +132,7 @@ class IyzicoClient {
       return data
     } catch (error) {
       console.error("[v0] iyzico API error:", error)
-      throw new Error("Payment initialization failed")
+      throw error
     }
   }
 
@@ -131,14 +143,15 @@ class IyzicoClient {
       conversationId: token,
       token: token,
     })
+    const randomString = this.generateRandomString()
 
     try {
       const response = await fetch(`${this.config.baseUrl}${uri}`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          Authorization: this.generateAuthString(uri, body),
-          "x-iyzi-rnd": this.generateRandomString(),
+          Authorization: this.generateAuthString(randomString, uri, body),
+          "x-iyzi-rnd": randomString,
         },
         body: body,
       })
