@@ -1,37 +1,36 @@
 import { NextResponse } from "next/server"
-import { createClient } from "@/lib/supabase/server"
-import { getUserSubscription, getUserUsage } from "@/lib/api/subscriptions"
+import { createServerClient } from "@/lib/supabase/server"
 
 export async function GET() {
   try {
-    const supabase = await createClient()
+    const supabase = await createServerClient()
 
-    // Get current user
     const {
       data: { user },
+      error: authError,
     } = await supabase.auth.getUser()
 
-    if (!user) {
+    if (authError || !user) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
     }
 
     // Get subscription
-    const subscription = await getUserSubscription(user.id)
+    const { data: subscription } = await supabase
+      .from("subscriptions")
+      .select("*")
+      .eq("user_id", user.id)
+      .eq("status", "active")
+      .single()
 
-    // Get usage for both features
-    const ocrUsage = await getUserUsage(user.id, "ocr_analysis")
-    const riskUsage = await getUserUsage(user.id, "risk_analysis")
+    // Get usage tracking
+    const { data: usage } = await supabase.from("usage_tracking").select("*").eq("user_id", user.id)
 
     return NextResponse.json({
       subscription,
-      usage: {
-        ocr_analysis: ocrUsage,
-        risk_analysis: riskUsage,
-      },
-      isPremium: subscription?.plan_type === "premium",
+      usage,
     })
   } catch (error) {
-    console.error("Error fetching subscription status:", error)
+    console.error("[v0] Subscription status error:", error)
     return NextResponse.json({ error: "Internal server error" }, { status: 500 })
   }
 }

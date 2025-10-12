@@ -21,7 +21,6 @@ import {
   ShieldCheck,
   Menu,
   Key,
-  Crown,
 } from "lucide-react"
 import {
   DropdownMenu,
@@ -46,7 +45,6 @@ const navItems = [
 ]
 
 const settingsItems = [
-  { href: "/uygulama/premium", label: "Premium", icon: Crown, highlight: true },
   { href: "/uygulama/bildirimler", label: "Bildirimler", icon: Bell },
   { href: "/uygulama/ayarlar", label: "Ayarlar", icon: Settings },
   { href: "#", label: "Menüyü Daralt", icon: Menu, action: "toggle" },
@@ -185,11 +183,9 @@ export default function AppSidebar() {
               <Link
                 href={item.href}
                 className={`flex items-center rounded-lg text-sm font-medium transition-all duration-200 h-10 ${
-                  item.highlight
-                    ? "bg-gradient-to-r from-yellow-500 to-amber-500 text-white hover:from-yellow-600 hover:to-amber-600 shadow-sm"
-                    : isActive
-                      ? "bg-gradient-to-r from-emerald-600 to-teal-700 dark:from-emerald-500 dark:to-teal-600 text-white shadow-sm"
-                      : "hover:bg-emerald-50 dark:hover:bg-emerald-900/30 text-gray-700 dark:text-gray-300 hover:text-emerald-700 dark:hover:text-emerald-400"
+                  isActive
+                    ? "bg-gradient-to-r from-emerald-600 to-teal-700 dark:from-emerald-500 dark:to-teal-600 text-white shadow-sm"
+                    : "hover:bg-emerald-50 dark:hover:bg-emerald-900/30 text-gray-700 dark:text-gray-300 hover:text-emerald-700 dark:hover:text-emerald-400"
                 } ${isCollapsed ? "justify-center px-2 w-10" : "justify-start gap-3 px-3"}`}
               >
                 <item.icon className="h-5 w-5 flex-shrink-0" />

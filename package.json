@@ -42,7 +42,7 @@
     "@radix-ui/react-toggle-group": "latest",
     "@radix-ui/react-tooltip": "latest",
     "@react-email/render": "latest",
-    "@supabase/ssr": "latest",
+    "@supabase/ssr": "^0.1.0",
     "@supabase/supabase-js": "latest",
     "@types/node": "^20",
     "@types/react": "^18",

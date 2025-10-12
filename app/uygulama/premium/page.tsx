@@ -1,344 +1,302 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
-import { Crown, Zap, Shield, TrendingUp, Check, X, Sparkles, Loader2 } from "lucide-react"
-import { useRouter } from "next/navigation"
+import { Crown, Check, Sparkles, Zap, TrendingUp, X } from "lucide-react"
+import { useSubscription } from "@/hooks/use-subscription"
+import { useRouter, useSearchParams } from "next/navigation"
+import { useToast } from "@/hooks/use-toast"
 
 export default function PremiumPage() {
+  const { subscription, loading, isPremium } = useSubscription()
+  const [isProcessing, setIsProcessing] = useState(false)
   const router = useRouter()
-  const [loading, setLoading] = useState(false)
-  const [isPremium, setIsPremium] = useState(false)
-  const [checkingStatus, setCheckingStatus] = useState(true)
+  const searchParams = useSearchParams()
+  const { toast } = useToast()
 
   useEffect(() => {
-    checkSubscriptionStatus()
-  }, [])
+    const success = searchParams.get("success")
+    const error = searchParams.get("error")
 
-  const checkSubscriptionStatus = async () => {
-    try {
-      const response = await fetch("/api/subscription/status")
-      if (response.ok) {
-        const data = await response.json()
-        setIsPremium(data.isPremium)
-      }
-    } catch (error) {
-      console.error("Error checking subscription:", error)
-    } finally {
-      setCheckingStatus(false)
+    if (success === "true") {
+      toast({
+        title: "Ödeme Başarılı",
+        description: "Premium üyeliğiniz aktif edildi. Tüm özelliklere erişebilirsiniz!",
+      })
+      router.replace("/uygulama/premium")
+    } else if (error) {
+      toast({
+        title: "Ödeme Hatası",
+        description: "Ödeme işlemi tamamlanamadı. Lütfen tekrar deneyin.",
+        variant: "destructive",
+      })
+      router.replace("/uygulama/premium")
     }
-  }
+  }, [searchParams, toast, router])
 
   const handleUpgrade = async () => {
-    setLoading(true)
+    setIsProcessing(true)
     try {
       const response = await fetch("/api/payment/initialize", {
         method: "POST",
       })
 
       if (!response.ok) {
-        throw new Error("Payment initialization failed")
+        throw new Error("Ödeme başlatılamadı")
       }
 
       const data = await response.json()
 
-      if (data.checkoutFormContent) {
-        const paymentContainer = document.createElement("div")
-        paymentContainer.innerHTML = data.checkoutFormContent
-        document.body.appendChild(paymentContainer)
-
-        const script = paymentContainer.querySelector("script")
-        if (script) {
-          const newScript = document.createElement("script")
-          newScript.textContent = script.textContent
-          document.body.appendChild(newScript)
-        }
+      if (data.paymentPageUrl) {
+        window.location.href = data.paymentPageUrl
+      } else if (data.checkoutFormContent) {
+        const checkoutDiv = document.createElement("div")
+        checkoutDiv.innerHTML = data.checkoutFormContent
+        document.body.appendChild(checkoutDiv)
       }
     } catch (error) {
-      console.error("Payment error:", error)
-      alert("Ödeme başlatılırken bir hata oluştu. Lütfen tekrar deneyin.")
-    } finally {
-      setLoading(false)
+      console.error("[v0] Payment initialization error:", error)
+      toast({
+        title: "Hata",
+        description: "Ödeme işlemi başlatılamadı. Lütfen tekrar deneyin.",
+        variant: "destructive",
+      })
+      setIsProcessing(false)
     }
   }
 
-  if (checkingStatus) {
+  if (loading) {
     return (
-      <div className="min-h-screen bg-[#151515] flex items-center justify-center">
-        <Loader2 className="w-8 h-8 text-emerald-500 animate-spin" />
-      </div>
-    )
-  }
-
-  if (isPremium) {
-    return (
-      <div className="min-h-screen bg-[#151515] text-white p-8">
-        <div className="max-w-4xl mx-auto">
-          <Card className="bg-gradient-to-br from-emerald-500/20 to-teal-500/20 border-emerald-500/30">
-            <CardHeader className="text-center">
-              <div className="w-20 h-20 rounded-full bg-gradient-to-br from-emerald-500 to-teal-500 flex items-center justify-center mx-auto mb-4">
-                <Crown className="w-10 h-10 text-white" />
-              </div>
-              <CardTitle className="text-3xl font-bold text-white">Premium Üyesiniz</CardTitle>
-              <CardDescription className="text-white/70 text-lg">
-                Tüm özelliklere sınırsız erişiminiz var
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-6">
-              <div className="grid md:grid-cols-2 gap-4">
-                <div className="bg-black/20 rounded-lg p-4 border border-white/10">
-                  <div className="flex items-center gap-3 mb-2">
-                    <Zap className="w-5 h-5 text-emerald-400" />
-                    <p className="font-semibold text-white">Sınırsız OCR Analizi</p>
-                  </div>
-                  <p className="text-white/60 text-sm">Aktif</p>
-                </div>
-                <div className="bg-black/20 rounded-lg p-4 border border-white/10">
-                  <div className="flex items-center gap-3 mb-2">
-                    <TrendingUp className="w-5 h-5 text-emerald-400" />
-                    <p className="font-semibold text-white">Risk Analizi</p>
-                  </div>
-                  <p className="text-white/60 text-sm">Aktif</p>
-                </div>
-                <div className="bg-black/20 rounded-lg p-4 border border-white/10">
-                  <div className="flex items-center gap-3 mb-2">
-                    <Shield className="w-5 h-5 text-emerald-400" />
-                    <p className="font-semibold text-white">Reklamsız</p>
-                  </div>
-                  <p className="text-white/60 text-sm">Aktif</p>
-                </div>
-                <div className="bg-black/20 rounded-lg p-4 border border-white/10">
-                  <div className="flex items-center gap-3 mb-2">
-                    <Sparkles className="w-5 h-5 text-emerald-400" />
-                    <p className="font-semibold text-white">Öncelikli Destek</p>
-                  </div>
-                  <p className="text-white/60 text-sm">Aktif</p>
-                </div>
-              </div>
-              <Button
-                onClick={() => router.push("/uygulama/ana-sayfa")}
-                className="w-full bg-gradient-to-r from-emerald-500 to-teal-500 text-white font-bold py-6 text-lg hover:from-emerald-600 hover:to-teal-600"
-              >
-                Ana Sayfaya Dön
-              </Button>
-            </CardContent>
-          </Card>
+      <div className="flex items-center justify-center min-h-[60vh]">
+        <div className="text-center space-y-4">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-emerald-600 mx-auto"></div>
+          <p className="text-gray-600 dark:text-gray-400">Yükleniyor...</p>
         </div>
       </div>
     )
   }
 
   return (
-    <div className="min-h-screen bg-[#151515] text-white p-8">
-      <div className="max-w-6xl mx-auto">
-        {/* Header */}
-        <div className="text-center mb-12">
-          <div className="inline-flex items-center gap-2 bg-black/20 border border-white/10 rounded-full px-6 py-3 backdrop-blur-xl mb-6">
-            <Sparkles className="w-5 h-5 text-emerald-400" />
-            <span className="text-white/80 text-sm font-medium">Premium Üyelik</span>
+    <div className="space-y-8">
+      {/* Hero Section */}
+      <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-emerald-600 via-teal-600 to-cyan-700 dark:from-emerald-700 dark:via-teal-700 dark:to-cyan-800 p-12 text-white">
+        <div className="absolute inset-0 bg-gradient-to-t from-black/30 to-transparent"></div>
+        <div className="relative z-10 text-center space-y-6">
+          <div className="flex items-center justify-center">
+            <div className="p-4 bg-white/20 rounded-full backdrop-blur-sm">
+              <Crown className="h-16 w-16 text-white" />
+            </div>
           </div>
-          <h1 className="text-5xl md:text-6xl font-bold mb-6 leading-tight">
-            Finansal Özgürlüğünüze <span className="text-emerald-400">Yatırım Yapın</span>
-          </h1>
-          <p className="text-xl text-white/70 max-w-3xl mx-auto leading-relaxed">
-            Premium üyelikle tüm özelliklere sınırsız erişim kazanın ve finansal hedeflerinize daha hızlı ulaşın
+          <h1 className="text-5xl font-bold">Premium Üyelik</h1>
+          <p className="text-xl text-emerald-100 max-w-2xl mx-auto">
+            Tüm özelliklere sınırsız erişim, reklamsız deneyim ve gelişmiş analiz araçları
           </p>
-        </div>
-
-        {/* Pricing Card */}
-        <div className="max-w-2xl mx-auto mb-12">
-          <Card className="bg-gradient-to-br from-gray-900 to-gray-800 border-emerald-500/20 overflow-hidden">
-            <div className="absolute top-0 right-0 w-64 h-64 bg-emerald-500/10 rounded-full blur-3xl" />
-            <CardHeader className="relative">
-              <div className="flex items-center justify-between mb-4">
-                <Badge className="bg-gradient-to-r from-emerald-500 to-teal-500 text-white border-0 text-sm px-4 py-1">
-                  En Popüler
-                </Badge>
-                <Badge className="bg-yellow-500/20 text-yellow-500 border-yellow-500/30">50% İndirim</Badge>
-              </div>
-              <CardTitle className="text-3xl font-bold text-white">Premium Üyelik</CardTitle>
-              <CardDescription className="text-white/70 text-lg">Tüm özelliklere sınırsız erişim</CardDescription>
-            </CardHeader>
-            <CardContent className="relative space-y-6">
-              <div className="flex items-baseline gap-2">
-                <span className="text-5xl font-bold text-white">199₺</span>
-                <span className="text-white/60 text-lg">/ay</span>
-                <span className="text-white/40 line-through text-lg ml-2">399₺</span>
-              </div>
-
-              <div className="space-y-3">
-                <div className="flex items-center gap-3">
-                  <div className="w-6 h-6 rounded-full bg-emerald-500/20 flex items-center justify-center">
-                    <Check className="w-4 h-4 text-emerald-400" />
-                  </div>
-                  <span className="text-white">Sınırsız OCR Analizi</span>
-                </div>
-                <div className="flex items-center gap-3">
-                  <div className="w-6 h-6 rounded-full bg-emerald-500/20 flex items-center justify-center">
-                    <Check className="w-4 h-4 text-emerald-400" />
-                  </div>
-                  <span className="text-white">Detaylı Risk Analizi</span>
-                </div>
-                <div className="flex items-center gap-3">
-                  <div className="w-6 h-6 rounded-full bg-emerald-500/20 flex items-center justify-center">
-                    <Check className="w-4 h-4 text-emerald-400" />
-                  </div>
-                  <span className="text-white">Reklamsız Deneyim</span>
-                </div>
-                <div className="flex items-center gap-3">
-                  <div className="w-6 h-6 rounded-full bg-emerald-500/20 flex items-center justify-center">
-                    <Check className="w-4 h-4 text-emerald-400" />
-                  </div>
-                  <span className="text-white">Öncelikli Müşteri Desteği</span>
-                </div>
-                <div className="flex items-center gap-3">
-                  <div className="w-6 h-6 rounded-full bg-emerald-500/20 flex items-center justify-center">
-                    <Check className="w-4 h-4 text-emerald-400" />
-                  </div>
-                  <span className="text-white">Gelişmiş Raporlama</span>
-                </div>
-              </div>
-
-              <Button
-                onClick={handleUpgrade}
-                disabled={loading}
-                className="w-full bg-gradient-to-r from-emerald-500 to-teal-500 text-white font-bold py-6 text-lg hover:from-emerald-600 hover:to-teal-600 disabled:opacity-50"
-              >
-                {loading ? (
-                  <>
-                    <Loader2 className="w-5 h-5 mr-2 animate-spin" />
-                    İşleniyor...
-                  </>
-                ) : (
-                  <>
-                    <Crown className="w-5 h-5 mr-2" />
-                    Premium'a Geç
-                  </>
-                )}
-              </Button>
-
-              <p className="text-white/50 text-sm text-center">Güvenli ödeme ile iyzico altyapısı kullanılmaktadır</p>
-            </CardContent>
-          </Card>
-        </div>
-
-        {/* Feature Comparison */}
-        <div className="mb-12">
-          <h2 className="text-3xl font-bold text-center mb-8">Ücretsiz vs Premium</h2>
-          <Card className="bg-black/20 border-white/10">
-            <CardContent className="p-0">
-              <div className="overflow-x-auto">
-                <table className="w-full">
-                  <thead>
-                    <tr className="border-b border-white/10">
-                      <th className="text-left p-6 text-white/70">Özellik</th>
-                      <th className="text-center p-6 text-white/70">Ücretsiz</th>
-                      <th className="text-center p-6 text-white/70">
-                        <Badge className="bg-gradient-to-r from-emerald-500 to-teal-500 text-white border-0">
-                          Premium
-                        </Badge>
-                      </th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    <tr className="border-b border-white/10">
-                      <td className="p-6 text-white">OCR Analizi</td>
-                      <td className="p-6 text-center text-white/60">1 adet</td>
-                      <td className="p-6 text-center">
-                        <Badge className="bg-emerald-500/20 text-emerald-400 border-emerald-500/30">Sınırsız</Badge>
-                      </td>
-                    </tr>
-                    <tr className="border-b border-white/10">
-                      <td className="p-6 text-white">Risk Analizi</td>
-                      <td className="p-6 text-center">
-                        <X className="w-5 h-5 text-red-500 mx-auto" />
-                      </td>
-                      <td className="p-6 text-center">
-                        <Check className="w-5 h-5 text-emerald-400 mx-auto" />
-                      </td>
-                    </tr>
-                    <tr className="border-b border-white/10">
-                      <td className="p-6 text-white">Kredi Yönetimi</td>
-                      <td className="p-6 text-center">
-                        <Check className="w-5 h-5 text-emerald-400 mx-auto" />
-                      </td>
-                      <td className="p-6 text-center">
-                        <Check className="w-5 h-5 text-emerald-400 mx-auto" />
-                      </td>
-                    </tr>
-                    <tr className="border-b border-white/10">
-                      <td className="p-6 text-white">Ödeme Takibi</td>
-                      <td className="p-6 text-center">
-                        <Check className="w-5 h-5 text-emerald-400 mx-auto" />
-                      </td>
-                      <td className="p-6 text-center">
-                        <Check className="w-5 h-5 text-emerald-400 mx-auto" />
-                      </td>
-                    </tr>
-                    <tr className="border-b border-white/10">
-                      <td className="p-6 text-white">Reklamlar</td>
-                      <td className="p-6 text-center text-white/60">Var</td>
-                      <td className="p-6 text-center">
-                        <Badge className="bg-emerald-500/20 text-emerald-400 border-emerald-500/30">Yok</Badge>
-                      </td>
-                    </tr>
-                    <tr>
-                      <td className="p-6 text-white">Müşteri Desteği</td>
-                      <td className="p-6 text-center text-white/60">Standart</td>
-                      <td className="p-6 text-center">
-                        <Badge className="bg-emerald-500/20 text-emerald-400 border-emerald-500/30">Öncelikli</Badge>
-                      </td>
-                    </tr>
-                  </tbody>
-                </table>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-
-        {/* FAQ */}
-        <div className="max-w-3xl mx-auto">
-          <h2 className="text-3xl font-bold text-center mb-8">Sıkça Sorulan Sorular</h2>
-          <div className="space-y-4">
-            <Card className="bg-black/20 border-white/10">
-              <CardHeader>
-                <CardTitle className="text-lg text-white">Ödeme güvenli mi?</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p className="text-white/70">
-                  Evet, tüm ödemeler iyzico güvenli ödeme altyapısı üzerinden gerçekleştirilir. Kredi kartı bilgileriniz
-                  şifrelenir ve güvenli bir şekilde saklanır.
-                </p>
-              </CardContent>
-            </Card>
-
-            <Card className="bg-black/20 border-white/10">
-              <CardHeader>
-                <CardTitle className="text-lg text-white">İstediğim zaman iptal edebilir miyim?</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p className="text-white/70">
-                  Evet, Premium üyeliğinizi istediğiniz zaman iptal edebilirsiniz. İptal sonrası mevcut dönem sonuna
-                  kadar Premium özelliklerden yararlanmaya devam edersiniz.
-                </p>
-              </CardContent>
-            </Card>
-
-            <Card className="bg-black/20 border-white/10">
-              <CardHeader>
-                <CardTitle className="text-lg text-white">Otomatik yenileme var mı?</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p className="text-white/70">
-                  Hayır, otomatik yenileme yoktur. Her ay manuel olarak ödeme yapmanız gerekmektedir.
-                </p>
-              </CardContent>
-            </Card>
-          </div>
+          {isPremium && (
+            <Badge className="bg-white/20 text-white border-white/30 backdrop-blur-sm px-6 py-2 text-lg">
+              <Check className="h-5 w-5 mr-2" />
+              Aktif Premium Üye
+            </Badge>
+          )}
         </div>
       </div>
+
+      {/* Pricing Card */}
+      <div className="max-w-4xl mx-auto">
+        <div className="grid md:grid-cols-2 gap-8">
+          {/* Free Plan */}
+          <Card className="relative border-2 border-gray-200 dark:border-gray-700">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <span>Ücretsiz</span>
+              </CardTitle>
+              <CardDescription>Temel özellikler</CardDescription>
+              <div className="pt-4">
+                <p className="text-4xl font-bold">
+                  0₺<span className="text-lg font-normal text-gray-600 dark:text-gray-400">/ay</span>
+                </p>
+              </div>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="space-y-3">
+                <div className="flex items-start gap-3">
+                  <Check className="h-5 w-5 text-emerald-600 dark:text-emerald-400 mt-0.5" />
+                  <span className="text-sm">1 adet OCR analizi</span>
+                </div>
+                <div className="flex items-start gap-3">
+                  <X className="h-5 w-5 text-red-600 dark:text-red-400 mt-0.5" />
+                  <span className="text-sm text-gray-500 dark:text-gray-400">Risk analizi yok</span>
+                </div>
+                <div className="flex items-start gap-3">
+                  <Check className="h-5 w-5 text-emerald-600 dark:text-emerald-400 mt-0.5" />
+                  <span className="text-sm">Temel kredi takibi</span>
+                </div>
+                <div className="flex items-start gap-3">
+                  <Check className="h-5 w-5 text-emerald-600 dark:text-emerald-400 mt-0.5" />
+                  <span className="text-sm">Ödeme hatırlatıcıları</span>
+                </div>
+                <div className="flex items-start gap-3">
+                  <X className="h-5 w-5 text-red-600 dark:text-red-400 mt-0.5" />
+                  <span className="text-sm text-gray-500 dark:text-gray-400">Reklamlar gösterilir</span>
+                </div>
+              </div>
+              {!isPremium && (
+                <Button variant="outline" className="w-full bg-transparent" disabled>
+                  Mevcut Plan
+                </Button>
+              )}
+            </CardContent>
+          </Card>
+
+          {/* Premium Plan */}
+          <Card className="relative border-2 border-emerald-600 dark:border-emerald-500 shadow-xl">
+            <div className="absolute -top-4 left-1/2 -translate-x-1/2">
+              <Badge className="bg-gradient-to-r from-amber-500 to-orange-600 text-white border-0 px-4 py-1">
+                <Sparkles className="h-4 w-4 mr-1" />
+                Önerilen
+              </Badge>
+            </div>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Crown className="h-6 w-6 text-amber-500" />
+                <span>Premium</span>
+              </CardTitle>
+              <CardDescription>Tüm özellikler</CardDescription>
+              <div className="pt-4">
+                <p className="text-4xl font-bold">
+                  199₺<span className="text-lg font-normal text-gray-600 dark:text-gray-400">/ay</span>
+                </p>
+              </div>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="space-y-3">
+                <div className="flex items-start gap-3">
+                  <Check className="h-5 w-5 text-emerald-600 dark:text-emerald-400 mt-0.5" />
+                  <span className="text-sm font-medium">Sınırsız OCR analizi</span>
+                </div>
+                <div className="flex items-start gap-3">
+                  <Check className="h-5 w-5 text-emerald-600 dark:text-emerald-400 mt-0.5" />
+                  <span className="text-sm font-medium">Detaylı risk analizi</span>
+                </div>
+                <div className="flex items-start gap-3">
+                  <Check className="h-5 w-5 text-emerald-600 dark:text-emerald-400 mt-0.5" />
+                  <span className="text-sm font-medium">Gelişmiş raporlar</span>
+                </div>
+                <div className="flex items-start gap-3">
+                  <Check className="h-5 w-5 text-emerald-600 dark:text-emerald-400 mt-0.5" />
+                  <span className="text-sm font-medium">Öncelikli destek</span>
+                </div>
+                <div className="flex items-start gap-3">
+                  <Check className="h-5 w-5 text-emerald-600 dark:text-emerald-400 mt-0.5" />
+                  <span className="text-sm font-medium">Reklamsız deneyim</span>
+                </div>
+                <div className="flex items-start gap-3">
+                  <Check className="h-5 w-5 text-emerald-600 dark:text-emerald-400 mt-0.5" />
+                  <span className="text-sm font-medium">Tüm gelecek özellikler</span>
+                </div>
+              </div>
+              {isPremium ? (
+                <Button className="w-full bg-gradient-to-r from-emerald-600 to-teal-600" disabled>
+                  <Check className="h-5 w-5 mr-2" />
+                  Aktif Plan
+                </Button>
+              ) : (
+                <Button
+                  onClick={handleUpgrade}
+                  disabled={isProcessing}
+                  className="w-full bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white"
+                  size="lg"
+                >
+                  {isProcessing ? (
+                    <>
+                      <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-2"></div>
+                      İşleniyor...
+                    </>
+                  ) : (
+                    <>
+                      <Crown className="h-5 w-5 mr-2" />
+                      Premium'a Geç
+                    </>
+                  )}
+                </Button>
+              )}
+            </CardContent>
+          </Card>
+        </div>
+      </div>
+
+      {/* Features Grid */}
+      <div className="grid md:grid-cols-3 gap-6">
+        <Card>
+          <CardHeader>
+            <div className="p-3 bg-emerald-100 dark:bg-emerald-900/30 rounded-lg w-fit">
+              <Sparkles className="h-6 w-6 text-emerald-600 dark:text-emerald-400" />
+            </div>
+            <CardTitle>Sınırsız Analiz</CardTitle>
+            <CardDescription>OCR teknolojisi ile sınırsız kredi dökümü analizi yapın</CardDescription>
+          </CardHeader>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <div className="p-3 bg-blue-100 dark:bg-blue-900/30 rounded-lg w-fit">
+              <TrendingUp className="h-6 w-6 text-blue-600 dark:text-blue-400" />
+            </div>
+            <CardTitle>Risk Analizi</CardTitle>
+            <CardDescription>Finansal durumunuzu detaylı analiz edin ve öneriler alın</CardDescription>
+          </CardHeader>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <div className="p-3 bg-purple-100 dark:bg-purple-900/30 rounded-lg w-fit">
+              <Zap className="h-6 w-6 text-purple-600 dark:text-purple-400" />
+            </div>
+            <CardTitle>Reklamsız</CardTitle>
+            <CardDescription>Kesintisiz, reklamsız bir deneyim yaşayın</CardDescription>
+          </CardHeader>
+        </Card>
+      </div>
+
+      {/* Current Usage */}
+      {!isPremium && subscription && (
+        <Card>
+          <CardHeader>
+            <CardTitle>Mevcut Kullanım</CardTitle>
+            <CardDescription>Ücretsiz plan kullanım durumunuz</CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div>
+              <div className="flex items-center justify-between mb-2">
+                <span className="text-sm font-medium">OCR Analizi</span>
+                <span className="text-sm text-gray-600 dark:text-gray-400">
+                  {subscription.usage.ocrAnalysis.used} / {subscription.usage.ocrAnalysis.limit}
+                </span>
+              </div>
+              <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
+                <div
+                  className="bg-emerald-600 h-2 rounded-full transition-all"
+                  style={{
+                    width: `${(subscription.usage.ocrAnalysis.used / subscription.usage.ocrAnalysis.limit) * 100}%`,
+                  }}
+                ></div>
+              </div>
+            </div>
+            <div>
+              <div className="flex items-center justify-between mb-2">
+                <span className="text-sm font-medium">Risk Analizi</span>
+                <Badge variant="outline" className="text-xs">
+                  Premium Özellik
+                </Badge>
+              </div>
+              <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
+                <div className="bg-gray-400 h-2 rounded-full w-0"></div>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      )}
     </div>
   )
 }

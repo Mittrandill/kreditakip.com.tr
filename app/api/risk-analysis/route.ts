@@ -2,41 +2,61 @@ import { type NextRequest, NextResponse } from "next/server"
 import type { FinancialProfile, RiskAnalysisData } from "@/lib/types"
 import { getFinancialProfile } from "@/lib/api/financials"
 import { supabase } from "@/lib/supabase"
-import { canUseFeature, incrementUsage } from "@/lib/api/subscriptions"
-import { createClient } from "@/lib/supabase/server"
+import { createServerClient } from "@/lib/supabase/server"
 
 const CHART_COLORS = ["#10B981", "#3B82F6", "#F59E0B", "#EF4444", "#8B5CF6", "#06B6D4", "#F97316", "#84CC16"]
 
 export async function POST(request: NextRequest) {
   try {
+    const supabaseServer = await createServerClient()
+
+    const {
+      data: { user },
+      error: authError,
+    } = await supabaseServer.auth.getUser()
+
+    if (authError || !user) {
+      return NextResponse.json({ error: "Oturum açmanız gerekiyor" }, { status: 401 })
+    }
+
+    const { data: canUse, error: checkError } = await supabaseServer.rpc("can_use_feature", {
+      p_user_id: user.id,
+      p_feature_type: "risk_analysis",
+    })
+
+    if (checkError) {
+      console.error("[v0] Feature check error:", checkError)
+      return NextResponse.json({ error: "Özellik kontrolü başarısız oldu" }, { status: 500 })
+    }
+
+    if (!canUse) {
+      const { data: subscription } = await supabaseServer
+        .from("subscriptions")
+        .select("plan_type")
+        .eq("user_id", user.id)
+        .eq("status", "active")
+        .single()
+
+      return NextResponse.json(
+        {
+          error: "Risk analizi sadece Premium üyeler için kullanılabilir",
+          limitExceeded: true,
+          planType: subscription?.plan_type || "free",
+          upgradeMessage:
+            "Premium üyelik ile risk analizi ve tüm özelliklere sınırsız erişim sağlayabilirsiniz. Sadece 199₺/ay!",
+        },
+        { status: 403 },
+      )
+    }
+
     const { userId } = await request.json()
 
     if (!userId) {
       return NextResponse.json({ error: "Kullanıcı ID gereklidir" }, { status: 400 })
     }
 
-    const supabaseClient = await createClient()
-    const {
-      data: { user },
-    } = await supabaseClient.auth.getUser()
-
-    if (!user || user.id !== userId) {
-      return NextResponse.json({ error: "Yetkisiz erişim" }, { status: 401 })
-    }
-
-    const canUse = await canUseFeature(userId, "risk_analysis")
-
-    if (!canUse) {
-      return NextResponse.json(
-        {
-          error: "Risk analizi özelliği Premium üyelere özeldir",
-          limitReached: true,
-          upgradeRequired: true,
-          message:
-            "Risk analizi özelliği sadece Premium üyelere özeldir. Detaylı finansal analiz ve öneriler için Premium üyeliğe geçin.",
-        },
-        { status: 403 },
-      )
+    if (userId !== user.id) {
+      return NextResponse.json({ error: "Yetkisiz erişim" }, { status: 403 })
     }
 
     const financialProfile = await getFinancialProfile(userId)
@@ -52,7 +72,14 @@ export async function POST(request: NextRequest) {
 
     const analysisData = await performComprehensiveRiskAnalysis(userId, financialProfile)
 
-    await incrementUsage(userId, "risk_analysis")
+    const { error: incrementError } = await supabaseServer.rpc("increment_usage", {
+      p_user_id: user.id,
+      p_feature_type: "risk_analysis",
+    })
+
+    if (incrementError) {
+      console.error("[v0] Usage increment error:", incrementError)
+    }
 
     return NextResponse.json(analysisData)
   } catch (error) {
@@ -96,14 +123,12 @@ async function performComprehensiveRiskAnalysis(
     creditCardDebt + otherDebts + creditsArray.reduce((sum, credit) => sum + (credit.remaining_debt || 0), 0)
   const netWorth = totalAssets - totalLiabilities
 
-  // Calculate total monthly debt payments from credits only
   const totalMonthlyDebtPayments = creditsArray.reduce((sum, credit) => {
     return sum + (credit.monthly_payment || 0)
   }, 0)
 
-  const creditUtilizationRatio = creditCardDebt > 0 ? 0.7 : 0 // Assume high utilization if debt exists
+  const creditUtilizationRatio = creditCardDebt > 0 ? 0.7 : 0
 
-  // Calculate debt-to-income ratio
   const debtToIncomeRatio = monthlyIncome > 0 ? totalMonthlyDebtPayments / monthlyIncome : 0
   const dtiPercentage = Math.round(debtToIncomeRatio * 100)
 
@@ -114,7 +139,6 @@ async function performComprehensiveRiskAnalysis(
   let overallRiskColor: "emerald" | "yellow" | "red"
   let numericScore: number
 
-  // More comprehensive risk calculation
   let riskFactors = 0
   if (dtiPercentage > 40) riskFactors += 30
   else if (dtiPercentage > 30) riskFactors += 15
@@ -138,7 +162,6 @@ async function performComprehensiveRiskAnalysis(
     overallRiskColor = "red"
   }
 
-  // Analyze cash flow
   const disposableIncome = monthlyIncome - monthlyExpenses - totalMonthlyDebtPayments
   const cashFlowAssessment = disposableIncome > 0 ? "Pozitif" : disposableIncome < 0 ? "Negatif" : "Dengede"
 
@@ -181,7 +204,6 @@ async function performComprehensiveRiskAnalysis(
     })
   }
 
-  // Identify positive factors
   const positiveFactors = []
   if (dtiPercentage <= 30) {
     positiveFactors.push({
@@ -222,7 +244,6 @@ async function performComprehensiveRiskAnalysis(
     })
   }
 
-  // Generate recommendations
   const recommendations = []
   if (dtiPercentage > 40) {
     recommendations.push({
@@ -305,7 +326,7 @@ async function performComprehensiveRiskAnalysis(
       monthlyExpenses,
       disposableIncome,
       assessment: cashFlowAssessment,
-      explanation: `Aylık geliriniz ${monthlyIncome.toLocaleString("tr-TR")} TL, giderleriniz ${monthlyExpenses.toLocaleString("tr-TR")} TL. Borç ödemeleriniz dahil edildiğinde ${disposableIncome >= 0 ? "pozitif" : "negatif"} nakit akışınız var.`,
+      explanation: `Aylık geliriniz ${monthlyIncome.toLocaleString("tr-TR")} TL, giderleriniz ${monthlyExpenses.toLocaleString("tr-TR")} TL. Borç ödemeleriniz dahil edildiğinde ${cashFlowAssessment.toLowerCase()} nakit akışınız var.`,
       suggestions:
         disposableIncome < 0
           ? [

@@ -23,6 +23,8 @@ import {
 import { useDropzone } from "react-dropzone"
 import { useToast } from "@/hooks/use-toast"
 import BankSelector from "@/components/bank-selector"
+import { UpgradePrompt } from "@/components/upgrade-prompt"
+import { useSubscription } from "@/hooks/use-subscription"
 
 interface AnalysisResult {
   bankName: string | null
@@ -46,6 +48,7 @@ interface AnalysisResult {
 export default function PDFOdemePlaniPage() {
   const router = useRouter()
   const { toast } = useToast()
+  const { subscription, canUseOCR } = useSubscription()
 
   const [file, setFile] = useState<File | null>(null)
   const [isAnalyzing, setIsAnalyzing] = useState(false)
@@ -54,6 +57,7 @@ export default function PDFOdemePlaniPage() {
   const [showBankSelector, setShowBankSelector] = useState(false)
   const [analysisResult, setAnalysisResult] = useState<AnalysisResult | null>(null)
   const [processingTime, setProcessingTime] = useState<number | null>(null)
+  const [showUpgradePrompt, setShowUpgradePrompt] = useState(false)
 
   const onDrop = useCallback(
     (acceptedFiles: File[]) => {
@@ -90,22 +94,26 @@ export default function PDFOdemePlaniPage() {
   const analyzeFile = async () => {
     if (!file) return
 
+    if (!canUseOCR) {
+      setShowUpgradePrompt(true)
+      return
+    }
+
     setIsAnalyzing(true)
     setProgress(0)
     setError(null)
     const startTime = Date.now()
 
     try {
-      // Hızlı progress animasyonu
       const progressInterval = setInterval(() => {
         setProgress((prev) => {
           if (prev >= 85) {
             clearInterval(progressInterval)
             return 85
           }
-          return prev + 15 // Daha hızlı artış
+          return prev + 15
         })
-      }, 300) // Daha sık güncelleme
+      }, 300)
 
       const formData = new FormData()
       formData.append("pdf", file)
@@ -122,6 +130,14 @@ export default function PDFOdemePlaniPage() {
       const processingTimeMs = Date.now() - startTime
       setProcessingTime(processingTimeMs)
 
+      if (response.status === 403) {
+        const errorData = await response.json()
+        if (errorData.limitExceeded) {
+          setShowUpgradePrompt(true)
+          return
+        }
+      }
+
       if (!response.ok) {
         const errorData = await response.json()
         throw new Error(errorData.error || "PDF analizi başarısız oldu")
@@ -137,11 +153,9 @@ export default function PDFOdemePlaniPage() {
           description: `${(processingTimeMs / 1000).toFixed(1)} saniyede ${data.paymentPlan.installments?.length || 0} taksit tespit edildi`,
         })
 
-        // Banka adı tespit edilmediyse banka seçici göster
         if (!data.paymentPlan.bankName) {
           setShowBankSelector(true)
         } else {
-          // Direkt analiz sayfasına yönlendir
           router.push(
             `/uygulama/krediler/pdf-odeme-plani/analiz?data=${encodeURIComponent(JSON.stringify(data.paymentPlan))}`,
           )
@@ -192,10 +206,8 @@ export default function PDFOdemePlaniPage() {
 
   return (
     <div className="space-y-8">
-      {/* Hero Section */}
       <Card className="overflow-hidden border-0 shadow-xl rounded-2xl">
         <div className="bg-gradient-to-r from-purple-600 to-indigo-700 p-8 text-white relative">
-          {/* Decorative circles */}
           <div className="absolute top-0 right-0 w-64 h-64 bg-white opacity-5 rounded-full -mt-32 -mr-32"></div>
           <div className="absolute bottom-0 left-0 w-40 h-40 bg-white opacity-5 rounded-full -mb-20 -ml-20"></div>
 
@@ -245,7 +257,6 @@ export default function PDFOdemePlaniPage() {
         </div>
       </Card>
 
-      {/* Main Upload Area */}
       <Card className="shadow-lg border-gray-200 rounded-2xl overflow-hidden">
         <CardHeader className="bg-gradient-to-r from-gray-50 to-purple-50 border-b">
           <CardTitle className="flex items-center gap-2">
@@ -255,7 +266,6 @@ export default function PDFOdemePlaniPage() {
           <CardDescription>Bankanızdan aldığınız ödeme planı PDF'ini yükleyin</CardDescription>
         </CardHeader>
         <CardContent className="p-8">
-          {/* Dropzone */}
           <div
             {...getRootProps()}
             className={`border-2 border-dashed rounded-2xl p-12 text-center cursor-pointer transition-all duration-200 ${
@@ -293,7 +303,6 @@ export default function PDFOdemePlaniPage() {
             </div>
           </div>
 
-          {/* Error Display */}
           {error && (
             <Alert variant="destructive" className="mt-6">
               <AlertCircle className="h-4 w-4" />
@@ -301,7 +310,6 @@ export default function PDFOdemePlaniPage() {
             </Alert>
           )}
 
-          {/* Progress */}
           {isAnalyzing && (
             <div className="space-y-4 mt-6">
               <div className="flex items-center gap-2">
@@ -313,7 +321,6 @@ export default function PDFOdemePlaniPage() {
             </div>
           )}
 
-          {/* Action Button */}
           <Button
             onClick={analyzeFile}
             disabled={!file || isAnalyzing}
@@ -334,8 +341,6 @@ export default function PDFOdemePlaniPage() {
         </CardContent>
       </Card>
 
-      {/* Features */}
-      {/* Features Grid */}
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
@@ -384,8 +389,15 @@ export default function PDFOdemePlaniPage() {
         ))}
       </motion.div>
 
-      {/* Bank Selector Modal */}
       {showBankSelector && <BankSelector onBankSelect={handleBankSelect} onSkip={handleBankSkip} />}
+      {showUpgradePrompt && (
+        <UpgradePrompt
+          open={showUpgradePrompt}
+          onOpenChange={setShowUpgradePrompt}
+          feature="ocr"
+          usageInfo={subscription?.usage.ocrAnalysis}
+        />
+      )}
     </div>
   )
 }

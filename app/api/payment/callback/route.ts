@@ -1,70 +1,80 @@
 import { NextResponse } from "next/server"
-import { createClient } from "@/lib/supabase/server"
+import { createServerClient } from "@/lib/supabase/server"
 import { iyzicoClient } from "@/lib/iyzico"
-import { upgradeToPremium } from "@/lib/api/subscriptions"
 
 export async function POST(request: Request) {
   try {
-    const { token } = await request.json()
+    const formData = await request.formData()
+    const token = formData.get("token") as string
 
     if (!token) {
-      return NextResponse.json({ error: "Token is required" }, { status: 400 })
+      return NextResponse.redirect(`${process.env.NEXT_PUBLIC_SITE_URL}/uygulama/premium?error=no_token`)
     }
 
     // Retrieve payment details from iyzico
     const paymentResult = await iyzicoClient.retrieveCheckoutForm(token)
 
     if (paymentResult.status !== "success" || paymentResult.paymentStatus !== "SUCCESS") {
-      // Update transaction as failed
-      const supabase = await createClient()
-      await supabase
-        .from("payment_transactions")
-        .update({
-          status: "failed",
-          error_message: paymentResult.errorMessage,
-        })
-        .eq("iyzico_payment_id", paymentResult.paymentId)
-
-      return NextResponse.json(
-        {
-          success: false,
-          error: paymentResult.errorMessage || "Payment failed",
-        },
-        { status: 400 },
-      )
+      console.error("[v0] Payment failed:", paymentResult)
+      return NextResponse.redirect(`${process.env.NEXT_PUBLIC_SITE_URL}/uygulama/premium?error=payment_failed`)
     }
 
-    const supabase = await createClient()
+    const supabase = await createServerClient()
 
-    // Get transaction
-    const { data: transaction } = await supabase
-      .from("payment_transactions")
-      .select("*")
-      .eq("iyzico_payment_id", paymentResult.paymentId)
-      .single()
+    // Get user from conversation ID
+    const conversationId = paymentResult.conversationId
+    const userId = conversationId.split("_")[1]
 
-    if (!transaction) {
-      return NextResponse.json({ error: "Transaction not found" }, { status: 404 })
-    }
-
-    // Update transaction as completed
-    await supabase
+    // Update payment transaction
+    const { error: transactionError } = await supabase
       .from("payment_transactions")
       .update({
         status: "completed",
-        payment_method: "iyzico",
+        iyzico_payment_id: paymentResult.paymentId,
+        updated_at: new Date().toISOString(),
       })
-      .eq("id", transaction.id)
+      .eq("iyzico_conversation_id", conversationId)
 
-    // Upgrade user to premium
-    await upgradeToPremium(transaction.user_id, paymentResult.paymentId, "iyzico")
+    if (transactionError) {
+      console.error("[v0] Transaction update error:", transactionError)
+    }
 
-    return NextResponse.json({
-      success: true,
-      message: "Payment completed successfully",
-    })
+    // Update or create premium subscription
+    const expiresAt = new Date()
+    expiresAt.setMonth(expiresAt.getMonth() + 1) // 1 month subscription
+
+    const { error: subscriptionError } = await supabase.from("subscriptions").upsert(
+      {
+        user_id: userId,
+        plan_type: "premium",
+        status: "active",
+        expires_at: expiresAt.toISOString(),
+        payment_method: "iyzico",
+        iyzico_subscription_id: paymentResult.paymentId,
+        updated_at: new Date().toISOString(),
+      },
+      {
+        onConflict: "user_id",
+      },
+    )
+
+    if (subscriptionError) {
+      console.error("[v0] Subscription update error:", subscriptionError)
+      return NextResponse.redirect(`${process.env.NEXT_PUBLIC_SITE_URL}/uygulama/premium?error=subscription_failed`)
+    }
+
+    // Update usage limits to unlimited for premium
+    await supabase
+      .from("usage_tracking")
+      .update({
+        limit_count: 999999,
+        updated_at: new Date().toISOString(),
+      })
+      .eq("user_id", userId)
+
+    return NextResponse.redirect(`${process.env.NEXT_PUBLIC_SITE_URL}/uygulama/premium?success=true`)
   } catch (error) {
-    console.error("Payment callback error:", error)
-    return NextResponse.json({ error: "Internal server error" }, { status: 500 })
+    console.error("[v0] Payment callback error:", error)
+    return NextResponse.redirect(`${process.env.NEXT_PUBLIC_SITE_URL}/uygulama/premium?error=callback_failed`)
   }
 }

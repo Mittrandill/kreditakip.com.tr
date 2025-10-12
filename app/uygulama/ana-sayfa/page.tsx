@@ -12,9 +12,6 @@ import Link from "next/link"
 import { useAuth } from "@/hooks/use-auth"
 import { getCredits } from "@/lib/api/credits"
 import { getUpcomingPayments } from "@/lib/api/payments"
-import { AdBanner } from "@/components/ad-banner"
-import { UpgradeBanner } from "@/components/upgrade-banner"
-import { UsageIndicator } from "@/components/usage-indicator"
 import {
   Home,
   Settings,
@@ -29,6 +26,7 @@ import {
 } from "lucide-react"
 import { Doughnut } from "react-chartjs-2"
 import { Chart as ChartJS, ArcElement, Tooltip, Legend } from "chart.js"
+import { AdBanner } from "@/components/ad-banner"
 
 ChartJS.register(ArcElement, Tooltip, Legend)
 
@@ -389,24 +387,11 @@ export default function DashboardPage() {
 
   return (
     <div className="flex flex-col gap-4 md:gap-6">
-      <UpgradeBanner />
-
-      <UsageIndicator />
-
-      <AdBanner position="top" className="mb-4" />
+      <AdBanner position="top" />
 
       <div className="relative overflow-hidden rounded-3xl">
         <div className="absolute inset-0 bg-gradient-to-br from-emerald-600 via-teal-600 to-cyan-700 dark:from-emerald-700 dark:via-teal-700 dark:to-cyan-800"></div>
         <div className="absolute inset-0 bg-gradient-to-t from-black/30 dark:from-black/50 to-transparent"></div>
-        <div className="absolute inset-0 opacity-20 dark:opacity-30">
-          <div
-            className="absolute inset-0"
-            style={{
-              backgroundImage: `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fillRule='evenodd'%3E%3Cg fill='%23ffffff' fillOpacity='0.15'%3E%3Ccircle cx='30' cy='30' r='2'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")`,
-            }}
-          ></div>
-        </div>
-
         <div className="absolute inset-0 opacity-20 dark:opacity-30">
           <div
             className="absolute inset-0"
@@ -498,8 +483,6 @@ export default function DashboardPage() {
           </div>
         </div>
       </div>
-
-      <AdBanner position="bottom" className="my-4" />
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
         <Card className="relative overflow-hidden border-0 bg-gradient-to-br from-emerald-500 via-teal-600 to-cyan-700 dark:from-emerald-600 dark:via-teal-700 dark:to-cyan-800 text-white shadow-2xl dark:shadow-emerald-900/20">
@@ -639,8 +622,6 @@ export default function DashboardPage() {
           </CardContent>
         </Card>
       </div>
-
-      <AdBanner position="top" className="mb-4" />
 
       <Card className="shadow-lg hover:shadow-xl dark:shadow-gray-900/20 dark:hover:shadow-gray-900/30 transition-shadow duration-300 rounded-xl border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800">
         <CardHeader>

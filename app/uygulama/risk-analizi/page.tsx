@@ -42,12 +42,11 @@ import {
 } from "lucide-react"
 import { BsFillGrid3X3GapFill } from "react-icons/bs"
 import { Progress } from "@/components/ui/progress"
-
+import { UpgradePrompt } from "@/components/upgrade-prompt"
 import { useAuth } from "@/hooks/use-auth"
-import { getFinancialProfile } from "@/lib/api/financials"
 import { getCredits } from "@/lib/api/credits"
 import { saveRiskAnalysis, getRiskAnalyses, deleteRiskAnalysis } from "@/lib/api/risk-analyses"
-import type { FinancialProfile, Credit, RiskAnalysis as RiskAnalysisType } from "@/lib/types"
+import type { Credit, RiskAnalysis as RiskAnalysisType } from "@/lib/types"
 import { formatCurrency, formatNumber } from "@/lib/format"
 import { useToast } from "@/hooks/use-toast"
 import { formatDistanceToNow, format } from "date-fns"
@@ -58,6 +57,7 @@ import {
   AlertTitle as ShadcnAlertTitle,
 } from "@/components/ui/alert"
 import { ListChecks } from "lucide-react"
+import { useSubscription } from "@/hooks/use-subscription"
 
 const getRiskBadgeText = (color: string | null | undefined): string => {
   if (color === "emerald") return "Düşük Risk"
@@ -88,8 +88,9 @@ export default function RiskAnaliziPage() {
   const { toast } = useToast()
   const router = useRouter()
   const userId = user?.id
+  const { canUseRiskAnalysis } = useSubscription()
 
-  const [financialProfile, setFinancialProfile] = useState<FinancialProfile | null>(null)
+  const [financialProfile, setFinancialProfile] = useState<any | null>(null)
   const [credits, setCredits] = useState<Credit[]>([])
   const [allPastAnalyses, setAllPastAnalyses] = useState<RiskAnalysisType[]>([])
 
@@ -110,6 +111,7 @@ export default function RiskAnaliziPage() {
   const [sortBy, setSortBy] = useState("created_at")
   const [sortOrder, setSortOrder] = useState<"asc" | "desc">("desc")
   const [currentPage, setCurrentPage] = useState(1)
+  const [showUpgradePrompt, setShowUpgradePrompt] = useState(false)
 
   const itemsPerPageCards = 6
   const itemsPerPageTable = 8
@@ -125,7 +127,7 @@ export default function RiskAnaliziPage() {
         }
         try {
           const [profileData, creditsData, pastAnalysesData] = await Promise.all([
-            getFinancialProfile(userId),
+            fetch(`/api/financial-profile/${userId}`).then((res) => res.json()),
             getCredits(userId),
             getRiskAnalyses(userId),
           ])
@@ -241,11 +243,15 @@ export default function RiskAnaliziPage() {
       return
     }
 
+    if (!canUseRiskAnalysis) {
+      setShowUpgradePrompt(true)
+      return
+    }
+
     setIsAnalyzing(true)
     setAnalysisError(null)
     setAnalysisProgress(0)
 
-    // Progress simulation for better UX
     const progressInterval = setInterval(() => {
       setAnalysisProgress((prev) => {
         if (prev >= 90) return prev
@@ -268,6 +274,13 @@ export default function RiskAnaliziPage() {
       clearInterval(progressInterval)
       setAnalysisProgress(100)
 
+      if (response.status === 403) {
+        if (responseData.limitExceeded) {
+          setShowUpgradePrompt(true)
+          return
+        }
+      }
+
       if (!response.ok) {
         const errorMessage = responseData.error || `Analiz API hatası: ${response.statusText}`
         const errorDetails = responseData.problematicString
@@ -285,7 +298,6 @@ export default function RiskAnaliziPage() {
       setAllPastAnalyses((prev) => [saved, ...prev.filter((p) => p.id !== saved.id)])
       toast({ title: "Başarılı", description: "Kapsamlı risk analizi tamamlandı ve kaydedildi." })
 
-      // Small delay to show 100% progress
       setTimeout(() => {
         router.push(`/uygulama/risk-analizi/${saved.id}`)
       }, 500)
@@ -344,7 +356,6 @@ export default function RiskAnaliziPage() {
     [allPastAnalyses],
   )
 
-  // Finansal araçların sayısı
   const totalFinancialInstruments = credits.length
 
   if (authLoading || (userId && initialDataLoading)) {
@@ -373,7 +384,6 @@ export default function RiskAnaliziPage() {
 
   return (
     <div className="flex flex-col gap-4 md:gap-6">
-      {/* Hero Section */}
       <Card className="bg-gradient-to-r from-red-600 to-rose-700 text-white border-transparent shadow-xl rounded-xl">
         <CardContent className="p-6 md:p-8">
           <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
@@ -820,6 +830,8 @@ export default function RiskAnaliziPage() {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      <UpgradePrompt open={showUpgradePrompt} onOpenChange={setShowUpgradePrompt} feature="risk_analysis" />
     </div>
   )
 }

@@ -1,7 +1,6 @@
 import { GoogleGenerativeAI } from "@google/generative-ai"
 import { mapBankName } from "@/lib/utils/bank-mapper"
-import { canUseFeature, incrementUsage } from "@/lib/api/subscriptions"
-import { createClient } from "@/lib/supabase/server"
+import { createServerClient } from "@/lib/supabase/server"
 
 export const maxDuration = 60
 
@@ -192,25 +191,52 @@ export async function POST(request: Request) {
   const startTime = Date.now()
 
   try {
-    const supabase = await createClient()
+    const supabase = await createServerClient()
+
     const {
       data: { user },
+      error: authError,
     } = await supabase.auth.getUser()
 
-    if (!user) {
-      return Response.json({ error: "Giriş yapmanız gerekiyor" }, { status: 401 })
+    if (authError || !user) {
+      return Response.json({ error: "Oturum açmanız gerekiyor" }, { status: 401 })
     }
 
-    const canUse = await canUseFeature(user.id, "ocr_analysis")
+    const { data: canUse, error: checkError } = await supabase.rpc("can_use_feature", {
+      p_user_id: user.id,
+      p_feature_type: "ocr_analysis",
+    })
+
+    if (checkError) {
+      console.error("[v0] Feature check error:", checkError)
+      return Response.json({ error: "Özellik kontrolü başarısız oldu" }, { status: 500 })
+    }
 
     if (!canUse) {
+      const { data: subscription } = await supabase
+        .from("subscriptions")
+        .select("plan_type")
+        .eq("user_id", user.id)
+        .eq("status", "active")
+        .single()
+
+      const { data: usage } = await supabase
+        .from("usage_tracking")
+        .select("used_count, limit_count")
+        .eq("user_id", user.id)
+        .eq("feature_type", "ocr_analysis")
+        .single()
+
       return Response.json(
         {
           error: "Ücretsiz analiz hakkınız doldu",
-          limitReached: true,
-          upgradeRequired: true,
-          message:
-            "Ücretsiz planınızda 1 adet OCR analiz hakkınız vardı ve bu hakkınızı kullandınız. Sınırsız analiz için Premium üyeliğe geçin.",
+          limitExceeded: true,
+          usageInfo: {
+            used: usage?.used_count || 0,
+            limit: usage?.limit_count || 1,
+            planType: subscription?.plan_type || "free",
+          },
+          upgradeMessage: "Premium üyelik ile sınırsız analiz yapabilirsiniz. Sadece 199₺/ay!",
         },
         { status: 403 },
       )
@@ -500,7 +526,14 @@ export async function POST(request: Request) {
       )
     }
 
-    await incrementUsage(user.id, "ocr_analysis")
+    const { error: incrementError } = await supabase.rpc("increment_usage", {
+      p_user_id: user.id,
+      p_feature_type: "ocr_analysis",
+    })
+
+    if (incrementError) {
+      console.error("[v0] Usage increment error:", incrementError)
+    }
 
     return Response.json({
       success: true,

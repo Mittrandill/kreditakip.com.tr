@@ -1,10 +1,11 @@
 "use client"
 
-import { useState, useEffect } from "react"
-import { Card, CardContent } from "@/components/ui/card"
+import { useState } from "react"
+import { Card } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
-import { Crown } from "lucide-react"
+import { X, Crown } from "lucide-react"
 import { useRouter } from "next/navigation"
+import { useSubscription } from "@/hooks/use-subscription"
 
 interface AdBannerProps {
   position?: "top" | "bottom" | "sidebar"
@@ -12,78 +13,121 @@ interface AdBannerProps {
 }
 
 export function AdBanner({ position = "top", className = "" }: AdBannerProps) {
+  const { isPremium, loading } = useSubscription()
+  const [isDismissed, setIsDismissed] = useState(false)
   const router = useRouter()
-  const [isPremium, setIsPremium] = useState(false)
-  const [loading, setLoading] = useState(true)
 
-  useEffect(() => {
-    checkSubscription()
-  }, [])
-
-  const checkSubscription = async () => {
-    try {
-      const response = await fetch("/api/subscription/status")
-      if (response.ok) {
-        const data = await response.json()
-        setIsPremium(data.isPremium)
-      }
-    } catch (error) {
-      console.error("Error checking subscription:", error)
-    } finally {
-      setLoading(false)
-    }
+  // Don't show ads for premium users
+  if (loading || isPremium) {
+    return null
   }
 
-  if (loading || isPremium) return null
+  if (isDismissed) {
+    return null
+  }
 
-  const ads = [
-    {
-      title: "Finansal Özgürlüğünüze Yatırım Yapın",
-      description: "Premium üyelikle sınırsız analiz ve reklamsız deneyim",
-      cta: "Premium'a Geç",
-      action: () => router.push("/uygulama/premium"),
-      bgGradient: "from-emerald-500 to-teal-500",
-    },
-    {
-      title: "Risk Analizi ile Geleceğinizi Planlayın",
-      description: "Detaylı finansal analiz ve öneriler için Premium'a geçin",
-      cta: "Hemen Başla",
-      action: () => router.push("/uygulama/premium"),
-      bgGradient: "from-blue-500 to-indigo-500",
-    },
-    {
-      title: "Sınırsız OCR Analizi",
-      description: "İstediğiniz kadar kredi dökümü analiz edin",
-      cta: "Yükselt",
-      action: () => router.push("/uygulama/premium"),
-      bgGradient: "from-purple-500 to-pink-500",
-    },
-  ]
+  const handleUpgrade = () => {
+    router.push("/uygulama/premium")
+  }
 
-  const randomAd = ads[Math.floor(Math.random() * ads.length)]
+  const handleDismiss = () => {
+    setIsDismissed(true)
+  }
 
   return (
-    <Card className={`bg-gradient-to-r ${randomAd.bgGradient} border-0 ${className}`}>
-      <CardContent className="p-4">
-        <div className="flex items-center justify-between gap-4">
-          <div className="flex items-center gap-3 flex-1">
-            <div className="w-10 h-10 rounded-full bg-white/20 flex items-center justify-center flex-shrink-0">
-              <Crown className="w-5 h-5 text-white" />
-            </div>
-            <div className="flex-1">
-              <p className="font-semibold text-white text-sm mb-1">{randomAd.title}</p>
-              <p className="text-xs text-white/80">{randomAd.description}</p>
-            </div>
-          </div>
-          <Button
-            onClick={randomAd.action}
-            size="sm"
-            className="bg-white text-gray-900 hover:bg-white/90 font-semibold"
-          >
-            {randomAd.cta}
-          </Button>
+    <Card
+      className={`relative overflow-hidden border-2 border-amber-200 dark:border-amber-800 bg-gradient-to-r from-amber-50 to-orange-50 dark:from-amber-900/20 dark:to-orange-900/20 ${className}`}
+    >
+      <button
+        onClick={handleDismiss}
+        className="absolute top-2 right-2 p-1 hover:bg-amber-100 dark:hover:bg-amber-800/50 rounded-full transition-colors z-10"
+        aria-label="Reklamı kapat"
+      >
+        <X className="h-4 w-4 text-amber-700 dark:text-amber-400" />
+      </button>
+
+      <div className="p-4 flex items-center gap-4">
+        <div className="flex-shrink-0 p-3 bg-gradient-to-br from-amber-500 to-orange-600 rounded-lg">
+          <Crown className="h-8 w-8 text-white" />
         </div>
-      </CardContent>
+
+        <div className="flex-1 min-w-0">
+          <h3 className="font-bold text-lg text-amber-900 dark:text-amber-100 mb-1">
+            Reklamsız Deneyim İçin Premium'a Geçin
+          </h3>
+          <p className="text-sm text-amber-700 dark:text-amber-300">
+            Sınırsız analiz, risk değerlendirmesi ve reklamsız kullanım. Sadece 199₺/ay
+          </p>
+        </div>
+
+        <Button
+          onClick={handleUpgrade}
+          className="flex-shrink-0 bg-gradient-to-r from-amber-600 to-orange-600 hover:from-amber-700 hover:to-orange-700 text-white"
+        >
+          <Crown className="h-4 w-4 mr-2" />
+          Premium'a Geç
+        </Button>
+      </div>
+    </Card>
+  )
+}
+
+export function AdSidebar({ className = "" }: { className?: string }) {
+  const { isPremium, loading } = useSubscription()
+  const router = useRouter()
+
+  if (loading || isPremium) {
+    return null
+  }
+
+  const handleUpgrade = () => {
+    router.push("/uygulama/premium")
+  }
+
+  return (
+    <Card
+      className={`overflow-hidden border-2 border-purple-200 dark:border-purple-800 bg-gradient-to-br from-purple-50 to-indigo-50 dark:from-purple-900/20 dark:to-indigo-900/20 ${className}`}
+    >
+      <div className="p-6 text-center space-y-4">
+        <div className="mx-auto p-4 bg-gradient-to-br from-purple-500 to-indigo-600 rounded-full w-fit">
+          <Crown className="h-12 w-12 text-white" />
+        </div>
+
+        <div>
+          <h3 className="font-bold text-xl text-purple-900 dark:text-purple-100 mb-2">Premium Üyelik</h3>
+          <p className="text-sm text-purple-700 dark:text-purple-300 mb-4">Tüm özelliklere sınırsız erişim</p>
+        </div>
+
+        <div className="space-y-2 text-left">
+          <div className="flex items-center gap-2 text-sm text-purple-700 dark:text-purple-300">
+            <div className="h-1.5 w-1.5 rounded-full bg-purple-600 dark:bg-purple-400"></div>
+            <span>Sınırsız OCR analizi</span>
+          </div>
+          <div className="flex items-center gap-2 text-sm text-purple-700 dark:text-purple-300">
+            <div className="h-1.5 w-1.5 rounded-full bg-purple-600 dark:bg-purple-400"></div>
+            <span>Detaylı risk analizi</span>
+          </div>
+          <div className="flex items-center gap-2 text-sm text-purple-700 dark:text-purple-300">
+            <div className="h-1.5 w-1.5 rounded-full bg-purple-600 dark:bg-purple-400"></div>
+            <span>Reklamsız deneyim</span>
+          </div>
+        </div>
+
+        <div className="pt-2">
+          <p className="text-3xl font-bold text-purple-900 dark:text-purple-100 mb-1">
+            199₺<span className="text-base font-normal text-purple-700 dark:text-purple-300">/ay</span>
+          </p>
+        </div>
+
+        <Button
+          onClick={handleUpgrade}
+          className="w-full bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white"
+          size="lg"
+        >
+          <Crown className="h-5 w-5 mr-2" />
+          Hemen Başla
+        </Button>
+      </div>
     </Card>
   )
 }
