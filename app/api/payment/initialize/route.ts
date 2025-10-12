@@ -4,6 +4,8 @@ import { iyzicoClient } from "@/lib/iyzico"
 
 export async function POST() {
   try {
+    console.log("[v0] Payment initialization started")
+
     const supabase = await createServerClient()
 
     // Get current user
@@ -13,8 +15,11 @@ export async function POST() {
     } = await supabase.auth.getUser()
 
     if (authError || !user) {
+      console.error("[v0] Auth error:", authError)
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
     }
+
+    console.log("[v0] User authenticated:", user.id)
 
     // Get user profile
     const { data: profile, error: profileError } = await supabase
@@ -23,8 +28,22 @@ export async function POST() {
       .eq("id", user.id)
       .single()
 
-    if (profileError || !profile) {
+    if (profileError) {
+      console.error("[v0] Profile error:", profileError)
       return NextResponse.json({ error: "Profile not found" }, { status: 404 })
+    }
+
+    console.log("[v0] Profile loaded for:", profile.email)
+
+    if (!process.env.IYZICO_API_KEY || !process.env.IYZICO_SECRET_KEY) {
+      console.error("[v0] iyzico credentials missing")
+      return NextResponse.json(
+        {
+          error:
+            "Payment system not configured. Please add IYZICO_API_KEY and IYZICO_SECRET_KEY environment variables.",
+        },
+        { status: 500 },
+      )
     }
 
     // Create payment request
@@ -34,6 +53,8 @@ export async function POST() {
       profile.first_name || "Kullanıcı",
       profile.last_name || "Adı",
     )
+
+    console.log("[v0] Payment request created")
 
     // Initialize payment with iyzico
     const paymentResponse = await iyzicoClient.initializeCheckoutForm(paymentRequest)
@@ -45,6 +66,8 @@ export async function POST() {
         { status: 400 },
       )
     }
+
+    console.log("[v0] Payment initialized successfully")
 
     // Create payment transaction record
     const { error: transactionError } = await supabase.from("payment_transactions").insert({
@@ -66,6 +89,9 @@ export async function POST() {
     })
   } catch (error) {
     console.error("[v0] Payment initialization error:", error)
-    return NextResponse.json({ error: "Internal server error" }, { status: 500 })
+    return NextResponse.json(
+      { error: error instanceof Error ? error.message : "Internal server error" },
+      { status: 500 },
+    )
   }
 }

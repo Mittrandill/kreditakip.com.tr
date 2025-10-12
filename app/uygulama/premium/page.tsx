@@ -38,29 +38,40 @@ export default function PremiumPage() {
 
   const handleUpgrade = async () => {
     setIsProcessing(true)
+    console.log("[v0] Starting payment initialization...")
+
     try {
       const response = await fetch("/api/payment/initialize", {
         method: "POST",
       })
 
+      console.log("[v0] Payment API response status:", response.status)
+
       if (!response.ok) {
-        throw new Error("Ödeme başlatılamadı")
+        const errorData = await response.json()
+        console.error("[v0] Payment API error:", errorData)
+        throw new Error(errorData.error || "Ödeme başlatılamadı")
       }
 
       const data = await response.json()
+      console.log("[v0] Payment data received:", { hasToken: !!data.token, hasUrl: !!data.paymentPageUrl })
 
       if (data.paymentPageUrl) {
+        console.log("[v0] Redirecting to payment page...")
         window.location.href = data.paymentPageUrl
       } else if (data.checkoutFormContent) {
+        console.log("[v0] Rendering checkout form...")
         const checkoutDiv = document.createElement("div")
         checkoutDiv.innerHTML = data.checkoutFormContent
         document.body.appendChild(checkoutDiv)
+      } else {
+        throw new Error("Ödeme sayfası bilgisi alınamadı")
       }
     } catch (error) {
       console.error("[v0] Payment initialization error:", error)
       toast({
         title: "Hata",
-        description: "Ödeme işlemi başlatılamadı. Lütfen tekrar deneyin.",
+        description: error instanceof Error ? error.message : "Ödeme işlemi başlatılamadı. Lütfen tekrar deneyin.",
         variant: "destructive",
       })
       setIsProcessing(false)

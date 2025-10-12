@@ -1,6 +1,8 @@
 // iyzico Payment Integration
 // Documentation: https://dev.iyzipay.com/
 
+import crypto from "crypto"
+
 interface IyzicoConfig {
   apiKey: string
   secretKey: string
@@ -73,7 +75,6 @@ class IyzicoClient {
   }
 
   private generateAuthString(uri: string, body: string): string {
-    const crypto = require("crypto")
     const randomString = this.generateRandomString()
     const dataToEncrypt = `${randomString}${uri}${body}`
 
@@ -83,12 +84,19 @@ class IyzicoClient {
   }
 
   private generateRandomString(): string {
-    return Math.random().toString(36).substring(2, 15)
+    return Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15)
   }
 
   async initializeCheckoutForm(request: IyzicoPaymentRequest): Promise<IyzicoPaymentResponse> {
     const uri = "/payment/iyzipos/checkoutform/initialize/auth/ecom"
     const body = JSON.stringify(request)
+    const randomString = this.generateRandomString()
+
+    console.log("[v0] Initializing iyzico payment with config:", {
+      baseUrl: this.config.baseUrl,
+      hasApiKey: !!this.config.apiKey,
+      hasSecretKey: !!this.config.secretKey,
+    })
 
     try {
       const response = await fetch(`${this.config.baseUrl}${uri}`, {
@@ -96,12 +104,19 @@ class IyzicoClient {
         headers: {
           "Content-Type": "application/json",
           Authorization: this.generateAuthString(uri, body),
-          "x-iyzi-rnd": this.generateRandomString(),
+          "x-iyzi-rnd": randomString,
         },
         body: body,
       })
 
       const data = await response.json()
+
+      console.log("[v0] iyzico response status:", data.status)
+
+      if (data.status !== "success") {
+        console.error("[v0] iyzico error:", data.errorMessage, data.errorCode)
+      }
+
       return data
     } catch (error) {
       console.error("[v0] iyzico API error:", error)
