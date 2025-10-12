@@ -19,7 +19,7 @@ importers:
         version: 0.24.1
       '@hookform/resolvers':
         specifier: ^3.3.4
-        version: 3.10.0(react-hook-form@7.64.0(react@18.3.1))
+        version: 3.10.0(react-hook-form@7.65.0(react@18.3.1))
       '@neondatabase/serverless':
         specifier: ^0.9.0
         version: 0.9.0
@@ -108,11 +108,11 @@ importers:
         specifier: latest
         version: 1.3.2(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       '@supabase/ssr':
-        specifier: ^0.1.0
-        version: 0.1.0(@supabase/supabase-js@2.74.0)
+        specifier: latest
+        version: 0.7.0(@supabase/supabase-js@2.75.0)
       '@supabase/supabase-js':
         specifier: latest
-        version: 2.74.0
+        version: 2.75.0
       '@types/node':
         specifier: ^20
         version: 20.0.0
@@ -148,7 +148,7 @@ importers:
         version: 8.6.0(react@18.3.1)
       framer-motion:
         specifier: latest
-        version: 12.23.22(@emotion/is-prop-valid@1.4.0)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
+        version: 12.23.24(@emotion/is-prop-valid@1.4.0)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       input-otp:
         specifier: latest
         version: 1.4.2(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
@@ -187,7 +187,7 @@ importers:
         version: 14.3.8(react@18.3.1)
       react-hook-form:
         specifier: latest
-        version: 7.64.0(react@18.3.1)
+        version: 7.65.0(react@18.3.1)
       react-icons:
         specifier: latest
         version: 5.5.0(react@18.3.1)
@@ -1165,32 +1165,32 @@ packages:
   '@standard-schema/utils@0.3.0':
     resolution: {integrity: sha512-e7Mew686owMaPJVNNLs55PUvgz371nKgwsc4vxE49zsODpJEnxgxRo2y/OKrqueavXgZNMDVj3DdHFlaSAeU8g==}
 
-  '@supabase/auth-js@2.74.0':
-    resolution: {integrity: sha512-EJYDxYhBCOS40VJvfQ5zSjo8Ku7JbTICLTcmXt4xHMQZt4IumpRfHg11exXI9uZ6G7fhsQlNgbzDhFN4Ni9NnA==}
+  '@supabase/auth-js@2.75.0':
+    resolution: {integrity: sha512-J8TkeqCOMCV4KwGKVoxmEBuDdHRwoInML2vJilthOo7awVCro2SM+tOcpljORwuBQ1vHUtV62Leit+5wlxrNtw==}
 
-  '@supabase/functions-js@2.74.0':
-    resolution: {integrity: sha512-VqWYa981t7xtIFVf7LRb9meklHckbH/tqwaML5P3LgvlaZHpoSPjMCNLcquuLYiJLxnh2rio7IxLh+VlvRvSWw==}
+  '@supabase/functions-js@2.75.0':
+    resolution: {integrity: sha512-18yk07Moj/xtQ28zkqswxDavXC3vbOwt1hDuYM3/7xPnwwpKnsmPyZ7bQ5th4uqiJzQ135t74La9tuaxBR6e7w==}
 
   '@supabase/node-fetch@2.6.15':
     resolution: {integrity: sha512-1ibVeYUacxWYi9i0cf5efil6adJ9WRyZBLivgjs+AUpewx1F3xPi7gLgaASI2SmIQxPoCEjAsLAzKPgMJVgOUQ==}
     engines: {node: 4.x || >=6.0.0}
 
-  '@supabase/postgrest-js@2.74.0':
-    resolution: {integrity: sha512-9Ypa2eS0Ib/YQClE+BhDSjx7OKjYEF6LAGjTB8X4HucdboGEwR0LZKctNfw6V0PPIAVjjzZxIlNBXGv0ypIkHw==}
+  '@supabase/postgrest-js@2.75.0':
+    resolution: {integrity: sha512-YfBz4W/z7eYCFyuvHhfjOTTzRrQIvsMG2bVwJAKEVVUqGdzqfvyidXssLBG0Fqlql1zJFgtsPpK1n4meHrI7tg==}
 
-  '@supabase/realtime-js@2.74.0':
-    resolution: {integrity: sha512-K5VqpA4/7RO1u1nyD5ICFKzWKu58bIDcPxHY0aFA7MyWkFd0pzi/XYXeoSsAifnD9p72gPIpgxVXCQZKJg1ktQ==}
+  '@supabase/realtime-js@2.75.0':
+    resolution: {integrity: sha512-B4Xxsf2NHd5cEnM6MGswOSPSsZKljkYXpvzKKmNxoUmNQOfB7D8HOa6NwHcUBSlxcjV+vIrYKcYXtavGJqeGrw==}
 
-  '@supabase/ssr@0.1.0':
-    resolution: {integrity: sha512-bIVrkqjAK5G3KjkIMKYKtAOlCgRRplEWjrlyRyXSOYtgDieiOhk2ZyNAPsEOa1By9OZVxuX5eAW1fitdnuxayw==}
+  '@supabase/ssr@0.7.0':
+    resolution: {integrity: sha512-G65t5EhLSJ5c8hTCcXifSL9Q/ZRXvqgXeNo+d3P56f4U1IxwTqjB64UfmfixvmMcjuxnq2yGqEWVJqUcO+AzAg==}
     peerDependencies:
-      '@supabase/supabase-js': ^2.33.1
+      '@supabase/supabase-js': ^2.43.4
 
-  '@supabase/storage-js@2.74.0':
-    resolution: {integrity: sha512-o0cTQdMqHh4ERDLtjUp1/KGPbQoNwKRxUh6f8+KQyjC5DSmiw/r+jgFe/WHh067aW+WU8nA9Ytw9ag7OhzxEkQ==}
+  '@supabase/storage-js@2.75.0':
+    resolution: {integrity: sha512-wpJMYdfFDckDiHQaTpK+Ib14N/O2o0AAWWhguKvmmMurB6Unx17GGmYp5rrrqCTf8S1qq4IfIxTXxS4hzrUySg==}
 
-  '@supabase/supabase-js@2.74.0':
-    resolution: {integrity: sha512-IEMM/V6gKdP+N/X31KDIczVzghDpiPWFGLNjS8Rus71KvV6y6ueLrrE/JGCHDrU+9pq5copF3iCa0YQh+9Lq9Q==}
+  '@supabase/supabase-js@2.75.0':
+    resolution: {integrity: sha512-8UN/vATSgS2JFuJlMVr51L3eUDz+j1m7Ww63wlvHLKULzCDaVWYzvacCjBTLW/lX/vedI2LBI4Vg+01G9ufsJQ==}
 
   '@sveltejs/acorn-typescript@1.0.5':
     resolution: {integrity: sha512-IwQk4yfwLdibDlrXVE04jTZYlLnwsTT2PIOQQGNLWfjavGifnk1JD1LcZjZaBTRcxZu2FfPfNLOE04DSu9lqtQ==}
@@ -1692,9 +1692,9 @@ packages:
   concat-map@0.0.1:
     resolution: {integrity: sha512-/Srv4dswyQNBfohGpz9o6Yb3Gz3SrUDqBH5rTuhGR7ahtlbYKnVxw2bCFMRljaA7EXHaXZ8wsHdodFvbkhKmqg==}
 
-  cookie@0.5.0:
-    resolution: {integrity: sha512-YZ3GUyn/o8gfKJlnlX7g7xq4gyO6OSuhGPKaaGssGB2qgDUS0gPgtTvoyZLTt9Ab6dC4hfc9dV5arkvc/OCmrw==}
-    engines: {node: '>= 0.6'}
+  cookie@1.0.2:
+    resolution: {integrity: sha512-9Kr/j4O16ISv8zBBhJoi4bXOYNTkFLOqSL3UDB0njXxCXNezjeyVrJyGOWtgfs/q2km1gwBcfH8q1yEGoMYunA==}
+    engines: {node: '>=18'}
 
   core-js@3.44.0:
     resolution: {integrity: sha512-aFCtd4l6GvAXwVEh3XbbVqJGHDJt0OZRa+5ePGx3LLwi12WfexqQxcsohb2wgsa/92xtl19Hd66G/L+TaAxDMw==}
@@ -2160,8 +2160,8 @@ packages:
   fraction.js@4.3.7:
     resolution: {integrity: sha512-ZsDfxO51wGAXREY55a7la9LScWpwv9RxIrYABrlvOFBlH/ShPnrtsXeuUIfXKKOVicNxQ+o8JTbJvjS4M89yew==}
 
-  framer-motion@12.23.22:
-    resolution: {integrity: sha512-ZgGvdxXCw55ZYvhoZChTlG6pUuehecgvEAJz0BHoC5pQKW1EC5xf1Mul1ej5+ai+pVY0pylyFfdl45qnM1/GsA==}
+  framer-motion@12.23.24:
+    resolution: {integrity: sha512-HMi5HRoRCTou+3fb3h9oTLyJGBxHfW+HnNE25tAXOvVx/IvwMHK0cx7IR4a2ZU6sh3IX1Z+4ts32PcYBOqka8w==}
     peerDependencies:
       '@emotion/is-prop-valid': '*'
       react: ^18.0.0 || ^19.0.0
@@ -2603,8 +2603,8 @@ packages:
     resolution: {integrity: sha512-qOOzS1cBTWYF4BH8fVePDBOO9iptMnGUEZwNc/cMWnTV2nVLZ7VoNWEPHkYczZA0pdoA7dl6e7FL659nX9S2aw==}
     engines: {node: '>=16 || 14 >=14.17'}
 
-  motion-dom@12.23.21:
-    resolution: {integrity: sha512-5xDXx/AbhrfgsQmSE7YESMn4Dpo6x5/DTZ4Iyy4xqDvVHWvFVoV+V2Ri2S/ksx+D40wrZ7gPYiMWshkdoqNgNQ==}
+  motion-dom@12.23.23:
+    resolution: {integrity: sha512-n5yolOs0TQQBRUFImrRfs/+6X4p3Q4n1dUEqt/H58Vx7OW6RF+foWEgmTVDhIWJIMXOuNNL0apKH2S16en9eiA==}
 
   motion-utils@12.23.6:
     resolution: {integrity: sha512-eAWoPgr4eFEOFfg2WjIsMoqJTW6Z8MTUCgn/GZ3VRpClWBdnbjryiA3ZSNLyxCTmCQx4RmYX6jX1iWHbenUPNQ==}
@@ -2896,9 +2896,6 @@ packages:
   raf@3.4.1:
     resolution: {integrity: sha512-Sq4CW4QhwOHE8ucn6J34MqtZCeWFP2aQSmrlroYgqAV1PjStIhJXxYuTgUIfkEk7zTLjmIjLmU5q+fbD1NnOJA==}
 
-  ramda@0.29.1:
-    resolution: {integrity: sha512-OfxIeWzd4xdUNxlWhgFazxsA/nl3mS4/jGZI5n00uWOoSSFRhC1b6gl6xvmzUamgmqELraWp0J/qqVlXYPDPyA==}
-
   react-chartjs-2@5.3.0:
     resolution: {integrity: sha512-UfZZFnDsERI3c3CZGxzvNJd02SHjaSJ8kgW1djn65H1KK8rehwTjyrRKOG3VTMG8wtHZ5rgAO5oTHtHi9GCCmw==}
     peerDependencies:
@@ -2922,8 +2919,8 @@ packages:
     peerDependencies:
       react: '>= 16.8 || 18.0.0'
 
-  react-hook-form@7.64.0:
-    resolution: {integrity: sha512-fnN+vvTiMLnRqKNTVhDysdrUay0kUUAymQnFIznmgDvapjveUWOOPqMNzPg+A+0yf9DuE2h6xzBjN1s+Qx8wcg==}
+  react-hook-form@7.65.0:
+    resolution: {integrity: sha512-xtOzDz063WcXvGWaHgLNrNzlsdFgtUWcb32E6WFaGTd7kPZG3EeDusjdZfUsPwKCKVXy1ZlntifaHZ4l8pAsmw==}
     engines: {node: '>=18.0.0'}
     peerDependencies:
       react: ^16.8.0 || ^17 || ^18 || ^19
@@ -3678,9 +3675,9 @@ snapshots:
 
   '@google/generative-ai@0.24.1': {}
 
-  '@hookform/resolvers@3.10.0(react-hook-form@7.64.0(react@18.3.1))':
+  '@hookform/resolvers@3.10.0(react-hook-form@7.65.0(react@18.3.1))':
     dependencies:
-      react-hook-form: 7.64.0(react@18.3.1)
+      react-hook-form: 7.65.0(react@18.3.1)
 
   '@humanwhocodes/config-array@0.6.0':
     dependencies:
@@ -4491,11 +4488,11 @@ snapshots:
 
   '@standard-schema/utils@0.3.0': {}
 
-  '@supabase/auth-js@2.74.0':
+  '@supabase/auth-js@2.75.0':
     dependencies:
       '@supabase/node-fetch': 2.6.15
 
-  '@supabase/functions-js@2.74.0':
+  '@supabase/functions-js@2.75.0':
     dependencies:
       '@supabase/node-fetch': 2.6.15
 
@@ -4503,11 +4500,11 @@ snapshots:
     dependencies:
       whatwg-url: 5.0.0
 
-  '@supabase/postgrest-js@2.74.0':
+  '@supabase/postgrest-js@2.75.0':
     dependencies:
       '@supabase/node-fetch': 2.6.15
 
-  '@supabase/realtime-js@2.74.0':
+  '@supabase/realtime-js@2.75.0':
     dependencies:
       '@supabase/node-fetch': 2.6.15
       '@types/phoenix': 1.6.6
@@ -4517,24 +4514,23 @@ snapshots:
       - bufferutil
       - utf-8-validate
 
-  '@supabase/ssr@0.1.0(@supabase/supabase-js@2.74.0)':
+  '@supabase/ssr@0.7.0(@supabase/supabase-js@2.75.0)':
     dependencies:
-      '@supabase/supabase-js': 2.74.0
-      cookie: 0.5.0
-      ramda: 0.29.1
+      '@supabase/supabase-js': 2.75.0
+      cookie: 1.0.2
 
-  '@supabase/storage-js@2.74.0':
+  '@supabase/storage-js@2.75.0':
     dependencies:
       '@supabase/node-fetch': 2.6.15
 
-  '@supabase/supabase-js@2.74.0':
+  '@supabase/supabase-js@2.75.0':
     dependencies:
-      '@supabase/auth-js': 2.74.0
-      '@supabase/functions-js': 2.74.0
+      '@supabase/auth-js': 2.75.0
+      '@supabase/functions-js': 2.75.0
       '@supabase/node-fetch': 2.6.15
-      '@supabase/postgrest-js': 2.74.0
-      '@supabase/realtime-js': 2.74.0
-      '@supabase/storage-js': 2.74.0
+      '@supabase/postgrest-js': 2.75.0
+      '@supabase/realtime-js': 2.75.0
+      '@supabase/storage-js': 2.75.0
     transitivePeerDependencies:
       - bufferutil
       - utf-8-validate
@@ -5062,7 +5058,7 @@ snapshots:
 
   concat-map@0.0.1: {}
 
-  cookie@0.5.0: {}
+  cookie@1.0.2: {}
 
   core-js@3.44.0:
     optional: true
@@ -5367,7 +5363,7 @@ snapshots:
       eslint: 8.0.0
       eslint-import-resolver-node: 0.3.9
       eslint-import-resolver-typescript: 3.10.1(eslint-plugin-import@2.32.0(eslint@8.0.0))(eslint@8.0.0)
-      eslint-plugin-import: 2.32.0(@typescript-eslint/parser@6.21.0(eslint@8.0.0)(typescript@5.8.3))(eslint-import-resolver-typescript@3.10.1)(eslint@8.0.0)
+      eslint-plugin-import: 2.32.0(@typescript-eslint/parser@6.21.0(eslint@8.0.0)(typescript@5.8.3))(eslint-import-resolver-typescript@3.10.1(eslint-plugin-import@2.32.0(eslint@8.0.0))(eslint@8.0.0))(eslint@8.0.0)
       eslint-plugin-jsx-a11y: 6.10.2(eslint@8.0.0)
       eslint-plugin-react: 7.37.5(eslint@8.0.0)
       eslint-plugin-react-hooks: 5.0.0-canary-7118f5dd7-20230705(eslint@8.0.0)
@@ -5397,7 +5393,7 @@ snapshots:
       tinyglobby: 0.2.14
       unrs-resolver: 1.11.1
     optionalDependencies:
-      eslint-plugin-import: 2.32.0(@typescript-eslint/parser@6.21.0(eslint@8.0.0)(typescript@5.8.3))(eslint-import-resolver-typescript@3.10.1)(eslint@8.0.0)
+      eslint-plugin-import: 2.32.0(@typescript-eslint/parser@6.21.0(eslint@8.0.0)(typescript@5.8.3))(eslint-import-resolver-typescript@3.10.1(eslint-plugin-import@2.32.0(eslint@8.0.0))(eslint@8.0.0))(eslint@8.0.0)
     transitivePeerDependencies:
       - supports-color
 
@@ -5412,7 +5408,7 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  eslint-plugin-import@2.32.0(@typescript-eslint/parser@6.21.0(eslint@8.0.0)(typescript@5.8.3))(eslint-import-resolver-typescript@3.10.1)(eslint@8.0.0):
+  eslint-plugin-import@2.32.0(@typescript-eslint/parser@6.21.0(eslint@8.0.0)(typescript@5.8.3))(eslint-import-resolver-typescript@3.10.1(eslint-plugin-import@2.32.0(eslint@8.0.0))(eslint@8.0.0))(eslint@8.0.0):
     dependencies:
       '@rtsao/scc': 1.1.0
       array-includes: 3.1.9
@@ -5649,9 +5645,9 @@ snapshots:
 
   fraction.js@4.3.7: {}
 
-  framer-motion@12.23.22(@emotion/is-prop-valid@1.4.0)(react-dom@18.3.1(react@18.3.1))(react@18.3.1):
+  framer-motion@12.23.24(@emotion/is-prop-valid@1.4.0)(react-dom@18.3.1(react@18.3.1))(react@18.3.1):
     dependencies:
-      motion-dom: 12.23.21
+      motion-dom: 12.23.23
       motion-utils: 12.23.6
       tslib: 2.8.1
     optionalDependencies:
@@ -6133,7 +6129,7 @@ snapshots:
 
   minipass@7.1.2: {}
 
-  motion-dom@12.23.21:
+  motion-dom@12.23.23:
     dependencies:
       motion-utils: 12.23.6
 
@@ -6400,8 +6396,6 @@ snapshots:
       performance-now: 2.1.0
     optional: true
 
-  ramda@0.29.1: {}
-
   react-chartjs-2@5.3.0(chart.js@4.5.0)(react@18.3.1):
     dependencies:
       chart.js: 4.5.0
@@ -6427,7 +6421,7 @@ snapshots:
       prop-types: 15.8.1
       react: 18.3.1
 
-  react-hook-form@7.64.0(react@18.3.1):
+  react-hook-form@7.65.0(react@18.3.1):
     dependencies:
       react: 18.3.1
 

@@ -1,5 +1,7 @@
 import { GoogleGenerativeAI } from "@google/generative-ai"
 import { mapBankName } from "@/lib/utils/bank-mapper"
+import { canUseFeature, incrementUsage } from "@/lib/api/subscriptions"
+import { createClient } from "@/lib/supabase/server"
 
 export const maxDuration = 60
 
@@ -190,6 +192,30 @@ export async function POST(request: Request) {
   const startTime = Date.now()
 
   try {
+    const supabase = await createClient()
+    const {
+      data: { user },
+    } = await supabase.auth.getUser()
+
+    if (!user) {
+      return Response.json({ error: "Giriş yapmanız gerekiyor" }, { status: 401 })
+    }
+
+    const canUse = await canUseFeature(user.id, "ocr_analysis")
+
+    if (!canUse) {
+      return Response.json(
+        {
+          error: "Ücretsiz analiz hakkınız doldu",
+          limitReached: true,
+          upgradeRequired: true,
+          message:
+            "Ücretsiz planınızda 1 adet OCR analiz hakkınız vardı ve bu hakkınızı kullandınız. Sınırsız analiz için Premium üyeliğe geçin.",
+        },
+        { status: 403 },
+      )
+    }
+
     if (!process.env.GEMINI_API_KEY) {
       return Response.json({ error: "Google API anahtarı bulunamadı" }, { status: 500 })
     }
@@ -208,9 +234,9 @@ export async function POST(request: Request) {
     const model = genAI.getGenerativeModel({
       model: "gemini-1.5-flash",
       generationConfig: {
-        temperature: 0.05, // Daha deterministik sonuçlar için düşürüldü
+        temperature: 0.05,
         topK: 1,
-        topP: 0.05, // Daha odaklı yanıtlar için düşürüldü
+        topP: 0.05,
         maxOutputTokens: 8192,
       },
     })
@@ -473,6 +499,8 @@ export async function POST(request: Request) {
         { status: 422 },
       )
     }
+
+    await incrementUsage(user.id, "ocr_analysis")
 
     return Response.json({
       success: true,

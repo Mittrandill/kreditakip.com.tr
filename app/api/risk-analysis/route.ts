@@ -2,6 +2,8 @@ import { type NextRequest, NextResponse } from "next/server"
 import type { FinancialProfile, RiskAnalysisData } from "@/lib/types"
 import { getFinancialProfile } from "@/lib/api/financials"
 import { supabase } from "@/lib/supabase"
+import { canUseFeature, incrementUsage } from "@/lib/api/subscriptions"
+import { createClient } from "@/lib/supabase/server"
 
 const CHART_COLORS = ["#10B981", "#3B82F6", "#F59E0B", "#EF4444", "#8B5CF6", "#06B6D4", "#F97316", "#84CC16"]
 
@@ -11,6 +13,30 @@ export async function POST(request: NextRequest) {
 
     if (!userId) {
       return NextResponse.json({ error: "Kullanıcı ID gereklidir" }, { status: 400 })
+    }
+
+    const supabaseClient = await createClient()
+    const {
+      data: { user },
+    } = await supabaseClient.auth.getUser()
+
+    if (!user || user.id !== userId) {
+      return NextResponse.json({ error: "Yetkisiz erişim" }, { status: 401 })
+    }
+
+    const canUse = await canUseFeature(userId, "risk_analysis")
+
+    if (!canUse) {
+      return NextResponse.json(
+        {
+          error: "Risk analizi özelliği Premium üyelere özeldir",
+          limitReached: true,
+          upgradeRequired: true,
+          message:
+            "Risk analizi özelliği sadece Premium üyelere özeldir. Detaylı finansal analiz ve öneriler için Premium üyeliğe geçin.",
+        },
+        { status: 403 },
+      )
     }
 
     const financialProfile = await getFinancialProfile(userId)
@@ -25,6 +51,8 @@ export async function POST(request: NextRequest) {
     }
 
     const analysisData = await performComprehensiveRiskAnalysis(userId, financialProfile)
+
+    await incrementUsage(userId, "risk_analysis")
 
     return NextResponse.json(analysisData)
   } catch (error) {
@@ -276,7 +304,7 @@ async function performComprehensiveRiskAnalysis(
       monthlyIncome,
       monthlyExpenses,
       disposableIncome,
-      assessment: disposableIncome > 0 ? "Pozitif" : disposableIncome < 0 ? "Negatif" : "Dengede",
+      assessment: cashFlowAssessment,
       explanation: `Aylık geliriniz ${monthlyIncome.toLocaleString("tr-TR")} TL, giderleriniz ${monthlyExpenses.toLocaleString("tr-TR")} TL. Borç ödemeleriniz dahil edildiğinde ${disposableIncome >= 0 ? "pozitif" : "negatif"} nakit akışınız var.`,
       suggestions:
         disposableIncome < 0
