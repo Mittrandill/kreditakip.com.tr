@@ -47,13 +47,20 @@ export default function PremiumPage() {
 
       console.log("[v0] Payment API response status:", response.status)
 
-      if (!response.ok) {
-        const errorData = await response.json()
-        console.error("[v0] Payment API error:", errorData)
-        throw new Error(errorData.error || "Ödeme başlatılamadı")
+      const contentType = response.headers.get("content-type")
+      if (!contentType || !contentType.includes("application/json")) {
+        const text = await response.text()
+        console.error("[v0] Non-JSON response:", text.substring(0, 200))
+        throw new Error("Sunucu beklenmeyen bir yanıt döndürdü. Lütfen daha sonra tekrar deneyin.")
       }
 
       const data = await response.json()
+
+      if (!response.ok) {
+        console.error("[v0] Payment API error:", data)
+        throw new Error(data.error || "Ödeme başlatılamadı")
+      }
+
       console.log("[v0] Payment data received:", { hasToken: !!data.token, hasUrl: !!data.paymentPageUrl })
 
       if (data.paymentPageUrl) {

@@ -40,7 +40,7 @@ export async function POST() {
       return NextResponse.json(
         {
           error:
-            "Payment system not configured. Please add IYZICO_API_KEY and IYZICO_SECRET_KEY environment variables.",
+            "Ödeme sistemi yapılandırılmamış. Lütfen IYZICO_API_KEY ve IYZICO_SECRET_KEY environment variable'larını ekleyin.",
         },
         { status: 500 },
       )
@@ -54,15 +54,39 @@ export async function POST() {
       profile.last_name || "Adı",
     )
 
-    console.log("[v0] Payment request created")
+    console.log("[v0] Payment request created:", {
+      conversationId: paymentRequest.conversationId,
+      price: paymentRequest.price,
+    })
 
-    // Initialize payment with iyzico
-    const paymentResponse = await iyzicoClient.initializeCheckoutForm(paymentRequest)
+    let paymentResponse
+    try {
+      paymentResponse = await iyzicoClient.initializeCheckoutForm(paymentRequest)
+      console.log("[v0] iyzico response:", {
+        status: paymentResponse.status,
+        hasToken: !!paymentResponse.token,
+        hasUrl: !!paymentResponse.paymentPageUrl,
+      })
+    } catch (iyzicoError) {
+      console.error("[v0] iyzico API error:", iyzicoError)
+      return NextResponse.json(
+        {
+          error: "iyzico ödeme sistemi ile bağlantı kurulamadı. Lütfen daha sonra tekrar deneyin.",
+        },
+        { status: 500 },
+      )
+    }
 
     if (paymentResponse.status !== "success") {
-      console.error("[v0] iyzico initialization failed:", paymentResponse)
+      console.error("[v0] iyzico initialization failed:", {
+        status: paymentResponse.status,
+        errorCode: paymentResponse.errorCode,
+        errorMessage: paymentResponse.errorMessage,
+      })
       return NextResponse.json(
-        { error: paymentResponse.errorMessage || "Payment initialization failed" },
+        {
+          error: paymentResponse.errorMessage || "Ödeme başlatılamadı. Lütfen bilgilerinizi kontrol edin.",
+        },
         { status: 400 },
       )
     }
@@ -90,7 +114,9 @@ export async function POST() {
   } catch (error) {
     console.error("[v0] Payment initialization error:", error)
     return NextResponse.json(
-      { error: error instanceof Error ? error.message : "Internal server error" },
+      {
+        error: error instanceof Error ? error.message : "Ödeme işlemi başlatılırken bir hata oluştu",
+      },
       { status: 500 },
     )
   }

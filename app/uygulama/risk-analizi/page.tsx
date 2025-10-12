@@ -127,13 +127,19 @@ export default function RiskAnaliziPage() {
           setInitialDataError(null)
         }
         try {
-          const [profileData, creditsData, pastAnalysesData] = await Promise.all([
-            fetch(`/api/financial-profile/${userId}`).then((res) => res.json()),
+          const [profileResponse, creditsData, pastAnalysesData] = await Promise.all([
+            fetch(`/api/financial-profile?userId=${userId}`),
             getCredits(userId),
             getRiskAnalyses(userId),
           ])
 
           if (!isMounted) return
+
+          if (!profileResponse.ok) {
+            throw new Error("Finansal profil yüklenemedi")
+          }
+
+          const profileData = await profileResponse.json()
 
           setFinancialProfile(profileData)
           setCredits(creditsData as Credit[])
