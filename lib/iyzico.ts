@@ -75,12 +75,12 @@ class IyzicoClient {
   }
 
   private generateAuthString(randomString: string, uri: string, body: string): string {
-    // iyzico expects: randomString + uri + requestBody
-    const dataToEncrypt = randomString + uri + body
+    // iyzico expects: IYZIWS apiKey:base64(hmac_sha256(apiKey + randomString + secretKey + body))
+    const dataToEncrypt = `${this.config.apiKey}${randomString}${this.config.secretKey}${body}`
 
     const hash = crypto.createHmac("sha256", this.config.secretKey).update(dataToEncrypt).digest("base64")
 
-    return `IYZWS ${this.config.apiKey}:${hash}`
+    return `IYZWSv2 ${this.config.apiKey}:${hash}`
   }
 
   private generateRandomString(): string {
@@ -98,6 +98,7 @@ class IyzicoClient {
       hasSecretKey: !!this.config.secretKey,
       apiKeyLength: this.config.apiKey.length,
       secretKeyLength: this.config.secretKey.length,
+      randomString: randomString,
     })
 
     if (!this.config.apiKey || !this.config.secretKey) {
@@ -105,15 +106,26 @@ class IyzicoClient {
     }
 
     try {
+      const authHeader = this.generateAuthString(randomString, uri, body)
+
+      console.log("[v0] Request details:", {
+        uri,
+        authHeaderPrefix: authHeader.substring(0, 20),
+        randomStringLength: randomString.length,
+      })
+
       const response = await fetch(`${this.config.baseUrl}${uri}`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          Authorization: this.generateAuthString(randomString, uri, body),
+          Authorization: authHeader,
           "x-iyzi-rnd": randomString,
+          Accept: "application/json",
         },
         body: body,
       })
+
+      console.log("[v0] iyzico response status:", response.status)
 
       if (!response.ok) {
         const errorText = await response.text()
@@ -152,6 +164,7 @@ class IyzicoClient {
           "Content-Type": "application/json",
           Authorization: this.generateAuthString(randomString, uri, body),
           "x-iyzi-rnd": randomString,
+          Accept: "application/json",
         },
         body: body,
       })
