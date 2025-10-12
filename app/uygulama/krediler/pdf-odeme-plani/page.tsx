@@ -25,6 +25,7 @@ import { useToast } from "@/hooks/use-toast"
 import BankSelector from "@/components/bank-selector"
 import { UpgradePrompt } from "@/components/upgrade-prompt"
 import { useSubscription } from "@/hooks/use-subscription"
+import { AdBanner } from "@/components/ad-banner"
 
 interface AnalysisResult {
   bankName: string | null
@@ -206,6 +207,8 @@ export default function PDFOdemePlaniPage() {
 
   return (
     <div className="space-y-8">
+      <AdBanner position="top" className="mb-6" />
+
       <Card className="overflow-hidden border-0 shadow-xl rounded-2xl">
         <div className="bg-gradient-to-r from-purple-600 to-indigo-700 p-8 text-white relative">
           <div className="absolute top-0 right-0 w-64 h-64 bg-white opacity-5 rounded-full -mt-32 -mr-32"></div>

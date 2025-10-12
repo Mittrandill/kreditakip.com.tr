@@ -58,6 +58,7 @@ import {
 } from "@/components/ui/alert"
 import { ListChecks } from "lucide-react"
 import { useSubscription } from "@/hooks/use-subscription"
+import { AdBanner } from "@/components/ad-banner"
 
 const getRiskBadgeText = (color: string | null | undefined): string => {
   if (color === "emerald") return "Düşük Risk"
@@ -384,6 +385,8 @@ export default function RiskAnaliziPage() {
 
   return (
     <div className="flex flex-col gap-4 md:gap-6">
+      <AdBanner position="top" className="mb-4" />
+
       <Card className="bg-gradient-to-r from-red-600 to-rose-700 text-white border-transparent shadow-xl rounded-xl">
         <CardContent className="p-6 md:p-8">
           <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
