@@ -8,8 +8,13 @@ const mailerSend = new MailerSend({
 const supabase = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL, process.env.SERVICE_ROLE_KEY)
 
 async function createEmailTemplate(firstName, bankName, installmentNumber, amount, dueDate, type) {
-  const isReminder = type === "reminder"
-  const subject = isReminder ? `💳 Kredi Taksit Hatırlatması - ${bankName}` : `⚠️ Geciken Ödeme Bildirimi - ${bankName}`
+  const isReminder = type === "reminder";
+  const subject = isReminder
+    ? `💳 Kredi Taksit Hatırlatması - ${bankName}`
+    : `⚠️ Geciken Ödeme Bildirimi - ${bankName}`;
+
+  const BRAND_LOGO =
+    "https://oymjjceuiotxfbpwsdym.supabase.co/storage/v1/object/public/Logo/logo-white.png";
 
   const getBankLogoUrl = (bankName) => {
     const bankMappings = {
@@ -59,311 +64,229 @@ async function createEmailTemplate(firstName, bankName, installmentNumber, amoun
       "Albaraka Türk Katılım Bankası A.Ş.": "albaraka-turk-katilim-bankasi.png",
       "Türkiye Finans": "turkiye-finans-katilim-bankasi.png",
       "Türkiye Finans Katılım Bankası A.Ş.": "turkiye-finans-katilim-bankasi.png",
-    }
+    };
+    const file = bankMappings[bankName] || "default-bank.png";
+    return `https://oymjjceuiotxfbpwsdym.supabase.co/storage/v1/object/public/bank-logos/${file}`;
+  };
 
-    const logoFileName = bankMappings[bankName] || "default-bank.png"
-    return `https://oymjjceuiotxfbpwsdym.supabase.co/storage/v1/object/public/bank-logos/${logoFileName}`
-  }
+  const accent = isReminder ? "#10b981" : "#dc2626";    // yeşil/kırmızı
+  const accentDark = isReminder ? "#0ea271" : "#b91c1c";
+  const badgeBg = isReminder ? "#ecfdf5" : "#fef2f2";
+  const badgeFg = isReminder ? "#065f46" : "#991b1b";
+
+  const safeFirstName = (firstName || "").trim() || "Kullanıcımız";
+  const bankLogo = getBankLogoUrl(bankName);
+
+  const preheader = isReminder
+    ? `${bankName} ${installmentNumber}. taksit vadesi ${dueDate}. Detaylar ve ödeme planınız içeride.`
+    : `${bankName} ${installmentNumber}. taksit için vade geçti. Planınızı kontrol edin ve aksiyon alın.`;
 
   const html = `
-    <!DOCTYPE html>
-    <html lang="tr">
-    <head>
-      <meta charset="utf-8">
-      <meta name="viewport" content="width=device-width, initial-scale=1.0">
-      <title>${subject}</title>
-      <style>
-        * {
-          margin: 0;
-          padding: 0;
-          box-sizing: border-box;
-        }
-        
-        body {
-          font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-          background-color: #0f172a;
-          color: #ffffff;
-          line-height: 1.6;
-          -webkit-font-smoothing: antialiased;
-        }
-        
-        .wrapper {
-          width: 100%;
-          background-color: #0f172a;
-          padding: 60px 0;
-        }
-        
-        .main {
-          max-width: 600px;
-          margin: 0 auto;
-          background-color: #1e293b;
-          border-radius: 16px;
-          overflow: hidden;
-          box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
-          border: 1px solid #334155;
-        }
-        
-        .header {
-          background: linear-gradient(135deg, #10b981 0%, #14b8a6 50%, #0d9488 100%);
-          padding: 48px 40px;
-          text-align: center;
-          position: relative;
-        }
-        
-        .logo {
-          max-width: 150px;
-          height: auto;
-          margin-bottom: 20px;
-          filter: brightness(0) invert(1);
-        }
-        
-        .header-title {
-          font-size: 28px;
-          font-weight: 700;
-          color: #ffffff;
-          margin: 0;
-        }
-        
-        .header-subtitle {
-          font-size: 16px;
-          color: rgba(255, 255, 255, 0.9);
-          margin-top: 8px;
-        }
-        
-        .content {
-          padding: 48px 40px;
-          background-color: #1e293b;
-        }
-        
-        .greeting {
-          font-size: 18px;
-          color: #ffffff;
-          margin-bottom: 32px;
-        }
-        
-        .greeting strong {
-          color: #ffffff;
-          font-weight: 600;
-        }
-        
-        .payment-card {
-          background: linear-gradient(145deg, #334155 0%, #475569 100%);
-          border: 1px solid #475569;
-          border-radius: 12px;
-          padding: 32px;
-          margin-bottom: 32px;
-          position: relative;
-        }
-        
-        .payment-card::before {
-          content: '';
-          position: absolute;
-          top: 0;
-          left: 0;
-          right: 0;
-          height: 4px;
-          background: ${isReminder ? "#10b981" : "#dc2626"};
-        }
-        
-        .bank-section {
-          display: flex;
-          align-items: center;
-          margin-bottom: 24px;
-          padding-bottom: 20px;
-          border-bottom: 1px solid #475569;
-        }
-        
-        .bank-icon {
-          width: 48px;
-          height: 48px;
-          background: #ffffff;
-          border-radius: 12px;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          margin-right: 16px;
-          overflow: hidden;
-        }
-        
-        .bank-logo {
-          width: 100%;
-          height: 100%;
-          object-fit: contain;
-        }
-        
-        .bank-name {
-          font-size: 16px;
-          color: #ffffff;
-          font-weight: 600;
-        }
-        
-        .amount-section {
-          text-align: center;
-          margin: 32px 0;
-        }
-        
-        .amount {
-          font-size: 42px;
-          font-weight: 800;
-          color: #ffffff;
-        }
-        
-        .info-grid {
-          display: flex;
-          gap: 16px;
-          margin-top: 24px;
-        }
-        
-        .info-item {
-          flex: 1;
-          padding: 16px;
-          background: #475569;
-          border-radius: 8px;
-          text-align: center;
-        }
-        
-        .info-label {
-          font-size: 12px;
-          color: #94a3b8;
-          text-transform: uppercase;
-          margin-bottom: 8px;
-        }
-        
-        .info-value {
-          font-size: 16px;
-          color: #ffffff;
-          font-weight: 700;
-        }
-        
-        .cta-button {
-          display: inline-block;
-          padding: 16px 40px;
-          background: linear-gradient(135deg, #10b981 0%, #0d9488 100%);
-          color: #ffffff;
-          text-decoration: none;
-          border-radius: 12px;
-          font-weight: 600;
-          margin: 32px 0;
-        }
-        
-        .footer {
-          padding: 40px;
-          background: #0f172a;
-          border-top: 1px solid #334155;
-          text-align: center;
-        }
-        
-        .footer-logo {
-          width: 80px;
-          height: auto;
-          margin-bottom: 20px;
-          opacity: 0.8;
-        }
-        
-        .footer-text {
-          font-size: 12px;
-          color: #64748b;
-          margin-bottom: 16px;
-        }
-        
-        .copyright {
-          font-size: 11px;
-          color: #475569;
-          border-top: 1px solid #334155;
-          padding-top: 20px;
-        }
-        
-        @media screen and (max-width: 600px) {
-          .header, .content, .footer {
-            padding: 32px 24px;
-          }
-          
-          .payment-card {
-            padding: 24px;
-          }
-          
-          .bank-section {
-            flex-direction: column;
-            text-align: center;
-          }
-          
-          .bank-icon {
-            margin: 0 auto 12px;
-          }
-          
-          .info-grid {
-            flex-direction: column;
-          }
-        }
-      </style>
-    </head>
-    <body>
-      <div class="wrapper">
-        <div class="main">
-          <div class="header">
-            <img src="/images/design-mode/logo-white.png" alt="Kredi Takip" class="logo">
-            <h1 class="header-title">${isReminder ? "Ödeme Hatırlatması" : "Gecikmiş Ödeme"}</h1>
-            <p class="header-subtitle">Finansal takibiniz bizimle güvende</p>
-          </div>
-          
-          <div class="content">
-            <p class="greeting">
-              Merhaba <strong>${firstName}</strong>,
-            </p>
-            
-            <div class="payment-card">
-              <div class="bank-section">
-                <div class="bank-icon">
-                  <img src="${getBankLogoUrl(bankName)}" alt="${bankName} logosu" class="bank-logo" onerror="this.style.display='none'; this.parentNode.innerHTML='🏦'; this.parentNode.style.fontSize='24px'; this.parentNode.style.color='#10b981';">
-                </div>
-                <div>
-                  <div class="bank-name">${bankName}</div>
-                </div>
-              </div>
-              
-              <div class="amount-section">
-                <div class="amount">${amount} ₺</div>
-              </div>
-              
-              <div class="info-grid">
-                <div class="info-item">
-                  <div class="info-label">Taksit</div>
-                  <div class="info-value">${installmentNumber}</div>
-                </div>
-                <div class="info-item">
-                  <div class="info-label">Vade Tarihi</div>
-                  <div class="info-value">${dueDate}</div>
-                </div>
-              </div>
-            </div>
-            
-            <div style="text-align: center;">
-              <a href="https://kreditakip.com.tr/uygulama/odeme-plani" class="cta-button">
-                Ödeme Planını Görüntüle
-              </a>
-            </div>
-          </div>
-          
-          <div class="footer">
-            <img src="/images/design-mode/logo-white.png" alt="Kredi Takip" class="footer-logo">
-            
-            <p class="footer-text">
-              Bu e-posta otomatik olarak gönderilmiştir.<br>
-              E-posta bildirimlerini almak istemiyorsanız, ayarlar sayfasından kapatabilirsiniz.
-            </p>
-            
-            <div class="copyright">
-              © 2025 kreditakip.com.tr • Tüm hakları saklıdır
-            </div>
-          </div>
-        </div>
-      </div>
-    </body>
-    </html>
-  `
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  <title>${subject}</title>
+  <style>
+    /* Client resets */
+    html, body { margin:0 !important; padding:0 !important; height:100% !important; width:100% !important; }
+    * { -ms-text-size-adjust:100%; -webkit-text-size-adjust:100%; }
+    table, td { mso-table-lspace:0pt !important; mso-table-rspace:0pt !important; border-collapse:collapse !important; }
+    img { -ms-interpolation-mode:bicubic; border:0; outline:0; text-decoration:none; display:block; }
+    a { text-decoration:none; }
+    /* Mobile */
+    @media screen and (max-width: 600px) {
+      .container { width:100% !important; }
+      .px-40 { padding-left:20px !important; padding-right:20px !important; }
+      .py-32 { padding-top:24px !important; padding-bottom:24px !important; }
+      .h1 { font-size:22px !important; line-height:1.3 !important; }
+      .amount { font-size:28px !important; }
+      .grid { display:block !important; }
+      .cell { width:100% !important; display:block !important; margin-bottom:12px !important; }
+      .brandbar { height:8px !important; }
+    }
+    /* Dark-ish neutral background to match brand */
+    body { background:#0f172a; }
+  </style>
+  <!--[if mso]>
+    <style type="text/css">
+      .fallback-font { font-family: Arial, Helvetica, sans-serif !important; }
+    </style>
+  <![endif]-->
+</head>
+<body class="fallback-font" style="background:#0f172a;">
+  <!-- Preheader (gizli) -->
+  <div style="display:none; max-height:0; overflow:hidden; opacity:0; mso-hide:all;">
+    ${preheader}
+  </div>
 
-  return { subject, html }
+  <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="background:#0f172a;">
+    <tr>
+      <td align="center" style="padding:32px 16px;">
+        <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="640" class="container" style="width:640px; max-width:100%;">
+          <!-- Brand header -->
+          <tr>
+            <td style="background:#1e293b; border:1px solid #334155; border-bottom:0; border-radius:16px 16px 0 0; padding:28px;" align="center">
+              <img src="${BRAND_LOGO}" width="140" height="auto" alt="Kredi Takip" style="height:auto;">
+              <div style="height:16px;"></div>
+              <div style="display:inline-block; padding:6px 10px; border-radius:999px; background:${badgeBg}; color:${badgeFg}; font-size:12px; font-weight:700;">
+                ${isReminder ? "ÖDEME HATIRLATMASI" : "GECİKEN ÖDEME"}
+              </div>
+              <div style="height:12px;"></div>
+              <h1 class="h1" style="margin:0; color:#ffffff; font-size:24px; line-height:1.4; font-weight:800;">
+                ${bankName} • ${installmentNumber}. Taksit
+              </h1>
+              <div style="height:6px;"></div>
+              <p style="margin:0; color:#b6c2d9; font-size:14px;">
+                Finansal takibiniz bizimle güvende
+              </p>
+            </td>
+          </tr>
+
+          <!-- Brand gradient bar -->
+          <tr>
+            <td class="brandbar" style="height:10px; background:linear-gradient(135deg, #10b981 0%, #14b8a6 50%, #0d9488 100%); border-left:1px solid #334155; border-right:1px solid #334155;"></td>
+          </tr>
+
+          <!-- Card -->
+          <tr>
+            <td style="background:#1e293b; border:1px solid #334155; border-top:0; border-bottom:0; padding:32px;" class="px-40 py-32">
+              <p style="margin:0 0 16px 0; color:#e5e7eb; font-size:16px;">
+                Merhaba <strong style="color:#fff;">${safeFirstName}</strong>,
+              </p>
+              <p style="margin:0; color:#b6c2d9; font-size:14px;">
+                ${isReminder
+                  ? "Aşağıdaki taksitinizin vade tarihi yaklaşıyor. Detayları kontrol ederek zamanında ödeme yapmanızı öneririz."
+                  : "Aşağıdaki taksidiniz için vade tarihi geçti. Lütfen planınızı kontrol ederek en kısa sürede işlem yapınız."}
+              </p>
+
+              <div style="height:24px;"></div>
+
+              <!-- Payment summary box -->
+              <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="background:#0b1220; border:1px solid #2a3a55; border-radius:12px;">
+                <tr>
+                  <td style="padding:20px;">
+                    <table role="presentation" width="100%">
+                      <tr>
+                        <td valign="middle" style="width:56px;">
+                          <!-- Bank logo box -->
+                          <table role="presentation" cellpadding="0" cellspacing="0" border="0" style="width:56px; height:56px; background:#ffffff; border-radius:12px;">
+                            <tr>
+                              <td align="center" valign="middle" style="padding:6px;">
+                                <img src="${bankLogo}" width="44" height="44" style="width:44px; height:44px;" alt="${bankName}">
+                              </td>
+                            </tr>
+                          </table>
+                        </td>
+                        <td style="width:16px;"></td>
+                        <td valign="middle">
+                          <div style="color:#ffffff; font-weight:700; font-size:16px;">${bankName}</div>
+                          <div style="color:#93a4bd; font-size:13px;">${installmentNumber}. Taksit</div>
+                        </td>
+                        <td align="right" valign="middle">
+                          <div class="amount" style="color:#ffffff; font-weight:800; font-size:34px; line-height:1;">${amount} ₺</div>
+                        </td>
+                      </tr>
+                    </table>
+
+                    <div style="height:16px;"></div>
+
+                    <!-- two column grid -->
+                    <table role="presentation" width="100%" class="grid">
+                      <tr>
+                        <td class="cell" style="width:50%; padding:12px; background:#122034; border-radius:8px;">
+                          <div style="color:#93a4bd; font-size:12px; text-transform:uppercase; letter-spacing:0.4px;">Vade Tarihi</div>
+                          <div style="color:#fff; font-size:16px; font-weight:700; margin-top:6px;">${dueDate}</div>
+                        </td>
+                        <td style="width:16px;"></td>
+                        <td class="cell" style="width:50%; padding:12px; background:#122034; border-radius:8px;">
+                          <div style="color:#93a4bd; font-size:12px; text-transform:uppercase; letter-spacing:0.4px;">Durum</div>
+                          <div style="color:${accent}; font-size:16px; font-weight:700; margin-top:6px;">
+                            ${isReminder ? "Yaklaşan Vade" : "Geciken Ödeme"}
+                          </div>
+                        </td>
+                      </tr>
+                    </table>
+                  </td>
+                </tr>
+                <!-- Accent bar -->
+                <tr>
+                  <td style="height:4px; background:${accent}; border-radius:0 0 12px 12px;"></td>
+                </tr>
+              </table>
+
+              <div style="height:28px;"></div>
+
+              <!-- CTA (Outlook bulletproof) -->
+              <table role="presentation" cellpadding="0" cellspacing="0" border="0" align="center">
+                <tr>
+                  <td align="center" bgcolor="${accent}" style="border-radius:12px;">
+                    <!--[if mso]>
+                      <v:roundrect xmlns:v="urn:schemas-microsoft-com:vml" xmlns:w="urn:schemas-microsoft-com:office:word"
+                        href="https://kreditakip.com.tr/uygulama/odeme-plani?utm_source=email&utm_medium=${isReminder?'reminder':'overdue'}"
+                        style="height:48px;v-text-anchor:middle;width:280px;" arcsize="20%" stroke="f" fillcolor="${accent}">
+                        <w:anchorlock/>
+                        <center style="color:#ffffff;font-family:Arial,sans-serif;font-size:16px;font-weight:700;">
+                          Ödeme Planını Görüntüle
+                        </center>
+                      </v:roundrect>
+                    <![endif]-->
+                    <a href="https://kreditakip.com.tr/uygulama/odeme-plani?utm_source=email&utm_medium=${isReminder?'reminder':'overdue'}"
+                       style="background:${accent}; border:1px solid ${accentDark}; display:inline-block; padding:14px 28px; border-radius:12px; color:#ffffff; font-weight:700; font-size:16px; line-height:1;"
+                       target="_blank">
+                      Ödeme Planını Görüntüle
+                    </a>
+                  </td>
+                </tr>
+              </table>
+
+              <div style="height:16px;"></div>
+              <p style="margin:0; color:#93a4bd; font-size:12px;">
+                Bu hatırlatma, bildirim tercihleriniz açıksa gönderilir. Bildirim ayarlarınızı dilediğiniz zaman güncelleyebilirsiniz.
+              </p>
+            </td>
+          </tr>
+
+          <!-- Footer -->
+          <tr>
+            <td style="background:#0f172a; border:1px solid #334155; border-top:0; border-radius:0 0 16px 16px; padding:24px;" align="center">
+              <img src="${BRAND_LOGO}" width="84" alt="Kredi Takip" style="opacity:0.9;">
+              <div style="height:10px;"></div>
+              <p style="margin:0; color:#7887a4; font-size:12px; line-height:1.6;">
+                Bu e-posta otomatik olarak gönderilmiştir.<br>
+                E-posta bildirimlerini almak istemiyorsanız <a href="https://kreditakip.com.tr/uygulama/ayarlar/bildirimler" style="color:${accent}; font-weight:600;">ayarlar</a> bölümünden kapatabilirsiniz.
+              </p>
+              <div style="height:12px;"></div>
+              <p style="margin:0; color:#5a6786; font-size:11px;">© 2025 kreditakip.com.tr • Tüm hakları saklıdır</p>
+            </td>
+          </tr>
+
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>`;
+
+  const text = `${subject}
+
+Merhaba ${safeFirstName},
+
+${bankName} (${installmentNumber}. taksit) için ${isReminder ? "vade yaklaşıyor" : "vade geçti"}.
+Tutar: ${amount} ₺
+Vade Tarihi: ${dueDate}
+
+Ödeme planınızı görüntüleyin:
+https://kreditakip.com.tr/uygulama/odeme-plani
+
+Bu e-posta otomatik olarak gönderilmiştir. Bildirim tercihlerinizi ayarlardan güncelleyebilirsiniz.
+© 2025 kreditakip.com.tr`;
+
+  return { subject, html, text };
 }
+
 
 async function sendNotifications() {
   try {
