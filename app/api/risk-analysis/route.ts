@@ -2,61 +2,72 @@ import { type NextRequest, NextResponse } from "next/server"
 import type { FinancialProfile, RiskAnalysisData } from "@/lib/types"
 import { getFinancialProfile } from "@/lib/api/financials"
 import { supabase } from "@/lib/supabase"
-import { createServerClient } from "@/lib/supabase/server"
+import { createClient } from "@supabase/supabase-js"
 
 const CHART_COLORS = ["#10B981", "#3B82F6", "#F59E0B", "#EF4444", "#8B5CF6", "#06B6D4", "#F97316", "#84CC16"]
 
 export async function POST(request: NextRequest) {
   try {
-    const supabaseServer = await createServerClient()
-
-    const {
-      data: { user },
-      error: authError,
-    } = await supabaseServer.auth.getUser()
-
-    if (authError || !user) {
-      return NextResponse.json({ error: "Oturum açmanız gerekiyor" }, { status: 401 })
-    }
-
-    const { data: canUse, error: checkError } = await supabaseServer.rpc("can_use_feature", {
-      p_user_id: user.id,
-      p_feature_type: "risk_analysis",
-    })
-
-    if (checkError) {
-      console.error("[v0] Feature check error:", checkError)
-      return NextResponse.json({ error: "Özellik kontrolü başarısız oldu" }, { status: 500 })
-    }
-
-    if (!canUse) {
-      const { data: subscription } = await supabaseServer
-        .from("subscriptions")
-        .select("plan_type")
-        .eq("user_id", user.id)
-        .eq("status", "active")
-        .single()
-
-      return NextResponse.json(
-        {
-          error: "Risk analizi sadece Premium üyeler için kullanılabilir",
-          limitExceeded: true,
-          planType: subscription?.plan_type || "free",
-          upgradeMessage:
-            "Premium üyelik ile risk analizi ve tüm özelliklere sınırsız erişim sağlayabilirsiniz. Sadece 199₺/ay!",
-        },
-        { status: 403 },
-      )
-    }
-
     const { userId } = await request.json()
 
     if (!userId) {
       return NextResponse.json({ error: "Kullanıcı ID gereklidir" }, { status: 400 })
     }
 
-    if (userId !== user.id) {
-      return NextResponse.json({ error: "Yetkisiz erişim" }, { status: 403 })
+    console.log("[v0] Risk analysis requested for user:", userId)
+
+    const supabaseAdmin = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.SERVICE_ROLE_KEY!, {
+      auth: {
+        autoRefreshToken: false,
+        persistSession: false,
+      },
+    })
+
+    const { data: profile, error: profileError } = await supabaseAdmin
+      .from("profiles")
+      .select("email")
+      .eq("id", userId)
+      .single()
+
+    if (profileError || !profile) {
+      console.error("[v0] User verification failed:", profileError)
+      return NextResponse.json({ error: "Kullanıcı bulunamadı" }, { status: 404 })
+    }
+
+    console.log("[v0] User verified:", profile.email)
+
+    const { data: subscription } = await supabaseAdmin
+      .from("subscriptions")
+      .select("plan_type, status")
+      .eq("user_id", userId)
+      .maybeSingle()
+
+    const isPremium = subscription?.plan_type === "premium" && subscription?.status === "active"
+
+    console.log("[v0] User subscription status:", { isPremium, plan: subscription?.plan_type })
+
+    if (!isPremium) {
+      const { data: canUse, error: checkError } = await supabaseAdmin.rpc("can_use_feature", {
+        p_user_id: userId,
+        p_feature_type: "risk_analysis",
+      })
+
+      if (checkError) {
+        console.error("[v0] Feature check error:", checkError)
+      }
+
+      if (!canUse) {
+        return NextResponse.json(
+          {
+            error: "Risk analizi sadece Premium üyeler için kullanılabilir",
+            limitExceeded: true,
+            planType: subscription?.plan_type || "free",
+            upgradeMessage:
+              "Premium üyelik ile risk analizi ve tüm özelliklere sınırsız erişim sağlayabilirsiniz. Sadece 199₺/ay!",
+          },
+          { status: 403 },
+        )
+      }
     }
 
     const financialProfile = await getFinancialProfile(userId)
@@ -70,20 +81,24 @@ export async function POST(request: NextRequest) {
       )
     }
 
+    console.log("[v0] Performing risk analysis...")
     const analysisData = await performComprehensiveRiskAnalysis(userId, financialProfile)
 
-    const { error: incrementError } = await supabaseServer.rpc("increment_usage", {
-      p_user_id: user.id,
-      p_feature_type: "risk_analysis",
-    })
+    if (!isPremium) {
+      const { error: incrementError } = await supabaseAdmin.rpc("increment_usage", {
+        p_user_id: userId,
+        p_feature_type: "risk_analysis",
+      })
 
-    if (incrementError) {
-      console.error("[v0] Usage increment error:", incrementError)
+      if (incrementError) {
+        console.error("[v0] Usage increment error:", incrementError)
+      }
     }
 
+    console.log("[v0] Risk analysis completed successfully")
     return NextResponse.json(analysisData)
   } catch (error) {
-    console.error("Risk analysis error:", error)
+    console.error("[v0] Risk analysis error:", error)
     return NextResponse.json(
       {
         error: "Risk analizi sırasında bir hata oluştu. Lütfen tekrar deneyin.",
