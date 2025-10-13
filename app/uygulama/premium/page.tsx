@@ -8,7 +8,6 @@ import { Crown, Check, Sparkles, Zap, TrendingUp, X } from "lucide-react"
 import { useSubscription } from "@/hooks/use-subscription"
 import { useRouter, useSearchParams } from "next/navigation"
 import { useToast } from "@/hooks/use-toast"
-import { supabase } from "@/lib/supabase"
 
 export default function PremiumPage() {
   const { subscription, loading, isPremium } = useSubscription()
@@ -38,68 +37,7 @@ export default function PremiumPage() {
   }, [searchParams, toast, router])
 
   const handleUpgrade = async () => {
-    setIsProcessing(true)
-    console.log("[v0] Starting payment initialization...")
-
-    try {
-      const {
-        data: { user },
-      } = await supabase.auth.getUser()
-
-      if (!user) {
-        throw new Error("Oturum açmanız gerekiyor")
-      }
-
-      console.log("[v0] Sending payment request for user:", user.id)
-
-      const response = await fetch("/api/payment/initialize", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          userId: user.id,
-        }),
-      })
-
-      console.log("[v0] Payment API response status:", response.status)
-
-      const contentType = response.headers.get("content-type")
-      if (!contentType || !contentType.includes("application/json")) {
-        const text = await response.text()
-        console.error("[v0] Non-JSON response:", text.substring(0, 200))
-        throw new Error("Sunucu beklenmeyen bir yanıt döndürdü. Lütfen daha sonra tekrar deneyin.")
-      }
-
-      const data = await response.json()
-
-      if (!response.ok) {
-        console.error("[v0] Payment API error:", data)
-        throw new Error(data.error || "Ödeme başlatılamadı")
-      }
-
-      console.log("[v0] Payment data received:", { hasToken: !!data.token, hasUrl: !!data.paymentPageUrl })
-
-      if (data.paymentPageUrl) {
-        console.log("[v0] Redirecting to payment page...")
-        window.location.href = data.paymentPageUrl
-      } else if (data.checkoutFormContent) {
-        console.log("[v0] Rendering checkout form...")
-        const checkoutDiv = document.createElement("div")
-        checkoutDiv.innerHTML = data.checkoutFormContent
-        document.body.appendChild(checkoutDiv)
-      } else {
-        throw new Error("Ödeme sayfası bilgisi alınamadı")
-      }
-    } catch (error) {
-      console.error("[v0] Payment initialization error:", error)
-      toast({
-        title: "Hata",
-        description: error instanceof Error ? error.message : "Ödeme işlemi başlatılamadı. Lütfen tekrar deneyin.",
-        variant: "destructive",
-      })
-      setIsProcessing(false)
-    }
+    router.push("/uygulama/odeme")
   }
 
   if (loading) {
