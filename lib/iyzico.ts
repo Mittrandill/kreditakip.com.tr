@@ -1,8 +1,6 @@
 // iyzico Payment Integration
 // Documentation: https://dev.iyzipay.com/
 
-import crypto from "crypto"
-
 interface IyzicoConfig {
   apiKey: string
   secretKey: string
@@ -74,16 +72,31 @@ class IyzicoClient {
     }
   }
 
-  private generateAuthString(randomString: string, uri: string, body: string): string {
+  private async generateAuthString(randomString: string, uri: string, body: string): Promise<string> {
     const dataToEncrypt = `${this.config.apiKey}${randomString}${this.config.secretKey}${body}`
 
-    const hash = crypto.createHmac("sha256", this.config.secretKey).update(dataToEncrypt).digest("base64")
+    // Convert string to Uint8Array
+    const encoder = new TextEncoder()
+    const keyData = encoder.encode(this.config.secretKey)
+    const messageData = encoder.encode(dataToEncrypt)
 
-    return `IYZIWS ${this.config.apiKey}:${hash}`
+    // Import key for HMAC
+    const key = await crypto.subtle.importKey("raw", keyData, { name: "HMAC", hash: "SHA-256" }, false, ["sign"])
+
+    // Generate HMAC
+    const signature = await crypto.subtle.sign("HMAC", key, messageData)
+
+    // Convert to base64
+    const hashArray = Array.from(new Uint8Array(signature))
+    const hashBase64 = btoa(String.fromCharCode(...hashArray))
+
+    return `IYZIWS ${this.config.apiKey}:${hashBase64}`
   }
 
   private generateRandomString(): string {
-    return crypto.randomBytes(16).toString("hex")
+    const array = new Uint8Array(16)
+    crypto.getRandomValues(array)
+    return Array.from(array, (byte) => byte.toString(16).padStart(2, "0")).join("")
   }
 
   async initializeCheckoutForm(request: IyzicoPaymentRequest): Promise<IyzicoPaymentResponse> {
@@ -105,7 +118,7 @@ class IyzicoClient {
     }
 
     try {
-      const authHeader = this.generateAuthString(randomString, uri, body)
+      const authHeader = await this.generateAuthString(randomString, uri, body)
 
       console.log("[v0] Request details:", {
         uri,
@@ -165,11 +178,13 @@ class IyzicoClient {
     const randomString = this.generateRandomString()
 
     try {
+      const authHeader = await this.generateAuthString(randomString, uri, body)
+
       const response = await fetch(`${this.config.baseUrl}${uri}`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          Authorization: this.generateAuthString(randomString, uri, body),
+          Authorization: authHeader,
           "x-iyzi-rnd": randomString,
           Accept: "application/json",
         },
@@ -206,7 +221,7 @@ class IyzicoClient {
         name: userName,
         surname: userSurname,
         email: userEmail,
-        identityNumber: "11111111111", // This should be collected from user
+        identityNumber: "11111111111",
         registrationAddress: "Türkiye",
         city: "Istanbul",
         country: "Turkey",
