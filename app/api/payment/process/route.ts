@@ -26,7 +26,7 @@ export async function POST(request: NextRequest) {
 
     console.log("[v0] Profile verified:", profile.email)
 
-    const { data: existingSub } = await supabase.from("subscriptions").select("*").eq("user_id", userId).single()
+    const { data: existingSub } = await supabase.from("subscriptions").select("*").eq("user_id", userId).maybeSingle()
 
     console.log("[v0] Existing subscription:", existingSub ? "found" : "not found")
 
@@ -36,26 +36,47 @@ export async function POST(request: NextRequest) {
     const expiresAt = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString()
     const now = new Date().toISOString()
 
-    const { data: subData, error: subError } = await supabase
-      .from("subscriptions")
-      .upsert(
-        {
-          user_id: userId,
+    let subData, subError
+
+    if (existingSub) {
+      // Update existing subscription
+      const result = await supabase
+        .from("subscriptions")
+        .update({
           plan_type: "premium",
           status: "active",
           started_at: now,
           expires_at: expiresAt,
           payment_method: "credit_card",
           updated_at: now,
-        },
-        {
-          onConflict: "user_id",
-        },
-      )
-      .select()
+        })
+        .eq("user_id", userId)
+        .select()
+
+      subData = result.data
+      subError = result.error
+      console.log("[v0] Updated existing subscription")
+    } else {
+      // Insert new subscription
+      const result = await supabase
+        .from("subscriptions")
+        .insert({
+          user_id: userId,
+          plan_type: "premium",
+          status: "active",
+          started_at: now,
+          expires_at: expiresAt,
+          payment_method: "credit_card",
+        })
+        .select()
+
+      subData = result.data
+      subError = result.error
+      console.log("[v0] Created new subscription")
+    }
 
     if (subError) {
-      console.error("[v0] Subscription upsert error:", subError)
+      console.error("[v0] Subscription error:", subError)
       return NextResponse.json({ error: "Abonelik güncellenemedi: " + subError.message }, { status: 500 })
     }
 
@@ -65,6 +86,7 @@ export async function POST(request: NextRequest) {
       .from("payment_transactions")
       .insert({
         user_id: userId,
+        subscription_id: subData?.[0]?.id,
         amount: 199.0,
         currency: "TRY",
         status: "completed",
