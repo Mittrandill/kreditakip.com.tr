@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useRef } from "react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
@@ -15,18 +15,23 @@ export default function PremiumPage() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const { toast } = useToast()
+  const hasProcessedParams = useRef(false)
 
   useEffect(() => {
+    if (hasProcessedParams.current) return
+
     const success = searchParams.get("success")
     const error = searchParams.get("error")
 
     if (success === "true") {
+      hasProcessedParams.current = true
       toast({
         title: "Ödeme Başarılı",
         description: "Premium üyeliğiniz aktif edildi. Tüm özelliklere erişebilirsiniz!",
       })
       router.replace("/uygulama/premium")
     } else if (error) {
+      hasProcessedParams.current = true
       toast({
         title: "Ödeme Hatası",
         description: "Ödeme işlemi tamamlanamadı. Lütfen tekrar deneyin.",
@@ -34,7 +39,7 @@ export default function PremiumPage() {
       })
       router.replace("/uygulama/premium")
     }
-  }, [searchParams, toast, router])
+  }, [searchParams, toast])
 
   const handleUpgrade = async () => {
     router.push("/uygulama/odeme")
