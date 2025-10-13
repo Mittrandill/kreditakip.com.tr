@@ -1,54 +1,56 @@
 import { type NextRequest, NextResponse } from "next/server"
-import { createServerClient } from "@/lib/supabase/server"
+import { createClient } from "@supabase/supabase-js"
+
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
+const supabaseServiceKey = process.env.SERVICE_ROLE_KEY!
 
 export async function GET(request: NextRequest) {
-  try {
-    const supabase = await createServerClient()
+  console.log("[v0] Financial profile API called")
 
+  try {
     const { searchParams } = new URL(request.url)
     const userId = searchParams.get("userId")
 
     if (!userId) {
+      console.log("[v0] No userId provided")
       return NextResponse.json({ error: "User ID gereklidir" }, { status: 400 })
     }
 
-    const {
-      data: { user },
-      error: authError,
-    } = await supabase.auth.getUser()
+    console.log("[v0] Fetching financial profile for user:", userId)
 
-    if (authError || !user) {
-      return NextResponse.json({ error: "Oturum açmanız gerekiyor" }, { status: 401 })
-    }
-
-    if (user.id !== userId) {
-      return NextResponse.json({ error: "Yetkisiz erişim" }, { status: 403 })
-    }
+    const supabase = createClient(supabaseUrl, supabaseServiceKey, {
+      auth: {
+        autoRefreshToken: false,
+        persistSession: false,
+      },
+    })
 
     const { data: profile, error } = await supabase
       .from("financial_profiles")
       .select("*")
       .eq("user_id", userId)
-      .single()
+      .maybeSingle()
 
     if (error) {
       console.error("[v0] Financial profile fetch error:", error)
-      // Return empty profile if not found
-      if (error.code === "PGRST116") {
-        return NextResponse.json({
-          user_id: userId,
-          monthly_income: null,
-          monthly_expenses: null,
-          emergency_fund: null,
-          real_estate_value: null,
-          vehicle_value: null,
-          credit_card_debt: null,
-          other_debts: null,
-        })
-      }
       return NextResponse.json({ error: "Finansal profil alınamadı" }, { status: 500 })
     }
 
+    if (!profile) {
+      console.log("[v0] No financial profile found, returning empty profile")
+      return NextResponse.json({
+        user_id: userId,
+        monthly_income: null,
+        monthly_expenses: null,
+        emergency_fund: null,
+        real_estate_value: null,
+        vehicle_value: null,
+        credit_card_debt: null,
+        other_debts: null,
+      })
+    }
+
+    console.log("[v0] Financial profile found:", profile)
     return NextResponse.json(profile)
   } catch (error) {
     console.error("[v0] Financial profile API error:", error)
