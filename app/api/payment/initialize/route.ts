@@ -26,17 +26,17 @@ export async function POST() {
       },
     )
 
-    // Get current user
     const {
-      data: { user },
+      data: { session },
       error: authError,
-    } = await supabase.auth.getUser()
+    } = await supabase.auth.getSession()
 
-    if (authError || !user) {
-      console.error("[v0] Auth error:", authError)
+    if (authError || !session?.user) {
+      console.error("[v0] Auth error:", authError?.message || "No session found")
       return NextResponse.json({ error: "Yetkisiz erişim" }, { status: 401 })
     }
 
+    const user = session.user
     console.log("[v0] User authenticated:", user.id)
 
     // Get user profile
