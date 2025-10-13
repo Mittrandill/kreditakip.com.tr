@@ -136,10 +136,13 @@ export default function RiskAnaliziPage() {
           if (!isMounted) return
 
           if (!profileResponse.ok) {
+            const errorText = await profileResponse.text()
+            console.error("[v0] Financial profile API error:", errorText)
             throw new Error("Finansal profil yüklenemedi")
           }
 
           const profileData = await profileResponse.json()
+          console.log("[v0] Financial profile loaded:", profileData)
 
           setFinancialProfile(profileData)
           setCredits(creditsData as Credit[])
@@ -154,7 +157,7 @@ export default function RiskAnaliziPage() {
           console.error("Risk Analizi - Başlangıç verileri alınırken hata:", err)
           if (isMounted) {
             setInitialDataError(
-              "Finansal bilgileriniz, kredi verileriniz veya geçmiş analizleriniz yüklenirken bir sorun oluştu.",
+              err instanceof Error ? err.message : "Finansal bilgileriniz yüklenirken bir sorun oluştu.",
             )
           }
         } finally {
