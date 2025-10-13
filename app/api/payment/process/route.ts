@@ -26,39 +26,57 @@ export async function POST(request: NextRequest) {
 
     console.log("[v0] Profile verified:", profile.email)
 
+    const { data: existingSub } = await supabase.from("subscriptions").select("*").eq("user_id", userId).single()
+
+    console.log("[v0] Existing subscription:", existingSub ? "found" : "not found")
+
     // TODO: Integrate with iyzico payment API here
     // For now, we'll simulate a successful payment
 
     const expiresAt = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString()
+    const now = new Date().toISOString()
 
-    const { error: subError } = await supabase
+    const { data: subData, error: subError } = await supabase
       .from("subscriptions")
-      .update({
-        plan_type: "premium",
-        status: "active",
-        started_at: new Date().toISOString(),
-        expires_at: expiresAt,
-        payment_method: "credit_card",
-        updated_at: new Date().toISOString(),
-      })
-      .eq("user_id", userId)
+      .upsert(
+        {
+          user_id: userId,
+          plan_type: "premium",
+          status: "active",
+          started_at: now,
+          expires_at: expiresAt,
+          payment_method: "credit_card",
+          updated_at: now,
+        },
+        {
+          onConflict: "user_id",
+        },
+      )
+      .select()
 
     if (subError) {
-      console.error("[v0] Subscription update error:", subError)
-      return NextResponse.json({ error: "Abonelik güncellenemedi" }, { status: 500 })
+      console.error("[v0] Subscription upsert error:", subError)
+      return NextResponse.json({ error: "Abonelik güncellenemedi: " + subError.message }, { status: 500 })
     }
 
-    const { error: txError } = await supabase.from("payment_transactions").insert({
-      user_id: userId,
-      amount: 199.0,
-      currency: "TRY",
-      status: "completed",
-      payment_method: "credit_card",
-      iyzico_conversation_id: `sim_${Date.now()}`,
-    })
+    console.log("[v0] Subscription updated successfully:", subData)
+
+    const { data: txData, error: txError } = await supabase
+      .from("payment_transactions")
+      .insert({
+        user_id: userId,
+        amount: 199.0,
+        currency: "TRY",
+        status: "completed",
+        payment_method: "credit_card",
+        iyzico_conversation_id: `sim_${Date.now()}`,
+      })
+      .select()
 
     if (txError) {
       console.error("[v0] Transaction record error:", txError)
+    } else {
+      console.log("[v0] Transaction recorded:", txData)
     }
 
     console.log("[v0] Payment successful, subscription activated")
