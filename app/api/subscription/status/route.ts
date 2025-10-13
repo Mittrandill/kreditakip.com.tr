@@ -14,16 +14,17 @@ export async function GET() {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
     }
 
-    // Get subscription
     const { data: subscription } = await supabase
       .from("subscriptions")
       .select("*")
       .eq("user_id", user.id)
       .eq("status", "active")
-      .single()
+      .maybeSingle()
 
     // Get usage tracking
     const { data: usage } = await supabase.from("usage_tracking").select("*").eq("user_id", user.id)
+
+    console.log("[v0] Subscription status fetched:", { subscription, usage })
 
     return NextResponse.json({
       subscription,

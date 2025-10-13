@@ -41,6 +41,7 @@ import {
   Clock,
   LocateIcon as Location,
   Upload,
+  Crown,
 } from "lucide-react"
 import { useAuth } from "@/hooks/use-auth"
 import { getProfile, updateProfile } from "@/lib/auth"
@@ -50,12 +51,15 @@ import { useToast } from "@/hooks/use-toast"
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 import { supabase } from "@/lib/supabase"
 import { useTheme } from "next-themes"
+import { useSubscription } from "@/hooks/use-subscription" // Import useSubscription hook
 
 export default function AyarlarPage() {
   const { user, profile: initialProfile, loading: authLoading } = useAuth()
   const { toast } = useToast()
   const router = useRouter()
   const { theme, setTheme } = useTheme()
+
+  const { subscription, isPremium, loading: subscriptionLoading } = useSubscription()
 
   const [profileData, setProfileData] = useState<Partial<Profile>>({})
   const [loadingProfile, setLoadingProfile] = useState(true)
@@ -500,7 +504,7 @@ export default function AyarlarPage() {
     return "KT"
   }
 
-  if (authLoading || loadingProfile) {
+  if (authLoading || loadingProfile || subscriptionLoading) {
     return (
       <div className="flex flex-col gap-4 md:gap-6 items-center justify-center min-h-[calc(100vh-150px)]">
         <Loader2 className="h-12 w-12 animate-spin text-emerald-600" />
@@ -533,6 +537,12 @@ export default function AyarlarPage() {
               <h2 className="text-3xl font-bold mb-2 flex items-center gap-3">
                 <Settings className="h-8 w-8" />
                 Hesap ve Sistem Ayarları
+                {isPremium && (
+                  <Badge className="bg-gradient-to-r from-amber-500 to-orange-600 text-white border-0">
+                    <Crown className="h-4 w-4 mr-1" />
+                    Premium
+                  </Badge>
+                )}
               </h2>
               <p className="text-slate-100 text-lg">
                 Hesap bilgilerinizi, güvenlik ayarlarınızı ve uygulama tercihlerinizi yönetin
@@ -608,6 +618,29 @@ export default function AyarlarPage() {
           <div className="p-6">
             <TabsContent value="profile">
               <div className="space-y-6">
+                {isPremium && (
+                  <Card className="border-2 border-amber-500 dark:border-amber-600 bg-gradient-to-r from-amber-50 to-orange-50 dark:from-amber-900/20 dark:to-orange-900/20">
+                    <CardContent className="p-6">
+                      <div className="flex items-center gap-4">
+                        <div className="p-3 bg-gradient-to-br from-amber-500 to-orange-600 rounded-lg">
+                          <Crown className="h-8 w-8 text-white" />
+                        </div>
+                        <div className="flex-1">
+                          <h3 className="text-xl font-bold text-amber-900 dark:text-amber-100 mb-1">
+                            Premium Üyelik Aktif
+                          </h3>
+                          <p className="text-sm text-amber-700 dark:text-amber-300">
+                            Tüm özelliklere sınırsız erişiminiz var. Üyelik bitiş tarihi:{" "}
+                            {subscription?.expiresAt
+                              ? new Date(subscription.expiresAt).toLocaleDateString("tr-TR")
+                              : "Süresiz"}
+                          </p>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                )}
+
                 <Card className="dark:bg-gray-900 dark:border-gray-800">
                   <CardHeader>
                     <CardTitle className="flex items-center gap-2 dark:text-white">

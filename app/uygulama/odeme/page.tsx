@@ -11,10 +11,12 @@ import { CreditCard, Lock, ArrowLeft } from "lucide-react"
 import { useRouter } from "next/navigation"
 import { useToast } from "@/hooks/use-toast"
 import { supabase } from "@/lib/supabase"
+import { useSubscription } from "@/hooks/use-subscription"
 
 export default function PaymentPage() {
   const router = useRouter()
   const { toast } = useToast()
+  const { refresh: refreshSubscription } = useSubscription()
   const [isProcessing, setIsProcessing] = useState(false)
   const [formData, setFormData] = useState({
     cardHolderName: "",
@@ -89,12 +91,14 @@ export default function PaymentPage() {
 
       console.log("[v0] Payment successful!")
 
+      await refreshSubscription()
+
       toast({
         title: "Ödeme Başarılı",
         description: "Premium üyeliğiniz aktif edildi!",
       })
 
-      router.push("/uygulama/premium?success=true")
+      router.push("/uygulama/ana-sayfa")
     } catch (error) {
       console.error("[v0] Payment error:", error)
       toast({
