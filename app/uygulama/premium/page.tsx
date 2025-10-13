@@ -8,6 +8,7 @@ import { Crown, Check, Sparkles, Zap, TrendingUp, X } from "lucide-react"
 import { useSubscription } from "@/hooks/use-subscription"
 import { useRouter, useSearchParams } from "next/navigation"
 import { useToast } from "@/hooks/use-toast"
+import { createBrowserClient } from "@/utils/supabase-client"
 
 export default function PremiumPage() {
   const { subscription, loading, isPremium } = useSubscription()
@@ -41,8 +42,29 @@ export default function PremiumPage() {
     console.log("[v0] Starting payment initialization...")
 
     try {
+      const supabase = createBrowserClient(
+        process.env.NEXT_PUBLIC_SUPABASE_URL!,
+        process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+      )
+
+      const {
+        data: { user },
+      } = await supabase.auth.getUser()
+
+      if (!user) {
+        throw new Error("Oturum açmanız gerekiyor")
+      }
+
+      console.log("[v0] Sending payment request for user:", user.id)
+
       const response = await fetch("/api/payment/initialize", {
         method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          userId: user.id,
+        }),
       })
 
       console.log("[v0] Payment API response status:", response.status)

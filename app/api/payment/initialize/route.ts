@@ -1,55 +1,45 @@
 import { NextResponse } from "next/server"
-import { createServerClient } from "@/lib/supabase/server"
+import { createClient } from "@supabase/supabase-js"
 
-export async function POST() {
+const supabaseAdmin = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.SERVICE_ROLE_KEY!, {
+  auth: {
+    autoRefreshToken: false,
+    persistSession: false,
+  },
+})
+
+export async function POST(request: Request) {
   try {
     console.log("[v0] Payment initialization started")
 
-    const supabase = await createServerClient()
+    const body = await request.json()
+    const { userId } = body
 
-    const {
-      data: { user },
-      error: authError,
-    } = await supabase.auth.getUser()
-
-    console.log("[v0] Auth check:", {
-      hasUser: !!user,
-      userId: user?.id,
-      hasError: !!authError,
-      errorMessage: authError?.message,
-    })
-
-    if (authError || !user) {
-      console.error("[v0] Auth error:", authError?.message || "No user found")
-      return NextResponse.json({ error: "Yetkisiz erişim" }, { status: 401 })
+    if (!userId) {
+      console.error("[v0] No user ID provided in request")
+      return NextResponse.json({ error: "Kullanıcı bilgisi eksik" }, { status: 400 })
     }
 
-    console.log("[v0] User authenticated:", user.id)
+    console.log("[v0] Processing payment for user:", userId)
 
-    // Get user profile
-    const { data: profile, error: profileError } = await supabase
+    const { data: profile, error: profileError } = await supabaseAdmin
       .from("profiles")
       .select("*")
-      .eq("id", user.id)
+      .eq("id", userId)
       .single()
 
-    if (profileError) {
-      console.error("[v0] Profile error:", profileError)
-      return NextResponse.json({ error: "Profil bulunamadı" }, { status: 404 })
+    if (profileError || !profile) {
+      console.error("[v0] Profile not found:", profileError)
+      return NextResponse.json({ error: "Kullanıcı profili bulunamadı" }, { status: 404 })
     }
 
     console.log("[v0] Profile loaded for:", profile.email)
 
     if (!process.env.IYZICO_API_KEY || !process.env.IYZICO_SECRET_KEY || !process.env.IYZICO_BASE_URL) {
-      console.error("[v0] iyzico credentials missing:", {
-        hasApiKey: !!process.env.IYZICO_API_KEY,
-        hasSecretKey: !!process.env.IYZICO_SECRET_KEY,
-        hasBaseUrl: !!process.env.IYZICO_BASE_URL,
-      })
+      console.error("[v0] iyzico credentials missing")
       return NextResponse.json(
         {
-          error:
-            "Ödeme sistemi yapılandırılmamış. Lütfen IYZICO_API_KEY ve IYZICO_SECRET_KEY environment variable'larını ekleyin.",
+          error: "Ödeme sistemi yapılandırılmamış. Lütfen environment variable'ları kontrol edin.",
         },
         { status: 500 },
       )
@@ -59,8 +49,8 @@ export async function POST() {
 
     // Create payment request
     const paymentRequest = iyzicoClient.createPremiumSubscriptionRequest(
-      user.id,
-      profile.email || user.email || "",
+      userId,
+      profile.email || "",
       profile.first_name || "Kullanıcı",
       profile.last_name || "Adı",
     )
@@ -68,10 +58,7 @@ export async function POST() {
     console.log("[v0] Payment request created:", {
       conversationId: paymentRequest.conversationId,
       price: paymentRequest.price,
-      currency: paymentRequest.currency,
-      basketId: paymentRequest.basketId,
       buyerEmail: paymentRequest.buyer.email,
-      callbackUrl: paymentRequest.callbackUrl,
     })
 
     let paymentResponse
@@ -81,29 +68,22 @@ export async function POST() {
         status: paymentResponse.status,
         hasToken: !!paymentResponse.token,
         hasUrl: !!paymentResponse.paymentPageUrl,
-        errorCode: paymentResponse.errorCode,
-        errorMessage: paymentResponse.errorMessage,
       })
     } catch (iyzicoError) {
       console.error("[v0] iyzico API error:", iyzicoError)
       return NextResponse.json(
         {
-          error: "iyzico ödeme sistemi ile bağlantı kurulamadı. Lütfen daha sonra tekrar deneyin.",
-          details: iyzicoError instanceof Error ? iyzicoError.message : String(iyzicoError),
+          error: "Ödeme sistemi ile bağlantı kurulamadı. Lütfen daha sonra tekrar deneyin.",
         },
         { status: 500 },
       )
     }
 
     if (paymentResponse.status !== "success") {
-      console.error("[v0] iyzico initialization failed:", {
-        status: paymentResponse.status,
-        errorCode: paymentResponse.errorCode,
-        errorMessage: paymentResponse.errorMessage,
-      })
+      console.error("[v0] iyzico initialization failed:", paymentResponse.errorMessage)
       return NextResponse.json(
         {
-          error: paymentResponse.errorMessage || "Ödeme başlatılamadı. Lütfen bilgilerinizi kontrol edin.",
+          error: paymentResponse.errorMessage || "Ödeme başlatılamadı",
         },
         { status: 400 },
       )
@@ -112,8 +92,8 @@ export async function POST() {
     console.log("[v0] Payment initialized successfully")
 
     // Create payment transaction record
-    const { error: transactionError } = await supabase.from("payment_transactions").insert({
-      user_id: user.id,
+    const { error: transactionError } = await supabaseAdmin.from("payment_transactions").insert({
+      user_id: userId,
       amount: 199.0,
       currency: "TRY",
       status: "pending",
