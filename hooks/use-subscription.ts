@@ -27,19 +27,24 @@ export function useSubscription() {
   useEffect(() => {
     async function fetchSubscription() {
       if (!user) {
+        console.log("[v0] No user, skipping subscription fetch")
         setLoading(false)
         return
       }
 
       try {
+        console.log("[v0] Fetching subscription status for user:", user.id)
         const response = await fetch("/api/subscription/status")
+        console.log("[v0] Subscription API response status:", response.status)
+
         if (response.ok) {
           const data = await response.json()
+          console.log("[v0] Subscription data received:", data)
 
           const ocrUsage = data.usage?.find((u: any) => u.feature_type === "ocr_analysis")
           const riskUsage = data.usage?.find((u: any) => u.feature_type === "risk_analysis")
 
-          setSubscription({
+          const subscriptionStatus = {
             planType: data.subscription?.plan_type || "free",
             status: data.subscription?.status || "active",
             expiresAt: data.subscription?.expires_at,
@@ -53,7 +58,13 @@ export function useSubscription() {
                 limit: riskUsage?.limit_count || 0,
               },
             },
-          })
+          }
+
+          console.log("[v0] Processed subscription status:", subscriptionStatus)
+          console.log("[v0] Is Premium:", subscriptionStatus.planType === "premium")
+          setSubscription(subscriptionStatus)
+        } else {
+          console.error("[v0] Subscription API error:", response.status, response.statusText)
         }
       } catch (error) {
         console.error("[v0] Subscription fetch error:", error)
@@ -70,6 +81,8 @@ export function useSubscription() {
     isPremium || (subscription?.usage.ocrAnalysis.used || 0) < (subscription?.usage.ocrAnalysis.limit || 1)
   const canUseRiskAnalysis = isPremium
 
+  console.log("[v0] useSubscription state:", { isPremium, canUseOCR, canUseRiskAnalysis, loading })
+
   return {
     subscription,
     loading,
@@ -77,29 +90,41 @@ export function useSubscription() {
     canUseOCR,
     canUseRiskAnalysis,
     refresh: async () => {
+      console.log("[v0] Refreshing subscription status...")
       setLoading(true)
-      const response = await fetch("/api/subscription/status")
-      if (response.ok) {
-        const data = await response.json()
-        const ocrUsage = data.usage?.find((u: any) => u.feature_type === "ocr_analysis")
-        const riskUsage = data.usage?.find((u: any) => u.feature_type === "risk_analysis")
-        setSubscription({
-          planType: data.subscription?.plan_type || "free",
-          status: data.subscription?.status || "active",
-          expiresAt: data.subscription?.expires_at,
-          usage: {
-            ocrAnalysis: {
-              used: ocrUsage?.used_count || 0,
-              limit: ocrUsage?.limit_count || 1,
+      try {
+        const response = await fetch("/api/subscription/status")
+        if (response.ok) {
+          const data = await response.json()
+          console.log("[v0] Refreshed subscription data:", data)
+
+          const ocrUsage = data.usage?.find((u: any) => u.feature_type === "ocr_analysis")
+          const riskUsage = data.usage?.find((u: any) => u.feature_type === "risk_analysis")
+
+          const subscriptionStatus = {
+            planType: data.subscription?.plan_type || "free",
+            status: data.subscription?.status || "active",
+            expiresAt: data.subscription?.expires_at,
+            usage: {
+              ocrAnalysis: {
+                used: ocrUsage?.used_count || 0,
+                limit: ocrUsage?.limit_count || 1,
+              },
+              riskAnalysis: {
+                used: riskUsage?.used_count || 0,
+                limit: riskUsage?.limit_count || 0,
+              },
             },
-            riskAnalysis: {
-              used: riskUsage?.used_count || 0,
-              limit: riskUsage?.limit_count || 0,
-            },
-          },
-        })
+          }
+
+          console.log("[v0] Refreshed subscription status:", subscriptionStatus)
+          setSubscription(subscriptionStatus)
+        }
+      } catch (error) {
+        console.error("[v0] Subscription refresh error:", error)
+      } finally {
+        setLoading(false)
       }
-      setLoading(false)
     },
   }
 }
