@@ -1,42 +1,22 @@
 import { NextResponse } from "next/server"
-import { cookies } from "next/headers"
-import { createServerClient } from "@supabase/ssr"
+import { createServerClient } from "@/lib/supabase/server"
 
 export async function POST() {
   try {
     console.log("[v0] Payment initialization started")
 
-    const cookieStore = await cookies()
-    const supabase = createServerClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-      {
-        cookies: {
-          getAll() {
-            return cookieStore.getAll()
-          },
-          setAll(cookiesToSet) {
-            try {
-              cookiesToSet.forEach(({ name, value, options }) => cookieStore.set(name, value, options))
-            } catch {
-              // Ignore errors from Server Components
-            }
-          },
-        },
-      },
-    )
+    const supabase = await createServerClient()
 
     const {
-      data: { session },
+      data: { user },
       error: authError,
-    } = await supabase.auth.getSession()
+    } = await supabase.auth.getUser()
 
-    if (authError || !session?.user) {
-      console.error("[v0] Auth error:", authError?.message || "No session found")
+    if (authError || !user) {
+      console.error("[v0] Auth error:", authError?.message || "No user found")
       return NextResponse.json({ error: "Yetkisiz erişim" }, { status: 401 })
     }
 
-    const user = session.user
     console.log("[v0] User authenticated:", user.id)
 
     // Get user profile
