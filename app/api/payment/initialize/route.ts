@@ -12,6 +12,13 @@ export async function POST() {
       error: authError,
     } = await supabase.auth.getUser()
 
+    console.log("[v0] Auth check:", {
+      hasUser: !!user,
+      userId: user?.id,
+      hasError: !!authError,
+      errorMessage: authError?.message,
+    })
+
     if (authError || !user) {
       console.error("[v0] Auth error:", authError?.message || "No user found")
       return NextResponse.json({ error: "Yetkisiz erişim" }, { status: 401 })
