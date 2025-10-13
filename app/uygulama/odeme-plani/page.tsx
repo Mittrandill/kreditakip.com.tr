@@ -1525,7 +1525,7 @@ export default function OdemePlaniPage() {
               <Button
                 variant="outline"
                 size="lg"
-                className="bg-white/20 dark:bg-white/15 text-white border-white/30 dark:border-white/20 hover:bg-white/30 dark:hover:bg-white/25 backdrop-blur-sm"
+                className="bg-transparent border-white/20 text-white hover:bg-white/10 hover:border-white/30"
                 onClick={() => {
                   // PDF export functionality
                   const data = allPayments.map((payment) => ({
@@ -1568,7 +1568,7 @@ export default function OdemePlaniPage() {
               <Button
                 variant="outline"
                 size="lg"
-                className="bg-white/20 dark:bg-white/15 text-white border-white/30 dark:border-white/20 hover:bg-white/30 dark:hover:bg-white/25 backdrop-blur-sm"
+                className="bg-transparent border-white/20 text-white hover:bg-white/10 hover:border-white/30"
                 onClick={() => {
                   setSelectedTab("hatirlatici")
                   toast({

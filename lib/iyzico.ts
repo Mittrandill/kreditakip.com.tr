@@ -75,12 +75,11 @@ class IyzicoClient {
   }
 
   private generateAuthString(randomString: string, uri: string, body: string): string {
-    // iyzico expects: IYZIWS apiKey:base64(hmac_sha256(apiKey + randomString + secretKey + body))
     const dataToEncrypt = `${this.config.apiKey}${randomString}${this.config.secretKey}${body}`
 
     const hash = crypto.createHmac("sha256", this.config.secretKey).update(dataToEncrypt).digest("base64")
 
-    return `IYZWSv2 ${this.config.apiKey}:${hash}`
+    return `IYZIWS ${this.config.apiKey}:${hash}`
   }
 
   private generateRandomString(): string {
@@ -112,6 +111,7 @@ class IyzicoClient {
         uri,
         authHeaderPrefix: authHeader.substring(0, 20),
         randomStringLength: randomString.length,
+        requestBodyPreview: body.substring(0, 100),
       })
 
       const response = await fetch(`${this.config.baseUrl}${uri}`, {
@@ -135,7 +135,14 @@ class IyzicoClient {
 
       const data = await response.json()
 
-      console.log("[v0] iyzico response status:", data.status)
+      console.log("[v0] iyzico response data:", {
+        status: data.status,
+        hasToken: !!data.token,
+        hasCheckoutFormContent: !!data.checkoutFormContent,
+        hasPaymentPageUrl: !!data.paymentPageUrl,
+        errorCode: data.errorCode,
+        errorMessage: data.errorMessage,
+      })
 
       if (data.status !== "success") {
         console.error("[v0] iyzico error:", data.errorMessage, data.errorCode)

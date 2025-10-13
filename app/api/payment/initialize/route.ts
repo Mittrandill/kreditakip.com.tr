@@ -33,8 +33,12 @@ export async function POST() {
 
     console.log("[v0] Profile loaded for:", profile.email)
 
-    if (!process.env.IYZICO_API_KEY || !process.env.IYZICO_SECRET_KEY) {
-      console.error("[v0] iyzico credentials missing")
+    if (!process.env.IYZICO_API_KEY || !process.env.IYZICO_SECRET_KEY || !process.env.IYZICO_BASE_URL) {
+      console.error("[v0] iyzico credentials missing:", {
+        hasApiKey: !!process.env.IYZICO_API_KEY,
+        hasSecretKey: !!process.env.IYZICO_SECRET_KEY,
+        hasBaseUrl: !!process.env.IYZICO_BASE_URL,
+      })
       return NextResponse.json(
         {
           error:
@@ -57,6 +61,10 @@ export async function POST() {
     console.log("[v0] Payment request created:", {
       conversationId: paymentRequest.conversationId,
       price: paymentRequest.price,
+      currency: paymentRequest.currency,
+      basketId: paymentRequest.basketId,
+      buyerEmail: paymentRequest.buyer.email,
+      callbackUrl: paymentRequest.callbackUrl,
     })
 
     let paymentResponse
@@ -66,12 +74,15 @@ export async function POST() {
         status: paymentResponse.status,
         hasToken: !!paymentResponse.token,
         hasUrl: !!paymentResponse.paymentPageUrl,
+        errorCode: paymentResponse.errorCode,
+        errorMessage: paymentResponse.errorMessage,
       })
     } catch (iyzicoError) {
       console.error("[v0] iyzico API error:", iyzicoError)
       return NextResponse.json(
         {
           error: "iyzico ödeme sistemi ile bağlantı kurulamadı. Lütfen daha sonra tekrar deneyin.",
+          details: iyzicoError instanceof Error ? iyzicoError.message : String(iyzicoError),
         },
         { status: 500 },
       )

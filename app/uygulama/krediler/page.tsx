@@ -336,7 +336,12 @@ export default function KredilerPage() {
               </p>
             </div>
             <div className="flex flex-col sm:flex-row gap-3">
-              <Button variant="outline" size="lg" onClick={() => router.push("/uygulama/krediler/pdf-odeme-plani")}>
+              <Button
+                variant="outline"
+                size="lg"
+                className="bg-transparent border-white/20 text-white hover:bg-white/10 hover:border-white/30"
+                onClick={() => router.push("/uygulama/krediler/pdf-odeme-plani")}
+              >
                 <Plus className="h-5 w-5 mr-2" />
                 PDF Ödeme Planı Ekle
               </Button>
