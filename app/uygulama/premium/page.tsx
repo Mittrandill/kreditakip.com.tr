@@ -8,7 +8,7 @@ import { Crown, Check, Sparkles, Zap, TrendingUp, X } from "lucide-react"
 import { useSubscription } from "@/hooks/use-subscription"
 import { useRouter, useSearchParams } from "next/navigation"
 import { useToast } from "@/hooks/use-toast"
-import { createBrowserClient } from "@/utils/supabase-client"
+import { supabase } from "@/lib/supabase"
 
 export default function PremiumPage() {
   const { subscription, loading, isPremium } = useSubscription()
@@ -42,11 +42,6 @@ export default function PremiumPage() {
     console.log("[v0] Starting payment initialization...")
 
     try {
-      const supabase = createBrowserClient(
-        process.env.NEXT_PUBLIC_SUPABASE_URL!,
-        process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-      )
-
       const {
         data: { user },
       } = await supabase.auth.getUser()
