@@ -34,7 +34,7 @@ export function useSubscription() {
 
       try {
         console.log("[v0] Fetching subscription status for user:", user.id)
-        const response = await fetch("/api/subscription/status")
+        const response = await fetch(`/api/subscription/status?userId=${user.id}`)
         console.log("[v0] Subscription API response status:", response.status)
 
         if (response.ok) {
@@ -93,7 +93,7 @@ export function useSubscription() {
       console.log("[v0] Refreshing subscription status...")
       setLoading(true)
       try {
-        const response = await fetch("/api/subscription/status")
+        const response = await fetch(`/api/subscription/status?userId=${user?.id}`)
         if (response.ok) {
           const data = await response.json()
           console.log("[v0] Refreshed subscription data:", data)
