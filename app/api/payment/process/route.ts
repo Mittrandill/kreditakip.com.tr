@@ -29,14 +29,16 @@ export async function POST(request: NextRequest) {
     // TODO: Integrate with iyzico payment API here
     // For now, we'll simulate a successful payment
 
-    // Update subscription to premium
+    const expiresAt = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString()
+
     const { error: subError } = await supabase
       .from("subscriptions")
       .update({
-        plan: "premium",
+        plan_type: "premium",
         status: "active",
-        current_period_start: new Date().toISOString(),
-        current_period_end: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
+        started_at: new Date().toISOString(),
+        expires_at: expiresAt,
+        payment_method: "credit_card",
         updated_at: new Date().toISOString(),
       })
       .eq("user_id", userId)
@@ -46,15 +48,18 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Abonelik güncellenemedi" }, { status: 500 })
     }
 
-    // Create payment transaction record
-    await supabase.from("payment_transactions").insert({
+    const { error: txError } = await supabase.from("payment_transactions").insert({
       user_id: userId,
       amount: 199.0,
       currency: "TRY",
-      status: "success",
+      status: "completed",
       payment_method: "credit_card",
-      transaction_id: `txn_${Date.now()}`,
+      iyzico_conversation_id: `sim_${Date.now()}`,
     })
+
+    if (txError) {
+      console.error("[v0] Transaction record error:", txError)
+    }
 
     console.log("[v0] Payment successful, subscription activated")
 
