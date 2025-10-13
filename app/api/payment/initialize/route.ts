@@ -1,12 +1,28 @@
 import { NextResponse } from "next/server"
-import { createServerClient } from "@/lib/supabase/server"
+import { cookies } from "next/headers"
+import { createClient } from "@supabase/supabase-js"
 import { iyzicoClient } from "@/lib/iyzico"
 
 export async function POST() {
   try {
     console.log("[v0] Payment initialization started")
 
-    const supabase = await createServerClient()
+    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
+    const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+
+    if (!supabaseUrl || !supabaseKey) {
+      console.error("[v0] Supabase credentials missing")
+      return NextResponse.json({ error: "Database configuration error" }, { status: 500 })
+    }
+
+    const cookieStore = await cookies()
+    const authToken = cookieStore.get("sb-access-token")?.value
+
+    const supabase = createClient(supabaseUrl, supabaseKey, {
+      global: {
+        headers: authToken ? { Authorization: `Bearer ${authToken}` } : {},
+      },
+    })
 
     // Get current user
     const {
