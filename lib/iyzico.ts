@@ -64,38 +64,23 @@ interface IyzicoPaymentResponse {
 }
 
 class IyzicoClient {
-  private config: IyzicoConfig | null = null
+  private config: IyzicoConfig
 
-  private getConfig(): IyzicoConfig {
-    if (!this.config) {
-      const apiKey = process.env.IYZICO_API_KEY
-      const secretKey = process.env.IYZICO_SECRET_KEY
-      const baseUrl = process.env.IYZICO_BASE_URL || "https://sandbox-api.iyzipay.com"
-
-      if (!apiKey || !secretKey) {
-        throw new Error(
-          "iyzico credentials not configured. Please set IYZICO_API_KEY and IYZICO_SECRET_KEY environment variables.",
-        )
-      }
-
-      this.config = {
-        apiKey,
-        secretKey,
-        baseUrl,
-      }
+  constructor() {
+    this.config = {
+      apiKey: process.env.IYZICO_API_KEY || "",
+      secretKey: process.env.IYZICO_SECRET_KEY || "",
+      baseUrl: process.env.IYZICO_BASE_URL || "https://sandbox-api.iyzipay.com",
     }
-
-    return this.config
   }
 
   private generateAuthString(randomString: string, uri: string, body: string): string {
-    const config = this.getConfig()
     // iyzico expects: IYZIWS apiKey:base64(hmac_sha256(apiKey + randomString + secretKey + body))
-    const dataToEncrypt = `${config.apiKey}${randomString}${config.secretKey}${body}`
+    const dataToEncrypt = `${this.config.apiKey}${randomString}${this.config.secretKey}${body}`
 
-    const hash = crypto.createHmac("sha256", config.secretKey).update(dataToEncrypt).digest("base64")
+    const hash = crypto.createHmac("sha256", this.config.secretKey).update(dataToEncrypt).digest("base64")
 
-    return `IYZWSv2 ${config.apiKey}:${hash}`
+    return `IYZWSv2 ${this.config.apiKey}:${hash}`
   }
 
   private generateRandomString(): string {
@@ -103,19 +88,22 @@ class IyzicoClient {
   }
 
   async initializeCheckoutForm(request: IyzicoPaymentRequest): Promise<IyzicoPaymentResponse> {
-    const config = this.getConfig()
     const uri = "/payment/iyzipos/checkoutform/initialize/auth/ecom"
     const body = JSON.stringify(request)
     const randomString = this.generateRandomString()
 
     console.log("[v0] Initializing iyzico payment with config:", {
-      baseUrl: config.baseUrl,
-      hasApiKey: !!config.apiKey,
-      hasSecretKey: !!config.secretKey,
-      apiKeyLength: config.apiKey.length,
-      secretKeyLength: config.secretKey.length,
+      baseUrl: this.config.baseUrl,
+      hasApiKey: !!this.config.apiKey,
+      hasSecretKey: !!this.config.secretKey,
+      apiKeyLength: this.config.apiKey.length,
+      secretKeyLength: this.config.secretKey.length,
       randomString: randomString,
     })
+
+    if (!this.config.apiKey || !this.config.secretKey) {
+      throw new Error("iyzico API credentials are not configured")
+    }
 
     try {
       const authHeader = this.generateAuthString(randomString, uri, body)
@@ -126,7 +114,7 @@ class IyzicoClient {
         randomStringLength: randomString.length,
       })
 
-      const response = await fetch(`${config.baseUrl}${uri}`, {
+      const response = await fetch(`${this.config.baseUrl}${uri}`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -161,7 +149,6 @@ class IyzicoClient {
   }
 
   async retrieveCheckoutForm(token: string): Promise<any> {
-    const config = this.getConfig()
     const uri = "/payment/iyzipos/checkoutform/auth/ecom/detail"
     const body = JSON.stringify({
       locale: "tr",
@@ -171,7 +158,7 @@ class IyzicoClient {
     const randomString = this.generateRandomString()
 
     try {
-      const response = await fetch(`${config.baseUrl}${uri}`, {
+      const response = await fetch(`${this.config.baseUrl}${uri}`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

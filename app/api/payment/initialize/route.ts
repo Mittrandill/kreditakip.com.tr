@@ -1,28 +1,30 @@
 import { NextResponse } from "next/server"
 import { cookies } from "next/headers"
-import { createClient } from "@supabase/supabase-js"
-import { iyzicoClient } from "@/lib/iyzico"
+import { createServerClient } from "@supabase/ssr"
 
 export async function POST() {
   try {
     console.log("[v0] Payment initialization started")
 
-    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
-    const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
-
-    if (!supabaseUrl || !supabaseKey) {
-      console.error("[v0] Supabase credentials missing")
-      return NextResponse.json({ error: "Database configuration error" }, { status: 500 })
-    }
-
     const cookieStore = await cookies()
-    const authToken = cookieStore.get("sb-access-token")?.value
-
-    const supabase = createClient(supabaseUrl, supabaseKey, {
-      global: {
-        headers: authToken ? { Authorization: `Bearer ${authToken}` } : {},
+    const supabase = createServerClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+      {
+        cookies: {
+          getAll() {
+            return cookieStore.getAll()
+          },
+          setAll(cookiesToSet) {
+            try {
+              cookiesToSet.forEach(({ name, value, options }) => cookieStore.set(name, value, options))
+            } catch {
+              // Ignore errors from Server Components
+            }
+          },
+        },
       },
-    })
+    )
 
     // Get current user
     const {
@@ -32,7 +34,7 @@ export async function POST() {
 
     if (authError || !user) {
       console.error("[v0] Auth error:", authError)
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
+      return NextResponse.json({ error: "Yetkisiz erişim" }, { status: 401 })
     }
 
     console.log("[v0] User authenticated:", user.id)
@@ -46,7 +48,7 @@ export async function POST() {
 
     if (profileError) {
       console.error("[v0] Profile error:", profileError)
-      return NextResponse.json({ error: "Profile not found" }, { status: 404 })
+      return NextResponse.json({ error: "Profil bulunamadı" }, { status: 404 })
     }
 
     console.log("[v0] Profile loaded for:", profile.email)
@@ -62,29 +64,20 @@ export async function POST() {
       )
     }
 
-    // Create payment request
-    let paymentRequest
-    try {
-      paymentRequest = iyzicoClient.createPremiumSubscriptionRequest(
-        user.id,
-        profile.email || user.email || "",
-        profile.first_name || "Kullanıcı",
-        profile.last_name || "Adı",
-      )
+    const { iyzicoClient } = await import("@/lib/iyzico")
 
-      console.log("[v0] Payment request created:", {
-        conversationId: paymentRequest.conversationId,
-        price: paymentRequest.price,
-      })
-    } catch (requestError) {
-      console.error("[v0] Payment request creation error:", requestError)
-      return NextResponse.json(
-        {
-          error: requestError instanceof Error ? requestError.message : "Ödeme isteği oluşturulamadı",
-        },
-        { status: 500 },
-      )
-    }
+    // Create payment request
+    const paymentRequest = iyzicoClient.createPremiumSubscriptionRequest(
+      user.id,
+      profile.email || user.email || "",
+      profile.first_name || "Kullanıcı",
+      profile.last_name || "Adı",
+    )
+
+    console.log("[v0] Payment request created:", {
+      conversationId: paymentRequest.conversationId,
+      price: paymentRequest.price,
+    })
 
     let paymentResponse
     try {
@@ -98,10 +91,7 @@ export async function POST() {
       console.error("[v0] iyzico API error:", iyzicoError)
       return NextResponse.json(
         {
-          error:
-            iyzicoError instanceof Error
-              ? iyzicoError.message
-              : "iyzico ödeme sistemi ile bağlantı kurulamadı. Lütfen daha sonra tekrar deneyin.",
+          error: "iyzico ödeme sistemi ile bağlantı kurulamadı. Lütfen daha sonra tekrar deneyin.",
         },
         { status: 500 },
       )
@@ -142,7 +132,7 @@ export async function POST() {
       paymentPageUrl: paymentResponse.paymentPageUrl,
     })
   } catch (error) {
-    console.error("[v0] Payment initialization error (top-level catch):", error)
+    console.error("[v0] Payment initialization error:", error)
     return NextResponse.json(
       {
         error: error instanceof Error ? error.message : "Ödeme işlemi başlatılırken bir hata oluştu",
