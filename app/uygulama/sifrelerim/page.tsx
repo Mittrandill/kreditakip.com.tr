@@ -39,6 +39,7 @@ import {
 import { BsFillGrid3X3GapFill } from "react-icons/bs"
 
 import { useAuth } from "@/hooks/use-auth"
+import { useSubscription } from "@/hooks/use-subscription" // Import subscription hook
 import { useToast } from "@/hooks/use-toast"
 import {
   getBankingCredentials,
@@ -119,6 +120,7 @@ const getPasswordChangeStatus = (credential: BankingCredential) => {
 
 export default function BankaciSifrelerimPage() {
   const { user, loading: authLoading } = useAuth()
+  const { isPremium, loading: subscriptionLoading } = useSubscription() // Check premium status
   const { toast } = useToast()
   const router = useRouter()
 
@@ -177,6 +179,12 @@ export default function BankaciSifrelerimPage() {
       isMounted = false
     }
   }, [user, authLoading])
+
+  useEffect(() => {
+    if (!subscriptionLoading && !isPremium && !authLoading) {
+      router.push("/uygulama/premium")
+    }
+  }, [isPremium, subscriptionLoading, authLoading, router])
 
   const filteredAndSortedCredentials = useMemo(() => {
     const filtered = allCredentials.filter((credential) => {
@@ -344,13 +352,17 @@ export default function BankaciSifrelerimPage() {
     return daysSinceUsed <= 7
   }).length
 
-  if (authLoading || loadingData) {
+  if (authLoading || subscriptionLoading) {
     return (
       <div className="flex flex-col gap-4 md:gap-6 items-center justify-center min-h-[calc(100vh-150px)]">
         <Loader2 className="h-12 w-12 animate-spin text-emerald-600" />
         <p className="text-lg text-gray-600 dark:text-gray-300">Veriler yükleniyor...</p>
       </div>
     )
+  }
+
+  if (!isPremium) {
+    return null
   }
 
   if (error) {

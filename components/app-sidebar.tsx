@@ -6,7 +6,6 @@ import { useSidebar } from "@/components/ui/sidebar"
 import { Separator } from "@/components/ui/separator"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"
-import { Badge } from "@/components/ui/badge"
 import {
   Home,
   CreditCard,
@@ -107,11 +106,10 @@ export default function AppSidebar() {
           >
             Kredi Takip
           </span>
-          {isPremium && !isCollapsed && (
-            <Badge className="ml-2 bg-gradient-to-r from-amber-500 to-orange-600 text-white border-0 text-xs">
-              <Crown className="h-3 w-3 mr-1" />
-              Premium
-            </Badge>
+          {isPremium && (
+            <div className="ml-2 p-1.5 bg-gradient-to-r from-amber-500 to-orange-600 rounded-lg shadow-lg">
+              <Crown className="h-4 w-4 text-white" />
+            </div>
           )}
         </Link>
       </div>

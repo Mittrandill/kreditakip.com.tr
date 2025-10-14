@@ -35,11 +35,12 @@ import {
   Minus,
   Search,
   X,
-  CheckCircle,
 } from "lucide-react"
 import { format, subMonths, startOfMonth, endOfMonth, isWithinInterval } from "date-fns"
 import { tr } from "date-fns/locale"
 import { useAuth } from "@/hooks/use-auth"
+import { useSubscription } from "@/hooks/use-subscription" // Import subscription hook
+import { useRouter } from "next/navigation" // Import router
 import { getCredits } from "@/lib/api/credits"
 import { getAllPayments } from "@/lib/api/payments"
 import type { Credit, Bank, CreditType, PaymentPlan } from "@/lib/types"
@@ -98,6 +99,8 @@ interface FilterState {
 
 export default function RaporlarPage() {
   const { user, loading: authLoading } = useAuth()
+  const { isPremium, loading: subscriptionLoading } = useSubscription() // Check premium status
+  const router = useRouter() // Router for redirect
   const [credits, setCredits] = useState<PopulatedCredit[]>([])
   const [payments, setPayments] = useState<PopulatedPayment[]>([])
   const [loading, setLoading] = useState(true)
@@ -116,6 +119,12 @@ export default function RaporlarPage() {
 
   const [activeTab, setActiveTab] = useState("overview")
   const [expandedFilters, setExpandedFilters] = useState(false)
+
+  useEffect(() => {
+    if (!subscriptionLoading && !isPremium && !authLoading) {
+      router.push("/uygulama/premium")
+    }
+  }, [isPremium, subscriptionLoading, authLoading, router])
 
   const fetchData = async () => {
     if (!user?.id) return
@@ -425,6 +434,19 @@ export default function RaporlarPage() {
     filters.amountRange.max < 10000000 ||
     filters.interestRange.min > 0 ||
     filters.interestRange.max < 50
+
+  if (authLoading || subscriptionLoading) {
+    return (
+      <div className="flex flex-col gap-4 items-center justify-center min-h-[calc(100vh-150px)]">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-emerald-600"></div>
+        <p className="text-lg text-gray-600">Raporlar hazırlanıyor...</p>
+      </div>
+    )
+  }
+
+  if (!isPremium) {
+    return null
+  }
 
   if (authLoading || loading) {
     return (
@@ -1126,7 +1148,7 @@ export default function RaporlarPage() {
                   />
                 </AreaChart>
               </ResponsiveContainer>
-            </CardContent>
+            </Card>
           </Card>
         </TabsContent>
 
@@ -1263,7 +1285,7 @@ export default function RaporlarPage() {
                   <ReferenceLine y={80} stroke="#F59E0B" strokeDasharray="5 5" label="Hedef %80" />
                 </LineChart>
               </ResponsiveContainer>
-            </CardContent>
+            </Card>
           </Card>
         </TabsContent>
 
@@ -1381,136 +1403,74 @@ export default function RaporlarPage() {
       {/* Premium Action Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         <Card className="shadow-xl border-0 bg-gradient-to-br from-blue-500 to-indigo-600 text-white">
-          <CardHeader className="pb-3">
-            <CardTitle className="text-lg flex items-center gap-2">
-              <Clock className="h-5 w-5" />
-              Yaklaşan Ödemeler
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-3">
-              {filteredPayments
-                .filter((p) => {
-                  const dueDate = new Date(p.due_date)
-                  const nextWeek = new Date()
-                  nextWeek.setDate(nextWeek.getDate() + 7)
-                  return p.status === "pending" && dueDate <= nextWeek
-                })
-                .slice(0, 3)
-                .map((payment) => (
-                  <div
-                    key={payment.id}
-                    className="flex items-center justify-between p-3 bg-white/20 rounded-lg border border-white/30 backdrop-blur-sm"
-                  >
-                    <div className="flex items-center gap-3">
-                      <BankLogo
-                        bankName={payment.credits?.banks?.name || ""}
-                        logoUrl={payment.credits?.banks?.logo_url}
-                        size="sm"
-                      />
-                      <div>
-                        <div className="font-medium text-sm text-white">{payment.credits?.banks?.name}</div>
-                        <div className="text-xs text-blue-100">
-                          {format(new Date(payment.due_date), "dd MMM", { locale: tr })}
-                        </div>
-                      </div>
-                    </div>
-                    <div className="text-right">
-                      <div className="font-bold text-sm text-white">{formatCurrency(payment.total_payment)}</div>
-                    </div>
-                  </div>
-                ))}
-              {summaryMetrics.upcomingPayments === 0 && (
-                <div className="text-center py-8 text-blue-100">
-                  <Clock className="h-12 w-12 mx-auto mb-4 text-blue-200" />
-                  <p>Yaklaşan ödeme bulunmuyor</p>
-                </div>
-              )}
+          <CardContent className="p-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-blue-100 text-sm font-medium">Yaklaşan Ödemeler</p>
+                <p className="text-2xl font-bold mt-1">
+                  {formatCurrency(
+                    filteredPayments
+                      .filter((p) => {
+                        const dueDate = new Date(p.due_date)
+                        const nextWeek = new Date()
+                        nextWeek.setDate(nextWeek.getDate() + 7)
+                        return p.status === "pending" && dueDate <= nextWeek
+                      })
+                      .reduce((sum, p) => sum + (p.total_payment || 0), 0),
+                  )}
+                </p>
+                <p className="text-blue-200 text-xs mt-1">
+                  {
+                    filteredPayments.filter((p) => {
+                      const dueDate = new Date(p.due_date)
+                      const nextWeek = new Date()
+                      nextWeek.setDate(nextWeek.getDate() + 7)
+                      return p.status === "pending" && dueDate <= nextWeek
+                    }).length
+                  }{" "}
+                  taksit
+                </p>
+              </div>
+              <div className="bg-blue-500/30 p-3 rounded-full">
+                <Clock className="h-6 w-6 text-blue-100" />
+              </div>
             </div>
           </CardContent>
         </Card>
 
         <Card className="shadow-xl border-0 bg-gradient-to-br from-red-500 to-rose-600 text-white">
-          <CardHeader className="pb-3">
-            <CardTitle className="text-lg flex items-center gap-2">
-              <AlertTriangle className="h-5 w-5" />
-              Geciken Ödemeler
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-3">
-              {filteredPayments
-                .filter((p) => p.status === "overdue")
-                .slice(0, 3)
-                .map((payment) => (
-                  <div
-                    key={payment.id}
-                    className="flex items-center justify-between p-3 bg-white/20 rounded-lg border border-white/30 backdrop-blur-sm"
-                  >
-                    <div className="flex items-center gap-3">
-                      <BankLogo
-                        bankName={payment.credits?.banks?.name || ""}
-                        logoUrl={payment.credits?.banks?.logo_url}
-                        size="sm"
-                      />
-                      <div>
-                        <div className="font-medium text-sm text-white">{payment.credits?.banks?.name}</div>
-                        <div className="text-xs text-red-100">
-                          {format(new Date(payment.due_date), "dd MMM", { locale: tr })} gecikti
-                        </div>
-                      </div>
-                    </div>
-                    <div className="text-right">
-                      <div className="font-bold text-sm text-white">{formatCurrency(payment.total_payment)}</div>
-                    </div>
-                  </div>
-                ))}
-              {summaryMetrics.overduePayments === 0 && (
-                <div className="text-center py-8 text-red-100">
-                  <CheckCircle className="h-12 w-12 mx-auto mb-4 text-red-200" />
-                  <p>Geciken ödeme bulunmuyor</p>
-                </div>
-              )}
+          <CardContent className="p-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-red-100 text-sm font-medium">Geciken Ödemeler</p>
+                <p className="text-2xl font-bold mt-1">
+                  {formatCurrency(
+                    filteredPayments
+                      .filter((p) => p.status === "overdue")
+                      .reduce((sum, p) => sum + (p.total_payment || 0), 0),
+                  )}
+                </p>
+                <p className="text-red-200 text-xs mt-1">
+                  {filteredPayments.filter((p) => p.status === "overdue").length} gecikmiş taksit
+                </p>
+              </div>
+              <div className="bg-red-500/30 p-3 rounded-full">
+                <AlertTriangle className="h-6 w-6 text-red-100" />
+              </div>
             </div>
           </CardContent>
         </Card>
 
         <Card className="shadow-xl border-0 bg-gradient-to-br from-emerald-500 to-teal-600 text-white">
-          <CardHeader className="pb-3">
-            <CardTitle className="text-lg flex items-center gap-2">
-              <TrendingUp className="h-5 w-5" />
-              Finansal Özet
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
-              <div className="flex justify-between items-center">
-                <span className="text-sm text-emerald-100">Toplam Ödenen</span>
-                <span className="font-bold text-white">{formatCurrency(summaryMetrics.totalPaidAmount)}</span>
+          <CardContent className="p-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-emerald-100 text-sm font-medium">Finansal Özet</p>
+                <p className="text-2xl font-bold mt-1">{formatCurrency(summaryMetrics.totalPaidAmount)}</p>
+                <p className="text-emerald-200 text-xs mt-1">Toplam Ödenen</p>
               </div>
-              <div className="flex justify-between items-center">
-                <span className="text-sm text-emerald-100">Ortalama Faiz</span>
-                <span className="font-bold text-white">%{summaryMetrics.averageInterest.toFixed(2)}</span>
-              </div>
-              <div className="flex justify-between items-center">
-                <span className="text-sm text-emerald-100">Aktif Kredi Oranı</span>
-                <span className="font-bold text-white">
-                  %{Math.round((summaryMetrics.activeCredits / Math.max(summaryMetrics.totalCredits, 1)) * 100)}
-                </span>
-              </div>
-              <div className="pt-3 border-t border-emerald-400">
-                <div className="flex justify-between items-center mb-2">
-                  <span className="text-sm font-medium text-emerald-100">Finansal Skor</span>
-                  <span className="text-sm font-bold text-white">
-                    {Math.round(summaryMetrics.paymentPerformance)}/100
-                  </span>
-                </div>
-                <div className="w-full h-3 bg-emerald-400/30 rounded-full overflow-hidden">
-                  <div
-                    className="h-3 bg-white rounded-full transition-all duration-500"
-                    style={{ width: `${summaryMetrics.paymentPerformance}%` }}
-                  ></div>
-                </div>
+              <div className="bg-emerald-500/30 p-3 rounded-full">
+                <TrendingUp className="h-6 w-6 text-emerald-100" />
               </div>
             </div>
           </CardContent>
