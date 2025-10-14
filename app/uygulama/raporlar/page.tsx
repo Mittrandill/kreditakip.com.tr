@@ -448,7 +448,7 @@ export default function RaporlarPage() {
     return null
   }
 
-  if (authLoading || loading) {
+  if (loading) {
     return (
       <div className="flex flex-col gap-4 items-center justify-center min-h-[calc(100vh-150px)]">
         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-emerald-600"></div>
