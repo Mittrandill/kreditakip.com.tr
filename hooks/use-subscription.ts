@@ -19,27 +19,41 @@ export interface SubscriptionStatus {
   }
 }
 
+const CACHE_KEY = "subscription_cache"
+const CACHE_DURATION = 5 * 60 * 1000 // 5 minutes
+
 export function useSubscription() {
   const { user } = useAuth()
-  const [subscription, setSubscription] = useState<SubscriptionStatus | null>(null)
-  const [loading, setLoading] = useState(true)
+  const [subscription, setSubscription] = useState<SubscriptionStatus | null>(() => {
+    if (typeof window !== "undefined") {
+      const cached = localStorage.getItem(CACHE_KEY)
+      if (cached) {
+        try {
+          const { data, timestamp } = JSON.parse(cached)
+          if (Date.now() - timestamp < CACHE_DURATION) {
+            return data
+          }
+        } catch (e) {
+          // Invalid cache, ignore
+        }
+      }
+    }
+    return null
+  })
+  const [loading, setLoading] = useState(!subscription) // Don't show loading if we have cached data
 
   useEffect(() => {
     async function fetchSubscription() {
       if (!user) {
-        console.log("[v0] No user, skipping subscription fetch")
         setLoading(false)
         return
       }
 
       try {
-        console.log("[v0] Fetching subscription status for user:", user.id)
         const response = await fetch(`/api/subscription/status?userId=${user.id}`)
-        console.log("[v0] Subscription API response status:", response.status)
 
         if (response.ok) {
           const data = await response.json()
-          console.log("[v0] Subscription data received:", data)
 
           const ocrUsage = data.usage?.find((u: any) => u.feature_type === "ocr_analysis")
           const riskUsage = data.usage?.find((u: any) => u.feature_type === "risk_analysis")
@@ -60,11 +74,17 @@ export function useSubscription() {
             },
           }
 
-          console.log("[v0] Processed subscription status:", subscriptionStatus)
-          console.log("[v0] Is Premium:", subscriptionStatus.planType === "premium")
           setSubscription(subscriptionStatus)
-        } else {
-          console.error("[v0] Subscription API error:", response.status, response.statusText)
+
+          if (typeof window !== "undefined") {
+            localStorage.setItem(
+              CACHE_KEY,
+              JSON.stringify({
+                data: subscriptionStatus,
+                timestamp: Date.now(),
+              }),
+            )
+          }
         }
       } catch (error) {
         console.error("[v0] Subscription fetch error:", error)
@@ -81,8 +101,6 @@ export function useSubscription() {
     isPremium || (subscription?.usage.ocrAnalysis.used || 0) < (subscription?.usage.ocrAnalysis.limit || 1)
   const canUseRiskAnalysis = isPremium
 
-  console.log("[v0] useSubscription state:", { isPremium, canUseOCR, canUseRiskAnalysis, loading })
-
   return {
     subscription,
     loading,
@@ -90,13 +108,11 @@ export function useSubscription() {
     canUseOCR,
     canUseRiskAnalysis,
     refresh: async () => {
-      console.log("[v0] Refreshing subscription status...")
       setLoading(true)
       try {
         const response = await fetch(`/api/subscription/status?userId=${user?.id}`)
         if (response.ok) {
           const data = await response.json()
-          console.log("[v0] Refreshed subscription data:", data)
 
           const ocrUsage = data.usage?.find((u: any) => u.feature_type === "ocr_analysis")
           const riskUsage = data.usage?.find((u: any) => u.feature_type === "risk_analysis")
@@ -117,8 +133,17 @@ export function useSubscription() {
             },
           }
 
-          console.log("[v0] Refreshed subscription status:", subscriptionStatus)
           setSubscription(subscriptionStatus)
+
+          if (typeof window !== "undefined") {
+            localStorage.setItem(
+              CACHE_KEY,
+              JSON.stringify({
+                data: subscriptionStatus,
+                timestamp: Date.now(),
+              }),
+            )
+          }
         }
       } catch (error) {
         console.error("[v0] Subscription refresh error:", error)

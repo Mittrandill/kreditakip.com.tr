@@ -41,7 +41,6 @@ import {
   Clock,
   LocateIcon as Location,
   Upload,
-  Crown,
 } from "lucide-react"
 import { useAuth } from "@/hooks/use-auth"
 import { getProfile, updateProfile } from "@/lib/auth"
@@ -379,7 +378,7 @@ export default function AyarlarPage() {
       console.error("Avatar upload error:", error)
       toast({
         title: "Hata",
-        description: error.message || "Fotoğraf yüklenirken bir hata oluştu.",
+        description: error.message || "Fotoğraf yüklenırken bir hata oluştu.",
         variant: "destructive",
       })
     } finally {
@@ -537,12 +536,6 @@ export default function AyarlarPage() {
               <h2 className="text-3xl font-bold mb-2 flex items-center gap-3">
                 <Settings className="h-8 w-8" />
                 Hesap ve Sistem Ayarları
-                {isPremium && (
-                  <Badge className="bg-gradient-to-r from-amber-500 to-orange-600 text-white border-0">
-                    <Crown className="h-4 w-4 mr-1" />
-                    Premium
-                  </Badge>
-                )}
               </h2>
               <p className="text-slate-100 text-lg">
                 Hesap bilgilerinizi, güvenlik ayarlarınızı ve uygulama tercihlerinizi yönetin
@@ -618,29 +611,6 @@ export default function AyarlarPage() {
           <div className="p-6">
             <TabsContent value="profile">
               <div className="space-y-6">
-                {isPremium && (
-                  <Card className="border-2 border-amber-500 dark:border-amber-600 bg-gradient-to-r from-amber-50 to-orange-50 dark:from-amber-900/20 dark:to-orange-900/20">
-                    <CardContent className="p-6">
-                      <div className="flex items-center gap-4">
-                        <div className="p-3 bg-gradient-to-br from-amber-500 to-orange-600 rounded-lg">
-                          <Crown className="h-8 w-8 text-white" />
-                        </div>
-                        <div className="flex-1">
-                          <h3 className="text-xl font-bold text-amber-900 dark:text-amber-100 mb-1">
-                            Premium Üyelik Aktif
-                          </h3>
-                          <p className="text-sm text-amber-700 dark:text-amber-300">
-                            Tüm özelliklere sınırsız erişiminiz var. Üyelik bitiş tarihi:{" "}
-                            {subscription?.expiresAt
-                              ? new Date(subscription.expiresAt).toLocaleDateString("tr-TR")
-                              : "Süresiz"}
-                          </p>
-                        </div>
-                      </div>
-                    </CardContent>
-                  </Card>
-                )}
-
                 <Card className="dark:bg-gray-900 dark:border-gray-800">
                   <CardHeader>
                     <CardTitle className="flex items-center gap-2 dark:text-white">

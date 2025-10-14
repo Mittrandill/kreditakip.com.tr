@@ -6,6 +6,7 @@ import { useSidebar } from "@/components/ui/sidebar"
 import { Separator } from "@/components/ui/separator"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"
+import { Badge } from "@/components/ui/badge"
 import {
   Home,
   CreditCard,
@@ -21,6 +22,7 @@ import {
   ShieldCheck,
   Menu,
   Key,
+  Crown,
 } from "lucide-react"
 import {
   DropdownMenu,
@@ -31,6 +33,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { useAuth } from "@/hooks/use-auth"
+import { useSubscription } from "@/hooks/use-subscription"
 import { signOut } from "@/lib/auth"
 import { useToast } from "@/hooks/use-toast"
 import Image from "next/image"
@@ -56,6 +59,7 @@ export default function AppSidebar() {
   const { state, toggleSidebar } = useSidebar()
   const isCollapsed = state === "collapsed"
   const { user, profile, loading } = useAuth()
+  const { isPremium } = useSubscription()
   const { toast } = useToast()
 
   const handleSignOut = async () => {
@@ -103,6 +107,12 @@ export default function AppSidebar() {
           >
             Kredi Takip
           </span>
+          {isPremium && !isCollapsed && (
+            <Badge className="ml-2 bg-gradient-to-r from-amber-500 to-orange-600 text-white border-0 text-xs">
+              <Crown className="h-3 w-3 mr-1" />
+              Premium
+            </Badge>
+          )}
         </Link>
       </div>
 
@@ -268,9 +278,12 @@ export default function AppSidebar() {
                 <UserIcon className="mr-2 h-4 w-4" />
                 Profil
               </DropdownMenuItem>
-              <DropdownMenuItem className="text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 focus:bg-gray-100 dark:focus:bg-gray-700">
+              <DropdownMenuItem
+                onClick={() => router.push("/uygulama/faturalandirma")}
+                className="text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 focus:bg-gray-100 dark:focus:bg-gray-700"
+              >
                 <Briefcase className="mr-2 h-4 w-4" />
-                Faturalama
+                Faturalandırma
               </DropdownMenuItem>
               <DropdownMenuItem className="text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 focus:bg-gray-100 dark:focus:bg-gray-700">
                 <HelpCircle className="mr-2 h-4 w-4" />
