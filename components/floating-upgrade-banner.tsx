@@ -70,10 +70,19 @@ export function FloatingUpgradeBanner() {
               Sınırsız analiz, risk değerlendirmesi ve reklamsız deneyim için Premium üyeliğe geçin
             </p>
             <div className="flex items-center gap-2">
-              <Button onClick={handleUpgrade} size="sm" className="bg-white text-emerald-600 hover:bg-emerald-50">
+              <Button
+                onClick={handleUpgrade}
+                size="sm"
+                className="bg-white text-emerald-600 hover:bg-emerald-50 font-semibold"
+              >
                 Sadece 199₺/ay
               </Button>
-              <Button onClick={handleDismiss} size="sm" variant="ghost" className="text-white hover:bg-white/20">
+              <Button
+                onClick={handleDismiss}
+                size="sm"
+                variant="outline"
+                className="border-white text-white hover:bg-white/10 hover:text-white hover:border-white bg-transparent"
+              >
                 Daha Sonra
               </Button>
             </div>
