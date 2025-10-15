@@ -1148,7 +1148,7 @@ export default function RaporlarPage() {
                   />
                 </AreaChart>
               </ResponsiveContainer>
-            </Card>
+            </CardContent>
           </Card>
         </TabsContent>
 
@@ -1285,7 +1285,7 @@ export default function RaporlarPage() {
                   <ReferenceLine y={80} stroke="#F59E0B" strokeDasharray="5 5" label="Hedef %80" />
                 </LineChart>
               </ResponsiveContainer>
-            </Card>
+            </CardContent>
           </Card>
         </TabsContent>
 
