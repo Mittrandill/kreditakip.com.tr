@@ -21,6 +21,8 @@ import {
   Search,
 } from "lucide-react"
 import { useAuth } from "@/hooks/use-auth"
+import { useSubscription } from "@/hooks/use-subscription" // Import subscription hook
+import { useRouter } from "next/navigation" // Import router for redirect
 import { getAllPayments } from "@/lib/api/payments"
 import { getUserCredits } from "@/lib/api/credits"
 import { formatCurrency, formatDate } from "@/lib/format"
@@ -104,13 +106,13 @@ function CalendarView({ payments }: { payments: PaymentWithCredit[] }) {
             variant="outline"
             size="sm"
             onClick={handlePrevMonth}
-            className="flex items-center gap-2 bg-transparent"
+            className="flex items-center gap-2 bg-white/20 dark:bg-white/15 text-white border-white/30 dark:border-white/20 hover:bg-white/30 dark:hover:bg-white/25 backdrop-blur-sm"
           >
             <ChevronLeft className="h-4 w-4" />
             Önceki
           </Button>
 
-          <h3 className="text-xl font-semibold">
+          <h3 className="text-xl font-semibold dark:text-white">
             {monthNames[currentMonth]} {currentYear}
           </h3>
 
@@ -118,7 +120,7 @@ function CalendarView({ payments }: { payments: PaymentWithCredit[] }) {
             variant="outline"
             size="sm"
             onClick={handleNextMonth}
-            className="flex items-center gap-2 bg-transparent"
+            className="flex items-center gap-2 bg-white/20 dark:bg-white/15 text-white border-white/30 dark:border-white/20 hover:bg-white/30 dark:hover:bg-white/25 backdrop-blur-sm"
           >
             Sonraki
             <ChevronRight className="h-4 w-4" />
@@ -126,7 +128,11 @@ function CalendarView({ payments }: { payments: PaymentWithCredit[] }) {
         </div>
 
         <div className="flex gap-2">
-          <Button variant="outline" size="sm">
+          <Button
+            variant="outline"
+            size="sm"
+            className="bg-white/20 dark:bg-white/15 text-white border-white/30 dark:border-white/20 hover:bg-white/30 dark:hover:bg-white/25 backdrop-blur-sm"
+          >
             <Filter className="h-4 w-4 mr-2" />
             Filtrele
           </Button>
@@ -135,13 +141,16 @@ function CalendarView({ payments }: { payments: PaymentWithCredit[] }) {
 
       <div className="grid grid-cols-7 gap-2">
         {dayNames.map((day) => (
-          <div key={day} className="p-2 text-center text-sm font-medium text-gray-500 bg-gray-50 rounded-t-lg">
+          <div
+            key={day}
+            className="p-2 text-center text-sm font-medium text-gray-500 dark:text-gray-400 bg-gray-50 dark:bg-gray-800 rounded-t-lg"
+          >
             {day}
           </div>
         ))}
 
         {Array.from({ length: startingDayOfWeek }, (_, i) => (
-          <div key={`empty-${i}`} className="p-2 h-32 bg-gray-50/30 rounded-lg"></div>
+          <div key={`empty-${i}`} className="p-2 h-32 bg-gray-50/30 dark:bg-gray-800/30 rounded-lg"></div>
         ))}
 
         {Array.from({ length: daysInMonth }, (_, i) => {
@@ -155,19 +164,25 @@ function CalendarView({ payments }: { payments: PaymentWithCredit[] }) {
               key={day}
               className={`p-2 h-32 border rounded-lg transition-all hover:shadow-md ${
                 isToday
-                  ? "bg-blue-50 border-blue-300 shadow-md ring-2 ring-blue-200"
+                  ? "bg-blue-50 dark:bg-blue-900/30 border-blue-300 dark:border-blue-700 shadow-md ring-2 ring-blue-200 dark:ring-blue-800"
                   : dayPayments.length > 0
-                    ? "bg-white border-gray-300 hover:border-gray-400"
-                    : "bg-gray-50/50 border-gray-200"
+                    ? "bg-white dark:bg-gray-900 border-gray-300 dark:border-gray-700 hover:border-gray-400 dark:hover:border-gray-600"
+                    : "bg-gray-50/50 dark:bg-gray-800/50 border-gray-200 dark:border-gray-700"
               }`}
             >
               <div
                 className={`text-sm font-semibold mb-2 ${
-                  isToday ? "text-blue-700" : dayPayments.length > 0 ? "text-gray-900" : "text-gray-500"
+                  isToday
+                    ? "text-blue-700 dark:text-blue-400"
+                    : dayPayments.length > 0
+                      ? "text-gray-900 dark:text-white"
+                      : "text-gray-500 dark:text-gray-400"
                 }`}
               >
                 {day}
-                {isToday && <span className="ml-1 text-xs bg-gray-600 text-white px-1 rounded">Bugün</span>}
+                {isToday && (
+                  <span className="ml-1 text-xs bg-gray-600 dark:bg-gray-700 text-white px-1 rounded">Bugün</span>
+                )}
               </div>
 
               <div className="space-y-1 overflow-y-auto max-h-20">
@@ -204,7 +219,7 @@ function CalendarView({ payments }: { payments: PaymentWithCredit[] }) {
                 })}
 
                 {dayPayments.length > 3 && (
-                  <div className="text-xs text-gray-600 bg-gray-100 p-1 rounded text-center">
+                  <div className="text-xs text-gray-600 dark:text-gray-300 bg-gray-100 dark:bg-gray-800 p-1 rounded text-center">
                     +{dayPayments.length - 3} daha
                   </div>
                 )}
@@ -216,21 +231,24 @@ function CalendarView({ payments }: { payments: PaymentWithCredit[] }) {
 
       {uniqueBanks.length > 0 && (
         <div className="mt-6">
-          <h4 className="text-sm font-semibold text-gray-700 mb-3 flex items-center gap-2">
-            <div className="w-2 h-2 bg-gray-400 rounded-full"></div>
+          <h4 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3 flex items-center gap-2">
+            <div className="w-2 h-2 bg-gray-400 dark:bg-gray-600 rounded-full"></div>
             Banka Renk Kodları
           </h4>
           <div className="flex flex-wrap gap-3">
             {uniqueBanks.map((bank) => (
-              <div key={bank.name} className="flex items-center gap-2 px-3 py-2 rounded-lg border border-gray-200">
+              <div
+                key={bank.name}
+                className="flex items-center gap-2 px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-700 dark:bg-gray-800"
+              >
                 <div className="w-3 h-3 rounded-full shadow-sm" style={{ backgroundColor: bank.color }}></div>
-                <span className="text-sm font-medium text-gray-700">{bank.name}</span>
+                <span className="text-sm font-medium text-gray-700 dark:text-gray-300">{bank.name}</span>
               </div>
             ))}
-            <div className="flex items-center gap-2 px-3 py-2 rounded-lg border border-gray-200">
+            <div className="flex items-center gap-2 px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-700 dark:bg-gray-800">
               <div className="w-3 h-3 rounded-full shadow-sm bg-emerald-500"></div>
-              <span className="text-sm font-medium text-gray-700">Ödenen</span>
-              <Check className="h-3 w-3 text-emerald-600" />
+              <span className="text-sm font-medium text-gray-700 dark:text-gray-300">Ödenen</span>
+              <Check className="h-3 w-3 text-emerald-600 dark:text-emerald-400" />
             </div>
           </div>
         </div>
@@ -473,38 +491,44 @@ function PaymentsList({
 
   return (
     <div className="space-y-6">
-      {/* Header - keep existing */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h3 className="text-lg font-semibold text-gray-900">Tüm Ödemeler</h3>
-          <p className="text-sm text-gray-600">
+          <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Tüm Ödemeler</h3>
+          <p className="text-sm text-gray-600 dark:text-gray-400">
             Toplam {filteredPayments.length} ödeme • Sayfa {currentPage} / {totalPages}
           </p>
         </div>
-        <Button variant="outline" size="sm" className="gap-2 w-fit bg-transparent" onClick={exportToExcel}>
+        <Button
+          variant="outline"
+          size="sm"
+          className="gap-2 w-fit bg-transparent dark:border-gray-700 dark:text-gray-300 dark:hover:bg-gray-800"
+          onClick={exportToExcel}
+        >
           <Download className="h-4 w-4" />
           İndir
         </Button>
       </div>
 
-      {/* Filters - keep existing */}
       <div className="flex flex-col sm:flex-row gap-4">
         {/* Search */}
         <div className="relative flex-1">
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400 dark:text-gray-500" />
           <input
             type="text"
             placeholder="Banka adı veya kredi kodu ara..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
+            className="w-full pl-10 pr-4 py-2 border border-gray-300 dark:border-gray-700 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 dark:bg-gray-900 dark:text-white dark:placeholder-gray-500"
           />
         </div>
 
         {/* Status Filter */}
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button variant="outline" className="gap-2 min-w-[140px] bg-transparent">
+            <Button
+              variant="outline"
+              className="gap-2 min-w-[140px] bg-transparent dark:border-gray-700 dark:text-gray-300 dark:hover:bg-gray-800"
+            >
               <Filter className="h-4 w-4" />
               {statusFilter === "all"
                 ? "Tüm Durumlar"
@@ -515,23 +539,38 @@ function PaymentsList({
                     : "Geciken"}
             </Button>
           </DropdownMenuTrigger>
-          <DropdownMenuContent align="end" className="w-48">
-            <DropdownMenuItem onClick={() => setStatusFilter("all")}>
+          <DropdownMenuContent align="end" className="w-48 dark:bg-gray-900 dark:border-gray-700">
+            <DropdownMenuItem
+              onClick={() => setStatusFilter("all")}
+              className="dark:hover:bg-gray-800 dark:text-gray-300"
+            >
               <span className="flex items-center justify-between w-full">
                 Tüm Durumlar
-                <span className="text-xs bg-gray-100 px-2 py-0.5 rounded">{statusCounts.all}</span>
+                <span className="text-xs bg-gray-100 dark:bg-gray-800 dark:text-gray-300 px-2 py-0.5 rounded">
+                  {statusCounts.all}
+                </span>
               </span>
             </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => setStatusFilter("pending")}>
+            <DropdownMenuItem
+              onClick={() => setStatusFilter("pending")}
+              className="dark:hover:bg-gray-800 dark:text-gray-300"
+            >
               <span className="flex items-center justify-between w-full">
                 Bekleyen
-                <span className="text-xs bg-gray-100 px-2 py-0.5 rounded">{statusCounts.pending}</span>
+                <span className="text-xs bg-gray-100 dark:bg-gray-800 dark:text-gray-300 px-2 py-0.5 rounded">
+                  {statusCounts.pending}
+                </span>
               </span>
             </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => setStatusFilter("overdue")}>
+            <DropdownMenuItem
+              onClick={() => setStatusFilter("overdue")}
+              className="dark:hover:bg-gray-800 dark:text-gray-300"
+            >
               <span className="flex items-center justify-between w-full">
                 Geciken
-                <span className="text-xs bg-gray-100 px-2 py-0.5 rounded">{statusCounts.overdue}</span>
+                <span className="text-xs bg-gray-100 dark:bg-gray-800 dark:text-gray-300 px-2 py-0.5 rounded">
+                  {statusCounts.overdue}
+                </span>
               </span>
             </DropdownMenuItem>
           </DropdownMenuContent>
@@ -540,15 +579,27 @@ function PaymentsList({
         {/* Bank Filter */}
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button variant="outline" className="gap-2 min-w-[140px] bg-transparent">
+            <Button
+              variant="outline"
+              className="gap-2 min-w-[140px] bg-transparent dark:border-gray-700 dark:text-gray-300 dark:hover:bg-gray-800"
+            >
               <CreditCard className="h-4 w-4" />
               {bankFilter === "all" ? "Tüm Bankalar" : bankFilter}
             </Button>
           </DropdownMenuTrigger>
-          <DropdownMenuContent align="end" className="w-48">
-            <DropdownMenuItem onClick={() => setBankFilter("all")}>Tüm Bankalar</DropdownMenuItem>
+          <DropdownMenuContent align="end" className="w-48 dark:bg-gray-900 dark:border-gray-700">
+            <DropdownMenuItem
+              onClick={() => setBankFilter("all")}
+              className="dark:hover:bg-gray-800 dark:text-gray-300"
+            >
+              Tüm Bankalar
+            </DropdownMenuItem>
             {uniqueBanks.map((bank) => (
-              <DropdownMenuItem key={bank.name} onClick={() => setBankFilter(bank.name)}>
+              <DropdownMenuItem
+                key={bank.name}
+                onClick={() => setBankFilter(bank.name)}
+                className="dark:hover:bg-gray-800 dark:text-gray-300"
+              >
                 <div className="flex items-center gap-2">
                   <BankLogo bankName={bank.name} size="sm" />
                   {bank.name}
@@ -559,17 +610,16 @@ function PaymentsList({
         </DropdownMenu>
       </div>
 
-      {/* Professional Table */}
       <div className="overflow-x-auto">
         <table className="w-full border-collapse">
           <thead>
-            <tr className="bg-white dark:bg-gray-900">
-              <th className="font-semibold text-gray-700 dark:text-gray-300 p-4">Banka</th>
-              <th className="font-semibold text-gray-700 dark:text-gray-300 p-4">Taksit No</th>
-              <th className="font-semibold text-gray-700 dark:text-gray-300 p-4">Vade Tarihi</th>
-              <th className="font-semibold text-gray-700 dark:text-gray-300 p-4">Ana Para</th>
-              <th className="font-semibold text-gray-700 dark:text-gray-300 p-4">Faiz</th>
-              <th className="font-semibold text-gray-700 dark:text-gray-300 p-4">Toplam</th>
+            <tr className="bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-700">
+              <th className="font-semibold text-gray-700 dark:text-gray-300 p-4 text-left">Banka</th>
+              <th className="font-semibold text-gray-700 dark:text-gray-300 p-4 text-left">Taksit No</th>
+              <th className="font-semibold text-gray-700 dark:text-gray-300 p-4 text-left">Vade Tarihi</th>
+              <th className="font-semibold text-gray-700 dark:text-gray-300 p-4 text-left">Ana Para</th>
+              <th className="font-semibold text-gray-700 dark:text-gray-300 p-4 text-left">Faiz</th>
+              <th className="font-semibold text-gray-700 dark:text-gray-300 p-4 text-left">Toplam</th>
               <th className="w-[100px] text-right font-semibold text-gray-700 dark:text-gray-300 p-4">İşlemler</th>
             </tr>
           </thead>
@@ -582,16 +632,20 @@ function PaymentsList({
               return (
                 <tr
                   key={payment.id}
-                  className={`hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors duration-150 ease-in-out ${
+                  className={`hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors duration-150 ease-in-out border-b border-gray-100 dark:border-gray-800 ${
                     index % 2 === 0 ? "bg-white dark:bg-gray-900" : "bg-gray-50/50 dark:bg-gray-800/50"
                   }`}
                 >
                   <td className="p-4">
                     <div className="flex items-center gap-3">
-                      <BankLogo bankName={payment.credits.banks.name} size="sm" />
+                      <BankLogo
+                        bankName={payment.credits.banks.name}
+                        logoUrl={payment.credits.banks.logo_url}
+                        size="sm"
+                      />
                       <div>
                         <div className="font-medium text-gray-900 dark:text-white">{payment.credits.banks.name}</div>
-                        <div className="text-xs text-gray-500">{payment.credits.credit_code}</div>
+                        <div className="text-xs text-gray-500 dark:text-gray-400">{payment.credits.credit_code}</div>
                       </div>
                     </div>
                   </td>
@@ -600,7 +654,9 @@ function PaymentsList({
                   <td className="p-4 font-semibold text-gray-900 dark:text-white">
                     {formatCurrency(payment.principal_amount)}
                   </td>
-                  <td className="p-4 font-medium text-orange-600">{formatCurrency(payment.interest_amount)}</td>
+                  <td className="p-4 font-medium text-orange-600 dark:text-orange-400">
+                    {formatCurrency(payment.interest_amount)}
+                  </td>
                   <td className="p-4 font-bold text-lg text-gray-900 dark:text-white">
                     {formatCurrency(payment.total_payment)}
                   </td>
@@ -648,19 +704,17 @@ function PaymentsList({
         </table>
       </div>
 
-      {/* No payments message */}
       {currentPayments.length === 0 && (
-        <div className="text-center py-12 text-gray-500">
-          <Calendar className="h-16 w-16 mx-auto mb-4 text-gray-400" />
-          <h3 className="font-medium text-gray-900 mb-2">Ödeme Bulunamadı</h3>
+        <div className="text-center py-12 text-gray-500 dark:text-gray-400">
+          <Calendar className="h-16 w-16 mx-auto mb-4 text-gray-400 dark:text-gray-600" />
+          <h3 className="font-medium text-gray-900 dark:text-white mb-2">Ödeme Bulunamadı</h3>
           <p className="text-sm">Seçilen filtrelere uygun ödeme bulunmuyor</p>
         </div>
       )}
 
-      {/* Pagination */}
       {totalPages > 1 && (
         <div className="flex items-center justify-between">
-          <div className="text-sm text-gray-600">
+          <div className="text-sm text-gray-600 dark:text-gray-400">
             {startIndex + 1}-{Math.min(endIndex, filteredPayments.length)} arası, toplam {filteredPayments.length} ödeme
           </div>
 
@@ -670,6 +724,7 @@ function PaymentsList({
               size="sm"
               onClick={() => setCurrentPage(currentPage - 1)}
               disabled={currentPage === 1}
+              className="dark:border-gray-700 dark:text-gray-300 dark:hover:bg-gray-800"
             >
               <ChevronLeft className="h-4 w-4" />
               Önceki
@@ -693,7 +748,7 @@ function PaymentsList({
                     key={pageNum}
                     variant={currentPage === pageNum ? "default" : "outline"}
                     size="sm"
-                    className="w-8 h-8 p-0"
+                    className="w-8 h-8 p-0 dark:border-gray-700 dark:text-gray-300 dark:hover:bg-gray-800"
                     onClick={() => setCurrentPage(pageNum)}
                   >
                     {pageNum}
@@ -707,6 +762,7 @@ function PaymentsList({
               size="sm"
               onClick={() => setCurrentPage(currentPage + 1)}
               disabled={currentPage === totalPages}
+              className="dark:border-gray-700 dark:text-gray-300 dark:hover:bg-gray-800"
             >
               Sonraki
               <ChevronRight className="h-4 w-4" />
@@ -798,11 +854,13 @@ function PaymentAnalysis({ payments, credits }: { payments: PaymentWithCredit[];
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <h3 className="text-xl font-semibold">Ödeme Analizi</h3>
-        <div className="text-sm text-gray-500">Son güncelleme: {new Date().toLocaleDateString("tr-TR")}</div>
+        <h3 className="text-xl font-semibold dark:text-white">Ödeme Analizi</h3>
+        <div className="text-sm text-gray-500 dark:text-gray-400">
+          Son güncelleme: {new Date().toLocaleDateString("tr-TR")}
+        </div>
       </div>
 
-      {/* Ana Metrikler */}
+      {/* Ana Metrikler - Gradient kartlar olduğu için değişiklik yok */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         <Card className="bg-gradient-to-br from-blue-600 to-blue-700 text-white border-transparent shadow-lg">
           <CardContent className="p-6">
@@ -892,7 +950,11 @@ function PaymentAnalysis({ payments, credits }: { payments: PaymentWithCredit[];
                   className="flex items-center justify-between text-sm bg-purple-500/20 p-2 rounded-lg"
                 >
                   <div className="flex items-center gap-2">
-                    <BankLogo bankName={payment.credits.banks.name} size="sm" />
+                    <BankLogo
+                      bankName={payment.credits.banks.name}
+                      logoUrl={payment.credits.banks.logo_url}
+                      size="sm"
+                    />
                     <span className="font-medium text-white">{payment.credits.banks.name}</span>
                   </div>
                   <div className="text-right">
@@ -906,11 +968,10 @@ function PaymentAnalysis({ payments, credits }: { payments: PaymentWithCredit[];
         </Card>
       )}
 
-      {/* Banka Bazında Dağılım */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <Card>
+        <Card className="dark:bg-gray-900 dark:border-gray-800">
           <CardHeader>
-            <CardTitle className="flex items-center gap-2">
+            <CardTitle className="flex items-center gap-2 dark:text-white">
               <CreditCard className="h-5 w-5" />
               Banka Bazında Dağılım
             </CardTitle>
@@ -920,36 +981,41 @@ function PaymentAnalysis({ payments, credits }: { payments: PaymentWithCredit[];
               {Object.entries(bankDistribution)
                 .sort(([, a], [, b]) => b.total - a.total)
                 .slice(0, 5)
-                .map(([bankName, data]) => (
-                  <div key={bankName} className="space-y-2">
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-2">
-                        <BankLogo bankName={bankName} size="sm" />
-                        <span className="font-medium text-sm">{bankName}</span>
+                .map(([bankName, data]) => {
+                  // Find a payment associated with this bank to get the logo URL
+                  const bankPayments = payments.filter((payment) => payment.credits.banks.name === bankName)
+
+                  return (
+                    <div key={bankName} className="space-y-2">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-2">
+                          <BankLogo bankName={bankName} logoUrl={bankPayments[0]?.credits.banks.logo_url} size="sm" />
+                          <span className="font-medium text-sm dark:text-white">{bankName}</span>
+                        </div>
+                        <span className="text-sm font-semibold dark:text-white">{formatCurrency(data.total)}</span>
                       </div>
-                      <span className="text-sm font-semibold">{formatCurrency(data.total)}</span>
+                      <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
+                        <div
+                          className="bg-gradient-to-r from-blue-500 to-blue-600 h-2 rounded-full transition-all duration-300"
+                          style={{
+                            width: `${Math.max(5, (data.total / Math.max(...Object.values(bankDistribution).map((d) => d.total))) * 100)}%`,
+                          }}
+                        ></div>
+                      </div>
+                      <div className="flex justify-between text-xs text-gray-600 dark:text-gray-400">
+                        <span>{data.count} taksit</span>
+                        <span>Bekleyen: {formatCurrency(data.pending)}</span>
+                      </div>
                     </div>
-                    <div className="w-full bg-gray-200 rounded-full h-2">
-                      <div
-                        className="bg-gradient-to-r from-blue-500 to-blue-600 h-2 rounded-full transition-all duration-300"
-                        style={{
-                          width: `${Math.max(5, (data.total / Math.max(...Object.values(bankDistribution).map((d) => d.total))) * 100)}%`,
-                        }}
-                      ></div>
-                    </div>
-                    <div className="flex justify-between text-xs text-gray-600">
-                      <span>{data.count} taksit</span>
-                      <span>Bekleyen: {formatCurrency(data.pending)}</span>
-                    </div>
-                  </div>
-                ))}
+                  )
+                })}
             </div>
           </CardContent>
         </Card>
 
-        <Card>
+        <Card className="dark:bg-gray-900 dark:border-gray-800">
           <CardHeader>
-            <CardTitle className="flex items-center gap-2">
+            <CardTitle className="flex items-center gap-2 dark:text-white">
               <TrendingUp className="h-5 w-5" />
               Aylık Ödeme Trendi
             </CardTitle>
@@ -959,12 +1025,12 @@ function PaymentAnalysis({ payments, credits }: { payments: PaymentWithCredit[];
               {monthlyTrend.map((month, index) => (
                 <div key={index} className="space-y-2">
                   <div className="flex items-center justify-between">
-                    <span className="font-medium text-sm">
+                    <span className="font-medium text-sm dark:text-white">
                       {month.month} {currentYear}
                     </span>
-                    <span className="text-sm font-semibold">{formatCurrency(month.total)}</span>
+                    <span className="text-sm font-semibold dark:text-white">{formatCurrency(month.total)}</span>
                   </div>
-                  <div className="w-full bg-gray-200 rounded-full h-2">
+                  <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
                     <div className="flex h-2 rounded-full overflow-hidden">
                       <div
                         className="bg-emerald-500 transition-all duration-300"
@@ -980,7 +1046,7 @@ function PaymentAnalysis({ payments, credits }: { payments: PaymentWithCredit[];
                       ></div>
                     </div>
                   </div>
-                  <div className="flex justify-between text-xs text-gray-600">
+                  <div className="flex justify-between text-xs text-gray-600 dark:text-gray-400">
                     <span className="flex items-center gap-1">
                       <div className="w-2 h-2 bg-emerald-500 rounded-full"></div>
                       Ödenen: {formatCurrency(month.paid)}
@@ -997,10 +1063,9 @@ function PaymentAnalysis({ payments, credits }: { payments: PaymentWithCredit[];
         </Card>
       </div>
 
-      {/* Yıllık Özet */}
-      <Card>
+      <Card className="dark:bg-gray-900 dark:border-gray-800">
         <CardHeader>
-          <CardTitle className="flex items-center gap-2">
+          <CardTitle className="flex items-center gap-2 dark:text-white">
             <CheckCircle className="h-5 w-5" />
             {currentYear} Yılı Özeti
           </CardTitle>
@@ -1008,18 +1073,20 @@ function PaymentAnalysis({ payments, credits }: { payments: PaymentWithCredit[];
         <CardContent>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             <div className="text-center">
-              <div className="text-2xl font-bold text-emerald-600">{paidThisYear.length}</div>
-              <p className="text-sm text-gray-600">Ödenen Taksit</p>
+              <div className="text-2xl font-bold text-emerald-600 dark:text-emerald-400">{paidThisYear.length}</div>
+              <p className="text-sm text-gray-600 dark:text-gray-400">Ödenen Taksit</p>
             </div>
             <div className="text-center">
-              <div className="text-2xl font-bold text-emerald-600">{formatCurrency(totalPaidThisYear)}</div>
-              <p className="text-sm text-gray-600">Toplam Ödenen</p>
+              <div className="text-2xl font-bold text-emerald-600 dark:text-emerald-400">
+                {formatCurrency(totalPaidThisYear)}
+              </div>
+              <p className="text-sm text-gray-600 dark:text-gray-400">Toplam Ödenen</p>
             </div>
             <div className="text-center">
-              <div className="text-2xl font-bold text-blue-600">
+              <div className="text-2xl font-bold text-blue-600 dark:text-blue-400">
                 {payments.filter((p) => p.status === "pending").length}
               </div>
-              <p className="text-sm text-gray-600">Kalan Taksit</p>
+              <p className="text-sm text-gray-600 dark:text-gray-400">Kalan Taksit</p>
             </div>
           </div>
         </CardContent>
@@ -1035,29 +1102,29 @@ function ReminderSettings({ payments }: { payments: PaymentWithCredit[] }) {
   const [loading, setLoading] = useState(true)
   const [updating, setUpdating] = useState<string | null>(null)
 
+  // Load preferences only if user is available, and this call is outside the return statement.
   useEffect(() => {
-    if (user) {
-      loadPreferences()
+    const loadUserPreferences = async () => {
+      if (user) {
+        try {
+          setLoading(true)
+          const { getNotificationPreferences } = await import("@/lib/api/notification-preferences")
+          const prefs = await getNotificationPreferences(user!.id)
+          setPreferences(prefs)
+        } catch (error) {
+          console.error("Error loading preferences:", error)
+          toast({
+            title: "Hata",
+            description: "Bildirim tercihleri yüklenemedi",
+            variant: "destructive",
+          })
+        } finally {
+          setLoading(false)
+        }
+      }
     }
-  }, [user])
-
-  const loadPreferences = async () => {
-    try {
-      setLoading(true)
-      const { getNotificationPreferences } = await import("@/lib/api/notification-preferences")
-      const prefs = await getNotificationPreferences(user!.id)
-      setPreferences(prefs)
-    } catch (error) {
-      console.error("Error loading preferences:", error)
-      toast({
-        title: "Hata",
-        description: "Bildirim tercihleri yüklenemedi",
-        variant: "destructive",
-      })
-    } finally {
-      setLoading(false)
-    }
-  }
+    loadUserPreferences()
+  }, [user, toast])
 
   const togglePreference = async (field: string, currentValue: boolean) => {
     if (!preferences) return
@@ -1084,39 +1151,7 @@ function ReminderSettings({ payments }: { payments: PaymentWithCredit[] }) {
     }
   }
 
-  const sendTestReminder = async (type: string) => {
-    setUpdating(`test_${type}`)
-    try {
-      const response = await fetch("/api/notifications/send-reminders", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ userId: user!.id, type }),
-      })
-
-      const result = await response.json()
-
-      if (result.success) {
-        toast({
-          title: "Test bildirimi gönderildi! 📧",
-          description:
-            result.emailsSent > 0
-              ? `${result.emailsSent} e-posta başarıyla gönderildi`
-              : "Gönderilecek ödeme bulunamadı",
-        })
-      } else {
-        throw new Error(result.error)
-      }
-    } catch (error) {
-      console.error("Error sending test reminder:", error)
-      toast({
-        title: "Hata ❌",
-        description: "Test bildirimi gönderilemedi. Lütfen tekrar deneyin.",
-        variant: "destructive",
-      })
-    } finally {
-      setUpdating(null)
-    }
-  }
+  // sendTestReminder fonksiyonu tamamen kaldırıldı
 
   if (loading) {
     return (
@@ -1129,7 +1164,7 @@ function ReminderSettings({ payments }: { payments: PaymentWithCredit[] }) {
   if (!preferences) {
     return (
       <div className="text-center py-8">
-        <p className="text-gray-600">Bildirim tercihleri yüklenemedi</p>
+        <p className="text-gray-600 dark:text-gray-400">Bildirim tercihleri yüklenemedi</p>
       </div>
     )
   }
@@ -1144,16 +1179,16 @@ function ReminderSettings({ payments }: { payments: PaymentWithCredit[] }) {
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <h3 className="text-xl font-semibold">Hatırlatıcı Ayarları</h3>
-        <div className="text-sm text-gray-500">
+        <h3 className="text-xl font-semibold dark:text-white">Hatırlatıcı Ayarları</h3>
+        <div className="text-sm text-gray-500 dark:text-gray-400">
           Son güncelleme: {new Date(preferences.updated_at).toLocaleDateString("tr-TR")}
         </div>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <Card>
+        <Card className="dark:bg-gray-900 dark:border-gray-800">
           <CardHeader>
-            <CardTitle className="flex items-center gap-2">
+            <CardTitle className="flex items-center gap-2 dark:text-white">
               <Bell className="h-5 w-5" />
               E-posta Hatırlatıcıları
             </CardTitle>
@@ -1161,8 +1196,8 @@ function ReminderSettings({ payments }: { payments: PaymentWithCredit[] }) {
           <CardContent className="space-y-4">
             <div className="flex items-center justify-between">
               <div>
-                <span className="font-medium">3 gün önceden hatırlat</span>
-                <p className="text-sm text-gray-600">Vade tarihinden 3 gün önce e-posta gönder</p>
+                <span className="font-medium dark:text-white">3 gün önceden hatırlat</span>
+                <p className="text-sm text-gray-600 dark:text-gray-400">Vade tarihinden 3 gün önce e-posta gönder</p>
               </div>
               <div className="flex items-center gap-2">
                 <Button
@@ -1170,6 +1205,11 @@ function ReminderSettings({ payments }: { payments: PaymentWithCredit[] }) {
                   size="sm"
                   onClick={() => togglePreference("email_3_days_before", preferences.email_3_days_before)}
                   disabled={updating === "email_3_days_before"}
+                  className={
+                    !preferences.email_3_days_before
+                      ? "dark:border-gray-700 dark:text-gray-300 dark:hover:bg-gray-800"
+                      : ""
+                  }
                 >
                   {updating === "email_3_days_before" ? (
                     <div className="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent"></div>
@@ -1179,26 +1219,13 @@ function ReminderSettings({ payments }: { payments: PaymentWithCredit[] }) {
                     "Pasif"
                   )}
                 </Button>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => sendTestReminder("3_days_before")}
-                  disabled={updating === "test_3_days_before" || !preferences.email_3_days_before}
-                  title="Test bildirimi gönder"
-                >
-                  {updating === "test_3_days_before" ? (
-                    <div className="animate-spin rounded-full h-4 w-4 border-2 border-gray-400 border-t-transparent"></div>
-                  ) : (
-                    "Test"
-                  )}
-                </Button>
               </div>
             </div>
 
             <div className="flex items-center justify-between">
               <div>
-                <span className="font-medium">1 gün önceden hatırlat</span>
-                <p className="text-sm text-gray-600">Vade tarihinden 1 gün önce e-posta gönder</p>
+                <span className="font-medium dark:text-white">1 gün önceden hatırlat</span>
+                <p className="text-sm text-gray-600 dark:text-gray-400">Vade tarihinden 1 gün önce e-posta gönder</p>
               </div>
               <div className="flex items-center gap-2">
                 <Button
@@ -1206,6 +1233,11 @@ function ReminderSettings({ payments }: { payments: PaymentWithCredit[] }) {
                   size="sm"
                   onClick={() => togglePreference("email_1_day_before", preferences.email_1_day_before)}
                   disabled={updating === "email_1_day_before"}
+                  className={
+                    !preferences.email_1_day_before
+                      ? "dark:border-gray-700 dark:text-gray-300 dark:hover:bg-gray-800"
+                      : ""
+                  }
                 >
                   {updating === "email_1_day_before" ? (
                     <div className="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent"></div>
@@ -1215,26 +1247,13 @@ function ReminderSettings({ payments }: { payments: PaymentWithCredit[] }) {
                     "Pasif"
                   )}
                 </Button>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => sendTestReminder("1_day_before")}
-                  disabled={updating === "test_1_day_before" || !preferences.email_1_day_before}
-                  title="Test bildirimi gönder"
-                >
-                  {updating === "test_1_day_before" ? (
-                    <div className="animate-spin rounded-full h-4 w-4 border-2 border-gray-400 border-t-transparent"></div>
-                  ) : (
-                    "Test"
-                  )}
-                </Button>
               </div>
             </div>
 
             <div className="flex items-center justify-between">
               <div>
-                <span className="font-medium">Vade günü hatırlat</span>
-                <p className="text-sm text-gray-600">Vade gününde e-posta gönder</p>
+                <span className="font-medium dark:text-white">Vade günü hatırlat</span>
+                <p className="text-sm text-gray-600 dark:text-gray-400">Vade gününde e-posta gönder</p>
               </div>
               <div className="flex items-center gap-2">
                 <Button
@@ -1242,6 +1261,11 @@ function ReminderSettings({ payments }: { payments: PaymentWithCredit[] }) {
                   size="sm"
                   onClick={() => togglePreference("email_on_due_date", preferences.email_on_due_date)}
                   disabled={updating === "email_on_due_date"}
+                  className={
+                    !preferences.email_on_due_date
+                      ? "dark:border-gray-700 dark:text-gray-300 dark:hover:bg-gray-800"
+                      : ""
+                  }
                 >
                   {updating === "email_on_due_date" ? (
                     <div className="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent"></div>
@@ -1251,26 +1275,13 @@ function ReminderSettings({ payments }: { payments: PaymentWithCredit[] }) {
                     "Pasif"
                   )}
                 </Button>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => sendTestReminder("due_date")}
-                  disabled={updating === "test_due_date" || !preferences.email_on_due_date}
-                  title="Test bildirimi gönder"
-                >
-                  {updating === "test_due_date" ? (
-                    <div className="animate-spin rounded-full h-4 w-4 border-2 border-gray-400 border-t-transparent"></div>
-                  ) : (
-                    "Test"
-                  )}
-                </Button>
               </div>
             </div>
 
             <div className="flex items-center justify-between">
               <div>
-                <span className="font-medium">Gecikme bildirimi</span>
-                <p className="text-sm text-gray-600">Vade geçtiğinde e-posta gönder</p>
+                <span className="font-medium dark:text-white">Gecikme bildirimi</span>
+                <p className="text-sm text-gray-600 dark:text-gray-400">Vade geçtiğinde e-posta gönder</p>
               </div>
               <div className="flex items-center gap-2">
                 <Button
@@ -1278,6 +1289,9 @@ function ReminderSettings({ payments }: { payments: PaymentWithCredit[] }) {
                   size="sm"
                   onClick={() => togglePreference("email_overdue", preferences.email_overdue)}
                   disabled={updating === "email_overdue"}
+                  className={
+                    !preferences.email_overdue ? "dark:border-gray-700 dark:text-gray-300 dark:hover:bg-gray-800" : ""
+                  }
                 >
                   {updating === "email_overdue" ? (
                     <div className="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent"></div>
@@ -1287,27 +1301,14 @@ function ReminderSettings({ payments }: { payments: PaymentWithCredit[] }) {
                     "Pasif"
                   )}
                 </Button>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => sendTestReminder("overdue")}
-                  disabled={updating === "test_overdue" || !preferences.email_overdue}
-                  title="Test bildirimi gönder"
-                >
-                  {updating === "test_overdue" ? (
-                    <div className="animate-spin rounded-full h-4 w-4 border-2 border-gray-400 border-t-transparent"></div>
-                  ) : (
-                    "Test"
-                  )}
-                </Button>
               </div>
             </div>
           </CardContent>
         </Card>
 
-        <Card>
+        <Card className="dark:bg-gray-900 dark:border-gray-800">
           <CardHeader>
-            <CardTitle className="flex items-center gap-2">
+            <CardTitle className="flex items-center gap-2 dark:text-white">
               <Clock className="h-5 w-5" />
               Genel Ayarlar
             </CardTitle>
@@ -1315,14 +1316,17 @@ function ReminderSettings({ payments }: { payments: PaymentWithCredit[] }) {
           <CardContent className="space-y-4">
             <div className="flex items-center justify-between">
               <div>
-                <span className="font-medium">E-posta bildirimleri</span>
-                <p className="text-sm text-gray-600">Tüm e-posta bildirimlerini aç/kapat</p>
+                <span className="font-medium dark:text-white">E-posta bildirimleri</span>
+                <p className="text-sm text-gray-600 dark:text-gray-400">Tüm e-posta bildirimlerini aç/kapat</p>
               </div>
               <Button
                 variant={preferences.email_enabled ? "default" : "outline"}
                 size="sm"
                 onClick={() => togglePreference("email_enabled", preferences.email_enabled)}
                 disabled={updating === "email_enabled"}
+                className={
+                  !preferences.email_enabled ? "dark:border-gray-700 dark:text-gray-300 dark:hover:bg-gray-800" : ""
+                }
               >
                 {updating === "email_enabled" ? (
                   <div className="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent"></div>
@@ -1336,17 +1340,24 @@ function ReminderSettings({ payments }: { payments: PaymentWithCredit[] }) {
 
             <div className="flex items-center justify-between">
               <div>
-                <span className="font-medium">Bildirim saati</span>
-                <p className="text-sm text-gray-600">Bildirimlerin gönderileceği saat</p>
+                <span className="font-medium dark:text-white">Bildirim saati</span>
+                <p className="text-sm text-gray-600 dark:text-gray-400">Bildirimlerin gönderileceği saat</p>
               </div>
-              <div className="text-sm font-medium text-gray-700">{preferences.notification_time}</div>
+              <div className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                {preferences.notification_time}
+              </div>
             </div>
 
-            <div className="pt-4 border-t">
-              <div className="text-sm text-gray-600 mb-2">SMS Bildirimleri (Yakında)</div>
+            <div className="pt-4 border-t dark:border-gray-700">
+              <div className="text-sm text-gray-600 dark:text-gray-400 mb-2">SMS Bildirimleri (Yakında)</div>
               <div className="flex items-center justify-between opacity-50">
-                <span className="text-sm">SMS bildirimleri</span>
-                <Button variant="outline" size="sm" disabled>
+                <span className="text-sm dark:text-gray-400">SMS bildirimleri</span>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  disabled
+                  className="dark:border-gray-700 dark:text-gray-400 bg-transparent"
+                >
                   Yakında
                 </Button>
               </div>
@@ -1355,9 +1366,10 @@ function ReminderSettings({ payments }: { payments: PaymentWithCredit[] }) {
         </Card>
       </div>
 
-      <Card>
+      {/* Yaklaşan Hatırlatııcılar kartına koyu tema desteği eklendi */}
+      <Card className="dark:bg-gray-900 dark:border-gray-800">
         <CardHeader>
-          <CardTitle className="flex items-center gap-2">
+          <CardTitle className="flex items-center gap-2 dark:text-white">
             <Calendar className="h-5 w-5" />
             Yaklaşan Hatırlatıcılar
           </CardTitle>
@@ -1371,12 +1383,19 @@ function ReminderSettings({ payments }: { payments: PaymentWithCredit[] }) {
                 const daysUntilDue = Math.ceil((dueDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24))
 
                 return (
-                  <div key={payment.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                  <div
+                    key={payment.id}
+                    className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-800 rounded-lg"
+                  >
                     <div className="flex items-center gap-3">
-                      <BankLogo bankName={payment.credits.banks.name} size="sm" />
+                      <BankLogo
+                        bankName={payment.credits.banks.name}
+                        logoUrl={payment.credits.banks.logo_url}
+                        size="sm"
+                      />
                       <div>
-                        <div className="font-medium">{payment.credits.banks.name}</div>
-                        <div className="text-sm text-gray-600">
+                        <div className="font-medium dark:text-white">{payment.credits.banks.name}</div>
+                        <div className="text-sm text-gray-600 dark:text-gray-400">
                           {formatDate(payment.due_date)} - {formatCurrency(payment.total_payment)}
                         </div>
                       </div>
@@ -1384,24 +1403,32 @@ function ReminderSettings({ payments }: { payments: PaymentWithCredit[] }) {
                     <div className="text-right">
                       <div
                         className={`text-sm font-medium ${
-                          daysUntilDue <= 1 ? "text-red-600" : daysUntilDue <= 3 ? "text-orange-600" : "text-gray-600"
+                          daysUntilDue <= 1
+                            ? "text-red-600 dark:text-red-400"
+                            : daysUntilDue <= 3
+                              ? "text-orange-600 dark:text-orange-400"
+                              : "text-gray-600 dark:text-gray-400"
                         }`}
                       >
                         {daysUntilDue === 0 ? "Bugün" : daysUntilDue === 1 ? "Yarın" : `${daysUntilDue} gün kaldı`}
                       </div>
-                      <div className="text-xs text-gray-500">#{payment.installment_number}. taksit</div>
+                      <div className="text-xs text-gray-500 dark:text-gray-400">
+                        #{payment.installment_number}. taksit
+                      </div>
                     </div>
                   </div>
                 )
               })}
               {upcomingPayments.length > 5 && (
-                <div className="text-center text-sm text-gray-600 pt-2">+{upcomingPayments.length - 5} ödeme daha</div>
+                <div className="text-center text-sm text-gray-600 dark:text-gray-400 pt-2">
+                  +{upcomingPayments.length - 5} ödeme daha
+                </div>
               )}
             </div>
           ) : (
-            <div className="text-center py-8 text-gray-500">
-              <Bell className="h-12 w-12 mx-auto mb-3 text-gray-400" />
-              <p className="font-medium">Yaklaşan ödeme yok</p>
+            <div className="text-center py-8 text-gray-500 dark:text-gray-400">
+              <Bell className="h-12 w-12 mx-auto mb-3 text-gray-400 dark:text-gray-600" />
+              <p className="font-medium dark:text-gray-300">Yaklaşan ödeme yok</p>
               <p className="text-sm">Önümüzdeki 7 gün içinde vadesi gelen ödeme bulunmuyor</p>
             </div>
           )}
@@ -1413,6 +1440,8 @@ function ReminderSettings({ payments }: { payments: PaymentWithCredit[] }) {
 
 export default function OdemePlaniPage() {
   const { user } = useAuth()
+  const { isPremium, loading: subscriptionLoading } = useSubscription() // Check premium status
+  const router = useRouter() // Router for redirect
   const [allPayments, setAllPayments] = useState<PaymentWithCredit[]>([])
   const [credits, setCredits] = useState<Credit[]>([])
   const [loading, setLoading] = useState(true)
@@ -1420,25 +1449,51 @@ export default function OdemePlaniPage() {
   const { toast } = useToast()
 
   useEffect(() => {
-    if (user) {
-      loadData()
+    if (!subscriptionLoading && !isPremium) {
+      router.push("/uygulama/premium")
     }
-  }, [user])
+  }, [isPremium, subscriptionLoading, router])
 
-  const loadData = async () => {
-    try {
-      setLoading(true)
-      const [paymentsData, creditsData] = await Promise.all([
-        getAllPayments(user!.id, 12, 12), // 12 ay geçmiş + 12 ay gelecek
-        getUserCredits(user!.id),
-      ])
-      setAllPayments(paymentsData || [])
-      setCredits(creditsData || [])
-    } catch (error) {
-      console.error("Error loading payment data:", error)
-    } finally {
-      setLoading(false)
+  useEffect(() => {
+    const loadUserData = async () => {
+      if (user) {
+        try {
+          setLoading(true)
+          const [paymentsData, creditsData] = await Promise.all([
+            getAllPayments(user.id, 12, 12), // 12 ay geçmiş + 12 ay gelecek
+            getUserCredits(user.id),
+          ])
+          setAllPayments(paymentsData || [])
+          setCredits(creditsData || [])
+        } catch (error) {
+          console.error("Error loading payment data:", error)
+          // Optionally show a toast for data loading error
+          toast({
+            title: "Veri Yükleme Hatası",
+            description: "Ödeme planı ve kredi bilgileri yüklenemedi.",
+            variant: "destructive",
+          })
+        } finally {
+          setLoading(false)
+        }
+      }
     }
+    loadUserData()
+  }, [user, toast])
+
+  if (subscriptionLoading) {
+    return (
+      <div className="flex items-center justify-center min-h-[400px]">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-orange-600 mx-auto mb-4"></div>
+          <p className="text-gray-600 dark:text-gray-400">Yükleniyor...</p>
+        </div>
+      </div>
+    )
+  }
+
+  if (!isPremium) {
+    return null
   }
 
   const thisMonthPayments = allPayments.filter((payment) => {
@@ -1475,7 +1530,7 @@ export default function OdemePlaniPage() {
       <div className="flex items-center justify-center min-h-[400px]">
         <div className="text-center">
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-orange-600 mx-auto mb-4"></div>
-          <p className="text-gray-600">Ödeme planları yükleniyor...</p>
+          <p className="text-gray-600 dark:text-gray-400">Ödeme planları yükleniyor...</p>
         </div>
       </div>
     )
@@ -1483,7 +1538,7 @@ export default function OdemePlaniPage() {
 
   return (
     <div className="flex flex-col gap-4 md:gap-6">
-      {/* Hero Section */}
+      {/* Hero Section - Gradient olduğu için değişiklik yok */}
       <Card className="bg-gradient-to-r from-orange-600 to-red-700 text-white border-transparent shadow-xl rounded-xl">
         <CardContent className="p-8">
           <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
@@ -1500,7 +1555,7 @@ export default function OdemePlaniPage() {
               <Button
                 variant="outline"
                 size="lg"
-                className="bg-white text-orange-600 hover:bg-orange-50 border-white"
+                className="bg-transparent border-white/20 text-white hover:bg-white/10 hover:border-white/30"
                 onClick={() => {
                   // PDF export functionality
                   const data = allPayments.map((payment) => ({
@@ -1543,7 +1598,7 @@ export default function OdemePlaniPage() {
               <Button
                 variant="outline"
                 size="lg"
-                className="bg-white text-orange-600 hover:bg-orange-50 border-white"
+                className="bg-transparent border-white/20 text-white hover:bg-white/10 hover:border-white/30"
                 onClick={() => {
                   setSelectedTab("hatirlatici")
                   toast({
@@ -1560,35 +1615,34 @@ export default function OdemePlaniPage() {
         </CardContent>
       </Card>
 
-      {/* Modern Tabs */}
-      <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+      <div className="bg-white dark:bg-gray-900 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-800 overflow-hidden">
         <Tabs value={selectedTab} onValueChange={setSelectedTab} className="w-full">
-          <div className="border-b border-gray-100 bg-gray-50/50">
+          <div className="border-b border-gray-100 dark:border-gray-800 bg-gray-50/50 dark:bg-gray-800/50">
             <TabsList className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 bg-transparent h-auto p-2 gap-2">
               <TabsTrigger
                 value="takvim"
-                className="flex items-center gap-2 py-3 px-4 data-[state=active]:text-emerald-600 data-[state=active]:bg-white data-[state=active]:shadow-sm rounded-xl transition-all duration-200 hover:bg-gray-100"
+                className="flex items-center gap-2 py-3 px-4 data-[state=active]:text-emerald-600 dark:data-[state=active]:text-emerald-400 data-[state=active]:bg-white dark:data-[state=active]:bg-gray-900 data-[state=active]:shadow-sm rounded-xl transition-all duration-200 hover:bg-gray-100 dark:hover:bg-gray-700 dark:text-gray-400"
               >
                 <Calendar className="h-4 w-4" />
                 <span className="hidden sm:inline font-medium">Takvim</span>
               </TabsTrigger>
               <TabsTrigger
                 value="liste"
-                className="flex items-center gap-2 py-3 px-4 data-[state=active]:text-emerald-600 data-[state=active]:bg-white data-[state=active]:shadow-sm rounded-xl transition-all duration-200 hover:bg-gray-100"
+                className="flex items-center gap-2 py-3 px-4 data-[state=active]:text-emerald-600 dark:data-[state=active]:text-emerald-400 data-[state=active]:bg-white dark:data-[state=active]:bg-gray-900 data-[state=active]:shadow-sm rounded-xl transition-all duration-200 hover:bg-gray-100 dark:hover:bg-gray-700 dark:text-gray-400"
               >
                 <CreditCard className="h-4 w-4" />
                 <span className="hidden sm:inline font-medium">Liste</span>
               </TabsTrigger>
               <TabsTrigger
                 value="analiz"
-                className="flex items-center gap-2 py-3 px-4 data-[state=active]:text-emerald-600 data-[state=active]:bg-white data-[state=active]:shadow-sm rounded-xl transition-all duration-200 hover:bg-gray-100"
+                className="flex items-center gap-2 py-3 px-4 data-[state=active]:text-emerald-600 dark:data-[state=active]:text-emerald-400 data-[state=active]:bg-white dark:data-[state=active]:bg-gray-900 data-[state=active]:shadow-sm rounded-xl transition-all duration-200 hover:bg-gray-100 dark:hover:bg-gray-700 dark:text-gray-400"
               >
                 <TrendingUp className="h-4 w-4" />
                 <span className="hidden sm:inline font-medium">Analiz</span>
               </TabsTrigger>
               <TabsTrigger
                 value="hatirlatici"
-                className="flex items-center gap-2 py-3 px-4 data-[state=active]:text-emerald-600 data-[state=active]:bg-white data-[state=active]:shadow-sm rounded-xl transition-all duration-200 hover:bg-gray-100"
+                className="flex items-center gap-2 py-3 px-4 data-[state=active]:text-emerald-600 dark:data-[state=active]:text-emerald-400 data-[state=active]:bg-white dark:data-[state=active]:bg-gray-900 data-[state=active]:shadow-sm rounded-xl transition-all duration-200 hover:bg-gray-100 dark:hover:bg-gray-700 dark:text-gray-400"
               >
                 <Bell className="h-4 w-4" />
                 <span className="hidden sm:inline font-medium">Hatırlatıcı</span>

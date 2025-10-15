@@ -9,7 +9,7 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Checkbox } from "@/components/ui/checkbox"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Eye, EyeOff, Shield, Zap, Users, CheckCircle, Mail, Phone, Chrome, AlertCircle } from "lucide-react"
+import { Eye, EyeOff, Shield, Zap, Users, CheckCircle, Mail, Phone, AlertCircle } from "lucide-react"
 import { signUp, signInWithGoogle } from "@/lib/auth"
 import { useToast } from "@/hooks/use-toast"
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
@@ -24,7 +24,7 @@ export default function RegisterPage() {
   const [error, setError] = useState<string | null>(null)
   const router = useRouter()
   const { toast } = useToast()
-  
+
   const [formData, setFormData] = useState({
     firstName: "",
     lastName: "",
@@ -45,9 +45,39 @@ export default function RegisterPage() {
     setFormData((prev) => ({ ...prev, [name]: checked }))
   }
 
+  const getErrorMessage = (error: any): string => {
+    if (!error?.message) return "Bilinmeyen bir hata oluştu."
+
+    const message = error.message.toLowerCase()
+
+    if (message.includes("email already registered") || message.includes("user already registered")) {
+      return "Bu e-posta adresi zaten kayıtlı. Giriş yapmayı deneyin."
+    }
+    if (message.includes("invalid email")) {
+      return "Geçersiz e-posta adresi formatı."
+    }
+    if (message.includes("password should be at least")) {
+      return "Şifre en az 6 karakter olmalıdır."
+    }
+    if (message.includes("confirmation email") || message.includes("email sending")) {
+      return "E-posta gönderilirken bir sorun oluştu. Lütfen e-posta adresinizi kontrol edin ve tekrar deneyin."
+    }
+    if (message.includes("signup is disabled")) {
+      return "Kayıt işlemi şu anda devre dışı. Lütfen daha sonra tekrar deneyin."
+    }
+    if (message.includes("rate limit")) {
+      return "Çok fazla deneme yapıldı. Lütfen birkaç dakika bekleyin."
+    }
+    if (message.includes("network") || message.includes("fetch")) {
+      return "Bağlantı sorunu. İnternet bağlantınızı kontrol edin."
+    }
+
+    return error.message
+  }
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    
+
     if (!formData.agreeTerms || !formData.agreeKvkk) {
       setError("Lütfen kullanım şartlarını ve KVKK aydınlatma metnini kabul edin.")
       return
@@ -58,29 +88,65 @@ export default function RegisterPage() {
       return
     }
 
+    if (formData.password.length < 6) {
+      setError("Şifre en az 6 karakter olmalıdır.")
+      return
+    }
+
     setIsLoading(true)
     setError(null)
 
     try {
+      console.log("[v0] SignUp attempt with:", {
+        email: formData.email,
+        hasPassword: !!formData.password,
+        userData: {
+          first_name: formData.firstName,
+          last_name: formData.lastName,
+          phone: formData.phone,
+        },
+      })
+
       const data = await signUp(formData.email, formData.password, {
         first_name: formData.firstName,
         last_name: formData.lastName,
         phone: formData.phone,
       })
 
+      console.log("[v0] SignUp response:", {
+        user: data?.user
+          ? { id: data.user.id, email: data.user.email, email_confirmed_at: data.user.email_confirmed_at }
+          : null,
+        session: data?.session ? "exists" : "null",
+      })
+
       if (data?.user) {
-        toast({
-          title: "Kayıt Başarılı!",
-          description: "Lütfen e-postanızı kontrol ederek hesabınızı doğrulayın.",
-          duration: 7000,
-        })
+        if (data.user.email_confirmed_at) {
+          toast({
+            title: "Kayıt Başarılı!",
+            description: "Hesabınız başarıyla oluşturuldu ve doğrulandı.",
+            duration: 5000,
+          })
+        } else {
+          toast({
+            title: "Kayıt Başarılı!",
+            description:
+              "Lütfen e-postanızı kontrol ederek hesabınızı doğrulayın. E-posta gelmezse spam klasörünü kontrol edin.",
+            duration: 10000,
+          })
+        }
         router.push("/giris")
       } else {
         setError("Kayıt başarısız. Lütfen bilgilerinizi kontrol edin.")
       }
     } catch (err: any) {
-      console.error("Register error:", err)
-      setError(err.message || "Bir hata oluştu. Lütfen tekrar deneyin.")
+      console.error("[v0] Register error details:", {
+        message: err.message,
+        status: err.status,
+        statusText: err.statusText,
+        fullError: err,
+      })
+      setError(getErrorMessage(err))
     } finally {
       setIsLoading(false)
     }
@@ -223,7 +289,7 @@ export default function RegisterPage() {
                             value={formData.password}
                             onChange={handleInputChange}
                             className="bg-white/5 border-white/20 text-white placeholder:text-white/50 pr-10"
-                            placeholder="En az 8 karakter"
+                            placeholder="En az 6 karakter"
                           />
                           <button
                             type="button"
@@ -321,11 +387,7 @@ export default function RegisterPage() {
                         size="lg"
                         className="w-full bg-transparent border-white/20 text-white hover:bg-white/10 hover:border-transparent hover:text-white disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200"
                       >
-                        <svg
-                          className="mr-3 h-5 w-5"
-                          viewBox="0 0 24 24"
-                          aria-hidden="true"
-                        >
+                        <svg className="mr-3 h-5 w-5" viewBox="0 0 24 24" aria-hidden="true">
                           <path
                             fill="#4285F4"
                             d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"

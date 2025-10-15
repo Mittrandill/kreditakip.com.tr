@@ -18,17 +18,15 @@ import {
   Bell,
   MoreHorizontal,
   ArrowUpRight,
-  Banknote,
   Target,
   DollarSign,
   TrendingUp,
   Clock,
   Wallet,
-  Building2,
-  CreditCard,
 } from "lucide-react"
 import { Doughnut } from "react-chartjs-2"
 import { Chart as ChartJS, ArcElement, Tooltip, Legend } from "chart.js"
+import { AdBanner } from "@/components/ad-banner"
 
 ChartJS.register(ArcElement, Tooltip, Legend)
 
@@ -389,6 +387,8 @@ export default function DashboardPage() {
 
   return (
     <div className="flex flex-col gap-4 md:gap-6">
+      <AdBanner position="top" />
+
       <div className="relative overflow-hidden rounded-3xl">
         <div className="absolute inset-0 bg-gradient-to-br from-emerald-600 via-teal-600 to-cyan-700 dark:from-emerald-700 dark:via-teal-700 dark:to-cyan-800"></div>
         <div className="absolute inset-0 bg-gradient-to-t from-black/30 dark:from-black/50 to-transparent"></div>
@@ -460,7 +460,7 @@ export default function DashboardPage() {
               <Button
                 variant="outline"
                 size="lg"
-                className="bg-white/20 dark:bg-white/15 text-white border-white/30 dark:border-white/20 hover:bg-white/30 dark:hover:bg-white/25 backdrop-blur-sm transition-all duration-200"
+                className="bg-transparent border-white/20 text-white hover:bg-white/10 hover:border-white/30"
                 asChild
               >
                 <Link href="/uygulama/ayarlar">
@@ -471,7 +471,7 @@ export default function DashboardPage() {
               <Button
                 variant="outline"
                 size="lg"
-                className="bg-white/20 dark:bg-white/15 text-white border-white/30 dark:border-white/20 hover:bg-white/30 dark:hover:bg-white/25 backdrop-blur-sm transition-all duration-200"
+                className="bg-transparent border-white/20 text-white hover:bg-white/10 hover:border-white/30"
                 asChild
               >
                 <Link href="/uygulama/bildirimler">
@@ -625,9 +625,7 @@ export default function DashboardPage() {
 
       <Card className="shadow-lg hover:shadow-xl dark:shadow-gray-900/20 dark:hover:shadow-gray-900/30 transition-shadow duration-300 rounded-xl border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800">
         <CardHeader>
-          <CardTitle className="text-gray-900 dark:text-gray-100 flex items-center gap-2">
-            Aktif Kredilerim
-          </CardTitle>
+          <CardTitle className="text-gray-900 dark:text-gray-100 flex items-center gap-2">Aktif Kredilerim</CardTitle>
           <CardDescription className="text-gray-600 dark:text-gray-400">
             Güncel kredi durumunuz ve ödeme bilgileri.
           </CardDescription>

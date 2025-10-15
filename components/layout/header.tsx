@@ -14,8 +14,8 @@ export default function Header() {
           <Link href="/" className="text-white/80 hover:text-white transition-colors">
             Ana Sayfa
           </Link>
-          <Link href="/ozellikler" className="text-white/80 hover:text-white transition-colors">
-            Özellikler
+          <Link href="/fiyatlandirma" className="text-white/80 hover:text-white transition-colors">
+            Fiyatlandırma
           </Link>
           <Link href="/hakkimizda" className="text-white/80 hover:text-white transition-colors">
             Hakkımızda
@@ -27,19 +27,18 @@ export default function Header() {
 
         <div className="flex items-center gap-4">
           <Link href="/giris">
-            <Button 
-             variant="outline" 
-             size="lg"
-             className="bg-transparent border-white/20 text-white hover:bg-white/10 hover:border-transparent hover:text-white"
-              >
-            Giriş Yap
+            <Button
+              variant="outline"
+              size="lg"
+              className="bg-transparent border-white/20 text-white hover:bg-white/10 hover:border-transparent hover:text-white"
+            >
+              Giriş Yap
             </Button>
           </Link>
           <Link href="/kayit-ol">
-            <Button 
-            className="bg-brand-green text-white font-semibold hover:bg-brand-green/90"
-            size="lg"
-            >Kayıt Ol</Button>
+            <Button className="bg-brand-green text-white font-semibold hover:bg-brand-green/90" size="lg">
+              Kayıt Ol
+            </Button>
           </Link>
         </div>
       </div>

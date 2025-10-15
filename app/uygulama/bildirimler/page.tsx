@@ -43,32 +43,32 @@ const ITEMS_PER_PAGE = 10
 const typeConfig = {
   info: {
     icon: Info,
-    color: "text-blue-600",
-    bgColor: "bg-blue-50",
+    color: "text-blue-600 dark:text-blue-400",
+    bgColor: "bg-blue-50 dark:bg-blue-900/30",
     badgeClass:
       "bg-gradient-to-r from-blue-600 to-indigo-700 text-white border-transparent hover:from-blue-700 hover:to-indigo-800",
     label: "Bilgi",
   },
   warning: {
     icon: AlertTriangle,
-    color: "text-orange-600",
-    bgColor: "bg-orange-50",
+    color: "text-orange-600 dark:text-orange-400",
+    bgColor: "bg-orange-50 dark:bg-orange-900/30",
     badgeClass:
       "bg-gradient-to-r from-orange-600 to-red-700 text-white border-transparent hover:from-orange-700 hover:to-red-800",
     label: "Uyarı",
   },
   error: {
     icon: AlertCircle,
-    color: "text-red-600",
-    bgColor: "bg-red-50",
+    color: "text-red-600 dark:text-red-400",
+    bgColor: "bg-red-50 dark:bg-red-900/30",
     badgeClass:
       "bg-gradient-to-r from-red-600 to-rose-700 text-white border-transparent hover:from-red-700 hover:to-rose-800",
     label: "Hata",
   },
   success: {
     icon: CheckCircle,
-    color: "text-green-600",
-    bgColor: "bg-green-50",
+    color: "text-green-600 dark:text-green-400",
+    bgColor: "bg-green-50 dark:bg-green-900/30",
     badgeClass:
       "bg-gradient-to-r from-emerald-600 to-teal-700 text-white border-transparent hover:from-emerald-700 hover:to-teal-800",
     label: "Başarılı",
@@ -208,10 +208,10 @@ export default function BildirimlerPage() {
   if (loading) {
     return (
       <div className="space-y-6 animate-pulse">
-        <div className="h-32 bg-gray-200 rounded-2xl"></div>
+        <div className="h-32 bg-gray-200 dark:bg-gray-800 rounded-2xl"></div>
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
           {[...Array(4)].map((_, i) => (
-            <div key={i} className="h-32 bg-gray-200 rounded-xl"></div>
+            <div key={i} className="h-32 bg-gray-200 dark:bg-gray-800 rounded-xl"></div>
           ))}
         </div>
       </div>
@@ -288,14 +288,19 @@ export default function BildirimlerPage() {
       </div>
 
       {/* Modern Table */}
-      <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+      <div className="bg-white dark:bg-gray-900 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-800 overflow-hidden">
         {/* Table Header */}
-        <div className="border-b border-gray-100 bg-gray-50/50 p-6">
+        <div className="border-b border-gray-100 dark:border-gray-800 bg-gray-50/50 dark:bg-gray-800/50 p-6">
           <div className="flex items-center justify-between flex-wrap gap-4">
-            <CardTitle className="text-xl font-bold text-gray-800">Bildirim Listesi</CardTitle>
+            <CardTitle className="text-xl font-bold text-gray-800 dark:text-white">Bildirim Listesi</CardTitle>
 
             <div className="flex items-center gap-2 flex-wrap">
-              <Button variant="outline" size="sm" onClick={loadNotifications} className="gap-2 bg-transparent">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={loadNotifications}
+                className="gap-2 bg-transparent dark:bg-transparent dark:border-gray-700 dark:text-gray-300 dark:hover:bg-gray-800"
+              >
                 <RefreshCw className="h-4 w-4" />
                 Yenile
               </Button>
@@ -312,12 +317,12 @@ export default function BildirimlerPage() {
           {/* Search and Filters */}
           <div className="flex items-center gap-4 flex-wrap mt-4">
             <div className="relative flex-1 min-w-64">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4 pointer-events-none" />
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 dark:text-gray-500 h-4 w-4 pointer-events-none" />
               <Input
                 placeholder="Bildirim ara..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-10 bg-white border border-gray-200 focus-visible:border-emerald-500 focus-visible:shadow-[0_0_0_0.5px_rgb(16,185,129)] transition-all duration-200"
+                className="pl-10 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 dark:text-white focus-visible:border-emerald-500 focus-visible:shadow-[0_0_0_0.5px_rgb(16,185,129)] transition-all duration-200"
                 autoComplete="off"
                 spellCheck="false"
               />
@@ -339,15 +344,15 @@ export default function BildirimlerPage() {
         <div className="p-6">
           {paginatedNotifications.length === 0 ? (
             <div className="text-center py-10">
-              <div className="w-24 h-24 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                <Bell className="h-12 w-12 text-gray-400" />
+              <div className="w-24 h-24 bg-gray-100 dark:bg-gray-800 rounded-full flex items-center justify-center mx-auto mb-4">
+                <Bell className="h-12 w-12 text-gray-400 dark:text-gray-500" />
               </div>
-              <h3 className="text-xl font-semibold text-gray-700 mb-2">
+              <h3 className="text-xl font-semibold text-gray-700 dark:text-gray-200 mb-2">
                 {searchTerm || showUnreadOnly
                   ? "Filtre kriterlerine uygun bildirim bulunamadı"
                   : "Henüz bildiriminiz yok"}
               </h3>
-              <p className="text-gray-500 mb-6">
+              <p className="text-gray-500 dark:text-gray-400 mb-6">
                 {searchTerm || showUnreadOnly
                   ? "Farklı filtreler deneyebilir veya arama teriminizi değiştirebilirsiniz."
                   : "Yeni bildirimler otomatik olarak oluşturulacak ve burada görünecek."}
@@ -358,7 +363,7 @@ export default function BildirimlerPage() {
               <div className="overflow-x-auto">
                 <Table>
                   <TableHeader>
-                    <TableRow className="bg-white dark:bg-gray-900">
+                    <TableRow className="bg-white dark:bg-gray-900 border-b dark:border-gray-800">
                       <TableHead className="font-semibold text-gray-700 dark:text-gray-300">Tip</TableHead>
                       <TableHead className="font-semibold text-gray-700 dark:text-gray-300">Başlık</TableHead>
                       <TableHead className="font-semibold text-gray-700 dark:text-gray-300">Mesaj</TableHead>
@@ -379,9 +384,9 @@ export default function BildirimlerPage() {
                       return (
                         <TableRow
                           key={notification.id}
-                          className={`hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors duration-150 ease-in-out ${
+                          className={`hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors duration-150 ease-in-out border-b dark:border-gray-800 ${
                             index % 2 === 0 ? "bg-white dark:bg-gray-900" : "bg-gray-50/50 dark:bg-gray-800/50"
-                          } ${!notification.is_read ? "bg-blue-50/30" : ""}`}
+                          } ${!notification.is_read ? "bg-blue-50/30 dark:bg-blue-900/20" : ""}`}
                         >
                           <TableCell>
                             <div className="flex items-center gap-2">
@@ -422,7 +427,7 @@ export default function BildirimlerPage() {
                                 <div className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse"></div>
                               )}
                               <Badge
-                                className={`${!notification.is_read ? "bg-emerald-500 text-white" : "bg-gray-100 text-gray-600"} text-xs px-2 py-1`}
+                                className={`${!notification.is_read ? "bg-emerald-500 text-white" : "bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300"} text-xs px-2 py-1`}
                               >
                                 {notification.is_read ? "Okundu" : "Yeni"}
                               </Badge>
@@ -435,25 +440,28 @@ export default function BildirimlerPage() {
                                 <Button
                                   variant="ghost"
                                   size="icon"
-                                  className="h-8 w-8 hover:bg-emerald-50 hover:text-emerald-600 dark:hover:bg-teal-900/20"
+                                  className="h-8 w-8 hover:bg-emerald-50 hover:text-emerald-600 dark:hover:bg-teal-900/20 dark:hover:text-teal-400"
                                 >
                                   <MoreHorizontal className="h-4 w-4" />
                                   <span className="sr-only">Actions</span>
                                 </Button>
                               </DropdownMenuTrigger>
-                              <DropdownMenuContent align="end">
+                              <DropdownMenuContent align="end" className="dark:bg-gray-800 dark:border-gray-700">
                                 {!notification.is_read && (
-                                  <DropdownMenuItem onClick={() => handleMarkAsRead(notification.id)}>
+                                  <DropdownMenuItem
+                                    onClick={() => handleMarkAsRead(notification.id)}
+                                    className="dark:text-gray-200 dark:hover:bg-gray-700"
+                                  >
                                     <Check className="mr-2 h-4 w-4" />
                                     Okundu İşaretle
                                   </DropdownMenuItem>
                                 )}
-                                <DropdownMenuItem>
+                                <DropdownMenuItem className="dark:text-gray-200 dark:hover:bg-gray-700">
                                   <Eye className="mr-2 h-4 w-4" />
                                   Detayları Gör
                                 </DropdownMenuItem>
                                 <DropdownMenuItem
-                                  className="text-red-600"
+                                  className="text-red-600 dark:text-red-400 dark:hover:bg-gray-700"
                                   onClick={() => handleDelete(notification.id)}
                                 >
                                   <Trash2 className="mr-2 h-4 w-4" />
@@ -488,15 +496,15 @@ export default function BildirimlerPage() {
       </div>
 
       {/* Auto-refresh info */}
-      <Card className="border-0 shadow-lg bg-gradient-to-r from-emerald-50 to-blue-50">
+      <Card className="border-0 shadow-lg bg-gradient-to-r from-emerald-50 to-blue-50 dark:from-emerald-900/20 dark:to-blue-900/20 dark:border dark:border-gray-800">
         <CardContent className="p-6">
           <div className="flex items-center gap-3">
-            <div className="p-2 bg-emerald-100 rounded-lg">
-              <Sparkles className="h-5 w-5 text-emerald-600" />
+            <div className="p-2 bg-emerald-100 dark:bg-emerald-900/30 rounded-lg">
+              <Sparkles className="h-5 w-5 text-emerald-600 dark:text-emerald-400" />
             </div>
             <div>
-              <h3 className="font-semibold text-gray-800 mb-1">Otomatik Bildirimler</h3>
-              <p className="text-sm text-gray-600">
+              <h3 className="font-semibold text-gray-800 dark:text-white mb-1">Otomatik Bildirimler</h3>
+              <p className="text-sm text-gray-600 dark:text-gray-300">
                 Yaklaşan ödemeleriniz için otomatik olarak bildirimler oluşturulur ve header'da görüntülenir.
               </p>
             </div>

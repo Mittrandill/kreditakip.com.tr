@@ -35,11 +35,12 @@ import {
   Minus,
   Search,
   X,
-  CheckCircle,
 } from "lucide-react"
 import { format, subMonths, startOfMonth, endOfMonth, isWithinInterval } from "date-fns"
 import { tr } from "date-fns/locale"
 import { useAuth } from "@/hooks/use-auth"
+import { useSubscription } from "@/hooks/use-subscription" // Import subscription hook
+import { useRouter } from "next/navigation" // Import router
 import { getCredits } from "@/lib/api/credits"
 import { getAllPayments } from "@/lib/api/payments"
 import type { Credit, Bank, CreditType, PaymentPlan } from "@/lib/types"
@@ -98,6 +99,8 @@ interface FilterState {
 
 export default function RaporlarPage() {
   const { user, loading: authLoading } = useAuth()
+  const { isPremium, loading: subscriptionLoading } = useSubscription() // Check premium status
+  const router = useRouter() // Router for redirect
   const [credits, setCredits] = useState<PopulatedCredit[]>([])
   const [payments, setPayments] = useState<PopulatedPayment[]>([])
   const [loading, setLoading] = useState(true)
@@ -116,6 +119,12 @@ export default function RaporlarPage() {
 
   const [activeTab, setActiveTab] = useState("overview")
   const [expandedFilters, setExpandedFilters] = useState(false)
+
+  useEffect(() => {
+    if (!subscriptionLoading && !isPremium && !authLoading) {
+      router.push("/uygulama/premium")
+    }
+  }, [isPremium, subscriptionLoading, authLoading, router])
 
   const fetchData = async () => {
     if (!user?.id) return
@@ -426,7 +435,20 @@ export default function RaporlarPage() {
     filters.interestRange.min > 0 ||
     filters.interestRange.max < 50
 
-  if (authLoading || loading) {
+  if (authLoading || subscriptionLoading) {
+    return (
+      <div className="flex flex-col gap-4 items-center justify-center min-h-[calc(100vh-150px)]">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-emerald-600"></div>
+        <p className="text-lg text-gray-600">Raporlar hazırlanıyor...</p>
+      </div>
+    )
+  }
+
+  if (!isPremium) {
+    return null
+  }
+
+  if (loading) {
     return (
       <div className="flex flex-col gap-4 items-center justify-center min-h-[calc(100vh-150px)]">
         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-emerald-600"></div>
@@ -558,7 +580,7 @@ export default function RaporlarPage() {
               <Button
                 variant="outline"
                 size="lg"
-                className="bg-white/10 hover:bg-white/20 text-white border-white/30 backdrop-blur-sm h-12 px-6"
+                className="bg-white/20 dark:bg-white/15 text-white border-white/30 dark:border-white/20 hover:bg-white/30 dark:hover:bg-white/25 backdrop-blur-sm h-12 px-6"
               >
                 <Settings className="h-5 w-5 mr-2" />
                 Rapor Ayarları
@@ -569,7 +591,7 @@ export default function RaporlarPage() {
       </div>
 
       {/* Premium Filters */}
-      <Card className="shadow-xl border-0 bg-gradient-to-br from-slate-50 to-gray-100">
+      <Card className="shadow-xl border-0 bg-gradient-to-br from-slate-50 to-gray-100 dark:from-gray-900 dark:to-gray-800">
         <CardHeader className="pb-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
@@ -577,13 +599,16 @@ export default function RaporlarPage() {
                 <Filter className="h-5 w-5 text-white" />
               </div>
               <div>
-                <CardTitle className="text-xl">Akıllı Filtreler</CardTitle>
-                <p className="text-sm text-gray-500 mt-1">Verilerinizi detaylı analiz edin</p>
+                <CardTitle className="text-xl dark:text-white">Akıllı Filtreler</CardTitle>
+                <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">Verilerinizi detaylı analiz edin</p>
               </div>
             </div>
             <div className="flex items-center gap-2">
               {hasActiveFilters && (
-                <Badge variant="secondary" className="bg-emerald-100 text-emerald-700">
+                <Badge
+                  variant="secondary"
+                  className="bg-emerald-100 dark:bg-emerald-900 text-emerald-700 dark:text-emerald-300"
+                >
                   {[
                     filters.searchTerm && "Arama",
                     filters.banks.length > 0 && `${filters.banks.length} Banka`,
@@ -610,12 +635,12 @@ export default function RaporlarPage() {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
             {/* Search */}
             <div className="relative">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400 dark:text-gray-500" />
               <Input
                 placeholder="Banka veya kredi türü ara..."
                 value={filters.searchTerm}
                 onChange={(e) => updateFilter("searchTerm", e.target.value)}
-                className="pl-10 h-11 bg-white border-gray-200 focus:border-emerald-500 focus:ring-emerald-500"
+                className="pl-10 h-11 bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700 focus:border-emerald-500 focus:ring-emerald-500 dark:text-white"
               />
             </div>
 
@@ -624,8 +649,8 @@ export default function RaporlarPage() {
               value={filters.dateRange.preset}
               onValueChange={(value) => updateFilter("dateRange", { ...filters.dateRange, preset: value })}
             >
-              <SelectTrigger className="h-11 bg-white border-gray-200">
-                <Calendar className="h-4 w-4 mr-2 text-gray-500" />
+              <SelectTrigger className="h-11 bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700 dark:text-white">
+                <Calendar className="h-4 w-4 mr-2 text-gray-500 dark:text-gray-400" />
                 <SelectValue placeholder="Zaman dilimi" />
               </SelectTrigger>
               <SelectContent>
@@ -641,15 +666,18 @@ export default function RaporlarPage() {
             {/* Bank Filter */}
             <Popover>
               <PopoverTrigger asChild>
-                <Button variant="outline" className="justify-start h-11 bg-white border-gray-200">
-                  <Building2 className="h-4 w-4 mr-2 text-gray-500" />
+                <Button
+                  variant="outline"
+                  className="justify-start h-11 bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700 dark:text-white"
+                >
+                  <Building2 className="h-4 w-4 mr-2 text-gray-500 dark:text-gray-400" />
                   Bankalar {filters.banks.length > 0 && `(${filters.banks.length})`}
                 </Button>
               </PopoverTrigger>
-              <PopoverContent className="w-80 p-4">
+              <PopoverContent className="w-80 p-4 dark:bg-gray-800 dark:border-gray-700">
                 <div className="space-y-3">
                   <div className="flex items-center justify-between">
-                    <Label className="font-medium">Banka Seçimi</Label>
+                    <Label className="font-medium dark:text-white">Banka Seçimi</Label>
                     <Button
                       variant="ghost"
                       size="sm"
@@ -672,7 +700,7 @@ export default function RaporlarPage() {
                             updateFilter("banks", newBanks)
                           }}
                         />
-                        <Label htmlFor={`bank-${bank}`} className="text-sm cursor-pointer flex-1">
+                        <Label htmlFor={`bank-${bank}`} className="text-sm cursor-pointer flex-1 dark:text-gray-300">
                           {bank}
                         </Label>
                       </div>
@@ -683,12 +711,12 @@ export default function RaporlarPage() {
             </Popover>
 
             {/* Quick Stats */}
-            <div className="flex items-center justify-center gap-4 text-sm text-gray-600 bg-gradient-to-r from-gray-50 to-slate-100 rounded-lg px-4 py-2">
+            <div className="flex items-center justify-center gap-4 text-sm text-gray-600 dark:text-gray-300 bg-gradient-to-r from-gray-50 to-slate-100 dark:from-gray-800 dark:to-gray-700 rounded-lg px-4 py-2">
               <div className="flex items-center gap-1">
                 <CreditCard className="h-4 w-4" />
                 <span>{filteredCredits.length} kredi</span>
               </div>
-              <div className="w-px h-4 bg-gray-300"></div>
+              <div className="w-px h-4 bg-gray-300 dark:bg-gray-600"></div>
               <div className="flex items-center gap-1">
                 <Activity className="h-4 w-4" />
                 <span>{filteredPayments.length} ödeme</span>
@@ -698,11 +726,11 @@ export default function RaporlarPage() {
 
           {/* Advanced Filters */}
           {expandedFilters && (
-            <div className="border-t pt-6">
+            <div className="border-t dark:border-gray-700 pt-6">
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {/* Credit Type Filter */}
                 <div className="space-y-3">
-                  <Label className="font-medium">Kredi Türleri</Label>
+                  <Label className="font-medium dark:text-white">Kredi Türleri</Label>
                   <div className="space-y-2 max-h-32 overflow-y-auto">
                     {filterOptions.creditTypes.map((type) => (
                       <div key={type} className="flex items-center space-x-2">
@@ -716,7 +744,7 @@ export default function RaporlarPage() {
                             updateFilter("creditTypes", newTypes)
                           }}
                         />
-                        <Label htmlFor={`type-${type}`} className="text-sm cursor-pointer">
+                        <Label htmlFor={`type-${type}`} className="text-sm cursor-pointer dark:text-gray-300">
                           {type}
                         </Label>
                       </div>
@@ -726,7 +754,7 @@ export default function RaporlarPage() {
 
                 {/* Amount Range */}
                 <div className="space-y-3">
-                  <Label className="font-medium">Tutar Aralığı (TL)</Label>
+                  <Label className="font-medium dark:text-white">Tutar Aralığı (TL)</Label>
                   <div className="flex items-center gap-2">
                     <Input
                       type="number"
@@ -738,7 +766,7 @@ export default function RaporlarPage() {
                           min: Number(e.target.value) || 0,
                         })
                       }
-                      className="flex-1"
+                      className="flex-1 dark:bg-gray-800 dark:border-gray-700 dark:text-white"
                     />
                     <Minus className="h-4 w-4 text-gray-400" />
                     <Input
@@ -751,14 +779,14 @@ export default function RaporlarPage() {
                           max: Number(e.target.value) || 10000000,
                         })
                       }
-                      className="flex-1"
+                      className="flex-1 dark:bg-gray-800 dark:border-gray-700 dark:text-white"
                     />
                   </div>
                 </div>
 
                 {/* Interest Range */}
                 <div className="space-y-3">
-                  <Label className="font-medium">Faiz Oranı (%)</Label>
+                  <Label className="font-medium dark:text-white">Faiz Oranı (%)</Label>
                   <div className="flex items-center gap-2">
                     <Input
                       type="number"
@@ -770,7 +798,7 @@ export default function RaporlarPage() {
                           min: Number(e.target.value) || 0,
                         })
                       }
-                      className="flex-1"
+                      className="flex-1 dark:bg-gray-800 dark:border-gray-700 dark:text-white"
                     />
                     <Minus className="h-4 w-4 text-gray-400" />
                     <Input
@@ -783,7 +811,7 @@ export default function RaporlarPage() {
                           max: Number(e.target.value) || 50,
                         })
                       }
-                      className="flex-1"
+                      className="flex-1 dark:bg-gray-800 dark:border-gray-700 dark:text-white"
                     />
                   </div>
                 </div>
@@ -841,42 +869,42 @@ export default function RaporlarPage() {
           <TabsList className="grid w-full grid-cols-3 lg:grid-cols-6 bg-transparent h-auto p-2 gap-2">
             <TabsTrigger
               value="overview"
-              className="flex items-center gap-2 py-3 px-4 data-[state=active]:text-emerald-600 rounded-xl transition-all duration-200 hover:bg-gray-100"
+              className="flex items-center gap-2 py-3 px-4 data-[state=active]:text-emerald-600 dark:data-[state=active]:text-emerald-400 rounded-xl transition-all duration-200 hover:bg-gray-100 dark:hover:bg-gray-800 dark:text-gray-300"
             >
               <Eye className="h-4 w-4" />
               <span className="hidden sm:inline font-medium">Genel Bakış</span>
             </TabsTrigger>
             <TabsTrigger
               value="trends"
-              className="flex items-center gap-2 py-3 px-4 data-[state=active]:text-emerald-600 rounded-xl transition-all duration-200 hover:bg-gray-100"
+              className="flex items-center gap-2 py-3 px-4 data-[state=active]:text-emerald-600 dark:data-[state=active]:text-emerald-400 rounded-xl transition-all duration-200 hover:bg-gray-100 dark:hover:bg-gray-800 dark:text-gray-300"
             >
               <TrendingUp className="h-4 w-4" />
               <span className="hidden sm:inline font-medium">Trendler</span>
             </TabsTrigger>
             <TabsTrigger
               value="distribution"
-              className="flex items-center gap-2 py-3 px-4 data-[state=active]:text-emerald-600 rounded-xl transition-all duration-200 hover:bg-gray-100"
+              className="flex items-center gap-2 py-3 px-4 data-[state=active]:text-emerald-600 dark:data-[state=active]:text-emerald-400 rounded-xl transition-all duration-200 hover:bg-gray-100 dark:hover:bg-gray-800 dark:text-gray-300"
             >
               <PieChart className="h-4 w-4" />
               <span className="hidden sm:inline font-medium">Dağılım</span>
             </TabsTrigger>
             <TabsTrigger
               value="performance"
-              className="flex items-center gap-2 py-3 px-4 data-[state=active]:text-emerald-600 rounded-xl transition-all duration-200 hover:bg-gray-100"
+              className="flex items-center gap-2 py-3 px-4 data-[state=active]:text-emerald-600 dark:data-[state=active]:text-emerald-400 rounded-xl transition-all duration-200 hover:bg-gray-100 dark:hover:bg-gray-800 dark:text-gray-300"
             >
               <Activity className="h-4 w-4" />
               <span className="hidden sm:inline font-medium">Performans</span>
             </TabsTrigger>
             <TabsTrigger
               value="analysis"
-              className="flex items-center gap-2 py-3 px-4 data-[state=active]:text-emerald-600 rounded-xl transition-all duration-200 hover:bg-gray-100"
+              className="flex items-center gap-2 py-3 px-4 data-[state=active]:text-emerald-600 dark:data-[state=active]:text-emerald-400 rounded-xl transition-all duration-200 hover:bg-gray-100 dark:hover:bg-gray-800 dark:text-gray-300"
             >
               <Target className="h-4 w-4" />
               <span className="hidden sm:inline font-medium">Analiz</span>
             </TabsTrigger>
             <TabsTrigger
               value="comparison"
-              className="flex items-center gap-2 py-3 px-4 data-[state=active]:text-emerald-600 rounded-xl transition-all duration-200 hover:bg-gray-100"
+              className="flex items-center gap-2 py-3 px-4 data-[state=active]:text-emerald-600 dark:data-[state=active]:text-emerald-400 rounded-xl transition-all duration-200 hover:bg-gray-100 dark:hover:bg-gray-800 dark:text-gray-300"
             >
               <Building2 className="h-4 w-4" />
               <span className="hidden sm:inline font-medium">Karşılaştırma</span>
@@ -886,9 +914,9 @@ export default function RaporlarPage() {
 
         <TabsContent value="overview" className="space-y-6">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            <Card className="shadow-xl border-0 bg-gradient-to-br from-white to-blue-50">
+            <Card className="shadow-xl border-0 bg-gradient-to-br from-white to-blue-50 dark:from-gray-900 dark:to-blue-950">
               <CardHeader className="pb-4">
-                <CardTitle className="flex items-center gap-2 text-lg">
+                <CardTitle className="flex items-center gap-2 text-lg dark:text-white">
                   <div className="p-2 bg-gradient-to-r from-blue-500 to-indigo-600 rounded-lg">
                     <TrendingUp className="h-5 w-5 text-white" />
                   </div>
@@ -929,9 +957,9 @@ export default function RaporlarPage() {
               </CardContent>
             </Card>
 
-            <Card className="shadow-xl border-0 bg-gradient-to-br from-white to-emerald-50">
+            <Card className="shadow-xl border-0 bg-gradient-to-br from-white to-emerald-50 dark:from-gray-900 dark:to-emerald-950">
               <CardHeader className="pb-4">
-                <CardTitle className="flex items-center gap-2 text-lg">
+                <CardTitle className="flex items-center gap-2 text-lg dark:text-white">
                   <div className="p-2 bg-gradient-to-r from-emerald-500 to-teal-600 rounded-lg">
                     <PieChart className="h-5 w-5 text-white" />
                   </div>
@@ -1057,15 +1085,15 @@ export default function RaporlarPage() {
         </TabsContent>
 
         <TabsContent value="trends" className="space-y-6">
-          <Card className="shadow-xl border-0 bg-gradient-to-br from-white to-purple-50">
+          <Card className="shadow-xl border-0 bg-gradient-to-br from-white to-purple-50 dark:from-gray-900 dark:to-purple-950">
             <CardHeader>
-              <CardTitle className="flex items-center gap-2 text-xl">
+              <CardTitle className="flex items-center gap-2 text-xl dark:text-white">
                 <div className="p-2 bg-gradient-to-r from-purple-500 to-pink-600 rounded-lg">
                   <TrendingUp className="h-6 w-6 text-white" />
                 </div>
                 Detaylı Trend Analizi
               </CardTitle>
-              <p className="text-gray-600">12 aylık ödeme performansı ve trend analizi</p>
+              <p className="text-gray-600 dark:text-gray-300">12 aylık ödeme performansı ve trend analizi</p>
             </CardHeader>
             <CardContent>
               <ResponsiveContainer width="100%" height={400}>
@@ -1126,9 +1154,9 @@ export default function RaporlarPage() {
 
         <TabsContent value="distribution" className="space-y-6">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            <Card className="shadow-xl border-0 bg-gradient-to-br from-white to-blue-50">
+            <Card className="shadow-xl border-0 bg-gradient-to-br from-white to-blue-50 dark:from-gray-900 dark:to-blue-950">
               <CardHeader>
-                <CardTitle className="flex items-center gap-2 text-lg">
+                <CardTitle className="flex items-center gap-2 text-lg dark:text-white">
                   <div className="p-2 bg-gradient-to-r from-blue-500 to-indigo-600 rounded-lg">
                     <Building2 className="h-5 w-5 text-white" />
                   </div>
@@ -1159,9 +1187,9 @@ export default function RaporlarPage() {
               </CardContent>
             </Card>
 
-            <Card className="shadow-xl border-0 bg-gradient-to-br from-white to-emerald-50">
+            <Card className="shadow-xl border-0 bg-gradient-to-br from-white to-emerald-50 dark:from-gray-900 dark:to-emerald-950">
               <CardHeader>
-                <CardTitle className="flex items-center gap-2 text-lg">
+                <CardTitle className="flex items-center gap-2 text-lg dark:text-white">
                   <div className="p-2 bg-gradient-to-r from-emerald-500 to-teal-600 rounded-lg">
                     <CreditCard className="h-5 w-5 text-white" />
                   </div>
@@ -1194,9 +1222,9 @@ export default function RaporlarPage() {
         </TabsContent>
 
         <TabsContent value="performance" className="space-y-6">
-          <Card className="shadow-xl border-0 bg-gradient-to-br from-white to-orange-50">
+          <Card className="shadow-xl border-0 bg-gradient-to-br from-white to-orange-50 dark:from-gray-900 dark:to-orange-950">
             <CardHeader>
-              <CardTitle className="flex items-center gap-2 text-xl">
+              <CardTitle className="flex items-center gap-2 text-xl dark:text-white">
                 <div className="p-2 bg-gradient-to-r from-orange-500 to-red-600 rounded-lg">
                   <Activity className="h-6 w-6 text-white" />
                 </div>
@@ -1262,15 +1290,15 @@ export default function RaporlarPage() {
         </TabsContent>
 
         <TabsContent value="analysis" className="space-y-6">
-          <Card className="shadow-xl border-0 bg-gradient-to-br from-white to-purple-50">
+          <Card className="shadow-xl border-0 bg-gradient-to-br from-white to-purple-50 dark:from-gray-900 dark:to-purple-950">
             <CardHeader>
-              <CardTitle className="flex items-center gap-2 text-xl">
+              <CardTitle className="flex items-center gap-2 text-xl dark:text-white">
                 <div className="p-2 bg-gradient-to-r from-purple-500 to-pink-600 rounded-lg">
                   <Target className="h-6 w-6 text-white" />
                 </div>
                 Faiz Oranı Analizi
               </CardTitle>
-              <p className="text-gray-600">Kredilerinizin faiz oranları ve piyasa karşılaştırması</p>
+              <p className="text-gray-600 dark:text-gray-300">Kredilerinizin faiz oranları ve piyasa karşılaştırması</p>
             </CardHeader>
             <CardContent>
               <ResponsiveContainer width="100%" height={400}>
@@ -1299,9 +1327,9 @@ export default function RaporlarPage() {
 
         <TabsContent value="comparison" className="space-y-6">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            <Card className="shadow-xl border-0 bg-gradient-to-br from-white to-indigo-50">
+            <Card className="shadow-xl border-0 bg-gradient-to-br from-white to-indigo-50 dark:from-gray-900 dark:to-indigo-950">
               <CardHeader>
-                <CardTitle className="flex items-center gap-2 text-lg">
+                <CardTitle className="flex items-center gap-2 text-lg dark:text-white">
                   <div className="p-2 bg-gradient-to-r from-indigo-500 to-purple-600 rounded-lg">
                     <Building2 className="h-5 w-5 text-white" />
                   </div>
@@ -1313,7 +1341,7 @@ export default function RaporlarPage() {
                   {chartData.bankDistribution.slice(0, 5).map((bank, index) => (
                     <div
                       key={bank.name}
-                      className="flex items-center justify-between p-4 bg-gradient-to-r from-gray-50 to-slate-100 rounded-xl border shadow-sm"
+                      className="flex items-center justify-between p-4 bg-gradient-to-r from-gray-50 to-slate-100 dark:from-gray-800 dark:to-gray-700 rounded-xl border dark:border-gray-700 shadow-sm"
                     >
                       <div className="flex items-center gap-4">
                         <div className="w-10 h-10 rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-sm font-bold text-white">
@@ -1322,14 +1350,16 @@ export default function RaporlarPage() {
                         <div className="flex items-center gap-3">
                           <BankLogo bankName={bank.fullName || bank.name} logoUrl={bank.logoUrl} size="sm" />
                           <div>
-                            <div className="font-semibold text-gray-900">{bank.name}</div>
-                            <div className="text-sm text-gray-500">{bank.count} kredi</div>
+                            <div className="font-semibold text-gray-900 dark:text-white">{bank.name}</div>
+                            <div className="text-sm text-gray-500 dark:text-gray-400">{bank.count} kredi</div>
                           </div>
                         </div>
                       </div>
                       <div className="text-right">
-                        <div className="font-bold text-lg">{formatCurrency(bank.value)}</div>
-                        <div className="text-sm text-gray-500">Ort. %{bank.averageInterest.toFixed(1)} faiz</div>
+                        <div className="font-bold text-lg dark:text-white">{formatCurrency(bank.value)}</div>
+                        <div className="text-sm text-gray-500 dark:text-gray-400">
+                          Ort. %{bank.averageInterest.toFixed(1)} faiz
+                        </div>
                       </div>
                     </div>
                   ))}
@@ -1337,9 +1367,9 @@ export default function RaporlarPage() {
               </CardContent>
             </Card>
 
-            <Card className="shadow-xl border-0 bg-gradient-to-br from-white to-green-50">
+            <Card className="shadow-xl border-0 bg-gradient-to-br from-white to-green-50 dark:from-gray-900 dark:to-green-950">
               <CardHeader>
-                <CardTitle className="flex items-center gap-2 text-lg">
+                <CardTitle className="flex items-center gap-2 text-lg dark:text-white">
                   <div className="p-2 bg-gradient-to-r from-green-500 to-emerald-600 rounded-lg">
                     <Wallet className="h-5 w-5 text-white" />
                   </div>
@@ -1373,136 +1403,74 @@ export default function RaporlarPage() {
       {/* Premium Action Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         <Card className="shadow-xl border-0 bg-gradient-to-br from-blue-500 to-indigo-600 text-white">
-          <CardHeader className="pb-3">
-            <CardTitle className="text-lg flex items-center gap-2">
-              <Clock className="h-5 w-5" />
-              Yaklaşan Ödemeler
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-3">
-              {filteredPayments
-                .filter((p) => {
-                  const dueDate = new Date(p.due_date)
-                  const nextWeek = new Date()
-                  nextWeek.setDate(nextWeek.getDate() + 7)
-                  return p.status === "pending" && dueDate <= nextWeek
-                })
-                .slice(0, 3)
-                .map((payment) => (
-                  <div
-                    key={payment.id}
-                    className="flex items-center justify-between p-3 bg-white/20 rounded-lg border border-white/30 backdrop-blur-sm"
-                  >
-                    <div className="flex items-center gap-3">
-                      <BankLogo
-                        bankName={payment.credits?.banks?.name || ""}
-                        logoUrl={payment.credits?.banks?.logo_url}
-                        size="sm"
-                      />
-                      <div>
-                        <div className="font-medium text-sm text-white">{payment.credits?.banks?.name}</div>
-                        <div className="text-xs text-blue-100">
-                          {format(new Date(payment.due_date), "dd MMM", { locale: tr })}
-                        </div>
-                      </div>
-                    </div>
-                    <div className="text-right">
-                      <div className="font-bold text-sm text-white">{formatCurrency(payment.total_payment)}</div>
-                    </div>
-                  </div>
-                ))}
-              {summaryMetrics.upcomingPayments === 0 && (
-                <div className="text-center py-8 text-blue-100">
-                  <Clock className="h-12 w-12 mx-auto mb-4 text-blue-200" />
-                  <p>Yaklaşan ödeme bulunmuyor</p>
-                </div>
-              )}
+          <CardContent className="p-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-blue-100 text-sm font-medium">Yaklaşan Ödemeler</p>
+                <p className="text-2xl font-bold mt-1">
+                  {formatCurrency(
+                    filteredPayments
+                      .filter((p) => {
+                        const dueDate = new Date(p.due_date)
+                        const nextWeek = new Date()
+                        nextWeek.setDate(nextWeek.getDate() + 7)
+                        return p.status === "pending" && dueDate <= nextWeek
+                      })
+                      .reduce((sum, p) => sum + (p.total_payment || 0), 0),
+                  )}
+                </p>
+                <p className="text-blue-200 text-xs mt-1">
+                  {
+                    filteredPayments.filter((p) => {
+                      const dueDate = new Date(p.due_date)
+                      const nextWeek = new Date()
+                      nextWeek.setDate(nextWeek.getDate() + 7)
+                      return p.status === "pending" && dueDate <= nextWeek
+                    }).length
+                  }{" "}
+                  taksit
+                </p>
+              </div>
+              <div className="bg-blue-500/30 p-3 rounded-full">
+                <Clock className="h-6 w-6 text-blue-100" />
+              </div>
             </div>
           </CardContent>
         </Card>
 
         <Card className="shadow-xl border-0 bg-gradient-to-br from-red-500 to-rose-600 text-white">
-          <CardHeader className="pb-3">
-            <CardTitle className="text-lg flex items-center gap-2">
-              <AlertTriangle className="h-5 w-5" />
-              Geciken Ödemeler
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-3">
-              {filteredPayments
-                .filter((p) => p.status === "overdue")
-                .slice(0, 3)
-                .map((payment) => (
-                  <div
-                    key={payment.id}
-                    className="flex items-center justify-between p-3 bg-white/20 rounded-lg border border-white/30 backdrop-blur-sm"
-                  >
-                    <div className="flex items-center gap-3">
-                      <BankLogo
-                        bankName={payment.credits?.banks?.name || ""}
-                        logoUrl={payment.credits?.banks?.logo_url}
-                        size="sm"
-                      />
-                      <div>
-                        <div className="font-medium text-sm text-white">{payment.credits?.banks?.name}</div>
-                        <div className="text-xs text-red-100">
-                          {format(new Date(payment.due_date), "dd MMM", { locale: tr })} gecikti
-                        </div>
-                      </div>
-                    </div>
-                    <div className="text-right">
-                      <div className="font-bold text-sm text-white">{formatCurrency(payment.total_payment)}</div>
-                    </div>
-                  </div>
-                ))}
-              {summaryMetrics.overduePayments === 0 && (
-                <div className="text-center py-8 text-red-100">
-                  <CheckCircle className="h-12 w-12 mx-auto mb-4 text-red-200" />
-                  <p>Geciken ödeme bulunmuyor</p>
-                </div>
-              )}
+          <CardContent className="p-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-red-100 text-sm font-medium">Geciken Ödemeler</p>
+                <p className="text-2xl font-bold mt-1">
+                  {formatCurrency(
+                    filteredPayments
+                      .filter((p) => p.status === "overdue")
+                      .reduce((sum, p) => sum + (p.total_payment || 0), 0),
+                  )}
+                </p>
+                <p className="text-red-200 text-xs mt-1">
+                  {filteredPayments.filter((p) => p.status === "overdue").length} gecikmiş taksit
+                </p>
+              </div>
+              <div className="bg-red-500/30 p-3 rounded-full">
+                <AlertTriangle className="h-6 w-6 text-red-100" />
+              </div>
             </div>
           </CardContent>
         </Card>
 
         <Card className="shadow-xl border-0 bg-gradient-to-br from-emerald-500 to-teal-600 text-white">
-          <CardHeader className="pb-3">
-            <CardTitle className="text-lg flex items-center gap-2">
-              <TrendingUp className="h-5 w-5" />
-              Finansal Özet
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
-              <div className="flex justify-between items-center">
-                <span className="text-sm text-emerald-100">Toplam Ödenen</span>
-                <span className="font-bold text-white">{formatCurrency(summaryMetrics.totalPaidAmount)}</span>
+          <CardContent className="p-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-emerald-100 text-sm font-medium">Finansal Özet</p>
+                <p className="text-2xl font-bold mt-1">{formatCurrency(summaryMetrics.totalPaidAmount)}</p>
+                <p className="text-emerald-200 text-xs mt-1">Toplam Ödenen</p>
               </div>
-              <div className="flex justify-between items-center">
-                <span className="text-sm text-emerald-100">Ortalama Faiz</span>
-                <span className="font-bold text-white">%{summaryMetrics.averageInterest.toFixed(2)}</span>
-              </div>
-              <div className="flex justify-between items-center">
-                <span className="text-sm text-emerald-100">Aktif Kredi Oranı</span>
-                <span className="font-bold text-white">
-                  %{Math.round((summaryMetrics.activeCredits / Math.max(summaryMetrics.totalCredits, 1)) * 100)}
-                </span>
-              </div>
-              <div className="pt-3 border-t border-emerald-400">
-                <div className="flex justify-between items-center mb-2">
-                  <span className="text-sm font-medium text-emerald-100">Finansal Skor</span>
-                  <span className="text-sm font-bold text-white">
-                    {Math.round(summaryMetrics.paymentPerformance)}/100
-                  </span>
-                </div>
-                <div className="w-full h-3 bg-emerald-400/30 rounded-full overflow-hidden">
-                  <div
-                    className="h-3 bg-white rounded-full transition-all duration-500"
-                    style={{ width: `${summaryMetrics.paymentPerformance}%` }}
-                  ></div>
-                </div>
+              <div className="bg-emerald-500/30 p-3 rounded-full">
+                <TrendingUp className="h-6 w-6 text-emerald-100" />
               </div>
             </div>
           </CardContent>

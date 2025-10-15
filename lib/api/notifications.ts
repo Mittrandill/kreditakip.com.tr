@@ -17,7 +17,6 @@ export async function getNotifications(userId: string) {
     .order("created_at", { ascending: false })
 
   if (error) {
-    console.error("Error fetching notifications:", error)
     throw error
   }
 
@@ -33,7 +32,6 @@ export async function markNotificationAsRead(notificationId: string) {
     .single()
 
   if (error) {
-    console.error("Error marking notification as read:", error)
     throw error
   }
 
@@ -48,7 +46,6 @@ export async function markAllNotificationsAsRead(userId: string) {
     .eq("is_read", false)
 
   if (error) {
-    console.error("Error marking all notifications as read:", error)
     throw error
   }
 
@@ -59,7 +56,6 @@ export async function deleteNotification(notificationId: string) {
   const { data, error } = await supabase.from("notifications").delete().eq("id", notificationId)
 
   if (error) {
-    console.error("Error deleting notification:", error)
     throw error
   }
 
@@ -73,7 +69,6 @@ export async function getNotificationStats(userId: string) {
     .eq("user_id", userId)
 
   if (allError) {
-    console.error("Error fetching notification stats:", allError)
     throw allError
   }
 
@@ -140,7 +135,6 @@ export async function createPaymentReminders(userId: string) {
       const { data, error } = await supabase.from("notifications").insert(notifications).select()
 
       if (error) {
-        console.error("Error creating payment reminders:", error)
         throw error
       }
 
@@ -149,7 +143,6 @@ export async function createPaymentReminders(userId: string) {
 
     return []
   } catch (error) {
-    console.error("Error in createPaymentReminders:", error)
     throw error
   }
 }
@@ -322,27 +315,24 @@ export async function createUpcomingPaymentNotifications(userId: string) {
       const { data, error } = await supabase.from("notifications").insert(notifications).select()
 
       if (error) {
-        console.error("Error creating upcoming payment notifications:", error)
         throw error
       }
 
-      console.log(`✅ ${notifications.length} yeni bildirim oluşturuldu`)
       return data
     }
 
     return []
   } catch (error) {
-    console.error("Error in createUpcomingPaymentNotifications:", error)
     throw error
   }
 }
 
 export async function createWeeklyPaymentNotifications(userId: string) {
   try {
-    // 1 hafta sonraki tarihi hesapla
-    const oneWeekLater = new Date()
-    oneWeekLater.setDate(oneWeekLater.getDate() + 7)
-    const oneWeekDate = oneWeekLater.toISOString().split("T")[0]
+    // 3 gün sonraki tarihi hesapla
+    const threeDaysLater = new Date()
+    threeDaysLater.setDate(threeDaysLater.getDate() + 3)
+    const threeDaysDate = threeDaysLater.toISOString().split("T")[0]
 
     // Bugünün tarihi
     const today = new Date().toISOString().split("T")[0]
@@ -356,7 +346,7 @@ export async function createWeeklyPaymentNotifications(userId: string) {
 
     const existingPaymentPlanIds = new Set(existingNotifications?.map((n) => n.payment_plan_id) || [])
 
-    // 1 hafta içinde vadesi gelen ödemeleri getir
+    // 3 gün içinde vadesi gelen ödemeleri getir
     const { data: upcomingPayments } = await supabase
       .from("payment_plans")
       .select(`
@@ -371,13 +361,12 @@ export async function createWeeklyPaymentNotifications(userId: string) {
       .eq("credits.user_id", userId)
       .eq("status", "pending")
       .gte("due_date", today)
-      .lte("due_date", oneWeekDate)
+      .lte("due_date", threeDaysDate)
 
     if (!upcomingPayments || upcomingPayments.length === 0) {
       return []
     }
 
-    // Daha önce bildirim oluşturulmamış ödemeler için bildirim oluştur
     const notifications = upcomingPayments
       .filter((payment) => !existingPaymentPlanIds.has(payment.id))
       .map((payment) => {
@@ -418,19 +407,14 @@ export async function createWeeklyPaymentNotifications(userId: string) {
       const { data, error } = await supabase.from("notifications").insert(notifications).select()
 
       if (error) {
-        console.error("Error creating weekly payment notifications:", error)
         throw error
       }
 
-      console.log(`✅ ${notifications.length} yeni haftalık bildirim oluşturuldu`)
       return data
     }
 
     return []
   } catch (error) {
-    console.error("Error in createWeeklyPaymentNotifications:", error)
     throw error
   }
 }
-
-// Alias for backward-compatibility with older imports

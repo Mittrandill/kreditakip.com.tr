@@ -1,85 +1,137 @@
 // Simple and reliable encryption utilities
-const ENCRYPTION_KEY =
-  process.env.ENCRYPTION_KEY || process.env.NEXT_PUBLIC_ENCRYPTION_KEY || "default-encryption-key-32-chars"
+const ENCRYPTION_KEY = "92C535qkivn+SR8aPAcOnAtCzMP541OZ"
 
-// Simple XOR encryption function
-function xorEncrypt(text: string, key: string): string {
-  let result = ""
-  for (let i = 0; i < text.length; i++) {
-    const textChar = text.charCodeAt(i)
-    const keyChar = key.charCodeAt(i % key.length)
-    result += String.fromCharCode(textChar ^ keyChar)
+function toUtf8Bytes(input: string): Uint8Array {
+  return new TextEncoder().encode(input)
+}
+
+function fromUtf8Bytes(bytes: Uint8Array): string {
+  return new TextDecoder().decode(bytes)
+}
+
+function concatBytes(a: Uint8Array, b: Uint8Array): Uint8Array {
+  const out = new Uint8Array(a.length + b.length)
+  out.set(a, 0)
+  out.set(b, a.length)
+  return out
+}
+
+function toBase64(bytes: Uint8Array): string {
+  let binary = ""
+  const len = bytes.byteLength
+  for (let i = 0; i < len; i++) binary += String.fromCharCode(bytes[i])
+  if (typeof btoa !== "undefined") return btoa(binary)
+  // @ts-ignore
+  return Buffer.from(binary, "binary").toString("base64")
+}
+
+function fromBase64(base64: string): Uint8Array {
+  let binary: string
+  if (typeof atob !== "undefined") binary = atob(base64)
+  else {
+    // @ts-ignore
+    binary = Buffer.from(base64, "base64").toString("binary")
+  }
+  const bytes = new Uint8Array(binary.length)
+  for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i)
+  return bytes
+}
+
+async function hmacSha256(key: string, data: string): Promise<Uint8Array> {
+  // Web Crypto API kullanarak HMAC-SHA256
+  if (typeof crypto !== "undefined" && crypto.subtle) {
+    const encoder = new TextEncoder()
+    const keyData = encoder.encode(key)
+    const messageData = encoder.encode(data)
+
+    const cryptoKey = await crypto.subtle.importKey("raw", keyData, { name: "HMAC", hash: "SHA-256" }, false, ["sign"])
+
+    const signature = await crypto.subtle.sign("HMAC", cryptoKey, messageData)
+    return new Uint8Array(signature)
+  }
+
+  // Fallback: Basit hash (güvenli değil, sadece crypto.subtle yoksa)
+  const message = `${key}:${data}`
+  const hash = await simpleHash(message)
+  return hash
+}
+
+async function simpleHash(text: string): Promise<Uint8Array> {
+  const encoder = new TextEncoder()
+  const data = encoder.encode(text)
+  let hash = 0
+  for (let i = 0; i < data.length; i++) {
+    hash = (hash << 5) - hash + data[i]
+    hash = hash & hash
+  }
+  const result = new Uint8Array(32)
+  for (let i = 0; i < 32; i++) {
+    result[i] = (hash >> ((i % 4) * 8)) & 0xff
   }
   return result
 }
 
-// XOR decryption (same as encryption for XOR)
-function xorDecrypt(encryptedText: string, key: string): string {
-  return xorEncrypt(encryptedText, key) // XOR is symmetric
-}
-
-// Safe base64 encoding
-function safeBase64Encode(str: string): string {
-  try {
-    return btoa(unescape(encodeURIComponent(str)))
-  } catch (error) {
-    console.error("Base64 encode error:", error)
-    return btoa(str)
-  }
-}
-
-// Safe base64 decoding
-function safeBase64Decode(str: string): string {
-  try {
-    return decodeURIComponent(escape(atob(str)))
-  } catch (error) {
-    console.error("Base64 decode error:", error)
-    return atob(str)
-  }
-}
-
-export async function encryptSensitiveData(data: string): Promise<string> {
-  try {
-    if (!data || data.trim() === "") {
-      return ""
+async function getRandomBytes(length: number): Promise<Uint8Array> {
+  const arr = new Uint8Array(length)
+  if (typeof crypto !== "undefined" && crypto.getRandomValues) {
+    crypto.getRandomValues(arr)
+  } else {
+    // Fallback
+    for (let i = 0; i < length; i++) {
+      arr[i] = Math.floor(Math.random() * 256)
     }
-
-    console.log(`🔐 Encrypting password: ${data.substring(0, 2)}***`)
-
-    // Step 1: XOR encrypt with key
-    const encrypted = xorEncrypt(data, ENCRYPTION_KEY)
-
-    // Step 2: Base64 encode for safe storage
-    const encoded = safeBase64Encode(encrypted)
-
-    console.log(`✅ Password encrypted successfully`)
-    return encoded
-  } catch (error) {
-    console.error("Encryption error:", error)
-    throw new Error("Failed to encrypt password")
   }
+  return arr
 }
 
-export async function decryptSensitiveData(encryptedData: string): Promise<string> {
-  try {
-    if (!encryptedData || encryptedData.trim() === "") {
-      return ""
-    }
-
-    console.log(`🔓 Decrypting password...`)
-
-    // Step 1: Base64 decode
-    const decoded = safeBase64Decode(encryptedData)
-
-    // Step 2: XOR decrypt with key
-    const decrypted = xorDecrypt(decoded, ENCRYPTION_KEY)
-
-    console.log(`✅ Password decrypted successfully`)
-    return decrypted
-  } catch (error) {
-    console.error("Decryption error:", error)
-    throw new Error("Failed to decrypt password")
+export async function encryptSensitiveData(plainText: string): Promise<string> {
+  if (!plainText || plainText.trim() === "") {
+    return ""
   }
+
+  const iv = await getRandomBytes(16)
+  const plain = toUtf8Bytes(plainText)
+  const cipher = new Uint8Array(plain.length)
+  let counter = 0
+  let offset = 0
+
+  while (offset < plain.length) {
+    const blockKeyBytes = await hmacSha256(ENCRYPTION_KEY, `${toBase64(iv)}:${counter}`)
+    const blockLen = Math.min(blockKeyBytes.length, plain.length - offset)
+    for (let i = 0; i < blockLen; i++) {
+      cipher[offset + i] = plain[offset + i] ^ blockKeyBytes[i]
+    }
+    offset += blockLen
+    counter++
+  }
+
+  const packed = concatBytes(iv, cipher)
+  return toBase64(packed)
+}
+
+export async function decryptSensitiveData(cipherText: string): Promise<string> {
+  if (!cipherText || cipherText.trim() === "") {
+    return ""
+  }
+
+  const packed = fromBase64(cipherText)
+  const iv = packed.slice(0, 16)
+  const cipher = packed.slice(16)
+  const plain = new Uint8Array(cipher.length)
+  let counter = 0
+  let offset = 0
+
+  while (offset < cipher.length) {
+    const blockKeyBytes = await hmacSha256(ENCRYPTION_KEY, `${toBase64(iv)}:${counter}`)
+    const blockLen = Math.min(blockKeyBytes.length, cipher.length - offset)
+    for (let i = 0; i < blockLen; i++) {
+      plain[offset + i] = cipher[offset + i] ^ blockKeyBytes[i]
+    }
+    offset += blockLen
+    counter++
+  }
+
+  return fromUtf8Bytes(plain)
 }
 
 export function maskCardNumber(cardNumber: string): string {
@@ -108,16 +160,6 @@ export function getCardBrand(cardNumber: string): string {
   return "Bilinmeyen"
 }
 
-const TEST_CARD_NUMBERS = [
-  "1111111111111111",
-  "4111111111111111",
-  "5555555555554444",
-  "378282246310005",
-  "6011111111111117",
-  "4242424242424242",
-  "1234567890123456",
-]
-
 export function validateCardNumber(cardNumber: string): boolean {
   if (!cardNumber) return false
 
@@ -126,9 +168,6 @@ export function validateCardNumber(cardNumber: string): boolean {
   if (!/^\d{13,19}$/.test(cleanNumber)) return false
 
   if (process.env.NODE_ENV === "development") {
-    if (TEST_CARD_NUMBERS.includes(cleanNumber)) {
-      return true
-    }
     return true // Allow any format in development
   }
 
@@ -198,36 +237,6 @@ export function sanitizeForLog(data: string): string {
   if (!data) return "[BOŞ]"
   if (data.length <= 4) return "[KISA_VERİ]"
   return data.substring(0, 2) + "***" + data.substring(data.length - 2)
-}
-
-export function getTestCardNumbers(): string[] {
-  return TEST_CARD_NUMBERS.map((num) => formatCardNumber(num))
-}
-
-export function getCardNumberSuggestions(): Array<{ number: string; brand: string; description: string }> {
-  return [
-    { number: "4111 1111 1111 1111", brand: "Visa", description: "Visa Test Kartı" },
-    { number: "5555 5555 5555 4444", brand: "Mastercard", description: "Mastercard Test Kartı" },
-    { number: "3782 8224 6310 005", brand: "American Express", description: "Amex Test Kartı" },
-    { number: "6011 1111 1111 1117", brand: "Discover", description: "Discover Test Kartı" },
-    { number: "4242 4242 4242 4242", brand: "Visa", description: "Stripe Test Kartı" },
-    { number: "1111 1111 1111 1111", brand: "Test", description: "Basit Test Kartı" },
-    { number: "1234 5678 9012 3456", brand: "Test", description: "Demo Kartı" },
-  ]
-}
-
-export function createTestPassword(): string {
-  const testPasswords = [
-    "123456",
-    "password123",
-    "test123",
-    "demo456",
-    "sample789",
-    "bankpass456",
-    "secure789",
-    "mypassword",
-  ]
-  return testPasswords[Math.floor(Math.random() * testPasswords.length)]
 }
 
 export function validatePasswordStrength(password: string): {

@@ -24,7 +24,6 @@ import {
   Mail,
   Phone,
   MapPin,
-  Camera,
   Save,
   Loader2,
   AlertCircle,
@@ -34,16 +33,14 @@ import {
   Key,
   Smartphone,
   Monitor,
-  Moon,
-  Sun,
   Globe,
   Download,
   Trash2,
   AlertTriangle,
-  Check,
   X,
   Clock,
   LocateIcon as Location,
+  Upload,
 } from "lucide-react"
 import { useAuth } from "@/hooks/use-auth"
 import { getProfile, updateProfile } from "@/lib/auth"
@@ -52,11 +49,16 @@ import type { Profile, FinancialProfile } from "@/lib/types"
 import { useToast } from "@/hooks/use-toast"
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 import { supabase } from "@/lib/supabase"
+import { useTheme } from "next-themes"
+import { useSubscription } from "@/hooks/use-subscription" // Import useSubscription hook
 
 export default function AyarlarPage() {
   const { user, profile: initialProfile, loading: authLoading } = useAuth()
   const { toast } = useToast()
   const router = useRouter()
+  const { theme, setTheme } = useTheme()
+
+  const { subscription, isPremium, loading: subscriptionLoading } = useSubscription()
 
   const [profileData, setProfileData] = useState<Partial<Profile>>({})
   const [loadingProfile, setLoadingProfile] = useState(true)
@@ -75,7 +77,6 @@ export default function AyarlarPage() {
   const [twoFactorEnabled, setTwoFactorEnabled] = useState(false)
 
   // Tercihler state'leri
-  const [darkMode, setDarkMode] = useState(false)
   const [language, setLanguage] = useState("tr")
   const [compactView, setCompactView] = useState(false)
   const [animationsEnabled, setAnimationsEnabled] = useState(true)
@@ -146,24 +147,16 @@ export default function AyarlarPage() {
       setLoadingProfile(false)
     }
 
-    // Load preferences from localStorage
     if (typeof window !== "undefined") {
-      const savedDarkMode = localStorage.getItem("darkMode") === "true"
       const savedLanguage = localStorage.getItem("language") || "tr"
       const savedCompactView = localStorage.getItem("compactView") === "true"
       const savedAnimations = localStorage.getItem("animationsEnabled") !== "false"
 
-      setDarkMode(savedDarkMode)
       setLanguage(savedLanguage)
       setCompactView(savedCompactView)
       setAnimationsEnabled(savedAnimations)
 
-      // Apply dark mode
-      if (savedDarkMode) {
-        document.documentElement.classList.add("dark")
-      } else {
-        document.documentElement.classList.remove("dark")
-      }
+      // Apply dark mode - this logic is now handled by next-themes and the initial load
     }
 
     return () => {
@@ -268,20 +261,78 @@ export default function AyarlarPage() {
     }
   }
 
+  const compressImage = (file: File, maxWidth = 400, quality = 0.8): Promise<File> => {
+    return new Promise((resolve) => {
+      const canvas = document.createElement("canvas")
+      const ctx = canvas.getContext("2d")!
+      const img = new Image()
+
+      img.onload = () => {
+        // Calculate new dimensions while maintaining aspect ratio
+        let { width, height } = img
+        if (width > height) {
+          if (width > maxWidth) {
+            height = (height * maxWidth) / width
+            width = maxWidth
+          }
+        } else {
+          if (height > maxWidth) {
+            width = (width * maxWidth) / height
+            height = maxWidth
+          }
+        }
+
+        canvas.width = width
+        canvas.height = height
+
+        // Draw and compress
+        ctx.drawImage(img, 0, 0, width, height)
+        canvas.toBlob(
+          (blob) => {
+            if (blob) {
+              const compressedFile = new File([blob], file.name, {
+                type: "image/jpeg",
+                lastModified: Date.now(),
+              })
+              resolve(compressedFile)
+            }
+          },
+          "image/jpeg",
+          quality,
+        )
+      }
+
+      img.src = URL.createObjectURL(file)
+    })
+  }
+
   // Avatar upload handler
-  const handleAvatarChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleAvatarChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
     if (file) {
-      if (file.size > 2 * 1024 * 1024) {
-        toast({ title: "Hata", description: "Dosya boyutu 2MB'dan büyük olamaz.", variant: "destructive" })
+      if (file.size > 10 * 1024 * 1024) {
+        // Increased initial limit to 10MB before compression
+        toast({ title: "Hata", description: "Dosya boyutu 10MB'dan büyük olamaz.", variant: "destructive" })
         return
       }
-      setAvatarFile(file)
-      const reader = new FileReader()
-      reader.onload = (e) => {
-        setAvatarPreview(e.target?.result as string)
+
+      try {
+        const compressedFile = await compressImage(file, 400, 0.8)
+        setAvatarFile(compressedFile)
+
+        const reader = new FileReader()
+        reader.onload = (e) => {
+          setAvatarPreview(e.target?.result as string)
+        }
+        reader.readAsDataURL(compressedFile)
+
+        toast({
+          title: "Resim hazırlandı",
+          description: `Dosya boyutu: ${(compressedFile.size / 1024).toFixed(0)}KB`,
+        })
+      } catch (error) {
+        toast({ title: "Hata", description: "Resim işlenirken bir hata oluştu.", variant: "destructive" })
       }
-      reader.readAsDataURL(file)
     }
   }
 
@@ -327,7 +378,7 @@ export default function AyarlarPage() {
       console.error("Avatar upload error:", error)
       toast({
         title: "Hata",
-        description: error.message || "Fotoğraf yüklenirken bir hata oluştu.",
+        description: error.message || "Fotoğraf yüklenırken bir hata oluştu.",
         variant: "destructive",
       })
     } finally {
@@ -371,13 +422,7 @@ export default function AyarlarPage() {
 
   // Preferences handlers
   const handleDarkModeToggle = (enabled: boolean) => {
-    setDarkMode(enabled)
-    localStorage.setItem("darkMode", enabled.toString())
-    if (enabled) {
-      document.documentElement.classList.add("dark")
-    } else {
-      document.documentElement.classList.remove("dark")
-    }
+    setTheme(enabled ? "dark" : "light")
     toast({ title: "Başarılı", description: `${enabled ? "Koyu" : "Açık"} tema etkinleştirildi.` })
   }
 
@@ -458,7 +503,7 @@ export default function AyarlarPage() {
     return "KT"
   }
 
-  if (authLoading || loadingProfile) {
+  if (authLoading || loadingProfile || subscriptionLoading) {
     return (
       <div className="flex flex-col gap-4 md:gap-6 items-center justify-center min-h-[calc(100vh-150px)]">
         <Loader2 className="h-12 w-12 animate-spin text-emerald-600" />
@@ -497,12 +542,16 @@ export default function AyarlarPage() {
               </p>
             </div>
             <div className="flex flex-col sm:flex-row gap-3">
-              <Button variant="outline-white" size="lg" onClick={() => router.push("/uygulama/bildirimler")}>
+              <Button
+                variant="outline"
+                size="lg"
+                className="bg-white/20 dark:bg-white/15 text-white border-white/30 dark:border-white/20 hover:bg-white/30 dark:hover:bg-white/25 backdrop-blur-sm"
+                onClick={() => router.push("/uygulama/bildirimler")}
+              >
                 <Bell className="h-5 w-5" />
                 Bildirimler
               </Button>
               <Button
-                variant="outline"
                 size="lg"
                 className="bg-white text-slate-600 hover:bg-slate-50 border-white"
                 onClick={() => {
@@ -524,34 +573,34 @@ export default function AyarlarPage() {
       </Card>
 
       {/* Modern Tabs */}
-      <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+      <div className="bg-white dark:bg-gray-900 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-800 overflow-hidden">
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <div className="border-b border-gray-100 bg-gray-50/50">
+          <div className="border-b border-gray-100 dark:border-gray-800 bg-gray-50/50 dark:bg-gray-800/50">
             <TabsList className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 bg-transparent h-auto p-2 gap-2">
               <TabsTrigger
                 value="profile"
-                className="flex items-center gap-2 py-3 px-4 data-[state=active]:text-emerald-600 rounded-xl transition-all duration-200 hover:bg-gray-100"
+                className="flex items-center gap-2 py-3 px-4 data-[state=active]:text-emerald-600 dark:data-[state=active]:text-emerald-400 rounded-xl transition-all duration-200 hover:bg-gray-100 dark:hover:bg-gray-700"
               >
                 <User className="h-4 w-4" />
                 <span className="font-medium">Profil</span>
               </TabsTrigger>
               <TabsTrigger
                 value="financial"
-                className="flex items-center gap-2 py-3 px-4 data-[state=active]:text-emerald-600 rounded-xl transition-all duration-200 hover:bg-gray-100"
+                className="flex items-center gap-2 py-3 px-4 data-[state=active]:text-emerald-600 dark:data-[state=active]:text-emerald-400 rounded-xl transition-all duration-200 hover:bg-gray-100 dark:hover:bg-gray-700"
               >
                 <DollarSign className="h-4 w-4" />
                 <span className="font-medium">Finansal</span>
               </TabsTrigger>
               <TabsTrigger
                 value="security"
-                className="flex items-center gap-2 py-3 px-4 data-[state=active]:text-emerald-600 rounded-xl transition-all duration-200 hover:bg-gray-100"
+                className="flex items-center gap-2 py-3 px-4 data-[state=active]:text-emerald-600 dark:data-[state=active]:text-emerald-400 rounded-xl transition-all duration-200 hover:bg-gray-100 dark:hover:bg-gray-700"
               >
                 <Shield className="h-4 w-4" />
                 <span className="font-medium">Güvenlik</span>
               </TabsTrigger>
               <TabsTrigger
                 value="preferences"
-                className="flex items-center gap-2 py-3 px-4 data-[state=active]:text-emerald-600 rounded-xl transition-all duration-200 hover:bg-gray-100"
+                className="flex items-center gap-2 py-3 px-4 data-[state=active]:text-emerald-600 dark:data-[state=active]:text-emerald-400 rounded-xl transition-all duration-200 hover:bg-gray-100 dark:hover:bg-gray-700"
               >
                 <Settings className="h-4 w-4" />
                 <span className="font-medium">Tercihler</span>
@@ -562,155 +611,147 @@ export default function AyarlarPage() {
           <div className="p-6">
             <TabsContent value="profile">
               <div className="space-y-6">
-                <Card>
+                <Card className="dark:bg-gray-900 dark:border-gray-800">
                   <CardHeader>
-                    <CardTitle className="flex items-center gap-2">
-                      <User className="h-5 w-5 text-emerald-600" />
+                    <CardTitle className="flex items-center gap-2 dark:text-white">
+                      <User className="h-5 w-5 text-emerald-600 dark:text-emerald-400" />
                       Kişisel Bilgiler
                     </CardTitle>
-                    <CardDescription>Profil bilgilerinizi güncelleyin</CardDescription>
+                    <CardDescription className="dark:text-gray-400">Profil bilgilerinizi güncelleyin</CardDescription>
                   </CardHeader>
                   <CardContent className="space-y-6">
                     {/* Profil Fotoğrafı */}
-                    <div className="flex items-center gap-4">
+                    <div className="flex items-center space-x-4">
                       <Avatar className="h-20 w-20">
-                        <AvatarImage
-                          src={
-                            avatarPreview ||
-                            profileData.avatar_url ||
-                            "/placeholder.svg?height=80&width=80&text=User" ||
-                            "/placeholder.svg" ||
-                            "/placeholder.svg" ||
-                            "/placeholder.svg"
-                          }
-                          alt="Profil"
-                        />
-                        <AvatarFallback>{getAvatarFallbackText()}</AvatarFallback>
+                        <AvatarImage src={avatarPreview || profileData.avatar_url || ""} />
+                        <AvatarFallback className="text-lg">{getAvatarFallbackText()}</AvatarFallback>
                       </Avatar>
                       <div className="space-y-2">
-                        <div className="flex gap-2">
-                          <Button variant="outline" size="sm" asChild>
-                            <label htmlFor="avatar-upload" className="cursor-pointer">
-                              <Camera className="mr-2 h-4 w-4" />
-                              Fotoğraf Seç
-                            </label>
-                          </Button>
-                          {avatarFile && (
-                            <Button size="sm" onClick={handleAvatarUpload} disabled={isUploadingAvatar}>
-                              {isUploadingAvatar ? (
-                                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                              ) : (
-                                <Check className="mr-2 h-4 w-4" />
-                              )}
-                              {isUploadingAvatar ? "Yükleniyor..." : "Kaydet"}
-                            </Button>
-                          )}
-                        </div>
-                        <input
-                          id="avatar-upload"
+                        <Label htmlFor="avatar" className="cursor-pointer">
+                          <div className="flex items-center space-x-2 px-4 py-2 border border-gray-300 dark:border-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 hover:border-gray-400 bg-transparent rounded-md transition-colors">
+                            <Upload className="h-4 w-4" />
+                            <span>Fotoğraf Seç</span>
+                          </div>
+                        </Label>
+                        <Input
+                          id="avatar"
                           type="file"
                           accept="image/*"
                           onChange={handleAvatarChange}
                           className="hidden"
                         />
-                        <p className="text-sm text-gray-500">JPG, PNG veya GIF. Maksimum 2MB.</p>
+                        <p className="text-xs text-muted-foreground dark:text-gray-400">
+                          JPG, PNG, GIF veya WebP. Maksimum 10MB.
+                          <br />
+                          Resim otomatik olarak optimize edilecek.
+                        </p>
                       </div>
                     </div>
+                    {avatarFile && (
+                      <div className="flex space-x-2">
+                        <Button
+                          variant="outline"
+                          className="border-gray-300 dark:border-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 hover:border-gray-400 bg-transparent"
+                          onClick={handleAvatarUpload}
+                          disabled={isUploadingAvatar}
+                          size="sm"
+                        >
+                          {isUploadingAvatar ? (
+                            <>
+                              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                              Yükleniyor...
+                            </>
+                          ) : (
+                            <>
+                              <Upload className="mr-2 h-4 w-4" />
+                              Fotoğrafı Yükle
+                            </>
+                          )}
+                        </Button>
+                        <Button
+                          variant="outline"
+                          className="border-gray-300 dark:border-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 hover:border-gray-400 bg-transparent"
+                          size="sm"
+                          onClick={() => {
+                            setAvatarFile(null)
+                            setAvatarPreview(null)
+                          }}
+                        >
+                          İptal
+                        </Button>
+                      </div>
+                    )}
 
                     {/* Form Alanları */}
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <div className="space-y-2">
-                        <Label htmlFor="first_name">Ad</Label>
+                        <Label htmlFor="first_name" className="dark:text-gray-200">
+                          Ad
+                        </Label>
                         <Input
                           id="first_name"
                           value={profileData.first_name || ""}
                           onChange={handleInputChange}
-                          className="custom-input"
+                          className="custom-input dark:bg-gray-800 dark:border-gray-700 dark:text-white"
                         />
                       </div>
                       <div className="space-y-2">
-                        <Label htmlFor="last_name">Soyad</Label>
+                        <Label htmlFor="last_name" className="dark:text-gray-200">
+                          Soyad
+                        </Label>
                         <Input
                           id="last_name"
                           value={profileData.last_name || ""}
                           onChange={handleInputChange}
-                          className="custom-input"
+                          className="custom-input dark:bg-gray-800 dark:border-gray-700 dark:text-white"
                         />
                       </div>
                       <div className="space-y-2">
-                        <Label htmlFor="email">E-posta</Label>
+                        <Label htmlFor="email" className="dark:text-gray-200">
+                          E-posta
+                        </Label>
                         <div className="relative">
-                          <Mail className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
+                          <Mail className="absolute left-3 top-3 h-4 w-4 text-gray-400 dark:text-gray-500" />
                           <Input
                             id="email"
                             type="email"
                             value={profileData.email || ""}
                             onChange={handleInputChange}
-                            className="pl-10 custom-input"
+                            className="pl-10 custom-input dark:bg-gray-800 dark:border-gray-700 dark:text-white"
                             disabled
                           />
                         </div>
                       </div>
                       <div className="space-y-2">
-                        <Label htmlFor="phone">Telefon</Label>
+                        <Label htmlFor="phone" className="dark:text-gray-200">
+                          Telefon
+                        </Label>
                         <div className="relative">
-                          <Phone className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
+                          <Phone className="absolute left-3 top-3 h-4 w-4 text-gray-400 dark:text-gray-500" />
                           <Input
                             id="phone"
                             value={profileData.phone || ""}
                             onChange={handleInputChange}
-                            className="pl-10 custom-input"
+                            className="pl-10 custom-input dark:bg-gray-800 dark:border-gray-700 dark:text-white"
                           />
                         </div>
                       </div>
                     </div>
 
                     <div className="space-y-2">
-                      <Label htmlFor="address">Adres</Label>
+                      <Label htmlFor="address" className="dark:text-gray-200">
+                        Adres
+                      </Label>
                       <div className="relative">
-                        <MapPin className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
+                        <MapPin className="absolute left-3 top-3 h-4 w-4 text-gray-400 dark:text-gray-500" />
                         <Textarea
                           id="address"
                           value={profileData.address || ""}
                           onChange={(e) => setProfileData((prev) => ({ ...prev, address: e.target.value }))}
-                          className="pl-10 custom-input min-h-[80px]"
+                          className="pl-10 custom-input min-h-[80px] dark:bg-gray-800 dark:border-gray-700 dark:text-white"
                           placeholder="Tam adresinizi girin..."
                         />
                       </div>
-                    </div>
-                  </CardContent>
-                </Card>
-
-                {/* Bildirim Ayarları */}
-                <Card>
-                  <CardHeader>
-                    <CardTitle className="flex items-center gap-2">
-                      <Bell className="h-5 w-5 text-emerald-600" />
-                      Bildirim Tercihleri
-                    </CardTitle>
-                    <CardDescription>Hangi bildirimleri almak istediğinizi seçin</CardDescription>
-                  </CardHeader>
-                  <CardContent className="space-y-4">
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <p className="font-medium">E-posta Bildirimleri</p>
-                        <p className="text-sm text-gray-500">Önemli güncellemeler için e-posta alın</p>
-                      </div>
-                      <Switch checked={emailNotifications} onCheckedChange={setEmailNotifications} />
-                    </div>
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <p className="font-medium">SMS Bildirimleri</p>
-                        <p className="text-sm text-gray-500">Ödeme hatırlatmaları için SMS alın</p>
-                      </div>
-                      <Switch checked={smsNotifications} onCheckedChange={setSmsNotifications} />
-                    </div>
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <p className="font-medium">Push Bildirimleri</p>
-                        <p className="text-sm text-gray-500">Mobil uygulama bildirimleri</p>
-                      </div>
-                      <Switch checked={pushNotifications} onCheckedChange={setPushNotifications} />
                     </div>
                   </CardContent>
                 </Card>
@@ -718,145 +759,197 @@ export default function AyarlarPage() {
             </TabsContent>
 
             <TabsContent value="financial">
-              <Card>
+              <Card className="dark:bg-gray-900 dark:border-gray-800">
                 <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <DollarSign className="h-5 w-5 text-emerald-600" />
+                  <CardTitle className="flex items-center gap-2 dark:text-white">
+                    <DollarSign className="h-5 w-5 text-emerald-600 dark:text-emerald-400" />
                     Finansal Bilgiler
                   </CardTitle>
-                  <CardDescription>Risk analizi ve finansal planlama için bilgilerinizi girin.</CardDescription>
+                  <CardDescription className="dark:text-gray-400">
+                    Risk analizi ve finansal planlama için bilgilerinizi girin.
+                  </CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-6">
                   {loadingFinancialProfile ? (
                     <div className="flex justify-center items-center p-8">
-                      <Loader2 className="h-8 w-8 animate-spin text-emerald-600" />
-                      <p className="ml-2">Finansal bilgiler yükleniyor...</p>
+                      <Loader2 className="h-8 w-8 animate-spin text-emerald-600 dark:text-emerald-400" />
+                      <p className="ml-2 dark:text-gray-300">Finansal bilgiler yükleniyor...</p>
                     </div>
                   ) : (
                     <>
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div className="space-y-2">
-                          <Label htmlFor="monthly_income">Aylık Net Gelir (₺)</Label>
+                          <Label htmlFor="monthly_income" className="dark:text-gray-200">
+                            Aylık Net Gelir (₺)
+                          </Label>
                           <Input
                             id="monthly_income"
                             type="number"
                             placeholder="Örn: 25000"
                             value={financialProfileData.monthly_income ?? ""}
                             onChange={handleFinancialInputChange}
+                            className="dark:bg-gray-800 dark:border-gray-700 dark:text-white"
                           />
-                          <p className="text-xs text-muted-foreground">Vergi sonrası aylık geliriniz</p>
+                          <p className="text-xs text-muted-foreground dark:text-gray-400">
+                            Vergi sonrası aylık geliriniz
+                          </p>
                         </div>
                         <div className="space-y-2">
-                          <Label htmlFor="monthly_expenses">Aylık Ortalama Gider (₺)</Label>
+                          <Label htmlFor="monthly_expenses" className="dark:text-gray-200">
+                            Aylık Ortalama Gider (₺)
+                          </Label>
                           <Input
                             id="monthly_expenses"
                             type="number"
                             placeholder="Örn: 18000"
                             value={financialProfileData.monthly_expenses ?? ""}
                             onChange={handleFinancialInputChange}
+                            className="dark:bg-gray-800 dark:border-gray-700 dark:text-white"
                           />
-                          <p className="text-xs text-muted-foreground">Kira, market, faturalar dahil tüm giderler</p>
+                          <p className="text-xs text-muted-foreground dark:text-gray-400">
+                            Kira, market, faturalar dahil tüm giderler
+                          </p>
                         </div>
                         <div className="space-y-2">
-                          <Label htmlFor="emergency_fund">Acil Durum Fonu (₺)</Label>
+                          <Label htmlFor="emergency_fund" className="dark:text-gray-200">
+                            Acil Durum Fonu (₺)
+                          </Label>
                           <Input
                             id="emergency_fund"
                             type="number"
                             placeholder="Örn: 50000"
                             value={financialProfileData.emergency_fund ?? ""}
                             onChange={handleFinancialInputChange}
+                            className="dark:bg-gray-800 dark:border-gray-700 dark:text-white"
                           />
-                          <p className="text-xs text-muted-foreground">Beklenmedik durumlar için ayrılan para</p>
+                          <p className="text-xs text-muted-foreground dark:text-gray-400">
+                            Beklenmedik durumlar için ayrılan para
+                          </p>
                         </div>
                         <div className="space-y-2">
-                          <Label htmlFor="investment_portfolio">Yatırım Portföyü (₺)</Label>
+                          <Label htmlFor="investment_portfolio" className="dark:text-gray-200">
+                            Yatırım Portföyü (₺)
+                          </Label>
                           <Input
                             id="investment_portfolio"
                             type="number"
                             placeholder="Örn: 75000"
                             value={financialProfileData.investment_portfolio ?? ""}
                             onChange={handleFinancialInputChange}
+                            className="dark:bg-gray-800 dark:border-gray-700 dark:text-white"
                           />
-                          <p className="text-xs text-muted-foreground">Hisse, fon, altın vb. yatırımlar</p>
+                          <p className="text-xs text-muted-foreground dark:text-gray-400">
+                            Hisse, fon, altın vb. yatırımlar
+                          </p>
                         </div>
                         <div className="space-y-2">
-                          <Label htmlFor="real_estate_value">Gayrimenkul Değeri (₺)</Label>
+                          <Label htmlFor="real_estate_value" className="dark:text-gray-200">
+                            Gayrimenkul Değeri (₺)
+                          </Label>
                           <Input
                             id="real_estate_value"
                             type="number"
                             placeholder="Örn: 800000"
                             value={financialProfileData.real_estate_value ?? ""}
                             onChange={handleFinancialInputChange}
+                            className="dark:bg-gray-800 dark:border-gray-700 dark:text-white"
                           />
-                          <p className="text-xs text-muted-foreground">Sahip olduğunuz ev/arsa değeri</p>
+                          <p className="text-xs text-muted-foreground dark:text-gray-400">
+                            Sahip olduğunuz ev/arsa değeri
+                          </p>
                         </div>
                         <div className="space-y-2">
-                          <Label htmlFor="vehicle_value">Araç Değeri (₺)</Label>
+                          <Label htmlFor="vehicle_value" className="dark:text-gray-200">
+                            Araç Değeri (₺)
+                          </Label>
                           <Input
                             id="vehicle_value"
                             type="number"
                             placeholder="Örn: 150000"
                             value={financialProfileData.vehicle_value ?? ""}
                             onChange={handleFinancialInputChange}
+                            className="dark:bg-gray-800 dark:border-gray-700 dark:text-white"
                           />
-                          <p className="text-xs text-muted-foreground">Sahip olduğunuz araçların piyasa değeri</p>
+                          <p className="text-xs text-muted-foreground dark:text-gray-400">
+                            Sahip olduğunuz araçların piyasa değeri
+                          </p>
                         </div>
                         <div className="space-y-2">
-                          <Label htmlFor="credit_card_debt">Kredi Kartı Borcu (₺)</Label>
+                          <Label htmlFor="credit_card_debt" className="dark:text-gray-200">
+                            Kredi Kartı Borcu (₺)
+                          </Label>
                           <Input
                             id="credit_card_debt"
                             type="number"
                             placeholder="Örn: 12000"
                             value={financialProfileData.credit_card_debt ?? ""}
                             onChange={handleFinancialInputChange}
+                            className="dark:bg-gray-800 dark:border-gray-700 dark:text-white"
                           />
-                          <p className="text-xs text-muted-foreground">Toplam kredi kartı borcunuz</p>
+                          <p className="text-xs text-muted-foreground dark:text-gray-400">
+                            Toplam kredi kartı borcunuz
+                          </p>
                         </div>
                         <div className="space-y-2">
-                          <Label htmlFor="other_monthly_obligations">Diğer Aylık Yükümlülükler (₺)</Label>
+                          <Label htmlFor="other_monthly_obligations" className="dark:text-gray-200">
+                            Diğer Aylık Yükümlülükler (₺)
+                          </Label>
                           <Input
                             id="other_monthly_obligations"
                             type="number"
                             placeholder="Örn: 2500"
                             value={financialProfileData.other_monthly_obligations ?? ""}
                             onChange={handleFinancialInputChange}
+                            className="dark:bg-gray-800 dark:border-gray-700 dark:text-white"
                           />
-                          <p className="text-xs text-muted-foreground">Nafaka, öğrenim kredisi vb.</p>
+                          <p className="text-xs text-muted-foreground dark:text-gray-400">
+                            Nafaka, öğrenim kredisi vb.
+                          </p>
                         </div>
                         <div className="space-y-2">
-                          <Label htmlFor="employment_duration_months">Mevcut İşteki Çalışma Süresi (Ay)</Label>
+                          <Label htmlFor="employment_duration_months" className="dark:text-gray-200">
+                            Mevcut İşteki Çalışma Süresi (Ay)
+                          </Label>
                           <Input
                             id="employment_duration_months"
                             type="number"
                             placeholder="Örn: 36"
                             value={financialProfileData.employment_duration_months ?? ""}
                             onChange={handleFinancialInputChange}
+                            className="dark:bg-gray-800 dark:border-gray-700 dark:text-white"
                           />
-                          <p className="text-xs text-muted-foreground">Mevcut işyerindeki deneyim süresi</p>
+                          <p className="text-xs text-muted-foreground dark:text-gray-400">
+                            Mevcut işyerindeki deneyim süresi
+                          </p>
                         </div>
                         <div className="space-y-2">
-                          <Label htmlFor="dependents_count">Bakmakla Yükümlü Kişi Sayısı</Label>
+                          <Label htmlFor="dependents_count" className="dark:text-gray-200">
+                            Bakmakla Yükümlü Kişi Sayısı
+                          </Label>
                           <Input
                             id="dependents_count"
                             type="number"
                             placeholder="Örn: 2"
                             value={financialProfileData.dependents_count ?? ""}
                             onChange={handleFinancialInputChange}
+                            className="dark:bg-gray-800 dark:border-gray-700 dark:text-white"
                           />
-                          <p className="text-xs text-muted-foreground">Çocuk, yaşlı ebeveyn vb.</p>
+                          <p className="text-xs text-muted-foreground dark:text-gray-400">Çocuk, yaşlı ebeveyn vb.</p>
                         </div>
                       </div>
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div className="space-y-2">
-                          <Label htmlFor="employment_status">Çalışma Durumu</Label>
+                          <Label htmlFor="employment_status" className="dark:text-gray-200">
+                            Çalışma Durumu
+                          </Label>
                           <Select
                             value={financialProfileData.employment_status || ""}
                             onValueChange={(value) => handleSelectChange("employment_status", value)}
                           >
-                            <SelectTrigger>
+                            <SelectTrigger className="dark:bg-gray-800 dark:border-gray-700 dark:text-white">
                               <SelectValue placeholder="Seçiniz..." />
                             </SelectTrigger>
-                            <SelectContent>
+                            <SelectContent className="dark:bg-gray-800 dark:border-gray-700">
                               <SelectItem value="tam_zamanli">Tam Zamanlı Çalışan</SelectItem>
                               <SelectItem value="yari_zamanli">Yarı Zamanlı Çalışan</SelectItem>
                               <SelectItem value="serbest_calisan">Serbest Çalışan (Freelancer)</SelectItem>
@@ -869,15 +962,17 @@ export default function AyarlarPage() {
                           </Select>
                         </div>
                         <div className="space-y-2">
-                          <Label htmlFor="housing_status">Konut Durumu</Label>
+                          <Label htmlFor="housing_status" className="dark:text-gray-200">
+                            Konut Durumu
+                          </Label>
                           <Select
                             value={financialProfileData.housing_status || ""}
                             onValueChange={(value) => handleSelectChange("housing_status", value)}
                           >
-                            <SelectTrigger>
+                            <SelectTrigger className="dark:bg-gray-800 dark:border-gray-700 dark:text-white">
                               <SelectValue placeholder="Seçiniz..." />
                             </SelectTrigger>
-                            <SelectContent>
+                            <SelectContent className="dark:bg-gray-800 dark:border-gray-700">
                               <SelectItem value="kira">Kiracı</SelectItem>
                               <SelectItem value="ev_sahibi_kredili">Ev Sahibi (Kredili)</SelectItem>
                               <SelectItem value="ev_sahibi_kredisiz">Ev Sahibi (Kredisiz)</SelectItem>
@@ -888,33 +983,41 @@ export default function AyarlarPage() {
                         </div>
                       </div>
                       <div className="space-y-2">
-                        <Label htmlFor="other_debt_obligations">Diğer Borç Yükümlülükleri</Label>
+                        <Label htmlFor="other_debt_obligations" className="dark:text-gray-200">
+                          Diğer Borç Yükümlülükleri
+                        </Label>
                         <Textarea
                           id="other_debt_obligations"
                           placeholder="Örn: Kredi kartı borcu, öğrenim kredisi"
                           value={financialProfileData.other_debt_obligations || ""}
                           onChange={handleFinancialInputChange}
+                          className="dark:bg-gray-800 dark:border-gray-700 dark:text-white"
                         />
                       </div>
                       <div className="space-y-2">
-                        <Label htmlFor="savings_goals">Tasarruf Hedefleri</Label>
+                        <Label htmlFor="savings_goals" className="dark:text-gray-200">
+                          Tasarruf Hedefleri
+                        </Label>
                         <Textarea
                           id="savings_goals"
                           placeholder="Örn: Ev almak, araba almak, emeklilik"
                           value={financialProfileData.savings_goals || ""}
                           onChange={handleFinancialInputChange}
+                          className="dark:bg-gray-800 dark:border-gray-700 dark:text-white"
                         />
                       </div>
                       <div className="space-y-2">
-                        <Label htmlFor="risk_tolerance">Risk Toleransı</Label>
+                        <Label htmlFor="risk_tolerance" className="dark:text-gray-200">
+                          Risk Toleransı
+                        </Label>
                         <Select
                           value={financialProfileData.risk_tolerance || ""}
                           onValueChange={(value) => handleSelectChange("risk_tolerance", value)}
                         >
-                          <SelectTrigger>
+                          <SelectTrigger className="dark:bg-gray-800 dark:border-gray-700 dark:text-white">
                             <SelectValue placeholder="Seçiniz..." />
                           </SelectTrigger>
-                          <SelectContent>
+                          <SelectContent className="dark:bg-gray-800 dark:border-gray-700">
                             <SelectItem value="dusuk">Düşük</SelectItem>
                             <SelectItem value="orta">Orta</SelectItem>
                             <SelectItem value="yuksek">Yüksek</SelectItem>
@@ -922,7 +1025,12 @@ export default function AyarlarPage() {
                         </Select>
                       </div>
                       <div className="pt-4">
-                        <Button onClick={handleSaveFinancialProfile} disabled={isSavingFinancial}>
+                        <Button
+                          variant="outline"
+                          className="border-gray-300 dark:border-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 hover:border-gray-400 bg-transparent"
+                          onClick={handleSaveFinancialProfile}
+                          disabled={isSavingFinancial}
+                        >
                           {isSavingFinancial ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
                           {isSavingFinancial ? "Kaydediliyor..." : "Finansal Bilgileri Kaydet"}
                         </Button>
@@ -947,17 +1055,21 @@ export default function AyarlarPage() {
             <TabsContent value="security">
               <div className="space-y-6">
                 {/* Şifre Değiştirme */}
-                <Card>
+                <Card className="dark:bg-gray-900 dark:border-gray-800">
                   <CardHeader>
-                    <CardTitle className="flex items-center gap-2">
-                      <Key className="h-5 w-5 text-emerald-600" />
+                    <CardTitle className="flex items-center gap-2 dark:text-white">
+                      <Key className="h-5 w-5 text-emerald-600 dark:text-emerald-400" />
                       Şifre Değiştir
                     </CardTitle>
-                    <CardDescription>Hesabınızın güvenliği için güçlü bir şifre kullanın</CardDescription>
+                    <CardDescription className="dark:text-gray-400">
+                      Hesabınızın güvenliği için güçlü bir şifre kullanın
+                    </CardDescription>
                   </CardHeader>
                   <CardContent className="space-y-4">
                     <div className="space-y-2">
-                      <Label htmlFor="current-password">Mevcut Şifre</Label>
+                      <Label htmlFor="current-password" className="dark:text-gray-200">
+                        Mevcut Şifre
+                      </Label>
                       <div className="relative">
                         <Input
                           id="current-password"
@@ -965,6 +1077,7 @@ export default function AyarlarPage() {
                           value={currentPassword}
                           onChange={(e) => setCurrentPassword(e.target.value)}
                           placeholder="Mevcut şifrenizi girin"
+                          className="dark:bg-gray-800 dark:border-gray-700 dark:text-white"
                         />
                         <Button
                           type="button"
@@ -978,7 +1091,9 @@ export default function AyarlarPage() {
                       </div>
                     </div>
                     <div className="space-y-2">
-                      <Label htmlFor="new-password">Yeni Şifre</Label>
+                      <Label htmlFor="new-password" className="dark:text-gray-200">
+                        Yeni Şifre
+                      </Label>
                       <div className="relative">
                         <Input
                           id="new-password"
@@ -986,6 +1101,7 @@ export default function AyarlarPage() {
                           value={newPassword}
                           onChange={(e) => setNewPassword(e.target.value)}
                           placeholder="Yeni şifrenizi girin"
+                          className="dark:bg-gray-800 dark:border-gray-700 dark:text-white"
                         />
                         <Button
                           type="button"
@@ -999,7 +1115,9 @@ export default function AyarlarPage() {
                       </div>
                     </div>
                     <div className="space-y-2">
-                      <Label htmlFor="confirm-password">Yeni Şifre (Tekrar)</Label>
+                      <Label htmlFor="confirm-password" className="dark:text-gray-200">
+                        Yeni Şifre (Tekrar)
+                      </Label>
                       <div className="relative">
                         <Input
                           id="confirm-password"
@@ -1007,6 +1125,7 @@ export default function AyarlarPage() {
                           value={confirmPassword}
                           onChange={(e) => setConfirmPassword(e.target.value)}
                           placeholder="Yeni şifrenizi tekrar girin"
+                          className="dark:bg-gray-800 dark:border-gray-700 dark:text-white"
                         />
                         <Button
                           type="button"
@@ -1027,38 +1146,31 @@ export default function AyarlarPage() {
                 </Card>
 
                 {/* İki Faktörlü Doğrulama */}
-                <Card>
+                <Card className="dark:bg-gray-900 dark:border-gray-800">
                   <CardHeader>
-                    <CardTitle className="flex items-center gap-2">
-                      <Smartphone className="h-5 w-5 text-emerald-600" />
+                    <CardTitle className="flex items-center gap-2 dark:text-white">
+                      <Smartphone className="h-5 w-5 text-emerald-600 dark:text-emerald-400" />
                       İki Faktörlü Doğrulama (2FA)
                     </CardTitle>
-                    <CardDescription>Hesabınıza ek güvenlik katmanı ekleyin</CardDescription>
+                    <CardDescription className="dark:text-gray-400">
+                      Hesabınıza ek güvenlik katmanı ekleyin
+                    </CardDescription>
                   </CardHeader>
                   <CardContent className="space-y-4">
                     <div className="flex items-center justify-between">
                       <div>
-                        <p className="font-medium">2FA Durumu</p>
-                        <p className="text-sm text-gray-500">
+                        <p className="font-medium dark:text-white">2FA Durumu</p>
+                        <p className="text-sm text-gray-500 dark:text-gray-400">
                           {twoFactorEnabled ? "İki faktörlü doğrulama etkin" : "İki faktörlü doğrulama devre dışı"}
                         </p>
                       </div>
-                      <Switch
-                        checked={twoFactorEnabled}
-                        onCheckedChange={(checked) => {
-                          setTwoFactorEnabled(checked)
-                          toast({
-                            title: "Başarılı",
-                            description: `2FA ${checked ? "etkinleştirildi" : "devre dışı bırakıldı"}.`,
-                          })
-                        }}
-                      />
+                      <Switch checked={twoFactorEnabled} onCheckedChange={setTwoFactorEnabled} />
                     </div>
                     {twoFactorEnabled && (
-                      <Alert>
+                      <Alert className="dark:bg-gray-800 dark:border-gray-700">
                         <Smartphone className="h-4 w-4" />
-                        <AlertTitle>2FA Etkin</AlertTitle>
-                        <AlertDescription>
+                        <AlertTitle className="dark:text-white">2FA Etkin</AlertTitle>
+                        <AlertDescription className="dark:text-gray-300">
                           İki faktörlü doğrulama etkinleştirildi. Giriş yaparken telefonunuzdaki doğrulama kodunu
                           kullanmanız gerekecek.
                         </AlertDescription>
@@ -1068,37 +1180,46 @@ export default function AyarlarPage() {
                 </Card>
 
                 {/* Oturum Geçmişi */}
-                <Card>
+                <Card className="dark:bg-gray-900 dark:border-gray-800">
                   <CardHeader>
-                    <CardTitle className="flex items-center gap-2">
-                      <Monitor className="h-5 w-5 text-emerald-600" />
+                    <CardTitle className="flex items-center gap-2 dark:text-white">
+                      <Monitor className="h-5 w-5 text-emerald-600 dark:text-emerald-400" />
                       Aktif Oturumlar
                     </CardTitle>
-                    <CardDescription>Hesabınıza bağlı cihazları görüntüleyin ve yönetin</CardDescription>
+                    <CardDescription className="dark:text-gray-400">
+                      Hesabınıza bağlı cihazları görüntüleyin ve yönetin
+                    </CardDescription>
                   </CardHeader>
                   <CardContent>
                     <div className="space-y-4">
                       {sessions.map((session) => (
-                        <div key={session.id} className="flex items-center justify-between p-4 border rounded-lg">
+                        <div
+                          key={session.id}
+                          className="flex items-center justify-between p-4 border rounded-lg dark:border-gray-700 dark:bg-gray-800/50"
+                        >
                           <div className="flex items-center gap-3">
-                            <Monitor className="h-5 w-5 text-gray-400" />
+                            <Monitor className="h-5 w-5 text-gray-400 dark:text-gray-500" />
                             <div>
-                              <p className="font-medium flex items-center gap-2">
+                              <p className="font-medium flex items-center gap-2 dark:text-white">
                                 {session.device}
                                 {session.current && <Badge variant="secondary">Mevcut</Badge>}
                               </p>
-                              <p className="text-sm text-gray-500 flex items-center gap-1">
+                              <p className="text-sm text-gray-500 dark:text-gray-400 flex items-center gap-1">
                                 <Location className="h-3 w-3" />
                                 {session.location}
                               </p>
-                              <p className="text-sm text-gray-500 flex items-center gap-1">
+                              <p className="text-sm text-gray-500 dark:text-gray-400 flex items-center gap-1">
                                 <Clock className="h-3 w-3" />
                                 {session.lastActive}
                               </p>
                             </div>
                           </div>
                           {!session.current && (
-                            <Button variant="outline" size="sm">
+                            <Button
+                              variant="outline"
+                              className="border-gray-300 dark:border-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 hover:border-gray-400 bg-transparent"
+                              size="sm"
+                            >
                               <X className="h-4 w-4 mr-1" />
                               Sonlandır
                             </Button>
@@ -1110,19 +1231,21 @@ export default function AyarlarPage() {
                 </Card>
 
                 {/* Hesap Silme */}
-                <Card className="border-red-200">
+                <Card className="border-red-200 dark:border-red-700/50 dark:bg-gray-900">
                   <CardHeader>
-                    <CardTitle className="flex items-center gap-2 text-red-600">
+                    <CardTitle className="flex items-center gap-2 text-red-600 dark:text-red-400">
                       <AlertTriangle className="h-5 w-5" />
                       Tehlikeli Bölge
                     </CardTitle>
-                    <CardDescription>Bu işlemler geri alınamaz. Dikkatli olun.</CardDescription>
+                    <CardDescription className="dark:text-gray-400">
+                      Bu işlemler geri alınamaz. Dikkatli olun.
+                    </CardDescription>
                   </CardHeader>
                   <CardContent className="space-y-4">
-                    <div className="flex items-center justify-between p-4 border border-red-200 rounded-lg bg-red-50">
+                    <div className="flex items-center justify-between p-4 border border-red-200 dark:border-red-700/50 rounded-lg bg-red-50 dark:bg-red-900/30">
                       <div>
-                        <p className="font-medium text-red-800">Hesabı Sil</p>
-                        <p className="text-sm text-red-600">
+                        <p className="font-medium text-red-800 dark:text-red-300">Hesabı Sil</p>
+                        <p className="text-sm text-red-600 dark:text-red-400">
                           Hesabınızı ve tüm verilerinizi kalıcı olarak silin. Bu işlem geri alınamaz.
                         </p>
                       </div>
@@ -1139,38 +1262,37 @@ export default function AyarlarPage() {
             <TabsContent value="preferences">
               <div className="space-y-6">
                 {/* Görünüm Ayarları */}
-                <Card>
+                <Card className="dark:bg-gray-900 dark:border-gray-800">
                   <CardHeader>
-                    <CardTitle className="flex items-center gap-2">
-                      <Monitor className="h-5 w-5 text-emerald-600" />
+                    <CardTitle className="flex items-center gap-2 dark:text-white">
+                      <Monitor className="h-5 w-5 text-emerald-600 dark:text-emerald-400" />
                       Görünüm Ayarları
                     </CardTitle>
-                    <CardDescription>Uygulama görünümünü kişiselleştirin</CardDescription>
+                    <CardDescription className="dark:text-gray-400">Uygulama görünümünü özelleştirin</CardDescription>
                   </CardHeader>
                   <CardContent className="space-y-4">
                     <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-3">
-                        {darkMode ? <Moon className="h-5 w-5" /> : <Sun className="h-5 w-5" />}
-                        <div>
-                          <p className="font-medium">Koyu Tema</p>
-                          <p className="text-sm text-gray-500">Karanlık görünümü etkinleştir</p>
-                        </div>
+                      <div>
+                        <p className="font-medium dark:text-white">Koyu Tema</p>
+                        <p className="text-sm text-gray-500 dark:text-gray-400">
+                          Gözlerinizi yormaması için koyu tema kullanın
+                        </p>
                       </div>
-                      <Switch checked={darkMode} onCheckedChange={handleDarkModeToggle} />
+                      <Switch checked={theme === "dark"} onCheckedChange={handleDarkModeToggle} />
                     </div>
-                    <Separator />
+                    <Separator className="dark:bg-gray-700" />
                     <div className="flex items-center justify-between">
                       <div>
-                        <p className="font-medium">Kompakt Görünüm</p>
-                        <p className="text-sm text-gray-500">Daha az boşluk ile sıkışık görünüm</p>
+                        <p className="font-medium dark:text-white">Kompakt Görünüm</p>
+                        <p className="text-sm text-gray-500 dark:text-gray-400">Daha fazla bilgiyi aynı alanda görün</p>
                       </div>
                       <Switch checked={compactView} onCheckedChange={handleCompactViewToggle} />
                     </div>
-                    <Separator />
+                    <Separator className="dark:bg-gray-700" />
                     <div className="flex items-center justify-between">
                       <div>
-                        <p className="font-medium">Animasyonlar</p>
-                        <p className="text-sm text-gray-500">Geçiş animasyonlarını etkinleştir</p>
+                        <p className="font-medium dark:text-white">Animasyonlar</p>
+                        <p className="text-sm text-gray-500 dark:text-gray-400">Geçiş animasyonlarını etkinleştirin</p>
                       </div>
                       <Switch checked={animationsEnabled} onCheckedChange={handleAnimationsToggle} />
                     </div>
@@ -1178,22 +1300,24 @@ export default function AyarlarPage() {
                 </Card>
 
                 {/* Dil ve Bölge */}
-                <Card>
+                <Card className="dark:bg-gray-900 dark:border-gray-800">
                   <CardHeader>
-                    <CardTitle className="flex items-center gap-2">
-                      <Globe className="h-5 w-5 text-emerald-600" />
+                    <CardTitle className="flex items-center gap-2 dark:text-white">
+                      <Globe className="h-5 w-5 text-emerald-600 dark:text-emerald-400" />
                       Dil ve Bölge
                     </CardTitle>
-                    <CardDescription>Dil ve bölgesel ayarlarınızı yapılandırın</CardDescription>
+                    <CardDescription className="dark:text-gray-400">
+                      Dil ve para birimi tercihlerinizi ayarlayın
+                    </CardDescription>
                   </CardHeader>
                   <CardContent className="space-y-4">
                     <div className="space-y-2">
-                      <Label htmlFor="language">Dil</Label>
+                      <Label className="dark:text-gray-200">Dil</Label>
                       <Select value={language} onValueChange={handleLanguageChange}>
-                        <SelectTrigger>
+                        <SelectTrigger className="dark:bg-gray-800 dark:border-gray-700 dark:text-white">
                           <SelectValue />
                         </SelectTrigger>
-                        <SelectContent>
+                        <SelectContent className="dark:bg-gray-800 dark:border-gray-700">
                           <SelectItem value="tr">Türkçe</SelectItem>
                           <SelectItem value="en">English</SelectItem>
                           <SelectItem value="de">Deutsch</SelectItem>
@@ -1202,12 +1326,12 @@ export default function AyarlarPage() {
                       </Select>
                     </div>
                     <div className="space-y-2">
-                      <Label>Para Birimi</Label>
+                      <Label className="dark:text-gray-200">Para Birimi</Label>
                       <Select defaultValue="try">
-                        <SelectTrigger>
+                        <SelectTrigger className="dark:bg-gray-800 dark:border-gray-700 dark:text-white">
                           <SelectValue />
                         </SelectTrigger>
-                        <SelectContent>
+                        <SelectContent className="dark:bg-gray-800 dark:border-gray-700">
                           <SelectItem value="try">Türk Lirası (₺)</SelectItem>
                           <SelectItem value="usd">US Dollar ($)</SelectItem>
                           <SelectItem value="eur">Euro (€)</SelectItem>
@@ -1217,58 +1341,61 @@ export default function AyarlarPage() {
                   </CardContent>
                 </Card>
 
-                {/* Bildirim Ayarları */}
-                <Card>
+                <Card className="dark:bg-gray-900 dark:border-gray-800">
                   <CardHeader>
-                    <CardTitle className="flex items-center gap-2">
-                      <Bell className="h-5 w-5 text-emerald-600" />
+                    <CardTitle className="flex items-center gap-2 dark:text-white">
+                      <Bell className="h-5 w-5 text-emerald-600 dark:text-emerald-400" />
                       Bildirim Ayarları
                     </CardTitle>
-                    <CardDescription>Bildirim tercihlerinizi yönetin</CardDescription>
+                    <CardDescription className="dark:text-gray-400">
+                      Detaylı bildirim tercihlerinizi yönetin
+                    </CardDescription>
                   </CardHeader>
                   <CardContent className="space-y-4">
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <p className="font-medium">E-posta Bildirimleri</p>
-                        <p className="text-sm text-gray-500">Önemli güncellemeler için e-posta alın</p>
+                    <div className="p-4 bg-blue-50 dark:bg-blue-900/30 border border-blue-200 dark:border-blue-700/50 rounded-lg">
+                      <div className="flex items-start gap-3">
+                        <Info className="h-5 w-5 text-blue-600 dark:text-blue-400 mt-0.5" />
+                        <div>
+                          <p className="font-medium text-blue-900 dark:text-blue-300">Gelişmiş Bildirim Ayarları</p>
+                          <p className="text-sm text-blue-700 dark:text-blue-400 mt-1">
+                            E-posta hatırlatıcıları, zaman ayarları ve test fonksiyonları için ödeme planı sayfasındaki
+                            hatırlatıcı sekmesini kullanın.
+                          </p>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            className="mt-3 border-gray-300 dark:border-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 hover:border-gray-400 bg-transparent"
+                            onClick={() => router.push("/uygulama/odeme-plani?tab=hatirlatici")}
+                          >
+                            <Bell className="h-4 w-4 mr-2" />
+                            Bildirim Ayarlarına Git
+                          </Button>
+                        </div>
                       </div>
-                      <Switch checked={emailNotifications} onCheckedChange={setEmailNotifications} />
-                    </div>
-                    <Separator />
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <p className="font-medium">SMS Bildirimleri</p>
-                        <p className="text-sm text-gray-500">Ödeme hatırlatmaları için SMS alın</p>
-                      </div>
-                      <Switch checked={smsNotifications} onCheckedChange={setSmsNotifications} />
-                    </div>
-                    <Separator />
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <p className="font-medium">Push Bildirimleri</p>
-                        <p className="text-sm text-gray-500">Mobil uygulama bildirimleri</p>
-                      </div>
-                      <Switch checked={pushNotifications} onCheckedChange={setPushNotifications} />
                     </div>
                   </CardContent>
                 </Card>
 
                 {/* Veri Yönetimi */}
-                <Card>
+                <Card className="dark:bg-gray-900 dark:border-gray-800">
                   <CardHeader>
-                    <CardTitle className="flex items-center gap-2">
-                      <Download className="h-5 w-5 text-emerald-600" />
+                    <CardTitle className="flex items-center gap-2 dark:text-white">
+                      <Download className="h-5 w-5 text-emerald-600 dark:text-emerald-400" />
                       Veri Yönetimi
                     </CardTitle>
-                    <CardDescription>Verilerinizi yönetin ve dışa aktarın</CardDescription>
+                    <CardDescription className="dark:text-gray-400">
+                      Verilerinizi yönetin ve dışa aktarın
+                    </CardDescription>
                   </CardHeader>
                   <CardContent className="space-y-4">
-                    <div className="flex items-center justify-between p-4 border rounded-lg">
+                    <div className="flex items-center justify-between p-4 border rounded-lg dark:border-gray-700 dark:bg-gray-800/50">
                       <div>
-                        <p className="font-medium">Verilerimi Dışa Aktar</p>
-                        <p className="text-sm text-gray-500">Tüm verilerinizi JSON formatında indirin</p>
+                        <p className="font-medium dark:text-white">Verilerimi Dışa Aktar</p>
+                        <p className="text-sm text-gray-500 dark:text-gray-400">
+                          Tüm verilerinizi JSON formatında indirin
+                        </p>
                       </div>
-                      <Button variant="outline" onClick={handleDataExport}>
+                      <Button onClick={handleDataExport}>
                         <Download className="h-4 w-4 mr-2" />
                         Dışa Aktar
                       </Button>

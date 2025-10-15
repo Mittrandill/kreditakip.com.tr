@@ -1,7 +1,7 @@
 import { AreaChart, FileText, Scan, TrendingUp, Shield, Clock, Users, Star, ArrowRight } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
-import { UserGrowthChart } from '@/components/user-growth-chart';
+import { UserGrowthChart } from "@/components/user-growth-chart"
 import Header from "@/components/layout/header"
 import Footer from "@/components/footer"
 import Link from "next/link"
@@ -82,7 +82,7 @@ export default function LandingPage() {
                     <Button
                       variant="outline"
                       size="lg"
-                      className="h-12 bg-transparent border-white/20 text-white hover:bg-white/10 hover:border-transparent hover:text-white"
+                      className="bg-transparent border-white/20 text-white hover:bg-white/10 hover:border-transparent hover:text-white"
                     >
                       Demo İzle
                     </Button>
@@ -268,35 +268,55 @@ export default function LandingPage() {
 
                 {/* Multi-Bank Support */}
                 <div className="relative group">
-                  <div className="absolute inset-0 bg-gradient-to-r from-emerald-500/20 to-transparent rounded-3xl blur-xl group-hover:blur-2xl transition-all duration-500" />
-                  <Card className="relative bg-black/20 border-white/10 backdrop-blur-xl hover:border-emerald-500/30 transition-all duration-500 group-hover:transform group-hover:scale-105 overflow-hidden">
-                    <CardContent className="p-10">
-                      <div className="relative mb-8">
-                        <div className="w-20 h-20 bg-gradient-to-br from-emerald-500/30 to-emerald-500/10 rounded-2xl flex items-center justify-center mx-auto backdrop-blur-sm border border-emerald-500/20">
-                          <Users className="w-10 h-10 text-emerald-400" />
-                        </div>
-                        <div className="absolute -top-2 -right-2 w-6 h-6 bg-emerald-500/80 rounded-full flex items-center justify-center">
-                          <div className="w-2 h-2 bg-white rounded-full animate-pulse" />
-                        </div>
+                  <div className="absolute inset-0 bg-gradient-to-r from-emerald-500/20 to-transparent rounded-3xl blur-xl group-hover:blur-2xl transition-all duration-700" />
+                  <Card className="relative bg-black/20 border-white/10 backdrop-blur-xl rounded-3xl p-8 lg:p-10 hover:border-emerald-500/30 transition-all duration-500 group-hover:transform group-hover:scale-105 overflow-hidden">
+                    <div className="absolute -top-6 left-1/2 -translate-x-1/2 w-12 h-12 bg-gradient-to-br from-emerald-500 to-emerald-500/80 rounded-full flex items-center justify-center text-brand-dark font-bold text-lg border-4 border-brand-dark shadow-lg">
+                      4
+                    </div>
+
+                    <div className="relative mb-8 pt-6">
+                      <div className="w-24 h-24 bg-gradient-to-br from-emerald-500/30 to-emerald-500/10 rounded-3xl flex items-center justify-center mx-auto backdrop-blur-sm border border-emerald-500/20 group-hover:from-emerald-500/40 group-hover:to-emerald-500/20 transition-all duration-500">
+                        <Users className="w-12 h-12 text-emerald-400" />
                       </div>
 
-                      <h3 className="text-2xl font-bold text-white mb-4 text-center">Çoklu Banka Desteği</h3>
-                      <p className="text-white/70 text-center leading-relaxed mb-6">
-                        Türkiye'deki tüm büyük bankaların kredi dökümlerini destekleyen geniş uyumluluk
-                      </p>
-
-                      <div className="flex justify-center gap-6 pt-4 border-t border-white/10">
-                        <div className="text-center">
-                          <div className="text-2xl font-bold text-emerald-400">25+</div>
-                          <div className="text-xs text-white/60">Banka</div>
-                        </div>
-                        <div className="text-center">
-                          <div className="text-2xl font-bold text-emerald-400">100%</div>
-                          <div className="text-xs text-white/60">Uyumlu</div>
-                        </div>
+                      {/* Floating Elements */}
+                      <div className="absolute -top-2 -right-2 w-6 h-6 bg-emerald-500/80 rounded-full flex items-center justify-center">
+                        <div className="w-2 h-2 bg-white rounded-full animate-pulse" />
                       </div>
-                    </CardContent>
+                      <div
+                        className="absolute -bottom-2 -left-2 w-4 h-4 bg-emerald-500/60 rounded-full animate-bounce"
+                        style={{ animationDelay: "0.5s" }}
+                      />
+                    </div>
+
+                    <h3 className="text-2xl lg:text-3xl font-bold text-white mb-6 text-center">Çoklu Banka Desteği</h3>
+                    <p className="text-white/70 text-center leading-relaxed mb-8">
+                      Türkiye'deki tüm büyük bankaların kredi dökümlerini destekleyen geniş uyumluluk
+                    </p>
+
+                    <div className="space-y-3 mb-8">
+                      <div className="flex items-center gap-3 text-sm text-white/60">
+                        <div className="w-2 h-2 bg-emerald-400 rounded-full" />
+                        <span>25+</span>
+                      </div>
+                      <div className="flex items-center gap-3 text-sm text-white/60">
+                        <div className="w-2 h-2 bg-emerald-400 rounded-full" />
+                        <span>100%</span>
+                      </div>
+                    </div>
+
+                    <div className="bg-white/5 rounded-full h-2 mb-4">
+                      <div className="bg-gradient-to-r from-emerald-500 to-emerald-500/80 h-2 rounded-full w-3/4 transition-all duration-1000" />
+                    </div>
+                    <p className="text-xs text-white/50 text-center">Adım 3/4 tamamlandı</p>
                   </Card>
+
+                  {/* Connection Arrow */}
+                  <div className="hidden lg:block absolute -right-6 top-1/2 -translate-y-1/2 z-20">
+                    <div className="w-12 h-12 bg-black/40 border border-white/10 rounded-full backdrop-blur-xl flex items-center justify-center group-hover:border-emerald-500/30 transition-all duration-500">
+                      <ArrowRight className="w-6 h-6 text-emerald-400" />
+                    </div>
+                  </div>
                 </div>
 
                 {/* Detailed Analysis */}
@@ -762,11 +782,11 @@ export default function LandingPage() {
                       <ArrowRight className="ml-2 w-5 h-5" />
                     </Button>
                   </Link>
-                    <Button
-                      variant="outline"
-                      size="lg"
-                      className="h-12 bg-transparent border-white/20 text-white hover:bg-white/10 hover:border-transparent hover:text-white"
-                    >
+                  <Button
+                    variant="outline"
+                    size="lg"
+                    className="bg-transparent border-white/20 text-white hover:bg-white/10 hover:border-transparent hover:text-white"
+                  >
                     Daha Fazla Bilgi
                   </Button>
                 </div>

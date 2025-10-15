@@ -8,6 +8,76 @@ const mailerSend = new MailerSend({
   apiKey: process.env.MAILERSEND_API_KEY || "",
 })
 
+async function checkEmailAlreadySent(
+  userId: string,
+  paymentPlanId: string,
+  notificationType: string,
+  scheduledDate: Date,
+): Promise<boolean> {
+  const startOfDay = new Date(scheduledDate)
+  startOfDay.setHours(0, 0, 0, 0)
+
+  const endOfDay = new Date(scheduledDate)
+  endOfDay.setHours(23, 59, 59, 999)
+
+  const { data, error } = await supabase
+    .from("notifications")
+    .select("id")
+    .eq("user_id", userId)
+    .eq("payment_plan_id", paymentPlanId)
+    .eq("notification_type", "email")
+    .gte("scheduled_for", startOfDay.toISOString())
+    .lte("scheduled_for", endOfDay.toISOString())
+    .not("email_sent_at", "is", null)
+    .limit(1)
+
+  if (error) {
+    console.error("Error checking duplicate email:", error)
+    return false // Hata durumunda e-posta gönderilmesine izin ver
+  }
+
+  return data && data.length > 0
+}
+
+async function createEmailNotificationRecord(
+  userId: string,
+  paymentPlanId: string,
+  creditId: string,
+  title: string,
+  message: string,
+  scheduledFor: Date,
+  emailSentAt?: Date,
+  emailProviderId?: string,
+  emailStatus = "pending",
+  errorMessage?: string,
+) {
+  const { data, error } = await supabase
+    .from("notifications")
+    .insert({
+      user_id: userId,
+      payment_plan_id: paymentPlanId,
+      credit_id: creditId,
+      title,
+      message,
+      notification_type: "email",
+      scheduled_for: scheduledFor.toISOString(),
+      email_sent_at: emailSentAt?.toISOString(),
+      email_provider_id: emailProviderId,
+      email_delivery_status: emailStatus,
+      email_error_message: errorMessage,
+      retry_count: 0,
+      is_read: false,
+    })
+    .select()
+    .single()
+
+  if (error) {
+    console.error("Error creating email notification record:", error)
+  }
+
+  return { data, error }
+}
+
 function createEmailTemplate(
   firstName: string,
   bankName: string,
@@ -66,6 +136,61 @@ function createEmailTemplate(
       break
   }
 
+  const getBankLogoUrl = (bankName: string): string => {
+    // Banka adına göre logo URL'ini oluştur
+    const bankMappings: Record<string, string> = {
+      "Yapı Kredi": "yapi-kredi-bankasi.png",
+      "Yapı Kredi Bankası": "yapi-kredi-bankasi.png",
+      "Yapı ve Kredi Bankası A.Ş.": "yapi-kredi-bankasi.png",
+      Garanti: "turkiye-garanti-bankasi.png",
+      "Garanti BBVA": "turkiye-garanti-bankasi.png",
+      "Türkiye Garanti Bankası": "turkiye-garanti-bankasi.png",
+      "Türkiye Garanti Bankası A.Ş.": "turkiye-garanti-bankasi.png",
+      Akbank: "akbank.png",
+      "Akbank T.A.Ş.": "akbank.png",
+      "İş Bankası": "turkiye-is-bankasi.png",
+      "Türkiye İş Bankası": "turkiye-is-bankasi.png",
+      "Türkiye İş Bankası A.Ş.": "turkiye-is-bankasi.png",
+      "Ziraat Bankası": "ziraat-bankasi.png",
+      "T.C. Ziraat Bankası A.Ş.": "ziraat-bankasi.png",
+      VakıfBank: "vakifbank.png",
+      "Türkiye Vakıflar Bankası": "vakifbank.png",
+      "Türkiye Vakıflar Bankası T.A.O.": "vakifbank.png",
+      Halkbank: "turkiye-halk-bankasi.png",
+      "Türkiye Halk Bankası A.Ş.": "turkiye-halk-bankasi.png",
+      DenizBank: "denizbank.png",
+      "DenizBank A.Ş.": "denizbank.png",
+      "QNB Finansbank": "qnb-finansbank.png",
+      "QNB Finansbank A.Ş.": "qnb-finansbank.png",
+      TEB: "turkiye-ekonomi-bankasi.png",
+      "Türkiye Ekonomi Bankası A.Ş.": "turkiye-ekonomi-bankasi.png",
+      ING: "ing-bank.png",
+      "ING Bank A.Ş.": "ing-bank.png",
+      Şekerbank: "sekerbank.png",
+      "Şekerbank T.A.Ş.": "sekerbank.png",
+      Fibabanka: "fibabanka.png",
+      "Fibabanka A.Ş.": "fibabanka.png",
+      "Enpara.com": "enpara-bank.png",
+      HSBC: "hsbc-bank.png",
+      "HSBC Bank A.Ş.": "hsbc-bank.png",
+      Citibank: "citibank.png",
+      "Citibank A.Ş.": "citibank.png",
+      "Ziraat Katılım": "ziraat-katilim-bankasi.png",
+      "Ziraat Katılım Bankası A.Ş.": "ziraat-katilim-bankasi.png",
+      "Vakıf Katılım": "vakif-katilim-bankasi.png",
+      "Vakıf Katılım Bankası A.Ş.": "vakif-katilim-bankasi.png",
+      "Kuveyt Türk": "kuveyt-turk-katilim-bankasi.png",
+      "Kuveyt Türk Katılım Bankası A.Ş.": "kuveyt-turk-katilim-bankasi.png",
+      "Albaraka Türk": "albaraka-turk-katilim-bankasi.png",
+      "Albaraka Türk Katılım Bankası A.Ş.": "albaraka-turk-katilim-bankasi.png",
+      "Türkiye Finans": "turkiye-finans-katilim-bankasi.png",
+      "Türkiye Finans Katılım Bankası A.Ş.": "turkiye-finans-katilim-bankasi.png",
+    }
+
+    const logoFileName = bankMappings[bankName] || "default-bank.png"
+    return `https://oymjjceuiotxfbpwsdym.supabase.co/storage/v1/object/public/bank-logos/${logoFileName}`
+  }
+
   return {
     subject,
     html: `
@@ -75,7 +200,7 @@ function createEmailTemplate(
           <meta charset="UTF-8">
           <meta name="viewport" content="width=device-width, initial-scale=1.0">
           <title>${subject}</title>
-          [if mso]>
+          <!--[if mso]>
           <noscript>
               <xml>
                   <o:OfficeDocumentSettings>
@@ -83,7 +208,7 @@ function createEmailTemplate(
                   </o:OfficeDocumentSettings>
               </xml>
           </noscript>
-          <![endif]
+          <![endif]-->
           <style>
               * {
                   margin: 0;
@@ -94,8 +219,8 @@ function createEmailTemplate(
               body {
                   font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
                   line-height: 1.6;
-                  color: #1e293b;
-                  background-color: #f8fafc;
+                  color: #ffffff;
+                  background-color: #0f172a;
                   margin: 0;
                   padding: 0;
                   -webkit-font-smoothing: antialiased;
@@ -105,7 +230,7 @@ function createEmailTemplate(
               .wrapper {
                   width: 100%;
                   table-layout: fixed;
-                  background-color: #f1f5f9;
+                  background-color: #0f172a;
                   padding: 60px 0;
               }
               
@@ -113,10 +238,11 @@ function createEmailTemplate(
                   width: 100%;
                   max-width: 600px;
                   margin: 0 auto;
-                  background-color: #ffffff;
+                  background-color: #1e293b;
                   border-radius: 16px;
                   overflow: hidden;
-                  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.08), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+                  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+                  border: 1px solid #334155;
               }
               
               /* Header with Gradient */
@@ -178,24 +304,25 @@ function createEmailTemplate(
               /* Content Section */
               .content {
                   padding: 48px 40px;
+                  background-color: #1e293b;
               }
               
               .greeting {
                   font-size: 18px;
-                  color: #475569;
+                  color: #ffffff;
                   margin-bottom: 32px;
                   font-weight: 400;
               }
               
               .greeting strong {
-                  color: #1e293b;
+                  color: #ffffff;
                   font-weight: 600;
               }
               
               /* Modern Payment Card */
               .payment-card {
-                  background: linear-gradient(145deg, #ffffff 0%, #f8fafc 100%);
-                  border: 1px solid #e2e8f0;
+                  background: linear-gradient(145deg, #334155 0%, #475569 100%);
+                  border: 1px solid #475569;
                   border-radius: 12px;
                   padding: 32px;
                   margin-bottom: 32px;
@@ -218,21 +345,27 @@ function createEmailTemplate(
                   align-items: center;
                   margin-bottom: 24px;
                   padding-bottom: 20px;
-                  border-bottom: 1px solid #f1f5f9;
+                  border-bottom: 1px solid #475569;
               }
               
               .bank-icon {
                   width: 48px;
                   height: 48px;
-                  background: linear-gradient(135deg, #10b981 0%, #0d9488 100%);
+                  background: #ffffff;
                   border-radius: 12px;
                   display: flex;
                   align-items: center;
                   justify-content: center;
                   margin-right: 16px;
-                  font-size: 24px;
-                  color: white;
                   flex-shrink: 0;
+                  overflow: hidden;
+              }
+              
+              .bank-logo {
+                  width: 100%;
+                  height: 100%;
+                  object-fit: contain;
+                  border-radius: 8px;
               }
               
               .bank-info {
@@ -250,7 +383,7 @@ function createEmailTemplate(
               
               .bank-name {
                   font-size: 16px;
-                  color: #1e293b;
+                  color: #ffffff;
                   font-weight: 600;
               }
               
@@ -278,16 +411,14 @@ function createEmailTemplate(
               .amount {
                   font-size: 42px;
                   font-weight: 800;
-                  background: linear-gradient(135deg, #10b981 0%, #0d9488 100%);
-                  -webkit-background-clip: text;
-                  -webkit-text-fill-color: transparent;
-                  background-clip: text;
+                  color: #ffffff;
+                  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
                   letter-spacing: -1px;
               }
               
               .currency {
                   font-size: 24px;
-                  color: #64748b;
+                  color: #ffffff;
                   font-weight: 500;
               }
               
@@ -307,8 +438,8 @@ function createEmailTemplate(
                   width: 50%;
                   padding: 12px;
                   text-align: center;
-                  background: #f8fafc;
-                  border: 1px solid #f1f5f9;
+                  background: #475569;
+                  border: 1px solid #64748b;
               }
               
               .info-item:first-child {
@@ -331,14 +462,14 @@ function createEmailTemplate(
               
               .info-value {
                   font-size: 16px;
-                  color: #1e293b;
+                  color: #ffffff;
                   font-weight: 700;
               }
               
               /* Alert Message Box */
               .alert-box {
-                  background: #f8fafc;
-                  border: 1px solid #e2e8f0;
+                  background: #334155;
+                  border: 1px solid #475569;
                   border-radius: 12px;
                   padding: 20px;
                   margin-bottom: 32px;
@@ -371,13 +502,13 @@ function createEmailTemplate(
               .alert-title {
                   font-size: 14px;
                   font-weight: 600;
-                  color: #1e293b;
+                  color: #ffffff;
                   margin-bottom: 4px;
               }
               
               .alert-message {
                   font-size: 14px;
-                  color: #64748b;
+                  color: #e2e8f0;
                   line-height: 1.5;
               }
               
@@ -447,16 +578,16 @@ function createEmailTemplate(
               /* Footer */
               .footer {
                   padding: 40px;
-                  background: #f8fafc;
-                  border-top: 1px solid #e2e8f0;
+                  background: #0f172a;
+                  border-top: 1px solid #334155;
                   text-align: center;
               }
               
               .footer-logo {
-                  width: 32px;
-                  height: 32px;
-                  margin: 0 auto 16px;
-                  opacity: 0.4;
+                  width: 80px;
+                  height: auto;
+                  margin: 0 auto 20px;
+                  opacity: 0.8;
               }
               
               .footer-links {
@@ -477,24 +608,24 @@ function createEmailTemplate(
               }
               
               .footer-divider {
-                  color: #cbd5e1;
+                  color: #475569;
                   margin: 0 8px;
                   font-size: 10px;
               }
               
               .footer-text {
                   font-size: 12px;
-                  color: #94a3b8;
+                  color: #64748b;
                   line-height: 1.6;
                   margin-bottom: 16px;
               }
               
               .copyright {
                   font-size: 11px;
-                  color: #cbd5e1;
+                  color: #475569;
                   margin-top: 20px;
                   padding-top: 20px;
-                  border-top: 1px solid #e2e8f0;
+                  border-top: 1px solid #334155;
               }
               
               /* Responsive Design */
@@ -541,7 +672,7 @@ function createEmailTemplate(
                       width: 100%;
                       margin-bottom: 8px;
                       border-radius: 8px !important;
-                      border: 1px solid #f1f5f9 !important;
+                      border: 1px solid #64748b !important;
                   }
                   
                   .footer {
@@ -571,7 +702,7 @@ function createEmailTemplate(
                       <td>
                           <div class="header">
                               <div class="logo-wrapper">
-                                  <img src="https://kreditakip.com.tr/logo-white.png" alt="Kredi Takip" class="logo">
+                                  <img src="/images/design-mode/logo-white.png" alt="Kredi Takip" class="logo">
                               </div>
                               <h1 class="header-title">${title}</h1>
                               <p class="header-subtitle">Finansal takibiniz bizimle güvende</p>
@@ -584,7 +715,9 @@ function createEmailTemplate(
                               
                               <div class="payment-card">
                                   <div class="bank-section">
-                                      <div class="bank-icon">🏦</div>
+                                      <div class="bank-icon">
+                                          <img src="${getBankLogoUrl(bankName)}" alt="${bankName} logosu" class="bank-logo" onerror="this.style.display='none'; this.parentNode.innerHTML='🏦'; this.parentNode.style.fontSize='24px'; this.parentNode.style.color='#10b981';">
+                                      </div>
                                       <div class="bank-info">
                                           <div class="bank-label">Banka</div>
                                           <div class="bank-name">${bankName}</div>
@@ -642,7 +775,7 @@ function createEmailTemplate(
                           </div>
                           
                           <div class="footer">
-                              <img src="https://kreditakip.com.tr/logo.png" alt="Kredi Takip" class="footer-logo" style="width: 80px; height: auto; opacity: 1; margin-bottom: 20px;">
+                              <img src="/images/design-mode/logo-white.png" alt="Kredi Takip" class="footer-logo">
                               
                               <div class="footer-links">
                                   <a href="https://kreditakip.com.tr/uygulama/ayarlar" class="footer-link">Bildirim Ayarları</a>
@@ -660,7 +793,7 @@ function createEmailTemplate(
                               </p>
                               
                               <div class="copyright">
-                                  © 2024 kreditakip.com.tr • Tüm hakları saklıdır
+                                  © 2025 kreditakip.com.tr • Tüm hakları saklıdır
                               </div>
                           </div>
                       </td>
@@ -776,6 +909,7 @@ export async function POST(request: NextRequest) {
     threeDaysLater.setDate(threeDaysLater.getDate() + 3)
 
     let emailsSent = 0
+    let emailsSkipped = 0
     const results = []
 
     // Bildirim tipine göre filtreleme
@@ -828,6 +962,22 @@ export async function POST(request: NextRequest) {
       const amount = payment.total_payment.toLocaleString("tr-TR")
       const dueDate = new Date(payment.due_date).toLocaleDateString("tr-TR")
       const installmentNumber = payment.installment_number
+      const scheduledFor = new Date()
+
+      const alreadySent = await checkEmailAlreadySent(userId, payment.id, type, scheduledFor)
+      if (alreadySent) {
+        results.push({
+          paymentId: payment.id,
+          bankName,
+          amount,
+          dueDate,
+          success: false,
+          skipped: true,
+          reason: "Email already sent today",
+        })
+        emailsSkipped++
+        continue
+      }
 
       try {
         const emailTemplate = createEmailTemplate(
@@ -852,6 +1002,20 @@ export async function POST(request: NextRequest) {
 
         if (response.statusCode !== 202) {
           console.error(`MailerSend error for payment ${payment.id}:`, response)
+
+          await createEmailNotificationRecord(
+            userId,
+            payment.id,
+            payment.credit_id,
+            emailTemplate.subject,
+            `${bankName} bankasından ${installmentNumber}. taksit ödeme hatırlatması`,
+            scheduledFor,
+            undefined,
+            undefined,
+            "failed",
+            `HTTP ${response.statusCode}`,
+          )
+
           results.push({
             paymentId: payment.id,
             bankName,
@@ -861,18 +1025,47 @@ export async function POST(request: NextRequest) {
             error: `HTTP ${response.statusCode}`,
           })
         } else {
+          const emailSentAt = new Date()
+          const messageId = response.headers?.["x-message-id"] || "unknown"
+
+          await createEmailNotificationRecord(
+            userId,
+            payment.id,
+            payment.credit_id,
+            emailTemplate.subject,
+            `${bankName} bankasından ${installmentNumber}. taksit ödeme hatırlatması`,
+            scheduledFor,
+            emailSentAt,
+            messageId,
+            "sent",
+          )
+
           results.push({
             paymentId: payment.id,
             bankName,
             amount,
             dueDate,
             success: true,
-            messageId: response.headers?.["x-message-id"] || "unknown",
+            messageId,
           })
           emailsSent++
         }
       } catch (error) {
         console.error(`Error sending email for payment ${payment.id}:`, error)
+
+        await createEmailNotificationRecord(
+          userId,
+          payment.id,
+          payment.credit_id,
+          `Ödeme Hatırlatması - ${type}`,
+          `${bankName} bankasından ${installmentNumber}. taksit ödeme hatırlatması`,
+          scheduledFor,
+          undefined,
+          undefined,
+          "failed",
+          error.message,
+        )
+
         results.push({
           paymentId: payment.id,
           bankName,
@@ -886,8 +1079,9 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json({
       success: true,
-      message: `${emailsSent} e-posta gönderildi`,
+      message: `${emailsSent} e-posta gönderildi, ${emailsSkipped} e-posta atlandı (zaten gönderilmiş)`,
       emailsSent,
+      emailsSkipped,
       totalPayments: paymentsToNotify.length,
       results,
     })

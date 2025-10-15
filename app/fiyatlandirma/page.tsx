@@ -4,8 +4,8 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import Header from "@/components/layout/header"
-import Footer from "@/components/layout/footer"
-import { CheckCircle, X, Star, Zap, Crown, Rocket, Headphones, ArrowRight } from "lucide-react"
+import Footer from "@/components/footer"
+import { CheckCircle, X, Star, Crown, Sparkles, ArrowRight } from "lucide-react"
 import { useRouter } from "next/navigation"
 
 export default function PricingPage() {
@@ -13,291 +13,302 @@ export default function PricingPage() {
 
   const plans = [
     {
-      name: "Başlangıç",
+      name: "Ücretsiz",
       price: "0",
-      period: "Ücretsiz",
-      description: "Bireysel kullanıcılar için temel özellikler",
-      features: ["5 PDF analizi/ay", "Temel raporlama", "E-posta desteği", "Mobil uygulama", "Temel güvenlik"],
+      period: "₺",
+      description: "Temel özelliklerle başlayın",
+      features: [
+        "1 adet OCR analizi",
+        "Temel kredi takibi",
+        "Ödeme hatırlatıcıları",
+        "Mobil uygulama erişimi",
+        "E-posta bildirimleri",
+      ],
       notIncluded: [
-        "AI destekli öneriler",
+        "Risk analizi",
+        "Sınırsız OCR analizi",
         "Gelişmiş raporlama",
-        "API erişimi",
+        "Refinansman önerileri",
+        "Reklamsız deneyim",
         "Öncelikli destek",
-        "Özel entegrasyonlar",
       ],
       popular: false,
       cta: "Ücretsiz Başla",
       color: "from-gray-500 to-gray-600",
+      note: "Reklamlar gösterilir",
     },
     {
-      name: "Profesyonel",
-      price: "299",
-      period: "/ay",
-      description: "Küçük işletmeler ve profesyoneller için",
+      name: "Premium",
+      price: "199",
+      period: "₺/ay",
+      description: "Tüm özelliklere sınırsız erişim",
       features: [
-        "Sınırsız PDF analizi",
-        "AI destekli öneriler",
-        "Gelişmiş raporlama",
-        "Öncelikli e-posta desteği",
+        "Sınırsız OCR analizi",
+        "Detaylı risk analizi",
+        "Gelişmiş finansal raporlar",
+        "Refinansman önerileri",
+        "Reklamsız deneyim",
+        "Öncelikli destek",
+        "Tüm gelecek özellikler",
         "API erişimi",
-        "Özel dashboard",
         "Excel/PDF export",
-        "Mobil uygulama",
-      ],
-      notIncluded: ["Telefon desteği", "Özel entegrasyonlar", "Dedicated hesap yöneticisi"],
-      popular: true,
-      cta: "14 Gün Ücretsiz Dene",
-      color: "from-emerald-500 to-teal-500",
-    },
-    {
-      name: "Kurumsal",
-      price: "999",
-      period: "/ay",
-      description: "Büyük şirketler için gelişmiş çözümler",
-      features: [
-        "Sınırsız her şey",
-        "Gelişmiş AI analizi",
-        "Özel raporlama",
-        "7/24 telefon desteği",
-        "Özel entegrasyonlar",
-        "Dedicated hesap yöneticisi",
-        "SLA garantisi",
-        "Özel eğitim",
-        "Beyaz etiket çözümü",
-        "On-premise kurulum",
+        "Özel dashboard",
       ],
       notIncluded: [],
-      popular: false,
-      cta: "Satış Ekibiyle Görüş",
-      color: "from-purple-500 to-pink-500",
+      popular: true,
+      cta: "Premium'a Geç",
+      color: "from-emerald-500 to-teal-500",
+      note: "En popüler seçim",
     },
   ]
 
   const faqs = [
     {
-      question: "Ücretsiz deneme süresi boyunca kredi kartı bilgisi gerekli mi?",
+      question: "Ücretsiz planda kaç analiz yapabilirim?",
       answer:
-        "Hayır, 14 günlük ücretsiz deneme için kredi kartı bilgisi gerekmez. Deneme süresi sonunda otomatik ücretlendirme yapılmaz.",
+        "Ücretsiz planda ayda 1 adet OCR destekli kredi dökümü analizi yapabilirsiniz. Daha fazla analiz için Premium plana geçebilirsiniz.",
     },
     {
-      question: "Plan değişikliği nasıl yapılır?",
+      question: "Premium üyelik nasıl iptal edilir?",
       answer:
-        "Hesap ayarlarınızdan istediğiniz zaman plan değişikliği yapabilirsiniz. Yükseltme anında aktif olur, düşürme ise bir sonraki fatura döneminde geçerli olur.",
+        "Hesap ayarlarınızdan istediğiniz zaman Premium üyeliğinizi iptal edebilirsiniz. İptal sonrası mevcut dönem sonuna kadar Premium özelliklerden yararlanmaya devam edersiniz.",
     },
     {
-      question: "Para iade garantisi var mı?",
+      question: "Risk analizi nedir?",
       answer:
-        "Evet, tüm ücretli planlar için 30 gün para iade garantisi sunuyoruz. Memnun kalmazsanız tam iade alabilirsiniz.",
+        "Risk analizi, finansal durumunuzu detaylı olarak değerlendiren ve borç/gelir oranınızı, ödeme kapasitesini analiz eden Premium özelliğimizdir.",
     },
     {
-      question: "Kurumsal planlar için özel fiyatlandırma var mı?",
+      question: "Ödeme güvenli mi?",
       answer:
-        "Evet, 100+ kullanıcı için özel fiyatlandırma seçeneklerimiz bulunmaktadır. Satış ekibimizle iletişime geçin.",
+        "Evet, tüm ödemeler iyzico güvencesi altında 256-bit SSL şifreleme ile korunur. Kredi kartı bilgileriniz bizimle paylaşılmaz.",
     },
     {
-      question: "Verilerim güvende mi?",
+      question: "Ücretsiz kullanıcılar hangi reklamları görür?",
       answer:
-        "Evet, tüm verileriniz 256-bit SSL şifreleme ile korunur. SOC 2 Type II sertifikalıyız ve KVKK uyumlu çalışırız.",
+        "Ücretsiz kullanıcılar uygulama içinde belirli aralıklarla finansal ürün ve hizmet reklamları görürler. Premium üyeler reklamsız deneyim yaşar.",
     },
     {
-      question: "API kullanımı nasıl faturalandırılır?",
+      question: "Premium üyelik otomatik yenilenir mi?",
       answer:
-        "API kullanımı planınıza dahildir. Profesyonel planda aylık 10,000 çağrı, Kurumsal planda sınırsız kullanım mevcuttur.",
+        "Evet, Premium üyelik aylık olarak otomatik yenilenir. İstediğiniz zaman iptal edebilir veya yenilemeyi durdurabilirsiniz.",
     },
   ]
 
   return (
-    <div className="min-h-screen bg-gray-900 text-white">
-      <Header />
+    <div className="min-h-screen w-full bg-[#151515] text-white font-sans">
+      <div className="absolute inset-0 -z-0">
+        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[80vw] h-[80vh] bg-emerald-500/20 blur-[150px] rounded-full" />
+      </div>
 
-      {/* Hero Section */}
-      <section className="pt-24 pb-16 relative overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900" />
-        <div className="container mx-auto px-4 relative z-10">
-          <div className="text-center max-w-4xl mx-auto">
-            <Badge className="mb-6 bg-emerald-500/20 text-emerald-400 border-emerald-500/30 text-lg px-6 py-2">
-              <Crown className="mr-2 h-5 w-5" />
-              Şeffaf Fiyatlandırma
-            </Badge>
-            <h1 className="text-4xl md:text-6xl font-bold mb-6">
-              İhtiyacınıza Uygun{" "}
-              <span className="bg-gradient-to-r from-emerald-400 to-teal-400 bg-clip-text text-transparent">
-                Planı Seçin
-              </span>
+      <div className="relative z-10">
+        <Header />
+
+        {/* Hero Section */}
+        <section className="pt-24 pb-16 px-4 md:px-8 lg:px-16">
+          <div className="container mx-auto text-center">
+            <div className="inline-flex items-center gap-2 bg-black/20 border border-white/10 rounded-full px-6 py-3 backdrop-blur-xl mb-8">
+              <div className="w-2 h-2 bg-emerald-400 rounded-full animate-pulse" />
+              <span className="text-white/80 text-sm font-medium">Basit ve Şeffaf Fiyatlandırma</span>
+            </div>
+            <h1 className="text-5xl md:text-6xl font-bold mb-6 leading-tight">
+              İhtiyacınıza Uygun <span className="text-emerald-400">Planı Seçin</span>
             </h1>
-            <p className="text-xl text-gray-300 mb-8 max-w-2xl mx-auto">
-              14 gün ücretsiz deneme ile başlayın. Kredi kartı gerekmez. İstediğiniz zaman iptal edebilirsiniz.
+            <p className="text-xl text-white/70 max-w-3xl mx-auto mb-8 leading-relaxed">
+              Ücretsiz başlayın, ihtiyacınız olduğunda Premium'a geçin. Kredi kartı gerekmez, istediğiniz zaman iptal
+              edebilirsiniz.
             </p>
           </div>
-        </div>
-      </section>
+        </section>
 
-      {/* Pricing Plans */}
-      <section className="py-16">
-        <div className="container mx-auto px-4">
-          <div className="grid md:grid-cols-3 gap-8 max-w-7xl mx-auto">
-            {plans.map((plan, index) => (
-              <Card
-                key={index}
-                className={`relative bg-gray-800/50 border-gray-700 hover:border-emerald-500/50 transition-all duration-300 ${
-                  plan.popular ? "ring-2 ring-emerald-500/50 scale-105" : ""
-                }`}
-              >
-                {plan.popular && (
-                  <div className="absolute -top-4 left-1/2 transform -translate-x-1/2">
-                    <Badge className="bg-gradient-to-r from-emerald-500 to-teal-500 text-white px-6 py-2">
-                      <Star className="mr-2 h-4 w-4" />
-                      En Popüler
-                    </Badge>
-                  </div>
-                )}
+        {/* Pricing Plans */}
+        <section className="py-16 px-4 md:px-8 lg:px-16">
+          <div className="container mx-auto">
+            <div className="grid md:grid-cols-2 gap-8 max-w-5xl mx-auto">
+              {plans.map((plan, index) => (
+                <Card
+                  key={index}
+                  className={`relative bg-black/20 border-white/10 backdrop-blur-xl hover:border-emerald-500/30 transition-all duration-500 ${
+                    plan.popular ? "ring-2 ring-emerald-500/50 scale-105 md:scale-110" : ""
+                  }`}
+                >
+                  {plan.popular && (
+                    <div className="absolute -top-4 left-1/2 transform -translate-x-1/2">
+                      <Badge className="bg-gradient-to-r from-emerald-500 to-teal-500 text-white px-6 py-2 border-0">
+                        <Star className="mr-2 h-4 w-4" />
+                        {plan.note}
+                      </Badge>
+                    </div>
+                  )}
 
-                <CardHeader className="text-center pb-8">
-                  <div
-                    className={`w-16 h-16 mx-auto mb-4 bg-gradient-to-r ${plan.color} rounded-2xl flex items-center justify-center`}
-                  >
-                    {index === 0 && <Zap className="h-8 w-8 text-white" />}
-                    {index === 1 && <Rocket className="h-8 w-8 text-white" />}
-                    {index === 2 && <Crown className="h-8 w-8 text-white" />}
-                  </div>
-                  <CardTitle className="text-2xl text-white mb-2">{plan.name}</CardTitle>
-                  <CardDescription className="text-gray-400 mb-6">{plan.description}</CardDescription>
-                  <div className="mb-6">
-                    <span className="text-4xl font-bold text-white">₺{plan.price}</span>
-                    <span className="text-gray-400">{plan.period}</span>
-                  </div>
-                </CardHeader>
+                  <CardHeader className="text-center pb-8 pt-12">
+                    <div
+                      className={`w-20 h-20 mx-auto mb-6 bg-gradient-to-r ${plan.color} rounded-2xl flex items-center justify-center`}
+                    >
+                      {index === 0 ? (
+                        <Sparkles className="h-10 w-10 text-white" />
+                      ) : (
+                        <Crown className="h-10 w-10 text-white" />
+                      )}
+                    </div>
+                    <CardTitle className="text-3xl text-white mb-3">{plan.name}</CardTitle>
+                    <CardDescription className="text-white/60 text-lg mb-6">{plan.description}</CardDescription>
+                    <div className="mb-6">
+                      <span className="text-5xl font-bold text-white">{plan.price}</span>
+                      <span className="text-xl text-white/70">{plan.period}</span>
+                    </div>
+                    {!plan.popular && plan.note && (
+                      <Badge variant="outline" className="border-white/20 text-white/60">
+                        {plan.note}
+                      </Badge>
+                    )}
+                  </CardHeader>
 
-                <CardContent className="space-y-6">
-                  <div className="space-y-3">
-                    {plan.features.map((feature, featureIndex) => (
-                      <div key={featureIndex} className="flex items-center gap-3">
-                        <CheckCircle className="h-5 w-5 text-emerald-400 flex-shrink-0" />
-                        <span className="text-gray-300">{feature}</span>
-                      </div>
-                    ))}
-                    {plan.notIncluded.map((feature, featureIndex) => (
-                      <div key={featureIndex} className="flex items-center gap-3 opacity-50">
-                        <X className="h-5 w-5 text-gray-500 flex-shrink-0" />
-                        <span className="text-gray-500">{feature}</span>
-                      </div>
-                    ))}
-                  </div>
+                  <CardContent className="space-y-6 px-8 pb-8">
+                    <div className="space-y-4">
+                      {plan.features.map((feature, featureIndex) => (
+                        <div key={featureIndex} className="flex items-start gap-3">
+                          <CheckCircle className="h-5 w-5 text-emerald-400 flex-shrink-0 mt-0.5" />
+                          <span className="text-white/80">{feature}</span>
+                        </div>
+                      ))}
+                      {plan.notIncluded.map((feature, featureIndex) => (
+                        <div key={featureIndex} className="flex items-start gap-3 opacity-40">
+                          <X className="h-5 w-5 text-white/40 flex-shrink-0 mt-0.5" />
+                          <span className="text-white/40">{feature}</span>
+                        </div>
+                      ))}
+                    </div>
 
-                  <Button
-                    className={`w-full ${
-                      plan.popular
-                        ? "bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600"
-                        : "bg-gray-700 hover:bg-gray-600"
-                    } text-white`}
-                    onClick={() => router.push("/giris")}
-                  >
-                    {plan.cta}
-                    <ArrowRight className="ml-2 h-4 w-4" />
-                  </Button>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* Features Comparison */}
-      <section className="py-16 bg-gray-800/30">
-        <div className="container mx-auto px-4">
-          <div className="text-center mb-12">
-            <h2 className="text-3xl font-bold text-white mb-4">Özellik Karşılaştırması</h2>
-            <p className="text-gray-300">Hangi planın size uygun olduğunu görün</p>
-          </div>
-
-          <div className="max-w-6xl mx-auto overflow-x-auto">
-            <table className="w-full border-collapse">
-              <thead>
-                <tr className="border-b border-gray-700">
-                  <th className="text-left py-4 px-6 text-white font-semibold">Özellikler</th>
-                  <th className="text-center py-4 px-6 text-white font-semibold">Başlangıç</th>
-                  <th className="text-center py-4 px-6 text-white font-semibold">Profesyonel</th>
-                  <th className="text-center py-4 px-6 text-white font-semibold">Kurumsal</th>
-                </tr>
-              </thead>
-              <tbody className="text-gray-300">
-                {[
-                  ["PDF Analizi", "5/ay", "Sınırsız", "Sınırsız"],
-                  ["AI Destekli Öneriler", "❌", "✅", "✅"],
-                  ["Gelişmiş Raporlama", "❌", "✅", "✅"],
-                  ["API Erişimi", "❌", "✅", "✅"],
-                  ["Telefon Desteği", "❌", "❌", "✅"],
-                  ["Özel Entegrasyonlar", "❌", "❌", "✅"],
-                  ["SLA Garantisi", "❌", "❌", "✅"],
-                ].map((row, index) => (
-                  <tr key={index} className="border-b border-gray-800">
-                    <td className="py-4 px-6 font-medium">{row[0]}</td>
-                    <td className="py-4 px-6 text-center">{row[1]}</td>
-                    <td className="py-4 px-6 text-center">{row[2]}</td>
-                    <td className="py-4 px-6 text-center">{row[3]}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </div>
-      </section>
-
-      {/* FAQ Section */}
-      <section className="py-16">
-        <div className="container mx-auto px-4">
-          <div className="text-center mb-12">
-            <h2 className="text-3xl font-bold text-white mb-4">Sıkça Sorulan Sorular</h2>
-            <p className="text-gray-300">Merak ettiğiniz her şey burada</p>
-          </div>
-
-          <div className="max-w-4xl mx-auto space-y-6">
-            {faqs.map((faq, index) => (
-              <Card key={index} className="bg-gray-800/50 border-gray-700">
-                <CardHeader>
-                  <CardTitle className="text-white text-lg">{faq.question}</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <p className="text-gray-300">{faq.answer}</p>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* CTA Section */}
-      <section className="py-16 bg-gradient-to-r from-emerald-600/20 to-teal-600/20">
-        <div className="container mx-auto px-4 text-center">
-          <div className="max-w-3xl mx-auto">
-            <h2 className="text-3xl md:text-4xl font-bold text-white mb-6">Hala Karar Veremediniz Mi?</h2>
-            <p className="text-xl text-gray-300 mb-8">
-              Uzmanlarımızla konuşun ve size en uygun planı birlikte belirleyin
-            </p>
-            <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <Button
-                size="lg"
-                className="bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600 text-white"
-                onClick={() => router.push("/giris")}
-              >
-                <Rocket className="mr-2 h-5 w-5" />
-                Ücretsiz Deneme Başlat
-              </Button>
-              <Button
-                size="lg"
-                variant="outline"
-                className="border-gray-600 text-gray-300 hover:bg-gray-800 hover:border-emerald-500"
-                onClick={() => router.push("/iletisim")}
-              >
-                <Headphones className="mr-2 h-5 w-5" />
-                Satış Ekibiyle Görüş
-              </Button>
+                    <Button
+                      className={`w-full ${
+                        plan.popular
+                          ? "bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600"
+                          : "bg-white/10 hover:bg-white/20 border border-white/20"
+                      } text-white text-lg py-6`}
+                      onClick={() => router.push("/giris")}
+                    >
+                      {plan.cta}
+                      <ArrowRight className="ml-2 h-5 w-5" />
+                    </Button>
+                  </CardContent>
+                </Card>
+              ))}
             </div>
           </div>
-        </div>
-      </section>
+        </section>
 
-      <Footer />
+        {/* Features Comparison */}
+        <section className="py-20 px-4 md:px-8 lg:px-16 relative overflow-hidden">
+          <div className="absolute inset-0">
+            <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-emerald-500/10 rounded-full blur-3xl" />
+            <div className="absolute bottom-1/4 right-1/4 w-80 h-80 bg-teal-500/10 rounded-full blur-3xl" />
+          </div>
+
+          <div className="container mx-auto relative z-10">
+            <div className="text-center mb-12">
+              <h2 className="text-4xl md:text-5xl font-bold text-white mb-4">Özellik Karşılaştırması</h2>
+              <p className="text-xl text-white/70">Hangi planın size uygun olduğunu görün</p>
+            </div>
+
+            <div className="max-w-4xl mx-auto bg-black/20 border border-white/10 rounded-3xl backdrop-blur-xl overflow-hidden">
+              <div className="overflow-x-auto">
+                <table className="w-full">
+                  <thead>
+                    <tr className="border-b border-white/10">
+                      <th className="text-left py-6 px-8 text-white font-semibold text-lg">Özellikler</th>
+                      <th className="text-center py-6 px-8 text-white font-semibold text-lg">Ücretsiz</th>
+                      <th className="text-center py-6 px-8 text-white font-semibold text-lg">Premium</th>
+                    </tr>
+                  </thead>
+                  <tbody className="text-white/80">
+                    {[
+                      ["OCR Analizi", "1/ay", "Sınırsız"],
+                      ["Risk Analizi", "❌", "✅"],
+                      ["Gelişmiş Raporlar", "❌", "✅"],
+                      ["Refinansman Önerileri", "❌", "✅"],
+                      ["Reklamsız Deneyim", "❌", "✅"],
+                      ["Öncelikli Destek", "❌", "✅"],
+                      ["API Erişimi", "❌", "✅"],
+                      ["Excel/PDF Export", "❌", "✅"],
+                    ].map((row, index) => (
+                      <tr key={index} className="border-b border-white/5 hover:bg-white/5 transition-colors">
+                        <td className="py-5 px-8 font-medium">{row[0]}</td>
+                        <td className="py-5 px-8 text-center">{row[1]}</td>
+                        <td className="py-5 px-8 text-center text-emerald-400 font-medium">{row[2]}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* FAQ Section */}
+        <section className="py-20 px-4 md:px-8 lg:px-16">
+          <div className="container mx-auto">
+            <div className="text-center mb-12">
+              <h2 className="text-4xl md:text-5xl font-bold text-white mb-4">Sıkça Sorulan Sorular</h2>
+              <p className="text-xl text-white/70">Merak ettiğiniz her şey burada</p>
+            </div>
+
+            <div className="max-w-4xl mx-auto space-y-6">
+              {faqs.map((faq, index) => (
+                <Card
+                  key={index}
+                  className="bg-black/20 border-white/10 backdrop-blur-xl hover:border-emerald-500/30 transition-all"
+                >
+                  <CardHeader>
+                    <CardTitle className="text-white text-lg">{faq.question}</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <p className="text-white/70 leading-relaxed">{faq.answer}</p>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        {/* CTA Section */}
+        <section className="py-20 px-4 md:px-8 lg:px-16">
+          <div className="container mx-auto">
+            <div className="relative bg-black/20 border border-white/10 rounded-3xl p-12 md:p-16 text-center backdrop-blur-xl overflow-hidden">
+              <div className="absolute -top-10 -left-10 w-40 h-40 bg-emerald-500/20 rounded-full blur-2xl" />
+              <div className="absolute -bottom-10 -right-10 w-40 h-40 bg-teal-500/20 rounded-full blur-2xl" />
+              <div className="relative z-10">
+                <h2 className="text-4xl md:text-5xl font-bold text-white mb-6">
+                  Hemen <span className="text-emerald-400">Başlayın</span>
+                </h2>
+                <p className="text-xl text-white/80 mb-8 max-w-2xl mx-auto">
+                  Ücretsiz hesap oluşturun ve kredi yönetiminizi bir sonraki seviyeye taşıyın
+                </p>
+                <div className="flex flex-col sm:flex-row gap-4 justify-center">
+                  <Button
+                    size="lg"
+                    className="bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600 text-white px-8 py-6 text-lg"
+                    onClick={() => router.push("/giris")}
+                  >
+                    <Crown className="mr-2 h-5 w-5" />
+                    Ücretsiz Başla
+                  </Button>
+                  <Button
+                    size="lg"
+                    variant="outline"
+                    className="bg-transparent border-white/20 text-white hover:bg-white/10 hover:border-white/30"
+                    onClick={() => router.push("/iletisim")}
+                  >
+                    Daha Fazla Bilgi
+                  </Button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <Footer />
+      </div>
     </div>
   )
 }

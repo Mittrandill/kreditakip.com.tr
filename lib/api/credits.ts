@@ -2,10 +2,6 @@ import { supabase } from "@/lib/supabase"
 import type { Credit } from "@/lib/types"
 import { createPaymentPlansForCredit } from "./payment-plans"
 
-/* ------------------------------------------------------------------ */
-/*  CRUD UTILS                                                        */
-/* ------------------------------------------------------------------ */
-
 export async function getCredits(userId: string) {
   if (!userId) throw new Error("User ID is required")
 
@@ -32,7 +28,6 @@ export async function getCredits(userId: string) {
     .order("created_at", { ascending: false })
 
   if (error) {
-    console.error("Error fetching credits:", error)
     throw error
   }
 
@@ -65,7 +60,6 @@ export async function getCreditById(creditId: string, userId: string) {
     .single()
 
   if (error) {
-    console.error("Error fetching credit:", error)
     throw error
   }
 
@@ -76,7 +70,6 @@ export async function createCredit(creditData: Omit<Credit, "id" | "created_at" 
   const { data, error } = await supabase.from("credits").insert(creditData).select().single()
 
   if (error) {
-    console.error("Error creating credit:", error)
     throw error
   }
 
@@ -91,7 +84,6 @@ export async function createCreditWithPaymentPlans(
   const { data: credit, error } = await supabase.from("credits").insert(creditData).select().single()
 
   if (error) {
-    console.error("Error creating credit:", error)
     throw error
   }
 
@@ -107,7 +99,6 @@ export async function createCreditWithPaymentPlans(
 
       await createPaymentPlansForCredit(credit.id, paymentPlansData)
     } catch (paymentPlanError) {
-      console.error("Error creating payment plans for credit:", paymentPlanError)
       // Don't throw here, let the credit creation succeed
     }
   }
@@ -124,7 +115,6 @@ export async function updateCredit(creditId: string, updates: Partial<Credit>) {
     .single()
 
   if (error) {
-    console.error("Error updating credit:", error)
     throw error
   }
 
@@ -135,7 +125,6 @@ export async function deleteCredit(creditId: string) {
   const { error } = await supabase.from("credits").delete().eq("id", creditId)
 
   if (error) {
-    console.error("Error deleting credit:", error)
     throw error
   }
 }
@@ -144,7 +133,6 @@ export async function getBanks() {
   const { data, error } = await supabase.from("banks").select("*").order("name")
 
   if (error) {
-    console.error("Error fetching banks:", error)
     throw error
   }
 
@@ -155,19 +143,13 @@ export async function getCreditTypes() {
   const { data, error } = await supabase.from("credit_types").select("*").order("name")
 
   if (error) {
-    console.error("Error fetching credit types:", error)
     throw error
   }
 
   return data
 }
 
-/* ------------- helper alias (legacy calls expect this) ------------ */
 export { getCredits as getUserCredits }
-
-/* ------------------------------------------------------------------ */
-/*  STATUS SYNC UTILITY (new)                                          */
-/* ------------------------------------------------------------------ */
 
 export async function updateCreditStatus(creditId: string) {
   // Pull every payment plan for the credit
