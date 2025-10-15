@@ -4,6 +4,7 @@ import { SidebarProvider, Sidebar, SidebarContent } from "@/components/ui/sideba
 import AppSidebar from "@/components/app-sidebar"
 import Header from "@/components/header"
 import FloatingActionMenu from "@/components/floating-action-menu"
+import { FloatingUpgradeBanner } from "@/components/floating-upgrade-banner"
 
 export default function UygulamaLayout({
   children,
@@ -29,6 +30,8 @@ export default function UygulamaLayout({
 
           {/* Floating Action Menu */}
           <FloatingActionMenu />
+
+          <FloatingUpgradeBanner />
         </div>
       </SidebarProvider>
     </AuthGuard>

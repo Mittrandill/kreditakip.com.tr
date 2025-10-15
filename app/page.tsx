@@ -82,7 +82,7 @@ export default function LandingPage() {
                     <Button
                       variant="outline"
                       size="lg"
-                      className="border-white/20 text-white hover:bg-white/10 hover:border-white/30 bg-transparent"
+                      className="bg-transparent border-white/20 text-white hover:bg-white/10 hover:border-transparent hover:text-white"
                     >
                       Demo İzle
                     </Button>
@@ -785,7 +785,7 @@ export default function LandingPage() {
                   <Button
                     variant="outline"
                     size="lg"
-                    className="border-white/20 text-white hover:bg-white/10 hover:border-white/30 bg-transparent"
+                    className="bg-transparent border-white/20 text-white hover:bg-white/10 hover:border-transparent hover:text-white"
                   >
                     Daha Fazla Bilgi
                   </Button>

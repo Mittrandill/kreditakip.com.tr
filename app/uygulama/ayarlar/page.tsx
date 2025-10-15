@@ -50,12 +50,15 @@ import { useToast } from "@/hooks/use-toast"
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 import { supabase } from "@/lib/supabase"
 import { useTheme } from "next-themes"
+import { useSubscription } from "@/hooks/use-subscription" // Import useSubscription hook
 
 export default function AyarlarPage() {
   const { user, profile: initialProfile, loading: authLoading } = useAuth()
   const { toast } = useToast()
   const router = useRouter()
   const { theme, setTheme } = useTheme()
+
+  const { subscription, isPremium, loading: subscriptionLoading } = useSubscription()
 
   const [profileData, setProfileData] = useState<Partial<Profile>>({})
   const [loadingProfile, setLoadingProfile] = useState(true)
@@ -375,7 +378,7 @@ export default function AyarlarPage() {
       console.error("Avatar upload error:", error)
       toast({
         title: "Hata",
-        description: error.message || "Fotoğraf yüklenirken bir hata oluştu.",
+        description: error.message || "Fotoğraf yüklenırken bir hata oluştu.",
         variant: "destructive",
       })
     } finally {
@@ -500,7 +503,7 @@ export default function AyarlarPage() {
     return "KT"
   }
 
-  if (authLoading || loadingProfile) {
+  if (authLoading || loadingProfile || subscriptionLoading) {
     return (
       <div className="flex flex-col gap-4 md:gap-6 items-center justify-center min-h-[calc(100vh-150px)]">
         <Loader2 className="h-12 w-12 animate-spin text-emerald-600" />

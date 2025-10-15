@@ -21,6 +21,8 @@ import {
   Search,
 } from "lucide-react"
 import { useAuth } from "@/hooks/use-auth"
+import { useSubscription } from "@/hooks/use-subscription" // Import subscription hook
+import { useRouter } from "next/navigation" // Import router for redirect
 import { getAllPayments } from "@/lib/api/payments"
 import { getUserCredits } from "@/lib/api/credits"
 import { formatCurrency, formatDate } from "@/lib/format"
@@ -1100,29 +1102,29 @@ function ReminderSettings({ payments }: { payments: PaymentWithCredit[] }) {
   const [loading, setLoading] = useState(true)
   const [updating, setUpdating] = useState<string | null>(null)
 
+  // Load preferences only if user is available, and this call is outside the return statement.
   useEffect(() => {
-    if (user) {
-      loadPreferences()
+    const loadUserPreferences = async () => {
+      if (user) {
+        try {
+          setLoading(true)
+          const { getNotificationPreferences } = await import("@/lib/api/notification-preferences")
+          const prefs = await getNotificationPreferences(user!.id)
+          setPreferences(prefs)
+        } catch (error) {
+          console.error("Error loading preferences:", error)
+          toast({
+            title: "Hata",
+            description: "Bildirim tercihleri yüklenemedi",
+            variant: "destructive",
+          })
+        } finally {
+          setLoading(false)
+        }
+      }
     }
-  }, [user])
-
-  const loadPreferences = async () => {
-    try {
-      setLoading(true)
-      const { getNotificationPreferences } = await import("@/lib/api/notification-preferences")
-      const prefs = await getNotificationPreferences(user!.id)
-      setPreferences(prefs)
-    } catch (error) {
-      console.error("Error loading preferences:", error)
-      toast({
-        title: "Hata",
-        description: "Bildirim tercihleri yüklenemedi",
-        variant: "destructive",
-      })
-    } finally {
-      setLoading(false)
-    }
-  }
+    loadUserPreferences()
+  }, [user, toast])
 
   const togglePreference = async (field: string, currentValue: boolean) => {
     if (!preferences) return
@@ -1438,6 +1440,8 @@ function ReminderSettings({ payments }: { payments: PaymentWithCredit[] }) {
 
 export default function OdemePlaniPage() {
   const { user } = useAuth()
+  const { isPremium, loading: subscriptionLoading } = useSubscription() // Check premium status
+  const router = useRouter() // Router for redirect
   const [allPayments, setAllPayments] = useState<PaymentWithCredit[]>([])
   const [credits, setCredits] = useState<Credit[]>([])
   const [loading, setLoading] = useState(true)
@@ -1445,25 +1449,51 @@ export default function OdemePlaniPage() {
   const { toast } = useToast()
 
   useEffect(() => {
-    if (user) {
-      loadData()
+    if (!subscriptionLoading && !isPremium) {
+      router.push("/uygulama/premium")
     }
-  }, [user])
+  }, [isPremium, subscriptionLoading, router])
 
-  const loadData = async () => {
-    try {
-      setLoading(true)
-      const [paymentsData, creditsData] = await Promise.all([
-        getAllPayments(user!.id, 12, 12), // 12 ay geçmiş + 12 ay gelecek
-        getUserCredits(user!.id),
-      ])
-      setAllPayments(paymentsData || [])
-      setCredits(creditsData || [])
-    } catch (error) {
-      console.error("Error loading payment data:", error)
-    } finally {
-      setLoading(false)
+  useEffect(() => {
+    const loadUserData = async () => {
+      if (user) {
+        try {
+          setLoading(true)
+          const [paymentsData, creditsData] = await Promise.all([
+            getAllPayments(user.id, 12, 12), // 12 ay geçmiş + 12 ay gelecek
+            getUserCredits(user.id),
+          ])
+          setAllPayments(paymentsData || [])
+          setCredits(creditsData || [])
+        } catch (error) {
+          console.error("Error loading payment data:", error)
+          // Optionally show a toast for data loading error
+          toast({
+            title: "Veri Yükleme Hatası",
+            description: "Ödeme planı ve kredi bilgileri yüklenemedi.",
+            variant: "destructive",
+          })
+        } finally {
+          setLoading(false)
+        }
+      }
     }
+    loadUserData()
+  }, [user, toast])
+
+  if (subscriptionLoading) {
+    return (
+      <div className="flex items-center justify-center min-h-[400px]">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-orange-600 mx-auto mb-4"></div>
+          <p className="text-gray-600 dark:text-gray-400">Yükleniyor...</p>
+        </div>
+      </div>
+    )
+  }
+
+  if (!isPremium) {
+    return null
   }
 
   const thisMonthPayments = allPayments.filter((payment) => {
@@ -1525,7 +1555,7 @@ export default function OdemePlaniPage() {
               <Button
                 variant="outline"
                 size="lg"
-                className="bg-white/20 dark:bg-white/15 text-white border-white/30 dark:border-white/20 hover:bg-white/30 dark:hover:bg-white/25 backdrop-blur-sm"
+                className="bg-transparent border-white/20 text-white hover:bg-white/10 hover:border-white/30"
                 onClick={() => {
                   // PDF export functionality
                   const data = allPayments.map((payment) => ({
@@ -1568,7 +1598,7 @@ export default function OdemePlaniPage() {
               <Button
                 variant="outline"
                 size="lg"
-                className="bg-white/20 dark:bg-white/15 text-white border-white/30 dark:border-white/20 hover:bg-white/30 dark:hover:bg-white/25 backdrop-blur-sm"
+                className="bg-transparent border-white/20 text-white hover:bg-white/10 hover:border-white/30"
                 onClick={() => {
                   setSelectedTab("hatirlatici")
                   toast({

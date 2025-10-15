@@ -1,5 +1,6 @@
 import { GoogleGenerativeAI } from "@google/generative-ai"
 import { mapBankName } from "@/lib/utils/bank-mapper"
+import { createServerClient } from "@/lib/supabase/server"
 
 export const maxDuration = 60
 
@@ -190,6 +191,57 @@ export async function POST(request: Request) {
   const startTime = Date.now()
 
   try {
+    const supabase = await createServerClient()
+
+    const {
+      data: { user },
+      error: authError,
+    } = await supabase.auth.getUser()
+
+    if (authError || !user) {
+      return Response.json({ error: "Oturum açmanız gerekiyor" }, { status: 401 })
+    }
+
+    const { data: canUse, error: checkError } = await supabase.rpc("can_use_feature", {
+      p_user_id: user.id,
+      p_feature_type: "ocr_analysis",
+    })
+
+    if (checkError) {
+      console.error("[v0] Feature check error:", checkError)
+      return Response.json({ error: "Özellik kontrolü başarısız oldu" }, { status: 500 })
+    }
+
+    if (!canUse) {
+      const { data: subscription } = await supabase
+        .from("subscriptions")
+        .select("plan_type")
+        .eq("user_id", user.id)
+        .eq("status", "active")
+        .single()
+
+      const { data: usage } = await supabase
+        .from("usage_tracking")
+        .select("used_count, limit_count")
+        .eq("user_id", user.id)
+        .eq("feature_type", "ocr_analysis")
+        .single()
+
+      return Response.json(
+        {
+          error: "Ücretsiz analiz hakkınız doldu",
+          limitExceeded: true,
+          usageInfo: {
+            used: usage?.used_count || 0,
+            limit: usage?.limit_count || 1,
+            planType: subscription?.plan_type || "free",
+          },
+          upgradeMessage: "Premium üyelik ile sınırsız analiz yapabilirsiniz. Sadece 199₺/ay!",
+        },
+        { status: 403 },
+      )
+    }
+
     if (!process.env.GEMINI_API_KEY) {
       return Response.json({ error: "Google API anahtarı bulunamadı" }, { status: 500 })
     }
@@ -208,9 +260,9 @@ export async function POST(request: Request) {
     const model = genAI.getGenerativeModel({
       model: "gemini-1.5-flash",
       generationConfig: {
-        temperature: 0.05, // Daha deterministik sonuçlar için düşürüldü
+        temperature: 0.05,
         topK: 1,
-        topP: 0.05, // Daha odaklı yanıtlar için düşürüldü
+        topP: 0.05,
         maxOutputTokens: 8192,
       },
     })
@@ -472,6 +524,15 @@ export async function POST(request: Request) {
         },
         { status: 422 },
       )
+    }
+
+    const { error: incrementError } = await supabase.rpc("increment_usage", {
+      p_user_id: user.id,
+      p_feature_type: "ocr_analysis",
+    })
+
+    if (incrementError) {
+      console.error("[v0] Usage increment error:", incrementError)
     }
 
     return Response.json({

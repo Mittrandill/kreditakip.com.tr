@@ -451,7 +451,11 @@ export default function SifreEklePage() {
                   </Button>
 
                   <Link href="/uygulama/sifrelerim" className="block">
-                    <Button type="button" variant="outline" className="w-full bg-transparent">
+                    <Button
+                      type="button"
+                      variant="outline"
+                      className="w-full bg-transparent border-white/20 hover:bg-white/10 hover:border-white/30"
+                    >
                       İptal
                     </Button>
                   </Link>
