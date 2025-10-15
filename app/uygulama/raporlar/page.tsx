@@ -569,8 +569,9 @@ export default function RaporlarPage() {
                 }}
                 trigger={
                   <Button
+                    variant="outline"
                     size="lg"
-                    className="bg-white/20 hover:bg-white/30 text-white border-white/30 backdrop-blur-sm h-12 px-6"
+                    className="bg-transparent border-white/20 text-white hover:bg-white/10 hover:border-transparent hover:text-white h-12 px-6"
                   >
                     <Download className="h-5 w-5 mr-2" />
                     PDF Rapor İndir
