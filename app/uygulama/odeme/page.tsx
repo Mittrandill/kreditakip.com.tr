@@ -2,64 +2,67 @@
 
 import type React from "react"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { CreditCard, Lock, ArrowLeft, Shield, Zap, Clock, Building2, CheckCircle2 } from "lucide-react"
 import { useRouter } from "next/navigation"
 import { useToast } from "@/hooks/use-toast"
 import { supabase } from "@/lib/supabase"
 import { useSubscription } from "@/hooks/use-subscription"
 import Link from "next/link"
+import { turkishCities, cityDistricts } from "@/lib/turkish-cities"
 
 export default function PaymentPage() {
   const router = useRouter()
   const { toast } = useToast()
   const { refresh: refreshSubscription } = useSubscription()
   const [isProcessing, setIsProcessing] = useState(false)
-  const [formData, setFormData] = useState({
-    cardHolderName: "",
-    cardNumber: "",
-    expiryDate: "",
-    cvv: "",
-  })
+  const [selectedCityCode, setSelectedCityCode] = useState("")
+  const [availableDistricts, setAvailableDistricts] = useState<string[]>([])
+
   const [billingInfo, setBillingInfo] = useState({
     fullName: "",
     email: "",
     phone: "",
     address: "",
     city: "",
+    district: "",
     zipCode: "",
+    taxId: "", // Added VKN field
   })
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = e.target
-
-    if (name === "cardNumber") {
-      const formatted = value
-        .replace(/\s/g, "")
-        .replace(/(\d{4})/g, "$1 ")
-        .trim()
-      setFormData((prev) => ({ ...prev, [name]: formatted }))
-    } else if (name === "expiryDate") {
-      const formatted = value
-        .replace(/\D/g, "")
-        .replace(/(\d{2})(\d)/, "$1/$2")
-        .slice(0, 5)
-      setFormData((prev) => ({ ...prev, [name]: formatted }))
-    } else if (name === "cvv") {
-      const formatted = value.replace(/\D/g, "").slice(0, 4)
-      setFormData((prev) => ({ ...prev, [name]: formatted }))
+  useEffect(() => {
+    if (selectedCityCode && cityDistricts[selectedCityCode]) {
+      setAvailableDistricts(cityDistricts[selectedCityCode])
     } else {
-      setFormData((prev) => ({ ...prev, [name]: value }))
+      setAvailableDistricts([])
     }
-  }
+  }, [selectedCityCode])
 
   const handleBillingChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target
-    setBillingInfo((prev) => ({ ...prev, [name]: value }))
+    if (name === "taxId") {
+      const formatted = value.replace(/\D/g, "").slice(0, 11)
+      setBillingInfo((prev) => ({ ...prev, [name]: formatted }))
+    } else {
+      setBillingInfo((prev) => ({ ...prev, [name]: value }))
+    }
+  }
+
+  const handleCityChange = (value: string) => {
+    const city = turkishCities.find((c) => c.code === value)
+    if (city) {
+      setSelectedCityCode(value)
+      setBillingInfo((prev) => ({ ...prev, city: city.name, district: "" }))
+    }
+  }
+
+  const handleDistrictChange = (value: string) => {
+    setBillingInfo((prev) => ({ ...prev, district: value }))
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -81,36 +84,54 @@ export default function PaymentPage() {
         throw new Error("Kullanıcı profili bulunamadı")
       }
 
-      const response = await fetch("/api/payment/direct", {
+      console.log("[v0] Saving billing information")
+      const { error: billingError } = await supabase.from("billing_info").upsert(
+        {
+          user_id: user.id,
+          full_name: billingInfo.fullName,
+          email: billingInfo.email,
+          phone: billingInfo.phone,
+          address: billingInfo.address,
+          city: billingInfo.city,
+          district: billingInfo.district,
+          postal_code: billingInfo.zipCode,
+          country: "Turkey",
+          tax_id: billingInfo.taxId || null,
+          updated_at: new Date().toISOString(),
+        },
+        {
+          onConflict: "user_id",
+        },
+      )
+
+      if (billingError) {
+        console.error("[v0] Billing info save error:", billingError)
+        throw new Error("Fatura bilgileri kaydedilemedi")
+      }
+
+      console.log("[v0] Billing information saved successfully")
+
+      const response = await fetch("/api/payment/initialize", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
           userId: user.id,
-          billingInfo,
-          cardDetails: formData,
         }),
       })
 
       const data = await response.json()
 
       if (!response.ok) {
-        throw new Error(data.error || "Ödeme işlemi başarısız")
+        throw new Error(data.error || "Ödeme işlemi başlatılamadı")
       }
 
-      toast({
-        title: "Ödeme Başarılı!",
-        description: "Premium üyeliğiniz aktifleştirildi. Yönlendiriliyorsunuz...",
-      })
-
-      // Refresh subscription data
-      await refreshSubscription()
-
-      // Redirect to premium page after 2 seconds
-      setTimeout(() => {
-        router.push("/uygulama/premium")
-      }, 2000)
+      if (data.paymentPageUrl) {
+        window.location.href = data.paymentPageUrl
+      } else {
+        throw new Error("Ödeme sayfası URL'si alınamadı")
+      }
     } catch (error) {
       console.error("[v0] Payment error:", error)
       toast({
@@ -118,7 +139,6 @@ export default function PaymentPage() {
         description: error instanceof Error ? error.message : "Ödeme işlemi başarısız oldu",
         variant: "destructive",
       })
-    } finally {
       setIsProcessing(false)
     }
   }
@@ -127,7 +147,6 @@ export default function PaymentPage() {
     <div className="space-y-6">
       <Card className="overflow-hidden border-0 shadow-xl rounded-2xl">
         <div className="bg-gradient-to-r from-emerald-600 to-teal-700 p-8 text-white relative">
-          {/* Decorative circles */}
           <div className="absolute top-0 right-0 w-64 h-64 bg-white opacity-5 rounded-full -mt-32 -mr-32"></div>
           <div className="absolute bottom-0 left-0 w-40 h-40 bg-white opacity-5 rounded-full -mb-20 -ml-20"></div>
 
@@ -173,9 +192,7 @@ export default function PaymentPage() {
 
       <form onSubmit={handleSubmit} className="space-y-8">
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          {/* Left Column - Forms (2 columns) */}
           <div className="lg:col-span-2 space-y-6">
-            {/* Fatura Bilgileri */}
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
@@ -227,16 +244,53 @@ export default function PaymentPage() {
                   </div>
 
                   <div className="space-y-2">
-                    <Label htmlFor="city">Şehir *</Label>
+                    <Label htmlFor="taxId">Vergi Kimlik No (Opsiyonel)</Label>
                     <Input
-                      id="city"
-                      name="city"
-                      placeholder="İstanbul"
-                      value={billingInfo.city}
+                      id="taxId"
+                      name="taxId"
+                      placeholder="12345678901"
+                      value={billingInfo.taxId}
                       onChange={handleBillingChange}
-                      required
+                      maxLength={11}
                       disabled={isProcessing}
                     />
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="city">İl *</Label>
+                    <Select value={selectedCityCode} onValueChange={handleCityChange} disabled={isProcessing} required>
+                      <SelectTrigger>
+                        <SelectValue placeholder="İl seçiniz" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {turkishCities.map((city) => (
+                          <SelectItem key={city.code} value={city.code}>
+                            {city.name}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="district">İlçe *</Label>
+                    <Select
+                      value={billingInfo.district}
+                      onValueChange={handleDistrictChange}
+                      disabled={isProcessing || !selectedCityCode || availableDistricts.length === 0}
+                      required
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder={selectedCityCode ? "İlçe seçiniz" : "Önce il seçiniz"} />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {availableDistricts.map((district) => (
+                          <SelectItem key={district} value={district}>
+                            {district}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
                   </div>
 
                   <div className="space-y-2">
@@ -268,7 +322,6 @@ export default function PaymentPage() {
               </CardContent>
             </Card>
 
-            {/* Kart Bilgileri */}
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
@@ -285,8 +338,8 @@ export default function PaymentPage() {
                       id="cardHolderName"
                       name="cardHolderName"
                       placeholder="AKIN KAYA"
-                      value={formData.cardHolderName}
-                      onChange={handleInputChange}
+                      value={billingInfo.cardHolderName}
+                      onChange={handleBillingChange}
                       required
                       disabled={isProcessing}
                       className="uppercase"
@@ -299,8 +352,8 @@ export default function PaymentPage() {
                       id="cardNumber"
                       name="cardNumber"
                       placeholder="1234 5678 9012 3456"
-                      value={formData.cardNumber}
-                      onChange={handleInputChange}
+                      value={billingInfo.cardNumber}
+                      onChange={handleBillingChange}
                       maxLength={19}
                       required
                       disabled={isProcessing}
@@ -314,8 +367,8 @@ export default function PaymentPage() {
                       id="expiryDate"
                       name="expiryDate"
                       placeholder="MM/YY"
-                      value={formData.expiryDate}
-                      onChange={handleInputChange}
+                      value={billingInfo.expiryDate}
+                      onChange={handleBillingChange}
                       maxLength={5}
                       required
                       disabled={isProcessing}
@@ -330,8 +383,8 @@ export default function PaymentPage() {
                       name="cvv"
                       type="password"
                       placeholder="123"
-                      value={formData.cvv}
-                      onChange={handleInputChange}
+                      value={billingInfo.cvv}
+                      onChange={handleBillingChange}
                       maxLength={4}
                       required
                       disabled={isProcessing}
@@ -348,34 +401,7 @@ export default function PaymentPage() {
             </Card>
           </div>
 
-          {/* Right Column - Summary (1 column) */}
           <div className="space-y-6">
-            <Card className="relative overflow-hidden border-0 bg-gradient-to-br from-slate-700 via-slate-800 to-slate-900 text-white shadow-2xl h-56 transform transition-transform hover:scale-105">
-              <div className="absolute top-0 right-0 w-48 h-48 bg-emerald-500/20 rounded-full blur-3xl"></div>
-              <div className="absolute bottom-0 left-0 w-48 h-48 bg-cyan-500/20 rounded-full blur-3xl"></div>
-              <CardContent className="relative p-8 h-full flex flex-col justify-between">
-                <div className="flex items-center justify-between">
-                  <div className="w-12 h-12 bg-gradient-to-br from-amber-400 to-orange-500 rounded-lg shadow-lg"></div>
-                  <CreditCard className="h-10 w-10 text-white/80" />
-                </div>
-                <div className="space-y-4">
-                  <div className="text-2xl font-mono tracking-wider">
-                    {formData.cardNumber || "•••• •••• •••• ••••"}
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <p className="text-xs text-white/60 mb-1">Kart Sahibi</p>
-                      <p className="font-medium">{formData.cardHolderName || "AD SOYAD"}</p>
-                    </div>
-                    <div>
-                      <p className="text-xs text-white/60 mb-1">Son Kullanma</p>
-                      <p className="font-medium">{formData.expiryDate || "MM/YY"}</p>
-                    </div>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-
             <Card className="sticky top-6">
               <CardHeader>
                 <CardTitle>Ödeme Özeti</CardTitle>
@@ -404,12 +430,12 @@ export default function PaymentPage() {
                     {isProcessing ? (
                       <>
                         <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
-                        İşleniyor...
+                        Yönlendiriliyor...
                       </>
                     ) : (
                       <>
                         <Lock className="h-4 w-4 mr-2" />
-                        199₺ Öde ve Aktifleştir
+                        Ödeme Sayfasına Git
                       </>
                     )}
                   </Button>
@@ -423,7 +449,6 @@ export default function PaymentPage() {
               </CardContent>
             </Card>
 
-            {/* Security Features */}
             <Card className="bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-blue-950/20 dark:to-indigo-950/20 border-blue-200 dark:border-blue-800">
               <CardContent className="pt-6 space-y-3">
                 <div className="flex items-start gap-3">
