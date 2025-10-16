@@ -17,13 +17,7 @@ export default function PricingPage() {
       price: "0",
       period: "₺",
       description: "Temel özelliklerle başlayın",
-      features: [
-        "1 adet OCR analizi",
-        "Temel kredi takibi",
-        "Ödeme hatırlatıcıları",
-        "Mobil uygulama erişimi",
-        "E-posta bildirimleri",
-      ],
+      features: ["1 adet OCR analizi", "Temel kredi takibi", "Ödeme hatırlatıcıları"],
       notIncluded: [
         "Risk analizi",
         "Sınırsız OCR analizi",
@@ -299,7 +293,7 @@ export default function PricingPage() {
                   <Button
                     size="lg"
                     variant="outline"
-                    className="bg-transparent border-white/20 text-white hover:bg-white/10 hover:border-white/30"
+                    className="bg-transparent border-white/20 text-white hover:bg-white/10 hover:border-transparent hover:text-white px-8 py-6 text-lg"
                     onClick={() => router.push("/iletisim")}
                   >
                     Daha Fazla Bilgi
