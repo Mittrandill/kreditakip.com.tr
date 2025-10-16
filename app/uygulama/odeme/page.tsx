@@ -7,7 +7,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { CreditCard, Lock, ArrowLeft, Sparkles, Shield, CheckCircle2, Building2, User, Mail, Phone } from "lucide-react"
+import { CreditCard, Lock, Sparkles, Shield, CheckCircle2, Building2, User, Mail, Phone, Wallet } from "lucide-react"
 import { useRouter } from "next/navigation"
 import { useToast } from "@/hooks/use-toast"
 import { supabase } from "@/lib/supabase"
@@ -55,7 +55,6 @@ export default function PaymentPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setIsProcessing(true)
-    console.log("[v0] Starting payment process...")
 
     try {
       const {
@@ -71,8 +70,6 @@ export default function PaymentPage() {
       if (!profile) {
         throw new Error("Kullanıcı profili bulunamadı")
       }
-
-      console.log("[v0] Sending payment request...")
 
       const response = await fetch("/api/payment/process", {
         method: "POST",
@@ -100,8 +97,6 @@ export default function PaymentPage() {
         throw new Error(data.error || "Ödeme işlemi başarısız")
       }
 
-      console.log("[v0] Payment successful!")
-
       await refreshSubscription()
 
       toast({
@@ -111,7 +106,7 @@ export default function PaymentPage() {
 
       router.push("/uygulama/ana-sayfa")
     } catch (error) {
-      console.error("[v0] Payment error:", error)
+      console.error("Payment error:", error)
       toast({
         title: "Ödeme Hatası",
         description: error instanceof Error ? error.message : "Ödeme işlemi başarısız oldu",
@@ -123,18 +118,18 @@ export default function PaymentPage() {
   }
 
   return (
-    <div className="max-w-7xl mx-auto space-y-6 pb-8">
-      <Card className="relative overflow-hidden border-0 bg-gradient-to-br from-emerald-500 via-teal-600 to-cyan-700 dark:from-emerald-600 dark:via-teal-700 dark:to-cyan-800 text-white shadow-2xl">
-        <div className="absolute top-0 right-0 w-96 h-96 bg-white/10 rounded-full blur-3xl"></div>
-        <div className="absolute bottom-0 left-0 w-96 h-96 bg-cyan-500/20 rounded-full blur-3xl"></div>
-        <CardContent className="relative p-8 md:p-12">
-          <div className="flex items-center gap-4 mb-2">
-            <Button variant="ghost" size="icon" onClick={() => router.back()} className="text-white hover:bg-white/20">
-              <ArrowLeft className="h-5 w-5" />
-            </Button>
+    <div className="flex flex-col gap-4 md:gap-6">
+      <Card className="bg-gradient-to-r from-blue-600 to-indigo-700 text-white border-transparent shadow-xl rounded-xl">
+        <CardContent className="p-8">
+          <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
             <div>
-              <h1 className="text-4xl md:text-5xl font-bold">Premium Ödeme</h1>
-              <p className="text-white/90 text-lg md:text-xl mt-3">Güvenli ödeme ile premium üyeliğe geçin</p>
+              <h2 className="text-3xl font-bold mb-2 flex items-center gap-3">
+                <Wallet className="h-8 w-8" />
+                Ödeme
+              </h2>
+              <p className="text-blue-100 text-lg">
+                Güvenli ödeme ile premium üyeliğe geçin ve tüm özelliklerin keyfini çıkarın
+              </p>
             </div>
           </div>
         </CardContent>
