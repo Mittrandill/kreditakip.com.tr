@@ -87,7 +87,7 @@ class IyzicoClient {
   }
 
   private async generateAuthString(randomString: string, uri: string, body: string): Promise<string> {
-    const dataToEncrypt = `${this.config.apiKey}${randomString}${this.config.secretKey}${body}`
+    const dataToEncrypt = randomString + body
 
     // Convert string to Uint8Array
     const encoder = new TextEncoder()
@@ -409,21 +409,18 @@ class IyzicoClient {
         registrationAddress: billingAddress.address,
         city: billingAddress.city,
         country: "Turkey",
-        zipCode: billingAddress.zipCode,
       },
       shippingAddress: {
         contactName: `${userName} ${userSurname}`,
         city: billingAddress.city,
         country: "Turkey",
         address: billingAddress.address,
-        zipCode: billingAddress.zipCode,
       },
       billingAddress: {
         contactName: `${userName} ${userSurname}`,
         city: billingAddress.city,
         country: "Turkey",
         address: billingAddress.address,
-        zipCode: billingAddress.zipCode,
       },
       basketItems: [
         {
