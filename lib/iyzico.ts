@@ -87,7 +87,7 @@ class IyzicoClient {
   }
 
   private async generateAuthString(randomString: string, uri: string, body: string): Promise<string> {
-    const dataToEncrypt = randomString + body
+    const dataToEncrypt = randomString + uri + body
 
     // Convert string to Uint8Array
     const encoder = new TextEncoder()
