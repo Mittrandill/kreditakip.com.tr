@@ -320,7 +320,7 @@ export default function DashboardPage() {
             size: 12,
             family: "Inter, sans-serif",
           },
-          color: (context: any) => (document.documentElement.classList.contains("dark") ? "#e5e7eb" : "#374151"),
+          color: "#ffffff",
           generateLabels: (chart: any) => {
             const data = chart.data
             if (data.labels.length && data.datasets.length) {
@@ -352,12 +352,10 @@ export default function DashboardPage() {
             return `${context.label}: ${formatCurrency(value)} (${percentage}%)`
           },
         },
-        backgroundColor: (context: any) =>
-          document.documentElement.classList.contains("dark") ? "rgba(17, 24, 39, 0.95)" : "rgba(0, 0, 0, 0.8)",
+        backgroundColor: "rgba(0, 0, 0, 0.9)",
         titleColor: "white",
         bodyColor: "white",
-        borderColor: (context: any) =>
-          document.documentElement.classList.contains("dark") ? "rgba(75, 85, 99, 0.3)" : "rgba(255, 255, 255, 0.1)",
+        borderColor: "rgba(255, 255, 255, 0.2)",
         borderWidth: 1,
       },
     },
@@ -614,7 +612,7 @@ export default function DashboardPage() {
               </TableHeader>
               <TableBody>
                 {upcomingPayments.slice(0, 5).map((payment, index) => {
-                  const paymentDate = new Date(payment.payment_date)
+                  const paymentDate = new Date(payment.due_date)
                   const today = new Date()
                   const daysUntil = Math.ceil((paymentDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24))
                   const isUrgent = daysUntil <= 7
@@ -656,7 +654,7 @@ export default function DashboardPage() {
                       </TableCell>
                       <TableCell className="text-gray-600 dark:text-gray-300">{payment.installment_number}</TableCell>
                       <TableCell className="font-semibold text-gray-900 dark:text-gray-100">
-                        {formatCurrency(payment.installment_amount)}
+                        {formatCurrency(payment.total_payment)}
                       </TableCell>
                       <TableCell>
                         <Badge
