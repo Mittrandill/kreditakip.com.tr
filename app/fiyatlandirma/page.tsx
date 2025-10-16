@@ -28,7 +28,7 @@ export default function PricingPage() {
         "Risk analizi",
         "Sınırsız OCR analizi",
         "Gelişmiş raporlama",
-        "Refinansman önerileri",
+        "Şifre yönetimi",
         "Reklamsız deneyim",
         "Öncelikli destek",
       ],
@@ -46,13 +46,11 @@ export default function PricingPage() {
         "Sınırsız OCR analizi",
         "Detaylı risk analizi",
         "Gelişmiş finansal raporlar",
-        "Refinansman önerileri",
+        "PDF rapor indirme",
+        "Bankacılık şifre yönetimi",
         "Reklamsız deneyim",
         "Öncelikli destek",
         "Tüm gelecek özellikler",
-        "API erişimi",
-        "Excel/PDF export",
-        "Özel dashboard",
       ],
       notIncluded: [],
       popular: true,
@@ -92,6 +90,11 @@ export default function PricingPage() {
       question: "Premium üyelik otomatik yenilenir mi?",
       answer:
         "Evet, Premium üyelik aylık olarak otomatik yenilenir. İstediğiniz zaman iptal edebilir veya yenilemeyi durdurabilirsiniz.",
+    },
+    {
+      question: "Şifre yönetimi özelliği nedir?",
+      answer:
+        "Premium üyeler, tüm bankacılık şifrelerini güvenli bir şekilde saklayabilir ve yönetebilir. Şifreler 256-bit AES şifreleme ile korunur.",
     },
   ]
 
@@ -226,11 +229,11 @@ export default function PricingPage() {
                       ["OCR Analizi", "1/ay", "Sınırsız"],
                       ["Risk Analizi", "❌", "✅"],
                       ["Gelişmiş Raporlar", "❌", "✅"],
-                      ["Refinansman Önerileri", "❌", "✅"],
+                      ["PDF Rapor İndirme", "❌", "✅"],
+                      ["Şifre Yönetimi", "❌", "✅"],
                       ["Reklamsız Deneyim", "❌", "✅"],
                       ["Öncelikli Destek", "❌", "✅"],
-                      ["API Erişimi", "❌", "✅"],
-                      ["Excel/PDF Export", "❌", "✅"],
+                      ["Tüm Gelecek Özellikler", "❌", "✅"],
                     ].map((row, index) => (
                       <tr key={index} className="border-b border-white/5 hover:bg-white/5 transition-colors">
                         <td className="py-5 px-8 font-medium">{row[0]}</td>
