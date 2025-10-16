@@ -9,7 +9,7 @@ export async function POST(request: NextRequest) {
 
   try {
     const body = await request.json()
-    const { userId, email, name, card, billingInfo } = body
+    const { userId, billingInfo } = body
 
     console.log("[v0] Processing payment for user:", userId)
 
@@ -26,6 +26,7 @@ export async function POST(request: NextRequest) {
 
     console.log("[v0] Profile verified:", profile.email)
 
+    // Save billing information first
     if (billingInfo) {
       console.log("[v0] Saving billing information")
       const { error: billingError } = await supabase.from("billing_info").upsert(
@@ -52,86 +53,77 @@ export async function POST(request: NextRequest) {
       console.log("[v0] Billing information saved successfully")
     }
 
-    const { data: existingSub } = await supabase.from("subscriptions").select("*").eq("user_id", userId).maybeSingle()
-
-    console.log("[v0] Existing subscription:", existingSub ? "found" : "not found")
-
-    // TODO: Integrate with iyzico payment API here
-    // For now, we'll simulate a successful payment
-
-    const expiresAt = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString()
-    const now = new Date().toISOString()
-
-    let subData, subError
-
-    if (existingSub) {
-      // Update existing subscription
-      const result = await supabase
-        .from("subscriptions")
-        .update({
-          plan_type: "premium",
-          status: "active",
-          started_at: now,
-          expires_at: expiresAt,
-          payment_method: "credit_card",
-          updated_at: now,
-        })
-        .eq("user_id", userId)
-        .select()
-
-      subData = result.data
-      subError = result.error
-      console.log("[v0] Updated existing subscription")
-    } else {
-      // Insert new subscription
-      const result = await supabase
-        .from("subscriptions")
-        .insert({
-          user_id: userId,
-          plan_type: "premium",
-          status: "active",
-          started_at: now,
-          expires_at: expiresAt,
-          payment_method: "credit_card",
-        })
-        .select()
-
-      subData = result.data
-      subError = result.error
-      console.log("[v0] Created new subscription")
+    // Check iyzico credentials
+    if (!process.env.IYZICO_API_KEY || !process.env.IYZICO_SECRET_KEY || !process.env.IYZICO_BASE_URL) {
+      console.error("[v0] iyzico credentials missing")
+      return NextResponse.json(
+        {
+          error: "Ödeme sistemi yapılandırılmamış",
+        },
+        { status: 500 },
+      )
     }
 
-    if (subError) {
-      console.error("[v0] Subscription error:", subError)
-      return NextResponse.json({ error: "Abonelik güncellenemedi: " + subError.message }, { status: 500 })
-    }
+    // Initialize iyzico payment
+    const { iyzicoClient } = await import("@/lib/iyzico")
 
-    console.log("[v0] Subscription updated successfully:", subData)
+    const paymentRequest = iyzicoClient.createPremiumSubscriptionRequest(
+      userId,
+      billingInfo?.email || profile.email || "",
+      billingInfo?.fullName?.split(" ")[0] || profile.first_name || "Kullanıcı",
+      billingInfo?.fullName?.split(" ").slice(1).join(" ") || profile.last_name || "Adı",
+    )
 
-    const { data: txData, error: txError } = await supabase
-      .from("payment_transactions")
-      .insert({
-        user_id: userId,
-        subscription_id: subData?.[0]?.id,
-        amount: 199.0,
-        currency: "TRY",
-        status: "completed",
-        payment_method: "credit_card",
-        iyzico_conversation_id: `sim_${Date.now()}`,
+    console.log("[v0] Initializing iyzico payment")
+
+    let paymentResponse
+    try {
+      paymentResponse = await iyzicoClient.initializeCheckoutForm(paymentRequest)
+      console.log("[v0] iyzico response:", {
+        status: paymentResponse.status,
+        hasToken: !!paymentResponse.token,
       })
-      .select()
-
-    if (txError) {
-      console.error("[v0] Transaction record error:", txError)
-    } else {
-      console.log("[v0] Transaction recorded:", txData)
+    } catch (iyzicoError) {
+      console.error("[v0] iyzico API error:", iyzicoError)
+      return NextResponse.json(
+        {
+          error: "Ödeme sistemi ile bağlantı kurulamadı",
+        },
+        { status: 500 },
+      )
     }
 
-    console.log("[v0] Payment successful, subscription activated")
+    if (paymentResponse.status !== "success") {
+      console.error("[v0] iyzico initialization failed:", paymentResponse.errorMessage)
+      return NextResponse.json(
+        {
+          error: paymentResponse.errorMessage || "Ödeme başlatılamadı",
+        },
+        { status: 400 },
+      )
+    }
+
+    // Create payment transaction record
+    const { error: transactionError } = await supabase.from("payment_transactions").insert({
+      user_id: userId,
+      amount: 199.0,
+      currency: "TRY",
+      status: "pending",
+      payment_method: "credit_card",
+      iyzico_conversation_id: paymentRequest.conversationId,
+    })
+
+    if (transactionError) {
+      console.error("[v0] Transaction record error:", transactionError)
+    }
+
+    console.log("[v0] Payment initialized successfully")
 
     return NextResponse.json({
       success: true,
-      message: "Ödeme başarılı, premium üyelik aktif edildi",
+      token: paymentResponse.token,
+      checkoutFormContent: paymentResponse.checkoutFormContent,
+      paymentPageUrl: paymentResponse.paymentPageUrl,
     })
   } catch (error) {
     console.error("[v0] Payment process error:", error)

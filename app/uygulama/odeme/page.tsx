@@ -79,15 +79,6 @@ export default function PaymentPage() {
         },
         body: JSON.stringify({
           userId: user.id,
-          email: profile.email,
-          name: profile.full_name || "Kullanıcı",
-          card: {
-            cardHolderName: formData.cardHolderName,
-            cardNumber: formData.cardNumber.replace(/\s/g, ""),
-            expireMonth: formData.expireMonth,
-            expireYear: formData.expireYear,
-            cvc: "123",
-          },
           billingInfo,
         }),
       })
@@ -98,14 +89,15 @@ export default function PaymentPage() {
         throw new Error(data.error || "Ödeme işlemi başarısız")
       }
 
-      await refreshSubscription()
-
-      toast({
-        title: "Ödeme Başarılı",
-        description: "Premium üyeliğiniz aktif edildi!",
-      })
-
-      router.push("/uygulama/ana-sayfa")
+      if (data.paymentPageUrl) {
+        window.location.href = data.paymentPageUrl
+      } else if (data.checkoutFormContent) {
+        const checkoutContainer = document.createElement("div")
+        checkoutContainer.innerHTML = data.checkoutFormContent
+        document.body.appendChild(checkoutContainer)
+      } else {
+        throw new Error("Ödeme sayfası yüklenemedi")
+      }
     } catch (error) {
       console.error("[v0] Payment error:", error)
       toast({
