@@ -22,8 +22,8 @@ export default function PaymentPage() {
   const [formData, setFormData] = useState({
     cardHolderName: "",
     cardNumber: "",
-    expireMonth: "",
-    expireYear: "",
+    expiryDate: "",
+    cvv: "",
   })
   const [billingInfo, setBillingInfo] = useState({
     fullName: "",
@@ -42,6 +42,15 @@ export default function PaymentPage() {
         .replace(/\s/g, "")
         .replace(/(\d{4})/g, "$1 ")
         .trim()
+      setFormData((prev) => ({ ...prev, [name]: formatted }))
+    } else if (name === "expiryDate") {
+      const formatted = value
+        .replace(/\D/g, "")
+        .replace(/(\d{2})(\d)/, "$1/$2")
+        .slice(0, 5)
+      setFormData((prev) => ({ ...prev, [name]: formatted }))
+    } else if (name === "cvv") {
+      const formatted = value.replace(/\D/g, "").slice(0, 4)
       setFormData((prev) => ({ ...prev, [name]: formatted }))
     } else {
       setFormData((prev) => ({ ...prev, [name]: value }))
@@ -72,7 +81,7 @@ export default function PaymentPage() {
         throw new Error("Kullanıcı profili bulunamadı")
       }
 
-      const response = await fetch("/api/payment/process", {
+      const response = await fetch("/api/payment/direct", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -80,6 +89,7 @@ export default function PaymentPage() {
         body: JSON.stringify({
           userId: user.id,
           billingInfo,
+          cardDetails: formData,
         }),
       })
 
@@ -89,15 +99,18 @@ export default function PaymentPage() {
         throw new Error(data.error || "Ödeme işlemi başarısız")
       }
 
-      if (data.paymentPageUrl) {
-        window.location.href = data.paymentPageUrl
-      } else if (data.checkoutFormContent) {
-        const checkoutContainer = document.createElement("div")
-        checkoutContainer.innerHTML = data.checkoutFormContent
-        document.body.appendChild(checkoutContainer)
-      } else {
-        throw new Error("Ödeme sayfası yüklenemedi")
-      }
+      toast({
+        title: "Ödeme Başarılı!",
+        description: "Premium üyeliğiniz aktifleştirildi. Yönlendiriliyorsunuz...",
+      })
+
+      // Refresh subscription data
+      await refreshSubscription()
+
+      // Redirect to premium page after 2 seconds
+      setTimeout(() => {
+        router.push("/uygulama/premium")
+      }, 2000)
     } catch (error) {
       console.error("[v0] Payment error:", error)
       toast({
@@ -296,30 +309,33 @@ export default function PaymentPage() {
                   </div>
 
                   <div className="space-y-2">
-                    <Label htmlFor="expireMonth">Son Kullanma Ayı *</Label>
+                    <Label htmlFor="expiryDate">Son Kullanma Tarihi *</Label>
                     <Input
-                      id="expireMonth"
-                      name="expireMonth"
-                      placeholder="12"
-                      value={formData.expireMonth}
+                      id="expiryDate"
+                      name="expiryDate"
+                      placeholder="MM/YY"
+                      value={formData.expiryDate}
                       onChange={handleInputChange}
-                      maxLength={2}
+                      maxLength={5}
                       required
                       disabled={isProcessing}
+                      className="font-mono"
                     />
                   </div>
 
                   <div className="space-y-2">
-                    <Label htmlFor="expireYear">Son Kullanma Yılı *</Label>
+                    <Label htmlFor="cvv">CVV *</Label>
                     <Input
-                      id="expireYear"
-                      name="expireYear"
-                      placeholder="2025"
-                      value={formData.expireYear}
+                      id="cvv"
+                      name="cvv"
+                      type="password"
+                      placeholder="123"
+                      value={formData.cvv}
                       onChange={handleInputChange}
                       maxLength={4}
                       required
                       disabled={isProcessing}
+                      className="font-mono"
                     />
                   </div>
                 </div>
@@ -353,11 +369,7 @@ export default function PaymentPage() {
                     </div>
                     <div>
                       <p className="text-xs text-white/60 mb-1">Son Kullanma</p>
-                      <p className="font-medium">
-                        {formData.expireMonth && formData.expireYear
-                          ? `${formData.expireMonth}/${formData.expireYear}`
-                          : "MM/YYYY"}
-                      </p>
+                      <p className="font-medium">{formData.expiryDate || "MM/YY"}</p>
                     </div>
                   </div>
                 </div>
