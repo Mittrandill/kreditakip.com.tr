@@ -4,7 +4,7 @@ import { useState, useEffect, useRef } from "react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
-import { Crown, Check, Sparkles, Zap, TrendingUp, X } from "lucide-react"
+import { Crown, Check, Sparkles, TrendingUp, X, Shield, BarChart3 } from "lucide-react"
 import { useSubscription } from "@/hooks/use-subscription"
 import { useRouter, useSearchParams } from "next/navigation"
 import { useToast } from "@/hooks/use-toast"
@@ -39,7 +39,7 @@ export default function PremiumPage() {
       })
       router.replace("/uygulama/premium")
     }
-  }, [searchParams, toast])
+  }, [searchParams, toast, router])
 
   const handleUpgrade = async () => {
     router.push("/uygulama/odeme")
@@ -58,21 +58,22 @@ export default function PremiumPage() {
 
   return (
     <div className="space-y-8">
-      {/* Hero Section */}
-      <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-emerald-600 via-teal-600 to-cyan-700 dark:from-emerald-700 dark:via-teal-700 dark:to-cyan-800 p-12 text-white">
-        <div className="absolute inset-0 bg-gradient-to-t from-black/30 to-transparent"></div>
+      <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-emerald-500 via-teal-600 to-cyan-700 dark:from-emerald-600 dark:via-teal-700 dark:to-cyan-800 p-12 text-white shadow-2xl">
+        <div className="absolute inset-0 bg-[url('/grid.svg')] opacity-10"></div>
+        <div className="absolute top-0 right-0 w-96 h-96 bg-white/10 rounded-full blur-3xl"></div>
+        <div className="absolute bottom-0 left-0 w-96 h-96 bg-cyan-500/20 rounded-full blur-3xl"></div>
         <div className="relative z-10 text-center space-y-6">
           <div className="flex items-center justify-center">
-            <div className="p-4 bg-white/20 rounded-full backdrop-blur-sm">
-              <Crown className="h-16 w-16 text-white" />
+            <div className="p-5 bg-white/20 rounded-2xl backdrop-blur-sm shadow-xl">
+              <Crown className="h-20 w-20 text-white" />
             </div>
           </div>
-          <h1 className="text-5xl font-bold">Premium Üyelik</h1>
-          <p className="text-xl text-emerald-100 max-w-2xl mx-auto">
+          <h1 className="text-5xl md:text-6xl font-bold">Premium Üyelik</h1>
+          <p className="text-xl md:text-2xl text-white/90 max-w-2xl mx-auto leading-relaxed">
             Tüm özelliklere sınırsız erişim, reklamsız deneyim ve gelişmiş analiz araçları
           </p>
           {isPremium && (
-            <Badge className="bg-white/20 text-white border-white/30 backdrop-blur-sm px-6 py-2 text-lg">
+            <Badge className="bg-white/20 text-white border-white/30 backdrop-blur-sm px-6 py-3 text-lg shadow-lg">
               <Check className="h-5 w-5 mr-2" />
               Aktif Premium Üye
             </Badge>
@@ -80,42 +81,54 @@ export default function PremiumPage() {
         </div>
       </div>
 
-      {/* Pricing Card */}
-      <div className="max-w-4xl mx-auto">
+      <div className="max-w-5xl mx-auto">
         <div className="grid md:grid-cols-2 gap-8">
           {/* Free Plan */}
-          <Card className="relative border-2 border-gray-200 dark:border-gray-700">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <span>Ücretsiz</span>
-              </CardTitle>
-              <CardDescription>Temel özellikler</CardDescription>
+          <Card className="relative border-2 border-gray-200 dark:border-gray-700 hover:shadow-lg transition-shadow">
+            <CardHeader className="space-y-4">
+              <div className="flex items-center justify-between">
+                <CardTitle className="text-2xl">Ücretsiz</CardTitle>
+                <Badge variant="outline" className="text-xs">
+                  Temel
+                </Badge>
+              </div>
+              <CardDescription className="text-base">Temel özellikler ile başlayın</CardDescription>
               <div className="pt-4">
-                <p className="text-4xl font-bold">
+                <p className="text-5xl font-bold">
                   0₺<span className="text-lg font-normal text-gray-600 dark:text-gray-400">/ay</span>
                 </p>
               </div>
             </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="space-y-3">
+            <CardContent className="space-y-6">
+              <div className="space-y-4">
                 <div className="flex items-start gap-3">
-                  <Check className="h-5 w-5 text-emerald-600 dark:text-emerald-400 mt-0.5" />
+                  <div className="p-1 bg-emerald-100 dark:bg-emerald-900/30 rounded-full">
+                    <Check className="h-4 w-4 text-emerald-600 dark:text-emerald-400" />
+                  </div>
                   <span className="text-sm">1 adet OCR analizi</span>
                 </div>
                 <div className="flex items-start gap-3">
-                  <X className="h-5 w-5 text-red-600 dark:text-red-400 mt-0.5" />
+                  <div className="p-1 bg-red-100 dark:bg-red-900/30 rounded-full">
+                    <X className="h-4 w-4 text-red-600 dark:text-red-400" />
+                  </div>
                   <span className="text-sm text-gray-500 dark:text-gray-400">Risk analizi yok</span>
                 </div>
                 <div className="flex items-start gap-3">
-                  <Check className="h-5 w-5 text-emerald-600 dark:text-emerald-400 mt-0.5" />
+                  <div className="p-1 bg-emerald-100 dark:bg-emerald-900/30 rounded-full">
+                    <Check className="h-4 w-4 text-emerald-600 dark:text-emerald-400" />
+                  </div>
                   <span className="text-sm">Temel kredi takibi</span>
                 </div>
                 <div className="flex items-start gap-3">
-                  <Check className="h-5 w-5 text-emerald-600 dark:text-emerald-400 mt-0.5" />
+                  <div className="p-1 bg-emerald-100 dark:bg-emerald-900/30 rounded-full">
+                    <Check className="h-4 w-4 text-emerald-600 dark:text-emerald-400" />
+                  </div>
                   <span className="text-sm">Ödeme hatırlatıcıları</span>
                 </div>
                 <div className="flex items-start gap-3">
-                  <X className="h-5 w-5 text-red-600 dark:text-red-400 mt-0.5" />
+                  <div className="p-1 bg-red-100 dark:bg-red-900/30 rounded-full">
+                    <X className="h-4 w-4 text-red-600 dark:text-red-400" />
+                  </div>
                   <span className="text-sm text-gray-500 dark:text-gray-400">Reklamlar gösterilir</span>
                 </div>
               </div>
@@ -128,54 +141,70 @@ export default function PremiumPage() {
           </Card>
 
           {/* Premium Plan */}
-          <Card className="relative border-2 border-emerald-600 dark:border-emerald-500 shadow-xl">
-            <div className="absolute -top-4 left-1/2 -translate-x-1/2">
-              <Badge className="bg-gradient-to-r from-amber-500 to-orange-600 text-white border-0 px-4 py-1">
+          <Card className="relative border-2 border-emerald-500 dark:border-emerald-600 shadow-2xl hover:shadow-emerald-500/20 transition-all scale-105">
+            <div className="absolute -top-4 left-1/2 -translate-x-1/2 z-20">
+              <Badge className="bg-gradient-to-r from-amber-500 to-orange-600 text-white border-0 px-6 py-2 shadow-lg">
                 <Sparkles className="h-4 w-4 mr-1" />
                 Önerilen
               </Badge>
             </div>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Crown className="h-6 w-6 text-amber-500" />
-                <span>Premium</span>
-              </CardTitle>
-              <CardDescription>Tüm özellikler</CardDescription>
+            <div className="absolute inset-0 bg-gradient-to-br from-emerald-50/50 to-teal-50/50 dark:from-emerald-950/20 dark:to-teal-950/20 rounded-lg -z-10"></div>
+            <CardHeader className="relative space-y-4">
+              <div className="flex items-center justify-between">
+                <CardTitle className="flex items-center gap-2 text-2xl">
+                  <Crown className="h-7 w-7 text-amber-500" />
+                  <span>Premium</span>
+                </CardTitle>
+                <Badge className="bg-gradient-to-r from-emerald-600 to-teal-600 text-white border-0">Popüler</Badge>
+              </div>
+              <CardDescription className="text-base">Tüm özellikler ve sınırsız erişim</CardDescription>
               <div className="pt-4">
-                <p className="text-4xl font-bold">
+                <p className="text-5xl font-bold">
                   199₺<span className="text-lg font-normal text-gray-600 dark:text-gray-400">/ay</span>
                 </p>
               </div>
             </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="space-y-3">
+            <CardContent className="relative space-y-6">
+              <div className="space-y-4">
                 <div className="flex items-start gap-3">
-                  <Check className="h-5 w-5 text-emerald-600 dark:text-emerald-400 mt-0.5" />
+                  <div className="p-1 bg-emerald-100 dark:bg-emerald-900/30 rounded-full">
+                    <Check className="h-4 w-4 text-emerald-600 dark:text-emerald-400" />
+                  </div>
                   <span className="text-sm font-medium">Sınırsız OCR analizi</span>
                 </div>
                 <div className="flex items-start gap-3">
-                  <Check className="h-5 w-5 text-emerald-600 dark:text-emerald-400 mt-0.5" />
+                  <div className="p-1 bg-emerald-100 dark:bg-emerald-900/30 rounded-full">
+                    <Check className="h-4 w-4 text-emerald-600 dark:text-emerald-400" />
+                  </div>
                   <span className="text-sm font-medium">Detaylı risk analizi</span>
                 </div>
                 <div className="flex items-start gap-3">
-                  <Check className="h-5 w-5 text-emerald-600 dark:text-emerald-400 mt-0.5" />
+                  <div className="p-1 bg-emerald-100 dark:bg-emerald-900/30 rounded-full">
+                    <Check className="h-4 w-4 text-emerald-600 dark:text-emerald-400" />
+                  </div>
                   <span className="text-sm font-medium">Gelişmiş raporlar</span>
                 </div>
                 <div className="flex items-start gap-3">
-                  <Check className="h-5 w-5 text-emerald-600 dark:text-emerald-400 mt-0.5" />
-                  <span className="text-sm font-medium">Öncelikli destek</span>
+                  <div className="p-1 bg-emerald-100 dark:bg-emerald-900/30 rounded-full">
+                    <Check className="h-4 w-4 text-emerald-600 dark:text-emerald-400" />
+                  </div>
+                  <span className="text-sm font-medium">Şifre yönetimi</span>
                 </div>
                 <div className="flex items-start gap-3">
-                  <Check className="h-5 w-5 text-emerald-600 dark:text-emerald-400 mt-0.5" />
+                  <div className="p-1 bg-emerald-100 dark:bg-emerald-900/30 rounded-full">
+                    <Check className="h-4 w-4 text-emerald-600 dark:text-emerald-400" />
+                  </div>
                   <span className="text-sm font-medium">Reklamsız deneyim</span>
                 </div>
                 <div className="flex items-start gap-3">
-                  <Check className="h-5 w-5 text-emerald-600 dark:text-emerald-400 mt-0.5" />
-                  <span className="text-sm font-medium">Tüm gelecek özellikler</span>
+                  <div className="p-1 bg-emerald-100 dark:bg-emerald-900/30 rounded-full">
+                    <Check className="h-4 w-4 text-emerald-600 dark:text-emerald-400" />
+                  </div>
+                  <span className="text-sm font-medium">Öncelikli destek</span>
                 </div>
               </div>
               {isPremium ? (
-                <Button className="w-full bg-gradient-to-r from-emerald-600 to-teal-600" disabled>
+                <Button className="w-full bg-gradient-to-r from-emerald-600 to-teal-600 shadow-lg" disabled size="lg">
                   <Check className="h-5 w-5 mr-2" />
                   Aktif Plan
                 </Button>
@@ -183,7 +212,7 @@ export default function PremiumPage() {
                 <Button
                   onClick={handleUpgrade}
                   disabled={isProcessing}
-                  className="w-full bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white"
+                  className="w-full bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white shadow-lg hover:shadow-xl transition-all"
                   size="lg"
                 >
                   {isProcessing ? (
@@ -204,72 +233,84 @@ export default function PremiumPage() {
         </div>
       </div>
 
-      {/* Features Grid */}
       <div className="grid md:grid-cols-3 gap-6">
-        <Card>
-          <CardHeader>
-            <div className="p-3 bg-emerald-100 dark:bg-emerald-900/30 rounded-lg w-fit">
-              <Sparkles className="h-6 w-6 text-emerald-600 dark:text-emerald-400" />
+        <Card className="relative overflow-hidden border-0 bg-gradient-to-br from-emerald-500 to-teal-600 text-white shadow-xl hover:shadow-2xl transition-shadow">
+          <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full blur-2xl"></div>
+          <CardHeader className="relative">
+            <div className="p-3 bg-white/20 rounded-xl w-fit backdrop-blur-sm">
+              <Sparkles className="h-7 w-7 text-white" />
             </div>
-            <CardTitle>Sınırsız Analiz</CardTitle>
-            <CardDescription>OCR teknolojisi ile sınırsız kredi dökümü analizi yapın</CardDescription>
+            <CardTitle className="text-white text-xl">Sınırsız Analiz</CardTitle>
+            <CardDescription className="text-white/80">
+              OCR teknolojisi ile sınırsız kredi dökümü analizi yapın
+            </CardDescription>
           </CardHeader>
         </Card>
 
-        <Card>
-          <CardHeader>
-            <div className="p-3 bg-blue-100 dark:bg-blue-900/30 rounded-lg w-fit">
-              <TrendingUp className="h-6 w-6 text-blue-600 dark:text-blue-400" />
+        <Card className="relative overflow-hidden border-0 bg-gradient-to-br from-blue-500 to-indigo-600 text-white shadow-xl hover:shadow-2xl transition-shadow">
+          <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full blur-2xl"></div>
+          <CardHeader className="relative">
+            <div className="p-3 bg-white/20 rounded-xl w-fit backdrop-blur-sm">
+              <BarChart3 className="h-7 w-7 text-white" />
             </div>
-            <CardTitle>Risk Analizi</CardTitle>
-            <CardDescription>Finansal durumunuzu detaylı analiz edin ve öneriler alın</CardDescription>
+            <CardTitle className="text-white text-xl">Risk Analizi</CardTitle>
+            <CardDescription className="text-white/80">
+              Finansal durumunuzu detaylı analiz edin ve öneriler alın
+            </CardDescription>
           </CardHeader>
         </Card>
 
-        <Card>
-          <CardHeader>
-            <div className="p-3 bg-purple-100 dark:bg-purple-900/30 rounded-lg w-fit">
-              <Zap className="h-6 w-6 text-purple-600 dark:text-purple-400" />
+        <Card className="relative overflow-hidden border-0 bg-gradient-to-br from-purple-500 to-pink-600 text-white shadow-xl hover:shadow-2xl transition-shadow">
+          <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full blur-2xl"></div>
+          <CardHeader className="relative">
+            <div className="p-3 bg-white/20 rounded-xl w-fit backdrop-blur-sm">
+              <Shield className="h-7 w-7 text-white" />
             </div>
-            <CardTitle>Reklamsız</CardTitle>
-            <CardDescription>Kesintisiz, reklamsız bir deneyim yaşayın</CardDescription>
+            <CardTitle className="text-white text-xl">Reklamsız</CardTitle>
+            <CardDescription className="text-white/80">Kesintisiz, reklamsız bir deneyim yaşayın</CardDescription>
           </CardHeader>
         </Card>
       </div>
 
       {/* Current Usage */}
       {!isPremium && subscription && (
-        <Card>
-          <CardHeader>
-            <CardTitle>Mevcut Kullanım</CardTitle>
-            <CardDescription>Ücretsiz plan kullanım durumunuz</CardDescription>
+        <Card className="relative overflow-hidden border-0 bg-gradient-to-br from-amber-500 via-orange-600 to-red-600 dark:from-amber-600 dark:via-orange-700 dark:to-red-700 text-white shadow-2xl">
+          <div className="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full blur-3xl"></div>
+          <div className="absolute bottom-0 left-0 w-64 h-64 bg-orange-500/20 rounded-full blur-3xl"></div>
+          <CardHeader className="relative">
+            <CardTitle className="flex items-center gap-2 text-white text-2xl">
+              <TrendingUp className="h-6 w-6" />
+              Mevcut Kullanım
+            </CardTitle>
+            <CardDescription className="text-white/90 text-base">Ücretsiz plan kullanım durumunuz</CardDescription>
           </CardHeader>
-          <CardContent className="space-y-4">
-            <div>
-              <div className="flex items-center justify-between mb-2">
-                <span className="text-sm font-medium">OCR Analizi</span>
-                <span className="text-sm text-gray-600 dark:text-gray-400">
+          <CardContent className="relative space-y-6">
+            <div className="bg-white/10 backdrop-blur-sm rounded-xl p-5 border border-white/20">
+              <div className="flex items-center justify-between mb-3">
+                <span className="text-base font-medium text-white">OCR Analizi</span>
+                <span className="text-base font-bold text-white">
                   {subscription.usage.ocrAnalysis.used} / {subscription.usage.ocrAnalysis.limit}
                 </span>
               </div>
-              <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
+              <div className="w-full bg-white/20 rounded-full h-3 overflow-hidden">
                 <div
-                  className="bg-emerald-600 h-2 rounded-full transition-all"
+                  className="bg-white h-3 rounded-full transition-all shadow-lg"
                   style={{
                     width: `${(subscription.usage.ocrAnalysis.used / subscription.usage.ocrAnalysis.limit) * 100}%`,
                   }}
                 ></div>
               </div>
             </div>
-            <div>
-              <div className="flex items-center justify-between mb-2">
-                <span className="text-sm font-medium">Risk Analizi</span>
-                <Badge variant="outline" className="text-xs">
+            <div className="bg-white/10 backdrop-blur-sm rounded-xl p-5 border border-white/20">
+              <div className="flex items-center justify-between mb-3">
+                <span className="text-base font-medium text-white">Risk Analizi</span>
+                <Badge className="bg-white/20 text-white border-white/30 backdrop-blur-sm">
+                  <Crown className="h-3 w-3 mr-1" />
                   Premium Özellik
                 </Badge>
               </div>
-              <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
-                <div className="bg-gray-400 h-2 rounded-full w-0"></div>
+              <div className="w-full bg-white/20 rounded-full h-3 overflow-hidden">
+                <div className="bg-white/40 h-3 rounded-full w-0"></div>
               </div>
             </div>
           </CardContent>

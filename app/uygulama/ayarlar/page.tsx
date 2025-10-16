@@ -378,7 +378,7 @@ export default function AyarlarPage() {
       console.error("Avatar upload error:", error)
       toast({
         title: "Hata",
-        description: error.message || "Fotoğraf yüklenırken bir hata oluştu.",
+        description: error.message || "Fotoğraf yüklenirken bir hata oluştu.",
         variant: "destructive",
       })
     } finally {
@@ -538,22 +538,14 @@ export default function AyarlarPage() {
                 Hesap ve Sistem Ayarları
               </h2>
               <p className="text-slate-100 text-lg">
-                Hesap bilgilerinizi, güvenlik ayarlarınızı ve uygulama tercihlerinizi yönetin
+                Hesap bilgilerinizi, güvenlik ayarlarınızı ve uygulama tercihlerini yönetin
               </p>
             </div>
             <div className="flex flex-col sm:flex-row gap-3">
               <Button
                 variant="outline"
                 size="lg"
-                className="bg-white/20 dark:bg-white/15 text-white border-white/30 dark:border-white/20 hover:bg-white/30 dark:hover:bg-white/25 backdrop-blur-sm"
-                onClick={() => router.push("/uygulama/bildirimler")}
-              >
-                <Bell className="h-5 w-5" />
-                Bildirimler
-              </Button>
-              <Button
-                size="lg"
-                className="bg-white text-slate-600 hover:bg-slate-50 border-white"
+                className="bg-transparent border-white/20 text-white hover:bg-white/10 hover:border-transparent hover:text-white"
                 onClick={() => {
                   if (activeTab === "profile") handleSaveProfile()
                   if (activeTab === "financial") handleSaveFinancialProfile()

@@ -418,7 +418,7 @@ export default function RiskAnaliziPage() {
               <Button
                 variant="outline"
                 size="lg"
-                className="bg-white/20 dark:bg-white/15 text-white border-white/30 dark:border-white/20 hover:bg-white/30 dark:hover:bg-white/25 backdrop-blur-sm"
+                className="bg-transparent border-white/20 text-white hover:bg-white/10 hover:border-transparent hover:text-white"
                 onClick={() => router.push("/uygulama/ayarlar?tab=financial")}
               >
                 <Settings className="h-5 w-5 mr-2" />

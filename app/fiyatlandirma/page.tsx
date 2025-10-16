@@ -17,18 +17,12 @@ export default function PricingPage() {
       price: "0",
       period: "₺",
       description: "Temel özelliklerle başlayın",
-      features: [
-        "1 adet OCR analizi",
-        "Temel kredi takibi",
-        "Ödeme hatırlatıcıları",
-        "Mobil uygulama erişimi",
-        "E-posta bildirimleri",
-      ],
+      features: ["1 adet OCR analizi", "Temel kredi takibi", "Ödeme hatırlatıcıları"],
       notIncluded: [
         "Risk analizi",
         "Sınırsız OCR analizi",
         "Gelişmiş raporlama",
-        "Refinansman önerileri",
+        "Şifre yönetimi",
         "Reklamsız deneyim",
         "Öncelikli destek",
       ],
@@ -46,13 +40,11 @@ export default function PricingPage() {
         "Sınırsız OCR analizi",
         "Detaylı risk analizi",
         "Gelişmiş finansal raporlar",
-        "Refinansman önerileri",
+        "PDF rapor indirme",
+        "Bankacılık şifre yönetimi",
         "Reklamsız deneyim",
         "Öncelikli destek",
         "Tüm gelecek özellikler",
-        "API erişimi",
-        "Excel/PDF export",
-        "Özel dashboard",
       ],
       notIncluded: [],
       popular: true,
@@ -92,6 +84,11 @@ export default function PricingPage() {
       question: "Premium üyelik otomatik yenilenir mi?",
       answer:
         "Evet, Premium üyelik aylık olarak otomatik yenilenir. İstediğiniz zaman iptal edebilir veya yenilemeyi durdurabilirsiniz.",
+    },
+    {
+      question: "Şifre yönetimi özelliği nedir?",
+      answer:
+        "Premium üyeler, tüm bankacılık şifrelerini güvenli bir şekilde saklayabilir ve yönetebilir. Şifreler 256-bit AES şifreleme ile korunur.",
     },
   ]
 
@@ -226,11 +223,11 @@ export default function PricingPage() {
                       ["OCR Analizi", "1/ay", "Sınırsız"],
                       ["Risk Analizi", "❌", "✅"],
                       ["Gelişmiş Raporlar", "❌", "✅"],
-                      ["Refinansman Önerileri", "❌", "✅"],
+                      ["PDF Rapor İndirme", "❌", "✅"],
+                      ["Şifre Yönetimi", "❌", "✅"],
                       ["Reklamsız Deneyim", "❌", "✅"],
                       ["Öncelikli Destek", "❌", "✅"],
-                      ["API Erişimi", "❌", "✅"],
-                      ["Excel/PDF Export", "❌", "✅"],
+                      ["Tüm Gelecek Özellikler", "❌", "✅"],
                     ].map((row, index) => (
                       <tr key={index} className="border-b border-white/5 hover:bg-white/5 transition-colors">
                         <td className="py-5 px-8 font-medium">{row[0]}</td>
@@ -296,7 +293,7 @@ export default function PricingPage() {
                   <Button
                     size="lg"
                     variant="outline"
-                    className="bg-transparent border-white/20 text-white hover:bg-white/10 hover:border-white/30"
+                    className="bg-transparent border-white/20 text-white hover:bg-white/10 hover:border-transparent hover:text-white px-8 py-6 text-lg"
                     onClick={() => router.push("/iletisim")}
                   >
                     Daha Fazla Bilgi

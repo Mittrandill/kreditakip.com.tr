@@ -17,7 +17,6 @@ export function AdBanner({ position = "top", className = "" }: AdBannerProps) {
   const [isDismissed, setIsDismissed] = useState(false)
   const router = useRouter()
 
-  // Don't show ads for premium users
   if (loading || isPremium) {
     return null
   }

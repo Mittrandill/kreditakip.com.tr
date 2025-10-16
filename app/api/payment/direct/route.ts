@@ -5,13 +5,24 @@ const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
 const supabaseServiceKey = process.env.SERVICE_ROLE_KEY!
 
 export async function POST(request: NextRequest) {
-  console.log("[v0] Payment process started")
+  console.log("[v0] Direct payment process started")
 
   try {
     const body = await request.json()
-    const { userId, billingInfo } = body
+    const { userId, billingInfo, cardDetails } = body
 
-    console.log("[v0] Processing payment for user:", userId)
+    console.log("[v0] Processing direct payment for user:", userId)
+
+    // Validate required fields
+    if (
+      !cardDetails ||
+      !cardDetails.cardNumber ||
+      !cardDetails.cardHolderName ||
+      !cardDetails.expiryDate ||
+      !cardDetails.cvv
+    ) {
+      return NextResponse.json({ error: "Kart bilgileri eksik" }, { status: 400 })
+    }
 
     // Create Supabase admin client
     const supabase = createClient(supabaseUrl, supabaseServiceKey)
@@ -64,66 +75,114 @@ export async function POST(request: NextRequest) {
       )
     }
 
+    // Parse expiry date
+    const [expireMonth, expireYear] = cardDetails.expiryDate.split("/").map((s: string) => s.trim())
+
     // Initialize iyzico payment
     const { iyzicoClient } = await import("@/lib/iyzico")
 
-    const paymentRequest = iyzicoClient.createPremiumSubscriptionRequest(
+    const paymentRequest = iyzicoClient.createDirectPaymentRequest(
       userId,
       billingInfo?.email || profile.email || "",
       billingInfo?.fullName?.split(" ")[0] || profile.first_name || "Kullanıcı",
       billingInfo?.fullName?.split(" ").slice(1).join(" ") || profile.last_name || "Adı",
+      {
+        cardHolderName: cardDetails.cardHolderName,
+        cardNumber: cardDetails.cardNumber,
+        expireMonth: expireMonth,
+        expireYear: expireYear,
+        cvc: cardDetails.cvv,
+      },
+      {
+        address: billingInfo.address,
+        city: billingInfo.city,
+        zipCode: billingInfo.zipCode,
+      },
     )
 
-    console.log("[v0] Initializing iyzico payment")
+    console.log("[v0] Processing direct payment with iyzico")
 
     let paymentResponse
     try {
-      paymentResponse = await iyzicoClient.initializeCheckoutForm(paymentRequest)
+      paymentResponse = await iyzicoClient.createPayment(paymentRequest)
       console.log("[v0] iyzico response:", {
         status: paymentResponse.status,
-        hasToken: !!paymentResponse.token,
+        paymentId: paymentResponse.paymentId,
       })
     } catch (iyzicoError) {
       console.error("[v0] iyzico API error:", iyzicoError)
       return NextResponse.json(
         {
-          error: "Ödeme sistemi ile bağlantı kurulamadı",
+          error: "Ödeme işlemi başarısız oldu",
         },
         { status: 500 },
       )
     }
 
     if (paymentResponse.status !== "success") {
-      console.error("[v0] iyzico initialization failed:", paymentResponse.errorMessage)
+      console.error("[v0] iyzico payment failed:", paymentResponse.errorMessage)
+
+      // Create failed transaction record
+      await supabase.from("payment_transactions").insert({
+        user_id: userId,
+        amount: 199.0,
+        currency: "TRY",
+        status: "failed",
+        payment_method: "credit_card",
+        iyzico_conversation_id: paymentRequest.conversationId,
+        error_message: paymentResponse.errorMessage,
+      })
+
       return NextResponse.json(
         {
-          error: paymentResponse.errorMessage || "Ödeme başlatılamadı",
+          error: paymentResponse.errorMessage || "Ödeme başarısız oldu",
         },
         { status: 400 },
       )
     }
 
-    // Create payment transaction record
-    const { error: transactionError } = await supabase.from("payment_transactions").insert({
+    // Payment successful - update subscription
+    console.log("[v0] Payment successful, updating subscription")
+
+    const subscriptionEndDate = new Date()
+    subscriptionEndDate.setMonth(subscriptionEndDate.getMonth() + 1)
+
+    const { error: subscriptionError } = await supabase.from("subscriptions").upsert(
+      {
+        user_id: userId,
+        plan_type: "premium",
+        status: "active",
+        start_date: new Date().toISOString(),
+        end_date: subscriptionEndDate.toISOString(),
+        updated_at: new Date().toISOString(),
+      },
+      {
+        onConflict: "user_id",
+      },
+    )
+
+    if (subscriptionError) {
+      console.error("[v0] Subscription update error:", subscriptionError)
+      return NextResponse.json({ error: "Abonelik güncellenemedi: " + subscriptionError.message }, { status: 500 })
+    }
+
+    // Create successful transaction record
+    await supabase.from("payment_transactions").insert({
       user_id: userId,
       amount: 199.0,
       currency: "TRY",
-      status: "pending",
+      status: "completed",
       payment_method: "credit_card",
       iyzico_conversation_id: paymentRequest.conversationId,
+      iyzico_payment_id: paymentResponse.paymentId,
     })
 
-    if (transactionError) {
-      console.error("[v0] Transaction record error:", transactionError)
-    }
-
-    console.log("[v0] Payment initialized successfully")
+    console.log("[v0] Payment completed successfully")
 
     return NextResponse.json({
       success: true,
-      token: paymentResponse.token,
-      checkoutFormContent: paymentResponse.checkoutFormContent,
-      paymentPageUrl: paymentResponse.paymentPageUrl,
+      message: "Ödeme başarıyla tamamlandı",
+      paymentId: paymentResponse.paymentId,
     })
   } catch (error) {
     console.error("[v0] Payment process error:", error)

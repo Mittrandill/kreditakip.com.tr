@@ -47,6 +47,19 @@ interface IyzicoPaymentRequest {
   }>
 }
 
+interface IyzicoDirectPaymentRequest extends Omit<IyzicoPaymentRequest, "callbackUrl"> {
+  installment: number
+  paymentChannel: string
+  paymentCard: {
+    cardHolderName: string
+    cardNumber: string
+    expireMonth: string
+    expireYear: string
+    cvc: string
+    registerCard: number
+  }
+}
+
 interface IyzicoPaymentResponse {
   status: string
   locale: string
@@ -59,6 +72,7 @@ interface IyzicoPaymentResponse {
   errorCode?: string
   errorMessage?: string
   errorGroup?: string
+  paymentId?: string
 }
 
 class IyzicoClient {
@@ -73,7 +87,7 @@ class IyzicoClient {
   }
 
   private async generateAuthString(randomString: string, uri: string, body: string): Promise<string> {
-    const dataToEncrypt = `${this.config.apiKey}${randomString}${this.config.secretKey}${body}`
+    const dataToEncrypt = randomString + uri + body
 
     // Convert string to Uint8Array
     const encoder = new TextEncoder()
@@ -199,6 +213,104 @@ class IyzicoClient {
     }
   }
 
+  async createPayment(request: IyzicoDirectPaymentRequest): Promise<IyzicoPaymentResponse> {
+    const uri = "/payment/auth"
+    const body = JSON.stringify(request)
+    const randomString = this.generateRandomString()
+
+    console.log("[v0] Creating direct payment with iyzico")
+
+    if (!this.config.apiKey || !this.config.secretKey) {
+      throw new Error("iyzico API credentials are not configured")
+    }
+
+    try {
+      const authHeader = await this.generateAuthString(randomString, uri, body)
+
+      const response = await fetch(`${this.config.baseUrl}${uri}`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: authHeader,
+          "x-iyzi-rnd": randomString,
+          Accept: "application/json",
+        },
+        body: body,
+      })
+
+      console.log("[v0] iyzico direct payment response status:", response.status)
+
+      if (!response.ok) {
+        const errorText = await response.text()
+        console.error("[v0] iyzico HTTP error:", response.status, errorText)
+        throw new Error(`iyzico API returned ${response.status}: ${errorText}`)
+      }
+
+      const data = await response.json()
+
+      console.log("[v0] iyzico payment response:", {
+        status: data.status,
+        paymentId: data.paymentId,
+        errorCode: data.errorCode,
+        errorMessage: data.errorMessage,
+      })
+
+      return data
+    } catch (error) {
+      console.error("[v0] iyzico payment error:", error)
+      throw error
+    }
+  }
+
+  async createDirectPayment(request: IyzicoDirectPaymentRequest): Promise<any> {
+    const uri = "/payment/auth"
+    const body = JSON.stringify(request)
+    const randomString = this.generateRandomString()
+
+    console.log("[v0] Creating direct payment with iyzico")
+
+    if (!this.config.apiKey || !this.config.secretKey) {
+      throw new Error("iyzico API credentials are not configured")
+    }
+
+    try {
+      const authHeader = await this.generateAuthString(randomString, uri, body)
+
+      const response = await fetch(`${this.config.baseUrl}${uri}`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: authHeader,
+          "x-iyzi-rnd": randomString,
+          Accept: "application/json",
+        },
+        body: body,
+      })
+
+      console.log("[v0] iyzico direct payment response status:", response.status)
+
+      if (!response.ok) {
+        const errorText = await response.text()
+        console.error("[v0] iyzico HTTP error:", response.status, errorText)
+        throw new Error(`iyzico API returned ${response.status}: ${errorText}`)
+      }
+
+      const data = await response.json()
+
+      console.log("[v0] iyzico direct payment response:", {
+        status: data.status,
+        paymentId: data.paymentId,
+        errorCode: data.errorCode,
+        errorMessage: data.errorMessage,
+      })
+
+      return data
+    } catch (error) {
+      console.error("[v0] iyzico direct payment error:", error)
+      throw error
+    }
+  }
+
   createPremiumSubscriptionRequest(
     userId: string,
     userEmail: string,
@@ -249,7 +361,79 @@ class IyzicoClient {
       ],
     }
   }
+
+  createDirectPaymentRequest(
+    userId: string,
+    userEmail: string,
+    userName: string,
+    userSurname: string,
+    cardDetails: {
+      cardHolderName: string
+      cardNumber: string
+      expireMonth: string
+      expireYear: string
+      cvc: string
+    },
+    billingAddress: {
+      address: string
+      city: string
+      zipCode: string
+    },
+  ): IyzicoDirectPaymentRequest {
+    const conversationId = `sub_${userId}_${Date.now()}`
+
+    return {
+      locale: "tr",
+      conversationId: conversationId,
+      price: "199.00",
+      paidPrice: "199.00",
+      currency: "TRY",
+      installment: 1,
+      basketId: conversationId,
+      paymentChannel: "WEB",
+      paymentGroup: "SUBSCRIPTION",
+      paymentCard: {
+        cardHolderName: cardDetails.cardHolderName,
+        cardNumber: cardDetails.cardNumber.replace(/\s/g, ""),
+        expireMonth: cardDetails.expireMonth,
+        expireYear: cardDetails.expireYear,
+        cvc: cardDetails.cvc,
+        registerCard: 0,
+      },
+      buyer: {
+        id: userId,
+        name: userName,
+        surname: userSurname,
+        email: userEmail,
+        identityNumber: "11111111111",
+        registrationAddress: billingAddress.address,
+        city: billingAddress.city,
+        country: "Turkey",
+      },
+      shippingAddress: {
+        contactName: `${userName} ${userSurname}`,
+        city: billingAddress.city,
+        country: "Turkey",
+        address: billingAddress.address,
+      },
+      billingAddress: {
+        contactName: `${userName} ${userSurname}`,
+        city: billingAddress.city,
+        country: "Turkey",
+        address: billingAddress.address,
+      },
+      basketItems: [
+        {
+          id: "premium_sub_001",
+          name: "Premium Üyelik",
+          category1: "Subscription",
+          itemType: "VIRTUAL",
+          price: "199.00",
+        },
+      ],
+    }
+  }
 }
 
 export const iyzicoClient = new IyzicoClient()
-export type { IyzicoPaymentRequest, IyzicoPaymentResponse }
+export type { IyzicoPaymentRequest, IyzicoPaymentResponse, IyzicoDirectPaymentRequest }

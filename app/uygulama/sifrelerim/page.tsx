@@ -395,7 +395,12 @@ export default function BankaciSifrelerimPage() {
               </p>
             </div>
             <div className="flex flex-col sm:flex-row gap-3">
-              <Button size="lg" onClick={() => router.push("/uygulama/sifrelerim/ekle")}>
+              <Button
+                variant="outline"
+                size="lg"
+                className="bg-transparent border-white/20 text-white hover:bg-white/10 hover:border-transparent hover:text-white"
+                onClick={() => router.push("/uygulama/sifrelerim/ekle")}
+              >
                 <Plus className="h-5 w-5 mr-2" />
                 Yeni Şifre Ekle
               </Button>

@@ -22,13 +22,10 @@ import {
   DollarSign,
   TrendingUp,
   Clock,
-  Wallet,
+  AlertCircle,
+  Calendar,
 } from "lucide-react"
-import { Doughnut } from "react-chartjs-2"
-import { Chart as ChartJS, ArcElement, Tooltip, Legend } from "chart.js"
 import { AdBanner } from "@/components/ad-banner"
-
-ChartJS.register(ArcElement, Tooltip, Legend)
 
 // Kredi verisi için genişletilmiş tip (ilişkili tablolarla)
 interface PopulatedCredit extends Credit {
@@ -82,10 +79,6 @@ export default function DashboardPage() {
   const [upcomingPaymentCount, setUpcomingPaymentCount] = useState(0)
 
   // Grafik state'leri
-  const [lineChartData, setLineChartData] = useState(defaultLineChartData)
-  const [barChartData, setBarChartData] = useState(defaultBarChartData)
-  const [bankChartData, setBankChartData] = useState<any>(null)
-  const [creditTypeChartData, setCreditTypeChartData] = useState<any>(null)
 
   useEffect(() => {
     let isMounted = true
@@ -136,133 +129,8 @@ export default function DashboardPage() {
             setUpcomingPaymentCount(upcomingPaymentsData?.length || 0)
 
             // Line Chart verisi - Finansal trend
-            if (activeCredits.length > 0) {
-              const now = new Date()
-              const months = []
-
-              for (let i = 5; i >= 0; i--) {
-                const date = new Date(now.getFullYear(), now.getMonth() - i, 1)
-                const monthName = date.toLocaleDateString("tr-TR", { month: "short" })
-
-                // Basit simülasyon
-                const totalDebtAtMonth = activeCredits.reduce((sum, credit) => {
-                  const monthlyReduction = credit.monthly_payment * 0.7
-                  const remainingAtMonth = credit.remaining_debt + monthlyReduction * i
-                  return sum + remainingAtMonth
-                }, 0)
-
-                const totalPaidAtMonth = activeCredits.reduce((sum, credit) => {
-                  const monthlyPayment = credit.monthly_payment
-                  return sum + monthlyPayment * (6 - i)
-                }, 0)
-
-                months.push({
-                  month: monthName,
-                  anaParaBorcu: Math.max(0, totalDebtAtMonth),
-                  toplamOdenen: totalPaidAtMonth,
-                })
-              }
-
-              setLineChartData(months)
-            } else {
-              setLineChartData(defaultLineChartData)
-            }
 
             // Bar Chart verisi - Nakit akış
-            if (activeCredits.length > 0) {
-              const now = new Date()
-              const cashFlowMonths = []
-
-              for (let i = 0; i < 6; i++) {
-                const date = new Date(now.getFullYear(), now.getMonth() + i, 1)
-                const monthName = date.toLocaleDateString("tr-TR", { month: "short" })
-
-                const monthlyKrediPayment = activeCredits.reduce((sum, credit) => sum + credit.monthly_payment, 0)
-                const estimatedIncome = monthlyKrediPayment + 5000
-
-                cashFlowMonths.push({
-                  name: monthName,
-                  krediOdeme: monthlyKrediPayment,
-                  gelir: estimatedIncome,
-                })
-              }
-
-              setBarChartData(cashFlowMonths)
-            } else {
-              setBarChartData(defaultBarChartData)
-            }
-
-            if (activeCredits.length > 0) {
-              // Banka dağılımı
-              const bankDistribution = activeCredits.reduce((acc: any, credit) => {
-                const bankName = credit.banks?.name || "Diğer Bankalar"
-                const existing = acc.find((item: any) => item.name === bankName)
-
-                if (existing) {
-                  existing.value += credit.remaining_debt
-                } else {
-                  acc.push({
-                    name: bankName,
-                    value: credit.remaining_debt,
-                    color: getBankColor(bankName),
-                    logoUrl: credit.banks?.logo_url,
-                  })
-                }
-                return acc
-              }, [])
-
-              const sortedBankData = bankDistribution.sort((a: any, b: any) => b.value - a.value).slice(0, 5)
-
-              setBankChartData({
-                labels: sortedBankData.map((item: any) => item.name),
-                datasets: [
-                  {
-                    data: sortedBankData.map((item: any) => item.value),
-                    backgroundColor: sortedBankData.map((item: any) => item.color),
-                    borderWidth: 2,
-                    borderColor: "#ffffff",
-                    cutout: "70%",
-                  },
-                ],
-              })
-
-              // Kredi türü dağılımı
-              const creditTypeDistribution = activeCredits.reduce((acc: any, credit) => {
-                const typeName = credit.credit_types?.name || "Diğer Krediler"
-                const existing = acc.find((item: any) => item.name === typeName)
-
-                if (existing) {
-                  existing.value += credit.remaining_debt
-                } else {
-                  acc.push({
-                    name: typeName,
-                    value: credit.remaining_debt,
-                    color: getColorForCreditType(typeName),
-                  })
-                }
-                return acc
-              }, [])
-
-              const sortedCreditTypeData = creditTypeDistribution
-                .sort((a: any, b: any) => b.value - a.value)
-                .slice(0, 5)
-
-              setCreditTypeChartData({
-                labels: sortedCreditTypeData.map((item: any) => item.name),
-                datasets: [
-                  {
-                    data: sortedCreditTypeData.map((item: any) => item.value),
-                    backgroundColor: sortedCreditTypeData.map((item: any) => item.color),
-                    borderWidth: 2,
-                    borderColor: "#ffffff",
-                    cutout: "70%",
-                  },
-                ],
-              })
-            } else {
-              setBankChartData(null)
-              setCreditTypeChartData(null)
-            }
           }
         } catch (err) {
           console.error("Dashboard data fetch error:", err)
@@ -286,93 +154,9 @@ export default function DashboardPage() {
     }
   }, [user, authLoading])
 
-  const getBankColor = (bankName: string): string => {
-    const colorMap: { [key: string]: string } = {
-      "Türkiye İş Bankası A.Ş.": "#1e40af",
-      "Türkiye Garanti Bankası A.Ş.": "#059669",
-      "Türkiye Vakıflar Bankası T.A.O.": "#dc2626",
-      "Türkiye Halk Bankası A.Ş.": "#7c3aed",
-      "Akbank T.A.Ş.": "#ea580c",
-      "Yapı ve Kredi Bankası A.Ş.": "#0891b2",
-      "Türk Ekonomi Bankası A.Ş.": "#f59e0b",
-      "Enpara Bank A.S.": "#10b981",
-      "Fibabanka A.S.": "#8b5cf6",
-      "Diğer Bankalar": "#6b7280",
-    }
-    return colorMap[bankName] || "#6b7280"
-  }
+  // Removed chart-related helper functions (getBankColor, getColorForCreditType)
 
-  const getColorForCreditType = (typeName: string): string => {
-    const colorMap: { [key: string]: string } = {
-      "İhtiyaç Kredisi": "#3b82f6",
-      "Konut Kredisi": "#10b981",
-      "Taşıt Kredisi": "#f59e0b",
-      "Ticari Kredi": "#8b5cf6",
-      "Ticari Finansman": "#06b6d4",
-      "İşletme Kredisi": "#ef4444",
-      "Taksitli Nakit Avans": "#84cc16",
-      "Kredi Kartı": "#ef4444",
-      "Diğer Krediler": "#6b7280",
-      Diğer: "#94a3b8",
-    }
-    return colorMap[typeName] || "#6b7280"
-  }
-
-  const chartOptions = {
-    responsive: true,
-    maintainAspectRatio: false,
-    plugins: {
-      legend: {
-        position: "bottom" as const,
-        labels: {
-          padding: 20,
-          usePointStyle: true,
-          font: {
-            size: 12,
-            family: "Inter, sans-serif",
-          },
-          color: (context: any) => (document.documentElement.classList.contains("dark") ? "#e5e7eb" : "#374151"),
-          generateLabels: (chart: any) => {
-            const data = chart.data
-            if (data.labels.length && data.datasets.length) {
-              return data.labels.map((label: string, i: number) => {
-                const value = data.datasets[0].data[i]
-                const total = data.datasets[0].data.reduce((sum: number, val: number) => sum + val, 0)
-                const percentage = ((value / total) * 100).toFixed(1)
-                return {
-                  text: `${label} (${percentage}%)`,
-                  fillStyle: data.datasets[0].backgroundColor[i],
-                  strokeStyle: data.datasets[0].backgroundColor[i],
-                  lineWidth: 0,
-                  pointStyle: "circle",
-                  hidden: false,
-                  index: i,
-                }
-              })
-            }
-            return []
-          },
-        },
-      },
-      tooltip: {
-        callbacks: {
-          label: (context: any) => {
-            const value = context.parsed
-            const total = context.dataset.data.reduce((sum: number, val: number) => sum + val, 0)
-            const percentage = ((value / total) * 100).toFixed(1)
-            return `${context.label}: ${formatCurrency(value)} (${percentage}%)`
-          },
-        },
-        backgroundColor: (context: any) =>
-          document.documentElement.classList.contains("dark") ? "rgba(17, 24, 39, 0.95)" : "rgba(0, 0, 0, 0.8)",
-        titleColor: "white",
-        bodyColor: "white",
-        borderColor: (context: any) =>
-          document.documentElement.classList.contains("dark") ? "rgba(75, 85, 99, 0.3)" : "rgba(255, 255, 255, 0.1)",
-        borderWidth: 1,
-      },
-    },
-  }
+  // Removed chartOptions
 
   const displayName = profile?.first_name || user?.email?.split("@")[0] || "Kullanıcı"
 
@@ -545,83 +329,119 @@ export default function DashboardPage() {
         <Card className="relative overflow-hidden border-0 bg-gradient-to-br from-purple-500 via-pink-600 to-rose-700 dark:from-purple-600 dark:via-pink-700 dark:to-rose-800 text-white shadow-2xl dark:shadow-purple-900/20">
           <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 dark:bg-white/5 rounded-full -translate-y-16 translate-x-16"></div>
           <CardContent className="relative p-8">
-            <div className="flex items-center justify-between mb-6">
-              <div className="p-4 bg-white/20 dark:bg-white/15 rounded-2xl backdrop-blur-sm">
-                <Wallet className="h-8 w-8 text-white" />
-              </div>
-              <Badge className="bg-white/20 dark:bg-white/15 text-white border-white/30 dark:border-white/20 backdrop-blur-sm px-3 py-1">
-                Aktif
-              </Badge>
-            </div>
-            <h3 className="font-bold text-2xl mb-3 drop-shadow-md">Aylık Yük</h3>
-            <p className="text-4xl font-black mb-4 drop-shadow-lg">{formatCurrency(monthlyPayment)}</p>
-            <p className="text-sm text-purple-100 dark:text-purple-50 leading-relaxed">
-              <span className="font-semibold text-white">{credits.filter((c) => c.status === "active").length}</span>{" "}
-              aktif krediden toplam aylık ödeme
-            </p>
-            <div className="mt-6 grid grid-cols-3 gap-2">
-              <div className="text-center">
-                <div className="text-xs text-purple-200 dark:text-purple-100 mb-1">Min</div>
-                <div className="h-1 bg-white/30 dark:bg-white/20 rounded"></div>
-              </div>
-              <div className="text-center">
-                <div className="text-xs text-purple-200 dark:text-purple-100 mb-1">Ort</div>
-                <div className="h-1 bg-white/60 dark:bg-white/50 rounded"></div>
-              </div>
-              <div className="text-center">
-                <div className="text-xs text-purple-200 dark:text-purple-100 mb-1">Max</div>
-                <div className="h-1 bg-white dark:bg-white/90 rounded"></div>
+            <div className="h-80">
+              <div className="flex items-center justify-center h-full text-purple-100 dark:text-purple-50">
+                Veri bulunmamaktadır
               </div>
             </div>
           </CardContent>
         </Card>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <Card className="shadow-lg hover:shadow-xl dark:shadow-gray-900/20 dark:hover:shadow-gray-900/30 transition-shadow duration-300 rounded-xl border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800">
-          <CardHeader className="pb-4">
-            <CardTitle className="text-gray-900 dark:text-gray-100 flex items-center gap-2 text-lg">
-              Banka Dağılımı
-            </CardTitle>
-            <CardDescription className="text-gray-600 dark:text-gray-400">
-              Borç tutarına göre banka dağılımı
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="h-80">
-              {bankChartData ? (
-                <Doughnut data={bankChartData} options={chartOptions} />
-              ) : (
-                <div className="flex items-center justify-center h-full text-gray-500 dark:text-gray-400">
-                  Veri bulunmamaktadır
-                </div>
-              )}
-            </div>
-          </CardContent>
-        </Card>
+      <Card className="shadow-lg hover:shadow-xl dark:shadow-gray-900/20 dark:hover:shadow-gray-900/30 transition-shadow duration-300 rounded-xl border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800">
+        <CardHeader>
+          <CardTitle className="text-gray-900 dark:text-gray-100 flex items-center gap-2">
+            <Clock className="h-5 w-5 text-yellow-600 dark:text-yellow-400" />
+            Yaklaşan Ödemeler
+          </CardTitle>
+          <CardDescription className="text-gray-600 dark:text-gray-400">
+            Önümüzdeki 30 gün içinde yapılması gereken ödemeler.
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="overflow-x-auto">
+            <Table>
+              <TableHeader>
+                <TableRow className="bg-gray-50 dark:bg-gray-700/50 border-gray-200 dark:border-gray-600 hover:bg-gray-100 dark:hover:bg-gray-700">
+                  <TableHead className="font-semibold text-gray-700 dark:text-gray-200">Banka</TableHead>
+                  <TableHead className="font-semibold text-gray-700 dark:text-gray-200">Kredi Kodu</TableHead>
+                  <TableHead className="font-semibold text-gray-700 dark:text-gray-200">Ödeme Tarihi</TableHead>
+                  <TableHead className="font-semibold text-gray-700 dark:text-gray-200">Taksit No</TableHead>
+                  <TableHead className="font-semibold text-gray-700 dark:text-gray-200">Tutar</TableHead>
+                  <TableHead className="font-semibold text-gray-700 dark:text-gray-200">Durum</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {upcomingPayments.slice(0, 5).map((payment, index) => {
+                  const paymentDate = new Date(payment.due_date)
+                  const today = new Date()
+                  const daysUntil = Math.ceil((paymentDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24))
+                  const isUrgent = daysUntil <= 7
 
-        <Card className="shadow-lg hover:shadow-xl dark:shadow-gray-900/20 dark:hover:shadow-gray-900/30 transition-shadow duration-300 rounded-xl border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800">
-          <CardHeader className="pb-4">
-            <CardTitle className="text-gray-900 dark:text-gray-100 flex items-center gap-2 text-lg">
-              Kredi Türü Dağılımı
-            </CardTitle>
-            <CardDescription className="text-gray-600 dark:text-gray-400">
-              Borç tutarına göre kredi türü dağılımı
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="h-80">
-              {creditTypeChartData ? (
-                <Doughnut data={creditTypeChartData} options={chartOptions} />
-              ) : (
-                <div className="flex items-center justify-center h-full text-gray-500 dark:text-gray-400">
-                  Veri bulunmamaktadır
-                </div>
-              )}
-            </div>
-          </CardContent>
-        </Card>
-      </div>
+                  return (
+                    <TableRow
+                      key={payment.id}
+                      className={`hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors duration-150 ease-in-out ${
+                        index % 2 === 0 ? "bg-white dark:bg-gray-800" : "bg-gray-50/50 dark:bg-gray-700/30"
+                      } border-gray-200 dark:border-gray-600`}
+                    >
+                      <TableCell>
+                        <div className="flex items-center gap-3">
+                          <BankLogo
+                            bankName={payment.credits?.banks?.name || "Bilinmeyen Banka"}
+                            logoUrl={payment.credits?.banks?.logo_url || undefined}
+                            size="sm"
+                            className="flex-shrink-0"
+                          />
+                          <span className="font-medium text-gray-900 dark:text-gray-100 text-sm">
+                            {payment.credits?.banks?.name || "N/A"}
+                          </span>
+                        </div>
+                      </TableCell>
+                      <TableCell className="text-gray-600 dark:text-gray-300">
+                        {payment.credits?.credit_code || "N/A"}
+                      </TableCell>
+                      <TableCell>
+                        <div className="flex flex-col">
+                          <span className="font-medium text-gray-900 dark:text-gray-100">
+                            {paymentDate.toLocaleDateString("tr-TR")}
+                          </span>
+                          <span
+                            className={`text-xs ${isUrgent ? "text-red-600 dark:text-red-400 font-semibold" : "text-gray-500 dark:text-gray-400"}`}
+                          >
+                            {daysUntil === 0 ? "Bugün" : daysUntil === 1 ? "Yarın" : `${daysUntil} gün sonra`}
+                          </span>
+                        </div>
+                      </TableCell>
+                      <TableCell className="text-gray-600 dark:text-gray-300">{payment.installment_number}</TableCell>
+                      <TableCell className="font-semibold text-gray-900 dark:text-gray-100">
+                        {formatCurrency(payment.total_payment)}
+                      </TableCell>
+                      <TableCell>
+                        {isUrgent ? (
+                          <Badge className="bg-gradient-to-r from-red-500 to-rose-600 dark:from-red-600 dark:to-rose-700 text-white border-0 shadow-md hover:shadow-lg transition-all duration-200 px-3 py-1.5 font-medium">
+                            <AlertCircle className="h-3.5 w-3.5 mr-1.5" />
+                            Acil
+                          </Badge>
+                        ) : (
+                          <Badge className="bg-gradient-to-r from-amber-400 to-orange-500 dark:from-amber-500 dark:to-orange-600 text-white border-0 shadow-md hover:shadow-lg transition-all duration-200 px-3 py-1.5 font-medium">
+                            <Calendar className="h-3.5 w-3.5 mr-1.5" />
+                            Yaklaşan
+                          </Badge>
+                        )}
+                      </TableCell>
+                    </TableRow>
+                  )
+                })}
+              </TableBody>
+            </Table>
+            {upcomingPayments.length === 0 && (
+              <div className="text-center py-8 text-gray-500 dark:text-gray-400">Yaklaşan ödeme bulunmamaktadır.</div>
+            )}
+            {upcomingPayments.length > 5 && (
+              <div className="mt-4 text-center">
+                <Link
+                  href="/uygulama/odeme-plani"
+                  className="inline-flex items-center justify-center gap-2 px-4 py-2 bg-gradient-to-r from-yellow-500 to-orange-600 hover:from-yellow-600 hover:to-orange-700 dark:from-yellow-400 dark:to-orange-500 dark:hover:from-yellow-500 dark:hover:to-orange-600 text-white font-medium rounded-lg shadow-md hover:shadow-lg dark:shadow-yellow-900/20 transition-all duration-200 text-sm"
+                >
+                  <Clock className="h-4 w-4" />
+                  <span>Tüm Ödemeleri Gör ({upcomingPayments.length})</span>
+                </Link>
+              </div>
+            )}
+          </div>
+        </CardContent>
+      </Card>
 
       <Card className="shadow-lg hover:shadow-xl dark:shadow-gray-900/20 dark:hover:shadow-gray-900/30 transition-shadow duration-300 rounded-xl border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800">
         <CardHeader>
