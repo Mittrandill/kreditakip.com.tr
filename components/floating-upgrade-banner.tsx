@@ -14,7 +14,7 @@ export function FloatingUpgradeBanner() {
   const pathname = usePathname()
 
   useEffect(() => {
-    if (pathname === "/uygulama/premium" || isPremium || loading || !subscription) {
+    if (pathname === "/uygulama/premium" || isPremium || loading) {
       setIsVisible(false)
       return
     }
