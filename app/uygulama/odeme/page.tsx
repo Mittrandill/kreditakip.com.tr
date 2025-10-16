@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { CreditCard, Lock, ArrowLeft, Shield, Zap, Clock, Building2, CheckCircle2 } from "lucide-react"
+import { Lock, ArrowLeft, Shield, Zap, Clock, Building2, CheckCircle2 } from "lucide-react"
 import { useRouter } from "next/navigation"
 import { useToast } from "@/hooks/use-toast"
 import { supabase } from "@/lib/supabase"
@@ -32,8 +32,8 @@ export default function PaymentPage() {
     city: "",
     district: "",
     zipCode: "",
-    taxId: "", // VKN field
-    taxOffice: "", // Added tax office field
+    taxNumber: "", // Renamed from taxId to match backend
+    taxOffice: "",
   })
 
   useEffect(() => {
@@ -46,7 +46,7 @@ export default function PaymentPage() {
 
   const handleBillingChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target
-    if (name === "taxId") {
+    if (name === "taxNumber") {
       const formatted = value.replace(/\D/g, "").slice(0, 11)
       setBillingInfo((prev) => ({ ...prev, [name]: formatted }))
     } else {
@@ -97,7 +97,7 @@ export default function PaymentPage() {
           district: billingInfo.district,
           postal_code: billingInfo.zipCode,
           country: "Turkey",
-          tax_id: billingInfo.taxId || null,
+          tax_number: billingInfo.taxNumber || null,
           tax_office: billingInfo.taxOffice || null,
           updated_at: new Date().toISOString(),
         },
@@ -120,6 +120,17 @@ export default function PaymentPage() {
         },
         body: JSON.stringify({
           userId: user.id,
+          billingInfo: {
+            fullName: billingInfo.fullName,
+            email: billingInfo.email,
+            phone: billingInfo.phone,
+            address: billingInfo.address,
+            city: billingInfo.city,
+            district: billingInfo.district,
+            zipCode: billingInfo.zipCode,
+            taxNumber: billingInfo.taxNumber,
+            taxOffice: billingInfo.taxOffice,
+          },
         }),
       })
 
@@ -246,12 +257,12 @@ export default function PaymentPage() {
                   </div>
 
                   <div className="space-y-2">
-                    <Label htmlFor="taxId">Vergi Kimlik No *</Label>
+                    <Label htmlFor="taxNumber">Vergi Kimlik No *</Label>
                     <Input
-                      id="taxId"
-                      name="taxId"
+                      id="taxNumber"
+                      name="taxNumber"
                       placeholder="12345678901"
-                      value={billingInfo.taxId}
+                      value={billingInfo.taxNumber}
                       onChange={handleBillingChange}
                       maxLength={11}
                       required
@@ -334,84 +345,6 @@ export default function PaymentPage() {
                       disabled={isProcessing}
                     />
                   </div>
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <CreditCard className="h-5 w-5 text-emerald-600" />
-                  Kart Bilgileri
-                </CardTitle>
-                <CardDescription>Ödeme bilgilerinizi güvenle girin</CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div className="md:col-span-2 space-y-2">
-                    <Label htmlFor="cardHolderName">Kart Üzerindeki İsim *</Label>
-                    <Input
-                      id="cardHolderName"
-                      name="cardHolderName"
-                      placeholder="AKIN KAYA"
-                      value={billingInfo.cardHolderName}
-                      onChange={handleBillingChange}
-                      required
-                      disabled={isProcessing}
-                      className="uppercase"
-                    />
-                  </div>
-
-                  <div className="md:col-span-2 space-y-2">
-                    <Label htmlFor="cardNumber">Kart Numarası *</Label>
-                    <Input
-                      id="cardNumber"
-                      name="cardNumber"
-                      placeholder="1234 5678 9012 3456"
-                      value={billingInfo.cardNumber}
-                      onChange={handleBillingChange}
-                      maxLength={19}
-                      required
-                      disabled={isProcessing}
-                      className="font-mono"
-                    />
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label htmlFor="expiryDate">Son Kullanma Tarihi *</Label>
-                    <Input
-                      id="expiryDate"
-                      name="expiryDate"
-                      placeholder="MM/YY"
-                      value={billingInfo.expiryDate}
-                      onChange={handleBillingChange}
-                      maxLength={5}
-                      required
-                      disabled={isProcessing}
-                      className="font-mono"
-                    />
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label htmlFor="cvv">CVV *</Label>
-                    <Input
-                      id="cvv"
-                      name="cvv"
-                      type="password"
-                      placeholder="123"
-                      value={billingInfo.cvv}
-                      onChange={handleBillingChange}
-                      maxLength={4}
-                      required
-                      disabled={isProcessing}
-                      className="font-mono"
-                    />
-                  </div>
-                </div>
-
-                <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400 bg-gray-50 dark:bg-gray-800 p-4 rounded-lg border">
-                  <Lock className="h-4 w-4 flex-shrink-0" />
-                  <span>Ödeme bilgileriniz SSL ile şifrelenir ve güvenli şekilde işlenir</span>
                 </div>
               </CardContent>
             </Card>
