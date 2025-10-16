@@ -13,12 +13,11 @@ interface AdBannerProps {
 }
 
 export function AdBanner({ position = "top", className = "" }: AdBannerProps) {
-  const { isPremium, loading } = useSubscription()
+  const { isPremium, loading, subscription } = useSubscription()
   const [isDismissed, setIsDismissed] = useState(false)
   const router = useRouter()
 
-  // Don't show ads for premium users
-  if (loading || isPremium) {
+  if (loading || isPremium || !subscription) {
     return null
   }
 
@@ -73,10 +72,10 @@ export function AdBanner({ position = "top", className = "" }: AdBannerProps) {
 }
 
 export function AdSidebar({ className = "" }: { className?: string }) {
-  const { isPremium, loading } = useSubscription()
+  const { isPremium, loading, subscription } = useSubscription()
   const router = useRouter()
 
-  if (loading || isPremium) {
+  if (loading || isPremium || !subscription) {
     return null
   }
 

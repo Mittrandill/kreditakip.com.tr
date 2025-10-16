@@ -14,8 +14,7 @@ export function FloatingUpgradeBanner() {
   const pathname = usePathname()
 
   useEffect(() => {
-    // Don't show on premium page or if already premium
-    if (pathname === "/uygulama/premium" || isPremium || loading) {
+    if (pathname === "/uygulama/premium" || isPremium || loading || !subscription) {
       setIsVisible(false)
       return
     }
@@ -29,13 +28,13 @@ export function FloatingUpgradeBanner() {
 
     // Show banner after 5 seconds for free users
     const timer = setTimeout(() => {
-      if (!isPremium && !loading) {
+      if (!isPremium && !loading && subscription) {
         setIsVisible(true)
       }
     }, 5000)
 
     return () => clearTimeout(timer)
-  }, [isPremium, loading, pathname])
+  }, [isPremium, loading, pathname, subscription])
 
   const handleDismiss = () => {
     setIsVisible(false)
@@ -47,7 +46,7 @@ export function FloatingUpgradeBanner() {
     router.push("/uygulama/premium")
   }
 
-  if (!isVisible || isDismissed || isPremium || loading) {
+  if (!isVisible || isDismissed || isPremium || loading || !subscription) {
     return null
   }
 
