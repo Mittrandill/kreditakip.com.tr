@@ -32,7 +32,8 @@ export default function PaymentPage() {
     city: "",
     district: "",
     zipCode: "",
-    taxId: "", // Added VKN field
+    taxId: "", // VKN field
+    taxOffice: "", // Added tax office field
   })
 
   useEffect(() => {
@@ -97,6 +98,7 @@ export default function PaymentPage() {
           postal_code: billingInfo.zipCode,
           country: "Turkey",
           tax_id: billingInfo.taxId || null,
+          tax_office: billingInfo.taxOffice || null,
           updated_at: new Date().toISOString(),
         },
         {
@@ -244,7 +246,7 @@ export default function PaymentPage() {
                   </div>
 
                   <div className="space-y-2">
-                    <Label htmlFor="taxId">Vergi Kimlik No (Opsiyonel)</Label>
+                    <Label htmlFor="taxId">Vergi Kimlik No *</Label>
                     <Input
                       id="taxId"
                       name="taxId"
@@ -252,6 +254,20 @@ export default function PaymentPage() {
                       value={billingInfo.taxId}
                       onChange={handleBillingChange}
                       maxLength={11}
+                      required
+                      disabled={isProcessing}
+                    />
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="taxOffice">Vergi Dairesi *</Label>
+                    <Input
+                      id="taxOffice"
+                      name="taxOffice"
+                      placeholder="Kadıköy Vergi Dairesi"
+                      value={billingInfo.taxOffice}
+                      onChange={handleBillingChange}
+                      required
                       disabled={isProcessing}
                     />
                   </div>
