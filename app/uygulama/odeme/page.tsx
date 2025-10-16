@@ -7,7 +7,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { CreditCard, Lock, ArrowLeft, Sparkles, Shield, CheckCircle2 } from "lucide-react"
+import { CreditCard, Lock, ArrowLeft, Sparkles, Shield, CheckCircle2, Building2, User, Mail, Phone } from "lucide-react"
 import { useRouter } from "next/navigation"
 import { useToast } from "@/hooks/use-toast"
 import { supabase } from "@/lib/supabase"
@@ -24,6 +24,14 @@ export default function PaymentPage() {
     expireMonth: "",
     expireYear: "",
   })
+  const [billingInfo, setBillingInfo] = useState({
+    fullName: "",
+    email: "",
+    phone: "",
+    address: "",
+    city: "",
+    zipCode: "",
+  })
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target
@@ -37,6 +45,11 @@ export default function PaymentPage() {
     } else {
       setFormData((prev) => ({ ...prev, [name]: value }))
     }
+  }
+
+  const handleBillingChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target
+    setBillingInfo((prev) => ({ ...prev, [name]: value }))
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -77,6 +90,7 @@ export default function PaymentPage() {
             expireYear: formData.expireYear,
             cvc: "123",
           },
+          billingInfo,
         }),
       })
 
@@ -109,30 +123,32 @@ export default function PaymentPage() {
   }
 
   return (
-    <div className="max-w-6xl mx-auto space-y-6">
+    <div className="max-w-7xl mx-auto space-y-6 pb-8">
       <Card className="relative overflow-hidden border-0 bg-gradient-to-br from-emerald-500 via-teal-600 to-cyan-700 dark:from-emerald-600 dark:via-teal-700 dark:to-cyan-800 text-white shadow-2xl">
-        <div className="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full blur-3xl"></div>
-        <CardContent className="relative p-8">
-          <div className="flex items-center gap-4 mb-4">
+        <div className="absolute top-0 right-0 w-96 h-96 bg-white/10 rounded-full blur-3xl"></div>
+        <div className="absolute bottom-0 left-0 w-96 h-96 bg-cyan-500/20 rounded-full blur-3xl"></div>
+        <CardContent className="relative p-8 md:p-12">
+          <div className="flex items-center gap-4 mb-2">
             <Button variant="ghost" size="icon" onClick={() => router.back()} className="text-white hover:bg-white/20">
               <ArrowLeft className="h-5 w-5" />
             </Button>
             <div>
-              <h1 className="text-4xl font-bold">Premium Ödeme</h1>
-              <p className="text-white/90 text-lg mt-2">Güvenli ödeme ile premium üyeliğe geçin</p>
+              <h1 className="text-4xl md:text-5xl font-bold">Premium Ödeme</h1>
+              <p className="text-white/90 text-lg md:text-xl mt-3">Güvenli ödeme ile premium üyeliğe geçin</p>
             </div>
           </div>
         </CardContent>
       </Card>
 
-      <div className="grid lg:grid-cols-2 gap-6">
-        <div className="space-y-6">
-          <Card className="relative overflow-hidden border-0 bg-gradient-to-br from-slate-700 via-slate-800 to-slate-900 text-white shadow-2xl h-56">
+      <div className="grid lg:grid-cols-3 gap-6">
+        {/* Left Column - Card Preview & Summary */}
+        <div className="lg:col-span-1 space-y-6">
+          <Card className="relative overflow-hidden border-0 bg-gradient-to-br from-slate-700 via-slate-800 to-slate-900 text-white shadow-2xl h-56 transform transition-transform hover:scale-105">
             <div className="absolute top-0 right-0 w-48 h-48 bg-emerald-500/20 rounded-full blur-3xl"></div>
             <div className="absolute bottom-0 left-0 w-48 h-48 bg-cyan-500/20 rounded-full blur-3xl"></div>
             <CardContent className="relative p-8 h-full flex flex-col justify-between">
               <div className="flex items-center justify-between">
-                <div className="w-12 h-12 bg-gradient-to-br from-amber-400 to-orange-500 rounded-lg"></div>
+                <div className="w-12 h-12 bg-gradient-to-br from-amber-400 to-orange-500 rounded-lg shadow-lg"></div>
                 <CreditCard className="h-10 w-10 text-white/80" />
               </div>
               <div className="space-y-4">
@@ -172,7 +188,7 @@ export default function PaymentPage() {
                 <span className="text-gray-600 dark:text-gray-400">Periyot</span>
                 <span className="font-semibold">Aylık</span>
               </div>
-              <div className="flex items-center justify-between py-3 bg-gradient-to-r from-emerald-50 to-teal-50 dark:from-emerald-950/20 dark:to-teal-950/20 rounded-lg px-4">
+              <div className="flex items-center justify-between py-4 bg-gradient-to-r from-emerald-50 to-teal-50 dark:from-emerald-950/20 dark:to-teal-950/20 rounded-lg px-4">
                 <span className="text-lg font-bold">Toplam</span>
                 <span className="text-3xl font-bold text-emerald-600 dark:text-emerald-400">199₺</span>
               </div>
@@ -200,111 +216,230 @@ export default function PaymentPage() {
           </Card>
         </div>
 
-        <Card className="shadow-lg">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2 text-2xl">
-              <CreditCard className="h-6 w-6 text-emerald-600" />
-              Kart Bilgileri
-            </CardTitle>
-            <CardDescription>Ödeme bilgilerinizi güvenle girin</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <form onSubmit={handleSubmit} className="space-y-5">
-              <div className="space-y-2">
-                <Label htmlFor="cardHolderName" className="text-base">
-                  Kart Üzerindeki İsim
-                </Label>
-                <Input
-                  id="cardHolderName"
-                  name="cardHolderName"
-                  placeholder="AKIN KAYA"
-                  value={formData.cardHolderName}
-                  onChange={handleInputChange}
-                  required
-                  disabled={isProcessing}
-                  className="h-12 text-base"
-                />
-              </div>
+        {/* Right Column - Forms */}
+        <div className="lg:col-span-2 space-y-6">
+          <form onSubmit={handleSubmit} className="space-y-6">
+            <Card className="shadow-lg">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2 text-2xl">
+                  <Building2 className="h-6 w-6 text-emerald-600" />
+                  Fatura Bilgileri
+                </CardTitle>
+                <CardDescription>Fatura için gerekli bilgilerinizi girin</CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-5">
+                <div className="grid md:grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="fullName" className="text-base flex items-center gap-2">
+                      <User className="h-4 w-4" />
+                      Ad Soyad
+                    </Label>
+                    <Input
+                      id="fullName"
+                      name="fullName"
+                      placeholder="Akın Kaya"
+                      value={billingInfo.fullName}
+                      onChange={handleBillingChange}
+                      required
+                      disabled={isProcessing}
+                      className="h-12 text-base"
+                    />
+                  </div>
 
-              <div className="space-y-2">
-                <Label htmlFor="cardNumber" className="text-base">
-                  Kart Numarası
-                </Label>
-                <Input
-                  id="cardNumber"
-                  name="cardNumber"
-                  placeholder="1234 5678 9012 3456"
-                  value={formData.cardNumber}
-                  onChange={handleInputChange}
-                  maxLength={19}
-                  required
-                  disabled={isProcessing}
-                  className="h-12 text-base font-mono"
-                />
-              </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="email" className="text-base flex items-center gap-2">
+                      <Mail className="h-4 w-4" />
+                      E-posta
+                    </Label>
+                    <Input
+                      id="email"
+                      name="email"
+                      type="email"
+                      placeholder="akin@example.com"
+                      value={billingInfo.email}
+                      onChange={handleBillingChange}
+                      required
+                      disabled={isProcessing}
+                      className="h-12 text-base"
+                    />
+                  </div>
+                </div>
 
-              <div className="grid grid-cols-2 gap-4">
+                <div className="grid md:grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="phone" className="text-base flex items-center gap-2">
+                      <Phone className="h-4 w-4" />
+                      Telefon
+                    </Label>
+                    <Input
+                      id="phone"
+                      name="phone"
+                      placeholder="0555 123 4567"
+                      value={billingInfo.phone}
+                      onChange={handleBillingChange}
+                      required
+                      disabled={isProcessing}
+                      className="h-12 text-base"
+                    />
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="city" className="text-base">
+                      Şehir
+                    </Label>
+                    <Input
+                      id="city"
+                      name="city"
+                      placeholder="İstanbul"
+                      value={billingInfo.city}
+                      onChange={handleBillingChange}
+                      required
+                      disabled={isProcessing}
+                      className="h-12 text-base"
+                    />
+                  </div>
+                </div>
+
+                <div className="grid md:grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="address" className="text-base">
+                      Adres
+                    </Label>
+                    <Input
+                      id="address"
+                      name="address"
+                      placeholder="Mahalle, Sokak, No"
+                      value={billingInfo.address}
+                      onChange={handleBillingChange}
+                      required
+                      disabled={isProcessing}
+                      className="h-12 text-base"
+                    />
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="zipCode" className="text-base">
+                      Posta Kodu
+                    </Label>
+                    <Input
+                      id="zipCode"
+                      name="zipCode"
+                      placeholder="34000"
+                      value={billingInfo.zipCode}
+                      onChange={handleBillingChange}
+                      required
+                      disabled={isProcessing}
+                      className="h-12 text-base"
+                    />
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card className="shadow-lg">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2 text-2xl">
+                  <CreditCard className="h-6 w-6 text-emerald-600" />
+                  Kart Bilgileri
+                </CardTitle>
+                <CardDescription>Ödeme bilgilerinizi güvenle girin</CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-5">
                 <div className="space-y-2">
-                  <Label htmlFor="expireMonth" className="text-base">
-                    Son Kullanma Ayı
+                  <Label htmlFor="cardHolderName" className="text-base">
+                    Kart Üzerindeki İsim
                   </Label>
                   <Input
-                    id="expireMonth"
-                    name="expireMonth"
-                    placeholder="12"
-                    value={formData.expireMonth}
+                    id="cardHolderName"
+                    name="cardHolderName"
+                    placeholder="AKIN KAYA"
+                    value={formData.cardHolderName}
                     onChange={handleInputChange}
-                    maxLength={2}
                     required
                     disabled={isProcessing}
-                    className="h-12 text-base"
+                    className="h-12 text-base uppercase"
                   />
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="expireYear" className="text-base">
-                    Son Kullanma Yılı
+                  <Label htmlFor="cardNumber" className="text-base">
+                    Kart Numarası
                   </Label>
                   <Input
-                    id="expireYear"
-                    name="expireYear"
-                    placeholder="2025"
-                    value={formData.expireYear}
+                    id="cardNumber"
+                    name="cardNumber"
+                    placeholder="1234 5678 9012 3456"
+                    value={formData.cardNumber}
                     onChange={handleInputChange}
-                    maxLength={4}
+                    maxLength={19}
                     required
                     disabled={isProcessing}
-                    className="h-12 text-base"
+                    className="h-12 text-base font-mono"
                   />
                 </div>
-              </div>
 
-              <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400 bg-gray-50 dark:bg-gray-800 p-4 rounded-lg border">
-                <Lock className="h-4 w-4 flex-shrink-0" />
-                <span>Ödeme bilgileriniz SSL ile şifrelenir ve güvenli şekilde işlenir</span>
-              </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="expireMonth" className="text-base">
+                      Son Kullanma Ayı
+                    </Label>
+                    <Input
+                      id="expireMonth"
+                      name="expireMonth"
+                      placeholder="12"
+                      value={formData.expireMonth}
+                      onChange={handleInputChange}
+                      maxLength={2}
+                      required
+                      disabled={isProcessing}
+                      className="h-12 text-base"
+                    />
+                  </div>
 
-              <Button
-                type="submit"
-                className="w-full bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 shadow-lg hover:shadow-xl transition-all"
-                size="lg"
-                disabled={isProcessing}
-              >
-                {isProcessing ? (
-                  <>
-                    <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-2"></div>
-                    İşleniyor...
-                  </>
-                ) : (
-                  <>
-                    <Lock className="h-5 w-5 mr-2" />
-                    199₺ Öde ve Aktifleştir
-                  </>
-                )}
-              </Button>
-            </form>
-          </CardContent>
-        </Card>
+                  <div className="space-y-2">
+                    <Label htmlFor="expireYear" className="text-base">
+                      Son Kullanma Yılı
+                    </Label>
+                    <Input
+                      id="expireYear"
+                      name="expireYear"
+                      placeholder="2025"
+                      value={formData.expireYear}
+                      onChange={handleInputChange}
+                      maxLength={4}
+                      required
+                      disabled={isProcessing}
+                      className="h-12 text-base"
+                    />
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400 bg-gray-50 dark:bg-gray-800 p-4 rounded-lg border">
+                  <Lock className="h-4 w-4 flex-shrink-0" />
+                  <span>Ödeme bilgileriniz SSL ile şifrelenir ve güvenli şekilde işlenir</span>
+                </div>
+
+                <Button
+                  type="submit"
+                  className="w-full bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 shadow-lg hover:shadow-xl transition-all h-14 text-lg"
+                  disabled={isProcessing}
+                >
+                  {isProcessing ? (
+                    <>
+                      <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-2"></div>
+                      İşleniyor...
+                    </>
+                  ) : (
+                    <>
+                      <Lock className="h-5 w-5 mr-2" />
+                      199₺ Öde ve Aktifleştir
+                    </>
+                  )}
+                </Button>
+              </CardContent>
+            </Card>
+          </form>
+        </div>
       </div>
     </div>
   )

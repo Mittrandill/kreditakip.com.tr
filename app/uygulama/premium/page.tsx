@@ -142,13 +142,13 @@ export default function PremiumPage() {
 
           {/* Premium Plan */}
           <Card className="relative border-2 border-emerald-500 dark:border-emerald-600 shadow-2xl hover:shadow-emerald-500/20 transition-all scale-105">
-            <div className="absolute -top-4 left-1/2 -translate-x-1/2">
+            <div className="absolute -top-4 left-1/2 -translate-x-1/2 z-20">
               <Badge className="bg-gradient-to-r from-amber-500 to-orange-600 text-white border-0 px-6 py-2 shadow-lg">
                 <Sparkles className="h-4 w-4 mr-1" />
                 Önerilen
               </Badge>
             </div>
-            <div className="absolute inset-0 bg-gradient-to-br from-emerald-50/50 to-teal-50/50 dark:from-emerald-950/20 dark:to-teal-950/20 rounded-lg"></div>
+            <div className="absolute inset-0 bg-gradient-to-br from-emerald-50/50 to-teal-50/50 dark:from-emerald-950/20 dark:to-teal-950/20 rounded-lg -z-10"></div>
             <CardHeader className="relative space-y-4">
               <div className="flex items-center justify-between">
                 <CardTitle className="flex items-center gap-2 text-2xl">
@@ -274,44 +274,43 @@ export default function PremiumPage() {
 
       {/* Current Usage */}
       {!isPremium && subscription && (
-        <Card className="border-2 border-amber-200 dark:border-amber-800 bg-gradient-to-br from-amber-50 to-orange-50 dark:from-amber-950/20 dark:to-orange-950/20">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <TrendingUp className="h-5 w-5 text-amber-600" />
+        <Card className="relative overflow-hidden border-0 bg-gradient-to-br from-amber-500 via-orange-600 to-red-600 dark:from-amber-600 dark:via-orange-700 dark:to-red-700 text-white shadow-2xl">
+          <div className="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full blur-3xl"></div>
+          <div className="absolute bottom-0 left-0 w-64 h-64 bg-orange-500/20 rounded-full blur-3xl"></div>
+          <CardHeader className="relative">
+            <CardTitle className="flex items-center gap-2 text-white text-2xl">
+              <TrendingUp className="h-6 w-6" />
               Mevcut Kullanım
             </CardTitle>
-            <CardDescription>Ücretsiz plan kullanım durumunuz</CardDescription>
+            <CardDescription className="text-white/90 text-base">Ücretsiz plan kullanım durumunuz</CardDescription>
           </CardHeader>
-          <CardContent className="space-y-6">
-            <div>
+          <CardContent className="relative space-y-6">
+            <div className="bg-white/10 backdrop-blur-sm rounded-xl p-5 border border-white/20">
               <div className="flex items-center justify-between mb-3">
-                <span className="text-sm font-medium">OCR Analizi</span>
-                <span className="text-sm font-semibold text-amber-700 dark:text-amber-400">
+                <span className="text-base font-medium text-white">OCR Analizi</span>
+                <span className="text-base font-bold text-white">
                   {subscription.usage.ocrAnalysis.used} / {subscription.usage.ocrAnalysis.limit}
                 </span>
               </div>
-              <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-3 overflow-hidden">
+              <div className="w-full bg-white/20 rounded-full h-3 overflow-hidden">
                 <div
-                  className="bg-gradient-to-r from-emerald-500 to-teal-600 h-3 rounded-full transition-all shadow-sm"
+                  className="bg-white h-3 rounded-full transition-all shadow-lg"
                   style={{
                     width: `${(subscription.usage.ocrAnalysis.used / subscription.usage.ocrAnalysis.limit) * 100}%`,
                   }}
                 ></div>
               </div>
             </div>
-            <div>
+            <div className="bg-white/10 backdrop-blur-sm rounded-xl p-5 border border-white/20">
               <div className="flex items-center justify-between mb-3">
-                <span className="text-sm font-medium">Risk Analizi</span>
-                <Badge
-                  variant="outline"
-                  className="text-xs border-amber-300 text-amber-700 dark:border-amber-700 dark:text-amber-400"
-                >
+                <span className="text-base font-medium text-white">Risk Analizi</span>
+                <Badge className="bg-white/20 text-white border-white/30 backdrop-blur-sm">
                   <Crown className="h-3 w-3 mr-1" />
                   Premium Özellik
                 </Badge>
               </div>
-              <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-3 overflow-hidden">
-                <div className="bg-gray-400 h-3 rounded-full w-0"></div>
+              <div className="w-full bg-white/20 rounded-full h-3 overflow-hidden">
+                <div className="bg-white/40 h-3 rounded-full w-0"></div>
               </div>
             </div>
           </CardContent>
