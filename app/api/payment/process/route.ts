@@ -9,7 +9,7 @@ export async function POST(request: NextRequest) {
 
   try {
     const body = await request.json()
-    const { userId, email, name, card } = body
+    const { userId, email, name, card, billingInfo } = body
 
     console.log("[v0] Processing payment for user:", userId)
 
@@ -25,6 +25,32 @@ export async function POST(request: NextRequest) {
     }
 
     console.log("[v0] Profile verified:", profile.email)
+
+    if (billingInfo) {
+      console.log("[v0] Saving billing information")
+      const { error: billingError } = await supabase.from("billing_info").upsert(
+        {
+          user_id: userId,
+          full_name: billingInfo.fullName,
+          email: billingInfo.email,
+          phone: billingInfo.phone,
+          address: billingInfo.address,
+          city: billingInfo.city,
+          postal_code: billingInfo.zipCode,
+          country: "Türkiye",
+          updated_at: new Date().toISOString(),
+        },
+        {
+          onConflict: "user_id",
+        },
+      )
+
+      if (billingError) {
+        console.error("[v0] Billing info save error:", billingError)
+        return NextResponse.json({ error: "Fatura bilgileri kaydedilemedi: " + billingError.message }, { status: 500 })
+      }
+      console.log("[v0] Billing information saved successfully")
+    }
 
     const { data: existingSub } = await supabase.from("subscriptions").select("*").eq("user_id", userId).maybeSingle()
 
