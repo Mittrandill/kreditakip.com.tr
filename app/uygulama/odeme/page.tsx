@@ -12,17 +12,26 @@ import { Lock, ArrowLeft, Shield, Zap, Clock, Building2, CheckCircle2, CreditCar
 import { useRouter } from "next/navigation"
 import { useToast } from "@/hooks/use-toast"
 import { useSubscription } from "@/hooks/use-subscription"
+import { useAuth } from "@/hooks/use-auth"
 import Link from "next/link"
 import { turkishCities, cityDistricts } from "@/lib/turkish-cities"
-import { createBrowserClient } from "@/lib/supabase/client"
 
 export default function PaymentPage() {
   const router = useRouter()
   const { toast } = useToast()
   const { refresh: refreshSubscription } = useSubscription()
+  const { user, loading: authLoading } = useAuth()
   const [isProcessing, setIsProcessing] = useState(false)
   const [selectedCityCode, setSelectedCityCode] = useState("")
   const [availableDistricts, setAvailableDistricts] = useState<string[]>([])
+
+  useEffect(() => {
+    if (selectedCityCode && cityDistricts[selectedCityCode]) {
+      setAvailableDistricts(cityDistricts[selectedCityCode])
+    } else {
+      setAvailableDistricts([])
+    }
+  }, [selectedCityCode])
 
   const [cardDetails, setCardDetails] = useState({
     cardHolderName: "",
@@ -43,14 +52,6 @@ export default function PaymentPage() {
     taxNumber: "",
     taxOffice: "",
   })
-
-  useEffect(() => {
-    if (selectedCityCode && cityDistricts[selectedCityCode]) {
-      setAvailableDistricts(cityDistricts[selectedCityCode])
-    } else {
-      setAvailableDistricts([])
-    }
-  }, [selectedCityCode])
 
   const handleCardChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target
@@ -105,11 +106,6 @@ export default function PaymentPage() {
 
     try {
       console.log("[v0] Submitting subscription payment")
-
-      const supabase = createBrowserClient()
-      const {
-        data: { user },
-      } = await supabase.auth.getUser()
 
       if (!user) {
         throw new Error("Kullanıcı oturumu bulunamadı. Lütfen tekrar giriş yapın.")
@@ -198,6 +194,17 @@ export default function PaymentPage() {
     } finally {
       setIsProcessing(false)
     }
+  }
+
+  if (authLoading) {
+    return (
+      <div className="flex items-center justify-center min-h-[400px]">
+        <div className="text-center space-y-4">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-emerald-600 mx-auto"></div>
+          <p className="text-gray-600 dark:text-gray-400">Yükleniyor...</p>
+        </div>
+      </div>
+    )
   }
 
   return (
