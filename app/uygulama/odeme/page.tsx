@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Lock, ArrowLeft, Shield, Zap, Clock, Building2, CheckCircle2 } from "lucide-react"
+import { Lock, ArrowLeft, Shield, Zap, Clock, Building2, CheckCircle2, CreditCard } from "lucide-react"
 import { useRouter } from "next/navigation"
 import { useToast } from "@/hooks/use-toast"
 import { supabase } from "@/lib/supabase"
@@ -24,6 +24,14 @@ export default function PaymentPage() {
   const [selectedCityCode, setSelectedCityCode] = useState("")
   const [availableDistricts, setAvailableDistricts] = useState<string[]>([])
 
+  const [cardDetails, setCardDetails] = useState({
+    cardHolderName: "",
+    cardNumber: "",
+    expireMonth: "",
+    expireYear: "",
+    cvc: "",
+  })
+
   const [billingInfo, setBillingInfo] = useState({
     fullName: "",
     email: "",
@@ -32,7 +40,7 @@ export default function PaymentPage() {
     city: "",
     district: "",
     zipCode: "",
-    taxNumber: "", // Renamed from taxId to match backend
+    taxNumber: "",
     taxOffice: "",
   })
 
@@ -43,6 +51,34 @@ export default function PaymentPage() {
       setAvailableDistricts([])
     }
   }, [selectedCityCode])
+
+  const handleCardChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target
+
+    if (name === "cardNumber") {
+      // Format card number with spaces
+      const formatted = value
+        .replace(/\s/g, "")
+        .replace(/(\d{4})/g, "$1 ")
+        .trim()
+        .slice(0, 19)
+      setCardDetails((prev) => ({ ...prev, [name]: formatted }))
+    } else if (name === "expireMonth" || name === "expireYear") {
+      // Only allow numbers
+      const formatted = value.replace(/\D/g, "")
+      if (name === "expireMonth") {
+        setCardDetails((prev) => ({ ...prev, [name]: formatted.slice(0, 2) }))
+      } else {
+        setCardDetails((prev) => ({ ...prev, [name]: formatted.slice(0, 4) }))
+      }
+    } else if (name === "cvc") {
+      // Only allow numbers, max 3-4 digits
+      const formatted = value.replace(/\D/g, "").slice(0, 4)
+      setCardDetails((prev) => ({ ...prev, [name]: formatted }))
+    } else {
+      setCardDetails((prev) => ({ ...prev, [name]: value }))
+    }
+  }
 
   const handleBillingChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target
@@ -79,47 +115,23 @@ export default function PaymentPage() {
         throw new Error("Oturum açmanız gerekiyor")
       }
 
-      const { data: profile } = await supabase.from("profiles").select("*").eq("id", user.id).single()
+      console.log("[v0] Processing direct payment with card details")
 
-      if (!profile) {
-        throw new Error("Kullanıcı profili bulunamadı")
-      }
-
-      console.log("[v0] Saving billing information")
-      const { error: billingError } = await supabase.from("billing_info").upsert(
-        {
-          user_id: user.id,
-          full_name: billingInfo.fullName,
-          email: billingInfo.email,
-          phone: billingInfo.phone,
-          address: billingInfo.address,
-          city: billingInfo.city,
-          district: billingInfo.district,
-          postal_code: billingInfo.zipCode,
-          country: "Turkey",
-          tax_number: billingInfo.taxNumber || null,
-          tax_office: billingInfo.taxOffice || null,
-          updated_at: new Date().toISOString(),
-        },
-        {
-          onConflict: "user_id",
-        },
-      )
-
-      if (billingError) {
-        console.error("[v0] Billing info save error:", billingError)
-        throw new Error("Fatura bilgileri kaydedilemedi")
-      }
-
-      console.log("[v0] Billing information saved successfully")
-
-      const response = await fetch("/api/payment/initialize", {
+      // Send payment request with card details
+      const response = await fetch("/api/payment/create", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          userId: user.id,
+          price: 199,
+          cardDetails: {
+            cardHolderName: cardDetails.cardHolderName,
+            cardNumber: cardDetails.cardNumber.replace(/\s/g, ""),
+            expireMonth: cardDetails.expireMonth,
+            expireYear: cardDetails.expireYear,
+            cvc: cardDetails.cvc,
+          },
           billingInfo: {
             fullName: billingInfo.fullName,
             email: billingInfo.email,
@@ -137,13 +149,22 @@ export default function PaymentPage() {
       const data = await response.json()
 
       if (!response.ok) {
-        throw new Error(data.error || "Ödeme işlemi başlatılamadı")
+        throw new Error(data.message || "Ödeme işlemi başarısız oldu")
       }
 
-      if (data.paymentPageUrl) {
-        window.location.href = data.paymentPageUrl
+      if (data.status === "success") {
+        toast({
+          title: "Ödeme Başarılı!",
+          description: "Premium üyeliğiniz aktif edildi.",
+        })
+
+        await refreshSubscription()
+
+        setTimeout(() => {
+          router.push("/uygulama/premium")
+        }, 1500)
       } else {
-        throw new Error("Ödeme sayfası URL'si alınamadı")
+        throw new Error(data.message || "Ödeme başarısız")
       }
     } catch (error) {
       console.error("[v0] Payment error:", error)
@@ -206,6 +227,90 @@ export default function PaymentPage() {
       <form onSubmit={handleSubmit} className="space-y-8">
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           <div className="lg:col-span-2 space-y-6">
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <CreditCard className="h-5 w-5 text-emerald-600" />
+                  Kart Bilgileri
+                </CardTitle>
+                <CardDescription>Ödeme için kart bilgilerinizi girin</CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="space-y-2">
+                  <Label htmlFor="cardHolderName">Kart Üzerindeki İsim *</Label>
+                  <Input
+                    id="cardHolderName"
+                    name="cardHolderName"
+                    placeholder="AKIN KAYA"
+                    value={cardDetails.cardHolderName}
+                    onChange={handleCardChange}
+                    required
+                    disabled={isProcessing}
+                    className="uppercase"
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="cardNumber">Kart Numarası *</Label>
+                  <Input
+                    id="cardNumber"
+                    name="cardNumber"
+                    placeholder="1234 5678 9012 3456"
+                    value={cardDetails.cardNumber}
+                    onChange={handleCardChange}
+                    required
+                    disabled={isProcessing}
+                    maxLength={19}
+                  />
+                </div>
+
+                <div className="grid grid-cols-3 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="expireMonth">Ay *</Label>
+                    <Input
+                      id="expireMonth"
+                      name="expireMonth"
+                      placeholder="MM"
+                      value={cardDetails.expireMonth}
+                      onChange={handleCardChange}
+                      required
+                      disabled={isProcessing}
+                      maxLength={2}
+                    />
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="expireYear">Yıl *</Label>
+                    <Input
+                      id="expireYear"
+                      name="expireYear"
+                      placeholder="YYYY"
+                      value={cardDetails.expireYear}
+                      onChange={handleCardChange}
+                      required
+                      disabled={isProcessing}
+                      maxLength={4}
+                    />
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="cvc">CVV *</Label>
+                    <Input
+                      id="cvc"
+                      name="cvc"
+                      type="password"
+                      placeholder="123"
+                      value={cardDetails.cvc}
+                      onChange={handleCardChange}
+                      required
+                      disabled={isProcessing}
+                      maxLength={4}
+                    />
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
@@ -379,12 +484,12 @@ export default function PaymentPage() {
                     {isProcessing ? (
                       <>
                         <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
-                        Yönlendiriliyor...
+                        İşleniyor...
                       </>
                     ) : (
                       <>
                         <Lock className="h-4 w-4 mr-2" />
-                        Ödeme Sayfasına Git
+                        Ödemeyi Tamamla
                       </>
                     )}
                   </Button>
