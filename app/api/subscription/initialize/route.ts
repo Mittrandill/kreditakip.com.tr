@@ -8,7 +8,6 @@ export async function POST(request: NextRequest) {
   try {
     console.log("[v0] Subscription initialize API called")
 
-    // Request body'yi al
     const body = await request.json()
     const { userId, billingInfo, cardInfo } = body
 
@@ -19,7 +18,6 @@ export async function POST(request: NextRequest) {
 
     console.log("[v0] Processing subscription for user:", userId)
 
-    // User is already authenticated on client side, so we can trust the userId
     const supabase = createServiceRoleClient()
 
     console.log("[v0] Billing info received:", {
@@ -77,21 +75,19 @@ export async function POST(request: NextRequest) {
 
     console.log("[v0] Billing info saved successfully")
 
-    // iyzico abonelik servisini başlat
     const iyzicoService = new IyzicoSubscriptionService({
       apiKey,
       secretKey,
       uri,
     })
 
-    // Aboneliği başlat
     console.log("[v0] Initializing iyzico subscription")
     const result = await iyzicoService.initializeSubscription(
       productReferenceCode,
       planReferenceCode,
       {
         ...billingInfo,
-        identityNumber: billingInfo.taxNumber || "11111111111", // TC Kimlik No (11 haneli)
+        identityNumber: billingInfo.taxNumber || "11111111111",
       },
       cardInfo,
     )
@@ -99,7 +95,6 @@ export async function POST(request: NextRequest) {
     console.log("[v0] Subscription result:", result)
 
     if (result.status === "success") {
-      // Abonelik başarılı, kullanıcıyı premium yap
       const subscriptionReferenceCode = result.subscriptionReferenceCode
 
       console.log("[v0] Updating user subscription status")
