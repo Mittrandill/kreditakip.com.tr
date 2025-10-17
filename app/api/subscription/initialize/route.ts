@@ -50,20 +50,23 @@ export async function POST(request: NextRequest) {
 
     // Fatura bilgilerini kaydet
     console.log("[v0] Saving billing info to database")
-    const { error: billingError } = await supabase.from("billing_info").upsert({
-      user_id: userId,
-      full_name: billingInfo.fullName,
-      email: billingInfo.email,
-      phone: billingInfo.phone,
-      address: billingInfo.address,
-      city: billingInfo.city,
-      district: billingInfo.district,
-      postal_code: billingInfo.zipCode,
-      country: "Turkey",
-      tax_number: billingInfo.taxNumber,
-      tax_office: billingInfo.taxOffice,
-      updated_at: new Date().toISOString(),
-    })
+    const { error: billingError } = await supabase.from("billing_info").upsert(
+      {
+        user_id: userId,
+        full_name: billingInfo.fullName,
+        email: billingInfo.email,
+        phone: billingInfo.phone,
+        address: billingInfo.address,
+        city: billingInfo.city,
+        district: billingInfo.district,
+        postal_code: billingInfo.zipCode,
+        country: "Turkey",
+        tax_number: billingInfo.taxNumber,
+        tax_office: billingInfo.taxOffice,
+        updated_at: new Date().toISOString(),
+      },
+      { onConflict: "user_id" },
+    )
 
     if (billingError) {
       console.error("[v0] Error saving billing info:", billingError)
