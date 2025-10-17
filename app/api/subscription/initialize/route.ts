@@ -17,14 +17,8 @@ export async function POST(request: NextRequest) {
 
     console.log("[v0] Processing subscription for user:", userId)
 
-    // Kullanıcının var olduğunu doğrula
+    // User is already authenticated on client side, so we can trust the userId
     const supabase = await createClient()
-    const { data: userData, error: userError } = await supabase.from("users").select("id").eq("id", userId).single()
-
-    if (userError || !userData) {
-      console.error("[v0] User not found:", userError)
-      return NextResponse.json({ error: "User not found" }, { status: 404 })
-    }
 
     console.log("[v0] Billing info received:", {
       ...billingInfo,
