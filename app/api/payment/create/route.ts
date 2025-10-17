@@ -5,6 +5,8 @@ const Iyzipay = require("iyzipay")
 
 export async function POST(request: NextRequest) {
   try {
+    console.log("[v0] Payment API called")
+
     const supabase = await createClient()
 
     const {
@@ -12,12 +14,19 @@ export async function POST(request: NextRequest) {
       error: authError,
     } = await supabase.auth.getUser()
 
+    console.log("[v0] Auth check - User:", user?.id, "Error:", authError?.message)
+
     if (authError || !user) {
+      console.log("[v0] Auth failed - authError:", authError, "user:", user)
       return NextResponse.json({ status: "error", message: "Unauthorized" }, { status: 401 })
     }
 
+    console.log("[v0] User authenticated:", user.id)
+
     const body = await request.json()
     const { price, cardDetails, billingInfo } = body
+
+    console.log("[v0] Request body:", { price, hasBillingInfo: !!billingInfo, hasCardDetails: !!cardDetails })
 
     if (!price || !cardDetails) {
       return NextResponse.json(
@@ -37,6 +46,7 @@ export async function POST(request: NextRequest) {
     }
 
     if (billingInfo) {
+      console.log("[v0] Saving billing info")
       const { error: billingError } = await supabase.from("billing_info").upsert(
         {
           user_id: user.id,
@@ -58,26 +68,36 @@ export async function POST(request: NextRequest) {
       )
 
       if (billingError) {
-        console.error("Billing info save error:", billingError)
+        console.error("[v0] Billing info save error:", billingError)
+      } else {
+        console.log("[v0] Billing info saved successfully")
       }
     }
 
+    console.log("[v0] Initializing iyzipay")
     const iyzipay = new Iyzipay({
       apiKey: process.env.IYZICO_API_KEY,
       secretKey: process.env.IYZICO_SECRET_KEY,
       uri: process.env.IYZICO_BASE_URL,
     })
 
+    const userIp =
+      request.headers.get("x-forwarded-for")?.split(",")[0] || request.headers.get("x-real-ip") || "85.34.78.112"
+
+    const nameParts = (billingInfo?.fullName || "Ad Soyad").split(" ")
+    const firstName = nameParts[0] || "Ad"
+    const lastName = nameParts.slice(1).join(" ") || "Soyad"
+
     const paymentRequest = {
       locale: Iyzipay.LOCALE.TR,
       conversationId: `${user.id}_${Date.now()}`,
       price: price.toString(),
       paidPrice: price.toString(),
-      currency: "TRY",
+      currency: Iyzipay.CURRENCY.TRY,
       installment: "1",
       basketId: `B${Date.now()}`,
-      paymentChannel: "WEB",
-      paymentGroup: "SUBSCRIPTION",
+      paymentChannel: Iyzipay.PAYMENT_CHANNEL.WEB,
+      paymentGroup: Iyzipay.PAYMENT_GROUP.PRODUCT,
       paymentCard: {
         cardHolderName: cardDetails.cardHolderName,
         cardNumber: cardDetails.cardNumber.replace(/\s/g, ""),
@@ -87,58 +107,68 @@ export async function POST(request: NextRequest) {
         registerCard: "0",
       },
       buyer: {
-        id: user.id,
-        name: billingInfo?.fullName?.split(" ")[0] || "Ad",
-        surname: billingInfo?.fullName?.split(" ").slice(1).join(" ") || "Soyad",
+        id: user.id.substring(0, 11),
+        name: firstName,
+        surname: lastName,
+        gsmNumber: billingInfo?.phone || "+905350000000",
         email: billingInfo?.email || user.email || "email@email.com",
-        identityNumber: billingInfo?.taxNumber || "11111111111",
-        registrationAddress: billingInfo?.address || "Adres",
-        ip: request.headers.get("x-forwarded-for") || request.headers.get("x-real-ip") || "85.34.78.112",
+        identityNumber: "11111111111", // Use valid 11-digit TC identity number
+        lastLoginDate: new Date().toISOString().split("T")[0] + " " + new Date().toTimeString().split(" ")[0],
+        registrationDate: new Date().toISOString().split("T")[0] + " " + new Date().toTimeString().split(" ")[0],
+        registrationAddress: billingInfo?.address || "Adres Bilgisi",
+        ip: userIp,
         city: billingInfo?.city || "Istanbul",
         country: "Turkey",
+        zipCode: billingInfo?.zipCode || "34000",
       },
       shippingAddress: {
         contactName: billingInfo?.fullName || "Ad Soyad",
         city: billingInfo?.city || "Istanbul",
         country: "Turkey",
-        address: billingInfo?.address || "Adres",
+        address: billingInfo?.address || "Adres Bilgisi",
+        zipCode: billingInfo?.zipCode || "34000",
       },
       billingAddress: {
         contactName: billingInfo?.fullName || "Ad Soyad",
         city: billingInfo?.city || "Istanbul",
         country: "Turkey",
-        address: billingInfo?.address || "Adres",
+        address: billingInfo?.address || "Adres Bilgisi",
+        zipCode: billingInfo?.zipCode || "34000",
       },
       basketItems: [
         {
           id: "PREMIUM_SUB",
           name: "Premium Abonelik",
           category1: "Subscription",
-          itemType: "VIRTUAL",
+          category2: "Monthly",
+          itemType: Iyzipay.BASKET_ITEM_TYPE.VIRTUAL,
           price: price.toString(),
         },
       ],
     }
 
-    console.log("[v0] Sending payment request to Iyzipay...")
+    console.log("[v0] Sending payment request to iyzipay")
+    console.log("[v0] Payment request:", JSON.stringify(paymentRequest, null, 2))
 
-    const paymentResult = await new Promise((resolve, reject) => {
+    const paymentResult: any = await new Promise((resolve, reject) => {
       iyzipay.payment.create(paymentRequest, (err: any, result: any) => {
         if (err) {
-          console.error("[v0] Iyzipay error:", err)
+          console.error("[v0] Iyzipay callback error:", err)
           reject(err)
         } else {
-          console.log("[v0] Iyzipay result:", result)
+          console.log("[v0] Iyzipay callback result:", JSON.stringify(result, null, 2))
           resolve(result)
         }
       })
     })
 
-    const result = paymentResult as any
+    console.log("[v0] Payment result status:", paymentResult.status)
 
-    if (result.status === "success") {
+    if (paymentResult.status === "success") {
+      console.log("[v0] Payment successful, updating subscription")
+
       const endDate = new Date()
-      endDate.setMonth(endDate.getMonth() + 1) // 1 month subscription
+      endDate.setMonth(endDate.getMonth() + 1)
 
       const { error: subError } = await supabase.from("subscriptions").upsert(
         {
@@ -147,7 +177,7 @@ export async function POST(request: NextRequest) {
           status: "active",
           start_date: new Date().toISOString(),
           end_date: endDate.toISOString(),
-          payment_id: result.paymentId,
+          payment_id: paymentResult.paymentId,
           updated_at: new Date().toISOString(),
         },
         {
@@ -157,6 +187,8 @@ export async function POST(request: NextRequest) {
 
       if (subError) {
         console.error("[v0] Subscription update error:", subError)
+      } else {
+        console.log("[v0] Subscription updated successfully")
       }
 
       const { error: paymentError } = await supabase.from("payments").insert({
@@ -164,28 +196,31 @@ export async function POST(request: NextRequest) {
         amount: price,
         currency: "TRY",
         payment_method: "credit_card",
-        payment_id: result.paymentId,
+        payment_id: paymentResult.paymentId,
         status: "success",
         description: "Premium abonelik ödemesi",
       })
 
       if (paymentError) {
         console.error("[v0] Payment record error:", paymentError)
+      } else {
+        console.log("[v0] Payment recorded successfully")
       }
 
       return NextResponse.json({
         status: "success",
-        paymentId: result.paymentId,
-        conversationId: result.conversationId,
+        paymentId: paymentResult.paymentId,
+        conversationId: paymentResult.conversationId,
         message: "Ödeme başarılı",
       })
     } else {
-      console.error("[v0] Payment failed:", result)
+      console.error("[v0] Payment failed:", paymentResult)
       return NextResponse.json(
         {
           status: "error",
-          message: result.errorMessage || "Ödeme başarısız",
-          errorCode: result.errorCode,
+          message: paymentResult.errorMessage || "Ödeme başarısız",
+          errorCode: paymentResult.errorCode,
+          errorGroup: paymentResult.errorGroup,
         },
         { status: 400 },
       )

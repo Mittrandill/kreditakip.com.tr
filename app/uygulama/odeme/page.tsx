@@ -8,11 +8,11 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Lock, ArrowLeft, Shield, Zap, Clock, Building2, CheckCircle2 } from "lucide-react"
+import { Lock, ArrowLeft, Shield, Zap, Clock, Building2, CheckCircle2, CreditCard } from "lucide-react"
 import { useRouter } from "next/navigation"
 import { useToast } from "@/hooks/use-toast"
-import { supabase } from "@/lib/supabase"
 import { useSubscription } from "@/hooks/use-subscription"
+import { useAuth } from "@/hooks/use-auth"
 import Link from "next/link"
 import { turkishCities, cityDistricts } from "@/lib/turkish-cities"
 
@@ -20,9 +20,26 @@ export default function PaymentPage() {
   const router = useRouter()
   const { toast } = useToast()
   const { refresh: refreshSubscription } = useSubscription()
+  const { user, loading: authLoading } = useAuth()
   const [isProcessing, setIsProcessing] = useState(false)
   const [selectedCityCode, setSelectedCityCode] = useState("")
   const [availableDistricts, setAvailableDistricts] = useState<string[]>([])
+
+  useEffect(() => {
+    if (selectedCityCode && cityDistricts[selectedCityCode]) {
+      setAvailableDistricts(cityDistricts[selectedCityCode])
+    } else {
+      setAvailableDistricts([])
+    }
+  }, [selectedCityCode])
+
+  const [cardDetails, setCardDetails] = useState({
+    cardHolderName: "",
+    cardNumber: "",
+    expireMonth: "",
+    expireYear: "",
+    cvc: "",
+  })
 
   const [billingInfo, setBillingInfo] = useState({
     fullName: "",
@@ -32,17 +49,34 @@ export default function PaymentPage() {
     city: "",
     district: "",
     zipCode: "",
-    taxNumber: "", // Renamed from taxId to match backend
+    taxNumber: "",
     taxOffice: "",
   })
 
-  useEffect(() => {
-    if (selectedCityCode && cityDistricts[selectedCityCode]) {
-      setAvailableDistricts(cityDistricts[selectedCityCode])
+  const handleCardChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target
+
+    if (name === "cardNumber") {
+      const formatted = value
+        .replace(/\s/g, "")
+        .replace(/(\d{4})/g, "$1 ")
+        .trim()
+        .slice(0, 19)
+      setCardDetails((prev) => ({ ...prev, [name]: formatted }))
+    } else if (name === "expireMonth" || name === "expireYear") {
+      const formatted = value.replace(/\D/g, "")
+      if (name === "expireMonth") {
+        setCardDetails((prev) => ({ ...prev, [name]: formatted.slice(0, 2) }))
+      } else {
+        setCardDetails((prev) => ({ ...prev, [name]: formatted.slice(0, 4) }))
+      }
+    } else if (name === "cvc") {
+      const formatted = value.replace(/\D/g, "").slice(0, 4)
+      setCardDetails((prev) => ({ ...prev, [name]: formatted }))
     } else {
-      setAvailableDistricts([])
+      setCardDetails((prev) => ({ ...prev, [name]: value }))
     }
-  }, [selectedCityCode])
+  }
 
   const handleBillingChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target
@@ -71,55 +105,51 @@ export default function PaymentPage() {
     setIsProcessing(true)
 
     try {
-      const {
-        data: { user },
-      } = await supabase.auth.getUser()
+      console.log("[v0] Submitting subscription payment")
 
       if (!user) {
-        throw new Error("Oturum açmanız gerekiyor")
+        throw new Error("Kullanıcı oturumu bulunamadı. Lütfen tekrar giriş yapın.")
       }
 
-      const { data: profile } = await supabase.from("profiles").select("*").eq("id", user.id).single()
-
-      if (!profile) {
-        throw new Error("Kullanıcı profili bulunamadı")
+      if (cardDetails.cardNumber.replace(/\s/g, "").length !== 16) {
+        throw new Error("Geçerli bir kart numarası giriniz (16 hane)")
       }
 
-      console.log("[v0] Saving billing information")
-      const { error: billingError } = await supabase.from("billing_info").upsert(
-        {
-          user_id: user.id,
-          full_name: billingInfo.fullName,
-          email: billingInfo.email,
-          phone: billingInfo.phone,
-          address: billingInfo.address,
-          city: billingInfo.city,
-          district: billingInfo.district,
-          postal_code: billingInfo.zipCode,
-          country: "Turkey",
-          tax_number: billingInfo.taxNumber || null,
-          tax_office: billingInfo.taxOffice || null,
-          updated_at: new Date().toISOString(),
-        },
-        {
-          onConflict: "user_id",
-        },
-      )
-
-      if (billingError) {
-        console.error("[v0] Billing info save error:", billingError)
-        throw new Error("Fatura bilgileri kaydedilemedi")
+      if (
+        cardDetails.expireMonth.length !== 2 ||
+        Number.parseInt(cardDetails.expireMonth) < 1 ||
+        Number.parseInt(cardDetails.expireMonth) > 12
+      ) {
+        throw new Error("Geçerli bir ay giriniz (01-12)")
       }
 
-      console.log("[v0] Billing information saved successfully")
+      if (cardDetails.expireYear.length !== 4 || Number.parseInt(cardDetails.expireYear) < new Date().getFullYear()) {
+        throw new Error("Geçerli bir yıl giriniz")
+      }
 
-      const response = await fetch("/api/payment/initialize", {
+      if (cardDetails.cvc.length < 3) {
+        throw new Error("Geçerli bir CVV giriniz")
+      }
+
+      if (billingInfo.taxNumber.length !== 11) {
+        throw new Error("Vergi Kimlik No 11 haneli olmalıdır")
+      }
+
+      const response = await fetch("/api/subscription/initialize", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
+        credentials: "include",
         body: JSON.stringify({
           userId: user.id,
+          cardInfo: {
+            cardHolderName: cardDetails.cardHolderName,
+            cardNumber: cardDetails.cardNumber.replace(/\s/g, ""),
+            expireMonth: cardDetails.expireMonth,
+            expireYear: cardDetails.expireYear,
+            cvc: cardDetails.cvc,
+          },
           billingInfo: {
             fullName: billingInfo.fullName,
             email: billingInfo.email,
@@ -137,13 +167,22 @@ export default function PaymentPage() {
       const data = await response.json()
 
       if (!response.ok) {
-        throw new Error(data.error || "Ödeme işlemi başlatılamadı")
+        throw new Error(data.error || "Ödeme işlemi başarısız oldu")
       }
 
-      if (data.paymentPageUrl) {
-        window.location.href = data.paymentPageUrl
+      if (data.success) {
+        toast({
+          title: "Abonelik Başarılı!",
+          description: "Premium üyeliğiniz aktif edildi.",
+        })
+
+        await refreshSubscription()
+
+        setTimeout(() => {
+          router.push("/uygulama/premium")
+        }, 1500)
       } else {
-        throw new Error("Ödeme sayfası URL'si alınamadı")
+        throw new Error(data.error || "Abonelik başlatılamadı")
       }
     } catch (error) {
       console.error("[v0] Payment error:", error)
@@ -152,8 +191,20 @@ export default function PaymentPage() {
         description: error instanceof Error ? error.message : "Ödeme işlemi başarısız oldu",
         variant: "destructive",
       })
+    } finally {
       setIsProcessing(false)
     }
+  }
+
+  if (authLoading) {
+    return (
+      <div className="flex items-center justify-center min-h-[400px]">
+        <div className="text-center space-y-4">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-emerald-600 mx-auto"></div>
+          <p className="text-gray-600 dark:text-gray-400">Yükleniyor...</p>
+        </div>
+      </div>
+    )
   }
 
   return (
@@ -206,6 +257,90 @@ export default function PaymentPage() {
       <form onSubmit={handleSubmit} className="space-y-8">
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           <div className="lg:col-span-2 space-y-6">
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <CreditCard className="h-5 w-5 text-emerald-600" />
+                  Kart Bilgileri
+                </CardTitle>
+                <CardDescription>Ödeme için kart bilgilerinizi girin</CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="space-y-2">
+                  <Label htmlFor="cardHolderName">Kart Üzerindeki İsim *</Label>
+                  <Input
+                    id="cardHolderName"
+                    name="cardHolderName"
+                    placeholder="AKIN KAYA"
+                    value={cardDetails.cardHolderName}
+                    onChange={handleCardChange}
+                    required
+                    disabled={isProcessing}
+                    className="uppercase"
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="cardNumber">Kart Numarası *</Label>
+                  <Input
+                    id="cardNumber"
+                    name="cardNumber"
+                    placeholder="1234 5678 9012 3456"
+                    value={cardDetails.cardNumber}
+                    onChange={handleCardChange}
+                    required
+                    disabled={isProcessing}
+                    maxLength={19}
+                  />
+                </div>
+
+                <div className="grid grid-cols-3 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="expireMonth">Ay *</Label>
+                    <Input
+                      id="expireMonth"
+                      name="expireMonth"
+                      placeholder="MM"
+                      value={cardDetails.expireMonth}
+                      onChange={handleCardChange}
+                      required
+                      disabled={isProcessing}
+                      maxLength={2}
+                    />
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="expireYear">Yıl *</Label>
+                    <Input
+                      id="expireYear"
+                      name="expireYear"
+                      placeholder="YYYY"
+                      value={cardDetails.expireYear}
+                      onChange={handleCardChange}
+                      required
+                      disabled={isProcessing}
+                      maxLength={4}
+                    />
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="cvc">CVV *</Label>
+                    <Input
+                      id="cvc"
+                      name="cvc"
+                      type="password"
+                      placeholder="123"
+                      value={cardDetails.cvc}
+                      onChange={handleCardChange}
+                      required
+                      disabled={isProcessing}
+                      maxLength={4}
+                    />
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
@@ -379,12 +514,12 @@ export default function PaymentPage() {
                     {isProcessing ? (
                       <>
                         <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
-                        Yönlendiriliyor...
+                        İşleniyor...
                       </>
                     ) : (
                       <>
                         <Lock className="h-4 w-4 mr-2" />
-                        Ödeme Sayfasına Git
+                        Ödemeyi Tamamla
                       </>
                     )}
                   </Button>
