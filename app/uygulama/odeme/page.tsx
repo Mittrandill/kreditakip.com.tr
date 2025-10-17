@@ -14,6 +14,7 @@ import { useToast } from "@/hooks/use-toast"
 import { useSubscription } from "@/hooks/use-subscription"
 import Link from "next/link"
 import { turkishCities, cityDistricts } from "@/lib/turkish-cities"
+import { createBrowserClient } from "@/lib/supabase/client"
 
 export default function PaymentPage() {
   const router = useRouter()
@@ -105,6 +106,15 @@ export default function PaymentPage() {
     try {
       console.log("[v0] Submitting subscription payment")
 
+      const supabase = createBrowserClient()
+      const {
+        data: { user },
+      } = await supabase.auth.getUser()
+
+      if (!user) {
+        throw new Error("Kullanıcı oturumu bulunamadı. Lütfen tekrar giriş yapın.")
+      }
+
       if (cardDetails.cardNumber.replace(/\s/g, "").length !== 16) {
         throw new Error("Geçerli bir kart numarası giriniz (16 hane)")
       }
@@ -136,6 +146,7 @@ export default function PaymentPage() {
         },
         credentials: "include",
         body: JSON.stringify({
+          userId: user.id,
           cardInfo: {
             cardHolderName: cardDetails.cardHolderName,
             cardNumber: cardDetails.cardNumber.replace(/\s/g, ""),

@@ -6,23 +6,25 @@ export async function POST(request: NextRequest) {
   try {
     console.log("[v0] Subscription initialize API called")
 
-    // Kullanıcı kontrolü
-    const supabase = await createClient()
-    const {
-      data: { user },
-      error: authError,
-    } = await supabase.auth.getUser()
-
-    if (authError || !user) {
-      console.error("[v0] Auth error:", authError)
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
-    }
-
-    console.log("[v0] User authenticated:", user.id)
-
     // Request body'yi al
     const body = await request.json()
-    const { billingInfo, cardInfo } = body
+    const { userId, billingInfo, cardInfo } = body
+
+    if (!userId) {
+      console.error("[v0] User ID missing from request")
+      return NextResponse.json({ error: "User ID required" }, { status: 400 })
+    }
+
+    console.log("[v0] Processing subscription for user:", userId)
+
+    // Kullanıcının var olduğunu doğrula
+    const supabase = await createClient()
+    const { data: userData, error: userError } = await supabase.from("users").select("id").eq("id", userId).single()
+
+    if (userError || !userData) {
+      console.error("[v0] User not found:", userError)
+      return NextResponse.json({ error: "User not found" }, { status: 404 })
+    }
 
     console.log("[v0] Billing info received:", {
       ...billingInfo,
@@ -55,7 +57,7 @@ export async function POST(request: NextRequest) {
     // Fatura bilgilerini kaydet
     console.log("[v0] Saving billing info to database")
     const { error: billingError } = await supabase.from("billing_info").upsert({
-      user_id: user.id,
+      user_id: userId,
       full_name: billingInfo.fullName,
       email: billingInfo.email,
       phone: billingInfo.phone,
@@ -103,7 +105,7 @@ export async function POST(request: NextRequest) {
 
       console.log("[v0] Updating user subscription status")
       const { error: updateError } = await supabase.from("subscriptions").upsert({
-        user_id: user.id,
+        user_id: userId,
         plan_type: "premium",
         status: "active",
         iyzico_subscription_reference: subscriptionReferenceCode,
