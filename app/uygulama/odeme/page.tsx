@@ -11,7 +11,6 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Lock, ArrowLeft, Shield, Zap, Clock, Building2, CheckCircle2, CreditCard } from "lucide-react"
 import { useRouter } from "next/navigation"
 import { useToast } from "@/hooks/use-toast"
-import { supabase } from "@/lib/supabase"
 import { useSubscription } from "@/hooks/use-subscription"
 import Link from "next/link"
 import { turkishCities, cityDistricts } from "@/lib/turkish-cities"
@@ -56,7 +55,6 @@ export default function PaymentPage() {
     const { name, value } = e.target
 
     if (name === "cardNumber") {
-      // Format card number with spaces
       const formatted = value
         .replace(/\s/g, "")
         .replace(/(\d{4})/g, "$1 ")
@@ -64,7 +62,6 @@ export default function PaymentPage() {
         .slice(0, 19)
       setCardDetails((prev) => ({ ...prev, [name]: formatted }))
     } else if (name === "expireMonth" || name === "expireYear") {
-      // Only allow numbers
       const formatted = value.replace(/\D/g, "")
       if (name === "expireMonth") {
         setCardDetails((prev) => ({ ...prev, [name]: formatted.slice(0, 2) }))
@@ -72,7 +69,6 @@ export default function PaymentPage() {
         setCardDetails((prev) => ({ ...prev, [name]: formatted.slice(0, 4) }))
       }
     } else if (name === "cvc") {
-      // Only allow numbers, max 3-4 digits
       const formatted = value.replace(/\D/g, "").slice(0, 4)
       setCardDetails((prev) => ({ ...prev, [name]: formatted }))
     } else {
@@ -107,25 +103,40 @@ export default function PaymentPage() {
     setIsProcessing(true)
 
     try {
-      const {
-        data: { user },
-      } = await supabase.auth.getUser()
+      console.log("[v0] Submitting subscription payment")
 
-      if (!user) {
-        throw new Error("Oturum açmanız gerekiyor")
+      if (cardDetails.cardNumber.replace(/\s/g, "").length !== 16) {
+        throw new Error("Geçerli bir kart numarası giriniz (16 hane)")
       }
 
-      console.log("[v0] Processing direct payment with card details")
+      if (
+        cardDetails.expireMonth.length !== 2 ||
+        Number.parseInt(cardDetails.expireMonth) < 1 ||
+        Number.parseInt(cardDetails.expireMonth) > 12
+      ) {
+        throw new Error("Geçerli bir ay giriniz (01-12)")
+      }
 
-      // Send payment request with card details
-      const response = await fetch("/api/payment/create", {
+      if (cardDetails.expireYear.length !== 4 || Number.parseInt(cardDetails.expireYear) < new Date().getFullYear()) {
+        throw new Error("Geçerli bir yıl giriniz")
+      }
+
+      if (cardDetails.cvc.length < 3) {
+        throw new Error("Geçerli bir CVV giriniz")
+      }
+
+      if (billingInfo.taxNumber.length !== 11) {
+        throw new Error("Vergi Kimlik No 11 haneli olmalıdır")
+      }
+
+      const response = await fetch("/api/subscription/initialize", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
+        credentials: "include",
         body: JSON.stringify({
-          price: 199,
-          cardDetails: {
+          cardInfo: {
             cardHolderName: cardDetails.cardHolderName,
             cardNumber: cardDetails.cardNumber.replace(/\s/g, ""),
             expireMonth: cardDetails.expireMonth,
@@ -149,12 +160,12 @@ export default function PaymentPage() {
       const data = await response.json()
 
       if (!response.ok) {
-        throw new Error(data.message || "Ödeme işlemi başarısız oldu")
+        throw new Error(data.error || "Ödeme işlemi başarısız oldu")
       }
 
-      if (data.status === "success") {
+      if (data.success) {
         toast({
-          title: "Ödeme Başarılı!",
+          title: "Abonelik Başarılı!",
           description: "Premium üyeliğiniz aktif edildi.",
         })
 
@@ -164,7 +175,7 @@ export default function PaymentPage() {
           router.push("/uygulama/premium")
         }, 1500)
       } else {
-        throw new Error(data.message || "Ödeme başarısız")
+        throw new Error(data.error || "Abonelik başlatılamadı")
       }
     } catch (error) {
       console.error("[v0] Payment error:", error)
@@ -173,6 +184,7 @@ export default function PaymentPage() {
         description: error instanceof Error ? error.message : "Ödeme işlemi başarısız oldu",
         variant: "destructive",
       })
+    } finally {
       setIsProcessing(false)
     }
   }
