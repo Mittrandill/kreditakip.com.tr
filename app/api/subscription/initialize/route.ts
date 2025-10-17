@@ -1,6 +1,6 @@
 import { type NextRequest, NextResponse } from "next/server"
 import { IyzicoSubscriptionService } from "@/lib/iyzico-subscription"
-import { createClient } from "@/lib/supabase/server"
+import { createServiceRoleClient } from "@/lib/supabase/server"
 
 export async function POST(request: NextRequest) {
   try {
@@ -18,7 +18,7 @@ export async function POST(request: NextRequest) {
     console.log("[v0] Processing subscription for user:", userId)
 
     // User is already authenticated on client side, so we can trust the userId
-    const supabase = await createClient()
+    const supabase = createServiceRoleClient()
 
     console.log("[v0] Billing info received:", {
       ...billingInfo,
