@@ -2,6 +2,8 @@ import { type NextRequest, NextResponse } from "next/server"
 import { IyzicoSubscriptionService } from "@/lib/iyzico-subscription"
 import { createServiceRoleClient } from "@/lib/supabase/server"
 
+export const runtime = "nodejs"
+
 export async function POST(request: NextRequest) {
   try {
     console.log("[v0] Subscription initialize API called")
