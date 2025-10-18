@@ -9,12 +9,13 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Lock, ArrowLeft, Shield, Zap, Clock, Building2, CheckCircle2, CreditCard } from "lucide-react"
-import { useRouter } from "next/navigation"
+import { useRouter, useSearchParams } from "next/navigation"
 import { useToast } from "@/hooks/use-toast"
 import { useSubscription } from "@/hooks/use-subscription"
 import { useAuth } from "@/hooks/use-auth"
 import Link from "next/link"
 import { turkishCities, cityDistricts } from "@/lib/turkish-cities"
+import { getPlanById } from "@/lib/subscription-plans"
 
 export default function PaymentPage() {
   const router = useRouter()
@@ -24,6 +25,16 @@ export default function PaymentPage() {
   const [isProcessing, setIsProcessing] = useState(false)
   const [selectedCityCode, setSelectedCityCode] = useState("")
   const [availableDistricts, setAvailableDistricts] = useState<string[]>([])
+  const searchParams = useSearchParams()
+
+  // Plan bilgisini al
+  const planId = searchParams.get("plan") || "premium-monthly"
+  const selectedPlan = getPlanById(planId)
+
+  if (!selectedPlan) {
+    router.push("/uygulama/premium")
+    return null
+  }
 
   useEffect(() => {
     if (selectedCityCode && cityDistricts[selectedCityCode]) {
@@ -143,6 +154,7 @@ export default function PaymentPage() {
         credentials: "include",
         body: JSON.stringify({
           userId: user.id,
+          planId: selectedPlan.id,
           cardInfo: {
             cardHolderName: cardDetails.cardHolderName,
             cardNumber: cardDetails.cardNumber.replace(/\s/g, ""),
@@ -178,9 +190,8 @@ export default function PaymentPage() {
 
         await refreshSubscription()
 
-        setTimeout(() => {
-          router.push("/uygulama/premium")
-        }, 1500)
+        // Başarılı sayfasına yönlendir
+        router.push("/uygulama/odeme/basarili")
       } else {
         throw new Error(data.error || "Abonelik başlatılamadı")
       }
@@ -494,17 +505,25 @@ export default function PaymentPage() {
               <CardContent className="space-y-4">
                 <div className="space-y-3">
                   <div className="flex justify-between text-sm">
-                    <span className="text-gray-600 dark:text-gray-400">Premium Üyelik:</span>
-                    <span className="font-medium">199₺</span>
+                    <span className="text-gray-600 dark:text-gray-400">{selectedPlan.name}:</span>
+                    <span className="font-medium">{selectedPlan.price}₺</span>
                   </div>
                   <div className="flex justify-between text-sm">
                     <span className="text-gray-600 dark:text-gray-400">Periyot:</span>
-                    <span className="font-medium">Aylık</span>
+                    <span className="font-medium">{selectedPlan.periodLabel}</span>
                   </div>
+                  {selectedPlan.originalPrice && (
+                    <div className="flex justify-between text-sm text-emerald-600 dark:text-emerald-400">
+                      <span>Tasarruf:</span>
+                      <span className="font-medium">
+                        {selectedPlan.originalPrice - selectedPlan.price}₺
+                      </span>
+                    </div>
+                  )}
                   <div className="border-t pt-3">
                     <div className="flex justify-between text-sm font-semibold">
                       <span>Toplam:</span>
-                      <span className="text-emerald-600 dark:text-emerald-400">199₺</span>
+                      <span className="text-emerald-600 dark:text-emerald-400">{selectedPlan.price}₺</span>
                     </div>
                   </div>
                 </div>

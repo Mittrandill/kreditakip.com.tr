@@ -4,10 +4,11 @@ import { useState, useEffect, useRef } from "react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
-import { Crown, Check, Sparkles, TrendingUp, X, Shield, BarChart3 } from "lucide-react"
+import { Crown, Check, Sparkles, TrendingUp, X, Shield, BarChart3, Zap } from "lucide-react"
 import { useSubscription } from "@/hooks/use-subscription"
 import { useRouter, useSearchParams } from "next/navigation"
 import { useToast } from "@/hooks/use-toast"
+import { SUBSCRIPTION_PLANS, calculateSavings } from "@/lib/subscription-plans"
 
 export default function PremiumPage() {
   const { subscription, loading, isPremium } = useSubscription()
@@ -41,8 +42,8 @@ export default function PremiumPage() {
     }
   }, [searchParams, toast, router])
 
-  const handleUpgrade = async () => {
-    router.push("/uygulama/odeme")
+  const handleUpgrade = async (planId: string) => {
+    router.push(`/uygulama/odeme?plan=${planId}`)
   }
 
   if (loading) {
@@ -140,96 +141,96 @@ export default function PremiumPage() {
             </CardContent>
           </Card>
 
-          {/* Premium Plan */}
-          <Card className="relative border-2 border-emerald-500 dark:border-emerald-600 shadow-2xl hover:shadow-emerald-500/20 transition-all scale-105">
-            <div className="absolute -top-4 left-1/2 -translate-x-1/2 z-20">
-              <Badge className="bg-gradient-to-r from-amber-500 to-orange-600 text-white border-0 px-6 py-2 shadow-lg">
-                <Sparkles className="h-4 w-4 mr-1" />
-                Önerilen
-              </Badge>
-            </div>
-            <div className="absolute inset-0 bg-gradient-to-br from-emerald-50/50 to-teal-50/50 dark:from-emerald-950/20 dark:to-teal-950/20 rounded-lg -z-10"></div>
-            <CardHeader className="relative space-y-4">
-              <div className="flex items-center justify-between">
-                <CardTitle className="flex items-center gap-2 text-2xl">
-                  <Crown className="h-7 w-7 text-amber-500" />
-                  <span>Premium</span>
-                </CardTitle>
-                <Badge className="bg-gradient-to-r from-emerald-600 to-teal-600 text-white border-0">Popüler</Badge>
-              </div>
-              <CardDescription className="text-base">Tüm özellikler ve sınırsız erişim</CardDescription>
-              <div className="pt-4">
-                <p className="text-5xl font-bold">
-                  199₺<span className="text-lg font-normal text-gray-600 dark:text-gray-400">/ay</span>
-                </p>
-              </div>
-            </CardHeader>
-            <CardContent className="relative space-y-6">
-              <div className="space-y-4">
-                <div className="flex items-start gap-3">
-                  <div className="p-1 bg-emerald-100 dark:bg-emerald-900/30 rounded-full">
-                    <Check className="h-4 w-4 text-emerald-600 dark:text-emerald-400" />
-                  </div>
-                  <span className="text-sm font-medium">Sınırsız OCR analizi</span>
+          {/* Premium Plans */}
+          {SUBSCRIPTION_PLANS.map((plan) => (
+            <Card
+              key={plan.id}
+              className={`relative border-2 shadow-2xl hover:shadow-xl transition-all ${
+                plan.popular
+                  ? "border-emerald-500 dark:border-emerald-600 scale-105"
+                  : "border-gray-200 dark:border-gray-700"
+              }`}
+            >
+              {plan.popular && (
+                <div className="absolute -top-4 left-1/2 -translate-x-1/2 z-20">
+                  <Badge className="bg-gradient-to-r from-amber-500 to-orange-600 text-white border-0 px-6 py-2 shadow-lg">
+                    <Sparkles className="h-4 w-4 mr-1" />
+                    En Popüler
+                  </Badge>
                 </div>
-                <div className="flex items-start gap-3">
-                  <div className="p-1 bg-emerald-100 dark:bg-emerald-900/30 rounded-full">
-                    <Check className="h-4 w-4 text-emerald-600 dark:text-emerald-400" />
-                  </div>
-                  <span className="text-sm font-medium">Detaylı risk analizi</span>
-                </div>
-                <div className="flex items-start gap-3">
-                  <div className="p-1 bg-emerald-100 dark:bg-emerald-900/30 rounded-full">
-                    <Check className="h-4 w-4 text-emerald-600 dark:text-emerald-400" />
-                  </div>
-                  <span className="text-sm font-medium">Gelişmiş raporlar</span>
-                </div>
-                <div className="flex items-start gap-3">
-                  <div className="p-1 bg-emerald-100 dark:bg-emerald-900/30 rounded-full">
-                    <Check className="h-4 w-4 text-emerald-600 dark:text-emerald-400" />
-                  </div>
-                  <span className="text-sm font-medium">Şifre yönetimi</span>
-                </div>
-                <div className="flex items-start gap-3">
-                  <div className="p-1 bg-emerald-100 dark:bg-emerald-900/30 rounded-full">
-                    <Check className="h-4 w-4 text-emerald-600 dark:text-emerald-400" />
-                  </div>
-                  <span className="text-sm font-medium">Reklamsız deneyim</span>
-                </div>
-                <div className="flex items-start gap-3">
-                  <div className="p-1 bg-emerald-100 dark:bg-emerald-900/30 rounded-full">
-                    <Check className="h-4 w-4 text-emerald-600 dark:text-emerald-400" />
-                  </div>
-                  <span className="text-sm font-medium">Öncelikli destek</span>
-                </div>
-              </div>
-              {isPremium ? (
-                <Button className="w-full bg-gradient-to-r from-emerald-600 to-teal-600 shadow-lg" disabled size="lg">
-                  <Check className="h-5 w-5 mr-2" />
-                  Aktif Plan
-                </Button>
-              ) : (
-                <Button
-                  onClick={handleUpgrade}
-                  disabled={isProcessing}
-                  className="w-full bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white shadow-lg hover:shadow-xl transition-all"
-                  size="lg"
-                >
-                  {isProcessing ? (
-                    <>
-                      <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-2"></div>
-                      İşleniyor...
-                    </>
-                  ) : (
-                    <>
-                      <Crown className="h-5 w-5 mr-2" />
-                      Premium'a Geç
-                    </>
-                  )}
-                </Button>
               )}
-            </CardContent>
-          </Card>
+              {plan.popular && (
+                <div className="absolute inset-0 bg-gradient-to-br from-emerald-50/50 to-teal-50/50 dark:from-emerald-950/20 dark:to-teal-950/20 rounded-lg -z-10"></div>
+              )}
+              <CardHeader className="relative space-y-4">
+                <div className="flex items-center justify-between">
+                  <CardTitle className="flex items-center gap-2 text-2xl">
+                    <Crown className="h-7 w-7 text-amber-500" />
+                    <span>{plan.name}</span>
+                  </CardTitle>
+                  {plan.discount && (
+                    <Badge className="bg-gradient-to-r from-red-500 to-orange-500 text-white border-0">
+                      {plan.discount}
+                    </Badge>
+                  )}
+                </div>
+                <CardDescription className="text-base">{plan.description}</CardDescription>
+                <div className="pt-4">
+                  {plan.originalPrice && (
+                    <p className="text-xl text-gray-500 dark:text-gray-400 line-through">
+                      {plan.originalPrice}₺/{plan.periodLabel.toLowerCase()}
+                    </p>
+                  )}
+                  <p className="text-5xl font-bold">
+                    {plan.price}₺<span className="text-lg font-normal text-gray-600 dark:text-gray-400">/{plan.periodLabel.toLowerCase()}</span>
+                  </p>
+                  {plan.period === "yearly" && (
+                    <p className="text-sm text-emerald-600 dark:text-emerald-400 mt-2">
+                      <Zap className="h-4 w-4 inline mr-1" />
+                      {calculateSavings(plan.price, 199)}₺ tasarruf
+                    </p>
+                  )}
+                </div>
+              </CardHeader>
+              <CardContent className="relative space-y-6">
+                <div className="space-y-4">
+                  {plan.features.map((feature, idx) => (
+                    <div key={idx} className="flex items-start gap-3">
+                      <div className="p-1 bg-emerald-100 dark:bg-emerald-900/30 rounded-full">
+                        <Check className="h-4 w-4 text-emerald-600 dark:text-emerald-400" />
+                      </div>
+                      <span className="text-sm font-medium">{feature}</span>
+                    </div>
+                  ))}
+                </div>
+                {isPremium ? (
+                  <Button className="w-full bg-gradient-to-r from-emerald-600 to-teal-600 shadow-lg" disabled size="lg">
+                    <Check className="h-5 w-5 mr-2" />
+                    Aktif Plan
+                  </Button>
+                ) : (
+                  <Button
+                    onClick={() => handleUpgrade(plan.id)}
+                    disabled={isProcessing}
+                    className="w-full bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white shadow-lg hover:shadow-xl transition-all"
+                    size="lg"
+                  >
+                    {isProcessing ? (
+                      <>
+                        <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-2"></div>
+                        İşleniyor...
+                      </>
+                    ) : (
+                      <>
+                        <Crown className="h-5 w-5 mr-2" />
+                        {plan.name} Al
+                      </>
+                    )}
+                  </Button>
+                )}
+              </CardContent>
+            </Card>
+          ))}
         </div>
       </div>
 

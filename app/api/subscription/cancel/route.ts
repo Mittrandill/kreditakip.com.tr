@@ -1,10 +1,12 @@
 import { type NextRequest, NextResponse } from "next/server"
-import { IyzicoSubscriptionService } from "@/lib/iyzico-subscription"
+import { IyzipaySubscriptionClient } from "@/lib/iyzipay-client"
 import { createClient } from "@/lib/supabase/server"
+
+export const runtime = "nodejs"
 
 export async function POST(request: NextRequest) {
   try {
-    console.log("[v0] Subscription cancel API called")
+    console.log("[iyzipay] Subscription cancel API called")
 
     // Kullanıcı kontrolü
     const supabase = await createClient()
@@ -29,14 +31,14 @@ export async function POST(request: NextRequest) {
     }
 
     // iyzico servisini başlat
-    const iyzicoService = new IyzicoSubscriptionService({
+    const iyzicoClient = new IyzipaySubscriptionClient({
       apiKey: process.env.IYZICO_API_KEY!,
       secretKey: process.env.IYZICO_SECRET_KEY!,
       uri: process.env.IYZICO_BASE_URL!,
     })
 
     // Aboneliği iptal et
-    const result = await iyzicoService.cancelSubscription(subscription.iyzico_subscription_reference)
+    const result = await iyzicoClient.cancelSubscription(subscription.iyzico_subscription_reference)
 
     if (result.status === "success") {
       // Veritabanında aboneliği güncelle
@@ -62,7 +64,7 @@ export async function POST(request: NextRequest) {
       )
     }
   } catch (error: any) {
-    console.error("[v0] Cancel subscription error:", error)
+    console.error("[iyzipay] Cancel subscription error:", error)
     return NextResponse.json(
       {
         error: error.message || "Bir hata oluştu",

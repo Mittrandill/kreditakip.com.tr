@@ -1,26 +1,33 @@
 import { type NextRequest, NextResponse } from "next/server"
-import { IyzicoSubscriptionService } from "@/lib/iyzico-subscription"
+import { IyzipaySubscriptionClient } from "@/lib/iyzipay-client"
 import { createServiceRoleClient } from "@/lib/supabase/server"
 
 export const runtime = "nodejs"
 
 export async function POST(request: NextRequest) {
   try {
-    console.log("[v0] Subscription initialize API called")
+    console.log("[iyzipay] Subscription initialize API called")
 
     const body = await request.json()
-    const { userId, billingInfo, cardInfo } = body
+    const { userId, billingInfo, cardInfo, planId } = body
 
     if (!userId) {
-      console.error("[v0] User ID missing from request")
+      console.error("[iyzipay] User ID missing from request")
       return NextResponse.json({ error: "User ID required" }, { status: 400 })
     }
 
-    console.log("[v0] Processing subscription for user:", userId)
+    // Plan bilgisini belirle
+    const isYearly = planId === "premium-yearly"
+    const price = isYearly ? "1990.00" : "199.00"
+    const daysToAdd = isYearly ? 365 : 30
+
+    console.log("[iyzipay] Selected plan:", { planId, price, daysToAdd })
+
+    console.log("[iyzipay] Processing subscription for user:", userId)
 
     const supabase = createServiceRoleClient()
 
-    console.log("[v0] Billing info received:", {
+    console.log("[iyzipay] Billing info received:", {
       ...billingInfo,
       taxNumber: billingInfo.taxNumber ? "****" : undefined,
     })
@@ -29,27 +36,14 @@ export async function POST(request: NextRequest) {
     const apiKey = process.env.IYZICO_API_KEY
     const secretKey = process.env.IYZICO_SECRET_KEY
     const uri = process.env.IYZICO_BASE_URL
-    const productReferenceCode = process.env.IYZICO_PRODUCT_REFERENCE_CODE
-    const planReferenceCode = process.env.IYZICO_PLAN_REFERENCE_CODE
 
     if (!apiKey || !secretKey || !uri) {
-      console.error("[v0] Missing iyzico credentials")
+      console.error("[iyzipay] Missing iyzico credentials")
       return NextResponse.json({ error: "iyzico credentials not configured" }, { status: 500 })
     }
 
-    if (!productReferenceCode || !planReferenceCode) {
-      console.error("[v0] Missing product or plan reference codes")
-      return NextResponse.json(
-        {
-          error:
-            "Product or plan reference codes not configured. Please set IYZICO_PRODUCT_REFERENCE_CODE and IYZICO_PLAN_REFERENCE_CODE environment variables.",
-        },
-        { status: 500 },
-      )
-    }
-
     // Fatura bilgilerini kaydet
-    console.log("[v0] Saving billing info to database")
+    console.log("[iyzipay] Saving billing info to database")
     const { error: billingError } = await supabase.from("billing_info").upsert(
       {
         user_id: userId,
@@ -69,58 +63,77 @@ export async function POST(request: NextRequest) {
     )
 
     if (billingError) {
-      console.error("[v0] Error saving billing info:", billingError)
+      console.error("[iyzipay] Error saving billing info:", billingError)
       return NextResponse.json({ error: "Failed to save billing information" }, { status: 500 })
     }
 
-    console.log("[v0] Billing info saved successfully")
+    console.log("[iyzipay] Billing info saved successfully")
 
-    const iyzicoService = new IyzicoSubscriptionService({
+    const iyzicoClient = new IyzipaySubscriptionClient({
       apiKey,
       secretKey,
       uri,
     })
 
-    console.log("[v0] Initializing iyzico subscription")
-    const result = await iyzicoService.initializeSubscription(
-      productReferenceCode,
-      planReferenceCode,
+    // Normal payment API kullan (subscription API yerine)
+    console.log("[iyzipay] Processing payment with normal payment API")
+    const result = await iyzicoClient.createPayment(
+      userId,
       {
         ...billingInfo,
         identityNumber: billingInfo.taxNumber || "11111111111",
       },
       cardInfo,
+      price,
     )
 
-    console.log("[v0] Subscription result:", result)
+    console.log("[iyzipay] Payment result:", result)
 
     if (result.status === "success") {
-      const subscriptionReferenceCode = result.subscriptionReferenceCode
+      const paymentId = result.paymentId
 
-      console.log("[v0] Updating user subscription status")
+      console.log("[iyzipay] Payment successful, creating subscription record")
+
+      // Subscription kaydı oluştur
+      const startDate = new Date()
+      const expiresAt = new Date()
+      expiresAt.setDate(expiresAt.getDate() + daysToAdd) // Plan'a göre gün ekle
+
       const { error: updateError } = await supabase.from("subscriptions").upsert({
         user_id: userId,
         plan_type: "premium",
         status: "active",
-        iyzico_subscription_reference: subscriptionReferenceCode,
-        start_date: new Date().toISOString(),
+        start_date: startDate.toISOString(),
+        expires_at: expiresAt.toISOString(),
+        payment_method: "iyzico",
+        iyzico_subscription_id: paymentId, // Normal payment API için payment ID
         updated_at: new Date().toISOString(),
       })
 
       if (updateError) {
-        console.error("[v0] Error updating subscription:", updateError)
+        console.error("[iyzipay] Error updating subscription:", updateError)
         return NextResponse.json({ error: "Failed to update subscription status" }, { status: 500 })
       }
 
-      console.log("[v0] Subscription activated successfully")
+      // Usage limits'i premium'a yükselt
+      await supabase
+        .from("usage_tracking")
+        .update({
+          limit_count: 999999,
+          updated_at: new Date().toISOString(),
+        })
+        .eq("user_id", userId)
+
+      console.log("[iyzipay] Subscription activated successfully")
 
       return NextResponse.json({
         success: true,
-        subscriptionReferenceCode,
-        message: "Abonelik başarıyla başlatıldı",
+        paymentId,
+        expiresAt: expiresAt.toISOString(),
+        message: "Premium üyeliğiniz başarıyla aktif edildi",
       })
     } else {
-      console.error("[v0] iyzico subscription failed:", result)
+      console.error("[iyzipay] Payment failed:", result)
       return NextResponse.json(
         {
           error: result.errorMessage || "Ödeme işlemi başarısız oldu",
@@ -129,7 +142,7 @@ export async function POST(request: NextRequest) {
       )
     }
   } catch (error: any) {
-    console.error("[v0] Subscription API error:", error)
+    console.error("[iyzipay] Subscription API error:", error)
     return NextResponse.json(
       {
         error: error.message || "Bir hata oluştu",

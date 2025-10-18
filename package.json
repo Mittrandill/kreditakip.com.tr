@@ -84,9 +84,11 @@
     "zod": "^3.22.4"
   },
   "devDependencies": {
+    "@types/canvas-confetti": "^1.9.0",
     "@types/node": "^22",
     "@types/react": "^18",
     "@types/react-dom": "^18",
+    "canvas-confetti": "^1.9.3",
     "eslint": "^8",
     "eslint-config-next": "14.1.0",
     "postcss": "^8.5",

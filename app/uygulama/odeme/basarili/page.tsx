@@ -1,0 +1,188 @@
+"use client"
+
+import { useEffect, useState } from "react"
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { Button } from "@/components/ui/button"
+import { CheckCircle2, Sparkles, ArrowRight, Download } from "lucide-react"
+import { useRouter } from "next/navigation"
+import { useSubscription } from "@/hooks/use-subscription"
+import Link from "next/link"
+import confetti from "canvas-confetti"
+
+export default function PaymentSuccessPage() {
+  const router = useRouter()
+  const { subscription, loading } = useSubscription()
+  const [showContent, setShowContent] = useState(false)
+
+  useEffect(() => {
+    // Confetti efekti
+    const duration = 3 * 1000
+    const animationEnd = Date.now() + duration
+
+    const randomInRange = (min: number, max: number) => {
+      return Math.random() * (max - min) + min
+    }
+
+    const interval = setInterval(() => {
+      const timeLeft = animationEnd - Date.now()
+
+      if (timeLeft <= 0) {
+        return clearInterval(interval)
+      }
+
+      const particleCount = 50 * (timeLeft / duration)
+
+      confetti({
+        particleCount,
+        startVelocity: 30,
+        spread: 360,
+        ticks: 60,
+        origin: {
+          x: randomInRange(0.1, 0.3),
+          y: Math.random() - 0.2,
+        },
+      })
+      confetti({
+        particleCount,
+        startVelocity: 30,
+        spread: 360,
+        ticks: 60,
+        origin: {
+          x: randomInRange(0.7, 0.9),
+          y: Math.random() - 0.2,
+        },
+      })
+    }, 250)
+
+    // İçeriği göster
+    setTimeout(() => setShowContent(true), 500)
+
+    return () => clearInterval(interval)
+  }, [])
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-[60vh]">
+        <div className="text-center space-y-4">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-emerald-600 mx-auto"></div>
+          <p className="text-gray-600 dark:text-gray-400">Yükleniyor...</p>
+        </div>
+      </div>
+    )
+  }
+
+  return (
+    <div className="min-h-[80vh] flex items-center justify-center p-4">
+      <div
+        className={`max-w-2xl w-full space-y-8 transition-all duration-1000 ${
+          showContent ? "opacity-100 translate-y-0" : "opacity-0 translate-y-8"
+        }`}
+      >
+        {/* Success Icon */}
+        <div className="flex justify-center">
+          <div className="relative">
+            <div className="absolute inset-0 bg-emerald-500/20 rounded-full blur-2xl animate-pulse"></div>
+            <div className="relative bg-gradient-to-br from-emerald-500 to-teal-600 p-8 rounded-full">
+              <CheckCircle2 className="h-24 w-24 text-white" />
+            </div>
+          </div>
+        </div>
+
+        {/* Success Message */}
+        <div className="text-center space-y-4">
+          <h1 className="text-4xl md:text-5xl font-bold bg-gradient-to-r from-emerald-600 to-teal-600 bg-clip-text text-transparent">
+            Tebrikler! 🎉
+          </h1>
+          <p className="text-xl md:text-2xl text-gray-700 dark:text-gray-300">
+            Premium üyeliğiniz başarıyla aktif edildi
+          </p>
+        </div>
+
+        {/* Subscription Details */}
+        <Card className="border-2 border-emerald-200 dark:border-emerald-800 shadow-xl">
+          <CardHeader className="bg-gradient-to-r from-emerald-50 to-teal-50 dark:from-emerald-950/50 dark:to-teal-950/50">
+            <CardTitle className="flex items-center gap-2">
+              <Sparkles className="h-5 w-5 text-emerald-600" />
+              Abonelik Detayları
+            </CardTitle>
+            <CardDescription>Premium üyelik bilgileriniz</CardDescription>
+          </CardHeader>
+          <CardContent className="pt-6 space-y-4">
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-1">
+                <p className="text-sm text-gray-500 dark:text-gray-400">Plan</p>
+                <p className="font-semibold text-emerald-600 dark:text-emerald-400">
+                  {subscription?.plan_type === "premium" ? "Premium" : "Free"}
+                </p>
+              </div>
+              <div className="space-y-1">
+                <p className="text-sm text-gray-500 dark:text-gray-400">Durum</p>
+                <p className="font-semibold text-emerald-600 dark:text-emerald-400">Aktif</p>
+              </div>
+              <div className="space-y-1">
+                <p className="text-sm text-gray-500 dark:text-gray-400">Başlangıç</p>
+                <p className="font-medium">
+                  {subscription?.start_date ? new Date(subscription.start_date).toLocaleDateString("tr-TR") : "-"}
+                </p>
+              </div>
+              <div className="space-y-1">
+                <p className="text-sm text-gray-500 dark:text-gray-400">Bitiş</p>
+                <p className="font-medium">
+                  {subscription?.expires_at ? new Date(subscription.expires_at).toLocaleDateString("tr-TR") : "-"}
+                </p>
+              </div>
+            </div>
+
+            <div className="bg-emerald-50 dark:bg-emerald-950/30 p-4 rounded-lg border border-emerald-200 dark:border-emerald-800">
+              <p className="text-sm text-emerald-800 dark:text-emerald-200 flex items-start gap-2">
+                <CheckCircle2 className="h-5 w-5 mt-0.5 flex-shrink-0" />
+                <span>
+                  Artık tüm premium özelliklere sınırsız erişiminiz var! Sınırsız OCR analizi, detaylı risk analizi ve
+                  daha fazlası sizleri bekliyor.
+                </span>
+              </p>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Action Buttons */}
+        <div className="grid md:grid-cols-2 gap-4">
+          <Link href="/uygulama/ana-sayfa" className="block">
+            <Button className="w-full bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white shadow-lg hover:shadow-xl transition-all" size="lg">
+              Ana Sayfaya Dön
+              <ArrowRight className="h-5 w-5 ml-2" />
+            </Button>
+          </Link>
+          <Link href="/uygulama/premium" className="block">
+            <Button variant="outline" className="w-full" size="lg">
+              Üyelik Bilgilerim
+            </Button>
+          </Link>
+        </div>
+
+        {/* Features Preview */}
+        <Card className="bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-blue-950/20 dark:to-indigo-950/20 border-blue-200 dark:border-blue-800">
+          <CardHeader>
+            <CardTitle className="text-blue-900 dark:text-blue-100">Şimdi Neler Yapabilirsiniz?</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <ul className="space-y-3">
+              {[
+                "Sınırsız sayıda kredi döküm analizi yapın",
+                "Detaylı finansal risk analizleri oluşturun",
+                "Gelişmiş raporlara ve önerilere erişin",
+                "Hassas bilgilerinizi güvenle şifreleyin",
+                "Reklamsız, kesintisiz bir deneyim yaşayın",
+              ].map((feature, idx) => (
+                <li key={idx} className="flex items-start gap-3 text-blue-900 dark:text-blue-100">
+                  <CheckCircle2 className="h-5 w-5 text-blue-600 dark:text-blue-400 mt-0.5 flex-shrink-0" />
+                  <span>{feature}</span>
+                </li>
+              ))}
+            </ul>
+          </CardContent>
+        </Card>
+      </div>
+    </div>
+  )
+}
