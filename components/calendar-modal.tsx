@@ -142,7 +142,7 @@ export function CalendarModal({ onDateSelect, onClose, initialDate, title = "Tar
           <div className="flex items-center justify-between">
             <div>
               <CardTitle className="flex items-center gap-2">
-                <CalendarIcon className="h-5 w-5 text-blue-600" />
+              
                 {title}
               </CardTitle>
             </div>
@@ -224,24 +224,14 @@ export function CalendarModal({ onDateSelect, onClose, initialDate, title = "Tar
             </div>
           </div>
 
-          {/* Seçilen Tarih Önizlemesi */}
-          {selectedDate && (
-            <div className="bg-blue-50 dark:bg-blue-950/20 p-3 rounded-lg border border-blue-200 dark:border-blue-800">
-              <div className="flex items-center gap-2">
-                <CalendarIcon className="h-4 w-4 text-blue-600" />
-                <span className="text-sm font-medium text-blue-900 dark:text-blue-100">Seçilen Tarih:</span>
-              </div>
-              <p className="text-lg font-semibold text-blue-900 dark:text-blue-100 mt-1">{formatSelectedDate()}</p>
-            </div>
-          )}
-
+        
           {/* Butonlar */}
           <div className="flex gap-3 pt-2">
             <Button variant="outline" onClick={onClose} className="flex-1">
               İptal
             </Button>
             <Button onClick={handleConfirm} className="flex-1" disabled={!selectedDate}>
-              <CalendarIcon className="h-4 w-4 mr-2" />
+          
               Onayla
             </Button>
           </div>

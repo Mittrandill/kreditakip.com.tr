@@ -47,7 +47,7 @@ import { useToast } from "@/hooks/use-toast"
 import { usePathname } from "next/navigation"
 import Image from "next/image"
 import { useState, useEffect, useRef, useMemo } from "react"
-import { useTheme } from "next-themes"
+import { useUserTheme } from "@/components/user-theme-provider"
 import { getNotifications, markNotificationAsRead } from "@/lib/api/notifications"
 import { formatDistanceToNow } from "date-fns"
 import { tr } from "date-fns/locale"
@@ -211,8 +211,8 @@ export default function Header({ pageTitle }: HeaderProps) {
   const router = useRouter()
   const { toast } = useToast()
   const pathname = usePathname()
-  const [isDarkMode, setIsDarkMode] = useState(false)
-  const [themeLoading, setThemeLoading] = useState(true)
+  const { theme, setTheme } = useUserTheme()
+  const isDarkMode = theme === "dark"
 
   const [notifications, setNotifications] = useState<any[]>([])
   const [unreadCount, setUnreadCount] = useState(0)
@@ -536,53 +536,10 @@ export default function Header({ pageTitle }: HeaderProps) {
     }
   }, [searchOpen])
 
-  // Load theme preference from localStorage (user-specific)
-  useEffect(() => {
-    if (!user?.id) {
-      setThemeLoading(false)
-      return
-    }
-
-    if (typeof window !== "undefined") {
-      // Use user-specific key
-      const themeKey = `theme-${user.id}`
-      const savedTheme = localStorage.getItem(themeKey)
-      const isDark = savedTheme === "dark"
-      setIsDarkMode(isDark)
-
-      // Apply theme only to /uygulama routes
-      if (pathname?.startsWith("/uygulama")) {
-        if (isDark) {
-          document.documentElement.classList.add("dark")
-        } else {
-          document.documentElement.classList.remove("dark")
-        }
-      }
-    }
-    setThemeLoading(false)
-  }, [user?.id, pathname])
-
-  // Toggle theme handler - saves to localStorage with user ID
+  // Toggle theme handler - syncs with Supabase via useThemeSync hook
   const toggleTheme = () => {
-    if (!user?.id) return
-
-    const newDarkMode = !isDarkMode
-    setIsDarkMode(newDarkMode)
-
-    if (typeof window !== "undefined") {
-      // Save with user-specific key
-      const themeKey = `theme-${user.id}`
-      localStorage.setItem(themeKey, newDarkMode ? "dark" : "light")
-
-      // Apply theme only to /uygulama routes
-      if (pathname?.startsWith("/uygulama")) {
-        if (newDarkMode) {
-          document.documentElement.classList.add("dark")
-        } else {
-          document.documentElement.classList.remove("dark")
-        }
-      }
-    }
+    const newTheme = isDarkMode ? "light" : "dark"
+    setTheme(newTheme)
   }
 
   return (

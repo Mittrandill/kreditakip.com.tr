@@ -77,6 +77,7 @@ export default function DashboardPage() {
   const [monthlyPayment, setMonthlyPayment] = useState(0)
   const [averageInterestRate, setAverageInterestRate] = useState(0)
   const [upcomingPaymentCount, setUpcomingPaymentCount] = useState(0)
+  const [thisMonthPayment, setThisMonthPayment] = useState(0)
 
   // Grafik state'leri
 
@@ -127,6 +128,17 @@ export default function DashboardPage() {
             }
 
             setUpcomingPaymentCount(upcomingPaymentsData?.length || 0)
+
+            // Bu ayki toplam ödeme hesaplama
+            const now = new Date()
+            const currentMonth = now.getMonth()
+            const currentYear = now.getFullYear()
+            const thisMonthPayments = upcomingPaymentsData?.filter((p) => {
+              const paymentDate = new Date(p.due_date)
+              return paymentDate.getMonth() === currentMonth && paymentDate.getFullYear() === currentYear
+            }) || []
+            const thisMonthTotal = thisMonthPayments.reduce((sum, p) => sum + p.total_payment, 0)
+            setThisMonthPayment(thisMonthTotal)
 
             // Line Chart verisi - Finansal trend
 
@@ -244,7 +256,7 @@ export default function DashboardPage() {
               <Button
                 variant="outline"
                 size="lg"
-                className="bg-transparent border-white/20 text-white hover:bg-white/10 hover:border-white/30"
+                className="bg-transparent border-white/20 text-white hover:bg-white/10 hover:border-transparent hover:text-white"
                 asChild
               >
                 <Link href="/uygulama/ayarlar">
@@ -255,7 +267,7 @@ export default function DashboardPage() {
               <Button
                 variant="outline"
                 size="lg"
-                className="bg-transparent border-white/20 text-white hover:bg-white/10 hover:border-white/30"
+                className="bg-transparent border-white/20 text-white hover:bg-white/10 hover:border-transparent hover:text-white"
                 asChild
               >
                 <Link href="/uygulama/bildirimler">
@@ -326,39 +338,84 @@ export default function DashboardPage() {
           </CardContent>
         </Card>
 
-        <Card className="relative overflow-hidden border-0 bg-gradient-to-br from-purple-500 via-pink-600 to-rose-700 dark:from-purple-600 dark:via-pink-700 dark:to-rose-800 text-white shadow-2xl dark:shadow-purple-900/20">
+        <Card className="relative overflow-hidden border-0 bg-gradient-to-br from-violet-500 via-purple-600 to-indigo-700 dark:from-violet-600 dark:via-purple-700 dark:to-indigo-800 text-white shadow-2xl dark:shadow-violet-900/20">
           <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 dark:bg-white/5 rounded-full -translate-y-16 translate-x-16"></div>
           <CardContent className="relative p-8">
-            <div className="h-80">
-              <div className="flex items-center justify-center h-full text-purple-100 dark:text-purple-50">
-                Veri bulunmamaktadır
+            <div className="flex items-center justify-between mb-6">
+              <div className="p-4 bg-white/20 dark:bg-white/15 rounded-2xl backdrop-blur-sm">
+                <Calendar className="h-8 w-8 text-white" />
+              </div>
+              <Badge className="bg-white/20 dark:bg-white/15 text-white border-white/30 dark:border-white/20 backdrop-blur-sm px-3 py-1">
+                {new Date().toLocaleDateString("tr-TR", { month: "long" })}
+              </Badge>
+            </div>
+            <h3 className="font-bold text-2xl mb-3 drop-shadow-md">Bu Ayki Ödemeler</h3>
+            <p className="text-4xl font-black mb-4 drop-shadow-lg">{formatCurrency(thisMonthPayment)}</p>
+            <p className="text-sm text-violet-100 dark:text-violet-50 leading-relaxed">
+              Bu ay içinde ödenecek{" "}
+              <span className="font-semibold text-white">
+                {upcomingPayments.filter((p) => {
+                  const paymentDate = new Date(p.due_date)
+                  const now = new Date()
+                  return paymentDate.getMonth() === now.getMonth() && paymentDate.getFullYear() === now.getFullYear()
+                }).length}
+              </span>{" "}
+              taksit bulunuyor
+            </p>
+            <div className="mt-6 grid grid-cols-2 gap-3">
+              <div className="bg-white/10 dark:bg-white/5 rounded-lg p-3 backdrop-blur-sm">
+                <div className="text-xs text-violet-200 dark:text-violet-100 mb-1">Ortalama Taksit</div>
+                <div className="text-lg font-bold text-white drop-shadow">
+                  {thisMonthPayment > 0 && upcomingPayments.filter((p) => {
+                    const paymentDate = new Date(p.due_date)
+                    const now = new Date()
+                    return paymentDate.getMonth() === now.getMonth() && paymentDate.getFullYear() === now.getFullYear()
+                  }).length > 0
+                    ? formatCurrency(thisMonthPayment / upcomingPayments.filter((p) => {
+                        const paymentDate = new Date(p.due_date)
+                        const now = new Date()
+                        return paymentDate.getMonth() === now.getMonth() && paymentDate.getFullYear() === now.getFullYear()
+                      }).length)
+                    : formatCurrency(0)}
+                </div>
+              </div>
+              <div className="bg-white/10 dark:bg-white/5 rounded-lg p-3 backdrop-blur-sm">
+                <div className="text-xs text-violet-200 dark:text-violet-100 mb-1">Toplam Aylık</div>
+                <div className="text-lg font-bold text-white drop-shadow">{formatCurrency(monthlyPayment)}</div>
               </div>
             </div>
           </CardContent>
         </Card>
       </div>
 
-      <Card className="shadow-lg hover:shadow-xl dark:shadow-gray-900/20 dark:hover:shadow-gray-900/30 transition-shadow duration-300 rounded-xl border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800">
-        <CardHeader>
-          <CardTitle className="text-gray-900 dark:text-gray-100 flex items-center gap-2">
-            <Clock className="h-5 w-5 text-yellow-600 dark:text-yellow-400" />
-            Yaklaşan Ödemeler
-          </CardTitle>
-          <CardDescription className="text-gray-600 dark:text-gray-400">
-            Önümüzdeki 30 gün içinde yapılması gereken ödemeler.
+      <Card className="relative overflow-hidden border-0 bg-gradient-to-br from-amber-500 via-orange-600 to-red-600 dark:from-amber-600 dark:via-orange-700 dark:to-red-700 shadow-2xl dark:shadow-orange-900/20 rounded-2xl">
+        <div className="absolute top-0 right-0 w-48 h-48 bg-white/10 dark:bg-white/5 rounded-full -translate-y-24 translate-x-24"></div>
+        <div className="absolute bottom-0 left-0 w-32 h-32 bg-white/5 dark:bg-white/5 rounded-full translate-y-16 -translate-x-16"></div>
+        <CardHeader className="relative">
+          <div className="flex items-center justify-between mb-2">
+            <div className="p-3 bg-white/20 dark:bg-white/15 rounded-xl backdrop-blur-sm">
+              <Clock className="h-6 w-6 text-white" />
+            </div>
+            <Badge className="bg-white/20 dark:bg-white/15 text-white border-white/30 dark:border-white/20 backdrop-blur-sm px-3 py-1">
+              {upcomingPayments.length} ödeme
+            </Badge>
+          </div>
+          <CardTitle className="text-white text-2xl font-bold drop-shadow-md">Yaklaşan Ödemeler</CardTitle>
+          <CardDescription className="text-amber-100 dark:text-amber-50 drop-shadow-sm">
+            Önümüzdeki 30 gün içinde yapılması gereken ödemeler
           </CardDescription>
         </CardHeader>
-        <CardContent>
+        <CardContent className="relative">
           <div className="overflow-x-auto">
             <Table>
               <TableHeader>
-                <TableRow className="bg-gray-50 dark:bg-gray-700/50 border-gray-200 dark:border-gray-600 hover:bg-gray-100 dark:hover:bg-gray-700">
-                  <TableHead className="font-semibold text-gray-700 dark:text-gray-200">Banka</TableHead>
-                  <TableHead className="font-semibold text-gray-700 dark:text-gray-200">Kredi Kodu</TableHead>
-                  <TableHead className="font-semibold text-gray-700 dark:text-gray-200">Ödeme Tarihi</TableHead>
-                  <TableHead className="font-semibold text-gray-700 dark:text-gray-200">Taksit No</TableHead>
-                  <TableHead className="font-semibold text-gray-700 dark:text-gray-200">Tutar</TableHead>
-                  <TableHead className="font-semibold text-gray-700 dark:text-gray-200">Durum</TableHead>
+                <TableRow className="border-white/30 dark:border-white/20 hover:bg-black/20 dark:hover:bg-black/30">
+                  <TableHead className="font-semibold text-white bg-black/20 dark:bg-black/30">Banka</TableHead>
+                  <TableHead className="font-semibold text-white bg-black/20 dark:bg-black/30">Kredi Kodu</TableHead>
+                  <TableHead className="font-semibold text-white bg-black/20 dark:bg-black/30">Ödeme Tarihi</TableHead>
+                  <TableHead className="font-semibold text-white bg-black/20 dark:bg-black/30">Taksit No</TableHead>
+                  <TableHead className="font-semibold text-white bg-black/20 dark:bg-black/30">Tutar</TableHead>
+                  <TableHead className="font-semibold text-white bg-black/20 dark:bg-black/30">Durum</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -371,9 +428,9 @@ export default function DashboardPage() {
                   return (
                     <TableRow
                       key={payment.id}
-                      className={`hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors duration-150 ease-in-out ${
-                        index % 2 === 0 ? "bg-white dark:bg-gray-800" : "bg-gray-50/50 dark:bg-gray-700/30"
-                      } border-gray-200 dark:border-gray-600`}
+                      className={`border-white/20 dark:border-white/15 hover:bg-black/30 dark:hover:bg-black/40 transition-colors duration-150 ${
+                        index % 2 === 0 ? "bg-black/10 dark:bg-black/20" : "bg-black/5 dark:bg-black/15"
+                      }`}
                     >
                       <TableCell>
                         <div className="flex items-center gap-3">
@@ -383,38 +440,38 @@ export default function DashboardPage() {
                             size="sm"
                             className="flex-shrink-0"
                           />
-                          <span className="font-medium text-gray-900 dark:text-gray-100 text-sm">
+                          <span className="font-medium text-white text-sm drop-shadow">
                             {payment.credits?.banks?.name || "N/A"}
                           </span>
                         </div>
                       </TableCell>
-                      <TableCell className="text-gray-600 dark:text-gray-300">
+                      <TableCell className="text-white/90">
                         {payment.credits?.credit_code || "N/A"}
                       </TableCell>
                       <TableCell>
                         <div className="flex flex-col">
-                          <span className="font-medium text-gray-900 dark:text-gray-100">
+                          <span className="font-medium text-white drop-shadow">
                             {paymentDate.toLocaleDateString("tr-TR")}
                           </span>
                           <span
-                            className={`text-xs ${isUrgent ? "text-red-600 dark:text-red-400 font-semibold" : "text-gray-500 dark:text-gray-400"}`}
+                            className={`text-xs font-medium ${isUrgent ? "text-red-200 dark:text-red-100" : "text-amber-200 dark:text-amber-100"}`}
                           >
                             {daysUntil === 0 ? "Bugün" : daysUntil === 1 ? "Yarın" : `${daysUntil} gün sonra`}
                           </span>
                         </div>
                       </TableCell>
-                      <TableCell className="text-gray-600 dark:text-gray-300">{payment.installment_number}</TableCell>
-                      <TableCell className="font-semibold text-gray-900 dark:text-gray-100">
+                      <TableCell className="text-white/90">{payment.installment_number}</TableCell>
+                      <TableCell className="font-semibold text-white drop-shadow">
                         {formatCurrency(payment.total_payment)}
                       </TableCell>
                       <TableCell>
                         {isUrgent ? (
-                          <Badge className="bg-gradient-to-r from-red-500 to-rose-600 dark:from-red-600 dark:to-rose-700 text-white border-0 shadow-md hover:shadow-lg transition-all duration-200 px-3 py-1.5 font-medium">
+                          <Badge className="bg-red-600/80 dark:bg-red-700/80 text-white border-red-500/50 dark:border-red-600/50 backdrop-blur-sm shadow-md px-3 py-1.5 font-medium">
                             <AlertCircle className="h-3.5 w-3.5 mr-1.5" />
                             Acil
                           </Badge>
                         ) : (
-                          <Badge className="bg-gradient-to-r from-amber-400 to-orange-500 dark:from-amber-500 dark:to-orange-600 text-white border-0 shadow-md hover:shadow-lg transition-all duration-200 px-3 py-1.5 font-medium">
+                          <Badge className="bg-amber-600/80 dark:bg-amber-700/80 text-white border-amber-500/50 dark:border-amber-600/50 backdrop-blur-sm shadow-md px-3 py-1.5 font-medium">
                             <Calendar className="h-3.5 w-3.5 mr-1.5" />
                             Yaklaşan
                           </Badge>
@@ -426,43 +483,60 @@ export default function DashboardPage() {
               </TableBody>
             </Table>
             {upcomingPayments.length === 0 && (
-              <div className="text-center py-8 text-gray-500 dark:text-gray-400">Yaklaşan ödeme bulunmamaktadır.</div>
+              <div className="text-center py-12 bg-black/10 dark:bg-black/20 rounded-lg">
+                <Clock className="h-12 w-12 mx-auto mb-3 text-white/60" />
+                <p className="text-white drop-shadow">Yaklaşan ödeme bulunmamaktadır.</p>
+              </div>
             )}
             {upcomingPayments.length > 5 && (
-              <div className="mt-4 text-center">
-                <Link
-                  href="/uygulama/odeme-plani"
-                  className="inline-flex items-center justify-center gap-2 px-4 py-2 bg-gradient-to-r from-yellow-500 to-orange-600 hover:from-yellow-600 hover:to-orange-700 dark:from-yellow-400 dark:to-orange-500 dark:hover:from-yellow-500 dark:hover:to-orange-600 text-white font-medium rounded-lg shadow-md hover:shadow-lg dark:shadow-yellow-900/20 transition-all duration-200 text-sm"
+              <div className="mt-6 text-center">
+                <Button
+                  variant="outline"
+                  size="lg"
+                  className="bg-transparent border-white/20 text-white hover:bg-white/10 hover:border-transparent hover:text-white"
+                  asChild
                 >
-                  <Clock className="h-4 w-4" />
-                  <span>Tüm Ödemeleri Gör ({upcomingPayments.length})</span>
-                </Link>
+                  <Link href="/uygulama/odeme-plani">
+                    <Clock className="h-5 w-5 mr-2" />
+                    Tüm Ödemeleri Gör ({upcomingPayments.length})
+                  </Link>
+                </Button>
               </div>
             )}
           </div>
         </CardContent>
       </Card>
 
-      <Card className="shadow-lg hover:shadow-xl dark:shadow-gray-900/20 dark:hover:shadow-gray-900/30 transition-shadow duration-300 rounded-xl border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800">
-        <CardHeader>
-          <CardTitle className="text-gray-900 dark:text-gray-100 flex items-center gap-2">Aktif Kredilerim</CardTitle>
-          <CardDescription className="text-gray-600 dark:text-gray-400">
-            Güncel kredi durumunuz ve ödeme bilgileri.
+      <Card className="relative overflow-hidden border-0 bg-gradient-to-br from-teal-500 via-emerald-600 to-green-700 dark:from-teal-600 dark:via-emerald-700 dark:to-green-800 shadow-2xl dark:shadow-teal-900/20 rounded-2xl">
+        <div className="absolute top-0 right-0 w-48 h-48 bg-white/10 dark:bg-white/5 rounded-full -translate-y-24 translate-x-24"></div>
+        <div className="absolute bottom-0 left-0 w-32 h-32 bg-white/5 dark:bg-white/5 rounded-full translate-y-16 -translate-x-16"></div>
+        <CardHeader className="relative">
+          <div className="flex items-center justify-between mb-2">
+            <div className="p-3 bg-white/20 dark:bg-white/15 rounded-xl backdrop-blur-sm">
+              <TrendingUp className="h-6 w-6 text-white" />
+            </div>
+            <Badge className="bg-white/20 dark:bg-white/15 text-white border-white/30 dark:border-white/20 backdrop-blur-sm px-3 py-1">
+              {credits.filter((c) => c.status === "active").length} aktif
+            </Badge>
+          </div>
+          <CardTitle className="text-white text-2xl font-bold drop-shadow-md">Aktif Kredilerim</CardTitle>
+          <CardDescription className="text-teal-100 dark:text-teal-50 drop-shadow-sm">
+            Güncel kredi durumunuz ve ödeme bilgileri
           </CardDescription>
         </CardHeader>
-        <CardContent>
+        <CardContent className="relative">
           <div className="overflow-x-auto">
             <Table>
               <TableHeader>
-                <TableRow className="bg-gray-50 dark:bg-gray-700/50 border-gray-200 dark:border-gray-600 hover:bg-gray-100 dark:hover:bg-gray-700">
-                  <TableHead className="font-semibold text-gray-700 dark:text-gray-200">Banka</TableHead>
-                  <TableHead className="font-semibold text-gray-700 dark:text-gray-200">Tür</TableHead>
-                  <TableHead className="font-semibold text-gray-700 dark:text-gray-200">Kalan Borç</TableHead>
-                  <TableHead className="font-semibold text-gray-700 dark:text-gray-200">Aylık Ödeme</TableHead>
-                  <TableHead className="font-semibold text-gray-700 dark:text-gray-200">Faiz Oranı</TableHead>
-                  <TableHead className="font-semibold text-gray-700 dark:text-gray-200">İlerleme</TableHead>
-                  <TableHead className="font-semibold text-gray-700 dark:text-gray-200">Durum</TableHead>
-                  <TableHead className="w-[50px] text-right font-semibold text-gray-700 dark:text-gray-200">
+                <TableRow className="border-white/30 dark:border-white/20 hover:bg-black/20 dark:hover:bg-black/30">
+                  <TableHead className="font-semibold text-white bg-black/20 dark:bg-black/30">Banka</TableHead>
+                  <TableHead className="font-semibold text-white bg-black/20 dark:bg-black/30">Tür</TableHead>
+                  <TableHead className="font-semibold text-white bg-black/20 dark:bg-black/30">Kalan Borç</TableHead>
+                  <TableHead className="font-semibold text-white bg-black/20 dark:bg-black/30">Aylık Ödeme</TableHead>
+                  <TableHead className="font-semibold text-white bg-black/20 dark:bg-black/30">Faiz Oranı</TableHead>
+                  <TableHead className="font-semibold text-white bg-black/20 dark:bg-black/30">İlerleme</TableHead>
+                  <TableHead className="font-semibold text-white bg-black/20 dark:bg-black/30">Durum</TableHead>
+                  <TableHead className="w-[50px] text-right font-semibold text-white bg-black/20 dark:bg-black/30">
                     İşlemler
                   </TableHead>
                 </TableRow>
@@ -476,9 +550,9 @@ export default function DashboardPage() {
                     return (
                       <TableRow
                         key={kredi.id}
-                        className={`hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors duration-150 ease-in-out ${
-                          index % 2 === 0 ? "bg-white dark:bg-gray-800" : "bg-gray-50/50 dark:bg-gray-700/30"
-                        } border-gray-200 dark:border-gray-600`}
+                        className={`border-white/20 dark:border-white/15 hover:bg-black/30 dark:hover:bg-black/40 transition-colors duration-150 ${
+                          index % 2 === 0 ? "bg-black/10 dark:bg-black/20" : "bg-black/5 dark:bg-black/15"
+                        }`}
                       >
                         <TableCell>
                           <div className="flex items-center gap-3">
@@ -489,42 +563,42 @@ export default function DashboardPage() {
                               className="flex-shrink-0"
                             />
                             <div className="flex flex-col">
-                              <span className="font-medium text-gray-900 dark:text-gray-100 text-sm">
+                              <span className="font-medium text-white text-sm drop-shadow">
                                 {kredi.banks?.name || "N/A"}
                               </span>
-                              <span className="text-xs text-gray-500 dark:text-gray-400">{kredi.credit_code}</span>
+                              <span className="text-xs text-white/70">{kredi.credit_code}</span>
                             </div>
                           </div>
                         </TableCell>
-                        <TableCell className="text-gray-600 dark:text-gray-300">
+                        <TableCell className="text-white/90">
                           {kredi.credit_types?.name || "N/A"}
                         </TableCell>
-                        <TableCell className="font-semibold text-gray-900 dark:text-gray-100">
+                        <TableCell className="font-semibold text-white drop-shadow">
                           {formatCurrency(kredi.remaining_debt)}
                         </TableCell>
-                        <TableCell className="text-gray-600 dark:text-gray-300">
+                        <TableCell className="text-white/90">
                           {formatCurrency(kredi.monthly_payment)}
                         </TableCell>
-                        <TableCell className="font-medium text-orange-600 dark:text-orange-400">
+                        <TableCell className="font-medium text-orange-300 dark:text-orange-200">
                           {formatPercent(kredi.interest_rate)}
                         </TableCell>
                         <TableCell>
                           <div className="flex items-center gap-2">
-                            <div className="flex-1 bg-gray-200 dark:bg-gray-600 rounded-full h-2 w-16">
+                            <div className="flex-1 bg-black/30 dark:bg-black/40 rounded-full h-2 w-16">
                               <div
-                                className="bg-gradient-to-r from-emerald-500 to-teal-600 dark:from-emerald-400 dark:to-teal-500 h-2 rounded-full transition-all duration-300"
+                                className="bg-white dark:bg-white/90 h-2 rounded-full transition-all duration-300 shadow-sm"
                                 style={{
                                   width: `${Math.max(5, Math.min(95, progressPercentage))}%`,
                                 }}
                               ></div>
                             </div>
-                            <span className="text-sm font-medium text-gray-600 dark:text-gray-300 min-w-[35px]">
+                            <span className="text-sm font-medium text-white drop-shadow min-w-[35px]">
                               {Math.round(progressPercentage)}%
                             </span>
                           </div>
                         </TableCell>
                         <TableCell>
-                          <Badge className="bg-gradient-to-r from-emerald-600 to-teal-700 dark:from-emerald-500 dark:to-teal-600 text-white border-transparent hover:from-emerald-700 hover:to-teal-800 dark:hover:from-emerald-600 dark:hover:to-teal-700">
+                          <Badge className="bg-emerald-600/80 dark:bg-emerald-700/80 text-white border-emerald-500/50 dark:border-emerald-600/50 backdrop-blur-sm">
                             Aktif
                           </Badge>
                         </TableCell>
@@ -532,7 +606,7 @@ export default function DashboardPage() {
                           <Button
                             variant="ghost"
                             size="icon"
-                            className="h-8 w-8 hover:bg-emerald-50 hover:text-emerald-600 dark:hover:bg-emerald-900/30 dark:hover:text-emerald-400"
+                            className="h-8 w-8 hover:bg-black/30 dark:hover:bg-black/40 text-white"
                             asChild
                           >
                             <Link href={`/uygulama/kredi-detay/${kredi.id}`}>
@@ -547,29 +621,112 @@ export default function DashboardPage() {
               </TableBody>
             </Table>
             {credits.filter((c) => c.status === "active").length === 0 && (
-              <div className="text-center py-8 text-gray-500 dark:text-gray-400">
-                Aktif kredi bulunmamaktadır.
-                <div className="mt-4">
-                  <Button
-                    asChild
-                    className="bg-emerald-600 hover:bg-emerald-700 dark:bg-emerald-500 dark:hover:bg-emerald-600"
-                  >
-                    <Link href="/uygulama/krediler/kredi-ekle">İlk Kredinizi Ekleyin</Link>
-                  </Button>
-                </div>
+              <div className="text-center py-12 bg-black/10 dark:bg-black/20 rounded-lg">
+                <TrendingUp className="h-12 w-12 mx-auto mb-3 text-white/60" />
+                <p className="text-white drop-shadow mb-4">Aktif kredi bulunmamaktadır.</p>
+                <Button
+                  variant="outline"
+                  size="lg"
+                  className="bg-transparent border-white/20 text-white hover:bg-white/10 hover:border-transparent hover:text-white"
+                  asChild
+                >
+                  <Link href="/uygulama/krediler/kredi-ekle">İlk Kredinizi Ekleyin</Link>
+                </Button>
               </div>
             )}
             {credits.filter((c) => c.status === "active").length > 5 && (
-              <div className="mt-4 text-center">
-                <Link
-                  href="/uygulama/krediler"
-                  className="inline-flex items-center justify-center gap-2 px-4 py-2 bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 dark:from-emerald-400 dark:to-teal-500 dark:hover:from-emerald-500 dark:hover:to-teal-600 text-white font-medium rounded-lg shadow-md hover:shadow-lg dark:shadow-emerald-900/20 transition-all duration-200 text-sm"
+              <div className="mt-6 text-center">
+                <Button
+                  variant="outline"
+                  size="lg"
+                  className="bg-transparent border-white/20 text-white hover:bg-white/10 hover:border-transparent hover:text-white"
+                  asChild
                 >
-                  <ArrowUpRight className="h-4 w-4" />
-                  <span>Tüm Kredileri Gör ({credits.filter((c) => c.status === "active").length})</span>
-                </Link>
+                  <Link href="/uygulama/krediler">
+                    <ArrowUpRight className="h-5 w-5 mr-2" />
+                    Tüm Kredileri Gör ({credits.filter((c) => c.status === "active").length})
+                  </Link>
+                </Button>
               </div>
             )}
+          </div>
+        </CardContent>
+      </Card>
+
+      <Card className="relative overflow-hidden border-0 bg-gradient-to-br from-slate-700 via-gray-800 to-zinc-900 dark:from-slate-800 dark:via-gray-900 dark:to-zinc-950 shadow-2xl dark:shadow-slate-900/20 rounded-2xl">
+        <div className="absolute top-0 right-0 w-64 h-64 bg-white/5 rounded-full -translate-y-32 translate-x-32"></div>
+        <div className="absolute bottom-0 left-0 w-48 h-48 bg-white/5 rounded-full translate-y-24 -translate-x-24"></div>
+        <CardHeader className="relative">
+          <div className="flex items-center justify-between mb-2">
+            <div className="p-3 bg-white/10 dark:bg-white/10 rounded-xl backdrop-blur-sm">
+              <ArrowUpRight className="h-6 w-6 text-white" />
+            </div>
+            <Badge className="bg-white/10 dark:bg-white/10 text-white border-white/20 dark:border-white/20 backdrop-blur-sm px-3 py-1">
+              Hızlı Erişim
+            </Badge>
+          </div>
+          <CardTitle className="text-white text-2xl font-bold drop-shadow-md">Hızlı İşlemler</CardTitle>
+          <CardDescription className="text-slate-300 dark:text-slate-200 drop-shadow-sm">
+            Sık kullanılan işlemlere hızlı erişim
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="relative">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <Button
+              variant="outline"
+              size="lg"
+              className="bg-transparent border-white/20 text-white hover:bg-white/10 hover:border-transparent hover:text-white h-auto py-6"
+              asChild
+            >
+              <Link href="/uygulama/krediler/kredi-ekle">
+                <div className="flex flex-col items-center gap-2">
+                  <DollarSign className="h-6 w-6" />
+                  <span className="text-sm">Yeni Kredi Ekle</span>
+                </div>
+              </Link>
+            </Button>
+
+            <Button
+              variant="outline"
+              size="lg"
+              className="bg-transparent border-white/20 text-white hover:bg-white/10 hover:border-transparent hover:text-white h-auto py-6"
+              asChild
+            >
+              <Link href="/uygulama/odeme-plani">
+                <div className="flex flex-col items-center gap-2">
+                  <Calendar className="h-6 w-6" />
+                  <span className="text-sm">Ödeme Planı</span>
+                </div>
+              </Link>
+            </Button>
+
+            <Button
+              variant="outline"
+              size="lg"
+              className="bg-transparent border-white/20 text-white hover:bg-white/10 hover:border-transparent hover:text-white h-auto py-6"
+              asChild
+            >
+              <Link href="/uygulama/raporlar">
+                <div className="flex flex-col items-center gap-2">
+                  <TrendingUp className="h-6 w-6" />
+                  <span className="text-sm">Raporlar</span>
+                </div>
+              </Link>
+            </Button>
+
+            <Button
+              variant="outline"
+              size="lg"
+              className="bg-transparent border-white/20 text-white hover:bg-white/10 hover:border-transparent hover:text-white h-auto py-6"
+              asChild
+            >
+              <Link href="/uygulama/risk-analizi">
+                <div className="flex flex-col items-center gap-2">
+                  <Target className="h-6 w-6" />
+                  <span className="text-sm">Risk Analizi</span>
+                </div>
+              </Link>
+            </Button>
           </div>
         </CardContent>
       </Card>

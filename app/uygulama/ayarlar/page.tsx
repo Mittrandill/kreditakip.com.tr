@@ -64,14 +64,14 @@ import type { Profile, FinancialProfile } from "@/lib/types"
 import { useToast } from "@/hooks/use-toast"
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 import { supabase } from "@/lib/supabase"
-// Removed useTheme - now using custom theme management
-import { useSubscription } from "@/hooks/use-subscription" // Import useSubscription hook
+import { useUserTheme } from "@/components/user-theme-provider"
+import { useSubscription } from "@/hooks/use-subscription"
 
 export default function AyarlarPage() {
   const { user, profile: initialProfile, loading: authLoading } = useAuth()
   const { toast } = useToast()
   const router = useRouter()
-  const [currentTheme, setCurrentTheme] = useState<"light" | "dark">("light")
+  const { theme, setTheme } = useUserTheme()
 
   const { subscription, isPremium, loading: subscriptionLoading } = useSubscription()
 
@@ -184,23 +184,7 @@ export default function AyarlarPage() {
     }
   }, [user, initialProfile, authLoading])
 
-  // Load user theme from localStorage (user-specific)
-  useEffect(() => {
-    if (!user?.id) return
-
-    if (typeof window !== "undefined") {
-      const themeKey = `theme-${user.id}`
-      const savedTheme = localStorage.getItem(themeKey) || "light"
-      setCurrentTheme(savedTheme as "light" | "dark")
-
-      // Apply theme
-      if (savedTheme === "dark") {
-        document.documentElement.classList.add("dark")
-      } else {
-        document.documentElement.classList.remove("dark")
-      }
-    }
-  }, [user?.id])
+  // Theme is now managed by useThemeSync hook - no need for manual loading
 
   // Finansal Profil State ve Fonksiyonları
   const [financialProfileData, setFinancialProfileData] = useState<Partial<FinancialProfile>>({})
@@ -458,27 +442,11 @@ export default function AyarlarPage() {
     }
   }
 
-  // Preferences handlers
+  // Preferences handlers - now syncs with Supabase
   const handleDarkModeToggle = (enabled: boolean) => {
-    if (!user?.id) return
-
     const newTheme = enabled ? "dark" : "light"
-    setCurrentTheme(newTheme)
-
-    // Apply immediately
-    if (enabled) {
-      document.documentElement.classList.add("dark")
-    } else {
-      document.documentElement.classList.remove("dark")
-    }
-
-    // Save to localStorage with user-specific key
-    if (typeof window !== "undefined") {
-      const themeKey = `theme-${user.id}`
-      localStorage.setItem(themeKey, newTheme)
-    }
-
-    toast({ title: "Başarılı", description: `${enabled ? "Koyu" : "Açık"} tema etkinleştirildi.` })
+    setTheme(newTheme)
+    toast({ title: "Başarılı", description: `${enabled ? "Koyu" : "Açık"} tema etkinleştirildi ve kaydedildi.` })
   }
 
   const handleLanguageChange = (lang: string) => {
@@ -1658,7 +1626,7 @@ export default function AyarlarPage() {
                           Gözlerinizi yormaması için koyu tema kullanın
                         </p>
                       </div>
-                      <Switch checked={currentTheme === "dark"} onCheckedChange={handleDarkModeToggle} />
+                      <Switch checked={theme === "dark"} onCheckedChange={handleDarkModeToggle} />
                     </div>
                     <Separator className="dark:bg-gray-700" />
                     <div className="flex items-center justify-between">

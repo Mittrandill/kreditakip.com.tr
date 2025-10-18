@@ -5,6 +5,7 @@ import AppSidebar from "@/components/app-sidebar"
 import Header from "@/components/header"
 import FloatingActionMenu from "@/components/floating-action-menu"
 import { FloatingUpgradeBanner } from "@/components/floating-upgrade-banner"
+import { UserThemeProvider } from "@/components/user-theme-provider"
 
 export default function UygulamaLayout({
   children,
@@ -13,7 +14,8 @@ export default function UygulamaLayout({
 }) {
   return (
     <AuthGuard requireAuth={true}>
-      <SidebarProvider defaultOpen={true}>
+      <UserThemeProvider>
+        <SidebarProvider defaultOpen={true}>
         <div className="min-h-screen flex w-full bg-gray-50 dark:bg-gray-950 relative">
           {/* Desktop Sidebar */}
           <Sidebar collapsible="icon" className="border-r hidden md:flex z-30">
@@ -34,6 +36,7 @@ export default function UygulamaLayout({
           <FloatingUpgradeBanner />
         </div>
       </SidebarProvider>
+      </UserThemeProvider>
     </AuthGuard>
   )
 }
