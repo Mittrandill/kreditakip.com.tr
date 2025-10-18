@@ -212,6 +212,7 @@ export default function Header({ pageTitle }: HeaderProps) {
   const { toast } = useToast()
   const pathname = usePathname()
   const [isDarkMode, setIsDarkMode] = useState(false)
+  const [themeLoading, setThemeLoading] = useState(true)
 
   const [notifications, setNotifications] = useState<any[]>([])
   const [unreadCount, setUnreadCount] = useState(0)
@@ -535,10 +536,17 @@ export default function Header({ pageTitle }: HeaderProps) {
     }
   }, [searchOpen])
 
-  // Load theme preference on mount
+  // Load theme preference from localStorage (user-specific)
   useEffect(() => {
+    if (!user?.id) {
+      setThemeLoading(false)
+      return
+    }
+
     if (typeof window !== "undefined") {
-      const savedTheme = localStorage.getItem("app-theme")
+      // Use user-specific key
+      const themeKey = `theme-${user.id}`
+      const savedTheme = localStorage.getItem(themeKey)
       const isDark = savedTheme === "dark"
       setIsDarkMode(isDark)
 
@@ -551,15 +559,20 @@ export default function Header({ pageTitle }: HeaderProps) {
         }
       }
     }
-  }, [pathname])
+    setThemeLoading(false)
+  }, [user?.id, pathname])
 
-  // Toggle theme handler
+  // Toggle theme handler - saves to localStorage with user ID
   const toggleTheme = () => {
+    if (!user?.id) return
+
     const newDarkMode = !isDarkMode
     setIsDarkMode(newDarkMode)
 
     if (typeof window !== "undefined") {
-      localStorage.setItem("app-theme", newDarkMode ? "dark" : "light")
+      // Save with user-specific key
+      const themeKey = `theme-${user.id}`
+      localStorage.setItem(themeKey, newDarkMode ? "dark" : "light")
 
       // Apply theme only to /uygulama routes
       if (pathname?.startsWith("/uygulama")) {

@@ -17,7 +17,7 @@ import { Crown, Check, Sparkles, TrendingUp, X, Shield, BarChart3, Zap, AlertCir
 import { useSubscription } from "@/hooks/use-subscription"
 import { useRouter, useSearchParams } from "next/navigation"
 import { useToast } from "@/hooks/use-toast"
-import { SUBSCRIPTION_PLANS, calculateSavings } from "@/lib/subscription-plans"
+import { fetchPlans, FALLBACK_PLANS, calculateSavings, type SubscriptionPlan } from "@/lib/subscription-plans"
 
 export default function PremiumPage() {
   const { subscription, loading, isPremium } = useSubscription()
@@ -25,10 +25,28 @@ export default function PremiumPage() {
   const [isYearly, setIsYearly] = useState(true) // Varsayılan olarak yıllık seçili (indirim için)
   const [showConfirmDialog, setShowConfirmDialog] = useState(false)
   const [targetPlanId, setTargetPlanId] = useState<string>("")
+  const [plans, setPlans] = useState<SubscriptionPlan[]>(FALLBACK_PLANS)
+  const [plansLoading, setPlansLoading] = useState(true)
   const router = useRouter()
   const searchParams = useSearchParams()
   const { toast } = useToast()
   const hasProcessedParams = useRef(false)
+
+  // Fetch plans from API
+  useEffect(() => {
+    async function loadPlans() {
+      try {
+        const fetchedPlans = await fetchPlans()
+        setPlans(fetchedPlans)
+      } catch (error) {
+        console.error("Error loading plans:", error)
+        // Fallback plans already set in initial state
+      } finally {
+        setPlansLoading(false)
+      }
+    }
+    loadPlans()
+  }, [])
 
   // Kullanıcının mevcut planına göre toggle'ı ayarla
   useEffect(() => {
@@ -85,11 +103,11 @@ export default function PremiumPage() {
   }
 
   // Seçili planı al
-  const selectedPlan = SUBSCRIPTION_PLANS.find((p) => p.period === (isYearly ? "yearly" : "monthly"))
-  const monthlyPlan = SUBSCRIPTION_PLANS.find((p) => p.period === "monthly")
-  const yearlyPlan = SUBSCRIPTION_PLANS.find((p) => p.period === "yearly")
+  const selectedPlan = plans.find((p) => p.period === (isYearly ? "yearly" : "monthly"))
+  const monthlyPlan = plans.find((p) => p.period === "monthly")
+  const yearlyPlan = plans.find((p) => p.period === "yearly")
 
-  if (loading) {
+  if (loading || plansLoading) {
     return (
       <div className="flex items-center justify-center min-h-[60vh]">
         <div className="text-center space-y-4">
