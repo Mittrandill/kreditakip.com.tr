@@ -4,6 +4,7 @@ import { useState, useEffect, useRef } from "react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
+import { Switch } from "@/components/ui/switch"
 import { Crown, Check, Sparkles, TrendingUp, X, Shield, BarChart3, Zap } from "lucide-react"
 import { useSubscription } from "@/hooks/use-subscription"
 import { useRouter, useSearchParams } from "next/navigation"
@@ -13,6 +14,7 @@ import { SUBSCRIPTION_PLANS, calculateSavings } from "@/lib/subscription-plans"
 export default function PremiumPage() {
   const { subscription, loading, isPremium } = useSubscription()
   const [isProcessing, setIsProcessing] = useState(false)
+  const [isYearly, setIsYearly] = useState(true) // Varsayılan olarak yıllık seçili (indirim için)
   const router = useRouter()
   const searchParams = useSearchParams()
   const { toast } = useToast()
@@ -42,9 +44,15 @@ export default function PremiumPage() {
     }
   }, [searchParams, toast, router])
 
-  const handleUpgrade = async (planId: string) => {
+  const handleUpgrade = async () => {
+    const planId = isYearly ? "premium-yearly" : "premium-monthly"
     router.push(`/uygulama/odeme?plan=${planId}`)
   }
+
+  // Seçili planı al
+  const selectedPlan = SUBSCRIPTION_PLANS.find((p) => p.period === (isYearly ? "yearly" : "monthly"))
+  const monthlyPlan = SUBSCRIPTION_PLANS.find((p) => p.period === "monthly")
+  const yearlyPlan = SUBSCRIPTION_PLANS.find((p) => p.period === "yearly")
 
   if (loading) {
     return (
@@ -82,10 +90,10 @@ export default function PremiumPage() {
         </div>
       </div>
 
-      <div className="max-w-5xl mx-auto">
+      <div className="max-w-4xl mx-auto">
         <div className="grid md:grid-cols-2 gap-8">
           {/* Free Plan */}
-          <Card className="relative border-2 border-gray-200 dark:border-gray-700 hover:shadow-lg transition-shadow">
+          <Card className="relative border-2 border-gray-200 dark:border-gray-700 hover:shadow-lg transition-shadow h-fit">
             <CardHeader className="space-y-4">
               <div className="flex items-center justify-between">
                 <CardTitle className="text-2xl">Ücretsiz</CardTitle>
@@ -141,96 +149,115 @@ export default function PremiumPage() {
             </CardContent>
           </Card>
 
-          {/* Premium Plans */}
-          {SUBSCRIPTION_PLANS.map((plan) => (
-            <Card
-              key={plan.id}
-              className={`relative border-2 shadow-2xl hover:shadow-xl transition-all ${
-                plan.popular
-                  ? "border-emerald-500 dark:border-emerald-600 scale-105"
-                  : "border-gray-200 dark:border-gray-700"
-              }`}
-            >
-              {plan.popular && (
-                <div className="absolute -top-4 left-1/2 -translate-x-1/2 z-20">
-                  <Badge className="bg-gradient-to-r from-amber-500 to-orange-600 text-white border-0 px-6 py-2 shadow-lg">
-                    <Sparkles className="h-4 w-4 mr-1" />
-                    En Popüler
+          {/* Premium Plan with Toggle */}
+          <Card className="relative border-2 border-emerald-500 dark:border-emerald-600 shadow-2xl hover:shadow-xl transition-all">
+            <div className="absolute -top-4 left-1/2 -translate-x-1/2 z-20">
+              <Badge className="bg-gradient-to-r from-amber-500 to-orange-600 text-white border-0 px-6 py-2 shadow-lg">
+                <Sparkles className="h-4 w-4 mr-1" />
+                En Popüler
+              </Badge>
+            </div>
+            <div className="absolute inset-0 bg-gradient-to-br from-emerald-50/50 to-teal-50/50 dark:from-emerald-950/20 dark:to-teal-950/20 rounded-lg -z-10"></div>
+
+            <CardHeader className="relative space-y-4">
+              <div className="flex items-center justify-between">
+                <CardTitle className="flex items-center gap-2 text-2xl">
+                  <Crown className="h-7 w-7 text-amber-500" />
+                  <span>Premium</span>
+                </CardTitle>
+                {isYearly && yearlyPlan?.discount && (
+                  <Badge className="bg-gradient-to-r from-red-500 to-orange-500 text-white border-0">
+                    {yearlyPlan.discount}
                   </Badge>
-                </div>
-              )}
-              {plan.popular && (
-                <div className="absolute inset-0 bg-gradient-to-br from-emerald-50/50 to-teal-50/50 dark:from-emerald-950/20 dark:to-teal-950/20 rounded-lg -z-10"></div>
-              )}
-              <CardHeader className="relative space-y-4">
-                <div className="flex items-center justify-between">
-                  <CardTitle className="flex items-center gap-2 text-2xl">
-                    <Crown className="h-7 w-7 text-amber-500" />
-                    <span>{plan.name}</span>
-                  </CardTitle>
-                  {plan.discount && (
-                    <Badge className="bg-gradient-to-r from-red-500 to-orange-500 text-white border-0">
-                      {plan.discount}
-                    </Badge>
-                  )}
-                </div>
-                <CardDescription className="text-base">{plan.description}</CardDescription>
-                <div className="pt-4">
-                  {plan.originalPrice && (
-                    <p className="text-xl text-gray-500 dark:text-gray-400 line-through">
-                      {plan.originalPrice}₺/{plan.periodLabel.toLowerCase()}
-                    </p>
-                  )}
-                  <p className="text-5xl font-bold">
-                    {plan.price}₺<span className="text-lg font-normal text-gray-600 dark:text-gray-400">/{plan.periodLabel.toLowerCase()}</span>
-                  </p>
-                  {plan.period === "yearly" && (
-                    <p className="text-sm text-emerald-600 dark:text-emerald-400 mt-2">
-                      <Zap className="h-4 w-4 inline mr-1" />
-                      {calculateSavings(plan.price, 199)}₺ tasarruf
-                    </p>
-                  )}
-                </div>
-              </CardHeader>
-              <CardContent className="relative space-y-6">
-                <div className="space-y-4">
-                  {plan.features.map((feature, idx) => (
-                    <div key={idx} className="flex items-start gap-3">
-                      <div className="p-1 bg-emerald-100 dark:bg-emerald-900/30 rounded-full">
-                        <Check className="h-4 w-4 text-emerald-600 dark:text-emerald-400" />
-                      </div>
-                      <span className="text-sm font-medium">{feature}</span>
-                    </div>
-                  ))}
-                </div>
-                {isPremium ? (
-                  <Button className="w-full bg-gradient-to-r from-emerald-600 to-teal-600 shadow-lg" disabled size="lg">
-                    <Check className="h-5 w-5 mr-2" />
-                    Aktif Plan
-                  </Button>
-                ) : (
-                  <Button
-                    onClick={() => handleUpgrade(plan.id)}
-                    disabled={isProcessing}
-                    className="w-full bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white shadow-lg hover:shadow-xl transition-all"
-                    size="lg"
-                  >
-                    {isProcessing ? (
-                      <>
-                        <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-2"></div>
-                        İşleniyor...
-                      </>
-                    ) : (
-                      <>
-                        <Crown className="h-5 w-5 mr-2" />
-                        {plan.name} Al
-                      </>
-                    )}
-                  </Button>
                 )}
-              </CardContent>
-            </Card>
-          ))}
+              </div>
+
+              {/* Toggle Switch */}
+              <div className="flex items-center justify-center gap-3 p-4 bg-white/50 dark:bg-gray-900/50 rounded-xl border border-emerald-200 dark:border-emerald-800">
+                <span className={`text-sm font-medium transition-colors ${!isYearly ? "text-emerald-600 dark:text-emerald-400" : "text-gray-500"}`}>
+                  Aylık
+                </span>
+                <Switch checked={isYearly} onCheckedChange={setIsYearly} className="data-[state=checked]:bg-emerald-600" />
+                <span className={`text-sm font-medium transition-colors ${isYearly ? "text-emerald-600 dark:text-emerald-400" : "text-gray-500"}`}>
+                  Yıllık
+                  {yearlyPlan && (
+                    <span className="ml-1 text-xs text-emerald-600 dark:text-emerald-400">
+                      (398₺ tasarruf)
+                    </span>
+                  )}
+                </span>
+              </div>
+
+              <CardDescription className="text-base text-center">
+                {isYearly ? "Yıllık öde, 2 ay bedava kazan!" : "Aylık ödeme ile premium özelliklere erişin"}
+              </CardDescription>
+
+              <div className="pt-4">
+                {isYearly && yearlyPlan?.originalPrice && (
+                  <p className="text-xl text-gray-500 dark:text-gray-400 line-through text-center">
+                    {yearlyPlan.originalPrice}₺/yıllık
+                  </p>
+                )}
+                <p className="text-5xl font-bold text-center">
+                  {selectedPlan?.price}₺
+                  <span className="text-lg font-normal text-gray-600 dark:text-gray-400">
+                    /{isYearly ? "yıl" : "ay"}
+                  </span>
+                </p>
+                {isYearly && yearlyPlan && monthlyPlan && (
+                  <div className="mt-3 p-3 bg-emerald-100 dark:bg-emerald-900/30 rounded-lg">
+                    <p className="text-sm text-emerald-800 dark:text-emerald-200 text-center flex items-center justify-center gap-2">
+                      <Zap className="h-4 w-4" />
+                      {calculateSavings(yearlyPlan.price, monthlyPlan.price)}₺ tasarruf ediyorsunuz!
+                    </p>
+                  </div>
+                )}
+                {!isYearly && (
+                  <p className="text-sm text-gray-600 dark:text-gray-400 text-center mt-2">
+                    Yıllık plan ile %17 indirim kazanın
+                  </p>
+                )}
+              </div>
+            </CardHeader>
+
+            <CardContent className="relative space-y-6">
+              <div className="space-y-4">
+                {selectedPlan?.features.map((feature, idx) => (
+                  <div key={idx} className="flex items-start gap-3">
+                    <div className="p-1 bg-emerald-100 dark:bg-emerald-900/30 rounded-full">
+                      <Check className="h-4 w-4 text-emerald-600 dark:text-emerald-400" />
+                    </div>
+                    <span className="text-sm font-medium">{feature}</span>
+                  </div>
+                ))}
+              </div>
+              {isPremium ? (
+                <Button className="w-full bg-gradient-to-r from-emerald-600 to-teal-600 shadow-lg" disabled size="lg">
+                  <Check className="h-5 w-5 mr-2" />
+                  Aktif Plan
+                </Button>
+              ) : (
+                <Button
+                  onClick={handleUpgrade}
+                  disabled={isProcessing}
+                  className="w-full bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white shadow-lg hover:shadow-xl transition-all"
+                  size="lg"
+                >
+                  {isProcessing ? (
+                    <>
+                      <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-2"></div>
+                      İşleniyor...
+                    </>
+                  ) : (
+                    <>
+                      <Crown className="h-5 w-5 mr-2" />
+                      Premium Al ({selectedPlan?.price}₺)
+                    </>
+                  )}
+                </Button>
+              )}
+            </CardContent>
+          </Card>
         </div>
       </div>
 

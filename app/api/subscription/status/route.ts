@@ -33,6 +33,38 @@ export async function GET(request: NextRequest) {
 
     console.log("[v0] Subscription query result:", { subscription, subError })
 
+    // Abonelik bitiş kontrolü - süresi dolmuşsa otomatik iptal et
+    if (subscription && subscription.expires_at) {
+      const expiresAt = new Date(subscription.expires_at)
+      const now = new Date()
+
+      if (expiresAt < now) {
+        console.log("[v0] Subscription expired, updating status to expired")
+
+        // Aboneliği "expired" olarak güncelle
+        await supabase
+          .from("subscriptions")
+          .update({
+            status: "expired",
+            updated_at: new Date().toISOString(),
+          })
+          .eq("id", subscription.id)
+
+        // Usage limits'i free plan'e düşür
+        await supabase
+          .from("usage_tracking")
+          .update({
+            limit_count: 1,
+            updated_at: new Date().toISOString(),
+          })
+          .eq("user_id", userId)
+          .eq("feature_type", "ocr_analysis")
+
+        // Response'ta expired subscription döndür
+        subscription.status = "expired"
+      }
+    }
+
     // Get usage tracking
     const { data: usage, error: usageError } = await supabase.from("usage_tracking").select("*").eq("user_id", userId)
 

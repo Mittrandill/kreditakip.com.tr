@@ -99,20 +99,44 @@ export async function POST(request: NextRequest) {
       const expiresAt = new Date()
       expiresAt.setDate(expiresAt.getDate() + daysToAdd) // Plan'a göre gün ekle
 
-      const { error: updateError } = await supabase.from("subscriptions").upsert({
-        user_id: userId,
-        plan_type: "premium",
-        status: "active",
-        start_date: startDate.toISOString(),
-        expires_at: expiresAt.toISOString(),
-        payment_method: "iyzico",
-        iyzico_subscription_id: paymentId, // Normal payment API için payment ID
-        updated_at: new Date().toISOString(),
-      })
+      const { data: subscriptionData, error: updateError } = await supabase
+        .from("subscriptions")
+        .upsert({
+          user_id: userId,
+          plan_type: "premium",
+          status: "active",
+          start_date: startDate.toISOString(),
+          expires_at: expiresAt.toISOString(),
+          payment_method: "iyzico",
+          iyzico_subscription_id: paymentId, // Normal payment API için payment ID
+          updated_at: new Date().toISOString(),
+        })
+        .select()
+        .single()
 
       if (updateError) {
         console.error("[iyzipay] Error updating subscription:", updateError)
         return NextResponse.json({ error: "Failed to update subscription status" }, { status: 500 })
+      }
+
+      // Payment transaction kaydı oluştur
+      console.log("[iyzipay] Creating payment transaction record")
+      const { error: paymentError } = await supabase.from("payment_transactions").insert({
+        user_id: userId,
+        subscription_id: subscriptionData?.id,
+        amount: parseFloat(price),
+        currency: "TRY",
+        status: "completed",
+        iyzico_payment_id: paymentId,
+        iyzico_conversation_id: `sub_${userId}_${Date.now()}`,
+        payment_method: "iyzico",
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+      })
+
+      if (paymentError) {
+        console.error("[iyzipay] Error creating payment transaction:", paymentError)
+        // Payment transaction hatası kritik değil, devam edebiliriz
       }
 
       // Usage limits'i premium'a yükselt
@@ -134,6 +158,26 @@ export async function POST(request: NextRequest) {
       })
     } else {
       console.error("[iyzipay] Payment failed:", result)
+
+      // Başarısız ödeme kaydı oluştur
+      const { error: failedPaymentError } = await supabase.from("payment_transactions").insert({
+        user_id: userId,
+        subscription_id: null,
+        amount: parseFloat(price),
+        currency: "TRY",
+        status: "failed",
+        iyzico_payment_id: null,
+        iyzico_conversation_id: `sub_${userId}_${Date.now()}`,
+        payment_method: "iyzico",
+        error_message: result.errorMessage || "Ödeme işlemi başarısız oldu",
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+      })
+
+      if (failedPaymentError) {
+        console.error("[iyzipay] Error creating failed payment transaction:", failedPaymentError)
+      }
+
       return NextResponse.json(
         {
           error: result.errorMessage || "Ödeme işlemi başarısız oldu",

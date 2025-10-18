@@ -7,6 +7,7 @@ export interface SubscriptionStatus {
   planType: "free" | "premium"
   status: "active" | "cancelled" | "expired"
   expiresAt?: string
+  startDate?: string
   usage: {
     ocrAnalysis: {
       used: number
@@ -62,6 +63,7 @@ export function useSubscription() {
             planType: data.subscription?.plan_type || "free",
             status: data.subscription?.status || "active",
             expiresAt: data.subscription?.expires_at,
+            startDate: data.subscription?.start_date,
             usage: {
               ocrAnalysis: {
                 used: ocrUsage?.used_count || 0,
@@ -121,6 +123,7 @@ export function useSubscription() {
             planType: data.subscription?.plan_type || "free",
             status: data.subscription?.status || "active",
             expiresAt: data.subscription?.expires_at,
+            startDate: data.subscription?.start_date,
             usage: {
               ocrAnalysis: {
                 used: ocrUsage?.used_count || 0,

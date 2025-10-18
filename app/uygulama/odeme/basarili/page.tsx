@@ -60,9 +60,10 @@ export default function PaymentSuccessPage() {
     return () => clearInterval(interval)
   }, [])
 
+
   if (loading) {
     return (
-      <div className="flex items-center justify-center min-h-[60vh]">
+      <div className="flex items-center justify-center min-h-screen bg-gray-50 dark:bg-gray-900">
         <div className="text-center space-y-4">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-emerald-600 mx-auto"></div>
           <p className="text-gray-600 dark:text-gray-400">Yükleniyor...</p>
@@ -72,12 +73,13 @@ export default function PaymentSuccessPage() {
   }
 
   return (
-    <div className="min-h-[80vh] flex items-center justify-center p-4">
-      <div
-        className={`max-w-2xl w-full space-y-8 transition-all duration-1000 ${
-          showContent ? "opacity-100 translate-y-0" : "opacity-0 translate-y-8"
-        }`}
-      >
+    <div className="fixed inset-0 z-50 overflow-y-auto bg-gray-50 dark:bg-gray-900">
+      <div className="min-h-screen flex items-center justify-center p-4 py-12">
+        <div
+          className={`max-w-2xl w-full space-y-8 transition-all duration-1000 ${
+            showContent ? "opacity-100 translate-y-0" : "opacity-0 translate-y-8"
+          }`}
+        >
         {/* Success Icon */}
         <div className="flex justify-center">
           <div className="relative">
@@ -122,13 +124,25 @@ export default function PaymentSuccessPage() {
               <div className="space-y-1">
                 <p className="text-sm text-gray-500 dark:text-gray-400">Başlangıç</p>
                 <p className="font-medium">
-                  {subscription?.start_date ? new Date(subscription.start_date).toLocaleDateString("tr-TR") : "-"}
+                  {subscription?.startDate
+                    ? new Date(subscription.startDate).toLocaleDateString("tr-TR", {
+                        year: "numeric",
+                        month: "long",
+                        day: "numeric",
+                      })
+                    : "-"}
                 </p>
               </div>
               <div className="space-y-1">
                 <p className="text-sm text-gray-500 dark:text-gray-400">Bitiş</p>
                 <p className="font-medium">
-                  {subscription?.expires_at ? new Date(subscription.expires_at).toLocaleDateString("tr-TR") : "-"}
+                  {subscription?.expiresAt
+                    ? new Date(subscription.expiresAt).toLocaleDateString("tr-TR", {
+                        year: "numeric",
+                        month: "long",
+                        day: "numeric",
+                      })
+                    : "-"}
                 </p>
               </div>
             </div>
@@ -182,6 +196,7 @@ export default function PaymentSuccessPage() {
             </ul>
           </CardContent>
         </Card>
+        </div>
       </div>
     </div>
   )
