@@ -28,11 +28,23 @@ export default function PaymentPage() {
   const searchParams = useSearchParams()
 
   // Plan bilgisini al
-  const planId = searchParams.get("plan") || "premium-monthly"
-  const selectedPlan = getPlanById(planId)
+  const planId = searchParams.get("plan")
+
+  // Plan seçilmeden ödeme sayfasına erişimi engelle
+  useEffect(() => {
+    if (!planId && !authLoading) {
+      toast({
+        title: "Plan Seçilmedi",
+        description: "Lütfen önce bir plan seçin.",
+        variant: "destructive",
+      })
+      router.push("/uygulama/premium")
+    }
+  }, [planId, authLoading, router, toast])
+
+  const selectedPlan = planId ? getPlanById(planId) : null
 
   if (!selectedPlan) {
-    router.push("/uygulama/premium")
     return null
   }
 

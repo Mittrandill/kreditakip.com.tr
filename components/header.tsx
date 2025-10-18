@@ -37,6 +37,8 @@ import {
   AlertCircle,
   ArrowRight,
   X,
+  Moon,
+  Sun,
 } from "lucide-react"
 import { useIsMobile } from "@/hooks/use-mobile"
 import { useAuth } from "@/hooks/use-auth"
@@ -45,6 +47,7 @@ import { useToast } from "@/hooks/use-toast"
 import { usePathname } from "next/navigation"
 import Image from "next/image"
 import { useState, useEffect, useRef, useMemo } from "react"
+import { useTheme } from "next-themes"
 import { getNotifications, markNotificationAsRead } from "@/lib/api/notifications"
 import { formatDistanceToNow } from "date-fns"
 import { tr } from "date-fns/locale"
@@ -160,6 +163,15 @@ const PAGE_INFO: Record<string, { title: string; description: string; parent?: s
     description: "Yeni banka hesabı bilgilerinizi sisteme ekleyin",
     parent: "Hesaplarım",
   },
+  "/uygulama/premium": {
+    title: "Premium Üyelik",
+    description: "Premium özelliklere erişin ve reklamsız deneyimin keyfini çıkarın",
+  },
+  "/uygulama/odeme": {
+    title: "Ödeme",
+    description: "Güvenli ödeme ile premium üyeliğe geçin",
+    parent: "Premium Üyelik",
+  },
 }
 
 const typeConfig = {
@@ -199,6 +211,7 @@ export default function Header({ pageTitle }: HeaderProps) {
   const router = useRouter()
   const { toast } = useToast()
   const pathname = usePathname()
+  const [isDarkMode, setIsDarkMode] = useState(false)
 
   const [notifications, setNotifications] = useState<any[]>([])
   const [unreadCount, setUnreadCount] = useState(0)
@@ -522,6 +535,43 @@ export default function Header({ pageTitle }: HeaderProps) {
     }
   }, [searchOpen])
 
+  // Load theme preference on mount
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const savedTheme = localStorage.getItem("app-theme")
+      const isDark = savedTheme === "dark"
+      setIsDarkMode(isDark)
+
+      // Apply theme only to /uygulama routes
+      if (pathname?.startsWith("/uygulama")) {
+        if (isDark) {
+          document.documentElement.classList.add("dark")
+        } else {
+          document.documentElement.classList.remove("dark")
+        }
+      }
+    }
+  }, [pathname])
+
+  // Toggle theme handler
+  const toggleTheme = () => {
+    const newDarkMode = !isDarkMode
+    setIsDarkMode(newDarkMode)
+
+    if (typeof window !== "undefined") {
+      localStorage.setItem("app-theme", newDarkMode ? "dark" : "light")
+
+      // Apply theme only to /uygulama routes
+      if (pathname?.startsWith("/uygulama")) {
+        if (newDarkMode) {
+          document.documentElement.classList.add("dark")
+        } else {
+          document.documentElement.classList.remove("dark")
+        }
+      }
+    }
+  }
+
   return (
     <header className="sticky top-0 z-50 flex h-16 items-center gap-4 border-b bg-white/80 dark:bg-gray-900/80 backdrop-blur-md supports-[backdrop-filter]:bg-white/60 dark:supports-[backdrop-filter]:bg-gray-900/60 px-4 sm:px-6 md:px-8 shadow-sm border-emerald-100 dark:border-gray-700">
       {isMobile ? (
@@ -756,6 +806,21 @@ export default function Header({ pageTitle }: HeaderProps) {
             )}
           </div>
         </form>
+
+        {/* Theme Toggle */}
+        <Button
+          variant="ghost"
+          size="icon"
+          className="rounded-full h-10 w-10 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+          onClick={toggleTheme}
+          aria-label="Tema değiştir"
+        >
+          {isDarkMode ? (
+            <Sun className="h-5 w-5 text-gray-600 dark:text-gray-400" />
+          ) : (
+            <Moon className="h-5 w-5 text-gray-600 dark:text-gray-400" />
+          )}
+        </Button>
 
         {/* Notification Dropdown */}
         <div className="relative" ref={dropdownRef}>

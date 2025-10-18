@@ -5,7 +5,15 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Switch } from "@/components/ui/switch"
-import { Crown, Check, Sparkles, TrendingUp, X, Shield, BarChart3, Zap } from "lucide-react"
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog"
+import { Crown, Check, Sparkles, TrendingUp, X, Shield, BarChart3, Zap, AlertCircle } from "lucide-react"
 import { useSubscription } from "@/hooks/use-subscription"
 import { useRouter, useSearchParams } from "next/navigation"
 import { useToast } from "@/hooks/use-toast"
@@ -15,10 +23,19 @@ export default function PremiumPage() {
   const { subscription, loading, isPremium } = useSubscription()
   const [isProcessing, setIsProcessing] = useState(false)
   const [isYearly, setIsYearly] = useState(true) // Varsayılan olarak yıllık seçili (indirim için)
+  const [showConfirmDialog, setShowConfirmDialog] = useState(false)
+  const [targetPlanId, setTargetPlanId] = useState<string>("")
   const router = useRouter()
   const searchParams = useSearchParams()
   const { toast } = useToast()
   const hasProcessedParams = useRef(false)
+
+  // Kullanıcının mevcut planına göre toggle'ı ayarla
+  useEffect(() => {
+    if (isPremium && subscription?.plan_id) {
+      setIsYearly(subscription.plan_id === "premium-yearly")
+    }
+  }, [isPremium, subscription?.plan_id])
 
   useEffect(() => {
     if (hasProcessedParams.current) return
@@ -46,7 +63,25 @@ export default function PremiumPage() {
 
   const handleUpgrade = async () => {
     const planId = isYearly ? "premium-yearly" : "premium-monthly"
-    router.push(`/uygulama/odeme?plan=${planId}`)
+
+    // Eğer mevcut planla aynı plana tıklandıysa, hiçbir şey yapma
+    if (isPremium && subscription?.plan_id === planId) {
+      return
+    }
+
+    // Eğer zaten premium ise ve farklı bir plana geçmek istiyorsa
+    if (isPremium && subscription?.plan_id !== planId) {
+      setTargetPlanId(planId)
+      setShowConfirmDialog(true)
+    } else {
+      // Yeni premium kullanıcı
+      router.push(`/uygulama/odeme?plan=${planId}`)
+    }
+  }
+
+  const confirmPlanChange = () => {
+    setShowConfirmDialog(false)
+    router.push(`/uygulama/odeme?plan=${targetPlanId}&upgrade=true`)
   }
 
   // Seçili planı al
@@ -79,21 +114,31 @@ export default function PremiumPage() {
           </div>
           <h1 className="text-5xl md:text-6xl font-bold">Premium Üyelik</h1>
           <p className="text-xl md:text-2xl text-white/90 max-w-2xl mx-auto leading-relaxed">
-            Tüm özelliklere sınırsız erişim, reklamsız deneyim ve gelişmiş analiz araçları
+            {isPremium
+              ? "Premium üyeliğiniz aktif! İstediğiniz zaman planınızı değiştirebilirsiniz."
+              : "Tüm özelliklere sınırsız erişim, reklamsız deneyim ve gelişmiş analiz araçları"}
           </p>
-          {isPremium && (
-            <Badge className="bg-white/20 text-white border-white/30 backdrop-blur-sm px-6 py-3 text-lg shadow-lg">
-              <Check className="h-5 w-5 mr-2" />
-              Aktif Premium Üye
-            </Badge>
+          {isPremium && subscription && (
+            <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
+              <Badge className="bg-white/20 text-white border-white/30 backdrop-blur-sm px-6 py-3 text-lg shadow-lg">
+                <Check className="h-5 w-5 mr-2" />
+                {subscription.plan_id === "premium-yearly" ? "Yıllık Premium" : "Aylık Premium"}
+              </Badge>
+              {subscription.expires_at && (
+                <Badge className="bg-white/15 text-white/90 border-white/20 backdrop-blur-sm px-6 py-3 text-base">
+                  <Crown className="h-4 w-4 mr-2" />
+                  {new Date(subscription.expires_at).toLocaleDateString("tr-TR")} tarihine kadar geçerli
+                </Badge>
+              )}
+            </div>
           )}
         </div>
       </div>
 
       <div className="max-w-4xl mx-auto">
-        <div className="grid md:grid-cols-2 gap-8">
+        <div className="grid md:grid-cols-2 gap-8 items-stretch">
           {/* Free Plan */}
-          <Card className="relative border-2 border-gray-200 dark:border-gray-700 hover:shadow-lg transition-shadow h-fit">
+          <Card className="relative border-2 border-gray-200 dark:border-gray-700 hover:shadow-lg transition-shadow flex flex-col">
             <CardHeader className="space-y-4">
               <div className="flex items-center justify-between">
                 <CardTitle className="text-2xl">Ücretsiz</CardTitle>
@@ -108,8 +153,8 @@ export default function PremiumPage() {
                 </p>
               </div>
             </CardHeader>
-            <CardContent className="space-y-6">
-              <div className="space-y-4">
+            <CardContent className="space-y-6 flex-1 flex flex-col">
+              <div className="space-y-4 flex-1">
                 <div className="flex items-start gap-3">
                   <div className="p-1 bg-emerald-100 dark:bg-emerald-900/30 rounded-full">
                     <Check className="h-4 w-4 text-emerald-600 dark:text-emerald-400" />
@@ -142,7 +187,7 @@ export default function PremiumPage() {
                 </div>
               </div>
               {!isPremium && (
-                <Button variant="outline" className="w-full bg-transparent" disabled>
+                <Button variant="outline" className="w-full bg-transparent mt-auto" disabled>
                   Mevcut Plan
                 </Button>
               )}
@@ -150,7 +195,7 @@ export default function PremiumPage() {
           </Card>
 
           {/* Premium Plan with Toggle */}
-          <Card className="relative border-2 border-emerald-500 dark:border-emerald-600 shadow-2xl hover:shadow-xl transition-all">
+          <Card className="relative border-2 border-emerald-500 dark:border-emerald-600 shadow-2xl hover:shadow-xl transition-all flex flex-col">
             <div className="absolute -top-4 left-1/2 -translate-x-1/2 z-20">
               <Badge className="bg-gradient-to-r from-amber-500 to-orange-600 text-white border-0 px-6 py-2 shadow-lg">
                 <Sparkles className="h-4 w-4 mr-1" />
@@ -220,8 +265,8 @@ export default function PremiumPage() {
               </div>
             </CardHeader>
 
-            <CardContent className="relative space-y-6">
-              <div className="space-y-4">
+            <CardContent className="relative space-y-6 flex-1 flex flex-col">
+              <div className="space-y-4 flex-1">
                 {selectedPlan?.features.map((feature, idx) => (
                   <div key={idx} className="flex items-start gap-3">
                     <div className="p-1 bg-emerald-100 dark:bg-emerald-900/30 rounded-full">
@@ -231,16 +276,20 @@ export default function PremiumPage() {
                   </div>
                 ))}
               </div>
-              {isPremium ? (
-                <Button className="w-full bg-gradient-to-r from-emerald-600 to-teal-600 shadow-lg" disabled size="lg">
+              {isPremium && subscription?.plan_id === (isYearly ? "premium-yearly" : "premium-monthly") ? (
+                <Button
+                  className="w-full bg-gray-400 dark:bg-gray-600 cursor-not-allowed shadow-lg mt-auto opacity-60"
+                  disabled
+                  size="lg"
+                >
                   <Check className="h-5 w-5 mr-2" />
-                  Aktif Plan
+                  Mevcut Planınız
                 </Button>
               ) : (
                 <Button
                   onClick={handleUpgrade}
                   disabled={isProcessing}
-                  className="w-full bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white shadow-lg hover:shadow-xl transition-all"
+                  className="w-full bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 dark:from-emerald-500 dark:to-teal-600 dark:hover:from-emerald-600 dark:hover:to-teal-700 text-white shadow-lg hover:shadow-xl transition-all mt-auto"
                   size="lg"
                 >
                   {isProcessing ? (
@@ -251,7 +300,7 @@ export default function PremiumPage() {
                   ) : (
                     <>
                       <Crown className="h-5 w-5 mr-2" />
-                      Premium Al ({selectedPlan?.price}₺)
+                      {isPremium ? `Plana Geç (${selectedPlan?.price}₺)` : `Premium Al (${selectedPlan?.price}₺)`}
                     </>
                   )}
                 </Button>
@@ -261,41 +310,41 @@ export default function PremiumPage() {
         </div>
       </div>
 
-      <div className="grid md:grid-cols-3 gap-6">
-        <Card className="relative overflow-hidden border-0 bg-gradient-to-br from-emerald-500 to-teal-600 text-white shadow-xl hover:shadow-2xl transition-shadow">
+      <div className="grid md:grid-cols-3 gap-6 mb-8">
+        <Card className="relative overflow-hidden border-0 bg-gradient-to-br from-emerald-500 to-teal-600 text-white shadow-xl hover:shadow-2xl transition-all hover:scale-105 duration-200">
           <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full blur-2xl"></div>
-          <CardHeader className="relative">
-            <div className="p-3 bg-white/20 rounded-xl w-fit backdrop-blur-sm">
+          <CardHeader className="relative pb-6">
+            <div className="p-3 bg-white/20 rounded-xl w-fit backdrop-blur-sm mb-3">
               <Sparkles className="h-7 w-7 text-white" />
             </div>
-            <CardTitle className="text-white text-xl">Sınırsız Analiz</CardTitle>
-            <CardDescription className="text-white/80">
+            <CardTitle className="text-white text-xl mb-2">Sınırsız Analiz</CardTitle>
+            <CardDescription className="text-white/90 text-base leading-relaxed">
               OCR teknolojisi ile sınırsız kredi dökümü analizi yapın
             </CardDescription>
           </CardHeader>
         </Card>
 
-        <Card className="relative overflow-hidden border-0 bg-gradient-to-br from-blue-500 to-indigo-600 text-white shadow-xl hover:shadow-2xl transition-shadow">
+        <Card className="relative overflow-hidden border-0 bg-gradient-to-br from-blue-500 to-indigo-600 text-white shadow-xl hover:shadow-2xl transition-all hover:scale-105 duration-200">
           <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full blur-2xl"></div>
-          <CardHeader className="relative">
-            <div className="p-3 bg-white/20 rounded-xl w-fit backdrop-blur-sm">
+          <CardHeader className="relative pb-6">
+            <div className="p-3 bg-white/20 rounded-xl w-fit backdrop-blur-sm mb-3">
               <BarChart3 className="h-7 w-7 text-white" />
             </div>
-            <CardTitle className="text-white text-xl">Risk Analizi</CardTitle>
-            <CardDescription className="text-white/80">
+            <CardTitle className="text-white text-xl mb-2">Risk Analizi</CardTitle>
+            <CardDescription className="text-white/90 text-base leading-relaxed">
               Finansal durumunuzu detaylı analiz edin ve öneriler alın
             </CardDescription>
           </CardHeader>
         </Card>
 
-        <Card className="relative overflow-hidden border-0 bg-gradient-to-br from-purple-500 to-pink-600 text-white shadow-xl hover:shadow-2xl transition-shadow">
+        <Card className="relative overflow-hidden border-0 bg-gradient-to-br from-purple-500 to-pink-600 text-white shadow-xl hover:shadow-2xl transition-all hover:scale-105 duration-200">
           <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full blur-2xl"></div>
-          <CardHeader className="relative">
-            <div className="p-3 bg-white/20 rounded-xl w-fit backdrop-blur-sm">
+          <CardHeader className="relative pb-6">
+            <div className="p-3 bg-white/20 rounded-xl w-fit backdrop-blur-sm mb-3">
               <Shield className="h-7 w-7 text-white" />
             </div>
-            <CardTitle className="text-white text-xl">Reklamsız</CardTitle>
-            <CardDescription className="text-white/80">Kesintisiz, reklamsız bir deneyim yaşayın</CardDescription>
+            <CardTitle className="text-white text-xl mb-2">Reklamsız</CardTitle>
+            <CardDescription className="text-white/90 text-base leading-relaxed">Kesintisiz, reklamsız bir deneyim yaşayın</CardDescription>
           </CardHeader>
         </Card>
       </div>
@@ -344,6 +393,69 @@ export default function PremiumPage() {
           </CardContent>
         </Card>
       )}
+
+      {/* Plan Change Confirmation Dialog */}
+      <Dialog open={showConfirmDialog} onOpenChange={setShowConfirmDialog}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <div className="flex items-center gap-3 mb-2">
+              <div className="p-2 bg-amber-100 dark:bg-amber-900/30 rounded-lg">
+                <AlertCircle className="h-6 w-6 text-amber-600 dark:text-amber-400" />
+              </div>
+              <DialogTitle className="text-xl">Plan Değişikliği Onayı</DialogTitle>
+            </div>
+            <DialogDescription className="text-base pt-2">
+              {subscription?.plan_id === "premium-yearly"
+                ? "Yıllık planınızdan aylık plana geçmek istediğinize emin misiniz?"
+                : "Aylık planınızdan yıllık plana geçmek istediğinize emin misiniz?"}
+            </DialogDescription>
+          </DialogHeader>
+          <div className="py-4">
+            <div className="space-y-3">
+              <div className="p-4 bg-gray-50 dark:bg-gray-800 rounded-lg">
+                <p className="text-sm font-medium text-gray-900 dark:text-gray-100 mb-2">Mevcut Plan:</p>
+                <div className="flex items-center justify-between">
+                  <span className="text-base text-gray-700 dark:text-gray-300">
+                    {subscription?.plan_id === "premium-yearly" ? "Yıllık Premium" : "Aylık Premium"}
+                  </span>
+                  <Badge variant="outline">
+                    {subscription?.plan_id === "premium-yearly" ? "1,990₺/yıl" : "199₺/ay"}
+                  </Badge>
+                </div>
+              </div>
+              <div className="p-4 bg-emerald-50 dark:bg-emerald-900/20 rounded-lg border-2 border-emerald-200 dark:border-emerald-800">
+                <p className="text-sm font-medium text-emerald-900 dark:text-emerald-100 mb-2">Yeni Plan:</p>
+                <div className="flex items-center justify-between">
+                  <span className="text-base text-emerald-700 dark:text-emerald-300">
+                    {targetPlanId === "premium-yearly" ? "Yıllık Premium" : "Aylık Premium"}
+                  </span>
+                  <Badge className="bg-emerald-600 dark:bg-emerald-500">
+                    {targetPlanId === "premium-yearly" ? "1,990₺/yıl" : "199₺/ay"}
+                  </Badge>
+                </div>
+              </div>
+            </div>
+            <p className="text-sm text-gray-600 dark:text-gray-400 mt-4">
+              Plan değişikliği hemen gerçekleşecek ve yeni ödeme döngüsü başlayacaktır.
+            </p>
+          </div>
+          <DialogFooter className="sm:space-x-2">
+            <Button
+              variant="outline"
+              onClick={() => setShowConfirmDialog(false)}
+              className="border-gray-300 dark:border-gray-700"
+            >
+              İptal
+            </Button>
+            <Button
+              onClick={confirmPlanChange}
+              className="bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 dark:from-emerald-500 dark:to-teal-600 text-white"
+            >
+              Planı Değiştir
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }

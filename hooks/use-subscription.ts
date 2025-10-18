@@ -5,6 +5,7 @@ import { useAuth } from "./use-auth"
 
 export interface SubscriptionStatus {
   planType: "free" | "premium"
+  plan_id?: string // 'premium-monthly' | 'premium-yearly' | null
   status: "active" | "cancelled" | "expired"
   expiresAt?: string
   startDate?: string
@@ -61,6 +62,7 @@ export function useSubscription() {
 
           const subscriptionStatus = {
             planType: data.subscription?.plan_type || "free",
+            plan_id: data.subscription?.plan_id || null,
             status: data.subscription?.status || "active",
             expiresAt: data.subscription?.expires_at,
             startDate: data.subscription?.start_date,
@@ -121,6 +123,7 @@ export function useSubscription() {
 
           const subscriptionStatus = {
             planType: data.subscription?.plan_type || "free",
+            plan_id: data.subscription?.plan_id || null,
             status: data.subscription?.status || "active",
             expiresAt: data.subscription?.expires_at,
             startDate: data.subscription?.start_date,

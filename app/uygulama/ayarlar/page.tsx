@@ -16,6 +16,14 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Separator } from "@/components/ui/separator"
 import { Badge } from "@/components/ui/badge"
 import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog"
+import {
   User,
   DollarSign,
   Shield,
@@ -41,6 +49,13 @@ import {
   Clock,
   LocateIcon as Location,
   Upload,
+  Crown,
+  CreditCard,
+  Calendar,
+  FileText,
+  TrendingUp,
+  ArrowUpRight,
+  Check,
 } from "lucide-react"
 import { useAuth } from "@/hooks/use-auth"
 import { getProfile, updateProfile } from "@/lib/auth"
@@ -83,6 +98,13 @@ export default function AyarlarPage() {
   const [emailNotifications, setEmailNotifications] = useState(true)
   const [smsNotifications, setSmsNotifications] = useState(true)
   const [pushNotifications, setPushNotifications] = useState(false)
+
+  // Abonelik state'leri
+  const [invoices, setInvoices] = useState<any[]>([])
+  const [loadingInvoices, setLoadingInvoices] = useState(false)
+  const [showUpgradeDialog, setShowUpgradeDialog] = useState(false)
+  const [isCancelling, setIsCancelling] = useState(false)
+  const [showCancelDialog, setShowCancelDialog] = useState(false)
 
   // Profil fotoğrafı state'leri
   const [avatarFile, setAvatarFile] = useState<File | null>(null)
@@ -493,6 +515,60 @@ export default function AyarlarPage() {
     }
   }
 
+  // Load invoices
+  useEffect(() => {
+    const loadInvoices = async () => {
+      if (!user?.id || activeTab !== "subscription") return
+
+      setLoadingInvoices(true)
+      try {
+        const response = await fetch("/api/subscription/invoices")
+        const data = await response.json()
+
+        if (data.success) {
+          setInvoices(data.invoices || [])
+        }
+      } catch (error) {
+        console.error("Error loading invoices:", error)
+      } finally {
+        setLoadingInvoices(false)
+      }
+    }
+
+    loadInvoices()
+  }, [user?.id, activeTab])
+
+  // Cancel subscription handler
+  const handleCancelSubscription = async () => {
+    setShowCancelDialog(false)
+    setIsCancelling(true)
+    try {
+      const response = await fetch("/api/subscription/cancel", {
+        method: "POST",
+      })
+
+      const data = await response.json()
+
+      if (data.success) {
+        toast({
+          title: "Abonelik İptal Edildi",
+          description: "Aboneliğiniz başarıyla iptal edildi. Mevcut dönem sonuna kadar premium özelliklerden yararlanabilirsiniz.",
+        })
+        window.location.reload()
+      } else {
+        throw new Error(data.error)
+      }
+    } catch (error: any) {
+      toast({
+        title: "Hata",
+        description: error.message || "Abonelik iptal edilirken bir hata oluştu.",
+        variant: "destructive",
+      })
+    } finally {
+      setIsCancelling(false)
+    }
+  }
+
   const getAvatarFallbackText = () => {
     if (profileData.first_name && profileData.last_name) {
       return `${profileData.first_name[0]}${profileData.last_name[0]}`.toUpperCase()
@@ -568,13 +644,20 @@ export default function AyarlarPage() {
       <div className="bg-white dark:bg-gray-900 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-800 overflow-hidden">
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
           <div className="border-b border-gray-100 dark:border-gray-800 bg-gray-50/50 dark:bg-gray-800/50">
-            <TabsList className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 bg-transparent h-auto p-2 gap-2">
+            <TabsList className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 bg-transparent h-auto p-2 gap-2">
               <TabsTrigger
                 value="profile"
                 className="flex items-center gap-2 py-3 px-4 data-[state=active]:text-emerald-600 dark:data-[state=active]:text-emerald-400 rounded-xl transition-all duration-200 hover:bg-gray-100 dark:hover:bg-gray-700"
               >
                 <User className="h-4 w-4" />
                 <span className="font-medium">Profil</span>
+              </TabsTrigger>
+              <TabsTrigger
+                value="subscription"
+                className="flex items-center gap-2 py-3 px-4 data-[state=active]:text-emerald-600 dark:data-[state=active]:text-emerald-400 rounded-xl transition-all duration-200 hover:bg-gray-100 dark:hover:bg-gray-700"
+              >
+                <Crown className="h-4 w-4" />
+                <span className="font-medium">Abonelik</span>
               </TabsTrigger>
               <TabsTrigger
                 value="financial"
@@ -747,6 +830,278 @@ export default function AyarlarPage() {
                     </div>
                   </CardContent>
                 </Card>
+              </div>
+            </TabsContent>
+
+            <TabsContent value="subscription">
+              <div className="space-y-6">
+                {/* Mevcut Plan */}
+                <Card className="dark:bg-gray-900 dark:border-gray-800">
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2 dark:text-white">
+                      <Crown className="h-5 w-5 text-emerald-600 dark:text-emerald-400" />
+                      Mevcut Plan
+                    </CardTitle>
+                    <CardDescription className="dark:text-gray-400">
+                      Abonelik durumunuz ve plan bilgileriniz
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent className="space-y-6">
+                    <div className="relative overflow-hidden rounded-xl bg-gradient-to-br from-emerald-500 to-teal-600 dark:from-emerald-600 dark:to-teal-700 p-6 text-white">
+                      <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full blur-2xl"></div>
+                      <div className="relative z-10">
+                        <div className="flex items-center justify-between mb-4">
+                          <div className="flex items-center gap-3">
+                            <div className="p-3 bg-white/20 rounded-xl backdrop-blur-sm">
+                              <Crown className="h-6 w-6 text-white" />
+                            </div>
+                            <div>
+                              <h3 className="text-2xl font-bold">{isPremium ? "Premium" : "Ücretsiz"} Plan</h3>
+                              <p className="text-emerald-100">
+                                {isPremium ? "Tüm özelliklere erişim" : "Temel özellikler"}
+                              </p>
+                            </div>
+                          </div>
+                          <Badge className="bg-white/20 border-white/30 text-white backdrop-blur-sm px-4 py-2">
+                            {subscription?.status === "active" ? "Aktif" : subscription?.status || "N/A"}
+                          </Badge>
+                        </div>
+
+                        {isPremium && subscription?.expires_at && (
+                          <div className="flex items-center gap-2 text-emerald-100">
+                            <Calendar className="h-4 w-4" />
+                            <span className="text-sm">
+                              Bitiş Tarihi: {new Date(subscription.expires_at).toLocaleDateString("tr-TR")}
+                            </span>
+                          </div>
+                        )}
+
+                        {subscription?.plan_id && (
+                          <div className="mt-4 p-4 bg-white/10 backdrop-blur-sm rounded-lg">
+                            <p className="text-sm font-medium mb-2">Plan Detayları</p>
+                            <p className="text-xs text-emerald-100">
+                              {subscription.plan_id === "premium-yearly"
+                                ? "Yıllık Premium - 1,990₺/yıl"
+                                : subscription.plan_id === "premium-monthly"
+                                  ? "Aylık Premium - 199₺/ay"
+                                  : "Ücretsiz Plan"}
+                            </p>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+
+                    {/* Kullanım İstatistikleri */}
+                    {subscription && (
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div className="p-4 border rounded-lg dark:border-gray-700 dark:bg-gray-800/50">
+                          <div className="flex items-center justify-between mb-2">
+                            <span className="text-sm font-medium dark:text-white">OCR Analizi</span>
+                            <Badge variant="outline" className="text-xs dark:border-gray-600">
+                              {isPremium ? "Sınırsız" : `${subscription.usage?.ocrAnalysis?.used || 0}/${subscription.usage?.ocrAnalysis?.limit || 1}`}
+                            </Badge>
+                          </div>
+                          <div className="w-full bg-gray-200 dark:bg-gray-600 rounded-full h-2">
+                            <div
+                              className="bg-gradient-to-r from-emerald-500 to-teal-600 h-2 rounded-full"
+                              style={{
+                                width: isPremium
+                                  ? "100%"
+                                  : `${Math.min(100, ((subscription.usage?.ocrAnalysis?.used || 0) / (subscription.usage?.ocrAnalysis?.limit || 1)) * 100)}%`,
+                              }}
+                            ></div>
+                          </div>
+                        </div>
+                        <div className="p-4 border rounded-lg dark:border-gray-700 dark:bg-gray-800/50">
+                          <div className="flex items-center justify-between mb-2">
+                            <span className="text-sm font-medium dark:text-white">Risk Analizi</span>
+                            <Badge variant="outline" className="text-xs dark:border-gray-600">
+                              {isPremium ? "Sınırsız" : "Premium Gerekli"}
+                            </Badge>
+                          </div>
+                          <div className="w-full bg-gray-200 dark:bg-gray-600 rounded-full h-2">
+                            <div
+                              className="bg-gradient-to-r from-blue-500 to-indigo-600 h-2 rounded-full"
+                              style={{ width: isPremium ? "100%" : "0%" }}
+                            ></div>
+                          </div>
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Plan Türü - Tüm kullanıcılar için göster */}
+                    <div className="p-4 bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 rounded-xl border border-blue-200 dark:border-blue-800">
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <p className="text-sm text-blue-700 dark:text-blue-300 font-medium mb-1">
+                            {isPremium ? "Abonelik Türü" : "Mevcut Plan"}
+                          </p>
+                          <p className="text-2xl font-bold text-blue-900 dark:text-blue-100">
+                            {isPremium
+                              ? subscription?.plan_id === "premium-yearly"
+                                ? "Yıllık Abonelik"
+                                : "Aylık Abonelik"
+                              : "Ücretsiz Plan"}
+                          </p>
+                          <p className="text-sm text-blue-600 dark:text-blue-400 mt-1">
+                            {isPremium
+                              ? subscription?.plan_id === "premium-yearly"
+                                ? "1,990₺/yıl"
+                                : "199₺/ay"
+                              : "0₺ - Sınırlı özellikler"}
+                          </p>
+                        </div>
+                        <div className="p-3 bg-blue-100 dark:bg-blue-800/30 rounded-xl">
+                          <Calendar className="h-8 w-8 text-blue-600 dark:text-blue-400" />
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Aksiyonlar */}
+                    <div className="flex flex-col sm:flex-row gap-3">
+                      {!isPremium ? (
+                        <Button
+                          className="bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 dark:from-emerald-500 dark:to-teal-600 dark:hover:from-emerald-600 dark:hover:to-teal-700 text-white shadow-md hover:shadow-lg transition-all"
+                          onClick={() => router.push("/uygulama/premium")}
+                        >
+                          <TrendingUp className="h-4 w-4 mr-2" />
+                          Premium'a Yükselt
+                        </Button>
+                      ) : (
+                        <>
+                          <Button
+                            className="bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 dark:from-emerald-500 dark:to-teal-600 dark:hover:from-emerald-600 dark:hover:to-teal-700 text-white shadow-md hover:shadow-lg transition-all"
+                            onClick={() => router.push("/uygulama/premium")}
+                          >
+                            <ArrowUpRight className="h-4 w-4 mr-2" />
+                            Planı Değiştir
+                          </Button>
+                          <Button
+                            variant="outline"
+                            className="border-red-300 dark:border-red-700 text-red-700 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 hover:border-red-400 bg-transparent shadow-sm hover:shadow-md transition-all"
+                            onClick={() => setShowCancelDialog(true)}
+                            disabled={isCancelling}
+                          >
+                            <X className="h-4 w-4 mr-2" />
+                            Aboneliği İptal Et
+                          </Button>
+                        </>
+                      )}
+                    </div>
+                  </CardContent>
+                </Card>
+
+                {/* Faturalama */}
+                <Card className="dark:bg-gray-900 dark:border-gray-800">
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2 dark:text-white">
+                      <FileText className="h-5 w-5 text-emerald-600 dark:text-emerald-400" />
+                      Faturalama
+                    </CardTitle>
+                    <CardDescription className="dark:text-gray-400">
+                      Ödeme geçmişinizi ve faturalarınızı görüntüleyin
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="flex items-center justify-between p-4 border rounded-lg dark:border-gray-700 dark:bg-gray-800/50">
+                      <div>
+                        <p className="font-medium dark:text-white mb-1">Fatura Geçmişi</p>
+                        <p className="text-sm text-gray-500 dark:text-gray-400">
+                          Tüm ödeme işlemlerinizi ve faturalarınızı görüntüleyin
+                        </p>
+                      </div>
+                      <Button
+                        onClick={() => router.push("/uygulama/faturalandirma")}
+                        className="bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 dark:from-emerald-500 dark:to-teal-600 dark:hover:from-emerald-600 dark:hover:to-teal-700 text-white"
+                      >
+                        <FileText className="h-4 w-4 mr-2" />
+                        Faturalara Git
+                      </Button>
+                    </div>
+                  </CardContent>
+                </Card>
+
+                {/* Bilgilendirme */}
+                <Alert className="bg-blue-50 dark:bg-blue-900/30 border-blue-200 dark:border-blue-700/50">
+                  <Info className="h-5 w-5 text-blue-600 dark:text-blue-400" />
+                  <AlertTitle className="text-blue-700 dark:text-blue-300">Abonelik Bilgisi</AlertTitle>
+                  <AlertDescription className="text-blue-600 dark:text-blue-400">
+                    {isPremium
+                      ? "Premium üyeliğiniz aktif. Tüm özelliklere sınırsız erişiminiz var. Aboneliğinizi istediğiniz zaman iptal edebilir veya planınızı değiştirebilirsiniz."
+                      : "Ücretsiz plan kullanıyorsunuz. Premium'a yükselterek sınırsız OCR analizi, risk analizi ve reklamsız deneyimin keyfini çıkarabilirsiniz."}
+                  </AlertDescription>
+                </Alert>
+
+                {/* Cancel Subscription Dialog */}
+                <Dialog open={showCancelDialog} onOpenChange={setShowCancelDialog}>
+                  <DialogContent className="sm:max-w-md">
+                    <DialogHeader>
+                      <div className="flex items-center gap-3 mb-2">
+                        <div className="p-2 bg-red-100 dark:bg-red-900/30 rounded-lg">
+                          <AlertTriangle className="h-6 w-6 text-red-600 dark:text-red-400" />
+                        </div>
+                        <DialogTitle className="text-xl">Abonelik İptali</DialogTitle>
+                      </div>
+                      <DialogDescription className="text-base pt-2">
+                        Aboneliğinizi iptal etmek istediğinize emin misiniz?
+                      </DialogDescription>
+                    </DialogHeader>
+                    <div className="py-4">
+                      <div className="space-y-3">
+                        <div className="p-4 bg-gray-50 dark:bg-gray-800 rounded-lg">
+                          <p className="text-sm font-medium text-gray-900 dark:text-gray-100 mb-2">Mevcut Abonelik:</p>
+                          <div className="flex items-center justify-between">
+                            <span className="text-base text-gray-700 dark:text-gray-300">
+                              {subscription?.plan_id === "premium-yearly" ? "Yıllık Premium" : "Aylık Premium"}
+                            </span>
+                            <Badge variant="outline">
+                              {subscription?.plan_id === "premium-yearly" ? "1,990₺/yıl" : "199₺/ay"}
+                            </Badge>
+                          </div>
+                        </div>
+                        <div className="p-4 bg-amber-50 dark:bg-amber-900/20 rounded-lg border border-amber-200 dark:border-amber-800">
+                          <div className="flex items-start gap-3">
+                            <AlertCircle className="h-5 w-5 text-amber-600 dark:text-amber-400 mt-0.5" />
+                            <div>
+                              <p className="text-sm font-medium text-amber-900 dark:text-amber-100 mb-1">
+                                Önemli Bilgiler
+                              </p>
+                              <ul className="text-sm text-amber-700 dark:text-amber-300 space-y-1">
+                                <li>• Mevcut dönem sonuna kadar premium özelliklerden yararlanabilirsiniz</li>
+                                <li>• İptal işlemi hemen gerçekleşecektir</li>
+                                <li>• Otomatik yenileme durdurulacaktır</li>
+                              </ul>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                    <DialogFooter className="sm:space-x-2">
+                      <Button
+                        variant="outline"
+                        onClick={() => setShowCancelDialog(false)}
+                        className="border-gray-300 dark:border-gray-700"
+                        disabled={isCancelling}
+                      >
+                        Vazgeç
+                      </Button>
+                      <Button
+                        onClick={handleCancelSubscription}
+                        disabled={isCancelling}
+                        className="bg-gradient-to-r from-red-600 to-rose-600 hover:from-red-700 hover:to-rose-700 text-white"
+                      >
+                        {isCancelling ? (
+                          <>
+                            <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                            İptal Ediliyor...
+                          </>
+                        ) : (
+                          "Aboneliği İptal Et"
+                        )}
+                      </Button>
+                    </DialogFooter>
+                  </DialogContent>
+                </Dialog>
               </div>
             </TabsContent>
 
