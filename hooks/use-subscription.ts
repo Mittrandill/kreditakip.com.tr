@@ -1,7 +1,7 @@
 "use client"
 
 import { useEffect, useState } from "react"
-import { useAuth } from "./use-auth"
+import { useAuthContext } from "@/components/auth-provider"
 
 export interface SubscriptionStatus {
   planType: "free" | "premium"
@@ -21,35 +21,50 @@ export interface SubscriptionStatus {
   }
 }
 
-const CACHE_KEY = "subscription_cache"
 const CACHE_DURATION = 5 * 60 * 1000 // 5 minutes
 
+// Helper function to get user-specific cache key
+const getCacheKey = (userId: string) => `subscription_cache_${userId}`
+
 export function useSubscription() {
-  const { user } = useAuth()
-  const [subscription, setSubscription] = useState<SubscriptionStatus | null>(() => {
-    if (typeof window !== "undefined") {
-      const cached = localStorage.getItem(CACHE_KEY)
-      if (cached) {
-        try {
-          const { data, timestamp } = JSON.parse(cached)
-          if (Date.now() - timestamp < CACHE_DURATION) {
-            return data
-          }
-        } catch (e) {
-          // Invalid cache, ignore
-        }
-      }
+  const { user } = useAuthContext()
+  const [subscription, setSubscription] = useState<SubscriptionStatus | null>(null)
+  const [loading, setLoading] = useState(true)
+  const [currentUserId, setCurrentUserId] = useState<string | null>(null)
+
+  // Reset subscription when user changes
+  useEffect(() => {
+    const newUserId = user?.id || null
+    if (newUserId !== currentUserId) {
+      console.log('[Subscription] User changed from', currentUserId, 'to', newUserId)
+      setSubscription(null)
+      setLoading(true)
+      setCurrentUserId(newUserId)
     }
-    return null
-  })
-  const [loading, setLoading] = useState(!subscription) // Don't show loading if we have cached data
+  }, [user?.id, currentUserId])
 
   useEffect(() => {
     async function fetchSubscription() {
-      if (!user) {
+      if (!user?.id) {
+        console.log('[Subscription] No user, clearing subscription')
+        setSubscription(null)
         setLoading(false)
+
+        // Clear localStorage cache
+        if (typeof window !== "undefined") {
+          const keysToRemove: string[] = []
+          for (let i = 0; i < localStorage.length; i++) {
+            const key = localStorage.key(i)
+            if (key && key.startsWith("subscription_cache_")) {
+              keysToRemove.push(key)
+            }
+          }
+          keysToRemove.forEach((key) => localStorage.removeItem(key))
+        }
         return
       }
+
+      console.log('[Subscription] Fetching for user:', user.id)
 
       try {
         const response = await fetch(`/api/subscription/status?userId=${user.id}`)
@@ -57,8 +72,16 @@ export function useSubscription() {
         if (response.ok) {
           const data = await response.json()
 
+          console.log('[Subscription] API Response for user', user.id, ':', {
+            subscription: data.subscription,
+            planType: data.subscription?.plan_type,
+            plan_id: data.subscription?.plan_id
+          })
+
           const ocrUsage = data.usage?.find((u: any) => u.feature_type === "ocr_analysis")
           const riskUsage = data.usage?.find((u: any) => u.feature_type === "risk_analysis")
+
+          const isPremiumUser = data.subscription?.plan_type === "premium"
 
           const subscriptionStatus = {
             planType: data.subscription?.plan_type || "free",
@@ -69,36 +92,40 @@ export function useSubscription() {
             usage: {
               ocrAnalysis: {
                 used: ocrUsage?.used_count || 0,
-                limit: ocrUsage?.limit_count || 1,
+                limit: ocrUsage?.limit_count || (isPremiumUser ? 999999 : 1),
               },
               riskAnalysis: {
                 used: riskUsage?.used_count || 0,
-                limit: riskUsage?.limit_count || 0,
+                limit: riskUsage?.limit_count || (isPremiumUser ? 999999 : 0),
               },
             },
           }
 
+          console.log('[Subscription] Final status for user', user.id, ':', subscriptionStatus)
           setSubscription(subscriptionStatus)
 
+          // Save to user-specific cache
           if (typeof window !== "undefined") {
+            const cacheKey = getCacheKey(user.id)
             localStorage.setItem(
-              CACHE_KEY,
+              cacheKey,
               JSON.stringify({
                 data: subscriptionStatus,
                 timestamp: Date.now(),
               }),
             )
+            console.log('[Subscription] Saved to cache:', cacheKey)
           }
         }
       } catch (error) {
-        console.error("[v0] Subscription fetch error:", error)
+        console.error("[Subscription] Fetch error for user", user?.id, ":", error)
       } finally {
         setLoading(false)
       }
     }
 
     fetchSubscription()
-  }, [user])
+  }, [user?.id])
 
   const isPremium = subscription?.planType === "premium"
   const canUseOCR =
@@ -112,14 +139,18 @@ export function useSubscription() {
     canUseOCR,
     canUseRiskAnalysis,
     refresh: async () => {
+      if (!user?.id) return
+
       setLoading(true)
       try {
-        const response = await fetch(`/api/subscription/status?userId=${user?.id}`)
+        const response = await fetch(`/api/subscription/status?userId=${user.id}`)
         if (response.ok) {
           const data = await response.json()
 
           const ocrUsage = data.usage?.find((u: any) => u.feature_type === "ocr_analysis")
           const riskUsage = data.usage?.find((u: any) => u.feature_type === "risk_analysis")
+
+          const isPremiumUser = data.subscription?.plan_type === "premium"
 
           const subscriptionStatus = {
             planType: data.subscription?.plan_type || "free",
@@ -130,20 +161,22 @@ export function useSubscription() {
             usage: {
               ocrAnalysis: {
                 used: ocrUsage?.used_count || 0,
-                limit: ocrUsage?.limit_count || 1,
+                limit: ocrUsage?.limit_count || (isPremiumUser ? 999999 : 1),
               },
               riskAnalysis: {
                 used: riskUsage?.used_count || 0,
-                limit: riskUsage?.limit_count || 0,
+                limit: riskUsage?.limit_count || (isPremiumUser ? 999999 : 0),
               },
             },
           }
 
           setSubscription(subscriptionStatus)
 
+          // Save to user-specific cache
           if (typeof window !== "undefined") {
+            const cacheKey = getCacheKey(user.id)
             localStorage.setItem(
-              CACHE_KEY,
+              cacheKey,
               JSON.stringify({
                 data: subscriptionStatus,
                 timestamp: Date.now(),

@@ -432,7 +432,7 @@ export default function KredilerPage() {
                     placeholder="Kredi ara..."
                     value={searchTerm}
                     onChange={(e) => handleSearchChange(e.target.value)}
-                    className="pl-8 w-[250px] dark:bg-gray-800 dark:border-gray-700 dark:text-white"
+                    className="pl-8 w-[250px]"
                   />
                 </div>
                 <DropdownMenu>

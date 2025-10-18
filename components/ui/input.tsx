@@ -8,7 +8,22 @@ const Input = React.forwardRef<HTMLInputElement, InputProps>(({ className, type,
     <input
       type={type}
       className={cn(
-        "flex h-10 w-full rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm transition-all duration-200 file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-gray-500 focus-visible:outline-none focus-visible:ring-0 focus-visible:border-emerald-500 focus-visible:shadow-[0_0_0_0.5px_rgb(16,185,129)] disabled:cursor-not-allowed disabled:opacity-50 hover:border-gray-300",
+        // Base styles
+        "flex h-10 w-full rounded-lg px-3 py-2 text-sm transition-all duration-200",
+        // Light mode
+        "border border-gray-200 bg-white text-gray-900 placeholder:text-gray-500",
+        // Dark mode
+        "dark:border-gray-600 dark:bg-gray-800 dark:text-white dark:placeholder:text-gray-400",
+        // Focus styles - remove browser default outline and add custom
+        "focus-visible:outline-none focus-visible:ring-0",
+        "focus-visible:border-emerald-500 focus-visible:shadow-[0_0_0_1px_rgb(16,185,129)]",
+        "dark:focus-visible:border-emerald-400 dark:focus-visible:shadow-[0_0_0_1px_rgb(52,211,153)]",
+        // Hover styles
+        "hover:border-gray-300 dark:hover:border-gray-500",
+        // File input
+        "file:border-0 file:bg-transparent file:text-sm file:font-medium",
+        // Disabled state
+        "disabled:cursor-not-allowed disabled:opacity-50",
         className,
       )}
       ref={ref}

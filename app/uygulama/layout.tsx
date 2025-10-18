@@ -1,5 +1,6 @@
 import type React from "react"
 import { AuthGuard } from "@/components/auth-guard"
+import { AuthProvider } from "@/components/auth-provider"
 import { SidebarProvider, Sidebar, SidebarContent } from "@/components/ui/sidebar"
 import AppSidebar from "@/components/app-sidebar"
 import Header from "@/components/header"
@@ -13,9 +14,10 @@ export default function UygulamaLayout({
   children: React.ReactNode
 }) {
   return (
-    <AuthGuard requireAuth={true}>
-      <UserThemeProvider>
-        <SidebarProvider defaultOpen={true}>
+    <AuthProvider>
+      <AuthGuard requireAuth={true}>
+        <UserThemeProvider>
+          <SidebarProvider defaultOpen={true}>
         <div className="min-h-screen flex w-full bg-gray-50 dark:bg-gray-950 relative">
           {/* Desktop Sidebar */}
           <Sidebar collapsible="icon" className="border-r hidden md:flex z-30">
@@ -35,8 +37,9 @@ export default function UygulamaLayout({
 
           <FloatingUpgradeBanner />
         </div>
-      </SidebarProvider>
-      </UserThemeProvider>
-    </AuthGuard>
+        </SidebarProvider>
+        </UserThemeProvider>
+      </AuthGuard>
+    </AuthProvider>
   )
 }

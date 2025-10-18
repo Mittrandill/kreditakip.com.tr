@@ -113,6 +113,18 @@ export async function signOut() {
     // Clear profile cache
     profileCache.clear()
 
+    // Clear all subscription caches (for all users)
+    if (typeof window !== "undefined") {
+      const keysToRemove: string[] = []
+      for (let i = 0; i < localStorage.length; i++) {
+        const key = localStorage.key(i)
+        if (key && key.startsWith("subscription_cache_")) {
+          keysToRemove.push(key)
+        }
+      }
+      keysToRemove.forEach((key) => localStorage.removeItem(key))
+    }
+
     const { error } = await supabase.auth.signOut()
 
     if (error) {
