@@ -219,7 +219,17 @@ export default function KredilerPage() {
       }
     })
 
-    if (sortBy === "kalanBorc") {
+    if (sortBy === "bankaAdi") {
+      filtered.sort((a, b) => {
+        const comparison = (a.banks?.name || "").localeCompare(b.banks?.name || "")
+        return sortOrder === "asc" ? comparison : -comparison
+      })
+    } else if (sortBy === "tur") {
+      filtered.sort((a, b) => {
+        const comparison = (a.credit_types?.name || "").localeCompare(b.credit_types?.name || "")
+        return sortOrder === "asc" ? comparison : -comparison
+      })
+    } else if (sortBy === "kalanBorc") {
       filtered.sort((a, b) => {
         const comparison = a.remaining_debt - b.remaining_debt
         return sortOrder === "asc" ? comparison : -comparison
@@ -229,6 +239,11 @@ export default function KredilerPage() {
         const dateA = new Date(a.last_payment_date!).getTime()
         const dateB = new Date(b.last_payment_date!).getTime()
         const comparison = dateA - dateB
+        return sortOrder === "asc" ? comparison : -comparison
+      })
+    } else if (sortBy === "faizOrani") {
+      filtered.sort((a, b) => {
+        const comparison = (a.interest_rate || 0) - (b.interest_rate || 0)
         return sortOrder === "asc" ? comparison : -comparison
       })
     }
@@ -654,11 +669,51 @@ export default function KredilerPage() {
                   <Table>
                     <TableHeader>
                       <TableRow className="bg-white dark:bg-gray-900 border-b dark:border-gray-800">
-                        <TableHead className="font-semibold text-gray-700 dark:text-gray-300">Banka</TableHead>
-                        <TableHead className="font-semibold text-gray-700 dark:text-gray-300">Tür</TableHead>
-                        <TableHead className="font-semibold text-gray-700 dark:text-gray-300">Kalan Borç</TableHead>
-                        <TableHead className="font-semibold text-gray-700 dark:text-gray-300">Sonraki Ödeme</TableHead>
-                        <TableHead className="font-semibold text-gray-700 dark:text-gray-300">Faiz Oranı</TableHead>
+                        <TableHead
+                          className="font-semibold text-gray-700 dark:text-gray-300 cursor-pointer hover:text-emerald-600 dark:hover:text-emerald-400"
+                          onClick={() => handleSort("bankaAdi")}
+                        >
+                          <div className="flex items-center gap-1">
+                            Banka
+                            <ArrowUpDown className="h-3 w-3" />
+                          </div>
+                        </TableHead>
+                        <TableHead
+                          className="font-semibold text-gray-700 dark:text-gray-300 cursor-pointer hover:text-emerald-600 dark:hover:text-emerald-400"
+                          onClick={() => handleSort("tur")}
+                        >
+                          <div className="flex items-center gap-1">
+                            Tür
+                            <ArrowUpDown className="h-3 w-3" />
+                          </div>
+                        </TableHead>
+                        <TableHead
+                          className="font-semibold text-gray-700 dark:text-gray-300 cursor-pointer hover:text-emerald-600 dark:hover:text-emerald-400"
+                          onClick={() => handleSort("kalanBorc")}
+                        >
+                          <div className="flex items-center gap-1">
+                            Kalan Borç
+                            <ArrowUpDown className="h-3 w-3" />
+                          </div>
+                        </TableHead>
+                        <TableHead
+                          className="font-semibold text-gray-700 dark:text-gray-300 cursor-pointer hover:text-emerald-600 dark:hover:text-emerald-400"
+                          onClick={() => handleSort("sonOdemeTarihi")}
+                        >
+                          <div className="flex items-center gap-1">
+                            Sonraki Ödeme
+                            <ArrowUpDown className="h-3 w-3" />
+                          </div>
+                        </TableHead>
+                        <TableHead
+                          className="font-semibold text-gray-700 dark:text-gray-300 cursor-pointer hover:text-emerald-600 dark:hover:text-emerald-400"
+                          onClick={() => handleSort("faizOrani")}
+                        >
+                          <div className="flex items-center gap-1">
+                            Faiz Oranı
+                            <ArrowUpDown className="h-3 w-3" />
+                          </div>
+                        </TableHead>
                         <TableHead className="font-semibold text-gray-700 dark:text-gray-300">İlerleme</TableHead>
                         <TableHead className="font-semibold text-gray-700 dark:text-gray-300">Durum</TableHead>
                         <TableHead className="w-[50px] text-right font-semibold text-gray-700 dark:text-gray-300">

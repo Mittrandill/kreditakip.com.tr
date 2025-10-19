@@ -203,6 +203,12 @@ export default function RiskAnaliziPage() {
         const scoreA = a.overall_risk_score || ""
         const scoreB = b.overall_risk_score || ""
         comparison = scoreA.localeCompare(scoreB)
+      } else if (sortBy === "debt_to_income_ratio") {
+        comparison = (parseFloat(a.debt_to_income_ratio) || 0) - (parseFloat(b.debt_to_income_ratio) || 0)
+      } else if (sortBy === "monthly_income") {
+        comparison = (a.monthly_income || 0) - (b.monthly_income || 0)
+      } else if (sortBy === "total_debt_amount") {
+        comparison = (a.total_debt_amount || 0) - (b.total_debt_amount || 0)
       }
       return sortOrder === "asc" ? comparison : -comparison
     })
@@ -732,12 +738,52 @@ export default function RiskAnaliziPage() {
                       <Table>
                         <TableHeader>
                           <TableRow className="bg-white dark:bg-gray-900 dark:border-gray-800">
-                            <TableHead className="dark:text-gray-300">Tarih</TableHead>
-                            <TableHead className="dark:text-gray-300">Risk Skoru</TableHead>
+                            <TableHead
+                              className="dark:text-gray-300 cursor-pointer hover:text-red-600 dark:hover:text-red-400"
+                              onClick={() => handleSort("created_at")}
+                            >
+                              <div className="flex items-center gap-1">
+                                Tarih
+                                <ArrowUpDown className="h-3 w-3" />
+                              </div>
+                            </TableHead>
+                            <TableHead
+                              className="dark:text-gray-300 cursor-pointer hover:text-red-600 dark:hover:text-red-400"
+                              onClick={() => handleSort("overall_risk_score")}
+                            >
+                              <div className="flex items-center gap-1">
+                                Risk Skoru
+                                <ArrowUpDown className="h-3 w-3" />
+                              </div>
+                            </TableHead>
                             <TableHead className="dark:text-gray-300">Risk Seviyesi</TableHead>
-                            <TableHead className="dark:text-gray-300">Borç/Gelir</TableHead>
-                            <TableHead className="dark:text-gray-300">Aylık Gelir</TableHead>
-                            <TableHead className="dark:text-gray-300">Toplam Borç</TableHead>
+                            <TableHead
+                              className="dark:text-gray-300 cursor-pointer hover:text-red-600 dark:hover:text-red-400"
+                              onClick={() => handleSort("debt_to_income_ratio")}
+                            >
+                              <div className="flex items-center gap-1">
+                                Borç/Gelir
+                                <ArrowUpDown className="h-3 w-3" />
+                              </div>
+                            </TableHead>
+                            <TableHead
+                              className="dark:text-gray-300 cursor-pointer hover:text-red-600 dark:hover:text-red-400"
+                              onClick={() => handleSort("monthly_income")}
+                            >
+                              <div className="flex items-center gap-1">
+                                Aylık Gelir
+                                <ArrowUpDown className="h-3 w-3" />
+                              </div>
+                            </TableHead>
+                            <TableHead
+                              className="dark:text-gray-300 cursor-pointer hover:text-red-600 dark:hover:text-red-400"
+                              onClick={() => handleSort("total_debt_amount")}
+                            >
+                              <div className="flex items-center gap-1">
+                                Toplam Borç
+                                <ArrowUpDown className="h-3 w-3" />
+                              </div>
+                            </TableHead>
                             <TableHead className="text-right dark:text-gray-300">İşlemler</TableHead>
                           </TableRow>
                         </TableHeader>

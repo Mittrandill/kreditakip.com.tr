@@ -207,16 +207,31 @@ export default function BankaciSifrelerimPage() {
       }
     })
 
-    if (sortBy === "sonKullanim") {
+    if (sortBy === "bankaAdi") {
+      filtered.sort((a, b) => {
+        const comparison = (a.bank_name || "").localeCompare(b.bank_name || "")
+        return sortOrder === "asc" ? comparison : -comparison
+      })
+    } else if (sortBy === "tur") {
+      filtered.sort((a, b) => {
+        const comparison = (a.credential_type || "").localeCompare(b.credential_type || "")
+        return sortOrder === "asc" ? comparison : -comparison
+      })
+    } else if (sortBy === "sifreAdi") {
+      filtered.sort((a, b) => {
+        const comparison = (a.credential_name || "").localeCompare(b.credential_name || "")
+        return sortOrder === "asc" ? comparison : -comparison
+      })
+    } else if (sortBy === "kullaniciAdi") {
+      filtered.sort((a, b) => {
+        const comparison = (a.username || "").localeCompare(b.username || "")
+        return sortOrder === "asc" ? comparison : -comparison
+      })
+    } else if (sortBy === "sonKullanim") {
       filtered.sort((a, b) => {
         const dateA = a.last_used_date ? new Date(a.last_used_date).getTime() : 0
         const dateB = b.last_used_date ? new Date(b.last_used_date).getTime() : 0
         const comparison = dateA - dateB
-        return sortOrder === "asc" ? comparison : -comparison
-      })
-    } else if (sortBy === "bankaAdi") {
-      filtered.sort((a, b) => {
-        const comparison = (a.bank_name || "").localeCompare(b.bank_name || "")
         return sortOrder === "asc" ? comparison : -comparison
       })
     }
@@ -713,12 +728,52 @@ export default function BankaciSifrelerimPage() {
                   <Table>
                     <TableHeader>
                       <TableRow className="bg-white dark:bg-gray-900">
-                        <TableHead className="font-semibold text-gray-700 dark:text-gray-300">Banka</TableHead>
-                        <TableHead className="font-semibold text-gray-700 dark:text-gray-300">Tür</TableHead>
-                        <TableHead className="font-semibold text-gray-700 dark:text-gray-300">Şifre Adı</TableHead>
-                        <TableHead className="font-semibold text-gray-700 dark:text-gray-300">Kullanıcı Adı</TableHead>
+                        <TableHead
+                          className="font-semibold text-gray-700 dark:text-gray-300 cursor-pointer hover:text-emerald-600 dark:hover:text-emerald-400"
+                          onClick={() => handleSort("bankaAdi")}
+                        >
+                          <div className="flex items-center gap-1">
+                            Banka
+                            <ArrowUpDown className="h-3 w-3" />
+                          </div>
+                        </TableHead>
+                        <TableHead
+                          className="font-semibold text-gray-700 dark:text-gray-300 cursor-pointer hover:text-emerald-600 dark:hover:text-emerald-400"
+                          onClick={() => handleSort("tur")}
+                        >
+                          <div className="flex items-center gap-1">
+                            Tür
+                            <ArrowUpDown className="h-3 w-3" />
+                          </div>
+                        </TableHead>
+                        <TableHead
+                          className="font-semibold text-gray-700 dark:text-gray-300 cursor-pointer hover:text-emerald-600 dark:hover:text-emerald-400"
+                          onClick={() => handleSort("sifreAdi")}
+                        >
+                          <div className="flex items-center gap-1">
+                            Şifre Adı
+                            <ArrowUpDown className="h-3 w-3" />
+                          </div>
+                        </TableHead>
+                        <TableHead
+                          className="font-semibold text-gray-700 dark:text-gray-300 cursor-pointer hover:text-emerald-600 dark:hover:text-emerald-400"
+                          onClick={() => handleSort("kullaniciAdi")}
+                        >
+                          <div className="flex items-center gap-1">
+                            Kullanıcı Adı
+                            <ArrowUpDown className="h-3 w-3" />
+                          </div>
+                        </TableHead>
                         <TableHead className="font-semibold text-gray-700 dark:text-gray-300">Şifre</TableHead>
-                        <TableHead className="font-semibold text-gray-700 dark:text-gray-300">Son Kullanım</TableHead>
+                        <TableHead
+                          className="font-semibold text-gray-700 dark:text-gray-300 cursor-pointer hover:text-emerald-600 dark:hover:text-emerald-400"
+                          onClick={() => handleSort("sonKullanim")}
+                        >
+                          <div className="flex items-center gap-1">
+                            Son Kullanım
+                            <ArrowUpDown className="h-3 w-3" />
+                          </div>
+                        </TableHead>
                         <TableHead className="font-semibold text-gray-700 dark:text-gray-300">Durum</TableHead>
                         <TableHead className="w-[50px] text-right font-semibold text-gray-700 dark:text-gray-300">
                           İşlemler
