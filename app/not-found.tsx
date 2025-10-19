@@ -43,7 +43,7 @@ export default function NotFoundPage() {
                 </Link>
                 <Button
                   variant="outline"
-                  className="h-12 bg-transparent border-white/20 text-white hover:bg-white/10 hover:border-transparent hover:text-white"
+                  className="h-12 bg-transparent border-white/20 text-white hover:bg-white/10 hover:border-transparent hover:text-white dark:bg-transparent dark:border-white/20 dark:text-white dark:hover:bg-white/10 dark:hover:border-transparent dark:hover:text-white"
                   onClick={() => window.history.back()}
                 >
                   <ArrowLeft className="w-5 h-5 mr-2" />
@@ -65,7 +65,7 @@ export default function NotFoundPage() {
                     <Button
                       variant="outline"
                       size="sm"
-                      className="bg-transparent border-white/20 text-white hover:bg-white/10 hover:border-transparent hover:text-white"
+                      className="bg-transparent border-white/20 text-white hover:bg-white/10 hover:border-transparent hover:text-white dark:bg-transparent dark:border-white/20 dark:text-white dark:hover:bg-white/10 dark:hover:border-transparent dark:hover:text-white"
                     >
                       Keşfet
                     </Button>
@@ -84,7 +84,7 @@ export default function NotFoundPage() {
                     <Button
                       variant="outline"
                       size="sm"
-                      className="bg-transparent border-white/20 text-white hover:bg-white/10 hover:border-transparent hover:text-white"
+                      className="bg-transparent border-white/20 text-white hover:bg-white/10 hover:border-transparent hover:text-white dark:bg-transparent dark:border-white/20 dark:text-white dark:hover:bg-white/10 dark:hover:border-transparent dark:hover:text-white"
                     >
                       Öğren
                     </Button>
@@ -103,7 +103,7 @@ export default function NotFoundPage() {
                     <Button
                       variant="outline"
                       size="sm"
-                      className="bg-transparent border-white/20 text-white hover:bg-white/10 hover:border-transparent hover:text-white"
+                      className="bg-transparent border-white/20 text-white hover:bg-white/10 hover:border-transparent hover:text-white dark:bg-transparent dark:border-white/20 dark:text-white dark:hover:bg-white/10 dark:hover:border-transparent dark:hover:text-white"
                     >
                       İletişim
                     </Button>

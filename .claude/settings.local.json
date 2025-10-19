@@ -9,7 +9,15 @@
       "Bash(timeout:*)",
       "Bash(pnpm build:*)",
       "Bash(pnpm run dev)",
-      "Bash(cat \"C:\\Users\\akint\\Desktop\\kreditakip.com.tr\\scripts\\41-add-plan-id-to-subscriptions.sql\")"
+      "Bash(cat \"C:\\Users\\akint\\Desktop\\kreditakip.com.tr\\scripts\\41-add-plan-id-to-subscriptions.sql\")",
+      "Bash(find \"C:\\Users\\akint\\Desktop\\kreditakip.com.tr\\app\" -type f -name \"*.tsx\" -exec grep -l \"bg-transparent border-white/20 text-white hover:bg-white/10\" {} ;)",
+      "Bash(powershell -Command \"$files = @(''app/cerez-politikasi/page.tsx'',''app/fiyatlandirma/page.tsx'',''app/giris/page.tsx'',''app/gizlilik-politikasi/page.tsx'',''app/hakkimizda/page.tsx'',''app/iletisim/page.tsx'',''app/kayit-ol/page.tsx'',''app/kullanim-sartlari/page.tsx'',''app/kvkk-aydinlatma/page.tsx'',''app/not-found.tsx'',''app/ozellikler/page.tsx'',''app/page.tsx'',''app/sifremi-unuttum/page.tsx'',''app/uygulama/ana-sayfa/page.tsx'',''app/uygulama/ayarlar/page.tsx'',''app/uygulama/krediler/page.tsx'',''app/uygulama/odeme-plani/page.tsx'',''app/uygulama/raporlar/page.tsx'',''app/uygulama/risk-analizi/page.tsx'',''app/uygulama/sifrelerim/page.tsx'',''app/yeni-sifre/page.tsx''); foreach ($file in $files) { $content = Get-Content $file -Raw; $content = $content -replace ''bg-transparent border-white/20 text-white hover:bg-white/10 hover:border-transparent hover:text-white'', ''bg-transparent border-white/20 text-white hover:bg-white/10 hover:border-transparent hover:text-white dark:bg-transparent dark:border-white/20 dark:text-white dark:hover:bg-white/10 dark:hover:border-transparent dark:hover:text-white''; Set-Content $file -Value $content -NoNewline }\")",
+      "Bash(for file in \"app/uygulama/krediler/page.tsx\" \"app/uygulama/sifrelerim/page.tsx\" \"app/uygulama/risk-analizi/page.tsx\" \"app/uygulama/odeme-plani/page.tsx\" \"app/uygulama/raporlar/page.tsx\" \"app/uygulama/ayarlar/page.tsx\")",
+      "Bash(do sed -i \"s/bg-transparent border-white\\/20 text-white hover:bg-white\\/10 hover:border-transparent hover:text-white\"\"/bg-transparent border-white\\/20 text-white hover:bg-white\\/10 hover:border-transparent hover:text-white dark:bg-transparent dark:border-white\\/20 dark:text-white dark:hover:bg-white\\/10 dark:hover:border-transparent dark:hover:text-white\"\"/g\" \"$file\")",
+      "Bash(done)",
+      "Bash(for file in \"components/credit-type-selector.tsx\" \"components/credit-card-type-selector.tsx\" \"components/account-type-selector.tsx\")",
+      "Bash(for file in \"app/page.tsx\" \"app/giris/page.tsx\" \"app/kayit-ol/page.tsx\" \"app/sifremi-unuttum/page.tsx\" \"app/yeni-sifre/page.tsx\" \"app/hakkimizda/page.tsx\" \"app/iletisim/page.tsx\" \"app/fiyatlandirma/page.tsx\" \"app/ozellikler/page.tsx\")",
+      "Bash(for file in \"app/gizlilik-politikasi/page.tsx\" \"app/kullanim-sartlari/page.tsx\" \"app/kvkk-aydinlatma/page.tsx\" \"app/cerez-politikasi/page.tsx\" \"app/not-found.tsx\")"
     ],
     "deny": [],
     "ask": []

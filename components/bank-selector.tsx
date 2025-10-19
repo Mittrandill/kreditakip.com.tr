@@ -382,10 +382,10 @@ export function BankSelector({ banks: propBanks, onBankSelect, onSkip }: BankSel
   if (loading) {
     return (
       <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4 z-50">
-        <Card className="w-full max-w-md">
+        <Card className="w-full max-w-md dark:bg-gray-800 dark:border-gray-700">
           <CardContent className="flex items-center justify-center p-8">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-emerald-600"></div>
-            <span className="ml-3">Bankalar yükleniyor...</span>
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-emerald-600 dark:border-emerald-400"></div>
+            <span className="ml-3 dark:text-gray-200">Bankalar yükleniyor...</span>
           </CardContent>
         </Card>
       </div>
@@ -394,8 +394,8 @@ export function BankSelector({ banks: propBanks, onBankSelect, onSkip }: BankSel
 
   return (
     <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4 z-50">
-      <Card className="w-full max-w-6xl h-[85vh] flex flex-col overflow-hidden shadow-2xl">
-        <CardHeader className="text-center border-b bg-gradient-to-br from-emerald-600 via-teal-600 to-cyan-700 text-white relative overflow-hidden">
+      <Card className="w-full max-w-6xl h-[85vh] flex flex-col overflow-hidden shadow-2xl dark:bg-gray-800 dark:border-gray-700">
+        <CardHeader className="text-center border-b bg-gradient-to-br from-emerald-600 via-teal-600 to-cyan-700 dark:from-emerald-700 dark:via-teal-700 dark:to-cyan-800 text-white relative overflow-hidden">
           <div className="absolute inset-0 bg-gradient-to-br from-emerald-500/20 via-teal-500/20 to-cyan-600/20"></div>
           <div className="absolute top-0 left-0 w-full h-full">
             <div className="absolute top-4 left-8 w-16 h-16 bg-white/10 rounded-full blur-xl"></div>
@@ -426,15 +426,15 @@ export function BankSelector({ banks: propBanks, onBankSelect, onSkip }: BankSel
             </div>
           </div>
         </CardHeader>
-        <CardContent className="flex flex-col h-full max-h-[calc(85vh-200px)] pt-6">
+        <CardContent className="flex flex-col h-full max-h-[calc(85vh-200px)] pt-6 dark:bg-gray-800">
           <div className="space-y-4 pb-4 pt-2">
             <div className="relative">
-              <Search className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
+              <Search className="absolute left-3 top-3 h-4 w-4 text-gray-400 dark:text-gray-500" />
               <Input
                 placeholder="Banka ara..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-10 border-emerald-200 focus:border-emerald-500 focus:ring-emerald-500"
+                className="pl-10 border-emerald-200 focus:border-emerald-500 focus:ring-emerald-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white dark:placeholder:text-gray-400"
               />
             </div>
 
@@ -447,8 +447,8 @@ export function BankSelector({ banks: propBanks, onBankSelect, onSkip }: BankSel
                   onClick={() => setSelectedCategory(category)}
                   className={
                     selectedCategory === category
-                      ? "bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600"
-                      : "hover:bg-emerald-50 hover:text-emerald-700 hover:border-emerald-300"
+                      ? "bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600 dark:from-emerald-600 dark:to-teal-600 dark:hover:from-emerald-700 dark:hover:to-teal-700"
+                      : "hover:bg-emerald-50 hover:text-emerald-700 hover:border-emerald-300 dark:border-gray-600 dark:text-gray-300 dark:hover:bg-emerald-900/30 dark:hover:text-emerald-400 dark:hover:border-emerald-500"
                   }
                 >
                   {category}
@@ -457,7 +457,7 @@ export function BankSelector({ banks: propBanks, onBankSelect, onSkip }: BankSel
             </div>
           </div>
 
-          <div className="flex-1 overflow-y-auto min-h-0 pb-4">
+          <div className="flex-1 overflow-y-auto min-h-0 pb-4 scrollbar-thin">
             <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 p-1">
               {filteredBanks.map((bank) => (
                 <button
@@ -465,8 +465,8 @@ export function BankSelector({ banks: propBanks, onBankSelect, onSkip }: BankSel
                   onClick={() => setSelectedBank(bank)}
                   className={`p-4 rounded-xl border-2 transition-all duration-300 hover:scale-105 hover:shadow-xl ${
                     selectedBank?.id === bank.id
-                      ? "border-emerald-500 bg-emerald-50 shadow-xl ring-2 ring-emerald-200 scale-105"
-                      : "border-gray-200 hover:border-emerald-300 hover:bg-emerald-50/50"
+                      ? "border-emerald-500 bg-emerald-50 shadow-xl ring-2 ring-emerald-200 scale-105 dark:bg-emerald-900/30 dark:border-emerald-400 dark:ring-emerald-500/50"
+                      : "border-gray-200 hover:border-emerald-300 hover:bg-emerald-50/50 dark:border-gray-600 dark:hover:border-emerald-500 dark:hover:bg-emerald-900/20"
                   }`}
                 >
                   <div className="flex flex-col items-center gap-3">
@@ -483,8 +483,8 @@ export function BankSelector({ banks: propBanks, onBankSelect, onSkip }: BankSel
                         </div>
                       )}
                     </div>
-                    <span className="text-sm font-medium text-center leading-tight text-gray-800">{bank.name}</span>
-                    <div className="text-xs text-emerald-600 font-medium">{bank.category}</div>
+                    <span className="text-sm font-medium text-center leading-tight text-gray-800 dark:text-gray-200">{bank.name}</span>
+                    <div className="text-xs text-emerald-600 dark:text-emerald-400 font-medium">{bank.category}</div>
                   </div>
                 </button>
               ))}
@@ -492,23 +492,23 @@ export function BankSelector({ banks: propBanks, onBankSelect, onSkip }: BankSel
 
             {filteredBanks.length === 0 && (
               <div className="text-center py-8">
-                <Building2 className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-                <p className="text-gray-500">Arama kriterinize uygun banka bulunamadı.</p>
-                <p className="text-sm text-gray-400 mt-2">Farklı bir arama terimi deneyin.</p>
+                <Building2 className="h-12 w-12 text-gray-400 dark:text-gray-500 mx-auto mb-4" />
+                <p className="text-gray-500 dark:text-gray-400">Arama kriterinize uygun banka bulunamadı.</p>
+                <p className="text-sm text-gray-400 dark:text-gray-500 mt-2">Farklı bir arama terimi deneyin.</p>
               </div>
             )}
           </div>
 
-          <div className="flex gap-3 pt-4 border-t border-gray-100 bg-white">
+          <div className="flex gap-3 pt-4 border-t border-gray-100 dark:border-gray-700 bg-white dark:bg-gray-800">
             <Button
               onClick={handleConfirm}
               disabled={!selectedBank}
-              className="flex-1 bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600 shadow-lg"
+              className="flex-1 bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600 dark:from-emerald-600 dark:to-teal-600 dark:hover:from-emerald-700 dark:hover:to-teal-700 shadow-lg"
             >
               <Check className="mr-2 h-4 w-4" />
               Seçimi Onayla
             </Button>
-            <Button onClick={onSkip} variant="outline" className="hover:bg-gray-50 border-gray-300 bg-transparent">
+            <Button onClick={onSkip} variant="outline" className="hover:bg-gray-50 dark:hover:bg-gray-700 border-gray-300 dark:border-gray-600 bg-transparent dark:bg-transparent dark:text-gray-300">
               Atla
             </Button>
           </div>

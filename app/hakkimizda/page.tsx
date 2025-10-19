@@ -67,7 +67,7 @@ export default function AboutPage() {
                     <Button
                       variant="outline"
                       size="lg"
-                      className="h-12 bg-transparent border-white/20 text-white hover:bg-white/10 hover:border-transparent hover:text-white"
+                      className="h-12 bg-transparent border-white/20 text-white hover:bg-white/10 hover:border-transparent hover:text-white dark:bg-transparent dark:border-white/20 dark:text-white dark:hover:bg-white/10 dark:hover:border-transparent dark:hover:text-white"
                       >
                       İletişime Geçin
                     </Button>
@@ -433,7 +433,7 @@ export default function AboutPage() {
               <p className="text-white/70 mb-6">Ekibimize katılmak ister misiniz? Açık pozisyonlarımızı inceleyin.</p>
               <Button 
                 variant="outline"
-                className="h-12 bg-transparent border-white/20 text-white hover:bg-white/10 hover:border-transparent hover:text-white"
+                className="h-12 bg-transparent border-white/20 text-white hover:bg-white/10 hover:border-transparent hover:text-white dark:bg-transparent dark:border-white/20 dark:text-white dark:hover:bg-white/10 dark:hover:border-transparent dark:hover:text-white"
                 >
                 Kariyer Fırsatları
                 <ArrowRight className="ml-2 w-4 h-4" />
@@ -644,7 +644,7 @@ export default function AboutPage() {
                     <Button
                       variant="outline"
                       size="lg"
-                      className="h-12 bg-transparent border-white/20 text-white hover:bg-white/10 hover:border-transparent hover:text-white"
+                      className="h-12 bg-transparent border-white/20 text-white hover:bg-white/10 hover:border-transparent hover:text-white dark:bg-transparent dark:border-white/20 dark:text-white dark:hover:bg-white/10 dark:hover:border-transparent dark:hover:text-white"
                       >
                       İletişime Geçin
                     </Button>

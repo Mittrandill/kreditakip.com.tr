@@ -138,6 +138,11 @@ export default function BankaciSifrelerimPage() {
   const [showDeleteDialog, setShowDeleteDialog] = useState(false)
   const [credentialToDelete, setCredentialToDelete] = useState<string | null>(null)
 
+  const [showUpdatePasswordDialog, setShowUpdatePasswordDialog] = useState(false)
+  const [credentialToUpdate, setCredentialToUpdate] = useState<BankingCredential | null>(null)
+  const [newPassword, setNewPassword] = useState("")
+  const [isUpdatingPassword, setIsUpdatingPassword] = useState(false)
+
   const [visiblePasswords, setVisiblePasswords] = useState<Set<string>>(new Set())
   const [copiedPasswords, setCopiedPasswords] = useState<Set<string>>(new Set())
 
@@ -277,6 +282,73 @@ export default function BankaciSifrelerimPage() {
     setShowDeleteDialog(true)
   }
 
+  const handleUpdatePassword = async (credential: BankingCredential) => {
+    setCredentialToUpdate(credential)
+    setNewPassword("")
+    setShowUpdatePasswordDialog(true)
+  }
+
+  const confirmUpdatePassword = async () => {
+    if (!credentialToUpdate || !user || !newPassword.trim()) {
+      toast({
+        title: "Hata",
+        description: "Lütfen yeni şifrenizi girin.",
+        variant: "destructive",
+      })
+      return
+    }
+
+    setIsUpdatingPassword(true)
+    try {
+      const { encryptPassword } = await import("@/lib/api/banking-credentials")
+      const encryptedPassword = await encryptPassword(newPassword)
+
+      const { supabase } = await import("@/lib/supabase")
+      const { error } = await supabase
+        .from("banking_credentials")
+        .update({
+          encrypted_password: encryptedPassword,
+          last_password_change_date: new Date().toISOString(),
+          updated_at: new Date().toISOString(),
+        })
+        .eq("id", credentialToUpdate.id)
+        .eq("user_id", user.id)
+
+      if (error) throw error
+
+      // Listeyi güncelle
+      setAllCredentials((prev) =>
+        prev.map((c) =>
+          c.id === credentialToUpdate.id
+            ? {
+                ...c,
+                encrypted_password: encryptedPassword,
+                last_password_change_date: new Date().toISOString(),
+              }
+            : c,
+        ),
+      )
+
+      toast({
+        title: "Başarılı",
+        description: "Şifre başarıyla güncellendi.",
+      })
+
+      setShowUpdatePasswordDialog(false)
+      setCredentialToUpdate(null)
+      setNewPassword("")
+    } catch (error) {
+      console.error("Şifre güncellenirken hata:", error)
+      toast({
+        title: "Hata",
+        description: "Şifre güncellenirken bir sorun oluştu.",
+        variant: "destructive",
+      })
+    } finally {
+      setIsUpdatingPassword(false)
+    }
+  }
+
   const confirmDeleteCredential = async () => {
     if (!credentialToDelete || !user) return
 
@@ -413,7 +485,7 @@ export default function BankaciSifrelerimPage() {
               <Button
                 variant="outline"
                 size="lg"
-                className="bg-transparent border-white/20 text-white hover:bg-white/10 hover:border-transparent hover:text-white"
+                className="bg-transparent border-white/20 text-white hover:bg-white/10 hover:border-transparent hover:text-white dark:bg-transparent dark:border-white/20 dark:text-white dark:hover:bg-white/10 dark:hover:border-transparent dark:hover:text-white"
                 onClick={() => router.push("/uygulama/sifrelerim/ekle")}
               >
                 <Plus className="h-5 w-5 mr-2" />
@@ -694,6 +766,10 @@ export default function BankaciSifrelerimPage() {
                                 </Button>
                               </DropdownMenuTrigger>
                               <DropdownMenuContent align="end">
+                                <DropdownMenuItem onClick={() => handleUpdatePassword(credential)}>
+                                  <Key className="mr-2 h-4 w-4" />
+                                  Şifre Güncelle
+                                </DropdownMenuItem>
                                 <DropdownMenuItem>Rapor Al</DropdownMenuItem>
                                 <DropdownMenuItem
                                   className="text-red-600 dark:text-red-400"
@@ -861,6 +937,10 @@ export default function BankaciSifrelerimPage() {
                                     <Edit className="mr-2 h-4 w-4" />
                                     Düzenle
                                   </DropdownMenuItem>
+                                  <DropdownMenuItem onClick={() => handleUpdatePassword(credential)}>
+                                    <Key className="mr-2 h-4 w-4" />
+                                    Şifre Güncelle
+                                  </DropdownMenuItem>
                                   <DropdownMenuItem
                                     className="text-red-600 dark:text-red-400"
                                     onClick={() => handleDeleteCredential(credential.id)}
@@ -914,6 +994,72 @@ export default function BankaciSifrelerimPage() {
             <AlertDialogAction onClick={confirmDeleteCredential} className="bg-red-600 hover:bg-red-700 text-white">
               <Trash2 className="h-4 w-4 mr-2" />
               Sil
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* Update Password Dialog */}
+      <AlertDialog open={showUpdatePasswordDialog} onOpenChange={setShowUpdatePasswordDialog}>
+        <AlertDialogContent className="dark:bg-gray-800 dark:border-gray-700">
+          <AlertDialogHeader>
+            <AlertDialogTitle className="flex items-center gap-2 dark:text-white">
+              <Key className="h-5 w-5 text-emerald-600 dark:text-emerald-400" />
+              Şifre Güncelle
+            </AlertDialogTitle>
+            <AlertDialogDescription className="dark:text-gray-400">
+              {credentialToUpdate && (
+                <div className="mb-4">
+                  <p className="font-medium text-gray-900 dark:text-white">
+                    {credentialToUpdate.bank_name} - {credentialToUpdate.credential_name}
+                  </p>
+                  <p className="text-sm text-gray-600 dark:text-gray-400">
+                    Kullanıcı: {credentialToUpdate.username || "N/A"}
+                  </p>
+                </div>
+              )}
+              Sadece yeni şifrenizi girerek mevcut şifrenizi güncelleyebilirsiniz.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <div className="py-4">
+            <label className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 block">Yeni Şifre</label>
+            <Input
+              type="password"
+              placeholder="Yeni şifrenizi girin..."
+              value={newPassword}
+              onChange={(e) => setNewPassword(e.target.value)}
+              className="dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+              disabled={isUpdatingPassword}
+            />
+          </div>
+          <AlertDialogFooter className="gap-2 sm:gap-0">
+            <AlertDialogCancel
+              onClick={() => {
+                setShowUpdatePasswordDialog(false)
+                setCredentialToUpdate(null)
+                setNewPassword("")
+              }}
+              disabled={isUpdatingPassword}
+              className="dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600"
+            >
+              İptal
+            </AlertDialogCancel>
+            <AlertDialogAction
+              onClick={confirmUpdatePassword}
+              disabled={isUpdatingPassword || !newPassword.trim()}
+              className="bg-gradient-to-r from-emerald-600 to-teal-700 hover:from-emerald-700 hover:to-teal-800 text-white"
+            >
+              {isUpdatingPassword ? (
+                <>
+                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                  Güncelleniyor...
+                </>
+              ) : (
+                <>
+                  <Key className="h-4 w-4 mr-2" />
+                  Şifreyi Güncelle
+                </>
+              )}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

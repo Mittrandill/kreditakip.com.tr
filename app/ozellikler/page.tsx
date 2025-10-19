@@ -66,7 +66,7 @@ export default function FeaturesPage() {
               <Button
                 variant="outline"
                 size="lg"
-                className="h-12 bg-transparent border-white/20 text-white hover:bg-white/10 hover:border-transparent hover:text-white"
+                className="h-12 bg-transparent border-white/20 text-white hover:bg-white/10 hover:border-transparent hover:text-white dark:bg-transparent dark:border-white/20 dark:text-white dark:hover:bg-white/10 dark:hover:border-transparent dark:hover:text-white"
               >
                 Demo İzle
               </Button>
@@ -747,7 +747,7 @@ export default function FeaturesPage() {
                   <Button
                     variant="outline"
                     size="lg"
-                    className="h-12 bg-transparent border-white/20 text-white hover:bg-white/10 hover:border-transparent hover:text-white"
+                    className="h-12 bg-transparent border-white/20 text-white hover:bg-white/10 hover:border-transparent hover:text-white dark:bg-transparent dark:border-white/20 dark:text-white dark:hover:bg-white/10 dark:hover:border-transparent dark:hover:text-white"
                   >
                     Demo Talep Et
                   </Button>

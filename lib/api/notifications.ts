@@ -23,11 +23,37 @@ export async function getNotifications(userId: string) {
   return data
 }
 
-export async function markNotificationAsRead(notificationId: string) {
+export async function getNotificationById(userId: string, notificationId: string) {
   const { data, error } = await supabase
     .from("notifications")
-    .update({ is_read: true })
+    .select(`
+      *,
+      credits (
+        credit_code,
+        banks (
+          name,
+          logo_url
+        )
+      )
+    `)
+    .eq("user_id", userId)
     .eq("id", notificationId)
+    .single()
+
+  if (error) {
+    if (error.code === "PGRST116") return null
+    throw error
+  }
+
+  return data
+}
+
+export async function markNotificationAsRead(userId: string, notificationId: string) {
+  const { data, error } = await supabase
+    .from("notifications")
+    .update({ is_read: true, read_at: new Date().toISOString() })
+    .eq("id", notificationId)
+    .eq("user_id", userId)
     .select()
     .single()
 
@@ -52,8 +78,12 @@ export async function markAllNotificationsAsRead(userId: string) {
   return data
 }
 
-export async function deleteNotification(notificationId: string) {
-  const { data, error } = await supabase.from("notifications").delete().eq("id", notificationId)
+export async function deleteNotification(userId: string, notificationId: string) {
+  const { data, error } = await supabase
+    .from("notifications")
+    .delete()
+    .eq("id", notificationId)
+    .eq("user_id", userId)
 
   if (error) {
     throw error

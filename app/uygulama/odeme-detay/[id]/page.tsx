@@ -44,7 +44,64 @@ export default function PaymentDetailPage({ params }: { params: { id: string } }
   }, [params.id])
 
   const handlePrint = () => {
-    window.print()
+    // Header, sidebar ve diğer elementleri gizle
+    const elementsToHide = [
+      ...document.querySelectorAll('header'),
+      ...document.querySelectorAll('nav'),
+      ...document.querySelectorAll('[data-sidebar]'),
+      ...document.querySelectorAll('.app-sidebar'),
+      ...document.querySelectorAll('[role="banner"]'),
+      ...document.querySelectorAll('.print\\:hidden'),
+      document.querySelector('.floating-action-menu'),
+      document.querySelector('.floating-upgrade-banner'),
+    ].filter(Boolean) as HTMLElement[]
+
+    // Orijinal display değerlerini sakla
+    const originalDisplayValues = elementsToHide.map(el => el.style.display)
+
+    // Elementleri gizle
+    elementsToHide.forEach(el => {
+      el.style.display = 'none'
+    })
+
+    // Gradient background için stil ekle
+    const style = document.createElement('style')
+    style.id = 'print-styles'
+    style.textContent = `
+      @media print {
+        @page {
+          margin: 1cm;
+        }
+        body {
+          margin: 0;
+          padding: 0;
+        }
+        .bg-gradient-to-r {
+          -webkit-print-color-adjust: exact !important;
+          print-color-adjust: exact !important;
+          color-adjust: exact !important;
+        }
+        * {
+          -webkit-print-color-adjust: exact !important;
+          print-color-adjust: exact !important;
+        }
+      }
+    `
+    document.head.appendChild(style)
+
+    // Yazdır
+    setTimeout(() => {
+      window.print()
+
+      // Yazdırma bitince elementleri geri getir
+      setTimeout(() => {
+        elementsToHide.forEach((el, index) => {
+          el.style.display = originalDisplayValues[index]
+        })
+        // Eklenen stili kaldır
+        document.getElementById('print-styles')?.remove()
+      }, 100)
+    }, 100)
   }
 
   const handleDownload = () => {
@@ -95,9 +152,10 @@ export default function PaymentDetailPage({ params }: { params: { id: string } }
             <div className="flex-1">
               <h2 className="text-3xl font-bold mb-2 flex items-center gap-3">
                 <Button
+                  variant="outline"
                   size="icon"
                   onClick={() => router.back()}
-                  className="bg-white/20 border-white/30 text-white hover:bg-white/30"
+                  className="bg-transparent border-white/20 text-white hover:bg-white/10 hover:border-transparent hover:text-white dark:bg-transparent dark:border-white/20 dark:text-white dark:hover:bg-white/10 dark:hover:border-transparent dark:hover:text-white"
                 >
                   <ArrowLeft className="h-4 w-4" />
                 </Button>
@@ -109,11 +167,21 @@ export default function PaymentDetailPage({ params }: { params: { id: string } }
               </p>
             </div>
             <div className="flex flex-col sm:flex-row gap-3">
-              <Button size="lg" onClick={handlePrint}>
+              <Button
+                variant="outline"
+                size="lg"
+                onClick={handlePrint}
+                className="bg-transparent border-white/20 text-white hover:bg-white/10 hover:border-transparent hover:text-white dark:bg-transparent dark:border-white/20 dark:text-white dark:hover:bg-white/10 dark:hover:border-transparent dark:hover:text-white"
+              >
                 <Printer className="h-5 w-5 mr-2" />
                 Yazdır
               </Button>
-              <Button size="lg" onClick={handleDownload}>
+              <Button
+                variant="outline"
+                size="lg"
+                onClick={handleDownload}
+                className="bg-transparent border-white/20 text-white hover:bg-white/10 hover:border-transparent hover:text-white dark:bg-transparent dark:border-white/20 dark:text-white dark:hover:bg-white/10 dark:hover:border-transparent dark:hover:text-white"
+              >
                 <Download className="h-5 w-5 mr-2" />
                 İndir
               </Button>
@@ -292,26 +360,3 @@ export default function PaymentDetailPage({ params }: { params: { id: string } }
     </div>
   )
 }
-;<style jsx global>{`
-  @media print {
-    header,
-    .app-header,
-    [data-testid="header"],
-    nav,
-    .sidebar,
-    .app-sidebar {
-      display: none !important;
-    }
-    
-    body {
-      margin: 0 !important;
-      padding: 0 !important;
-    }
-    
-    .print\\:bg-gradient-to-r {
-      background: linear-gradient(to right, #059669, #0f766e) !important;
-      -webkit-print-color-adjust: exact !important;
-      color-adjust: exact !important;
-    }
-  }
-`}</style>

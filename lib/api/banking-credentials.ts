@@ -288,3 +288,8 @@ export async function getBankingCredentialsStats(userId: string) {
     needsPasswordChange,
   }
 }
+
+// Export encrypt function for password updates
+export async function encryptPassword(password: string): Promise<string> {
+  return await encryptSensitiveData(password)
+}

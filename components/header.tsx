@@ -54,6 +54,7 @@ import { tr } from "date-fns/locale"
 import { getCredits } from "@/lib/api/credits"
 import BankLogo from "@/components/bank-logo"
 import { Badge } from "@/components/ui/badge"
+import { NotificationSheet } from "@/components/notification-sheet"
 
 interface HeaderProps {
   pageTitle?: string
@@ -217,6 +218,8 @@ export default function Header({ pageTitle }: HeaderProps) {
   const [notifications, setNotifications] = useState<any[]>([])
   const [unreadCount, setUnreadCount] = useState(0)
   const [notificationOpen, setNotificationOpen] = useState(false)
+  const [selectedNotification, setSelectedNotification] = useState<any>(null)
+  const [notificationSheetOpen, setNotificationSheetOpen] = useState(false)
   const dropdownRef = useRef<HTMLDivElement>(null)
 
   const [searchQuery, setSearchQuery] = useState("")
@@ -354,13 +357,20 @@ export default function Header({ pageTitle }: HeaderProps) {
     }
   }
 
-  const handleHeaderNotificationRead = async (notificationId: string) => {
-    try {
-      await markNotificationAsRead(notificationId)
-      setNotifications((prev) => prev.map((n) => (n.id === notificationId ? { ...n, is_read: true } : n)))
-      setUnreadCount((prev) => Math.max(0, prev - 1))
-    } catch (error) {
-      console.error("Error marking notification as read:", error)
+  const handleHeaderNotificationClick = async (notification: any) => {
+    setSelectedNotification(notification)
+    setNotificationSheetOpen(true)
+    setNotificationOpen(false)
+
+    // Okunmamışsa okundu olarak işaretle
+    if (!notification.is_read && user?.id) {
+      try {
+        await markNotificationAsRead(user.id, notification.id)
+        setNotifications((prev) => prev.map((n) => (n.id === notification.id ? { ...n, is_read: true } : n)))
+        setUnreadCount((prev) => Math.max(0, prev - 1))
+      } catch (error) {
+        console.error("Error marking notification as read:", error)
+      }
     }
   }
 
@@ -875,7 +885,7 @@ export default function Header({ pageTitle }: HeaderProps) {
                                 : "bg-blue-50 dark:bg-blue-900/20 hover:bg-blue-100 dark:hover:bg-blue-900/30 border border-blue-200 dark:border-blue-800"
                             }
                           `}
-                          onClick={() => handleHeaderNotificationRead(notification.id)}
+                          onClick={() => handleHeaderNotificationClick(notification)}
                         >
                           <div className="flex items-start gap-3">
                             <div
@@ -1007,6 +1017,13 @@ export default function Header({ pageTitle }: HeaderProps) {
           </DropdownMenuContent>
         </DropdownMenu>
       </div>
+
+      {/* Bildirim Detay Sheet */}
+      <NotificationSheet
+        notification={selectedNotification}
+        open={notificationSheetOpen}
+        onOpenChange={setNotificationSheetOpen}
+      />
     </header>
   )
 }

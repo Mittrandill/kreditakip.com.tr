@@ -474,7 +474,7 @@ export default function LoginPage() {
                       disabled={isLoading}
                       variant="outline"
                       size="lg"
-                      className="w-full bg-transparent border-white/20 text-white hover:bg-white/10 hover:border-transparent hover:text-white disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200"
+                      className="w-full bg-transparent border-white/20 text-white hover:bg-white/10 hover:border-transparent hover:text-white dark:bg-transparent dark:border-white/20 dark:text-white dark:hover:bg-white/10 dark:hover:border-transparent dark:hover:text-white disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200"
                     >
                       <svg className="mr-3 h-5 w-5" viewBox="0 0 24 24" aria-hidden="true">
                         <path

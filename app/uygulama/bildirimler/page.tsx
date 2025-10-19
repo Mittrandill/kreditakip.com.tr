@@ -1,6 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
+import { useRouter } from "next/navigation"
 import { Card, CardContent, CardTitle } from "@/components/ui/card"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Button } from "@/components/ui/button"
@@ -9,6 +10,7 @@ import { Badge } from "@/components/ui/badge"
 import { MetricCard } from "@/components/metric-card"
 import { PaginationModern } from "@/components/ui/pagination-modern"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
+import { NotificationSheet } from "@/components/notification-sheet"
 import { useAuth } from "@/hooks/use-auth"
 import {
   getNotifications,
@@ -35,7 +37,7 @@ import {
   Eye,
 } from "lucide-react"
 import { toast } from "sonner"
-import { formatDistanceToNow } from "date-fns"
+import { formatDistanceToNow, format } from "date-fns"
 import { tr } from "date-fns/locale"
 
 const ITEMS_PER_PAGE = 10
@@ -77,12 +79,15 @@ const typeConfig = {
 
 export default function BildirimlerPage() {
   const { user } = useAuth()
+  const router = useRouter()
   const [notifications, setNotifications] = useState<any[]>([])
   const [stats, setStats] = useState<any>({})
   const [loading, setLoading] = useState(true)
   const [searchTerm, setSearchTerm] = useState("")
   const [showUnreadOnly, setShowUnreadOnly] = useState(false)
   const [currentPage, setCurrentPage] = useState(1)
+  const [selectedNotification, setSelectedNotification] = useState<any>(null)
+  const [sheetOpen, setSheetOpen] = useState(false)
 
   const loadNotifications = async () => {
     if (!user?.id) return
@@ -132,8 +137,10 @@ export default function BildirimlerPage() {
   }
 
   const handleMarkAsRead = async (notificationId: string) => {
+    if (!user?.id) return
+
     try {
-      await markNotificationAsRead(notificationId)
+      await markNotificationAsRead(user.id, notificationId)
       setNotifications((prev) => prev.map((n) => (n.id === notificationId ? { ...n, is_read: true } : n)))
       setStats((prev) => ({
         ...prev,
@@ -163,9 +170,31 @@ export default function BildirimlerPage() {
     }
   }
 
+  const handleViewNotification = async (notification: any) => {
+    setSelectedNotification(notification)
+    setSheetOpen(true)
+
+    // Okunmamışsa okundu olarak işaretle
+    if (!notification.is_read && user?.id) {
+      try {
+        await markNotificationAsRead(user.id, notification.id)
+        setNotifications((prev) => prev.map((n) => (n.id === notification.id ? { ...n, is_read: true } : n)))
+        setStats((prev) => ({
+          ...prev,
+          unread: Math.max(0, prev.unread - 1),
+          read: prev.read + 1,
+        }))
+      } catch (error) {
+        console.error("Error marking notification as read:", error)
+      }
+    }
+  }
+
   const handleDelete = async (notificationId: string) => {
+    if (!user?.id) return
+
     try {
-      await deleteNotification(notificationId)
+      await deleteNotification(user.id, notificationId)
       const deletedNotification = notifications.find((n) => n.id === notificationId)
       setNotifications((prev) => prev.filter((n) => n.id !== notificationId))
       setStats((prev) => ({
@@ -175,6 +204,7 @@ export default function BildirimlerPage() {
         read: deletedNotification?.is_read ? prev.read - 1 : prev.read,
       }))
       toast.success("Bildirim silindi")
+      setSheetOpen(false)
     } catch (error) {
       toast.error("Bildirim silinirken hata oluştu")
     }
@@ -382,7 +412,7 @@ export default function BildirimlerPage() {
                       return (
                         <TableRow
                           key={notification.id}
-                          className={`hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors duration-150 ease-in-out border-b dark:border-gray-800 ${
+                          className={`transition-colors duration-150 ease-in-out border-b dark:border-gray-800 ${
                             index % 2 === 0 ? "bg-white dark:bg-gray-900" : "bg-gray-50/50 dark:bg-gray-800/50"
                           } ${!notification.is_read ? "bg-blue-50/30 dark:bg-blue-900/20" : ""}`}
                         >
@@ -432,7 +462,7 @@ export default function BildirimlerPage() {
                             </div>
                           </TableCell>
 
-                          <TableCell className="text-right">
+                          <TableCell className="text-right" onClick={(e) => e.stopPropagation()}>
                             <DropdownMenu>
                               <DropdownMenuTrigger asChild>
                                 <Button
@@ -454,7 +484,10 @@ export default function BildirimlerPage() {
                                     Okundu İşaretle
                                   </DropdownMenuItem>
                                 )}
-                                <DropdownMenuItem className="dark:text-gray-200 dark:hover:bg-gray-700">
+                                <DropdownMenuItem
+                                  onClick={() => handleViewNotification(notification)}
+                                  className="dark:text-gray-200 dark:hover:bg-gray-700"
+                                >
                                   <Eye className="mr-2 h-4 w-4" />
                                   Detayları Gör
                                 </DropdownMenuItem>
@@ -509,6 +542,14 @@ export default function BildirimlerPage() {
           </div>
         </CardContent>
       </Card>
+
+      {/* Bildirim Detay Sheet */}
+      <NotificationSheet
+        notification={selectedNotification}
+        open={sheetOpen}
+        onOpenChange={setSheetOpen}
+        onDelete={handleDelete}
+      />
     </div>
   )
 }
