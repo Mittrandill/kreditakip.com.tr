@@ -107,7 +107,7 @@ export default function RiskAnaliziPage() {
   const [isDeleting, setIsDeleting] = useState(false)
 
   const [activeTab, setActiveTab] = useState("tumAnalizler")
-  const [viewMode, setViewMode] = useState("cards")
+  const [viewMode, setViewMode] = useState("table")
   const [searchTerm, setSearchTerm] = useState("")
   const [sortBy, setSortBy] = useState("created_at")
   const [sortOrder, setSortOrder] = useState<"asc" | "desc">("desc")

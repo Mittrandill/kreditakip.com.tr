@@ -75,7 +75,6 @@ export default function AppSidebar() {
         description: "Çıkış yapılırken bir sorun oluştu.",
         variant: "destructive",
       })
-      console.error("Sign out error:", error)
     }
   }
 

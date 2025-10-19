@@ -36,7 +36,6 @@ export function useSubscription() {
   useEffect(() => {
     const newUserId = user?.id || null
     if (newUserId !== currentUserId) {
-      console.log('[Subscription] User changed from', currentUserId, 'to', newUserId)
       setSubscription(null)
       setLoading(true)
       setCurrentUserId(newUserId)
@@ -46,7 +45,6 @@ export function useSubscription() {
   useEffect(() => {
     async function fetchSubscription() {
       if (!user?.id) {
-        console.log('[Subscription] No user, clearing subscription')
         setSubscription(null)
         setLoading(false)
 
@@ -64,19 +62,11 @@ export function useSubscription() {
         return
       }
 
-      console.log('[Subscription] Fetching for user:', user.id)
-
       try {
         const response = await fetch(`/api/subscription/status?userId=${user.id}`)
 
         if (response.ok) {
           const data = await response.json()
-
-          console.log('[Subscription] API Response for user', user.id, ':', {
-            subscription: data.subscription,
-            planType: data.subscription?.plan_type,
-            plan_id: data.subscription?.plan_id
-          })
 
           const ocrUsage = data.usage?.find((u: any) => u.feature_type === "ocr_analysis")
           const riskUsage = data.usage?.find((u: any) => u.feature_type === "risk_analysis")
@@ -101,7 +91,6 @@ export function useSubscription() {
             },
           }
 
-          console.log('[Subscription] Final status for user', user.id, ':', subscriptionStatus)
           setSubscription(subscriptionStatus)
 
           // Save to user-specific cache
@@ -114,11 +103,10 @@ export function useSubscription() {
                 timestamp: Date.now(),
               }),
             )
-            console.log('[Subscription] Saved to cache:', cacheKey)
           }
         }
       } catch (error) {
-        console.error("[Subscription] Fetch error for user", user?.id, ":", error)
+        // Silent error handling in production
       } finally {
         setLoading(false)
       }
@@ -185,7 +173,7 @@ export function useSubscription() {
           }
         }
       } catch (error) {
-        console.error("[v0] Subscription refresh error:", error)
+        // Silent error handling in production
       } finally {
         setLoading(false)
       }

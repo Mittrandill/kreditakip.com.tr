@@ -510,9 +510,19 @@ export default function BankaciSifrelerimPage() {
                       {sortOrder === "asc" ? "Artan" : "Azalan"})
                     </Button>
                   </DropdownMenuTrigger>
-                  <DropdownMenuContent align="start">
-                    <DropdownMenuItem onClick={() => handleSort("sonKullanim")}>Son Kullanıma Göre</DropdownMenuItem>
-                    <DropdownMenuItem onClick={() => handleSort("bankaAdi")}>Banka Adına Göre</DropdownMenuItem>
+                  <DropdownMenuContent align="start" className="dark:bg-gray-800 dark:border-gray-700">
+                    <DropdownMenuItem
+                      onClick={() => handleSort("sonKullanim")}
+                      className="dark:text-white dark:hover:bg-gray-700"
+                    >
+                      Son Kullanıma Göre
+                    </DropdownMenuItem>
+                    <DropdownMenuItem
+                      onClick={() => handleSort("bankaAdi")}
+                      className="dark:text-white dark:hover:bg-gray-700"
+                    >
+                      Banka Adına Göre
+                    </DropdownMenuItem>
                   </DropdownMenuContent>
                 </DropdownMenu>
               </div>

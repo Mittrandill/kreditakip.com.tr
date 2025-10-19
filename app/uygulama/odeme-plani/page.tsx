@@ -46,6 +46,7 @@ const getBankColor = (index: number): string => {
 
 function CalendarView({ payments }: { payments: PaymentWithCredit[] }) {
   const [currentDate, setCurrentDate] = useState(new Date())
+  const [filterStatus, setFilterStatus] = useState<string>("all")
   const currentMonth = currentDate.getMonth()
   const currentYear = currentDate.getFullYear()
 
@@ -54,12 +55,23 @@ function CalendarView({ payments }: { payments: PaymentWithCredit[] }) {
   const daysInMonth = lastDay.getDate()
   const startingDayOfWeek = firstDay.getDay() === 0 ? 6 : firstDay.getDay() - 1
 
-  const uniqueBanks = Array.from(new Set(payments.map((p) => p.credits.banks.name))).map((bankName, index) => ({
+  // Filtreleme uygula
+  const filteredPayments = payments.filter((payment) => {
+    if (filterStatus === "all") return true
+    if (filterStatus === "paid") return payment.status === "paid"
+    if (filterStatus === "pending") return payment.status === "pending"
+    if (filterStatus === "overdue") {
+      return payment.status === "pending" && new Date(payment.due_date) < new Date()
+    }
+    return true
+  })
+
+  const uniqueBanks = Array.from(new Set(filteredPayments.map((p) => p.credits.banks.name))).map((bankName, index) => ({
     name: bankName,
     color: getBankColor(index),
   }))
 
-  const paymentsByDay = payments.reduce(
+  const paymentsByDay = filteredPayments.reduce(
     (acc, payment) => {
       const paymentDate = new Date(payment.due_date)
       if (paymentDate.getMonth() === currentMonth && paymentDate.getFullYear() === currentYear) {
@@ -107,13 +119,13 @@ function CalendarView({ payments }: { payments: PaymentWithCredit[] }) {
             variant="outline"
             size="sm"
             onClick={handlePrevMonth}
-            className="flex items-center gap-2 bg-white/20 dark:bg-white/15 text-white border-white/30 dark:border-white/20 hover:bg-white/30 dark:hover:bg-white/25 backdrop-blur-sm"
+            className="flex items-center gap-2 bg-white dark:bg-gray-800 text-gray-900 dark:text-white border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700"
           >
             <ChevronLeft className="h-4 w-4" />
             Önceki
           </Button>
 
-          <h3 className="text-xl font-semibold dark:text-white">
+          <h3 className="text-xl font-semibold text-gray-900 dark:text-white">
             {monthNames[currentMonth]} {currentYear}
           </h3>
 
@@ -121,7 +133,7 @@ function CalendarView({ payments }: { payments: PaymentWithCredit[] }) {
             variant="outline"
             size="sm"
             onClick={handleNextMonth}
-            className="flex items-center gap-2 bg-white/20 dark:bg-white/15 text-white border-white/30 dark:border-white/20 hover:bg-white/30 dark:hover:bg-white/25 backdrop-blur-sm"
+            className="flex items-center gap-2 bg-white dark:bg-gray-800 text-gray-900 dark:text-white border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700"
           >
             Sonraki
             <ChevronRight className="h-4 w-4" />
@@ -129,14 +141,44 @@ function CalendarView({ payments }: { payments: PaymentWithCredit[] }) {
         </div>
 
         <div className="flex gap-2">
-          <Button
-            variant="outline"
-            size="sm"
-            className="bg-white/20 dark:bg-white/15 text-white border-white/30 dark:border-white/20 hover:bg-white/30 dark:hover:bg-white/25 backdrop-blur-sm"
-          >
-            <Filter className="h-4 w-4 mr-2" />
-            Filtrele
-          </Button>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button
+                variant="outline"
+                size="sm"
+                className="bg-white dark:bg-gray-800 text-gray-900 dark:text-white border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700"
+              >
+                <Filter className="h-4 w-4 mr-2" />
+                Filtrele: {filterStatus === "all" ? "Tümü" : filterStatus === "paid" ? "Ödendi" : filterStatus === "pending" ? "Bekliyor" : "Gecikmiş"}
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="dark:bg-gray-800 dark:border-gray-700">
+              <DropdownMenuItem
+                onClick={() => setFilterStatus("all")}
+                className="dark:text-white dark:hover:bg-gray-700"
+              >
+                Tümü
+              </DropdownMenuItem>
+              <DropdownMenuItem
+                onClick={() => setFilterStatus("paid")}
+                className="dark:text-white dark:hover:bg-gray-700"
+              >
+                Ödendi
+              </DropdownMenuItem>
+              <DropdownMenuItem
+                onClick={() => setFilterStatus("pending")}
+                className="dark:text-white dark:hover:bg-gray-700"
+              >
+                Bekliyor
+              </DropdownMenuItem>
+              <DropdownMenuItem
+                onClick={() => setFilterStatus("overdue")}
+                className="dark:text-white dark:hover:bg-gray-700"
+              >
+                Gecikmiş
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
         </div>
       </div>
 
@@ -501,8 +543,7 @@ function PaymentsList({
         </div>
         <Button
           variant="outline"
-          size="sm"
-          className="gap-2 w-fit bg-transparent dark:border-gray-700 dark:text-gray-300 dark:hover:bg-gray-800"
+          className="gap-2 min-w-[140px] bg-transparent dark:border-gray-700 dark:text-gray-300 dark:hover:bg-gray-800"
           onClick={exportToExcel}
         >
           <Download className="h-4 w-4" />

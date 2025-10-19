@@ -104,6 +104,7 @@ export async function POST(request: NextRequest) {
         .upsert({
           user_id: userId,
           plan_type: "premium",
+          plan_id: planId, // premium-monthly veya premium-yearly
           status: "active",
           start_date: startDate.toISOString(),
           expires_at: expiresAt.toISOString(),

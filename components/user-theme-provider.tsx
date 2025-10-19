@@ -56,7 +56,7 @@ export function UserThemeProvider({ children }: { children: React.ReactNode }) {
           document.documentElement.classList.remove("dark")
         }
       } catch (error) {
-        console.error("Error loading theme:", error)
+        // Silent error handling in production
         setThemeState("light")
         document.documentElement.classList.remove("dark")
       } finally {
@@ -96,7 +96,6 @@ export function UserThemeProvider({ children }: { children: React.ReactNode }) {
       // Save to Supabase
       await updateUserTheme(user.id, newTheme)
     } catch (error) {
-      console.error("Error updating theme:", error)
       // Revert on error
       const profile = await getUserProfile(user.id)
       const originalTheme = profile?.theme || "light"

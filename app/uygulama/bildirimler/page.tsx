@@ -297,7 +297,6 @@ export default function BildirimlerPage() {
             <div className="flex items-center gap-2 flex-wrap">
               <Button
                 variant="outline"
-                size="sm"
                 onClick={loadNotifications}
                 className="gap-2 bg-transparent dark:bg-transparent dark:border-gray-700 dark:text-gray-300 dark:hover:bg-gray-800"
               >
@@ -306,7 +305,7 @@ export default function BildirimlerPage() {
               </Button>
 
               {stats.unread > 0 && (
-                <Button variant="default" size="sm" onClick={handleMarkAllAsRead} className="gap-2">
+                <Button variant="default" onClick={handleMarkAllAsRead} className="gap-2">
                   <CheckCircle className="h-4 w-4" />
                   Tümünü Okundu İşaretle
                 </Button>
@@ -330,7 +329,6 @@ export default function BildirimlerPage() {
 
             <Button
               variant={showUnreadOnly ? "default" : "outline"}
-              size="sm"
               onClick={() => setShowUnreadOnly(!showUnreadOnly)}
               className="gap-2"
             >

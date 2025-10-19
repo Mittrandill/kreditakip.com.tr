@@ -54,7 +54,7 @@ export function useAuth() {
         return profileData
       }
     } catch (error) {
-      console.error("Error loading profile:", error)
+      // Silent error handling in production
     } finally {
       loadingProfileRef.current.delete(userId)
     }
@@ -129,7 +129,6 @@ export function useAuth() {
         } = await supabase.auth.getSession()
 
         if (error) {
-          console.error("Error getting session:", error)
           updateAuthState({ loading: false })
           return
         }
@@ -144,7 +143,6 @@ export function useAuth() {
 
         subscription = authSubscription
       } catch (error) {
-        console.error("Error initializing auth:", error)
         updateAuthState({ loading: false })
       }
     }
