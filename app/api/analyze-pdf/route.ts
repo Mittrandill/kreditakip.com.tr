@@ -253,6 +253,25 @@ export async function POST(request: Request) {
       return Response.json({ error: "PDF dosyası bulunamadı" }, { status: 400 })
     }
 
+    // SECURITY FIX: Validate file type and size
+    const MAX_FILE_SIZE = 10 * 1024 * 1024 // 10MB
+    const ALLOWED_MIME_TYPES = ["application/pdf"]
+
+    if (!ALLOWED_MIME_TYPES.includes(file.type)) {
+      return Response.json({ error: "Sadece PDF dosyaları kabul edilir" }, { status: 400 })
+    }
+
+    if (file.size > MAX_FILE_SIZE) {
+      return Response.json(
+        { error: `Dosya boyutu çok büyük. Maksimum ${MAX_FILE_SIZE / 1024 / 1024}MB yüklenebilir` },
+        { status: 413 },
+      )
+    }
+
+    if (file.size === 0) {
+      return Response.json({ error: "Dosya boş olamaz" }, { status: 400 })
+    }
+
     const fileBuffer = await file.arrayBuffer()
     const base64Data = Buffer.from(fileBuffer).toString("base64")
 

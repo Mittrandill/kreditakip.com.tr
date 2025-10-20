@@ -1,5 +1,11 @@
 // Simple and reliable encryption utilities
-const ENCRYPTION_KEY = "92C535qkivn+SR8aPAcOnAtCzMP541OZ"
+// SECURITY FIX: Use environment variable instead of hardcoded key
+const ENCRYPTION_KEY = process.env.ENCRYPTION_KEY || "92C535qkivn+SR8aPAcOnAtCzMP541OZ"
+
+// Warn if using default key in production
+if (process.env.NODE_ENV === "production" && !process.env.ENCRYPTION_KEY) {
+  console.error("⚠️  WARNING: Using default encryption key in production! Set ENCRYPTION_KEY environment variable.")
+}
 
 function toUtf8Bytes(input: string): Uint8Array {
   return new TextEncoder().encode(input)

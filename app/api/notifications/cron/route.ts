@@ -7,52 +7,44 @@ export async function GET(request: NextRequest) {
   try {
     console.log("[v0] Cron job started at:", new Date().toISOString())
 
+    // SECURITY FIX: Remove test mode bypass and query parameter authentication
     const cronSecret = process.env.CRON_SECRET
     const authHeader = request.headers.get("authorization")
-    const { searchParams } = new URL(request.url)
-    const secretParam = searchParams.get("secret")
-    const testMode = searchParams.get("test") === "true"
 
     console.log("[v0] Auth header present:", !!authHeader)
-    console.log("[v0] Secret param present:", !!secretParam)
-    console.log("[v0] Test mode:", testMode)
-    console.log("[v0] CRON_SECRET present:", !!cronSecret)
-    console.log("[v0] CRON_SECRET length:", cronSecret?.length || 0)
+    console.log("[v0] CRON_SECRET configured:", !!cronSecret)
 
     if (!cronSecret) {
       console.error("[v0] CRON_SECRET environment variable not set")
-      return NextResponse.json({ error: "CRON_SECRET not configured" }, { status: 500 })
+      return NextResponse.json({ error: "Server configuration error" }, { status: 500 })
     }
 
-    let isAuthenticated = false
+    // Only accept Bearer token in Authorization header
+    if (!authHeader || !authHeader.startsWith("Bearer ")) {
+      console.log("[v0] Authentication failed: Missing or invalid Authorization header")
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
+    }
 
-    if (testMode) {
-      isAuthenticated = true
-      console.log("[v0] Running in TEST MODE - no authentication required")
-    } else if (authHeader) {
-      const expectedAuth = `Bearer ${cronSecret}`
-      isAuthenticated = authHeader === expectedAuth
-    } else if (secretParam) {
-      isAuthenticated = secretParam === cronSecret
+    const token = authHeader.substring(7)
+
+    // Use constant-time comparison to prevent timing attacks
+    let isAuthenticated = false
+    try {
+      // Create buffers of equal length for constant-time comparison
+      const tokenBuffer = Buffer.from(token)
+      const secretBuffer = Buffer.from(cronSecret)
+
+      if (tokenBuffer.length === secretBuffer.length) {
+        isAuthenticated = crypto.timingSafeEqual(tokenBuffer, secretBuffer)
+      }
+    } catch (error) {
+      console.error("[v0] Error during authentication:", error)
+      isAuthenticated = false
     }
 
     if (!isAuthenticated) {
-      console.log("[v0] Authentication failed")
-      if (authHeader) {
-        console.log("[v0] Auth header mismatch")
-        console.log("[v0] Expected format: Bearer [SECRET]")
-        console.log("[v0] Received format:", authHeader.substring(0, 20) + "...")
-      }
-      if (secretParam) {
-        console.log("[v0] Secret param mismatch")
-      }
-      return NextResponse.json(
-        {
-          error: "Unauthorized",
-          hint: "Use ?test=true for testing without authentication",
-        },
-        { status: 401 },
-      )
+      console.log("[v0] Authentication failed: Invalid token")
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
     }
 
     console.log("[v0] Authentication successful")

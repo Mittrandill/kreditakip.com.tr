@@ -89,8 +89,19 @@ export async function GET(request: NextRequest) {
   }
 }
 
-// POST endpoint to update plan prices (admin only - add authentication)
+// POST endpoint to update plan prices (admin only - SECURITY: endpoint disabled for safety)
 export async function POST(request: NextRequest) {
+  // SECURITY FIX: Disable admin endpoint until proper authentication is implemented
+  // This prevents unauthorized modifications to subscription plans
+  return NextResponse.json(
+    {
+      success: false,
+      error: "Admin endpoint temporarily disabled for security. Please use database console for plan modifications.",
+    },
+    { status: 403 },
+  )
+
+  /* COMMENTED OUT UNTIL PROPER ADMIN AUTHENTICATION IS IMPLEMENTED
   try {
     const body = await request.json()
     const { planId, updates } = body
@@ -105,9 +116,24 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // TODO: Add admin authentication check here
-    // const { user } = await authenticate(request)
-    // if (!user?.isAdmin) return unauthorized response
+    // SECURITY: Check admin authentication
+    const supabaseAuth = createServerClient()
+    const { data: { user }, error: authError } = await supabaseAuth.auth.getUser()
+
+    if (authError || !user) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
+    }
+
+    // Check if user has admin role
+    const { data: profile } = await supabaseAuth
+      .from("profiles")
+      .select("role")
+      .eq("id", user.id)
+      .single()
+
+    if (profile?.role !== "admin") {
+      return NextResponse.json({ error: "Forbidden: Admin access required" }, { status: 403 })
+    }
 
     const supabase = createClient(supabaseUrl, supabaseServiceKey, {
       auth: {

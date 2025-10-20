@@ -1,17 +1,24 @@
 import { type NextRequest, NextResponse } from "next/server"
 import { createClient } from "@supabase/supabase-js"
+import { createServerClient } from "@/lib/supabase/server"
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
 const supabaseServiceKey = process.env.SERVICE_ROLE_KEY!
 
 export async function GET(request: NextRequest) {
   try {
-    const { searchParams } = new URL(request.url)
-    const userId = searchParams.get("userId")
+    // SECURITY FIX: Use authenticated user instead of query parameter
+    const supabaseAuth = createServerClient()
+    const {
+      data: { user },
+      error: authError,
+    } = await supabaseAuth.auth.getUser()
 
-    if (!userId) {
-      return NextResponse.json({ error: "User ID gereklidir" }, { status: 400 })
+    if (authError || !user) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
     }
+
+    const userId = user.id
 
     const supabase = createClient(supabaseUrl, supabaseServiceKey, {
       auth: {

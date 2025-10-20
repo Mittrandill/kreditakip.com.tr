@@ -1,5 +1,6 @@
 import { type NextRequest, NextResponse } from "next/server"
 import { createClient } from "@supabase/supabase-js"
+import { createServerClient } from "@/lib/supabase/server"
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
 const supabaseServiceKey = process.env.SERVICE_ROLE_KEY!
@@ -8,14 +9,20 @@ export async function GET(request: NextRequest) {
   try {
     console.log("[v0] Subscription status API called")
 
-    const userId = request.nextUrl.searchParams.get("userId")
+    // SECURITY FIX: Use authenticated user instead of query parameter
+    const supabaseAuth = createServerClient()
+    const {
+      data: { user },
+      error: authError,
+    } = await supabaseAuth.auth.getUser()
 
-    if (!userId) {
-      console.log("[v0] No userId provided")
-      return NextResponse.json({ error: "User ID required" }, { status: 400 })
+    if (authError || !user) {
+      console.log("[v0] Unauthorized: No authenticated user")
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
     }
 
-    console.log("[v0] Fetching subscription for user:", userId)
+    const userId = user.id
+    console.log("[v0] Fetching subscription for authenticated user:", userId)
 
     const supabase = createClient(supabaseUrl, supabaseServiceKey, {
       auth: {
