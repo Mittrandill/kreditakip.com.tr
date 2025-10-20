@@ -310,4 +310,154 @@ export class IyzipaySubscriptionClient {
 
     return result
   }
+
+  /**
+   * PCI-DSS UYUMLU: Checkout Form başlatma (kart bilgileri sunucuya gelmez)
+   * Bu metod kullanıcıyı Iyzico'nun güvenli ödeme sayfasına yönlendirir
+   */
+  async initializeCheckoutForm(
+    price: string,
+    userId: string,
+    planId: string,
+    billingInfo: BillingInfo,
+    callbackUrl: string,
+  ): Promise<any> {
+    const uri = "/payment/iyzipos/checkoutform/initialize/auth/ecom"
+    const url = `${this.config.uri}${uri}`
+
+    const [firstName, ...lastNameParts] = billingInfo.fullName.split(" ")
+    const lastName = lastNameParts.join(" ") || firstName
+
+    const formattedPhone = billingInfo.phone.startsWith("0")
+      ? "+90" + billingInfo.phone.substring(1)
+      : billingInfo.phone.startsWith("+")
+        ? billingInfo.phone
+        : "+90" + billingInfo.phone
+
+    const conversationId = `checkout_${userId}_${Date.now()}`
+
+    const requestBody = {
+      locale: "tr",
+      conversationId,
+      price,
+      paidPrice: price,
+      currency: "TRY",
+      basketId: `basket_${Date.now()}`,
+      paymentGroup: "SUBSCRIPTION", // PRODUCT, LISTING, or SUBSCRIPTION
+      callbackUrl, // Ödeme sonrası dönüş URL'i
+      enabledInstallments: [1], // Taksit seçenekleri (1 = tek çekim)
+      buyer: {
+        id: userId,
+        name: firstName,
+        surname: lastName,
+        gsmNumber: formattedPhone,
+        email: billingInfo.email,
+        identityNumber: billingInfo.identityNumber,
+        lastLoginDate: new Date().toISOString().split("T")[0] + " 00:00:00",
+        registrationDate: new Date().toISOString().split("T")[0] + " 00:00:00",
+        registrationAddress: billingInfo.address,
+        ip: "85.34.78.112", // Bu frontend'den alınmalı
+        city: billingInfo.city,
+        country: "Turkey",
+        zipCode: billingInfo.zipCode,
+      },
+      shippingAddress: {
+        contactName: billingInfo.fullName,
+        city: billingInfo.city,
+        country: "Turkey",
+        address: billingInfo.address,
+        zipCode: billingInfo.zipCode,
+      },
+      billingAddress: {
+        contactName: billingInfo.fullName,
+        city: billingInfo.city,
+        country: "Turkey",
+        address: billingInfo.address,
+        zipCode: billingInfo.zipCode,
+      },
+      basketItems: [
+        {
+          id: planId,
+          name: "Premium Üyelik",
+          category1: "Subscription",
+          category2: "Premium",
+          itemType: "VIRTUAL",
+          price,
+        },
+      ],
+    }
+
+    const body = JSON.stringify(requestBody)
+    const authString = this.generateAuthString(uri, body)
+
+    console.log("[iyzipay] Initializing Checkout Form (PCI-DSS compliant)")
+    console.log("[iyzipay] Conversation ID:", conversationId)
+    console.log("[iyzipay] Amount:", price, "TRY")
+    console.log("[iyzipay] Callback URL:", callbackUrl)
+
+    const response = await fetch(url, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: authString,
+        "x-iyzi-rnd": crypto.randomBytes(16).toString("hex"),
+      },
+      body,
+    })
+
+    const result = await response.json()
+
+    console.log("[iyzipay] Checkout Form response:", {
+      status: result.status,
+      checkoutFormContent: result.checkoutFormContent ? "Generated" : "Missing",
+      paymentPageUrl: result.paymentPageUrl,
+      token: result.token,
+      errorMessage: result.errorMessage,
+    })
+
+    return result
+  }
+
+  /**
+   * PCI-DSS UYUMLU: Checkout Form sonucunu retrieve etme
+   * Kullanıcı ödemeyi tamamladıktan sonra bu metod ile sonuç alınır
+   */
+  async retrieveCheckoutFormResult(token: string): Promise<any> {
+    const uri = "/payment/iyzipos/checkoutform/auth/ecom/detail"
+    const url = `${this.config.uri}${uri}`
+
+    const requestBody = {
+      locale: "tr",
+      conversationId: `retrieve_${Date.now()}`,
+      token,
+    }
+
+    const body = JSON.stringify(requestBody)
+    const authString = this.generateAuthString(uri, body)
+
+    console.log("[iyzipay] Retrieving Checkout Form result")
+    console.log("[iyzipay] Token:", token)
+
+    const response = await fetch(url, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: authString,
+        "x-iyzi-rnd": crypto.randomBytes(16).toString("hex"),
+      },
+      body,
+    })
+
+    const result = await response.json()
+
+    console.log("[iyzipay] Checkout Form result:", {
+      status: result.status,
+      paymentStatus: result.paymentStatus,
+      paymentId: result.paymentId,
+      fraudStatus: result.fraudStatus,
+      errorMessage: result.errorMessage,
+    })
+
+    return result
+  }
 }
