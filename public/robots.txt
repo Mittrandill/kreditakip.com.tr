@@ -1,0 +1,36 @@
+# robots.txt for kreditakip.com.tr
+
+# Allow all search engines
+User-agent: *
+Allow: /
+
+# Specific rules for Google
+User-agent: Googlebot
+Allow: /
+Crawl-delay: 0
+
+# Specific rules for Bingbot
+User-agent: Bingbot
+Allow: /
+Crawl-delay: 0
+
+# Specific rules for Yandex
+User-agent: YandexBot
+Allow: /
+Crawl-delay: 0
+
+# Disallow admin and private areas
+Disallow: /api/
+Disallow: /uygulama/
+Disallow: /_next/
+Disallow: /admin/
+
+# Allow images
+Allow: /*.jpg$
+Allow: /*.jpeg$
+Allow: /*.png$
+Allow: /*.svg$
+Allow: /*.webp$
+
+# Sitemap location
+Sitemap: https://kreditakip.com.tr/sitemap.xml

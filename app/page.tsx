@@ -5,10 +5,25 @@ import { UserGrowthChart } from "@/components/user-growth-chart"
 import Header from "@/components/layout/header"
 import Footer from "@/components/footer"
 import Link from "next/link"
+import { StructuredData } from "@/components/seo/structured-data"
+import type { Metadata } from "next"
+
+export const metadata: Metadata = {
+  title: "Akıllı Kredi Yönetimi ve Ödeme Planlama",
+  description:
+    "Kredi kartı ekstrenizi saniyeler içinde akıllı ödeme planına dönüştürün. OCR teknolojisi, yapay zeka destekli risk analizi ve detaylı finansal raporlama ile kredi yönetiminin geleceğini keşfedin. Ücretsiz başlayın!",
+  openGraph: {
+    title: "Kredi Takip - Akıllı Kredi Yönetimi ve Ödeme Planlama",
+    description:
+      "Kredi kartı ekstrenizi saniyeler içinde akıllı ödeme planına dönüştürün. OCR teknolojisi ve yapay zeka destekli finansal yönetim platformu.",
+    images: ["/financial-dashboard.png"],
+  },
+}
 
 export default function LandingPage() {
   return (
     <div className="min-h-screen w-full bg-[#151515] text-white font-sans">
+      <StructuredData />
       <div className="absolute inset-0 -z-0">
         <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[80vw] h-[80vh] bg-emerald-500/20 blur-[150px] rounded-full" />
       </div>
