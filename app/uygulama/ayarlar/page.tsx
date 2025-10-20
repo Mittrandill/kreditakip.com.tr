@@ -140,6 +140,27 @@ export default function AyarlarPage() {
     let isMounted = true
     const searchParams = new URLSearchParams(window.location.search)
     const tab = searchParams.get("tab")
+    const payment = searchParams.get("payment")
+    const reason = searchParams.get("reason")
+
+    // Handle payment callback
+    if (payment && isMounted) {
+      if (payment === "success") {
+        toast({
+          title: "Ödeme Başarılı!",
+          description: "Premium üyeliğiniz aktif edildi. Tüm özelliklere erişebilirsiniz!",
+        })
+      } else if (payment === "failed") {
+        toast({
+          title: "Ödeme Başarısız",
+          description: reason ? decodeURIComponent(reason) : "Ödeme işlemi tamamlanamadı. Lütfen tekrar deneyin.",
+          variant: "destructive",
+        })
+      }
+      // Clean URL
+      window.history.replaceState({}, "", window.location.pathname)
+    }
+
     if (tab && isMounted) setActiveTab(tab)
 
     if (initialProfile && isMounted) {

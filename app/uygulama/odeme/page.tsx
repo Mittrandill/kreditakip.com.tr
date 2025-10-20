@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Lock, ArrowLeft, Shield, Zap, Clock, Building2, CheckCircle2, CreditCard } from "lucide-react"
+import { Lock, ArrowLeft, Shield, Zap, Clock, Building2, CheckCircle2, CreditCard, AlertCircle } from "lucide-react"
 import { useRouter, useSearchParams } from "next/navigation"
 import { useToast } from "@/hooks/use-toast"
 import { useSubscription } from "@/hooks/use-subscription"
@@ -16,6 +16,7 @@ import { useAuth } from "@/hooks/use-auth"
 import Link from "next/link"
 import { turkishCities, cityDistricts } from "@/lib/turkish-cities"
 import { getPlanById } from "@/lib/subscription-plans"
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 
 export default function PaymentPage() {
   const router = useRouter()
@@ -56,54 +57,27 @@ export default function PaymentPage() {
     }
   }, [selectedCityCode])
 
-  const [cardDetails, setCardDetails] = useState({
-    cardHolderName: "",
-    cardNumber: "",
-    expireMonth: "",
-    expireYear: "",
-    cvc: "",
-  })
-
   const [billingInfo, setBillingInfo] = useState({
     fullName: "",
-    email: "",
+    email: user?.email || "",
     phone: "",
     address: "",
     city: "",
     district: "",
     zipCode: "",
-    taxNumber: "",
-    taxOffice: "",
+    identityNumber: "",
   })
 
-  const handleCardChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = e.target
-
-    if (name === "cardNumber") {
-      const formatted = value
-        .replace(/\s/g, "")
-        .replace(/(\d{4})/g, "$1 ")
-        .trim()
-        .slice(0, 19)
-      setCardDetails((prev) => ({ ...prev, [name]: formatted }))
-    } else if (name === "expireMonth" || name === "expireYear") {
-      const formatted = value.replace(/\D/g, "")
-      if (name === "expireMonth") {
-        setCardDetails((prev) => ({ ...prev, [name]: formatted.slice(0, 2) }))
-      } else {
-        setCardDetails((prev) => ({ ...prev, [name]: formatted.slice(0, 4) }))
-      }
-    } else if (name === "cvc") {
-      const formatted = value.replace(/\D/g, "").slice(0, 4)
-      setCardDetails((prev) => ({ ...prev, [name]: formatted }))
-    } else {
-      setCardDetails((prev) => ({ ...prev, [name]: value }))
+  // Pre-fill email from user
+  useEffect(() => {
+    if (user?.email && !billingInfo.email) {
+      setBillingInfo((prev) => ({ ...prev, email: user.email! }))
     }
-  }
+  }, [user, billingInfo.email])
 
   const handleBillingChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target
-    if (name === "taxNumber") {
+    if (name === "identityNumber" || name === "phone") {
       const formatted = value.replace(/\D/g, "").slice(0, 11)
       setBillingInfo((prev) => ({ ...prev, [name]: formatted }))
     } else {
@@ -128,62 +102,43 @@ export default function PaymentPage() {
     setIsProcessing(true)
 
     try {
-      console.log("[v0] Submitting subscription payment")
+      console.log("[checkout] Initializing PCI-DSS compliant checkout")
 
       if (!user) {
         throw new Error("Kullanıcı oturumu bulunamadı. Lütfen tekrar giriş yapın.")
       }
 
-      if (cardDetails.cardNumber.replace(/\s/g, "").length !== 16) {
-        throw new Error("Geçerli bir kart numarası giriniz (16 hane)")
+      // Validations
+      if (billingInfo.identityNumber.length !== 11) {
+        throw new Error("TC Kimlik No 11 haneli olmalıdır")
       }
 
-      if (
-        cardDetails.expireMonth.length !== 2 ||
-        Number.parseInt(cardDetails.expireMonth) < 1 ||
-        Number.parseInt(cardDetails.expireMonth) > 12
-      ) {
-        throw new Error("Geçerli bir ay giriniz (01-12)")
+      if (billingInfo.phone.length < 10) {
+        throw new Error("Geçerli bir telefon numarası giriniz")
       }
 
-      if (cardDetails.expireYear.length !== 4 || Number.parseInt(cardDetails.expireYear) < new Date().getFullYear()) {
-        throw new Error("Geçerli bir yıl giriniz")
+      if (!billingInfo.city || !billingInfo.district) {
+        throw new Error("Lütfen il ve ilçe seçiniz")
       }
 
-      if (cardDetails.cvc.length < 3) {
-        throw new Error("Geçerli bir CVV giriniz")
-      }
-
-      if (billingInfo.taxNumber.length !== 11) {
-        throw new Error("Vergi Kimlik No 11 haneli olmalıdır")
-      }
-
-      const response = await fetch("/api/subscription/initialize", {
+      // Initialize PCI-DSS compliant checkout
+      const response = await fetch("/api/payment/checkout/initialize", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
         credentials: "include",
         body: JSON.stringify({
-          userId: user.id,
           planId: selectedPlan.id,
-          cardInfo: {
-            cardHolderName: cardDetails.cardHolderName,
-            cardNumber: cardDetails.cardNumber.replace(/\s/g, ""),
-            expireMonth: cardDetails.expireMonth,
-            expireYear: cardDetails.expireYear,
-            cvc: cardDetails.cvc,
-          },
           billingInfo: {
             fullName: billingInfo.fullName,
             email: billingInfo.email,
             phone: billingInfo.phone,
+            identityNumber: billingInfo.identityNumber,
             address: billingInfo.address,
             city: billingInfo.city,
             district: billingInfo.district,
             zipCode: billingInfo.zipCode,
-            taxNumber: billingInfo.taxNumber,
-            taxOffice: billingInfo.taxOffice,
           },
         }),
       })
@@ -191,32 +146,30 @@ export default function PaymentPage() {
       const data = await response.json()
 
       if (!response.ok) {
-        throw new Error(data.error || "Ödeme işlemi başarısız oldu")
+        throw new Error(data.error || "Ödeme işlemi başlatılamadı")
       }
 
-      if (data.success) {
-        toast({
-          title: "Abonelik Başarılı!",
-          description: "Premium üyeliğiniz aktif edildi.",
-        })
-
-        await refreshSubscription()
-
-        // Başarılı sayfasına yönlendir
-        router.push("/uygulama/odeme/basarili")
+      if (data.success && data.paymentPageUrl) {
+        console.log("[checkout] Redirecting to Iyzico payment page")
+        // Redirect to Iyzico's secure payment page
+        window.location.href = data.paymentPageUrl
+      } else if (data.success && data.checkoutFormContent) {
+        // Alternative: Show checkout form in modal (not recommended)
+        console.warn("[checkout] Inline checkout form received but not implemented")
+        throw new Error("Ödeme sayfası yönlendirmesi başarısız oldu. Lütfen tekrar deneyin.")
       } else {
-        throw new Error(data.error || "Abonelik başlatılamadı")
+        throw new Error(data.error || "Ödeme başlatılamadı")
       }
     } catch (error) {
-      console.error("[v0] Payment error:", error)
+      console.error("[checkout] Payment initialization error:", error)
       toast({
         title: "Ödeme Hatası",
         description: error instanceof Error ? error.message : "Ödeme işlemi başarısız oldu",
         variant: "destructive",
       })
-    } finally {
       setIsProcessing(false)
     }
+    // Don't set isProcessing to false here - we're redirecting
   }
 
   if (authLoading) {
@@ -250,7 +203,7 @@ export default function PaymentPage() {
               </Link>
               <div>
                 <h1 className="text-3xl md:text-4xl font-bold mb-2">Premium Ödeme</h1>
-                <p className="text-emerald-100 text-lg">Güvenli ödeme ile premium üyeliğe geçin</p>
+                <p className="text-emerald-100 text-lg">PCI-DSS uyumlu güvenli ödeme</p>
               </div>
             </div>
             <div className="flex flex-wrap gap-4">
@@ -277,100 +230,28 @@ export default function PaymentPage() {
         </div>
       </Card>
 
+      {/* PCI-DSS Information Alert */}
+      <Alert className="border-blue-200 dark:border-blue-800 bg-blue-50 dark:bg-blue-950/20">
+        <Shield className="h-5 w-5 text-blue-600 dark:text-blue-400" />
+        <AlertTitle className="text-blue-900 dark:text-blue-100">Güvenli Ödeme</AlertTitle>
+        <AlertDescription className="text-blue-700 dark:text-blue-300">
+          Kart bilgileriniz Iyzico'nun PCI-DSS sertifikalı güvenli sayfasında işlenecektir.
+          Kart bilgileriniz hiçbir zaman sunucularımıza gelmez ve saklanmaz.
+        </AlertDescription>
+      </Alert>
+
       <form onSubmit={handleSubmit} className="space-y-8">
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           <div className="lg:col-span-2 space-y-6">
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
-                  <CreditCard className="h-5 w-5 text-emerald-600" />
-                  Kart Bilgileri
-                </CardTitle>
-                <CardDescription>Ödeme için kart bilgilerinizi girin</CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="space-y-2">
-                  <Label htmlFor="cardHolderName">Kart Üzerindeki İsim *</Label>
-                  <Input
-                    id="cardHolderName"
-                    name="cardHolderName"
-                    placeholder="AKIN KAYA"
-                    value={cardDetails.cardHolderName}
-                    onChange={handleCardChange}
-                    required
-                    disabled={isProcessing}
-                    className="uppercase"
-                  />
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="cardNumber">Kart Numarası *</Label>
-                  <Input
-                    id="cardNumber"
-                    name="cardNumber"
-                    placeholder="1234 5678 9012 3456"
-                    value={cardDetails.cardNumber}
-                    onChange={handleCardChange}
-                    required
-                    disabled={isProcessing}
-                    maxLength={19}
-                  />
-                </div>
-
-                <div className="grid grid-cols-3 gap-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="expireMonth">Ay *</Label>
-                    <Input
-                      id="expireMonth"
-                      name="expireMonth"
-                      placeholder="MM"
-                      value={cardDetails.expireMonth}
-                      onChange={handleCardChange}
-                      required
-                      disabled={isProcessing}
-                      maxLength={2}
-                    />
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label htmlFor="expireYear">Yıl *</Label>
-                    <Input
-                      id="expireYear"
-                      name="expireYear"
-                      placeholder="YYYY"
-                      value={cardDetails.expireYear}
-                      onChange={handleCardChange}
-                      required
-                      disabled={isProcessing}
-                      maxLength={4}
-                    />
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label htmlFor="cvc">CVV *</Label>
-                    <Input
-                      id="cvc"
-                      name="cvc"
-                      type="password"
-                      placeholder="123"
-                      value={cardDetails.cvc}
-                      onChange={handleCardChange}
-                      required
-                      disabled={isProcessing}
-                      maxLength={4}
-                    />
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
                   <Building2 className="h-5 w-5 text-emerald-600" />
                   Fatura Bilgileri
                 </CardTitle>
-                <CardDescription>Fatura için gerekli bilgilerinizi girin</CardDescription>
+                <CardDescription>
+                  Fatura bilgilerinizi girin. Sonraki sayfada kart bilgilerinizi güvenli bir şekilde gireceksiniz.
+                </CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -406,39 +287,33 @@ export default function PaymentPage() {
                     <Input
                       id="phone"
                       name="phone"
-                      placeholder="0555 123 4567"
+                      placeholder="05551234567"
                       value={billingInfo.phone}
                       onChange={handleBillingChange}
                       required
                       disabled={isProcessing}
+                      maxLength={11}
                     />
+                    <p className="text-xs text-gray-500 dark:text-gray-400">
+                      Başında 0 ile birlikte 11 hane
+                    </p>
                   </div>
 
                   <div className="space-y-2">
-                    <Label htmlFor="taxNumber">Vergi Kimlik No *</Label>
+                    <Label htmlFor="identityNumber">TC Kimlik No *</Label>
                     <Input
-                      id="taxNumber"
-                      name="taxNumber"
+                      id="identityNumber"
+                      name="identityNumber"
                       placeholder="12345678901"
-                      value={billingInfo.taxNumber}
+                      value={billingInfo.identityNumber}
                       onChange={handleBillingChange}
                       maxLength={11}
                       required
                       disabled={isProcessing}
                     />
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label htmlFor="taxOffice">Vergi Dairesi *</Label>
-                    <Input
-                      id="taxOffice"
-                      name="taxOffice"
-                      placeholder="Kadıköy Vergi Dairesi"
-                      value={billingInfo.taxOffice}
-                      onChange={handleBillingChange}
-                      required
-                      disabled={isProcessing}
-                    />
+                    <p className="text-xs text-gray-500 dark:text-gray-400">
+                      Ödeme sağlayıcısı tarafından zorunludur
+                    </p>
                   </div>
 
                   <div className="space-y-2">
@@ -478,7 +353,7 @@ export default function PaymentPage() {
                     </Select>
                   </div>
 
-                  <div className="space-y-2">
+                  <div className="space-y-2 md:col-span-2">
                     <Label htmlFor="address">Adres *</Label>
                     <Input
                       id="address"
@@ -512,7 +387,7 @@ export default function PaymentPage() {
             <Card className="sticky top-6">
               <CardHeader>
                 <CardTitle>Ödeme Özeti</CardTitle>
-                <CardDescription>Girilen bilgilerin özeti</CardDescription>
+                <CardDescription>Seçtiğiniz plan</CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="space-y-3">
@@ -545,22 +420,30 @@ export default function PaymentPage() {
                     {isProcessing ? (
                       <>
                         <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
-                        İşleniyor...
+                        Yönlendiriliyor...
                       </>
                     ) : (
                       <>
                         <Lock className="h-4 w-4 mr-2" />
-                        Ödemeyi Tamamla
+                        Güvenli Ödemeye Geç
                       </>
                     )}
                   </Button>
 
                   <Link href="/uygulama/premium" className="block">
-                    <Button type="button" variant="outline" className="w-full bg-transparent">
+                    <Button type="button" variant="outline" className="w-full bg-transparent" disabled={isProcessing}>
                       İptal
                     </Button>
                   </Link>
                 </div>
+
+                <Alert className="mt-4">
+                  <AlertCircle className="h-4 w-4" />
+                  <AlertDescription className="text-xs">
+                    Sonraki sayfada Iyzico'nun güvenli ödeme sayfasına yönlendirileceksiniz.
+                    Kart bilgilerinizi orada gireceksiniz.
+                  </AlertDescription>
+                </Alert>
               </CardContent>
             </Card>
 
@@ -569,15 +452,28 @@ export default function PaymentPage() {
                 <div className="flex items-start gap-3">
                   <Shield className="h-5 w-5 text-blue-600 dark:text-blue-400 mt-0.5" />
                   <div>
-                    <p className="font-medium text-blue-900 dark:text-blue-100">256-bit SSL Şifreleme</p>
-                    <p className="text-sm text-blue-700 dark:text-blue-300">Tüm verileriniz şifrelenir</p>
+                    <p className="font-medium text-blue-900 dark:text-blue-100">PCI-DSS Uyumlu</p>
+                    <p className="text-sm text-blue-700 dark:text-blue-300">
+                      Kart bilgileriniz sunucularımıza gelmez
+                    </p>
                   </div>
                 </div>
                 <div className="flex items-start gap-3">
                   <CheckCircle2 className="h-5 w-5 text-blue-600 dark:text-blue-400 mt-0.5" />
                   <div>
                     <p className="font-medium text-blue-900 dark:text-blue-100">iyzico Güvencesi</p>
-                    <p className="text-sm text-blue-700 dark:text-blue-300">Güvenli ödeme altyapısı</p>
+                    <p className="text-sm text-blue-700 dark:text-blue-300">
+                      Sertifikalı güvenli ödeme altyapısı
+                    </p>
+                  </div>
+                </div>
+                <div className="flex items-start gap-3">
+                  <Lock className="h-5 w-5 text-blue-600 dark:text-blue-400 mt-0.5" />
+                  <div>
+                    <p className="font-medium text-blue-900 dark:text-blue-100">256-bit SSL</p>
+                    <p className="text-sm text-blue-700 dark:text-blue-300">
+                      Tüm iletişim şifrelenir
+                    </p>
                   </div>
                 </div>
               </CardContent>
