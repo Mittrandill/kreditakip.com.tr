@@ -151,9 +151,13 @@ export async function POST(request: NextRequest) {
       {
         user_id: userId,
         plan_type: "premium",
+        plan_id: "premium-monthly",
         status: "active",
         start_date: new Date().toISOString(),
-        end_date: subscriptionEndDate.toISOString(),
+        expires_at: subscriptionEndDate.toISOString(),
+        payment_method: "iyzico",
+        iyzico_subscription_id: paymentResponse.paymentId,
+        iyzico_subscription_reference: paymentResponse.paymentId,
         updated_at: new Date().toISOString(),
       },
       {

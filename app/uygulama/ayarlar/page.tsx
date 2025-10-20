@@ -544,8 +544,16 @@ export default function AyarlarPage() {
     setShowCancelDialog(false)
     setIsCancelling(true)
     try {
+      if (!user?.id) {
+        throw new Error("Kullanıcı bulunamadı")
+      }
+
       const response = await fetch("/api/subscription/cancel", {
         method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ userId: user.id }),
       })
 
       const data = await response.json()

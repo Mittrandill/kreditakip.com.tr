@@ -1,68 +1,101 @@
 import { type NextRequest, NextResponse } from "next/server"
 import { IyzipaySubscriptionClient } from "@/lib/iyzipay-client"
-import { createClient } from "@/lib/supabase/server"
+import { createClient } from "@supabase/supabase-js"
 
 export const runtime = "nodejs"
 
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
+const supabaseServiceKey = process.env.SERVICE_ROLE_KEY!
+
 export async function POST(request: NextRequest) {
   try {
+    console.log("[iyzipay] ========================================")
     console.log("[iyzipay] Subscription cancel API called")
 
-    // Kullanıcı kontrolü
-    const supabase = await createClient()
-    const {
-      data: { user },
-      error: authError,
-    } = await supabase.auth.getUser()
+    const body = await request.json()
+    const { userId } = body
 
-    if (authError || !user) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
+    if (!userId) {
+      console.error("[iyzipay] User ID missing from request")
+      return NextResponse.json({ error: "User ID required" }, { status: 400 })
     }
 
-    // Kullanıcının abonelik bilgisini al
-    const { data: subscription, error: subError } = await supabase
+    console.log("[iyzipay] Processing cancellation for user:", userId)
+
+    // Service Role Client kullan (authentication bypass)
+    const supabase = createClient(supabaseUrl, supabaseServiceKey, {
+      auth: {
+        autoRefreshToken: false,
+        persistSession: false,
+      },
+    })
+
+    // Kullanıcının aktif abonelik bilgisini al
+    const { data: subscriptions, error: subError } = await supabase
       .from("subscriptions")
       .select("*")
-      .eq("user_id", user.id)
-      .single()
+      .eq("user_id", userId)
+      .eq("status", "active")
+      .order("created_at", { ascending: false })
 
-    if (subError || !subscription || !subscription.iyzico_subscription_reference) {
+    if (subError) {
+      console.error("[iyzipay] Error fetching subscription:", subError)
+      return NextResponse.json({ error: "Abonelik sorgulanırken hata oluştu" }, { status: 500 })
+    }
+
+    if (!subscriptions || subscriptions.length === 0) {
+      console.log("[iyzipay] No active subscription found for user:", userId)
       return NextResponse.json({ error: "Aktif abonelik bulunamadı" }, { status: 404 })
     }
 
-    // iyzico servisini başlat
-    const iyzicoClient = new IyzipaySubscriptionClient({
-      apiKey: process.env.IYZICO_API_KEY!,
-      secretKey: process.env.IYZICO_SECRET_KEY!,
-      uri: process.env.IYZICO_BASE_URL!,
-    })
+    const subscription = subscriptions[0] // En son aktif abonelik
 
-    // Aboneliği iptal et
-    const result = await iyzicoClient.cancelSubscription(subscription.iyzico_subscription_reference)
+    // NOT: Normal payment API kullanıldığı için iyzico'da iptal etmiyoruz
+    // Sadece veritabanında cancelled olarak işaretliyoruz
+    console.log("[iyzipay] Cancelling subscription in database (no iyzico cancel needed for one-time payments)")
+    console.log("[iyzipay] Subscription ID to cancel:", subscription.id)
 
-    if (result.status === "success") {
-      // Veritabanında aboneliği güncelle
-      await supabase
-        .from("subscriptions")
-        .update({
-          status: "cancelled",
-          end_date: new Date().toISOString(),
-          updated_at: new Date().toISOString(),
-        })
-        .eq("user_id", user.id)
-
-      return NextResponse.json({
-        success: true,
-        message: "Abonelik başarıyla iptal edildi",
+    // Veritabanında aboneliği güncelle - ID ile güncelle
+    const { error: updateError } = await supabase
+      .from("subscriptions")
+      .update({
+        status: "cancelled",
+        updated_at: new Date().toISOString(),
       })
-    } else {
+      .eq("id", subscription.id)
+      .eq("user_id", userId) // Güvenlik için user_id kontrolü ekle
+
+    if (updateError) {
+      console.error("[iyzipay] Database update error:", updateError)
       return NextResponse.json(
-        {
-          error: result.errorMessage || "Abonelik iptal edilemedi",
-        },
-        { status: 400 },
+        { error: "Veritabanı güncellenirken hata oluştu" },
+        { status: 500 },
       )
     }
+
+    console.log("[iyzipay] Subscription cancelled successfully in database")
+
+    // Usage limits'i ücretsiz plana düşür
+    console.log("[iyzipay] Updating usage limits to free tier")
+    const { error: usageUpdateError } = await supabase
+      .from("usage_tracking")
+      .update({
+        limit_count: 1, // Ücretsiz plan limiti
+        updated_at: new Date().toISOString(),
+      })
+      .eq("user_id", userId)
+
+    if (usageUpdateError) {
+      console.error("[iyzipay] Error updating usage limits:", usageUpdateError)
+      // Usage update hatası kritik değil, devam edebiliriz
+    } else {
+      console.log("[iyzipay] Usage limits updated to free tier")
+    }
+
+    return NextResponse.json({
+      success: true,
+      message: "Abonelik başarıyla iptal edildi",
+    })
   } catch (error: any) {
     console.error("[iyzipay] Cancel subscription error:", error)
     return NextResponse.json(

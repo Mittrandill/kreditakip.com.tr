@@ -110,6 +110,7 @@ export async function POST(request: NextRequest) {
           expires_at: expiresAt.toISOString(),
           payment_method: "iyzico",
           iyzico_subscription_id: paymentId, // Normal payment API için payment ID
+          iyzico_subscription_reference: paymentId, // İptal için gerekli
           updated_at: new Date().toISOString(),
         })
         .select()

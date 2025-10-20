@@ -72,15 +72,15 @@ export function FloatingUpgradeBanner() {
               <Button
                 onClick={handleUpgrade}
                 size="sm"
-                className="bg-white text-emerald-600 hover:bg-emerald-50 font-semibold"
+                className="bg-white text-white hover:bg-emerald-50 font-semibold shadow-md"
               >
                 Sadece 199₺/ay
               </Button>
               <Button
                 onClick={handleDismiss}
                 size="sm"
-                variant="outline"
-                className="border-white text-white hover:bg-white/10 hover:text-white hover:border-white bg-transparent"
+                variant="ghost"
+                className="text-white hover:bg-white/20 hover:text-white border border-white/30 hover:border-white/50"
               >
                 Daha Sonra
               </Button>
