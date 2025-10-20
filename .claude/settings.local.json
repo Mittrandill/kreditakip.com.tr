@@ -29,7 +29,8 @@
       "Bash(taskkill //F //PID 23780)",
       "Bash(powershell -Command \"if (Test-Path ''nul'') { Remove-Item ''nul'' -Force; Write-Output ''nul file deleted'' } else { Write-Output ''nul file not found'' }\")",
       "Bash(git rm --cached nul)",
-      "Bash(git add .claude/settings.local.json app/api/payment/direct/route.ts app/api/subscription/cancel/route.ts app/api/subscription/initialize/route.ts app/uygulama/ayarlar/page.tsx components/floating-upgrade-banner.tsx app/actions/ scripts/fix-subscription-references.sql .gitignore)"
+      "Bash(git add .claude/settings.local.json app/api/payment/direct/route.ts app/api/subscription/cancel/route.ts app/api/subscription/initialize/route.ts app/uygulama/ayarlar/page.tsx components/floating-upgrade-banner.tsx app/actions/ scripts/fix-subscription-references.sql .gitignore)",
+      "Bash(git commit -m \"$(cat <<''EOF''\nfix: subscription cancellation logic and query improvements\n\n- Fixed active subscription query to use proper filtering\n- Changed update logic to use subscription ID instead of just user_id\n- Added usage_tracking limit reset on cancellation\n- Added nul to gitignore to prevent Windows system file conflicts\n- Improved error handling and logging\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nCo-Authored-By: Claude <noreply@anthropic.com>\nEOF\n)\")"
     ],
     "deny": [],
     "ask": []
