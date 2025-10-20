@@ -1,12 +1,40 @@
 import { type NextRequest, NextResponse } from "next/server"
-import { createClient } from "@supabase/supabase-js"
 
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
-const supabaseServiceKey = process.env.SERVICE_ROLE_KEY!
-
+/**
+ * ⚠️ DEPRECATED - PCI-DSS VIOLATION
+ * This endpoint is deprecated due to PCI-DSS compliance issues.
+ * Use /api/payment/checkout/initialize instead.
+ *
+ * Reason: This endpoint accepts credit card data directly on the server,
+ * which violates PCI-DSS compliance requirements.
+ *
+ * Migration: See docs/PCI-DSS-CHECKOUT-IMPLEMENTATION.md
+ */
 export async function POST(request: NextRequest) {
-  console.log("[v0] Direct payment process started")
+  console.error("[DEPRECATED] Direct payment endpoint called - this is a PCI-DSS violation!")
+  console.error("[DEPRECATED] Migrate to /api/payment/checkout/initialize immediately")
 
+  return NextResponse.json(
+    {
+      error: "This endpoint is deprecated and disabled for security reasons",
+      deprecated: true,
+      reason: "PCI-DSS compliance violation - card data must not be sent to server",
+      migration: {
+        newEndpoint: "/api/payment/checkout/initialize",
+        documentation: "/docs/PCI-DSS-CHECKOUT-IMPLEMENTATION.md",
+        benefits: [
+          "PCI-DSS compliant",
+          "No card data on your servers",
+          "Zero compliance costs",
+          "Iyzico hosted payment page",
+        ],
+      },
+      action: "Please update your frontend to use the new checkout flow",
+    },
+    { status: 410 }, // 410 Gone - resource permanently removed
+  )
+
+  /* DISABLED CODE - PCI-DSS VIOLATION
   try {
     const body = await request.json()
     const { userId, billingInfo, cardDetails } = body
@@ -195,4 +223,5 @@ export async function POST(request: NextRequest) {
       { status: 500 },
     )
   }
+  */
 }

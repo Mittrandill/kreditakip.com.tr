@@ -1,10 +1,35 @@
 import { type NextRequest, NextResponse } from "next/server"
-import { IyzipaySubscriptionClient } from "@/lib/iyzipay-client"
-import { createServiceRoleClient } from "@/lib/supabase/server"
 
 export const runtime = "nodejs"
 
+/**
+ * ⚠️ DEPRECATED - PCI-DSS VIOLATION
+ * This endpoint is deprecated due to PCI-DSS compliance issues.
+ * Use /api/payment/checkout/initialize instead.
+ *
+ * Reason: Accepts credit card data (cardInfo) directly on the server.
+ * Migration: See docs/PCI-DSS-CHECKOUT-IMPLEMENTATION.md
+ */
 export async function POST(request: NextRequest) {
+  console.error("[DEPRECATED] Subscription initialize endpoint called - PCI-DSS violation!")
+  console.error("[DEPRECATED] This endpoint accepts card data directly - use /api/payment/checkout/initialize")
+
+  return NextResponse.json(
+    {
+      error: "This endpoint is deprecated and disabled for security reasons",
+      deprecated: true,
+      reason: "PCI-DSS compliance violation - card data (cardInfo) must not be sent to server",
+      migration: {
+        newEndpoint: "/api/payment/checkout/initialize",
+        documentation: "/docs/PCI-DSS-CHECKOUT-IMPLEMENTATION.md",
+        changes: "Remove cardInfo from request, use billing info only",
+      },
+      action: "Update frontend to use PCI-DSS compliant checkout flow",
+    },
+    { status: 410 }, // 410 Gone
+  )
+
+  /* DISABLED CODE - PCI-DSS VIOLATION
   try {
     console.log("[iyzipay] Subscription initialize API called")
 
@@ -196,4 +221,5 @@ export async function POST(request: NextRequest) {
       { status: 500 },
     )
   }
+  */
 }
