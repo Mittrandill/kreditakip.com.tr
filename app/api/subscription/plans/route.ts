@@ -117,7 +117,7 @@ export async function POST(request: NextRequest) {
     }
 
     // SECURITY: Check admin authentication
-    const supabaseAuth = createServerClient()
+    const supabaseAuth = await createServerClient()
     const { data: { user }, error: authError } = await supabaseAuth.auth.getUser()
 
     if (authError || !user) {

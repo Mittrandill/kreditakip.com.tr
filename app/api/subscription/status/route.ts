@@ -10,7 +10,7 @@ export async function GET(request: NextRequest) {
     console.log("[v0] Subscription status API called")
 
     // SECURITY FIX: Use authenticated user instead of query parameter
-    const supabaseAuth = createServerClient()
+    const supabaseAuth = await createServerClient()
     const {
       data: { user },
       error: authError,
