@@ -43,7 +43,12 @@
       "Bash(git add lib/iyzipay-client.ts app/api/payment/checkout/ scripts/create-pending-payments-table.sql docs/PCI-DSS-CHECKOUT-IMPLEMENTATION.md)",
       "Bash(git add app/api/subscription/plans/route.ts)",
       "Bash(git commit -m \"$(cat <<''EOF''\nfix: syntax error in subscription plans route blocking deployment\n\nFixed missing closing comment delimiter (*/) in POST handler causing\n\"Unexpected eof\" build error on Vercel.\n\nIssue: Comment block starting at line 104 was not properly closed,\ncausing TypeScript/webpack compilation to fail.\n\nSolution: Added proper closing */ delimiter at line 181 after the\ncommented-out try-catch block.\n\nBuild now compiles successfully.\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nCo-Authored-By: Claude <noreply@anthropic.com>\nEOF\n)\")",
-      "Bash(git add app/uygulama/odeme/page.tsx app/uygulama/ayarlar/page.tsx)"
+      "Bash(git add app/uygulama/odeme/page.tsx app/uygulama/ayarlar/page.tsx)",
+      "Bash(git commit --allow-empty -m \"chore: trigger Vercel deployment\")",
+      "Bash(vercel --version)",
+      "Bash(git add scripts/verify-pci-dss-database.sql scripts/add-plan-id-to-subscriptions.sql docs/PCI-DSS-DATABASE-CHECKLIST.md)",
+      "Bash(git pull:*)",
+      "Read(//c/Users/akint/Desktop/ss/**)"
     ],
     "deny": [],
     "ask": []

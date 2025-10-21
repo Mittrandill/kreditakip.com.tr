@@ -188,7 +188,7 @@ function createEmailTemplate(
     }
 
     const logoFileName = bankMappings[bankName] || "default-bank.png"
-    return `https://oymjjceuiotxfbpwsdym.supabase.co/storage/v1/object/public/bank-logos/${logoFileName}`
+    return `https://oymjjceuiotxfbpwsdym.supabase.co/storage/v1/object/public/bank-icons/${logoFileName}`
   }
 
   return {
@@ -359,6 +359,8 @@ function createEmailTemplate(
                   margin-right: 16px;
                   flex-shrink: 0;
                   overflow: hidden;
+                  font-size: 24px;
+                  color: #10b981;
               }
               
               .bank-logo {
@@ -445,10 +447,12 @@ function createEmailTemplate(
               .info-item:first-child {
                   border-radius: 8px 0 0 8px;
                   border-right: none;
+                  margin-right: 8px;
               }
-              
+
               .info-item:last-child {
                   border-radius: 0 8px 8px 0;
+                  margin-left: 8px;
               }
               
               .info-label {
@@ -702,7 +706,7 @@ function createEmailTemplate(
                       <td>
                           <div class="header">
                               <div class="logo-wrapper">
-                                  <img src="/images/design-mode/logo-white.png" alt="Kredi Takip" class="logo">
+                                  <img src="https://oymjjceuiotxfbpwsdym.supabase.co/storage/v1/object/public/Logo/logo-white.png" alt="Kredi Takip" class="logo">
                               </div>
                               <h1 class="header-title">${title}</h1>
                               <p class="header-subtitle">Finansal takibiniz bizimle güvende</p>
@@ -716,7 +720,7 @@ function createEmailTemplate(
                               <div class="payment-card">
                                   <div class="bank-section">
                                       <div class="bank-icon">
-                                          <img src="${getBankLogoUrl(bankName)}" alt="${bankName} logosu" class="bank-logo" onerror="this.style.display='none'; this.parentNode.innerHTML='🏦'; this.parentNode.style.fontSize='24px'; this.parentNode.style.color='#10b981';">
+                                          🏦
                                       </div>
                                       <div class="bank-info">
                                           <div class="bank-label">Banka</div>
