@@ -63,7 +63,7 @@ export function useSubscription() {
       }
 
       try {
-        const response = await fetch(`/api/subscription/status?userId=${user.id}`)
+        const response = await fetch(`/api/subscription/status`)
 
         if (response.ok) {
           const data = await response.json()
@@ -131,7 +131,7 @@ export function useSubscription() {
 
       setLoading(true)
       try {
-        const response = await fetch(`/api/subscription/status?userId=${user.id}`)
+        const response = await fetch(`/api/subscription/status`)
         if (response.ok) {
           const data = await response.json()
 
