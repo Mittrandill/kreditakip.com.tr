@@ -8,7 +8,7 @@ const supabaseServiceKey = process.env.SERVICE_ROLE_KEY!
 export async function GET(request: NextRequest) {
   try {
     // SECURITY FIX: Use authenticated user instead of query parameter
-    const supabaseAuth = createServerClient()
+    const supabaseAuth = await createServerClient()
     const {
       data: { user },
       error: authError,
