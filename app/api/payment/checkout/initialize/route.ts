@@ -103,7 +103,7 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // Save pending payment record
+    // Save pending payment record with billing info
     const { error: insertError } = await supabaseAdmin.from("pending_payments").insert({
       user_id: user.id,
       plan_id: planId,
@@ -113,6 +113,9 @@ export async function POST(request: NextRequest) {
       conversation_id: result.conversationId,
       status: "pending",
       payment_method: "iyzico_checkout",
+      metadata: {
+        billingInfo,
+      },
       created_at: new Date().toISOString(),
     })
 

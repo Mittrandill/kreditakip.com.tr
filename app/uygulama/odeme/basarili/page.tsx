@@ -114,7 +114,13 @@ export default function PaymentSuccessPage() {
               <div className="space-y-1">
                 <p className="text-sm text-gray-500 dark:text-gray-400">Plan</p>
                 <p className="font-semibold text-emerald-600 dark:text-emerald-400">
-                  {subscription?.plan_type === "premium" ? "Premium" : "Free"}
+                  {subscription?.planType === "premium"
+                    ? subscription?.plan_id === "premium-yearly"
+                      ? "Premium Yıllık"
+                      : subscription?.plan_id === "premium-monthly"
+                        ? "Premium Aylık"
+                        : "Premium"
+                    : "Free"}
                 </p>
               </div>
               <div className="space-y-1">

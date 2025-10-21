@@ -1,6 +1,7 @@
 import { type NextRequest, NextResponse } from "next/server"
 import { IyzipaySubscriptionClient } from "@/lib/iyzipay-client"
 import { createClient } from "@supabase/supabase-js"
+import { sendInvoiceNotification } from "@/lib/email/invoice-notification"
 
 export const runtime = "nodejs"
 
@@ -15,12 +16,15 @@ export async function POST(request: NextRequest) {
   try {
     console.log("[checkout-callback] Payment callback received")
 
+    // Build base URL from environment or request
+    const baseUrl = process.env.NEXT_PUBLIC_APP_URL || `${request.nextUrl.protocol}//${request.nextUrl.host}`
+
     const body = await request.formData()
     const token = body.get("token") as string
 
     if (!token) {
       console.error("[checkout-callback] No token in callback")
-      return NextResponse.redirect(new URL("/uygulama/ayarlar?payment=failed&reason=no_token", request.url))
+      return NextResponse.redirect(`${baseUrl}/uygulama/ayarlar?payment=failed&reason=no_token`, 303)
     }
 
     console.log("[checkout-callback] Token:", token)
@@ -45,10 +49,8 @@ export async function POST(request: NextRequest) {
     if (result.status !== "success" || result.paymentStatus !== "SUCCESS") {
       console.error("[checkout-callback] Payment failed:", result.errorMessage)
       return NextResponse.redirect(
-        new URL(
-          `/uygulama/ayarlar?payment=failed&reason=${encodeURIComponent(result.errorMessage || "unknown")}`,
-          request.url,
-        ),
+        `${baseUrl}/uygulama/ayarlar?payment=failed&reason=${encodeURIComponent(result.errorMessage || "unknown")}`,
+        303
       )
     }
 
@@ -69,7 +71,7 @@ export async function POST(request: NextRequest) {
 
     if (!pendingPayment) {
       console.error("[checkout-callback] Pending payment not found")
-      return NextResponse.redirect(new URL("/uygulama/ayarlar?payment=failed&reason=payment_not_found", request.url))
+      return NextResponse.redirect(`${baseUrl}/uygulama/ayarlar?payment=failed&reason=payment_not_found`, 303)
     }
 
     const userId = pendingPayment.user_id
@@ -82,37 +84,51 @@ export async function POST(request: NextRequest) {
 
     if (!plan) {
       console.error("[checkout-callback] Plan not found")
-      return NextResponse.redirect(new URL("/uygulama/ayarlar?payment=failed&reason=plan_not_found", request.url))
+      return NextResponse.redirect(`${baseUrl}/uygulama/ayarlar?payment=failed&reason=plan_not_found`, 303)
     }
+
+    console.log("[checkout-callback] Plan details:", { planId, billing_interval: plan.billing_interval })
 
     // Calculate expiry date
     const startDate = new Date()
     const expiresAt = new Date(startDate)
 
-    if (plan.billing_interval === "yearly") {
+    // Check billing_interval from plan
+    if (plan.billing_interval === "yearly" || plan.billing_interval === 12) {
+      console.log("[checkout-callback] Setting yearly expiry (+ 1 year)")
       expiresAt.setFullYear(expiresAt.getFullYear() + 1)
     } else {
+      console.log("[checkout-callback] Setting monthly expiry (+ 1 month)")
       expiresAt.setMonth(expiresAt.getMonth() + 1)
     }
 
-    // Create subscription
-    const { error: subError } = await supabase.from("subscriptions").insert({
-      user_id: userId,
-      plan_id: planId,
-      plan_type: "premium",
-      status: "active",
-      start_date: startDate.toISOString(),
-      expires_at: expiresAt.toISOString(),
-      payment_method: "iyzico_checkout",
-      iyzico_payment_id: result.paymentId,
-      iyzico_subscription_reference: result.paymentId,
-      created_at: new Date().toISOString(),
-      updated_at: new Date().toISOString(),
+    console.log("[checkout-callback] Calculated dates:", {
+      startDate: startDate.toISOString(),
+      expiresAt: expiresAt.toISOString(),
     })
 
-    if (subError) {
+    // Create subscription
+    const { data: newSubscription, error: subError } = await supabase
+      .from("subscriptions")
+      .insert({
+        user_id: userId,
+        plan_id: planId,
+        plan_type: "premium",
+        status: "active",
+        start_date: startDate.toISOString(),
+        expires_at: expiresAt.toISOString(),
+        payment_method: "iyzico_checkout",
+        iyzico_payment_id: result.paymentId,
+        iyzico_subscription_reference: result.paymentId,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+      })
+      .select()
+      .single()
+
+    if (subError || !newSubscription) {
       console.error("[checkout-callback] Subscription creation failed:", subError)
-      return NextResponse.redirect(new URL("/uygulama/ayarlar?payment=failed&reason=subscription_error", request.url))
+      return NextResponse.redirect(`${baseUrl}/uygulama/ayarlar?payment=failed&reason=subscription_error`, 303)
     }
 
     // Update usage limits
@@ -145,15 +161,66 @@ export async function POST(request: NextRequest) {
       })
       .eq("token", token)
 
+    // Create payment transaction / invoice record
+    const { error: txError } = await supabase.from("payment_transactions").insert({
+      user_id: userId,
+      subscription_id: newSubscription.id,
+      amount: plan.price,
+      currency: plan.currency || "TRY",
+      status: "completed",
+      payment_method: "iyzico_checkout",
+      iyzico_payment_id: result.paymentId || null,
+      iyzico_conversation_id: result.conversationId || null,
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+    })
+
+    if (txError) {
+      console.error("[checkout-callback] Failed to create transaction record:", txError)
+      // Don't fail - subscription is created
+    } else {
+      console.log("[checkout-callback] Payment transaction record created successfully")
+    }
+
+    // Billing info is already stored in pending_payments.metadata
+    console.log("[checkout-callback] Billing info stored in pending_payments metadata")
+
+    // Send invoice notification email to admin
+    if (pendingPayment.metadata?.billingInfo) {
+      console.log("[checkout-callback] Sending invoice notification email to info@kreditakip.com.tr")
+
+      const emailResult = await sendInvoiceNotification({
+        userId,
+        subscriptionId: newSubscription.id,
+        planName: plan.name,
+        planId: plan.id,
+        amount: plan.price,
+        currency: plan.currency || "TRY",
+        paymentId: result.paymentId,
+        billingInfo: pendingPayment.metadata.billingInfo,
+        paymentDate: new Date().toISOString(),
+        expiresAt: expiresAt.toISOString(),
+      })
+
+      if (emailResult.success) {
+        console.log("[checkout-callback] Invoice notification sent successfully, messageId:", emailResult.messageId)
+      } else {
+        console.error("[checkout-callback] Failed to send invoice notification:", emailResult.error)
+        // Don't fail - subscription is created, email is not critical
+      }
+    }
+
     console.log("[checkout-callback] Subscription created successfully")
     console.log("[checkout-callback] Redirecting to success page")
 
-    // Redirect to success page
-    return NextResponse.redirect(new URL("/uygulama/ayarlar?payment=success", request.url))
+    // Redirect to success page with 303 See Other to convert POST to GET
+    return NextResponse.redirect(`${baseUrl}/uygulama/odeme/basarili`, 303)
   } catch (error: any) {
     console.error("[checkout-callback] Callback error:", error)
+    const baseUrl = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000"
     return NextResponse.redirect(
-      new URL(`/uygulama/ayarlar?payment=failed&reason=${encodeURIComponent(error.message)}`, request.url),
+      `${baseUrl}/uygulama/ayarlar?payment=failed&reason=${encodeURIComponent(error.message)}`,
+      303
     )
   }
 }

@@ -75,26 +75,17 @@ export async function POST(request: NextRequest) {
 
     console.log("[iyzipay] Subscription cancelled successfully in database")
 
-    // Usage limits'i ücretsiz plana düşür
-    console.log("[iyzipay] Updating usage limits to free tier")
-    const { error: usageUpdateError } = await supabase
-      .from("usage_tracking")
-      .update({
-        limit_count: 1, // Ücretsiz plan limiti
-        updated_at: new Date().toISOString(),
-      })
-      .eq("user_id", userId)
-
-    if (usageUpdateError) {
-      console.error("[iyzipay] Error updating usage limits:", usageUpdateError)
-      // Usage update hatası kritik değil, devam edebiliriz
-    } else {
-      console.log("[iyzipay] Usage limits updated to free tier")
-    }
+    // NOT: Usage limits'i hemen düşürmüyoruz
+    // Kullanıcı iptal etse bile expires_at tarihine kadar premium özelliklerden yararlanabilmeli
+    // Limits otomatik olarak subscription status API'sinde kontrol edilecek
+    console.log("[iyzipay] User will keep premium features until:", subscription.expires_at)
 
     return NextResponse.json({
       success: true,
-      message: "Abonelik başarıyla iptal edildi",
+      message: "Abonelik başarıyla iptal edildi. Premium özellikleriniz " +
+        new Date(subscription.expires_at).toLocaleDateString("tr-TR") +
+        " tarihine kadar aktif kalacak.",
+      expiresAt: subscription.expires_at,
     })
   } catch (error: any) {
     console.error("[iyzipay] Cancel subscription error:", error)

@@ -35,7 +35,9 @@ export async function GET(request: NextRequest) {
       .from("subscriptions")
       .select("*")
       .eq("user_id", userId)
-      .eq("status", "active")
+      .in("status", ["active", "cancelled"])
+      .order("created_at", { ascending: false })
+      .limit(1)
       .maybeSingle()
 
     console.log("[v0] Subscription query result:", { subscription, subError })

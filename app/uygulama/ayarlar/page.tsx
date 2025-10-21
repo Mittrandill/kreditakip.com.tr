@@ -987,6 +987,29 @@ export default function AyarlarPage() {
                       </div>
                     </div>
 
+                    {/* İptal Uyarısı */}
+                    {subscription?.status === "cancelled" && subscription?.expiresAt && (
+                      <div className="p-4 bg-yellow-50 dark:bg-yellow-900/20 rounded-xl border border-yellow-200 dark:border-yellow-800">
+                        <div className="flex items-start gap-3">
+                          <AlertCircle className="h-5 w-5 text-yellow-600 dark:text-yellow-400 mt-0.5" />
+                          <div>
+                            <p className="font-medium text-yellow-900 dark:text-yellow-100">Abonelik İptal Edildi</p>
+                            <p className="text-sm text-yellow-700 dark:text-yellow-300 mt-1">
+                              Premium özellikleriniz{" "}
+                              <strong>
+                                {new Date(subscription.expiresAt).toLocaleDateString("tr-TR", {
+                                  year: "numeric",
+                                  month: "long",
+                                  day: "numeric",
+                                })}
+                              </strong>{" "}
+                              tarihine kadar aktif kalacak.
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+                    )}
+
                     {/* Aksiyonlar */}
                     <div className="flex flex-col sm:flex-row gap-3">
                       {!isPremium ? (
@@ -996,6 +1019,14 @@ export default function AyarlarPage() {
                         >
                           <TrendingUp className="h-4 w-4 mr-2" />
                           Premium'a Yükselt
+                        </Button>
+                      ) : subscription?.status === "cancelled" ? (
+                        <Button
+                          className="bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 dark:from-emerald-500 dark:to-teal-600 dark:hover:from-emerald-600 dark:hover:to-teal-700 text-white shadow-md hover:shadow-lg transition-all"
+                          onClick={() => router.push("/uygulama/premium")}
+                        >
+                          <ArrowUpRight className="h-4 w-4 mr-2" />
+                          Yeniden Abone Ol
                         </Button>
                       ) : (
                         <>

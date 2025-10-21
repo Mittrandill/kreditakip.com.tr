@@ -66,6 +66,8 @@ export default function PaymentPage() {
     district: "",
     zipCode: "",
     identityNumber: "",
+    taxOffice: "",
+    taxNumber: "",
   })
 
   // Pre-fill email from user
@@ -139,6 +141,8 @@ export default function PaymentPage() {
             city: billingInfo.city,
             district: billingInfo.district,
             zipCode: billingInfo.zipCode,
+            taxOffice: billingInfo.taxOffice,
+            taxNumber: billingInfo.taxNumber,
           },
         }),
       })
@@ -377,6 +381,37 @@ export default function PaymentPage() {
                       required
                       disabled={isProcessing}
                     />
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="taxOffice">Vergi Dairesi (Opsiyonel)</Label>
+                    <Input
+                      id="taxOffice"
+                      name="taxOffice"
+                      placeholder="Kadıköy Vergi Dairesi"
+                      value={billingInfo.taxOffice}
+                      onChange={handleBillingChange}
+                      disabled={isProcessing}
+                    />
+                    <p className="text-xs text-gray-500 dark:text-gray-400">
+                      Kurumsal fatura için gereklidir
+                    </p>
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="taxNumber">Vergi Numarası (Opsiyonel)</Label>
+                    <Input
+                      id="taxNumber"
+                      name="taxNumber"
+                      placeholder="1234567890"
+                      value={billingInfo.taxNumber}
+                      onChange={handleBillingChange}
+                      maxLength={10}
+                      disabled={isProcessing}
+                    />
+                    <p className="text-xs text-gray-500 dark:text-gray-400">
+                      Kurumsal fatura için gereklidir
+                    </p>
                   </div>
                 </div>
               </CardContent>

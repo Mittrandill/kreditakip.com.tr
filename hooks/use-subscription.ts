@@ -115,7 +115,12 @@ export function useSubscription() {
     fetchSubscription()
   }, [user?.id])
 
-  const isPremium = subscription?.planType === "premium"
+  // Premium check: active OR (cancelled but not expired yet)
+  const isPremium =
+    subscription?.planType === "premium" &&
+    (subscription?.status === "active" ||
+      (subscription?.status === "cancelled" && subscription?.expiresAt && new Date(subscription.expiresAt) > new Date()))
+
   const canUseOCR =
     isPremium || (subscription?.usage.ocrAnalysis.used || 0) < (subscription?.usage.ocrAnalysis.limit || 1)
   const canUseRiskAnalysis = isPremium
