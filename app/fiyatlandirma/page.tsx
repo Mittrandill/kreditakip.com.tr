@@ -7,14 +7,17 @@ import Header from "@/components/layout/header"
 import Footer from "@/components/footer"
 import { CheckCircle, X, Star, Crown, Sparkles, ArrowRight } from "lucide-react"
 import { useRouter } from "next/navigation"
+import { useState } from "react"
 
 export default function PricingPage() {
   const router = useRouter()
+  const [billingPeriod, setBillingPeriod] = useState<"monthly" | "yearly">("monthly")
 
   const plans = [
     {
       name: "Ücretsiz",
-      price: "0",
+      monthlyPrice: "0",
+      yearlyPrice: "0",
       period: "₺",
       description: "Temel özelliklerle başlayın",
       features: ["1 adet OCR analizi", "Temel kredi takibi", "Ödeme hatırlatıcıları"],
@@ -33,8 +36,9 @@ export default function PricingPage() {
     },
     {
       name: "Premium",
-      price: "199",
-      period: "₺/ay",
+      monthlyPrice: "199",
+      yearlyPrice: "1,910",
+      period: billingPeriod === "monthly" ? "₺/ay" : "₺/yıl",
       description: "Tüm özelliklere sınırsız erişim",
       features: [
         "Sınırsız OCR analizi",
@@ -51,6 +55,7 @@ export default function PricingPage() {
       cta: "Premium'a Geç",
       color: "from-emerald-500 to-teal-500",
       note: "En popüler seçim",
+      savings: "2 ay bedava",
     },
   ]
 
@@ -115,6 +120,28 @@ export default function PricingPage() {
               Ücretsiz başlayın, ihtiyacınız olduğunda Premium'a geçin. Kredi kartı gerekmez, istediğiniz zaman iptal
               edebilirsiniz.
             </p>
+
+            <div className="flex items-center justify-center gap-4 mb-8">
+              <span className={`text-lg ${billingPeriod === "monthly" ? "text-white font-semibold" : "text-white/60"}`}>
+                Aylık
+              </span>
+              <button
+                onClick={() => setBillingPeriod(billingPeriod === "monthly" ? "yearly" : "monthly")}
+                className="relative w-16 h-8 bg-white/10 rounded-full border border-white/20 transition-all hover:bg-white/20"
+              >
+                <div
+                  className={`absolute top-1 w-6 h-6 bg-gradient-to-r from-emerald-500 to-teal-500 rounded-full transition-all ${
+                    billingPeriod === "yearly" ? "left-9" : "left-1"
+                  }`}
+                />
+              </button>
+              <span className={`text-lg ${billingPeriod === "yearly" ? "text-white font-semibold" : "text-white/60"}`}>
+                Yıllık
+              </span>
+              {billingPeriod === "yearly" && (
+                <Badge className="bg-gradient-to-r from-emerald-500 to-teal-500 text-white border-0">%20 İndirim</Badge>
+              )}
+            </div>
           </div>
         </section>
 
@@ -151,8 +178,17 @@ export default function PricingPage() {
                     <CardTitle className="text-3xl text-white mb-3">{plan.name}</CardTitle>
                     <CardDescription className="text-white/60 text-lg mb-6">{plan.description}</CardDescription>
                     <div className="mb-6">
-                      <span className="text-5xl font-bold text-white">{plan.price}</span>
+                      <span className="text-5xl font-bold text-white">
+                        {billingPeriod === "monthly" ? plan.monthlyPrice : plan.yearlyPrice}
+                      </span>
                       <span className="text-xl text-white/70">{plan.period}</span>
+                      {billingPeriod === "yearly" && plan.popular && (
+                        <div className="mt-2">
+                          <Badge variant="outline" className="border-emerald-500/50 text-emerald-400">
+                            {plan.savings}
+                          </Badge>
+                        </div>
+                      )}
                     </div>
                     {!plan.popular && plan.note && (
                       <Badge variant="outline" className="border-white/20 text-white/60">

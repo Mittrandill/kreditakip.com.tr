@@ -11,9 +11,9 @@ Bu checklist'i **Vercel deployment öncesi** veya **hemen sonrasında** çalış
 ### 1.1 Verification Script'i Çalıştır
 
 **Supabase SQL Editor'da çalıştır:**
-```sql
+\`\`\`sql
 -- scripts/verify-pci-dss-database.sql dosyasını aç ve tamamını çalıştır
-```
+\`\`\`
 
 **Beklenen Sonuçlar:**
 - ✅ `pending_payments table`: EXISTS
@@ -25,14 +25,14 @@ Bu checklist'i **Vercel deployment öncesi** veya **hemen sonrasında** çalış
 ### 1.2 Eksik Tablolar İçin
 
 **Eğer `pending_payments` yoksa:**
-```sql
+\`\`\`sql
 -- scripts/create-pending-payments-table.sql dosyasını çalıştır
-```
+\`\`\`
 
 **Eğer `subscriptions.plan_id` yoksa:**
-```sql
+\`\`\`sql
 -- scripts/add-plan-id-to-subscriptions.sql dosyasını çalıştır
-```
+\`\`\`
 
 ---
 
@@ -41,11 +41,11 @@ Bu checklist'i **Vercel deployment öncesi** veya **hemen sonrasında** çalış
 ### 2.1 Planları Kontrol Et
 
 **Supabase SQL Editor'da:**
-```sql
+\`\`\`sql
 SELECT id, name, price, currency, billing_interval, features
 FROM subscription_plans
 ORDER BY price;
-```
+\`\`\`
 
 **Gerekli planlar:**
 | id | name | price | billing_interval |
@@ -56,7 +56,7 @@ ORDER BY price;
 ### 2.2 Eksik Plan Varsa Ekle
 
 **Eğer planlar yoksa:**
-```sql
+\`\`\`sql
 INSERT INTO subscription_plans (id, name, price, currency, billing_interval, features, is_active)
 VALUES
   ('premium-monthly', 'Premium Aylık', 199.00, 'TRY', 'monthly',
@@ -65,7 +65,7 @@ VALUES
   ('premium-yearly', 'Premium Yıllık', 1990.00, 'TRY', 'yearly',
    '["Sınırsız OCR analizi", "Risk analizi", "Reklamsız deneyim", "Öncelikli destek", "%17 indirim"]'::jsonb,
    true);
-```
+\`\`\`
 
 ---
 
@@ -76,7 +76,7 @@ VALUES
 **Vercel Dashboard → Settings → Environment Variables:**
 
 Gerekli değişkenler:
-```bash
+\`\`\`bash
 # Iyzico (Zaten var olmalı)
 IYZICO_API_KEY=sandbox-xxx (Production'da gerçek key)
 IYZICO_SECRET_KEY=sandbox-xxx (Production'da gerçek secret)
@@ -93,7 +93,7 @@ SERVICE_ROLE_KEY=eyJxxx...
 # Encryption (Güvenlik için)
 ENCRYPTION_KEY=your_32_character_encryption_key
 CRON_SECRET=your_secure_cron_secret
-```
+\`\`\`
 
 ### 3.2 Eksik Varsa Ekle
 
@@ -106,9 +106,9 @@ CRON_SECRET=your_secure_cron_secret
 ### 4.1 Callback Endpoint'in Erişilebilir Olduğunu Doğrula
 
 **Test (Production'da):**
-```bash
+\`\`\`bash
 curl https://kreditakip.com.tr/api/payment/checkout/callback
-```
+\`\`\`
 
 **Beklenen sonuç:**
 - HTTP 400 veya 302 (çünkü token yok - bu normal)
@@ -116,11 +116,11 @@ curl https://kreditakip.com.tr/api/payment/checkout/callback
 
 ### 4.2 Initialize Endpoint Test
 
-```bash
+\`\`\`bash
 curl -X POST https://kreditakip.com.tr/api/payment/checkout/initialize \
   -H "Content-Type: application/json" \
   -d '{"test": true}'
-```
+\`\`\`
 
 **Beklenen:**
 - HTTP 401 (Unauthorized - auth gerekli - bu normal)
@@ -133,7 +133,7 @@ curl -X POST https://kreditakip.com.tr/api/payment/checkout/initialize \
 ### 5.1 Manuel Cleanup Function'ı Test Et
 
 **Supabase SQL Editor:**
-```sql
+\`\`\`sql
 -- Test: Create expired payment
 INSERT INTO pending_payments (user_id, plan_id, amount, currency, token, status, expires_at)
 VALUES (
@@ -151,19 +151,19 @@ SELECT cleanup_expired_pending_payments();
 
 -- Verify - status 'expired' olmalı
 SELECT * FROM pending_payments WHERE status = 'expired' ORDER BY created_at DESC LIMIT 5;
-```
+\`\`\`
 
 ### 5.2 Automatic Cleanup (Gelecekte - pg_cron gerekli)
 
 Supabase Pro plan'da pg_cron kullanılabilir:
-```sql
+\`\`\`sql
 -- Her 15 dakikada bir expired payment'ları temizle
 SELECT cron.schedule(
   'cleanup-expired-payments',
   '*/15 * * * *',
   'SELECT cleanup_expired_pending_payments();'
 );
-```
+\`\`\`
 
 ---
 
@@ -172,12 +172,12 @@ SELECT cron.schedule(
 ### 6.1 Sandbox Test Kartı ile Ödeme Yap
 
 **Kart Bilgileri (Sandbox):**
-```
+\`\`\`
 Kart No: 5528 7900 0000 0008
 Tarih: 12/30
 CVV: 123
 3D Secure: 123456
-```
+\`\`\`
 
 **Test Adımları:**
 1. `/uygulama/premium` sayfasına git
@@ -196,7 +196,7 @@ CVV: 123
 ### 6.2 Veritabanını Kontrol Et
 
 **Test sonrası:**
-```sql
+\`\`\`sql
 -- Pending payment completed olmalı
 SELECT * FROM pending_payments ORDER BY created_at DESC LIMIT 1;
 -- status = 'completed' olmalı
@@ -208,7 +208,7 @@ SELECT * FROM subscriptions WHERE user_id = 'senin-user-id' ORDER BY created_at 
 -- Usage limit updated olmalı
 SELECT * FROM usage_tracking WHERE user_id = 'senin-user-id' AND feature_type = 'ocr_analysis';
 -- limit_count = 999999 olmalı (monthly için)
-```
+\`\`\`
 
 ---
 
@@ -217,11 +217,11 @@ SELECT * FROM usage_tracking WHERE user_id = 'senin-user-id' AND feature_type = 
 ### 7.1 Failed Payment Test
 
 **Test kartı (başarısız):**
-```
+\`\`\`
 Kart No: 5406 6754 0667 5403
 Tarih: 12/30
 CVV: 123
-```
+\`\`\`
 
 **Beklenen:**
 - ❌ Ödeme başarısız olmalı
@@ -232,7 +232,7 @@ CVV: 123
 ### 7.2 Expired Token Test
 
 **Manuel test:**
-```sql
+\`\`\`sql
 -- 2 saat önce oluşturulmuş pending payment oluştur
 INSERT INTO pending_payments (user_id, plan_id, amount, currency, token, status, created_at, expires_at)
 VALUES (
@@ -248,14 +248,14 @@ VALUES (
 
 -- Callback'i bu token ile çağırmaya çalış (manuel test)
 -- Beklenen: "Token expired" hatası
-```
+\`\`\`
 
 ---
 
 ## 📊 Monitoring Queries
 
 ### Ödeme Başarı Oranı (Son 7 gün)
-```sql
+\`\`\`sql
 SELECT
   COUNT(*) as total_payments,
   COUNT(*) FILTER (WHERE status = 'completed') as successful,
@@ -267,10 +267,10 @@ SELECT
   ) as success_rate_percent
 FROM pending_payments
 WHERE created_at > NOW() - INTERVAL '7 days';
-```
+\`\`\`
 
 ### Ortalama Ödeme Tamamlanma Süresi
-```sql
+\`\`\`sql
 SELECT
   AVG(EXTRACT(EPOCH FROM (completed_at - created_at))) / 60 as avg_minutes,
   MIN(EXTRACT(EPOCH FROM (completed_at - created_at))) / 60 as min_minutes,
@@ -278,16 +278,16 @@ SELECT
 FROM pending_payments
 WHERE status = 'completed'
   AND created_at > NOW() - INTERVAL '7 days';
-```
+\`\`\`
 
 ### Terk Edilen Checkout'lar
-```sql
+\`\`\`sql
 SELECT COUNT(*)
 FROM pending_payments
 WHERE status = 'pending'
   AND created_at < NOW() - INTERVAL '1 hour'
   AND created_at > NOW() - INTERVAL '7 days';
-```
+\`\`\`
 
 ---
 

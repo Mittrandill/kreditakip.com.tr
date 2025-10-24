@@ -24,9 +24,9 @@ Bu döküman, Kredi Takip uygulamasında **PCI-DSS uyumlu** ödeme sistemini nas
 
 Supabase SQL Editor'de şu scripti çalıştır:
 
-```sql
+\`\`\`sql
 -- scripts/create-pending-payments-table.sql dosyasındaki SQL'i çalıştır
-```
+\`\`\`
 
 Bu tablo ödeme başlatma bilgilerini tutar.
 
@@ -34,7 +34,7 @@ Bu tablo ödeme başlatma bilgilerini tutar.
 
 `.env.local` dosyasına ekle:
 
-```bash
+\`\`\`bash
 # Iyzico (zaten var)
 IYZICO_API_KEY=your_api_key
 IYZICO_SECRET_KEY=your_secret_key
@@ -42,7 +42,7 @@ IYZICO_BASE_URL=https://sandbox-api.iyzipay.com  # Production: https://api.iyzip
 
 # Application URL (callback için gerekli)
 NEXT_PUBLIC_APP_URL=http://localhost:3000  # Production: https://kreditakip.com.tr
-```
+\`\`\`
 
 ---
 
@@ -52,7 +52,7 @@ NEXT_PUBLIC_APP_URL=http://localhost:3000  # Production: https://kreditakip.com.
 
 Kullanıcı "Ödeme Yap" butonuna tıkladığında:
 
-```typescript
+\`\`\`typescript
 // Örnek: components/payment-button.tsx
 
 async function initiatePayment() {
@@ -102,13 +102,13 @@ async function initiatePayment() {
     setLoading(false)
   }
 }
-```
+\`\`\`
 
 ### Adım 2: Checkout Form'u Gösterme
 
 #### Seçenek A: Modal İçinde (İframe)
 
-```tsx
+\`\`\`tsx
 "use client"
 
 import { useState } from "react"
@@ -122,14 +122,14 @@ export function CheckoutModal({ checkoutFormContent }: { checkoutFormContent: st
     </div>
   )
 }
-```
+\`\`\`
 
 #### Seçenek B: Yeni Sayfaya Yönlendir (Daha Basit)
 
-```tsx
+\`\`\`tsx
 // Kullanıcı otomatik olarak Iyzico'nun sayfasına gider
 window.location.href = data.paymentPageUrl
-```
+\`\`\`
 
 ### Adım 3: Callback Handling
 
@@ -142,7 +142,7 @@ Bu endpoint:
 
 Ayarlar sayfanızda success/fail mesajını gösterin:
 
-```tsx
+\`\`\`tsx
 // app/uygulama/ayarlar/page.tsx
 
 export default function SettingsPage() {
@@ -162,13 +162,13 @@ export default function SettingsPage() {
     // ... ayarlar sayfası içeriği
   )
 }
-```
+\`\`\`
 
 ---
 
 ## 📋 Ödeme Akışı
 
-```
+\`\`\`
 1. Kullanıcı "Premium'a Yükselt" tıklar
    ↓
 2. Frontend → POST /api/payment/checkout/initialize
@@ -190,7 +190,7 @@ export default function SettingsPage() {
 10. Backend subscription oluşturur
    ↓
 11. Kullanıcı /uygulama/ayarlar?payment=success sayfasına yönlendirilir
-```
+\`\`\`
 
 ---
 
@@ -224,7 +224,7 @@ export default function SettingsPage() {
 
 Iyzico sandbox ortamında test kartları:
 
-```
+\`\`\`
 Başarılı Ödeme:
 Kart No: 5528790000000008
 Tarih: 12/30
@@ -235,12 +235,12 @@ Başarısız Ödeme:
 Kart No: 5406675406675403
 Tarih: 12/30
 CVV: 123
-```
+\`\`\`
 
 ### Test Adımları
 
 1. **Ödeme Başlatma Testi:**
-```bash
+\`\`\`bash
 curl -X POST http://localhost:3000/api/payment/checkout/initialize \
   -H "Content-Type: application/json" \
   -d '{
@@ -256,7 +256,7 @@ curl -X POST http://localhost:3000/api/payment/checkout/initialize \
       "zipCode": "34000"
     }
   }'
-```
+\`\`\`
 
 2. **Checkout Form Gösterme:**
    - Response'daki `checkoutFormContent` veya `paymentPageUrl` kullan
@@ -308,7 +308,7 @@ curl -X POST http://localhost:3000/api/payment/checkout/initialize \
 ### Önemli Metrikler
 
 1. **Checkout Initialization Success Rate:**
-```sql
+\`\`\`sql
 SELECT
   COUNT(*) as total,
   COUNT(CASE WHEN status = 'completed' THEN 1 END) as successful,
@@ -316,24 +316,24 @@ SELECT
   COUNT(CASE WHEN status = 'expired' THEN 1 END) as expired
 FROM pending_payments
 WHERE created_at > NOW() - INTERVAL '7 days';
-```
+\`\`\`
 
 2. **Average Payment Completion Time:**
-```sql
+\`\`\`sql
 SELECT
   AVG(EXTRACT(EPOCH FROM (completed_at - created_at))) as avg_seconds
 FROM pending_payments
 WHERE status = 'completed'
   AND created_at > NOW() - INTERVAL '7 days';
-```
+\`\`\`
 
 3. **Abandoned Checkouts:**
-```sql
+\`\`\`sql
 SELECT COUNT(*)
 FROM pending_payments
 WHERE status = 'pending'
   AND created_at < NOW() - INTERVAL '1 hour';
-```
+\`\`\`
 
 ---
 
@@ -354,7 +354,7 @@ WHERE status = 'pending'
 
 Eski direct payment endpoint'lerini kapatmak için:
 
-```typescript
+\`\`\`typescript
 // app/api/payment/direct/route.ts
 export async function POST() {
   return NextResponse.json(
@@ -365,7 +365,7 @@ export async function POST() {
     { status: 410 } // Gone
   )
 }
-```
+\`\`\`
 
 ---
 

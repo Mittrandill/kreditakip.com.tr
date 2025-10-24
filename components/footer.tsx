@@ -55,32 +55,32 @@ export default function Footer() {
               </div>
               <div className="flex items-center gap-3 text-sm text-white/60">
                 <Users className="w-4 h-4 text-emerald-400" />
-                <span>1.2M+ Aktif Kullanıcı</span>
+                <span>1.2M+ Analiz Edilen Döküm</span>
               </div>
             </div>
 
             {/* Social Media */}
             <div className="flex items-center gap-4">
               <Link
-                href="#"
+                href="https://www.facebook.com/kreditakip.com.tr"
                 className="w-10 h-10 bg-white/5 hover:bg-emerald-500/20 border border-white/10 hover:border-emerald-500/30 rounded-full flex items-center justify-center transition-all duration-300 group"
               >
                 <Facebook className="w-5 h-5 text-white/60 group-hover:text-emerald-400" />
               </Link>
               <Link
-                href="#"
+                href="https://twitter.com/kreditakipcomtr"
                 className="w-10 h-10 bg-white/5 hover:bg-teal-500/20 border border-white/10 hover:border-teal-500/30 rounded-full flex items-center justify-center transition-all duration-300 group"
               >
                 <Twitter className="w-5 h-5 text-white/60 group-hover:text-teal-400" />
               </Link>
               <Link
-                href="#"
+                href="https://www.instagram.com/kreditakip.com.tr"
                 className="w-10 h-10 bg-white/5 hover:bg-emerald-500/20 border border-white/10 hover:border-emerald-500/30 rounded-full flex items-center justify-center transition-all duration-300 group"
               >
                 <Instagram className="w-5 h-5 text-white/60 group-hover:text-emerald-400" />
               </Link>
               <Link
-                href="#"
+                href="https://www.linkedin.com/company/kreditakipcomtr"
                 className="w-10 h-10 bg-white/5 hover:bg-teal-500/20 border border-white/10 hover:border-teal-500/30 rounded-full flex items-center justify-center transition-all duration-300 group"
               >
                 <Linkedin className="w-5 h-5 text-white/60 group-hover:text-teal-400" />
@@ -99,42 +99,35 @@ export default function Footer() {
             <h3 className="text-xl font-bold text-white">Ürün</h3>
             <div className="space-y-4">
               <Link
-                href="#"
+                href="/ozellikler"
                 className="block text-white/70 hover:text-emerald-400 transition-colors duration-300 flex items-center gap-2 group"
               >
                 <ArrowRight className="w-4 h-4 opacity-0 group-hover:opacity-100 transition-opacity" />
                 <span>Özellikler</span>
               </Link>
               <Link
-                href="#"
+                href="/ocr-teknolojisi"
                 className="block text-white/70 hover:text-emerald-400 transition-colors duration-300 flex items-center gap-2 group"
               >
                 <ArrowRight className="w-4 h-4 opacity-0 group-hover:opacity-100 transition-opacity" />
                 <span>OCR Teknolojisi</span>
               </Link>
               <Link
-                href="#"
+                href="/akilli-odeme-planlari"
                 className="block text-white/70 hover:text-emerald-400 transition-colors duration-300 flex items-center gap-2 group"
               >
                 <ArrowRight className="w-4 h-4 opacity-0 group-hover:opacity-100 transition-opacity" />
                 <span>Akıllı Ödeme Planları</span>
               </Link>
               <Link
-                href="#"
+                href="/guvenlik"
                 className="block text-white/70 hover:text-emerald-400 transition-colors duration-300 flex items-center gap-2 group"
               >
                 <ArrowRight className="w-4 h-4 opacity-0 group-hover:opacity-100 transition-opacity" />
                 <span>Güvenlik</span>
               </Link>
               <Link
-                href="#"
-                className="block text-white/70 hover:text-emerald-400 transition-colors duration-300 flex items-center gap-2 group"
-              >
-                <ArrowRight className="w-4 h-4 opacity-0 group-hover:opacity-100 transition-opacity" />
-                <span>API Dokümantasyonu</span>
-              </Link>
-              <Link
-                href="#"
+                href="/fiyatlandirma"
                 className="block text-white/70 hover:text-emerald-400 transition-colors duration-300 flex items-center gap-2 group"
               >
                 <ArrowRight className="w-4 h-4 opacity-0 group-hover:opacity-100 transition-opacity" />
@@ -148,28 +141,21 @@ export default function Footer() {
             <h3 className="text-xl font-bold text-white">Şirket</h3>
             <div className="space-y-4">
               <Link
-                href="#"
+                href="/hakkimizda"
                 className="block text-white/70 hover:text-teal-400 transition-colors duration-300 flex items-center gap-2 group"
               >
                 <ArrowRight className="w-4 h-4 opacity-0 group-hover:opacity-100 transition-opacity" />
                 <span>Hakkımızda</span>
               </Link>
               <Link
-                href="#"
+                href="/kariyer"
                 className="block text-white/70 hover:text-teal-400 transition-colors duration-300 flex items-center gap-2 group"
               >
                 <ArrowRight className="w-4 h-4 opacity-0 group-hover:opacity-100 transition-opacity" />
                 <span>Kariyer</span>
               </Link>
               <Link
-                href="#"
-                className="block text-white/70 hover:text-teal-400 transition-colors duration-300 flex items-center gap-2 group"
-              >
-                <ArrowRight className="w-4 h-4 opacity-0 group-hover:opacity-100 transition-opacity" />
-                <span>Basın Kiti</span>
-              </Link>
-              <Link
-                href="#"
+                href="/blog"
                 className="block text-white/70 hover:text-teal-400 transition-colors duration-300 flex items-center gap-2 group"
               >
                 <ArrowRight className="w-4 h-4 opacity-0 group-hover:opacity-100 transition-opacity" />
@@ -181,13 +167,6 @@ export default function Footer() {
               >
                 <ArrowRight className="w-4 h-4 opacity-0 group-hover:opacity-100 transition-opacity" />
                 <span>İletişim</span>
-              </Link>
-              <Link
-                href="#"
-                className="block text-white/70 hover:text-teal-400 transition-colors duration-300 flex items-center gap-2 group"
-              >
-                <ArrowRight className="w-4 h-4 opacity-0 group-hover:opacity-100 transition-opacity" />
-                <span>Ortaklık</span>
               </Link>
             </div>
           </div>
@@ -212,7 +191,7 @@ export default function Footer() {
                 <Link href="/gizlilik-politikasi" className="text-emerald-400 hover:underline">
                   Gizlilik Politikası
                 </Link>
-                'mızı kabul etmiş olursunuz.
+                'mız kabul etmiş olursunuz.
               </p>
             </div>
 
@@ -222,21 +201,15 @@ export default function Footer() {
               <div className="space-y-3">
                 <div className="flex items-center gap-3 text-sm text-white/70">
                   <Mail className="w-4 h-4 text-emerald-400" />
-                  <span>info@kreditakip.com</span>
+                  <span>info@kreditakip.com.tr</span>
                 </div>
                 <div className="flex items-center gap-3 text-sm text-white/70">
                   <Phone className="w-4 h-4 text-teal-400" />
-                  <span>+90 212 555 0123</span>
+                  <span>+90 543 203 53 09</span>
                 </div>
                 <div className="flex items-start gap-3 text-sm text-white/70">
                   <MapPin className="w-4 h-4 text-emerald-400 mt-0.5" />
-                  <span>
-                    Maslak Mah. Büyükdere Cad.
-                    <br />
-                    No: 123, Kat: 15
-                    <br />
-                    34485 Sarıyer/İstanbul
-                  </span>
+                  <span>Çeşme İzmir, TR</span>
                 </div>
               </div>
             </div>
@@ -249,7 +222,7 @@ export default function Footer() {
             <div className="grid grid-cols-2 md:grid-cols-4 gap-8 text-center">
               <div className="space-y-2">
                 <div className="text-3xl font-bold text-emerald-400">1.2M+</div>
-                <div className="text-white/60 text-sm">Aktif Kullanıcı</div>
+                <div className="text-white/60 text-sm">Analiz Edilen Döküm</div>
               </div>
               <div className="space-y-2">
                 <div className="text-3xl font-bold text-teal-400">99.8%</div>

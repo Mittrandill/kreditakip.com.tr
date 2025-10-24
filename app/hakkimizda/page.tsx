@@ -68,7 +68,7 @@ export default function AboutPage() {
                       variant="outline"
                       size="lg"
                       className="h-12 bg-transparent border-white/20 text-white hover:bg-white/10 hover:border-transparent hover:text-white dark:bg-transparent dark:border-white/20 dark:text-white dark:hover:bg-white/10 dark:hover:border-transparent dark:hover:text-white"
-                      >
+                    >
                       İletişime Geçin
                     </Button>
                   </Link>
@@ -79,7 +79,7 @@ export default function AboutPage() {
                   <div className="grid grid-cols-2 gap-6">
                     <div className="text-center">
                       <div className="text-4xl font-bold text-emerald-400 mb-2">1.2M+</div>
-                      <div className="text-white/60 text-sm">Aktif Kullanıcı</div>
+                      <div className="text-white/60 text-sm">Analiz Edilen Döküm</div>
                     </div>
                     <div className="text-center">
                       <div className="text-4xl font-bold text-teal-400 mb-2">5+</div>
@@ -235,7 +235,7 @@ export default function AboutPage() {
                       </div>
                       <h3 className="text-xl font-bold text-white mb-3">Büyük Büyüme</h3>
                       <p className="text-white/70">
-                        50,000 aktif kullanıcıya ulaştık. İlk banka ortaklıklarımızı kurduk ve AI teknolojimizi
+                        50,000 analiz edilen dökümüne ulaştık. İlk banka ortaklıklarımızı kurduk ve AI teknolojimizi
                         geliştirdik.
                       </p>
                     </div>
@@ -259,7 +259,7 @@ export default function AboutPage() {
                       </div>
                       <h3 className="text-xl font-bold text-white mb-3">Seri A Yatırımı</h3>
                       <p className="text-white/70">
-                        500,000 kullanıcıya ulaştık. Önemli bir yatırım aldık ve ekibimizi genişlettik.
+                        1 milyon kullanıcıya ulaştık. Önemli bir yatırım aldık ve ekibimizi genişlettik.
                       </p>
                     </div>
                   </div>
@@ -275,7 +275,7 @@ export default function AboutPage() {
                       </div>
                       <h3 className="text-xl font-bold text-white mb-3">Pazar Lideri</h3>
                       <p className="text-white/70">
-                        1 milyon kullanıcıyı geçtik. Türkiye'nin en büyük kredi yönetim platformu olduk.
+                        1.2 milyon kullanıcıyı geçtik. Türkiye'nin en büyük kredi yönetim platformu olduk.
                       </p>
                     </div>
                   </div>
@@ -414,13 +414,13 @@ export default function AboutPage() {
                     </Link>
                     <Link
                       href="#"
-                      className="w-8 h-8 bg-white/10 rounded-full flex items-center justify-center hover:bg-emerald-500/20 transition-colors"
+                      className="w-8 h-8 bg-white/10 rounded-full flex items-center justify-center hover:bg-teal-500/20 transition-colors"
                     >
                       <Twitter className="w-4 h-4 text-white/60" />
                     </Link>
                     <Link
                       href="#"
-                      className="w-8 h-8 bg-white/10 rounded-full flex items-center justify-center hover:bg-emerald-500/20 transition-colors"
+                      className="w-8 h-8 bg-white/10 rounded-full flex items-center justify-center hover:bg-teal-500/20 transition-colors"
                     >
                       <Mail className="w-4 h-4 text-white/60" />
                     </Link>
@@ -431,10 +431,10 @@ export default function AboutPage() {
 
             <div className="text-center mt-12">
               <p className="text-white/70 mb-6">Ekibimize katılmak ister misiniz? Açık pozisyonlarımızı inceleyin.</p>
-              <Button 
+              <Button
                 variant="outline"
                 className="h-12 bg-transparent border-white/20 text-white hover:bg-white/10 hover:border-transparent hover:text-white dark:bg-transparent dark:border-white/20 dark:text-white dark:hover:bg-white/10 dark:hover:border-transparent dark:hover:text-white"
-                >
+              >
                 Kariyer Fırsatları
                 <ArrowRight className="ml-2 w-4 h-4" />
               </Button>
@@ -584,7 +584,7 @@ export default function AboutPage() {
               <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
                 <div className="text-center">
                   <div className="text-4xl md:text-5xl font-bold text-emerald-400 mb-2">1.2M+</div>
-                  <div className="text-white/60">Aktif Kullanıcı</div>
+                  <div className="text-white/60">Analiz Edilen Döküm</div>
                 </div>
                 <div className="text-center">
                   <div className="text-4xl md:text-5xl font-bold text-teal-400 mb-2">5M+</div>
@@ -645,7 +645,7 @@ export default function AboutPage() {
                       variant="outline"
                       size="lg"
                       className="h-12 bg-transparent border-white/20 text-white hover:bg-white/10 hover:border-transparent hover:text-white dark:bg-transparent dark:border-white/20 dark:text-white dark:hover:bg-white/10 dark:hover:border-transparent dark:hover:text-white"
-                      >
+                    >
                       İletişime Geçin
                     </Button>
                   </Link>

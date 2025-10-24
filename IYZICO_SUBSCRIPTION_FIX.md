@@ -48,11 +48,11 @@ kreditakip.com.tr projesinde abonelik ödemelerinde sorun yaşanıyordu. Manuel 
 
 Aşağıdaki environment variable'ları `.env.local` dosyanızda tanımlanmalı:
 
-```env
+\`\`\`env
 IYZICO_API_KEY=your_api_key
 IYZICO_SECRET_KEY=your_secret_key
 IYZICO_BASE_URL=https://sandbox-api.iyzipay.com
-```
+\`\`\`
 
 **Not**: Product ve plan reference code'larına artık ihtiyaç yok (normal payment API kullanıyoruz).
 
@@ -71,13 +71,13 @@ IYZICO_BASE_URL=https://sandbox-api.iyzipay.com
 ## Ana Düzeltme: Auth Header Formatı
 
 ### ❌ Eski Yöntem (Hatalı)
-```typescript
+\`\`\`typescript
 // YANLIŞ FORMAT
 const authString = `IYZWSv2 ${Buffer.from(authString).toString("base64")}`
-```
+\`\`\`
 
 ### ✅ Yeni Yöntem (Doğru)
-```typescript
+\`\`\`typescript
 // DOĞRU FORMAT - iyzico IYZWSv2 authentication
 private generateAuthString(uri: string, body: string): string {
   const randomString = crypto.randomBytes(16).toString("hex")
@@ -90,14 +90,14 @@ private generateAuthString(uri: string, body: string): string {
   const authString = `apiKey:${this.config.apiKey}&randomKey:${randomString}&signature:${hash}`
   return `IYZWSv2 ${Buffer.from(authString).toString("base64")}`
 }
-```
+\`\`\`
 
 ## Neden iyzipay Paketi Kullanmadık?
 
 iyzipay npm paketi Next.js 14 App Router ile uyumlu değil:
-```
+\`\`\`
 Error: ENOENT: no such file or directory, scandir '.next/server/vendor-chunks/resources'
-```
+\`\`\`
 
 Paket, başlatma sırasında resources klasörünü okumaya çalışıyor ancak Next.js bundling sistemi bunu engeller.
 

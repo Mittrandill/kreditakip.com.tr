@@ -6,7 +6,7 @@ export const seoConfig = {
   defaultTitle: "Kredi Takip - Akıllı Kredi Yönetimi ve Ödeme Planlama",
   defaultDescription:
     "Kredi kartı ekstrenizi saniyeler içinde akıllı ödeme planına dönüştürün. OCR teknolojisi, yapay zeka destekli risk analizi ve detaylı finansal raporlama.",
-  twitterHandle: "@kreditakip",
+  twitterHandle: "@kreditakipcomtr",
 }
 
 export function generatePageMetadata({

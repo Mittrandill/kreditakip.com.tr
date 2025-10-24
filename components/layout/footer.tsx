@@ -74,7 +74,7 @@ export default function Footer() {
             <div className="grid grid-cols-2 gap-4 mb-6">
               <div className="bg-gray-800/50 rounded-xl p-4 border border-gray-700">
                 <div className="text-2xl font-bold text-emerald-400">25K+</div>
-                <div className="text-sm text-gray-400">Aktif Kullanıcı</div>
+                <div className="text-sm text-gray-400">Analiz Edilen Döküm</div>
               </div>
               <div className="bg-gray-800/50 rounded-xl p-4 border border-gray-700">
                 <div className="text-2xl font-bold text-emerald-400">₺2.5M+</div>
@@ -85,16 +85,16 @@ export default function Footer() {
             {/* Social Links */}
             <div className="flex space-x-3">
               {[
-                { icon: Linkedin, href: "#" },
-                { icon: Twitter, href: "#" },
-                { icon: Instagram, href: "#" },
+                { icon: Linkedin, href: "https://www.linkedin.com/company/kreditakipcomtr" },
+                { icon: Twitter, href: "https://twitter.com/kreditakipcomtr" },
+                { icon: Instagram, href: "https://www.instagram.com/kreditakip.com.tr" },
                 { icon: Youtube, href: "#" },
               ].map((social, index) => (
                 <Button
                   key={index}
                   variant="outline"
                   size="sm"
-                  className="border-gray-700 hover:border-emerald-500 hover:bg-emerald-500/10 text-gray-400 hover:text-emerald-400 transition-all duration-300"
+                  className="border-gray-700 hover:border-emerald-500 hover:bg-emerald-500/10 text-gray-400 hover:text-emerald-400 transition-all duration-300 bg-transparent"
                   asChild
                 >
                   <Link href={social.href}>
@@ -115,10 +115,8 @@ export default function Footer() {
               {[
                 { name: "Özellikler", href: "/ozellikler" },
                 { name: "Fiyatlandırma", href: "/fiyatlandirma" },
-                { name: "API Dokümantasyonu", href: "#" },
-                { name: "Entegrasyonlar", href: "#" },
-                { name: "Güvenlik", href: "#" },
-                { name: "Mobil Uygulama", href: "#" },
+                { name: "OCR Teknolojisi", href: "/ocr-teknolojisi" },
+                { name: "Akıllı Ödeme Planları", href: "/akilli-odeme-planlari" },
               ].map((item, index) => (
                 <li key={index}>
                   <Link
@@ -143,10 +141,8 @@ export default function Footer() {
               {[
                 { name: "Hakkımızda", href: "/hakkimizda" },
                 { name: "İletişim", href: "/iletisim" },
-                { name: "Kariyer", href: "#" },
-                { name: "Blog", href: "#" },
-                { name: "Basın Kiti", href: "#" },
-                { name: "Yatırımcılar", href: "#" },
+                { name: "Kariyer", href: "/kariyer" },
+                { name: "Blog", href: "/blog" },
               ].map((item, index) => (
                 <li key={index}>
                   <Link
@@ -169,12 +165,8 @@ export default function Footer() {
             </h3>
             <ul className="space-y-4">
               {[
-                { name: "Yardım Merkezi", href: "#" },
-                { name: "Canlı Destek", href: "#" },
-                { name: "Video Eğitimler", href: "#" },
-                { name: "SSS", href: "#" },
-                { name: "Durum Sayfası", href: "#" },
-                { name: "Topluluk", href: "#" },
+                { name: "SSS", href: "/sss" },
+                { name: "Güvenlik", href: "/guvenlik" },
               ].map((item, index) => (
                 <li key={index}>
                   <Link
@@ -196,19 +188,19 @@ export default function Footer() {
             {
               icon: Phone,
               title: "Telefon Desteği",
-              content: "+90 212 555 0123",
+              content: "+90 543 203 53 09",
               subtitle: "Pazartesi-Cuma 09:00-18:00",
             },
             {
               icon: Mail,
               title: "E-posta Desteği",
-              content: "destek@kreditakip.com",
+              content: "info@kreditakip.com.tr",
               subtitle: "24 saat içinde yanıt",
             },
             {
               icon: MapPin,
               title: "Ofis Adresi",
-              content: "Maslak, İstanbul",
+              content: "Çeşme İzmir, TR",
               subtitle: "Ziyaret randevusu için arayın",
             },
           ].map((contact, index) => (

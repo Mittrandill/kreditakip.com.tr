@@ -69,7 +69,7 @@ export const metadata: Metadata = {
     description:
       "Kredi kartı ekstrenizi saniyeler içinde akıllı ödeme planına dönüştürün. OCR teknolojisi ve yapay zeka destekli finansal yönetim.",
     images: ["/logo.png"],
-    creator: "@kreditakip",
+    creator: "@kreditakipcomtr",
   },
   icons: {
     icon: "/favicon.svg",
@@ -85,6 +85,7 @@ export const metadata: Metadata = {
     google: "google-site-verification-code",
     yandex: "yandex-verification-code",
   },
+    generator: 'v0.app'
 }
 
 export default function RootLayout({
@@ -94,9 +95,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="tr" suppressHydrationWarning>
-      <body className={cn("font-sans antialiased", poppins.variable)}>
-        {children}
-      </body>
+      <body className={cn("font-sans antialiased", poppins.variable)}>{children}</body>
     </html>
   )
 }

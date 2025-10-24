@@ -17,7 +17,7 @@ Tabloyu değiştirmek yerine kodu tabloya uyumlu hale getirin. Bu daha hızlı v
 
 ### `app/api/subscription/initialize/route.ts` Değişiklikleri
 
-```typescript
+\`\`\`typescript
 // ÖNCEKİ:
 const { error: updateError } = await supabase.from("subscriptions").upsert({
   user_id: userId,
@@ -41,7 +41,7 @@ const { error: updateError } = await supabase.from("subscriptions").upsert({
   iyzico_subscription_id: paymentId,  // ✅ Mevcut alanı kullan
   updated_at: new Date().toISOString(),
 })
-```
+\`\`\`
 
 **Not**: `iyzico_subscription_id` alanını normal payment ID için kullanıyoruz (semantic olarak hatalı ama çalışır).
 
@@ -53,7 +53,7 @@ Tabloyu koda uyumlu hale getirin. Bu daha semantik doğru ama migration gerektir
 
 ### Migration SQL
 
-```sql
+\`\`\`sql
 -- =====================================================
 -- Migration: 39-update-subscriptions-for-normal-payment
 -- Date: 2025-01-18
@@ -88,11 +88,11 @@ COMMENT ON COLUMN public.subscriptions.iyzico_payment_id
 IS 'Normal payment API payment ID (tek seferlik ödeme için)';
 
 COMMIT;
-```
+\`\`\`
 
 ### Rollback SQL (Geri Alma)
 
-```sql
+\`\`\`sql
 -- =====================================================
 -- Rollback: 39-update-subscriptions-for-normal-payment
 -- =====================================================
@@ -111,7 +111,7 @@ ALTER TABLE public.subscriptions
 RENAME COLUMN start_date TO started_at;
 
 COMMIT;
-```
+\`\`\`
 
 ---
 
@@ -121,7 +121,7 @@ Mevcut `iyzico_subscription_id` alanını kullanmaya devam edin ama `start_date`
 
 ### Minimal Migration SQL
 
-```sql
+\`\`\`sql
 -- =====================================================
 -- Migration: 39-rename-started-at-column
 -- Date: 2025-01-18
@@ -139,11 +139,11 @@ COMMENT ON COLUMN public.subscriptions.start_date
 IS 'Subscription başlangıç tarihi';
 
 COMMIT;
-```
+\`\`\`
 
 ### Kod Güncellemesi
 
-```typescript
+\`\`\`typescript
 // app/api/subscription/initialize/route.ts içinde
 const { error: updateError } = await supabase.from("subscriptions").upsert({
   user_id: userId,
@@ -155,7 +155,7 @@ const { error: updateError } = await supabase.from("subscriptions").upsert({
   iyzico_subscription_id: paymentId,  // ✅ Mevcut alanı kullan
   updated_at: new Date().toISOString(),
 })
-```
+\`\`\`
 
 ---
 
@@ -172,29 +172,29 @@ const { error: updateError } = await supabase.from("subscriptions").upsert({
 
 ### 1. Migration Çalıştır
 
-```bash
+\`\`\`bash
 # Supabase SQL Editor'e gidin
 # Migration SQL'i yapıştırıp çalıştırın
-```
+\`\`\`
 
 ### 2. Kodu Güncelle
 
 `app/api/subscription/initialize/route.ts` dosyasında:
 
-```typescript
+\`\`\`typescript
 // Değiştir:
 start_date: startDate.toISOString(),
 
 // Ve
 iyzico_subscription_id: paymentId,  // NOT: payment_id yerine subscription_id kullan
-```
+\`\`\`
 
 ### 3. Test Et
 
-```bash
+\`\`\`bash
 npm run dev
 # Ödeme formunu test edin
-```
+\`\`\`
 
 ---
 

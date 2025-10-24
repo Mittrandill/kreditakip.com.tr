@@ -23,7 +23,7 @@ This document outlines the critical security vulnerabilities that were identifie
 - Implemented authenticated user validation using Supabase auth
 - Now only returns data for the currently authenticated user
 
-```typescript
+\`\`\`typescript
 // BEFORE (VULNERABLE)
 const userId = request.nextUrl.searchParams.get("userId")
 
@@ -31,7 +31,7 @@ const userId = request.nextUrl.searchParams.get("userId")
 const { data: { user }, error: authError } = await supabaseAuth.auth.getUser()
 if (authError || !user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
 const userId = user.id
-```
+\`\`\`
 
 ---
 
@@ -46,7 +46,7 @@ const userId = user.id
 - Added warning in production if default key is used
 - Updated `.env.example` with proper documentation
 
-```typescript
+\`\`\`typescript
 // BEFORE (VULNERABLE)
 const ENCRYPTION_KEY = "92C535qkivn+SR8aPAcOnAtCzMP541OZ"
 
@@ -55,7 +55,7 @@ const ENCRYPTION_KEY = process.env.ENCRYPTION_KEY || "92C535qkivn+SR8aPAcOnAtCzM
 if (process.env.NODE_ENV === "production" && !process.env.ENCRYPTION_KEY) {
   console.error("⚠️ WARNING: Using default encryption key in production!")
 }
-```
+\`\`\`
 
 ---
 
@@ -73,7 +73,7 @@ if (process.env.NODE_ENV === "production" && !process.env.ENCRYPTION_KEY) {
 - Only accept Bearer token in Authorization header
 - Implemented constant-time comparison to prevent timing attacks
 
-```typescript
+\`\`\`typescript
 // BEFORE (VULNERABLE)
 if (testMode) {
   isAuthenticated = true
@@ -90,7 +90,7 @@ isAuthenticated = crypto.timingSafeEqual(
   Buffer.from(token),
   Buffer.from(cronSecret)
 )
-```
+\`\`\`
 
 ---
 
@@ -202,7 +202,7 @@ Added comprehensive security headers:
 **Recommended Solution:**
 Implement rate limiting using Upstash Redis:
 
-```typescript
+\`\`\`typescript
 import { Ratelimit } from "@upstash/ratelimit"
 
 const ratelimit = new Ratelimit({
@@ -219,7 +219,7 @@ export async function GET(request: Request) {
   }
   // proceed...
 }
-```
+\`\`\`
 
 **Estimated Effort:** 3-4 days
 
@@ -234,7 +234,7 @@ export async function GET(request: Request) {
 **Recommended Solution:**
 Implement Zod validation:
 
-```typescript
+\`\`\`typescript
 import { z } from "zod"
 
 const requestSchema = z.object({
@@ -244,7 +244,7 @@ const requestSchema = z.object({
 })
 
 const validatedData = requestSchema.parse(body)
-```
+\`\`\`
 
 **Estimated Effort:** 1 week
 
@@ -254,7 +254,7 @@ const validatedData = requestSchema.parse(body)
 
 The following environment variables must be set in production:
 
-```bash
+\`\`\`bash
 # Security - Generate with: openssl rand -base64 32
 ENCRYPTION_KEY=your_secure_32_character_key
 
@@ -269,7 +269,7 @@ IYZICO_API_KEY=your_iyzico_key
 IYZICO_SECRET_KEY=your_iyzico_secret
 GEMINI_API_KEY=your_gemini_key
 MAILERSEND_API_KEY=your_mailersend_key
-```
+\`\`\`
 
 ---
 

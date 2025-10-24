@@ -14,7 +14,7 @@ https://supabase.com/dashboard/project/YOUR_PROJECT_ID/sql/new
 
 `scripts/39-rename-started-at-column.sql` dosyasındaki kodu kopyalayıp çalıştırın:
 
-```sql
+\`\`\`sql
 BEGIN;
 
 ALTER TABLE public.subscriptions
@@ -27,11 +27,11 @@ COMMENT ON COLUMN public.subscriptions.iyzico_subscription_id
 IS 'iyzico payment ID (normal payment API) veya subscription ID (subscription API)';
 
 COMMIT;
-```
+\`\`\`
 
 ### 3️⃣ Test Edin
 
-```bash
+\`\`\`bash
 # Development server'ı yeniden başlatın (gerekirse)
 npm run dev
 
@@ -42,7 +42,7 @@ http://localhost:3000/uygulama/odeme
 # Kart: 5528790000000008
 # Tarih: 12/2030
 # CVV: 123
-```
+\`\`\`
 
 ## ✅ Yapılan Değişiklikler
 
@@ -63,7 +63,7 @@ http://localhost:3000/uygulama/odeme
 
 Migration'dan sonra tablonuzu kontrol edin:
 
-```sql
+\`\`\`sql
 -- Tablo yapısını kontrol et
 SELECT column_name, data_type, is_nullable
 FROM information_schema.columns
@@ -75,7 +75,7 @@ SELECT id, user_id, plan_type, status, start_date, expires_at, iyzico_subscripti
 FROM subscriptions
 ORDER BY created_at DESC
 LIMIT 5;
-```
+\`\`\`
 
 Beklenen sonuç:
 - ✅ `start_date` kolonu var
@@ -95,22 +95,22 @@ Supabase Dashboard'dan SQL Editor kullanın, doğrudan database'e bağlanmayın.
 ### Ödeme Testi Başarısız
 
 1. `.env.local` dosyanızı kontrol edin:
-   ```env
+   \`\`\`env
    IYZICO_API_KEY=...
    IYZICO_SECRET_KEY=...
    IYZICO_BASE_URL=https://sandbox-api.iyzipay.com
-   ```
+   \`\`\`
 
 2. Console logları kontrol edin:
-   ```
+   \`\`\`
    [iyzipay] Processing payment with normal payment API
    [iyzipay] Payment response: { status: 'success', ... }
-   ```
+   \`\`\`
 
 3. Supabase'de subscription kaydını kontrol edin:
-   ```sql
+   \`\`\`sql
    SELECT * FROM subscriptions WHERE user_id = 'YOUR_USER_ID';
-   ```
+   \`\`\`
 
 ## 📝 Notlar
 

@@ -16,14 +16,15 @@ export function StructuredData() {
         description:
           "Kredi kartı ekstrenizi saniyeler içinde akıllı ödeme planına dönüştürün. OCR teknolojisi ve yapay zeka destekli finansal yönetim platformu.",
         sameAs: [
-          "https://twitter.com/kreditakip",
-          "https://www.linkedin.com/company/kreditakip",
-          "https://www.instagram.com/kreditakip",
+          "https://twitter.com/kreditakipcomtr",
+          "https://www.linkedin.com/company/kreditakipcomtr",
+          "https://www.instagram.com/kreditakip.com.tr",
+          "https://www.facebook.com/kreditakip.com.tr",
         ],
         contactPoint: {
           "@type": "ContactPoint",
           contactType: "Customer Service",
-          email: "destek@kreditakip.com.tr",
+          email: "info@kreditakip.com.tr",
           areaServed: "TR",
           availableLanguage: ["Turkish"],
         },
@@ -142,10 +143,5 @@ export function StructuredData() {
     ],
   }
 
-  return (
-    <script
-      type="application/ld+json"
-      dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData) }}
-    />
-  )
+  return <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData) }} />
 }

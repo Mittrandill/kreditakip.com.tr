@@ -42,7 +42,9 @@ export default function ContactPage() {
                   </div>
                   <h3 className="text-lg font-bold text-white mb-2">E-posta</h3>
                   <p className="text-white/70 text-sm mb-3">Genel sorularınız için</p>
-                  <p className="text-emerald-400 font-medium">info@kreditakip.com</p>
+                  <a href="mailto:info@kreditakip.com.tr" className="text-emerald-400 font-medium hover:underline">
+                    info@kreditakip.com.tr
+                  </a>
                 </CardContent>
               </Card>
 
@@ -53,7 +55,9 @@ export default function ContactPage() {
                   </div>
                   <h3 className="text-lg font-bold text-white mb-2">Destek</h3>
                   <p className="text-white/70 text-sm mb-3">Teknik destek için</p>
-                  <p className="text-teal-400 font-medium">destek@kreditakip.com</p>
+                  <a href="mailto:info@kreditakip.com.tr" className="text-teal-400 font-medium hover:underline">
+                    info@kreditakip.com.tr
+                  </a>
                 </CardContent>
               </Card>
 
@@ -64,7 +68,9 @@ export default function ContactPage() {
                   </div>
                   <h3 className="text-lg font-bold text-white mb-2">Telefon</h3>
                   <p className="text-white/70 text-sm mb-3">Acil durumlar için</p>
-                  <p className="text-emerald-400 font-medium">+90 212 555 0123</p>
+                  <a href="tel:+905432035309" className="text-emerald-400 font-medium hover:underline">
+                    +90 543 203 53 09
+                  </a>
                 </CardContent>
               </Card>
 
@@ -180,13 +186,27 @@ export default function ContactPage() {
                     <div className="space-y-4">
                       <div>
                         <h4 className="text-white font-semibold mb-2">Merkez Ofis</h4>
-                        <p className="text-white/70">
-                          Maslak Mahallesi, Büyükdere Caddesi
-                          <br />
-                          No: 123, Kat: 15
-                          <br />
-                          34485 Sarıyer/İstanbul
-                        </p>
+                        <p className="text-white/70">Çeşme İzmir, TR</p>
+                      </div>
+                      <div className="border-t border-white/10 pt-4">
+                        <h4 className="text-white font-semibold mb-2">İletişim</h4>
+                        <div className="space-y-2 text-white/70">
+                          <p className="flex items-center gap-2">
+                            <Mail className="w-4 h-4 text-emerald-400" />
+                            <a
+                              href="mailto:info@kreditakip.com.tr"
+                              className="hover:text-emerald-400 transition-colors"
+                            >
+                              info@kreditakip.com.tr
+                            </a>
+                          </p>
+                          <p className="flex items-center gap-2">
+                            <Phone className="w-4 h-4 text-emerald-400" />
+                            <a href="tel:+905432035309" className="hover:text-emerald-400 transition-colors">
+                              +90 543 203 53 09
+                            </a>
+                          </p>
+                        </div>
                       </div>
                       <div className="border-t border-white/10 pt-4">
                         <h4 className="text-white font-semibold mb-2">Çalışma Saatleri</h4>
@@ -213,7 +233,7 @@ export default function ContactPage() {
                           variant="outline"
                           size="sm"
                           className="h-12 bg-transparent border-white/20 text-white hover:bg-white/10 hover:border-transparent hover:text-white dark:bg-transparent dark:border-white/20 dark:text-white dark:hover:bg-white/10 dark:hover:border-transparent dark:hover:text-white"
-                          >
+                        >
                           SSS'ye Git
                         </Button>
                       </div>
@@ -224,10 +244,10 @@ export default function ContactPage() {
                           Anında yardım için canlı destek hattımızı kullanın.
                         </p>
                         <Button
-                      variant="outline"
-                      size="sm"
-                      className="h-12 bg-transparent border-white/20 text-white hover:bg-white/10 hover:border-transparent hover:text-white dark:bg-transparent dark:border-white/20 dark:text-white dark:hover:bg-white/10 dark:hover:border-transparent dark:hover:text-white"
-                      >
+                          variant="outline"
+                          size="sm"
+                          className="h-12 bg-transparent border-white/20 text-white hover:bg-white/10 hover:border-transparent hover:text-white dark:bg-transparent dark:border-white/20 dark:text-white dark:hover:bg-white/10 dark:hover:border-transparent dark:hover:text-white"
+                        >
                           Canlı Sohbet
                         </Button>
                       </div>
