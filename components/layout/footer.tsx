@@ -116,7 +116,6 @@ export default function Footer() {
                 { name: "Özellikler", href: "/ozellikler" },
                 { name: "Fiyatlandırma", href: "/fiyatlandirma" },
                 { name: "OCR Teknolojisi", href: "/ocr-teknolojisi" },
-                { name: "Akıllı Ödeme Planları", href: "/akilli-odeme-planlari" },
               ].map((item, index) => (
                 <li key={index}>
                   <Link

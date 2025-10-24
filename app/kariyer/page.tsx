@@ -1,19 +1,6 @@
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
-import {
-  Briefcase,
-  MapPin,
-  Clock,
-  Users,
-  Heart,
-  Zap,
-  TrendingUp,
-  Award,
-  Coffee,
-  Laptop,
-  Globe,
-  ArrowRight,
-} from "lucide-react"
+import { Briefcase, Users, Heart, Zap, TrendingUp, Award, Coffee, Laptop, Globe, ArrowRight } from "lucide-react"
 import Header from "@/components/layout/header"
 import Footer from "@/components/footer"
 import Link from "next/link"
@@ -141,7 +128,7 @@ export default function CareerPage() {
               Geleceği <span className="text-emerald-400">Birlikte</span> İnşa Edelim
             </h1>
             <p className="text-xl text-white/70 max-w-3xl mx-auto mb-8 leading-relaxed">
-              Türkiye'nin en hızlı büyüyen fintech şirketinde kariyer fırsatlarını keşfedin
+              Türkiye'nin yeni nesil fintech platformunda kariyer fırsatlarını keşfedin
             </p>
             <Button
               size="lg"
@@ -231,50 +218,40 @@ export default function CareerPage() {
               <h2 className="text-4xl md:text-5xl font-bold mb-6">
                 Açık <span className="text-emerald-400">Pozisyonlar</span>
               </h2>
-              <p className="text-xl text-white/70 max-w-3xl mx-auto">Size uygun pozisyonu bulun ve başvurun</p>
+              <p className="text-xl text-white/70 max-w-3xl mx-auto">
+                Ekibimizi genişletiyoruz. Açık pozisyonlar yakında burada yayınlanacak.
+              </p>
             </div>
 
-            <div className="space-y-6">
-              {openPositions.map((position, index) => (
-                <Card
-                  key={index}
-                  className="bg-black/20 border-white/10 backdrop-blur-xl hover:border-emerald-500/30 transition-all duration-500 group"
-                >
-                  <CardContent className="p-8">
-                    <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6">
-                      <div className="flex-1">
-                        <div className="flex items-center gap-3 mb-3">
-                          <h3 className="text-2xl font-bold text-white group-hover:text-emerald-400 transition-colors">
-                            {position.title}
-                          </h3>
-                          <span className="bg-emerald-500/20 text-emerald-400 px-3 py-1 rounded-full text-xs font-semibold">
-                            {position.department}
-                          </span>
-                        </div>
-                        <p className="text-white/70 mb-4">{position.description}</p>
-                        <div className="flex flex-wrap gap-4 text-sm text-white/60">
-                          <div className="flex items-center gap-2">
-                            <MapPin className="w-4 h-4 text-emerald-400" />
-                            <span>{position.location}</span>
-                          </div>
-                          <div className="flex items-center gap-2">
-                            <Clock className="w-4 h-4 text-teal-400" />
-                            <span>{position.type}</span>
-                          </div>
-                          <div className="flex items-center gap-2">
-                            <Briefcase className="w-4 h-4 text-emerald-400" />
-                            <span>{position.department}</span>
-                          </div>
-                        </div>
-                      </div>
-                      <Button className="bg-gradient-to-r from-emerald-500 to-teal-500 text-white hover:from-emerald-600 hover:to-teal-600 whitespace-nowrap">
-                        Başvur
+            <div className="max-w-3xl mx-auto">
+              <Card className="bg-black/20 border-white/10 backdrop-blur-xl">
+                <CardContent className="p-12 text-center">
+                  <div className="w-20 h-20 bg-gradient-to-br from-emerald-500/30 to-emerald-500/10 rounded-3xl flex items-center justify-center mx-auto mb-6">
+                    <Briefcase className="w-10 h-10 text-emerald-400" />
+                  </div>
+                  <h3 className="text-2xl font-bold text-white mb-4">Açık Pozisyonlar Yakında</h3>
+                  <p className="text-white/70 mb-8 leading-relaxed">
+                    Ekibimizi büyütmeye devam ediyoruz. Yeni pozisyonlar için bizi takip edin veya spontan başvuru
+                    yapın.
+                  </p>
+                  <div className="flex flex-col sm:flex-row gap-4 justify-center">
+                    <Link href="/iletisim">
+                      <Button className="bg-gradient-to-r from-emerald-500 to-teal-500 text-white hover:from-emerald-600 hover:to-teal-600">
+                        Spontan Başvuru Yap
                         <ArrowRight className="ml-2 w-4 h-4" />
                       </Button>
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
+                    </Link>
+                    <Link href="https://linkedin.com/company/kreditakipcomtr" target="_blank">
+                      <Button
+                        variant="outline"
+                        className="bg-transparent border-white/20 text-white hover:bg-white/10 hover:border-transparent hover:text-white"
+                      >
+                        LinkedIn'de Takip Et
+                      </Button>
+                    </Link>
+                  </div>
+                </CardContent>
+              </Card>
             </div>
           </div>
         </section>

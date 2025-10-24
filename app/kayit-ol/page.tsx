@@ -16,12 +16,15 @@ import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 import Header from "@/components/layout/header"
 import Footer from "@/components/footer"
 import Link from "next/link"
+import { LegalModal } from "@/components/legal-modal"
 
 export default function RegisterPage() {
   const [showPassword, setShowPassword] = useState(false)
   const [showConfirmPassword, setShowConfirmPassword] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [showTermsModal, setShowTermsModal] = useState(false)
+  const [showKvkkModal, setShowKvkkModal] = useState(false)
   const router = useRouter()
   const { toast } = useToast()
 
@@ -337,9 +340,13 @@ export default function RegisterPage() {
                             className="border-white/20 data-[state=checked]:bg-emerald-500 data-[state=checked]:border-emerald-500"
                           />
                           <Label htmlFor="agreeTerms" className="text-sm text-white/80 leading-relaxed">
-                            <Link href="/kullanim-sartlari" className="text-emerald-400 hover:underline">
+                            <button
+                              type="button"
+                              onClick={() => setShowTermsModal(true)}
+                              className="text-emerald-400 hover:underline"
+                            >
                               Kullanım Şartları
-                            </Link>
+                            </button>
                             'nı okudum ve kabul ediyorum.
                           </Label>
                         </div>
@@ -352,9 +359,13 @@ export default function RegisterPage() {
                             className="border-white/20 data-[state=checked]:bg-emerald-500 data-[state=checked]:border-emerald-500"
                           />
                           <Label htmlFor="agreeKvkk" className="text-sm text-white/80 leading-relaxed">
-                            <Link href="/kvkk-aydinlatma" className="text-emerald-400 hover:underline">
+                            <button
+                              type="button"
+                              onClick={() => setShowKvkkModal(true)}
+                              className="text-emerald-400 hover:underline"
+                            >
                               KVKK Aydınlatma Metni
-                            </Link>
+                            </button>
                             'ni okudum ve kişisel verilerimin işlenmesini kabul ediyorum.
                           </Label>
                         </div>
@@ -514,6 +525,10 @@ export default function RegisterPage() {
 
         <Footer />
       </div>
+
+      {/* Legal Modals */}
+      <LegalModal open={showTermsModal} onOpenChange={setShowTermsModal} type="terms" />
+      <LegalModal open={showKvkkModal} onOpenChange={setShowKvkkModal} type="kvkk" />
     </div>
   )
 }

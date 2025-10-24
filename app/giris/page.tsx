@@ -8,10 +8,9 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { FileText, Scan, ArrowRight, TrendingUp, Shield, Eye, EyeOff, AlertCircle } from "lucide-react"
-import { signIn, signUp, signInWithGoogle } from "@/lib/auth"
+import { signIn, signInWithGoogle } from "@/lib/auth"
 import { useToast } from "@/hooks/use-toast"
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Checkbox } from "@/components/ui/checkbox"
 import Header from "@/components/layout/header"
 import Footer from "@/components/footer"
@@ -77,16 +76,6 @@ export default function LoginPage() {
   const [loginEmail, setLoginEmail] = useState("")
   const [loginPassword, setLoginPassword] = useState("")
 
-  // Register form state
-  const [registerFirstName, setRegisterFirstName] = useState("")
-  const [registerLastName, setRegisterLastName] = useState("")
-  const [registerEmail, setRegisterEmail] = useState("")
-  const [registerPassword, setRegisterPassword] = useState("")
-  const [termsAccepted, setTermsAccepted] = useState(false)
-
-  // Active tab state for programmatic switching
-  const [activeTab, setActiveTab] = useState("login")
-
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault()
     setIsLoading(true)
@@ -128,77 +117,6 @@ export default function LoginPage() {
       toast({
         variant: "destructive",
         title: "Giriş Hatası",
-        description: errorMessage,
-        duration: 6000,
-      })
-    } finally {
-      setIsLoading(false)
-    }
-  }
-
-  const handleRegister = async (e: React.FormEvent) => {
-    e.preventDefault()
-    if (!termsAccepted) {
-      const errorMsg = "Lütfen kullanım şartlarını ve gizlilik politikasını kabul edin."
-      setError(errorMsg)
-      toast({
-        variant: "destructive",
-        title: "Kayıt Hatası",
-        description: errorMsg,
-      })
-      return
-    }
-
-    if (registerPassword.length < 6) {
-      const errorMsg = "Şifre en az 6 karakter olmalıdır."
-      setError(errorMsg)
-      toast({
-        variant: "destructive",
-        title: "Şifre Hatası",
-        description: errorMsg,
-      })
-      return
-    }
-
-    setIsLoading(true)
-    setError(null)
-
-    try {
-      const data = await signUp(registerEmail, registerPassword, {
-        first_name: registerFirstName,
-        last_name: registerLastName,
-      })
-
-      if (data?.user) {
-        toast({
-          title: "Kayıt Başarılı!",
-          description: "Lütfen e-postanızı kontrol ederek hesabınızı doğrulayın. Doğrulama e-postası gönderildi.",
-          duration: 8000,
-        })
-        setRegisterFirstName("")
-        setRegisterLastName("")
-        setRegisterEmail("")
-        setRegisterPassword("")
-        setTermsAccepted(false)
-        setError(null)
-        setActiveTab("login")
-      } else {
-        const errorMsg = "Kayıt işlemi tamamlanamadı. Lütfen bilgilerinizi kontrol edin ve tekrar deneyin."
-        setError(errorMsg)
-        toast({
-          variant: "destructive",
-          title: "Kayıt Başarısız",
-          description: errorMsg,
-        })
-      }
-    } catch (err: any) {
-      console.error("Register error:", err)
-      const errorMessage = getErrorMessage(err)
-      setError(errorMessage)
-
-      toast({
-        variant: "destructive",
-        title: "Kayıt Hatası",
         description: errorMessage,
         duration: 6000,
       })
@@ -261,203 +179,72 @@ export default function LoginPage() {
                     </Alert>
                   )}
 
-                  <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-                    <TabsList className="grid w-full grid-cols-2 bg-white/5 border border-white/10">
-                      <TabsTrigger
-                        value="login"
-                        className="data-[state=active]:bg-emerald-500 data-[state=active]:text-white"
-                      >
-                        Giriş Yap
-                      </TabsTrigger>
-                      <TabsTrigger
-                        value="register"
-                        className="data-[state=active]:bg-emerald-500 data-[state=active]:text-white"
-                      >
-                        Kayıt Ol
-                      </TabsTrigger>
-                    </TabsList>
+                  <form onSubmit={handleLogin} className="space-y-6">
+                    <div className="space-y-2">
+                      <Label htmlFor="email" className="text-white/80">
+                        E-posta
+                      </Label>
+                      <Input
+                        id="email"
+                        type="email"
+                        placeholder="ornek@mail.com"
+                        required
+                        className="bg-white/5 border-white/20 text-white placeholder:text-white/40 focus:border-emerald-500 focus:ring-emerald-500/20"
+                        value={loginEmail}
+                        onChange={(e) => setLoginEmail(e.target.value)}
+                      />
+                    </div>
 
-                    <TabsContent value="login" className="space-y-6 mt-6">
-                      <form onSubmit={handleLogin} className="space-y-6">
-                        <div className="space-y-2">
-                          <Label htmlFor="email" className="text-white/80">
-                            E-posta
-                          </Label>
-                          <Input
-                            id="email"
-                            type="email"
-                            placeholder="ornek@mail.com"
-                            required
-                            className="bg-white/5 border-white/20 text-white placeholder:text-white/40 focus:border-emerald-500 focus:ring-emerald-500/20"
-                            value={loginEmail}
-                            onChange={(e) => setLoginEmail(e.target.value)}
-                          />
-                        </div>
-
-                        <div className="space-y-2">
-                          <div className="flex items-center justify-between">
-                            <Label htmlFor="password" className="text-white/80">
-                              Şifre
-                            </Label>
-                            <Link
-                              href="/sifremi-unuttum"
-                              className="text-sm text-teal-400 hover:text-emerald-400 transition-colors"
-                            >
-                              Şifremi Unuttum?
-                            </Link>
-                          </div>
-                          <div className="relative">
-                            <Input
-                              id="password"
-                              type={showPassword ? "text" : "password"}
-                              placeholder="••••••••"
-                              required
-                              className="bg-white/5 border-white/20 text-white placeholder:text-white/40 focus:border-emerald-500 focus:ring-emerald-500/20 pr-10"
-                              value={loginPassword}
-                              onChange={(e) => setLoginPassword(e.target.value)}
-                            />
-                            <Button
-                              type="button"
-                              variant="ghost"
-                              size="icon"
-                              className="absolute right-0 top-0 h-full px-3 hover:bg-transparent text-white/40 hover:text-white/60"
-                              onClick={() => setShowPassword(!showPassword)}
-                              aria-label={showPassword ? "Şifreyi gizle" : "Şifreyi göster"}
-                            >
-                              {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                            </Button>
-                          </div>
-                        </div>
-
-                        <div className="flex items-center space-x-2">
-                          <Checkbox id="remember" />
-                          <Label htmlFor="remember" className="text-sm font-normal text-white/60">
-                            Beni hatırla
-                          </Label>
-                        </div>
-
-                        <Button
-                          type="submit"
-                          disabled={isLoading}
-                          className="w-full bg-gradient-to-r from-emerald-500 to-teal-500 text-white font-bold h-12 text-base hover:from-emerald-600 hover:to-teal-600 disabled:opacity-50 disabled:cursor-not-allowed"
+                    <div className="space-y-2">
+                      <div className="flex items-center justify-between">
+                        <Label htmlFor="password" className="text-white/80">
+                          Şifre
+                        </Label>
+                        <Link
+                          href="/sifremi-unuttum"
+                          className="text-sm text-teal-400 hover:text-emerald-400 transition-colors"
                         >
-                          {isLoading ? "Giriş yapılıyor..." : "Giriş Yap"}
-                        </Button>
-                      </form>
-                    </TabsContent>
-
-                    <TabsContent value="register" className="space-y-4 mt-6">
-                      <form onSubmit={handleRegister} className="space-y-4">
-                        <div className="grid grid-cols-2 gap-4">
-                          <div className="space-y-2">
-                            <Label htmlFor="firstName" className="text-white/80">
-                              Ad
-                            </Label>
-                            <Input
-                              id="firstName"
-                              placeholder="Adınız"
-                              required
-                              className="bg-white/5 border-white/20 text-white placeholder:text-white/40 focus:border-emerald-500 focus:ring-emerald-500/20"
-                              value={registerFirstName}
-                              onChange={(e) => setRegisterFirstName(e.target.value)}
-                            />
-                          </div>
-                          <div className="space-y-2">
-                            <Label htmlFor="lastName" className="text-white/80">
-                              Soyad
-                            </Label>
-                            <Input
-                              id="lastName"
-                              placeholder="Soyadınız"
-                              required
-                              className="bg-white/5 border-white/20 text-white placeholder:text-white/40 focus:border-emerald-500 focus:ring-emerald-500/20"
-                              value={registerLastName}
-                              onChange={(e) => setRegisterLastName(e.target.value)}
-                            />
-                          </div>
-                        </div>
-                        <div className="space-y-2">
-                          <Label htmlFor="registerEmail" className="text-white/80">
-                            E-posta
-                          </Label>
-                          <Input
-                            id="registerEmail"
-                            type="email"
-                            placeholder="ornek@mail.com"
-                            required
-                            className="bg-white/5 border-white/20 text-white placeholder:text-white/40 focus:border-emerald-500 focus:ring-emerald-500/20"
-                            value={registerEmail}
-                            onChange={(e) => setRegisterEmail(e.target.value)}
-                          />
-                        </div>
-                        <div className="space-y-2">
-                          <Label htmlFor="registerPassword" className="text-white/80">
-                            Şifre
-                          </Label>
-                          <div className="relative">
-                            <Input
-                              id="registerPassword"
-                              type={showPassword ? "text" : "password"}
-                              placeholder="En az 6 karakter"
-                              required
-                              minLength={6}
-                              className="bg-white/5 border-white/20 text-white placeholder:text-white/40 focus:border-emerald-500 focus:ring-emerald-500/20 pr-10"
-                              value={registerPassword}
-                              onChange={(e) => setRegisterPassword(e.target.value)}
-                            />
-                            <Button
-                              type="button"
-                              variant="ghost"
-                              size="icon"
-                              className="absolute right-0 top-0 h-full px-3 hover:bg-transparent text-white/40 hover:text-white/60"
-                              onClick={() => setShowPassword(!showPassword)}
-                              aria-label={showPassword ? "Şifreyi gizle" : "Şifreyi göster"}
-                            >
-                              {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                            </Button>
-                          </div>
-                          <p className="text-xs text-white/50">En az 6 karakter içermelidir</p>
-                        </div>
-                        <div className="flex items-start space-x-2">
-                          <Checkbox
-                            id="terms"
-                            checked={termsAccepted}
-                            onCheckedChange={(checked) => setTermsAccepted(checked as boolean)}
-                            aria-labelledby="terms-label"
-                          />
-                          <Label
-                            htmlFor="terms"
-                            id="terms-label"
-                            className="text-sm font-normal leading-snug text-white/60"
-                          >
-                            <Link
-                              href="/kullanim-sartlari"
-                              target="_blank"
-                              className="text-emerald-400 hover:text-emerald-300 underline"
-                            >
-                              Kullanım şartlarını
-                            </Link>{" "}
-                            ve{" "}
-                            <Link
-                              href="/gizlilik-politikasi"
-                              target="_blank"
-                              className="text-emerald-400 hover:text-emerald-300 underline"
-                            >
-                              gizlilik politikasını
-                            </Link>{" "}
-                            okudum ve kabul ediyorum.
-                          </Label>
-                        </div>
+                          Şifremi Unuttum?
+                        </Link>
+                      </div>
+                      <div className="relative">
+                        <Input
+                          id="password"
+                          type={showPassword ? "text" : "password"}
+                          placeholder="••••••••"
+                          required
+                          className="bg-white/5 border-white/20 text-white placeholder:text-white/40 focus:border-emerald-500 focus:ring-emerald-500/20 pr-10"
+                          value={loginPassword}
+                          onChange={(e) => setLoginPassword(e.target.value)}
+                        />
                         <Button
-                          type="submit"
-                          className="w-full bg-gradient-to-r from-emerald-500 to-teal-500 text-white font-bold h-12 text-base hover:from-emerald-600 hover:to-teal-600 disabled:opacity-50 disabled:cursor-not-allowed"
-                          disabled={isLoading || !termsAccepted}
+                          type="button"
+                          variant="ghost"
+                          size="icon"
+                          className="absolute right-0 top-0 h-full px-3 hover:bg-transparent text-white/40 hover:text-white/60"
+                          onClick={() => setShowPassword(!showPassword)}
+                          aria-label={showPassword ? "Şifreyi gizle" : "Şifreyi göster"}
                         >
-                          {isLoading ? "Hesap oluşturuluyor..." : "Hesap Oluştur"}
+                          {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                         </Button>
-                      </form>
-                    </TabsContent>
-                  </Tabs>
+                      </div>
+                    </div>
+
+                    <div className="flex items-center space-x-2">
+                      <Checkbox id="remember" />
+                      <Label htmlFor="remember" className="text-sm font-normal text-white/60">
+                        Beni hatırla
+                      </Label>
+                    </div>
+
+                    <Button
+                      type="submit"
+                      disabled={isLoading}
+                      className="w-full bg-gradient-to-r from-emerald-500 to-teal-500 text-white font-bold h-12 text-base hover:from-emerald-600 hover:to-teal-600 disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      {isLoading ? "Giriş yapılıyor..." : "Giriş Yap"}
+                    </Button>
+                  </form>
 
                   <div className="relative my-8">
                     <div className="absolute inset-0 flex items-center">
@@ -496,6 +283,18 @@ export default function LoginPage() {
                       </svg>
                       {isLoading ? "Yönlendiriliyor..." : "Google ile Giriş Yap"}
                     </Button>
+
+                    <div className="text-center pt-4">
+                      <p className="text-white/70">
+                        Hesabınız yok mu?{" "}
+                        <Link
+                          href="/kayit-ol"
+                          className="text-emerald-400 hover:text-emerald-300 font-semibold transition-colors"
+                        >
+                          Kayıt Olun
+                        </Link>
+                      </p>
+                    </div>
                   </div>
                 </div>
               </div>

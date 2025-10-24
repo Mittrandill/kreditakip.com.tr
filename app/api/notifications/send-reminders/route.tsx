@@ -137,7 +137,6 @@ function createEmailTemplate(
   }
 
   const getBankLogoUrl = (bankName: string): string => {
-    // Banka adına göre logo URL'ini oluştur
     const bankMappings: Record<string, string> = {
       "Yapı Kredi": "yapi-kredi-bankasi.png",
       "Yapı Kredi Bankası": "yapi-kredi-bankasi.png",
@@ -188,7 +187,8 @@ function createEmailTemplate(
     }
 
     const logoFileName = bankMappings[bankName] || "default-bank.png"
-    return `https://oymjjceuiotxfbpwsdym.supabase.co/storage/v1/object/public/bank-icons/${logoFileName}`
+    const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://kreditakip.com.tr"
+    return `${baseUrl}/bank-icons/${logoFileName}`
   }
 
   return {
@@ -706,7 +706,7 @@ function createEmailTemplate(
                       <td>
                           <div class="header">
                               <div class="logo-wrapper">
-                                  <img src="https://oymjjceuiotxfbpwsdym.supabase.co/storage/v1/object/public/Logo/logo-white.png" alt="Kredi Takip" class="logo">
+                                  <img src="${process.env.NEXT_PUBLIC_SITE_URL || "https://kreditakip.com.tr"}/images/design-mode/logo-white.png" alt="Kredi Takip" class="logo">
                               </div>
                               <h1 class="header-title">${title}</h1>
                               <p class="header-subtitle">Finansal takibiniz bizimle güvende</p>
@@ -720,7 +720,7 @@ function createEmailTemplate(
                               <div class="payment-card">
                                   <div class="bank-section">
                                       <div class="bank-icon">
-                                          🏦
+                                          <img src="${getBankLogoUrl(bankName)}" alt="${bankName}" class="bank-logo">
                                       </div>
                                       <div class="bank-info">
                                           <div class="bank-label">Banka</div>
@@ -779,7 +779,7 @@ function createEmailTemplate(
                           </div>
                           
                           <div class="footer">
-                              <img src="/images/design-mode/logo-white.png" alt="Kredi Takip" class="footer-logo">
+                              <img src="${process.env.NEXT_PUBLIC_SITE_URL || "https://kreditakip.com.tr"}/images/design-mode/logo-white.png" alt="Kredi Takip" class="footer-logo">
                               
                               <div class="footer-links">
                                   <a href="https://kreditakip.com.tr/uygulama/ayarlar" class="footer-link">Bildirim Ayarları</a>

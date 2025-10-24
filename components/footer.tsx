@@ -113,13 +113,6 @@ export default function Footer() {
                 <span>OCR Teknolojisi</span>
               </Link>
               <Link
-                href="/akilli-odeme-planlari"
-                className="block text-white/70 hover:text-emerald-400 transition-colors duration-300 flex items-center gap-2 group"
-              >
-                <ArrowRight className="w-4 h-4 opacity-0 group-hover:opacity-100 transition-opacity" />
-                <span>Akıllı Ödeme Planları</span>
-              </Link>
-              <Link
                 href="/guvenlik"
                 className="block text-white/70 hover:text-emerald-400 transition-colors duration-300 flex items-center gap-2 group"
               >
