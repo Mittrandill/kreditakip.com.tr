@@ -4,72 +4,32 @@ import { Calendar, Clock, ArrowRight, User } from "lucide-react"
 import Header from "@/components/layout/header"
 import Footer from "@/components/footer"
 import Image from "next/image"
+import Link from "next/link"
+import { createSupabaseServer } from "@/lib/supabase-server"
 
-export default function BlogPage() {
-  const blogPosts = [
-    {
-      id: 1,
-      title: "Kredi Kartı Borcundan Kurtulmanın 5 Etkili Yolu",
-      excerpt: "Kredi kartı borçlarınızı yönetmek ve kısa sürede kapatmak için kanıtlanmış stratejiler.",
-      image: "/credit-card-debt-management.jpg",
-      category: "Finans İpuçları",
-      author: "Ahmet Yılmaz",
-      date: "15 Ocak 2024",
-      readTime: "5 dk",
-    },
-    {
-      id: 2,
-      title: "OCR Teknolojisi Nedir ve Nasıl Çalışır?",
-      excerpt: "Optik karakter tanıma teknolojisinin finansal belge işlemedeki rolü ve avantajları.",
-      image: "/ocr-technology-explained.jpg",
-      category: "Teknoloji",
-      author: "Elif Kaya",
-      date: "12 Ocak 2024",
-      readTime: "7 dk",
-    },
-    {
-      id: 3,
-      title: "2024'te Finansal Hedeflerinize Ulaşın",
-      excerpt: "Yeni yılda finansal özgürlüğe giden yolda atmanız gereken adımlar.",
-      image: "/financial-goals-planning.jpg",
-      category: "Planlama",
-      author: "Mehmet Özkan",
-      date: "8 Ocak 2024",
-      readTime: "6 dk",
-    },
-    {
-      id: 4,
-      title: "Kredi Faiz Oranlarını Anlamak",
-      excerpt: "Faiz oranlarının nasıl hesaplandığını ve bütçenizi nasıl etkilediğini öğrenin.",
-      image: "/interest-rates-guide.jpg",
-      category: "Eğitim",
-      author: "Ayşe Demir",
-      date: "5 Ocak 2024",
-      readTime: "8 dk",
-    },
-    {
-      id: 5,
-      title: "Dijital Bankacılıkta Güvenlik İpuçları",
-      excerpt: "Online finansal işlemlerinizi güvende tutmak için bilmeniz gerekenler.",
-      image: "/digital-banking-security.jpg",
-      category: "Güvenlik",
-      author: "Can Arslan",
-      date: "2 Ocak 2024",
-      readTime: "5 dk",
-    },
-    {
-      id: 6,
-      title: "Bütçe Yönetimi için En İyi Uygulamalar",
-      excerpt: "Aylık bütçenizi etkili bir şekilde yönetmek için pratik öneriler.",
-      image: "/budget-management-tips.jpg",
-      category: "Finans İpuçları",
-      author: "Zeynep Kara",
-      date: "29 Aralık 2023",
-      readTime: "6 dk",
-    },
-  ]
+export const revalidate = 60 // Revalidate every 60 seconds
 
-  const categories = ["Tümü", "Finans İpuçları", "Teknoloji", "Planlama", "Eğitim", "Güvenlik"]
+export default async function BlogPage() {
+  const supabase = createSupabaseServer()
+
+  // Fetch published blog posts with categories
+  const { data: blogPosts } = await supabase
+    .from("blog_posts")
+    .select(`
+      *,
+      category:blog_categories(name)
+    `)
+    .eq("status", "published")
+    .order("published_at", { ascending: false })
+
+  // Fetch all categories
+  const { data: categoriesData } = await supabase
+    .from("blog_categories")
+    .select("name")
+    .order("name", { ascending: true })
+
+  const categories = ["Tümü", ...(categoriesData?.map(c => c.name) || [])]
+  const posts = blogPosts || []
 
   return (
     <div className="min-h-screen w-full bg-[#151515] text-white font-sans">
@@ -118,112 +78,133 @@ export default function BlogPage() {
           </div>
         </section>
 
-        {/* Featured Post */}
-        <section className="py-12 px-4 md:px-8 lg:px-16">
-          <div className="container mx-auto">
-            <Card className="bg-black/20 border-white/10 backdrop-blur-xl overflow-hidden hover:border-emerald-500/30 transition-all duration-500">
-              <div className="grid lg:grid-cols-2 gap-0">
-                <div className="relative h-64 lg:h-auto">
-                  <Image
-                    src={blogPosts[0].image || "/placeholder.svg"}
-                    alt={blogPosts[0].title}
-                    fill
-                    className="object-cover"
-                  />
-                  <div className="absolute top-4 left-4 bg-emerald-500 text-white px-4 py-2 rounded-full text-sm font-semibold">
-                    Öne Çıkan
+        {posts.length === 0 ? (
+          <section className="py-20 px-4 md:px-8 lg:px-16">
+            <div className="container mx-auto text-center">
+              <p className="text-white/60 text-lg">Henüz blog yazısı yayınlanmamış.</p>
+            </div>
+          </section>
+        ) : (
+          <>
+            {/* Featured Post */}
+            <section className="py-12 px-4 md:px-8 lg:px-16">
+              <div className="container mx-auto">
+                <Link href={`/blog/${posts[0].slug}`}>
+                  <Card className="bg-black/20 border-white/10 backdrop-blur-xl overflow-hidden hover:border-emerald-500/30 transition-all duration-500 cursor-pointer">
+                    <div className="grid lg:grid-cols-2 gap-0">
+                      {posts[0].featured_image && (
+                        <div className="relative h-64 lg:h-auto">
+                          <Image
+                            src={posts[0].featured_image}
+                            alt={posts[0].title}
+                            fill
+                            className="object-cover"
+                          />
+                          <div className="absolute top-4 left-4 bg-emerald-500 text-white px-4 py-2 rounded-full text-sm font-semibold">
+                            Öne Çıkan
+                          </div>
+                        </div>
+                      )}
+                      <CardContent className="p-8 lg:p-12 flex flex-col justify-center">
+                        <div className="flex items-center gap-4 mb-4">
+                          <span className="text-emerald-400 text-sm font-semibold">
+                            {posts[0].category?.name || "Genel"}
+                          </span>
+                          <span className="text-white/40">•</span>
+                          <div className="flex items-center gap-2 text-white/60 text-sm">
+                            <Clock className="w-4 h-4" />
+                            <span>{posts[0].read_time || 5} dk</span>
+                          </div>
+                        </div>
+                        <h2 className="text-3xl font-bold text-white mb-4">{posts[0].title}</h2>
+                        <p className="text-white/70 mb-6 leading-relaxed">{posts[0].excerpt}</p>
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-3">
+                            <div className="w-10 h-10 bg-gradient-to-br from-emerald-500/30 to-emerald-500/10 rounded-full flex items-center justify-center">
+                              <User className="w-5 h-5 text-emerald-400" />
+                            </div>
+                            <div>
+                              <p className="text-white text-sm font-medium">KrediTakip</p>
+                              <p className="text-white/60 text-xs">
+                                {new Date(posts[0].published_at || posts[0].created_at).toLocaleDateString("tr-TR")}
+                              </p>
+                            </div>
+                          </div>
+                          <Button className="bg-gradient-to-r from-emerald-500 to-teal-500 text-white hover:from-emerald-600 hover:to-teal-600">
+                            Devamını Oku
+                            <ArrowRight className="ml-2 w-4 h-4" />
+                          </Button>
+                        </div>
+                      </CardContent>
+                    </div>
+                  </Card>
+                </Link>
+              </div>
+            </section>
+
+            {/* Blog Posts Grid */}
+            {posts.length > 1 && (
+              <section className="py-12 px-4 md:px-8 lg:px-16">
+                <div className="container mx-auto">
+                  <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+                    {posts.slice(1).map((post) => (
+                      <Link key={post.id} href={`/blog/${post.slug}`}>
+                        <Card className="bg-black/20 border-white/10 backdrop-blur-xl overflow-hidden hover:border-emerald-500/30 transition-all duration-500 group cursor-pointer h-full">
+                          {post.featured_image && (
+                            <div className="relative h-48 overflow-hidden">
+                              <Image
+                                src={post.featured_image}
+                                alt={post.title}
+                                fill
+                                className="object-cover group-hover:scale-110 transition-transform duration-500"
+                              />
+                              <div className="absolute top-4 left-4 bg-black/60 backdrop-blur-sm text-white px-3 py-1 rounded-full text-xs font-semibold">
+                                {post.category?.name || "Genel"}
+                              </div>
+                            </div>
+                          )}
+                          <CardContent className="p-6">
+                            <div className="flex items-center gap-3 mb-3 text-white/60 text-sm">
+                              <div className="flex items-center gap-1">
+                                <Calendar className="w-4 h-4" />
+                                <span>{new Date(post.published_at || post.created_at).toLocaleDateString("tr-TR")}</span>
+                              </div>
+                              <span>•</span>
+                              <div className="flex items-center gap-1">
+                                <Clock className="w-4 h-4" />
+                                <span>{post.read_time || 5} dk</span>
+                              </div>
+                            </div>
+                            <h3 className="text-xl font-bold text-white mb-3 group-hover:text-emerald-400 transition-colors">
+                              {post.title}
+                            </h3>
+                            <p className="text-white/70 text-sm mb-4 leading-relaxed line-clamp-3">{post.excerpt}</p>
+                            <div className="flex items-center justify-between pt-4 border-t border-white/10">
+                              <div className="flex items-center gap-2">
+                                <div className="w-8 h-8 bg-gradient-to-br from-teal-500/30 to-teal-500/10 rounded-full flex items-center justify-center">
+                                  <User className="w-4 h-4 text-teal-400" />
+                                </div>
+                                <span className="text-white/80 text-sm">KrediTakip</span>
+                              </div>
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                className="text-emerald-400 hover:text-emerald-300 hover:bg-emerald-500/10"
+                              >
+                                Oku
+                                <ArrowRight className="ml-1 w-4 h-4" />
+                              </Button>
+                            </div>
+                          </CardContent>
+                        </Card>
+                      </Link>
+                    ))}
                   </div>
                 </div>
-                <CardContent className="p-8 lg:p-12 flex flex-col justify-center">
-                  <div className="flex items-center gap-4 mb-4">
-                    <span className="text-emerald-400 text-sm font-semibold">{blogPosts[0].category}</span>
-                    <span className="text-white/40">•</span>
-                    <div className="flex items-center gap-2 text-white/60 text-sm">
-                      <Clock className="w-4 h-4" />
-                      <span>{blogPosts[0].readTime}</span>
-                    </div>
-                  </div>
-                  <h2 className="text-3xl font-bold text-white mb-4">{blogPosts[0].title}</h2>
-                  <p className="text-white/70 mb-6 leading-relaxed">{blogPosts[0].excerpt}</p>
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 bg-gradient-to-br from-emerald-500/30 to-emerald-500/10 rounded-full flex items-center justify-center">
-                        <User className="w-5 h-5 text-emerald-400" />
-                      </div>
-                      <div>
-                        <p className="text-white text-sm font-medium">{blogPosts[0].author}</p>
-                        <p className="text-white/60 text-xs">{blogPosts[0].date}</p>
-                      </div>
-                    </div>
-                    <Button className="bg-gradient-to-r from-emerald-500 to-teal-500 text-white hover:from-emerald-600 hover:to-teal-600">
-                      Devamını Oku
-                      <ArrowRight className="ml-2 w-4 h-4" />
-                    </Button>
-                  </div>
-                </CardContent>
-              </div>
-            </Card>
-          </div>
-        </section>
-
-        {/* Blog Posts Grid */}
-        <section className="py-12 px-4 md:px-8 lg:px-16">
-          <div className="container mx-auto">
-            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-              {blogPosts.slice(1).map((post) => (
-                <Card
-                  key={post.id}
-                  className="bg-black/20 border-white/10 backdrop-blur-xl overflow-hidden hover:border-emerald-500/30 transition-all duration-500 group"
-                >
-                  <div className="relative h-48 overflow-hidden">
-                    <Image
-                      src={post.image || "/placeholder.svg"}
-                      alt={post.title}
-                      fill
-                      className="object-cover group-hover:scale-110 transition-transform duration-500"
-                    />
-                    <div className="absolute top-4 left-4 bg-black/60 backdrop-blur-sm text-white px-3 py-1 rounded-full text-xs font-semibold">
-                      {post.category}
-                    </div>
-                  </div>
-                  <CardContent className="p-6">
-                    <div className="flex items-center gap-3 mb-3 text-white/60 text-sm">
-                      <div className="flex items-center gap-1">
-                        <Calendar className="w-4 h-4" />
-                        <span>{post.date}</span>
-                      </div>
-                      <span>•</span>
-                      <div className="flex items-center gap-1">
-                        <Clock className="w-4 h-4" />
-                        <span>{post.readTime}</span>
-                      </div>
-                    </div>
-                    <h3 className="text-xl font-bold text-white mb-3 group-hover:text-emerald-400 transition-colors">
-                      {post.title}
-                    </h3>
-                    <p className="text-white/70 text-sm mb-4 leading-relaxed">{post.excerpt}</p>
-                    <div className="flex items-center justify-between pt-4 border-t border-white/10">
-                      <div className="flex items-center gap-2">
-                        <div className="w-8 h-8 bg-gradient-to-br from-teal-500/30 to-teal-500/10 rounded-full flex items-center justify-center">
-                          <User className="w-4 h-4 text-teal-400" />
-                        </div>
-                        <span className="text-white/80 text-sm">{post.author}</span>
-                      </div>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        className="text-emerald-400 hover:text-emerald-300 hover:bg-emerald-500/10"
-                      >
-                        Oku
-                        <ArrowRight className="ml-1 w-4 h-4" />
-                      </Button>
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
-          </div>
-        </section>
+              </section>
+            )}
+          </>
+        )}
 
         {/* Newsletter CTA */}
         <section className="py-20 px-4 md:px-8 lg:px-16">
