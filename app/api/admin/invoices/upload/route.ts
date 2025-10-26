@@ -1,35 +1,30 @@
-import { createSupabaseServer } from "@/lib/supabase-server"
+import { createClient } from "@supabase/supabase-js"
 import { NextRequest, NextResponse } from "next/server"
+
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
+const supabaseServiceKey = process.env.SERVICE_ROLE_KEY!
 
 export async function POST(request: NextRequest) {
   try {
-    const supabase = createSupabaseServer()
-
-    // Check if user is admin
-    const {
-      data: { session },
-    } = await supabase.auth.getSession()
-
-    if (!session) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
-    }
-
-    const { data: profile } = await supabase
-      .from("profiles")
-      .select("is_admin")
-      .eq("id", session.user.id)
-      .single()
-
-    if (!profile?.is_admin) {
-      return NextResponse.json({ error: "Forbidden" }, { status: 403 })
-    }
+    const supabase = createClient(supabaseUrl, supabaseServiceKey)
 
     const formData = await request.formData()
     const file = formData.get("file") as File
-    const userId = formData.get("userId") as string
+    const invoiceId = formData.get("invoiceId") as string
 
-    if (!file || !userId) {
-      return NextResponse.json({ error: "Missing file or userId" }, { status: 400 })
+    if (!file || !invoiceId) {
+      return NextResponse.json({ error: "Missing file or invoiceId" }, { status: 400 })
+    }
+
+    // Get invoice to get user_id
+    const { data: invoice, error: invoiceError } = await supabase
+      .from("invoices")
+      .select("user_id, invoice_number")
+      .eq("id", invoiceId)
+      .single()
+
+    if (invoiceError || !invoice) {
+      return NextResponse.json({ error: "Invoice not found" }, { status: 404 })
     }
 
     // Validate file type
@@ -43,12 +38,12 @@ export async function POST(request: NextRequest) {
     }
 
     // Upload to Supabase Storage
-    const fileName = `${userId}/${Date.now()}-${file.name}`
+    const fileName = `${invoice.user_id}/${invoice.invoice_number}-${Date.now()}.pdf`
     const { data, error } = await supabase.storage
       .from("invoices")
       .upload(fileName, file, {
         contentType: "application/pdf",
-        upsert: false,
+        upsert: true, // Allow overwriting
       })
 
     if (error) {
@@ -60,6 +55,34 @@ export async function POST(request: NextRequest) {
     const {
       data: { publicUrl },
     } = supabase.storage.from("invoices").getPublicUrl(fileName)
+
+    // Update invoice with file URL and mark as paid
+    console.log("[invoice-upload] Updating invoice with file_url:", publicUrl)
+
+    const { data: updatedInvoice, error: updateError } = await supabase
+      .from("invoices")
+      .update({
+        file_url: publicUrl,
+        file_name: file.name,
+        status: "paid", // Automatically mark as paid when PDF is uploaded
+        payment_date: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+      })
+      .eq("id", invoiceId)
+      .select()
+      .single()
+
+    if (updateError) {
+      console.error("[invoice-upload] Error updating invoice:", updateError)
+      return NextResponse.json({ error: "Failed to update invoice" }, { status: 500 })
+    }
+
+    console.log("[invoice-upload] Invoice updated successfully:", {
+      id: updatedInvoice.id,
+      subscription_id: updatedInvoice.subscription_id,
+      file_url: updatedInvoice.file_url,
+      status: updatedInvoice.status,
+    })
 
     return NextResponse.json({ url: publicUrl, path: data.path })
   } catch (error) {

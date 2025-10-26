@@ -52,7 +52,8 @@
       "Bash(npx next lint:*)",
       "Bash(powershell -Command:*)",
       "Bash(pnpm install)",
-      "Bash(taskkill:*)"
+      "Bash(taskkill:*)",
+      "Bash(psql:*)"
     ],
     "deny": [],
     "ask": []

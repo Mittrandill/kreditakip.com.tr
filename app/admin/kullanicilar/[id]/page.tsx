@@ -1,69 +1,93 @@
 import { checkAdminAccess } from "@/lib/admin-check"
-import { createSupabaseServer } from "@/lib/supabase-server"
+import { createSupabaseAdmin } from "@/lib/supabase-server"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
-import { ArrowLeft, User, Mail, Phone, Calendar, CreditCard, FileText, ShieldCheck } from "lucide-react"
+import { ArrowLeft, User, Mail, Phone, MapPin, Building2, FileText, CreditCard, Calendar } from "lucide-react"
 import Link from "next/link"
-import { notFound } from "next/navigation"
+import { AdminLayoutWrapper } from "@/components/admin-layout-wrapper"
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 
-export default async function UserDetail({ params }: { params: { id: string } }) {
-  await checkAdminAccess()
-  const supabase = createSupabaseServer()
+interface PageProps {
+  params: {
+    id: string
+  }
+}
 
-  // Get user details
+export default async function UserDetailPage({ params }: PageProps) {
+  const { session } = await checkAdminAccess()
+  const supabase = createSupabaseAdmin()
+  const userId = params.id
+
+  // Get user profile
   const { data: user } = await supabase
     .from("profiles")
     .select(`
       *,
-      subscriptions (
+      subscriptions!subscriptions_user_id_fkey (
         id,
         plan_type,
         status,
-        started_at,
         expires_at,
-        created_at,
-        updated_at
+        created_at
       )
     `)
-    .eq("id", params.id)
+    .eq("id", userId)
     .single()
 
-  if (!user) {
-    notFound()
-  }
+  // Get billing info
+  const { data: billingInfo } = await supabase
+    .from("billing_info")
+    .select("*")
+    .eq("user_id", userId)
+    .single()
 
-  // Get user's invoices
+  // Get payment transactions
+  const { data: transactions } = await supabase
+    .from("payment_transactions")
+    .select("*")
+    .eq("user_id", userId)
+    .order("created_at", { ascending: false })
+
+  // Get invoices
   const { data: invoices } = await supabase
     .from("invoices")
     .select("*")
-    .eq("user_id", params.id)
+    .eq("user_id", userId)
     .order("invoice_date", { ascending: false })
 
-  // Get user's credits
-  const { data: credits } = await supabase
-    .from("credits")
-    .select("*")
-    .eq("user_id", params.id)
-    .order("created_at", { ascending: false })
-    .limit(10)
-
-  const subscription = user.subscriptions?.[0]
-
-  const planNames: Record<string, string> = {
-    free: "Ücretsiz",
-    premium: "Premium",
+  if (!user) {
+    return (
+      <AdminLayoutWrapper userEmail={session.user.email || ""}>
+        <div className="flex items-center justify-center min-h-[400px]">
+          <div className="text-center">
+            <h2 className="text-2xl font-bold text-white mb-2">Kullanıcı Bulunamadı</h2>
+            <p className="text-white/60 mb-4">Bu kullanıcı sistemde mevcut değil</p>
+            <Link href="/admin/kullanicilar">
+              <Button className="bg-gradient-to-r from-emerald-500 to-teal-600">
+                <ArrowLeft className="mr-2 h-4 w-4" />
+                Kullanıcılara Dön
+              </Button>
+            </Link>
+          </div>
+        </div>
+      </AdminLayoutWrapper>
+    )
   }
 
-  const planPrices: Record<string, string> = {
-    free: "0 TL/ay",
-    premium: "299 TL/ay",
-  }
+  // Find active subscription
+  const subscriptions = user.subscriptions || []
+  const activeSubscription = subscriptions.find((s: any) => s.status === "active")
+  const subscription = activeSubscription || subscriptions.sort((a: any, b: any) =>
+    new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+  )[0]
+
+  const fullName = [user.first_name, user.last_name].filter(Boolean).join(" ") || "-"
 
   return (
-    <div className="space-y-8">
-      {/* Header */}
-      <div className="flex items-center justify-between">
+    <AdminLayoutWrapper userEmail={session.user.email || ""}>
+      <div className="space-y-8">
+        {/* Header */}
         <div className="flex items-center gap-4">
           <Link href="/admin/kullanicilar">
             <Button variant="outline" size="icon" className="bg-black/20 border-white/10">
@@ -72,245 +96,331 @@ export default async function UserDetail({ params }: { params: { id: string } })
           </Link>
           <div>
             <h1 className="text-4xl font-bold mb-2">Kullanıcı Detayı</h1>
-            <p className="text-white/60">Kullanıcı bilgileri ve işlem geçmişi</p>
+            <p className="text-white/60">{fullName}</p>
           </div>
         </div>
-        <Link href={`/admin/faturalar/yeni?userId=${params.id}`}>
-          <Button className="bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700">
-            <FileText className="mr-2 h-4 w-4" />
-            Fatura Oluştur
-          </Button>
-        </Link>
-      </div>
 
-      {/* User Info */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <Card className="bg-black/20 border-white/10 backdrop-blur-xl">
-          <CardHeader>
-            <CardTitle className="text-white flex items-center gap-2">
-              <User className="h-5 w-5" />
-              Kişisel Bilgiler
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div>
-              <p className="text-white/60 text-sm mb-1">Ad Soyad</p>
-              <p className="text-white font-medium">
-                {[user.first_name, user.last_name].filter(Boolean).join(" ") || "-"}
-              </p>
-            </div>
-            <div>
-              <p className="text-white/60 text-sm mb-1 flex items-center gap-2">
-                <Mail className="h-4 w-4" />
-                E-posta
-              </p>
-              <p className="text-white font-medium">{user.email || "-"}</p>
-            </div>
-            <div>
-              <p className="text-white/60 text-sm mb-1 flex items-center gap-2">
-                <Phone className="h-4 w-4" />
-                Telefon
-              </p>
-              <p className="text-white font-medium">{user.phone || "-"}</p>
-            </div>
-            <div>
-              <p className="text-white/60 text-sm mb-1 flex items-center gap-2">
-                <Calendar className="h-4 w-4" />
-                Kayıt Tarihi
-              </p>
-              <p className="text-white font-medium">
-                {new Date(user.created_at).toLocaleDateString("tr-TR")}
-              </p>
-            </div>
-            {user.is_admin && (
-              <div className="pt-2 border-t border-white/10">
-                <Badge className="bg-purple-500/20 text-purple-400 border-purple-500/20">
-                  <ShieldCheck className="mr-1 h-3 w-3" />
-                  Admin Kullanıcı
-                </Badge>
-              </div>
-            )}
-          </CardContent>
-        </Card>
-
-        <Card className="bg-black/20 border-white/10 backdrop-blur-xl lg:col-span-2">
-          <CardHeader>
-            <CardTitle className="text-white flex items-center gap-2">
-              <CreditCard className="h-5 w-5" />
-              Abonelik Bilgileri
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            {subscription ? (
-              <>
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <p className="text-white/60 text-sm mb-1">Plan</p>
-                    <p className="text-white font-medium text-lg">
-                      {planNames[subscription.plan_type] || subscription.plan_type}
-                    </p>
-                    <p className="text-white/60 text-sm">
-                      {planPrices[subscription.plan_type] || "-"}
-                    </p>
+        {/* User Info Cards */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <Card className="bg-black/20 border-white/10 backdrop-blur-xl">
+            <CardHeader className="flex flex-row items-center justify-between pb-2">
+              <CardTitle className="text-sm font-medium text-white/80">Abonelik Durumu</CardTitle>
+              <CreditCard className="h-4 w-4 text-emerald-400" />
+            </CardHeader>
+            <CardContent>
+              {subscription ? (
+                <>
+                  <div className="text-2xl font-bold text-white mb-2">
+                    {subscription.plan_type === "premium" ? "Premium" : "Ücretsiz"}
                   </div>
-                  <div>
-                    <p className="text-white/60 text-sm mb-1">Durum</p>
-                    {subscription.status === "active" ? (
-                      <Badge className="bg-emerald-500/20 text-emerald-400 border-emerald-500/20">
-                        Aktif
-                      </Badge>
-                    ) : subscription.status === "cancelled" ? (
-                      <Badge className="bg-red-500/20 text-red-400 border-red-500/20">
-                        İptal Edildi
-                      </Badge>
-                    ) : subscription.status === "expired" ? (
-                      <Badge className="bg-yellow-500/20 text-yellow-400 border-yellow-500/20">
-                        Süresi Doldu
-                      </Badge>
-                    ) : (
-                      <Badge className="bg-gray-500/20 text-gray-400 border-gray-500/20">
-                        {subscription.status}
-                      </Badge>
+                  {subscription.status === "active" ? (
+                    <Badge className="bg-emerald-500/20 text-emerald-400 border-emerald-500/20">
+                      Aktif
+                    </Badge>
+                  ) : subscription.status === "cancelled" ? (
+                    <Badge className="bg-red-500/20 text-red-400 border-red-500/20">
+                      İptal Edildi
+                    </Badge>
+                  ) : (
+                    <Badge className="bg-yellow-500/20 text-yellow-400 border-yellow-500/20">
+                      Süresi Doldu
+                    </Badge>
+                  )}
+                </>
+              ) : (
+                <div className="text-white/60">Abonelik Yok</div>
+              )}
+            </CardContent>
+          </Card>
+
+          <Card className="bg-black/20 border-white/10 backdrop-blur-xl">
+            <CardHeader className="flex flex-row items-center justify-between pb-2">
+              <CardTitle className="text-sm font-medium text-white/80">Toplam Ödeme</CardTitle>
+              <FileText className="h-4 w-4 text-teal-400" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold text-white">
+                {transactions?.reduce((sum, tx) => sum + Number(tx.amount), 0).toFixed(2) || "0.00"} ₺
+              </div>
+              <p className="text-xs text-white/60 mt-1">{transactions?.length || 0} ödeme</p>
+            </CardContent>
+          </Card>
+
+          <Card className="bg-black/20 border-white/10 backdrop-blur-xl">
+            <CardHeader className="flex flex-row items-center justify-between pb-2">
+              <CardTitle className="text-sm font-medium text-white/80">Kayıt Tarihi</CardTitle>
+              <Calendar className="h-4 w-4 text-purple-400" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold text-white">
+                {new Date(user.created_at).toLocaleDateString("tr-TR")}
+              </div>
+              <p className="text-xs text-white/60 mt-1">
+                {Math.floor((Date.now() - new Date(user.created_at).getTime()) / (1000 * 60 * 60 * 24))} gün önce
+              </p>
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Tabs */}
+        <Tabs defaultValue="billing" className="space-y-6">
+          <TabsList className="bg-black/20 border border-white/10">
+            <TabsTrigger value="billing" className="data-[state=active]:bg-emerald-500/20">
+              Fatura Bilgileri
+            </TabsTrigger>
+            <TabsTrigger value="transactions" className="data-[state=active]:bg-emerald-500/20">
+              İşlemler
+            </TabsTrigger>
+          </TabsList>
+
+          {/* Billing Info Tab */}
+          <TabsContent value="billing" className="space-y-6">
+            <Card className="bg-black/20 border-white/10 backdrop-blur-xl">
+              <CardHeader>
+                <CardTitle className="text-white flex items-center gap-2">
+                  <Building2 className="h-5 w-5 text-emerald-400" />
+                  Fatura Bilgileri
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                {billingInfo ? (
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div className="space-y-2">
+                      <div className="flex items-center gap-2 text-white/60">
+                        <User className="h-4 w-4" />
+                        <span className="text-sm">Ad Soyad</span>
+                      </div>
+                      <p className="text-white font-medium">{billingInfo.full_name}</p>
+                    </div>
+
+                    <div className="space-y-2">
+                      <div className="flex items-center gap-2 text-white/60">
+                        <Mail className="h-4 w-4" />
+                        <span className="text-sm">E-posta</span>
+                      </div>
+                      <p className="text-white font-medium">{billingInfo.email}</p>
+                    </div>
+
+                    <div className="space-y-2">
+                      <div className="flex items-center gap-2 text-white/60">
+                        <Phone className="h-4 w-4" />
+                        <span className="text-sm">Telefon</span>
+                      </div>
+                      <p className="text-white font-medium">{billingInfo.phone}</p>
+                    </div>
+
+                    <div className="space-y-2">
+                      <div className="flex items-center gap-2 text-white/60">
+                        <MapPin className="h-4 w-4" />
+                        <span className="text-sm">Şehir</span>
+                      </div>
+                      <p className="text-white font-medium">{billingInfo.city}</p>
+                    </div>
+
+                    {billingInfo.district && (
+                      <div className="space-y-2">
+                        <div className="flex items-center gap-2 text-white/60">
+                          <MapPin className="h-4 w-4" />
+                          <span className="text-sm">İlçe</span>
+                        </div>
+                        <p className="text-white font-medium">{billingInfo.district}</p>
+                      </div>
+                    )}
+
+                    <div className="space-y-2 md:col-span-2">
+                      <div className="flex items-center gap-2 text-white/60">
+                        <MapPin className="h-4 w-4" />
+                        <span className="text-sm">Adres</span>
+                      </div>
+                      <p className="text-white font-medium">{billingInfo.address}</p>
+                    </div>
+
+                    <div className="space-y-2">
+                      <div className="flex items-center gap-2 text-white/60">
+                        <MapPin className="h-4 w-4" />
+                        <span className="text-sm">Posta Kodu</span>
+                      </div>
+                      <p className="text-white font-medium">{billingInfo.postal_code || "-"}</p>
+                    </div>
+
+                    {billingInfo.tax_office && (
+                      <div className="space-y-2">
+                        <div className="flex items-center gap-2 text-white/60">
+                          <Building2 className="h-4 w-4" />
+                          <span className="text-sm">Vergi Dairesi</span>
+                        </div>
+                        <p className="text-white font-medium">{billingInfo.tax_office}</p>
+                      </div>
+                    )}
+
+                    {billingInfo.tax_number && (
+                      <div className="space-y-2">
+                        <div className="flex items-center gap-2 text-white/60">
+                          <Building2 className="h-4 w-4" />
+                          <span className="text-sm">Vergi Numarası</span>
+                        </div>
+                        <p className="text-white font-medium">{billingInfo.tax_number}</p>
+                      </div>
                     )}
                   </div>
-                </div>
-                <div className="grid grid-cols-2 gap-4 pt-2">
-                  <div>
-                    <p className="text-white/60 text-sm mb-1">Başlangıç Tarihi</p>
-                    <p className="text-white">
-                      {subscription.started_at ? new Date(subscription.started_at).toLocaleDateString("tr-TR") : "-"}
+                ) : (
+                  <div className="text-center py-12">
+                    <Building2 className="h-12 w-12 text-white/20 mx-auto mb-4" />
+                    <p className="text-white/60">Fatura bilgisi girilmemiş</p>
+                    <p className="text-white/40 text-sm mt-2">
+                      Kullanıcı henüz ödeme yapmamış
                     </p>
                   </div>
-                  <div>
-                    <p className="text-white/60 text-sm mb-1">Bitiş Tarihi</p>
-                    <p className="text-white">
-                      {subscription.expires_at ? new Date(subscription.expires_at).toLocaleDateString("tr-TR") : "-"}
-                    </p>
+                )}
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          {/* Transactions Tab */}
+          <TabsContent value="transactions" className="space-y-6">
+            {/* Payment Transactions */}
+            <Card className="bg-black/20 border-white/10 backdrop-blur-xl">
+              <CardHeader>
+                <CardTitle className="text-white flex items-center gap-2">
+                  <CreditCard className="h-5 w-5 text-emerald-400" />
+                  Ödeme Geçmişi ({transactions?.length || 0})
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                {transactions && transactions.length > 0 ? (
+                  <div className="overflow-x-auto">
+                    <table className="w-full">
+                      <thead>
+                        <tr className="border-b border-white/10">
+                          <th className="text-left py-3 px-4 text-white/80 font-semibold">İşlem ID</th>
+                          <th className="text-left py-3 px-4 text-white/80 font-semibold">Tutar</th>
+                          <th className="text-left py-3 px-4 text-white/80 font-semibold">Durum</th>
+                          <th className="text-left py-3 px-4 text-white/80 font-semibold">Tarih</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {transactions.map((tx) => (
+                          <tr key={tx.id} className="border-b border-white/5 hover:bg-white/5 transition-colors">
+                            <td className="py-4 px-4 text-white/80 font-mono text-sm">
+                              {tx.transaction_id || tx.id.slice(0, 8)}
+                            </td>
+                            <td className="py-4 px-4 text-white font-semibold">
+                              {Number(tx.amount).toFixed(2)} {tx.currency}
+                            </td>
+                            <td className="py-4 px-4">
+                              {tx.status === "success" || tx.status === "completed" ? (
+                                <Badge className="bg-emerald-500/20 text-emerald-400 border-emerald-500/20">
+                                  Başarılı
+                                </Badge>
+                              ) : tx.status === "pending" ? (
+                                <Badge className="bg-yellow-500/20 text-yellow-400 border-yellow-500/20">
+                                  Bekliyor
+                                </Badge>
+                              ) : (
+                                <Badge className="bg-red-500/20 text-red-400 border-red-500/20">
+                                  Başarısız
+                                </Badge>
+                              )}
+                            </td>
+                            <td className="py-4 px-4 text-white/80">
+                              {new Date(tx.created_at).toLocaleString("tr-TR")}
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
                   </div>
-                </div>
-              </>
-            ) : (
-              <div className="text-center py-8">
-                <p className="text-white/60 mb-4">Kullanıcının aktif aboneliği bulunmuyor</p>
-                <Badge className="bg-gray-500/20 text-gray-400 border-gray-500/20">
-                  Ücretsiz Kullanıcı
-                </Badge>
-              </div>
-            )}
-          </CardContent>
-        </Card>
+                ) : (
+                  <div className="text-center py-12">
+                    <CreditCard className="h-12 w-12 text-white/20 mx-auto mb-4" />
+                    <p className="text-white/60">Henüz ödeme kaydı yok</p>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+
+            {/* Invoices */}
+            <Card className="bg-black/20 border-white/10 backdrop-blur-xl">
+              <CardHeader>
+                <CardTitle className="text-white flex items-center gap-2">
+                  <FileText className="h-5 w-5 text-teal-400" />
+                  Faturalar ({invoices?.length || 0})
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                {invoices && invoices.length > 0 ? (
+                  <div className="overflow-x-auto">
+                    <table className="w-full">
+                      <thead>
+                        <tr className="border-b border-white/10">
+                          <th className="text-left py-3 px-4 text-white/80 font-semibold">Fatura No</th>
+                          <th className="text-left py-3 px-4 text-white/80 font-semibold">Tutar</th>
+                          <th className="text-left py-3 px-4 text-white/80 font-semibold">Durum</th>
+                          <th className="text-left py-3 px-4 text-white/80 font-semibold">Tarih</th>
+                          <th className="text-left py-3 px-4 text-white/80 font-semibold">PDF</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {invoices.map((invoice) => (
+                          <tr key={invoice.id} className="border-b border-white/5 hover:bg-white/5 transition-colors">
+                            <td className="py-4 px-4 text-white font-mono text-sm">
+                              {invoice.invoice_number}
+                            </td>
+                            <td className="py-4 px-4 text-white font-semibold">
+                              {Number(invoice.amount).toFixed(2)} {invoice.currency}
+                            </td>
+                            <td className="py-4 px-4">
+                              {invoice.status === "paid" ? (
+                                <Badge className="bg-emerald-500/20 text-emerald-400 border-emerald-500/20">
+                                  Ödendi
+                                </Badge>
+                              ) : invoice.status === "pending" ? (
+                                <Badge className="bg-yellow-500/20 text-yellow-400 border-yellow-500/20">
+                                  Bekliyor
+                                </Badge>
+                              ) : invoice.status === "overdue" ? (
+                                <Badge className="bg-red-500/20 text-red-400 border-red-500/20">
+                                  Gecikmiş
+                                </Badge>
+                              ) : (
+                                <Badge className="bg-gray-500/20 text-gray-400 border-gray-500/20">
+                                  İptal
+                                </Badge>
+                              )}
+                            </td>
+                            <td className="py-4 px-4 text-white/80">
+                              {new Date(invoice.invoice_date).toLocaleDateString("tr-TR")}
+                            </td>
+                            <td className="py-4 px-4">
+                              {invoice.file_url ? (
+                                <a
+                                  href={invoice.file_url}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="text-teal-400 hover:text-teal-300 transition-colors"
+                                >
+                                  İndir
+                                </a>
+                              ) : (
+                                <span className="text-yellow-400 text-sm">PDF Yok</span>
+                              )}
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                ) : (
+                  <div className="text-center py-12">
+                    <FileText className="h-12 w-12 text-white/20 mx-auto mb-4" />
+                    <p className="text-white/60">Henüz fatura kaydı yok</p>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          </TabsContent>
+        </Tabs>
       </div>
-
-      {/* Invoices */}
-      <Card className="bg-black/20 border-white/10 backdrop-blur-xl">
-        <CardHeader>
-          <CardTitle className="text-white flex items-center gap-2">
-            <FileText className="h-5 w-5" />
-            Faturalar
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="overflow-x-auto">
-            <table className="w-full">
-              <thead>
-                <tr className="border-b border-white/10">
-                  <th className="text-left py-3 px-4 text-white/80 font-semibold">Fatura No</th>
-                  <th className="text-left py-3 px-4 text-white/80 font-semibold">Tarih</th>
-                  <th className="text-left py-3 px-4 text-white/80 font-semibold">Tutar</th>
-                  <th className="text-left py-3 px-4 text-white/80 font-semibold">Durum</th>
-                  <th className="text-left py-3 px-4 text-white/80 font-semibold">Açıklama</th>
-                  <th className="text-left py-3 px-4 text-white/80 font-semibold">İşlemler</th>
-                </tr>
-              </thead>
-              <tbody>
-                {invoices?.map((invoice) => (
-                  <tr key={invoice.id} className="border-b border-white/5 hover:bg-white/5 transition-colors">
-                    <td className="py-4 px-4 text-white font-mono">{invoice.invoice_number}</td>
-                    <td className="py-4 px-4 text-white/80">
-                      {new Date(invoice.invoice_date).toLocaleDateString("tr-TR")}
-                    </td>
-                    <td className="py-4 px-4 text-white font-semibold">
-                      {invoice.amount.toFixed(2)} {invoice.currency}
-                    </td>
-                    <td className="py-4 px-4">
-                      {invoice.status === "paid" ? (
-                        <Badge className="bg-emerald-500/20 text-emerald-400 border-emerald-500/20">
-                          Ödendi
-                        </Badge>
-                      ) : invoice.status === "pending" ? (
-                        <Badge className="bg-yellow-500/20 text-yellow-400 border-yellow-500/20">
-                          Bekliyor
-                        </Badge>
-                      ) : invoice.status === "overdue" ? (
-                        <Badge className="bg-red-500/20 text-red-400 border-red-500/20">
-                          Gecikmiş
-                        </Badge>
-                      ) : (
-                        <Badge className="bg-gray-500/20 text-gray-400 border-gray-500/20">
-                          İptal
-                        </Badge>
-                      )}
-                    </td>
-                    <td className="py-4 px-4 text-white/80">{invoice.description || "-"}</td>
-                    <td className="py-4 px-4">
-                      {invoice.file_url ? (
-                        <a
-                          href={invoice.file_url}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="text-teal-400 hover:text-teal-300 transition-colors"
-                        >
-                          İndir
-                        </a>
-                      ) : (
-                        <span className="text-white/40">-</span>
-                      )}
-                    </td>
-                  </tr>
-                ))}
-                {!invoices || invoices.length === 0 ? (
-                  <tr>
-                    <td colSpan={6} className="py-8 text-center text-white/60">
-                      Henüz fatura bulunmuyor
-                    </td>
-                  </tr>
-                ) : null}
-              </tbody>
-            </table>
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Recent Credits */}
-      <Card className="bg-black/20 border-white/10 backdrop-blur-xl">
-        <CardHeader>
-          <CardTitle className="text-white">Son Krediler</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-3">
-            {credits?.slice(0, 5).map((credit) => (
-              <div
-                key={credit.id}
-                className="flex items-center justify-between p-3 bg-white/5 rounded-lg"
-              >
-                <div>
-                  <p className="text-white font-medium">{credit.name}</p>
-                  <p className="text-white/60 text-sm">
-                    {new Date(credit.created_at).toLocaleDateString("tr-TR")}
-                  </p>
-                </div>
-                <div className="text-right">
-                  <p className="text-white font-semibold">{credit.amount?.toLocaleString("tr-TR")} TL</p>
-                  <p className="text-white/60 text-sm">{credit.credit_type}</p>
-                </div>
-              </div>
-            ))}
-            {!credits || credits.length === 0 ? (
-              <p className="text-center text-white/60 py-4">Henüz kredi kaydı bulunmuyor</p>
-            ) : null}
-          </div>
-        </CardContent>
-      </Card>
-    </div>
+    </AdminLayoutWrapper>
   )
 }

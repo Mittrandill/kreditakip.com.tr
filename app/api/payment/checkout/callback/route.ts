@@ -182,8 +182,60 @@ export async function POST(request: NextRequest) {
       console.log("[checkout-callback] Payment transaction record created successfully")
     }
 
-    // Billing info is already stored in pending_payments.metadata
-    console.log("[checkout-callback] Billing info stored in pending_payments metadata")
+    // Create pending invoice for admin to upload PDF
+    const invoiceNumber = `INV-${new Date().toISOString().split('T')[0].replace(/-/g, '')}-${newSubscription.id.slice(0, 8).toUpperCase()}`
+    const { error: invoiceError } = await supabase.from("invoices").insert({
+      user_id: userId,
+      subscription_id: newSubscription.id,
+      payment_id: result.paymentId,
+      invoice_number: invoiceNumber,
+      invoice_date: new Date().toISOString().split('T')[0],
+      due_date: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+      amount: plan.price,
+      currency: plan.currency || "TRY",
+      status: "pending", // Pending until admin uploads PDF
+      description: `Abonelik Ödemesi - ${plan.name}`,
+    })
+
+    if (invoiceError) {
+      console.error("[checkout-callback] Failed to create invoice:", invoiceError)
+      // Don't fail - subscription is created
+    } else {
+      console.log("[checkout-callback] Pending invoice created:", invoiceNumber)
+    }
+
+    // Save billing info to billing_info table for admin panel
+    if (pendingPayment.metadata?.billingInfo) {
+      const billingInfo = pendingPayment.metadata.billingInfo
+      console.log("[checkout-callback] Saving billing info to database")
+
+      const { error: billingError } = await supabase
+        .from("billing_info")
+        .upsert(
+          {
+            user_id: userId,
+            full_name: billingInfo.fullName,
+            email: billingInfo.email,
+            phone: billingInfo.phone,
+            address: billingInfo.address,
+            city: billingInfo.city,
+            district: billingInfo.district || null,
+            postal_code: billingInfo.zipCode || "",
+            country: "Türkiye",
+            tax_number: billingInfo.taxNumber || null,
+            tax_office: billingInfo.taxOffice || null,
+            updated_at: new Date().toISOString(),
+          },
+          { onConflict: "user_id" }
+        )
+
+      if (billingError) {
+        console.error("[checkout-callback] Failed to save billing info:", billingError)
+        // Don't fail - subscription is created
+      } else {
+        console.log("[checkout-callback] Billing info saved successfully")
+      }
+    }
 
     // Send invoice notification email to admin
     if (pendingPayment.metadata?.billingInfo) {

@@ -1,5 +1,5 @@
 import { checkAdminAccess } from "@/lib/admin-check"
-import { createSupabaseServer } from "@/lib/supabase-server"
+import { createSupabaseAdmin } from "@/lib/supabase-server"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Users, CreditCard, DollarSign } from "lucide-react"
@@ -8,14 +8,14 @@ import { AdminLayoutWrapper } from "@/components/admin-layout-wrapper"
 
 export default async function UsersManagement() {
   const { session } = await checkAdminAccess()
-  const supabase = createSupabaseServer()
+  const supabase = createSupabaseAdmin()
 
   // Get all users with their profiles and subscription info
   const { data: users, error: usersError } = await supabase
     .from("profiles")
     .select(`
       *,
-      subscriptions (
+      subscriptions!subscriptions_user_id_fkey (
         id,
         plan_type,
         status,
@@ -110,7 +110,13 @@ export default async function UsersManagement() {
               </thead>
               <tbody>
                 {users?.map((user) => {
-                  const subscription = user.subscriptions?.[0]
+                  // Find active subscription, or the most recent one
+                  const subscriptions = user.subscriptions || []
+                  const activeSubscription = subscriptions.find((s: any) => s.status === "active")
+                  const subscription = activeSubscription || subscriptions.sort((a: any, b: any) =>
+                    new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+                  )[0]
+
                   const planNames: Record<string, string> = {
                     free: "Ücretsiz",
                     premium: "Premium",

@@ -82,10 +82,7 @@ export default async function AdminDashboard() {
             </CardHeader>
             <CardContent>
               <div className="text-3xl font-bold text-white">{totalUsers || 0}</div>
-              <p className="text-xs text-white/60 mt-1">Profiles tablosunda</p>
-              <p className="text-xs text-yellow-400/60 mt-1">
-                ℹ️ auth.users sayısından farklıysa trigger kontrol edin
-              </p>
+              <p className="text-xs text-white/60 mt-1">Kayıtlı Kullanıcı</p>
             </CardContent>
           </Card>
 

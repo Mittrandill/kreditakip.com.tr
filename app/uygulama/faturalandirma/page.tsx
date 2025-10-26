@@ -9,9 +9,12 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { CreditCard, Download, Calendar, CheckCircle2, XCircle, Clock, Crown, ArrowLeft, Receipt } from "lucide-react"
 import { useAuth } from "@/hooks/use-auth"
 import { useSubscription } from "@/hooks/use-subscription"
-import { createClient } from "@supabase/supabase-js"
+import { createBrowserClient } from "@supabase/ssr"
 
-const supabase = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!)
+const supabase = createBrowserClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL!,
+  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+)
 
 interface PaymentTransaction {
   id: string
@@ -23,34 +26,75 @@ interface PaymentTransaction {
   iyzico_payment_id: string | null
 }
 
+interface Invoice {
+  id: string
+  invoice_number: string
+  invoice_date: string
+  amount: number
+  currency: string
+  status: string
+  file_url: string | null
+  file_name: string | null
+  payment_date: string | null
+  subscription_id: string | null
+}
+
 export default function FaturalandirmaPage() {
   const router = useRouter()
   const { user } = useAuth()
   const { subscription, isPremium, loading: subscriptionLoading } = useSubscription()
   const [transactions, setTransactions] = useState<PaymentTransaction[]>([])
+  const [invoices, setInvoices] = useState<Invoice[]>([])
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    async function fetchTransactions() {
-      if (!user) return
+    async function fetchData() {
+      if (!user) {
+        console.log("[faturalandirma] No user found, waiting...")
+        return
+      }
+
+      console.log("[faturalandirma] Fetching data for user:", user.id)
 
       try {
-        const { data, error } = await supabase
+        // Fetch transactions
+        console.log("[faturalandirma] Fetching transactions...")
+        const { data: transactionsData, error: transactionsError } = await supabase
           .from("payment_transactions")
           .select("*")
           .eq("user_id", user.id)
           .order("created_at", { ascending: false })
 
-        if (error) throw error
-        setTransactions(data || [])
+        if (transactionsError) {
+          console.error("[faturalandirma] Transactions error:", transactionsError)
+          throw transactionsError
+        }
+        console.log("[faturalandirma] Transactions fetched:", transactionsData?.length || 0)
+        setTransactions(transactionsData || [])
+
+        // Fetch invoices
+        console.log("[faturalandirma] Fetching invoices...")
+        const { data: invoicesData, error: invoicesError } = await supabase
+          .from("invoices")
+          .select("*")
+          .eq("user_id", user.id)
+          .order("invoice_date", { ascending: false })
+
+        if (invoicesError) {
+          console.error("[faturalandirma] Invoices error:", invoicesError)
+          throw invoicesError
+        }
+        console.log("[faturalandirma] Invoices fetched:", invoicesData?.length || 0)
+        console.log("[faturalandirma] Invoices data:", invoicesData)
+        setInvoices(invoicesData || [])
       } catch (error) {
-        console.error("Error fetching transactions:", error)
+        console.error("[faturalandirma] Error fetching data:", error)
       } finally {
         setLoading(false)
       }
     }
 
-    fetchTransactions()
+    fetchData()
   }, [user])
 
   const getStatusBadge = (status: string) => {
@@ -190,7 +234,6 @@ export default function FaturalandirmaPage() {
                     <TableHead>Tutar</TableHead>
                     <TableHead>Ödeme Yöntemi</TableHead>
                     <TableHead>Durum</TableHead>
-                    <TableHead className="text-right">İşlemler</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -213,11 +256,84 @@ export default function FaturalandirmaPage() {
                         </div>
                       </TableCell>
                       <TableCell>{getStatusBadge(transaction.status)}</TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </div>
+          )}
+        </CardContent>
+      </Card>
+
+      {/* Invoices */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Download className="h-5 w-5 text-blue-600" />
+            Faturalarım
+          </CardTitle>
+          <CardDescription>Faturalarınızı görüntüleyin ve indirin</CardDescription>
+        </CardHeader>
+        <CardContent>
+          {loading ? (
+            <p className="text-gray-500 text-center py-8">Yükleniyor...</p>
+          ) : invoices.length === 0 ? (
+            <p className="text-gray-500 text-center py-8">Henüz fatura bulunmuyor</p>
+          ) : (
+            <div className="overflow-x-auto">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Fatura No</TableHead>
+                    <TableHead>Tarih</TableHead>
+                    <TableHead>Tutar</TableHead>
+                    <TableHead>Durum</TableHead>
+                    <TableHead className="text-right">Fatura</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {invoices.map((invoice) => (
+                    <TableRow key={invoice.id}>
+                      <TableCell className="font-mono font-medium">{invoice.invoice_number}</TableCell>
+                      <TableCell>
+                        {new Date(invoice.invoice_date).toLocaleDateString("tr-TR", {
+                          year: "numeric",
+                          month: "long",
+                          day: "numeric",
+                        })}
+                      </TableCell>
+                      <TableCell className="font-medium">
+                        {Number(invoice.amount).toFixed(2)} {invoice.currency}
+                      </TableCell>
+                      <TableCell>
+                        {invoice.status === "paid" ? (
+                          <Badge className="bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400">
+                            <CheckCircle2 className="h-3 w-3 mr-1" />
+                            Ödendi
+                          </Badge>
+                        ) : (
+                          <Badge className="bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400">
+                            <Clock className="h-3 w-3 mr-1" />
+                            Hazırlanıyor
+                          </Badge>
+                        )}
+                      </TableCell>
                       <TableCell className="text-right">
-                        <Button variant="ghost" size="sm" disabled>
-                          <Download className="h-4 w-4 mr-2" />
-                          Fatura
-                        </Button>
+                        {invoice.file_url ? (
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => window.open(invoice.file_url!, "_blank")}
+                          >
+                            <Download className="h-4 w-4 mr-2" />
+                            PDF İndir
+                          </Button>
+                        ) : (
+                          <Button variant="ghost" size="sm" disabled>
+                            <Clock className="h-4 w-4 mr-2" />
+                            PDF Hazırlanıyor
+                          </Button>
+                        )}
                       </TableCell>
                     </TableRow>
                   ))}
