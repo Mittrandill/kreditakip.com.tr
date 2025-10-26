@@ -185,7 +185,6 @@ export function AccountTypeSelector({
 
   const handleConfirm = () => {
     if (selectedAccountTypeState) {
-      console.log(`🎯 Hesap türü seçildi:`, selectedAccountTypeState)
       onSelect(selectedAccountTypeState)
       onOpenChange(false)
     }

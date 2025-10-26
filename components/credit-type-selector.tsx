@@ -189,7 +189,6 @@ export function CreditTypeSelector({
 
   const handleConfirm = () => {
     if (selectedCreditTypeState) {
-      console.log(`🎯 Kredi türü seçildi:`, selectedCreditTypeState)
       onSelect(selectedCreditTypeState)
       onOpenChange(false)
     }

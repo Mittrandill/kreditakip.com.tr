@@ -239,12 +239,6 @@ export function CreditCardTypeSelector({
         original_bank_name: selectedCreditCardType.bank_name,
       }
 
-      console.log("🎯 Kart türü seçildi:", {
-        name: updatedCreditCardType.name,
-        segment: updatedCreditCardType.segment,
-        bank: matchedBankName,
-      })
-
       onCreditCardTypeSelect(updatedCreditCardType)
     }
   }

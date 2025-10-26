@@ -338,20 +338,17 @@ export default function Header({ pageTitle }: HeaderProps) {
 
   const loadHeaderNotifications = async () => {
     if (!user?.id) {
-      console.log("[v0] No user ID available for notifications")
       return
     }
 
     try {
-      console.log("[v0] Loading notifications for user:", user.id)
       const data = await getNotifications(user.id)
       const recent = data?.slice(0, 5) || []
       const unread = data?.filter((n) => !n.is_read).length || 0
       setNotifications(recent)
       setUnreadCount(unread)
-      console.log("[v0] Successfully loaded notifications:", recent.length, "recent,", unread, "unread")
     } catch (error) {
-      console.error("[v0] Error loading header notifications:", error)
+      console.error("Error loading header notifications:", error)
       setNotifications([])
       setUnreadCount(0)
     }
