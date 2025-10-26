@@ -66,6 +66,7 @@ import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 import { supabase } from "@/lib/supabase"
 import { useUserTheme } from "@/components/user-theme-provider"
 import { useSubscription } from "@/hooks/use-subscription"
+import { UserInvoices } from "@/components/user-invoices"
 
 export default function AyarlarPage() {
   const { user, profile: initialProfile, loading: authLoading } = useAuth()
@@ -674,7 +675,7 @@ export default function AyarlarPage() {
       <div className="bg-white dark:bg-gray-900 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-800 overflow-hidden">
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
           <div className="border-b border-gray-100 dark:border-gray-800 bg-gray-50/50 dark:bg-gray-800/50">
-            <TabsList className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 bg-transparent h-auto p-2 gap-2">
+            <TabsList className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 bg-transparent h-auto p-2 gap-2">
               <TabsTrigger
                 value="profile"
                 className="flex items-center gap-2 py-3 px-4 data-[state=active]:text-emerald-600 dark:data-[state=active]:text-emerald-400 rounded-xl transition-all duration-200 hover:bg-gray-100 dark:hover:bg-gray-700"
@@ -688,6 +689,13 @@ export default function AyarlarPage() {
               >
                 <Crown className="h-4 w-4" />
                 <span className="font-medium">Abonelik</span>
+              </TabsTrigger>
+              <TabsTrigger
+                value="invoices"
+                className="flex items-center gap-2 py-3 px-4 data-[state=active]:text-emerald-600 dark:data-[state=active]:text-emerald-400 rounded-xl transition-all duration-200 hover:bg-gray-100 dark:hover:bg-gray-700"
+              >
+                <FileText className="h-4 w-4" />
+                <span className="font-medium">Faturalar</span>
               </TabsTrigger>
               <TabsTrigger
                 value="financial"
@@ -1164,6 +1172,10 @@ export default function AyarlarPage() {
                   </DialogContent>
                 </Dialog>
               </div>
+            </TabsContent>
+
+            <TabsContent value="invoices">
+              <UserInvoices />
             </TabsContent>
 
             <TabsContent value="financial">

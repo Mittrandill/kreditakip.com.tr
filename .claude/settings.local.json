@@ -48,7 +48,11 @@
       "Bash(vercel --version)",
       "Bash(git add scripts/verify-pci-dss-database.sql scripts/add-plan-id-to-subscriptions.sql docs/PCI-DSS-DATABASE-CHECKLIST.md)",
       "Bash(git pull:*)",
-      "Read(//c/Users/akint/Desktop/ss/**)"
+      "Read(//c/Users/akint/Desktop/ss/**)",
+      "Bash(npx next lint:*)",
+      "Bash(powershell -Command:*)",
+      "Bash(pnpm install)",
+      "Bash(taskkill:*)"
     ],
     "deny": [],
     "ask": []
