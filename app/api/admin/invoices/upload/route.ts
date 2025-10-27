@@ -1,5 +1,6 @@
 import { createClient } from "@supabase/supabase-js"
 import { NextRequest, NextResponse } from "next/server"
+import { revalidatePath } from "next/cache"
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
 const supabaseServiceKey = process.env.SERVICE_ROLE_KEY!
@@ -84,7 +85,11 @@ export async function POST(request: NextRequest) {
       status: updatedInvoice.status,
     })
 
-    return NextResponse.json({ url: publicUrl, path: data.path })
+    // Revalidate the invoices page to clear Next.js cache
+    revalidatePath("/admin/faturalar")
+    console.log("[invoice-upload] Revalidated path: /admin/faturalar")
+
+    return NextResponse.json({ url: publicUrl, path: data.path, invoice: updatedInvoice })
   } catch (error) {
     console.error("Error in POST /api/admin/invoices/upload:", error)
     return NextResponse.json({ error: "Internal server error" }, { status: 500 })

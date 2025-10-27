@@ -96,6 +96,22 @@ export function InvoiceUploadButton({
       const uploadResult = await uploadResponse.json()
       console.log("[invoice-upload] Upload successful:", uploadResult)
 
+      // Wait 300ms to ensure database commit completes
+      await new Promise(resolve => setTimeout(resolve, 300))
+
+      // Verify the invoice was updated correctly by re-fetching
+      const verifyResponse = await fetch(`/api/admin/invoices?subscriptionId=${subscriptionId}`)
+      if (verifyResponse.ok) {
+        const { invoices: verifiedInvoices } = await verifyResponse.json()
+        const updatedInvoice = verifiedInvoices?.find((inv: any) => inv.id === pendingInvoice.id)
+
+        if (updatedInvoice?.file_url) {
+          console.log("[invoice-upload] Verification successful, file_url confirmed:", updatedInvoice.file_url)
+        } else {
+          console.warn("[invoice-upload] Warning: file_url not found in verification, but proceeding")
+        }
+      }
+
       alert("Fatura başarıyla yüklendi!")
 
       // Force reload with cache bypass

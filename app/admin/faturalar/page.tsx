@@ -59,17 +59,27 @@ export default async function InvoicesManagement() {
   })
 
   // Filter subscriptions that need invoices (no invoice OR invoice without PDF)
+  // Use explicit check: file_url must exist, not be null, and not be empty string
+  const invoicesWithPDF = invoices?.filter((inv) => {
+    const hasValidPDF = inv.file_url && inv.file_url.trim().length > 0
+    if (hasValidPDF) {
+      console.log(`[admin/faturalar] Invoice ${inv.id} has PDF for subscription ${inv.subscription_id}`)
+    }
+    return hasValidPDF
+  }) || []
+
   const subscriptionIdsWithPDF = new Set(
-    invoices?.filter((inv) => inv.file_url).map((inv) => inv.subscription_id) || []
+    invoicesWithPDF.map((inv) => inv.subscription_id)
   )
 
   console.log("[admin/faturalar] Total invoices:", invoices?.length)
-  console.log("[admin/faturalar] Invoices with PDF:", subscriptionIdsWithPDF.size)
+  console.log("[admin/faturalar] Invoices with valid PDF:", invoicesWithPDF.length)
   console.log("[admin/faturalar] Subscription IDs with PDF:", Array.from(subscriptionIdsWithPDF))
 
   const pendingInvoiceUsers = subscriptionsData?.filter((sub) => {
     const hasPDF = subscriptionIdsWithPDF.has(sub.id)
-    console.log(`[admin/faturalar] Subscription ${sub.id}: hasPDF=${hasPDF}`)
+    const userEmail = sub.profiles?.email || 'unknown'
+    console.log(`[admin/faturalar] Subscription ${sub.id} (${userEmail}): hasPDF=${hasPDF}, status=${sub.status}`)
     return !hasPDF
   }).map((sub) => ({
     ...sub,
@@ -77,6 +87,7 @@ export default async function InvoicesManagement() {
   })) || []
 
   console.log("[admin/faturalar] Pending invoice users count:", pendingInvoiceUsers.length)
+  console.log("[admin/faturalar] Pending invoice subscription IDs:", pendingInvoiceUsers.map(u => u.id))
 
   // Get invoice statistics
   const { count: totalInvoices } = await supabase
