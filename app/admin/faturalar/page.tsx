@@ -15,17 +15,10 @@ export default async function InvoicesManagement() {
   const { session } = await checkAdminAccess()
   const supabase = createSupabaseAdmin()
 
-  // Get all invoices with user info
+  // Get all invoices (without joins to avoid FK errors)
   const { data: invoices, error: invoicesError } = await supabase
     .from("invoices")
-    .select(`
-      *,
-      profiles (
-        first_name,
-        last_name,
-        email
-      )
-    `)
+    .select("*")
     .order("invoice_date", { ascending: false })
 
   if (invoicesError) {
@@ -35,9 +28,10 @@ export default async function InvoicesManagement() {
   }
 
   // Get successful payment transactions (without joins to avoid FK errors)
+  // Use transaction id as payment_id since payment_id column doesn't exist
   const { data: rawTransactions, error: transactionsError } = await supabase
     .from("payment_transactions")
-    .select("id, payment_id, subscription_id, amount, currency, status, user_id")
+    .select("id, subscription_id, amount, currency, status, user_id, iyzico_payment_id")
     .eq("status", "completed")
     .order("created_at", { ascending: false })
 
@@ -101,45 +95,51 @@ export default async function InvoicesManagement() {
 
   console.log("[admin/faturalar] Total successful payments:", allTransactions?.length || 0)
 
-  // Create a map of payment_id to invoice
-  const safeInvoices = invoices || []
-  const invoicesByPaymentId = new Map()
+  // Enrich invoices with user info from profilesMap
+  const safeInvoices = (invoices || []).map((inv: any) => ({
+    ...inv,
+    profiles: profilesMap.get(inv.user_id)
+  }))
+
+  const invoicesBySubscriptionId = new Map()
   safeInvoices.forEach((inv) => {
-    if (inv.payment_id) {
-      invoicesByPaymentId.set(inv.payment_id, inv)
+    if (inv.subscription_id) {
+      invoicesBySubscriptionId.set(inv.subscription_id, inv)
     }
   })
 
   console.log("[admin/faturalar] Total invoices:", safeInvoices.length)
-  console.log("[admin/faturalar] Invoices with payment_id:", invoicesByPaymentId.size)
+  console.log("[admin/faturalar] Invoices mapped by subscription_id:", invoicesBySubscriptionId.size)
 
   // Filter payments that need invoice PDFs
   const pendingInvoiceUsers = (allTransactions || [])
     .filter((tx) => {
-      const invoice = invoicesByPaymentId.get(tx.payment_id)
+      const invoice = invoicesBySubscriptionId.get(tx.subscription_id)
       const hasValidPDF = invoice?.file_url && invoice.file_url.trim().length > 0
 
       const userEmail = tx.subscriptions?.profiles?.email || 'unknown'
-      console.log(`[admin/faturalar] Payment ${tx.payment_id} (${userEmail}): hasInvoice=${!!invoice}, hasValidPDF=${hasValidPDF}`)
+      console.log(`[admin/faturalar] Subscription ${tx.subscription_id} (${userEmail}): hasInvoice=${!!invoice}, hasValidPDF=${hasValidPDF}`)
 
       return !hasValidPDF // Show if no invoice or no PDF
     })
     .map((tx) => ({
       id: tx.subscription_id,
-      user_id: tx.subscriptions?.user_id,
+      user_id: tx.subscriptions?.user_id || tx.user_id,
       plan_type: tx.subscriptions?.plan_type,
       status: tx.subscriptions?.status,
       created_at: tx.subscriptions?.created_at,
       profiles: tx.subscriptions?.profiles,
       transaction: {
-        payment_id: tx.payment_id,
+        transaction_id: tx.id,
+        iyzico_payment_id: tx.iyzico_payment_id,
+        subscription_id: tx.subscription_id,
         amount: tx.amount,
         currency: tx.currency,
       },
     }))
 
   console.log("[admin/faturalar] Pending invoice users count:", pendingInvoiceUsers.length)
-  console.log("[admin/faturalar] Pending payment IDs:", pendingInvoiceUsers.map(u => u.transaction.payment_id))
+  console.log("[admin/faturalar] Pending subscription IDs:", pendingInvoiceUsers.map(u => u.id))
 
   // Get invoice statistics
   const { count: totalInvoices } = await supabase
@@ -302,9 +302,8 @@ export default async function InvoicesManagement() {
                       </td>
                       <td className="py-4 px-4">
                         <InvoiceUploadButton
-                          paymentId={sub.transaction?.payment_id || ""}
-                          userId={sub.user_id}
                           subscriptionId={sub.id}
+                          userId={sub.user_id}
                           amount={sub.transaction?.amount || 0}
                           currency={sub.transaction?.currency || "TRY"}
                           userEmail={sub.profiles?.email || ""}

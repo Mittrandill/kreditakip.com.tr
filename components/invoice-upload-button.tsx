@@ -6,9 +6,8 @@ import { Upload, Loader2 } from "lucide-react"
 import { toast } from "sonner"
 
 interface InvoiceUploadButtonProps {
-  paymentId: string
-  userId: string
   subscriptionId: string
+  userId: string
   amount: number
   currency: string
   userEmail: string
@@ -16,9 +15,8 @@ interface InvoiceUploadButtonProps {
 }
 
 export function InvoiceUploadButton({
-  paymentId,
-  userId,
   subscriptionId,
+  userId,
   amount,
   currency,
   userEmail,
@@ -40,20 +38,20 @@ export function InvoiceUploadButton({
     setLoading(true)
 
     try {
-      console.log("[invoice-upload] Finding invoice by payment_id:", paymentId)
+      console.log("[invoice-upload] Finding invoice by subscription_id:", subscriptionId)
 
-      // 1. Find invoice by payment_id
-      const findResponse = await fetch(`/api/admin/invoices?paymentId=${paymentId}`)
+      // 1. Find invoice by subscription_id
+      const findResponse = await fetch(`/api/admin/invoices?subscriptionId=${subscriptionId}`)
 
       if (!findResponse.ok) {
         throw new Error("Fatura kaydı bulunamadı")
       }
 
       const { invoices } = await findResponse.json()
-      const pendingInvoice = invoices?.[0] // Should be only one invoice per payment_id
+      const pendingInvoice = invoices?.[0] // Should be only one invoice per subscription
 
       if (!pendingInvoice) {
-        throw new Error("Bu ödeme için fatura bulunamadı. Lütfen sayfayı yenileyin ve tekrar deneyin.")
+        throw new Error("Bu abonelik için fatura bulunamadı. Lütfen sayfayı yenileyin ve tekrar deneyin.")
       }
 
       console.log("[invoice-upload] Found invoice:", pendingInvoice.id, "Current file_url:", pendingInvoice.file_url)

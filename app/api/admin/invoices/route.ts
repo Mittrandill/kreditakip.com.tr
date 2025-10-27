@@ -10,18 +10,13 @@ export async function GET(request: NextRequest) {
     const { searchParams } = new URL(request.url)
     const subscriptionId = searchParams.get("subscriptionId")
     const invoiceNumber = searchParams.get("invoiceNumber")
-    const paymentId = searchParams.get("paymentId")
 
     let query = supabase
       .from("invoices")
       .select("*")
 
-    // Filter by payment_id if provided (most specific)
-    if (paymentId) {
-      query = query.eq("payment_id", paymentId)
-    }
-    // Filter by subscription if provided
-    else if (subscriptionId) {
+    // Filter by subscription if provided (primary method)
+    if (subscriptionId) {
       query = query.eq("subscription_id", subscriptionId)
     }
     // Filter by invoice number if provided
