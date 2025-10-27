@@ -101,24 +101,26 @@ export default async function InvoicesManagement() {
     profiles: profilesMap.get(inv.user_id)
   }))
 
-  const invoicesBySubscriptionId = new Map()
+  // Create map using payment_id (which matches iyzico_payment_id in transactions)
+  const invoicesByPaymentId = new Map()
   safeInvoices.forEach((inv) => {
-    if (inv.subscription_id) {
-      invoicesBySubscriptionId.set(inv.subscription_id, inv)
+    if (inv.payment_id) {
+      invoicesByPaymentId.set(inv.payment_id, inv)
     }
   })
 
   console.log("[admin/faturalar] Total invoices:", safeInvoices.length)
-  console.log("[admin/faturalar] Invoices mapped by subscription_id:", invoicesBySubscriptionId.size)
+  console.log("[admin/faturalar] Invoices mapped by payment_id:", invoicesByPaymentId.size)
 
   // Filter payments that need invoice PDFs
+  // Match: payment_transactions.iyzico_payment_id === invoices.payment_id
   const pendingInvoiceUsers = (allTransactions || [])
     .filter((tx) => {
-      const invoice = invoicesBySubscriptionId.get(tx.subscription_id)
+      const invoice = invoicesByPaymentId.get(tx.iyzico_payment_id)
       const hasValidPDF = invoice?.file_url && invoice.file_url.trim().length > 0
 
       const userEmail = tx.subscriptions?.profiles?.email || 'unknown'
-      console.log(`[admin/faturalar] Subscription ${tx.subscription_id} (${userEmail}): hasInvoice=${!!invoice}, hasValidPDF=${hasValidPDF}`)
+      console.log(`[admin/faturalar] Payment ${tx.iyzico_payment_id} (${userEmail}): hasInvoice=${!!invoice}, hasValidPDF=${hasValidPDF}`)
 
       return !hasValidPDF // Show if no invoice or no PDF
     })
@@ -139,7 +141,7 @@ export default async function InvoicesManagement() {
     }))
 
   console.log("[admin/faturalar] Pending invoice users count:", pendingInvoiceUsers.length)
-  console.log("[admin/faturalar] Pending subscription IDs:", pendingInvoiceUsers.map(u => u.id))
+  console.log("[admin/faturalar] Pending iyzico_payment_ids:", pendingInvoiceUsers.map(u => u.transaction.iyzico_payment_id))
 
   // Get invoice statistics
   const { count: totalInvoices } = await supabase
@@ -302,6 +304,7 @@ export default async function InvoicesManagement() {
                       </td>
                       <td className="py-4 px-4">
                         <InvoiceUploadButton
+                          iyzicoPaymentId={sub.transaction?.iyzico_payment_id || ""}
                           subscriptionId={sub.id}
                           userId={sub.user_id}
                           amount={sub.transaction?.amount || 0}

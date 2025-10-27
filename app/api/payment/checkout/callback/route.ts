@@ -224,6 +224,7 @@ export async function POST(request: NextRequest) {
             country: "Türkiye",
             tax_number: billingInfo.taxNumber || null,
             tax_office: billingInfo.taxOffice || null,
+            identity_number: billingInfo.identityNumber || null,
             updated_at: new Date().toISOString(),
           },
           { onConflict: "user_id" }
