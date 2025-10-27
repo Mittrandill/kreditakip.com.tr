@@ -6,13 +6,13 @@
 
 Supabase Dashboard > SQL Editor'de aşağıdaki script'leri sırayla çalıştırın:
 
-```sql
+\`\`\`sql
 -- 1. Blog ve Admin tabloları
 -- scripts/45-create-admin-and-blog-tables.sql dosyasını çalıştırın
 
 -- 2. Fatura tablosu
 -- scripts/46-create-invoices-table.sql dosyasını çalıştırın
-```
+\`\`\`
 
 ### 2. Storage Bucket Oluşturun
 
@@ -25,12 +25,12 @@ Storage policies için `docs/ADMIN-SETUP.md` dosyasına bakın.
 
 ### 3. Admin Kullanıcı Oluşturun
 
-```sql
+\`\`\`sql
 -- Önce normal kayıt yapın, sonra admin yetkisi verin:
 UPDATE public.profiles
 SET is_admin = true
 WHERE email = 'admin@kreditakip.com.tr';
-```
+\`\`\`
 
 ### 4. Admin Panel'e Giriş
 

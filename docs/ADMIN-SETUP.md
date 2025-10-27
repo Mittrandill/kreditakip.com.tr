@@ -27,7 +27,7 @@ Admin kullanıcı oluşturmak için Supabase SQL Editor'ü kullanmanız gerekmek
 
 Supabase Dashboard'a gidin ve SQL Editor'de aşağıdaki komutu çalıştırın:
 
-```sql
+\`\`\`sql
 -- E-posta ile admin yetkisi verme
 UPDATE public.profiles
 SET is_admin = true
@@ -37,17 +37,17 @@ WHERE email = 'admin@kreditakip.com.tr';
 UPDATE public.profiles
 SET is_admin = true
 WHERE id = 'kullanıcı-uuid-buraya';
-```
+\`\`\`
 
 ### Adım 3: Admin Yetkisini Kontrol Edin
 
 Admin yetkisinin verildiğini kontrol etmek için:
 
-```sql
+\`\`\`sql
 SELECT id, email, full_name, is_admin, created_at
 FROM public.profiles
 WHERE is_admin = true;
-```
+\`\`\`
 
 ---
 
@@ -57,9 +57,9 @@ Admin panel için gerekli database tablolarını oluşturmak için aşağıdaki 
 
 ### 1. Blog ve Admin Tabloları
 
-```bash
+\`\`\`bash
 # Script dosyası: scripts/45-create-admin-and-blog-tables.sql
-```
+\`\`\`
 
 Bu script:
 - `profiles` tablosuna `is_admin` kolonu ekler
@@ -69,9 +69,9 @@ Bu script:
 
 ### 2. Fatura Tablosu
 
-```bash
+\`\`\`bash
 # Script dosyası: scripts/46-create-invoices-table.sql
-```
+\`\`\`
 
 Bu script:
 - `invoices` tablosu oluşturur
@@ -104,7 +104,7 @@ Supabase Dashboard > Storage > invoices bucket > Policies sekmesine gidin ve aş
 
 #### Policy 1: Users can view their own invoices
 
-```sql
+\`\`\`sql
 CREATE POLICY "Users can view their own invoices"
 ON storage.objects FOR SELECT
 USING (
@@ -116,11 +116,11 @@ USING (
     )
   )
 );
-```
+\`\`\`
 
 #### Policy 2: Only admins can upload invoices
 
-```sql
+\`\`\`sql
 CREATE POLICY "Only admins can upload invoices"
 ON storage.objects FOR INSERT
 WITH CHECK (
@@ -130,11 +130,11 @@ WITH CHECK (
     WHERE id = auth.uid() AND is_admin = true
   )
 );
-```
+\`\`\`
 
 #### Policy 3: Only admins can delete invoices
 
-```sql
+\`\`\`sql
 CREATE POLICY "Only admins can delete invoices"
 ON storage.objects FOR DELETE
 USING (
@@ -144,7 +144,7 @@ USING (
     WHERE id = auth.uid() AND is_admin = true
   )
 );
-```
+\`\`\`
 
 ---
 
@@ -274,9 +274,9 @@ Her admin sayfasında `checkAdminAccess()` fonksiyonu çalışır:
 ### Admin panele erişemiyorum
 
 1. Kullanıcının `is_admin` flag'inin `true` olduğunu kontrol edin:
-   ```sql
+   \`\`\`sql
    SELECT id, email, is_admin FROM public.profiles WHERE email = 'kullanıcı-email';
-   ```
+   \`\`\`
 
 2. Tarayıcı cache'ini temizleyin ve tekrar giriş yapın
 

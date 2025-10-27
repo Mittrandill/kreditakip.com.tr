@@ -20,9 +20,9 @@ Trigger oluşturulmadan önce kayıt olan kullanıcılar profiles tablosunda olm
 ### Adım 1: Kontrol Edin
 Supabase Dashboard > SQL Editor'de aşağıdaki komutu çalıştırın:
 
-```sql
+\`\`\`sql
 -- scripts/48-check-users-count.sql dosyasını çalıştırın
-```
+\`\`\`
 
 Bu size şunları gösterecek:
 - `auth.users` tablosundaki toplam kullanıcı sayısı
@@ -31,19 +31,19 @@ Bu size şunları gösterecek:
 - Detaylı karşılaştırma
 
 **Sonuç:**
-```
+\`\`\`
 auth.users: 5
 profiles: 1
 Eksik profil: 4
-```
+\`\`\`
 
 Eğer eksik profil varsa, devam edin.
 
 ### Adım 2: Trigger Oluşturun ve Eksikleri Tamamlayın
 
-```sql
+\`\`\`sql
 -- scripts/49-create-profile-trigger.sql dosyasını çalıştırın
-```
+\`\`\`
 
 Bu script:
 1. ✅ Trigger fonksiyonu oluşturur (handle_new_user)
@@ -52,12 +52,12 @@ Bu script:
 4. ✅ Sonuçları gösterir
 
 **Çalıştırdıktan sonra:**
-```
+\`\`\`
 Trigger oluşturuldu ve eksik profiller eklendi
 auth_users_count: 5
 profiles_count: 5
 eksik_profil_sayisi: 0
-```
+\`\`\`
 
 ### Adım 3: Doğrulama
 
@@ -68,7 +68,7 @@ Admin dashboard'u yenileyin:
 ## 📊 Veri Akışı
 
 ### Doğru Akış (Trigger ile)
-```
+\`\`\`
 1. Kullanıcı kayıt olur
    ↓
 2. auth.users'a eklenir
@@ -78,10 +78,10 @@ Admin dashboard'u yenileyin:
 4. profiles'a otomatik eklenir
    ↓
 5. Dashboard doğru sayıyı gösterir ✅
-```
+\`\`\`
 
 ### Yanlış Akış (Trigger olmadan)
-```
+\`\`\`
 1. Kullanıcı kayıt olur
    ↓
 2. auth.users'a eklenir
@@ -91,12 +91,12 @@ Admin dashboard'u yenileyin:
 4. profiles'a EKLENMİYOR ❌
    ↓
 5. Dashboard eksik sayı gösterir
-```
+\`\`\`
 
 ## 🔧 Trigger Fonksiyonu Detayları
 
 ### handle_new_user() Fonksiyonu
-```sql
+\`\`\`sql
 CREATE OR REPLACE FUNCTION public.handle_new_user()
 RETURNS trigger AS $$
 BEGIN
@@ -110,15 +110,15 @@ BEGIN
   RETURN new;
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
-```
+\`\`\`
 
 ### Trigger
-```sql
+\`\`\`sql
 CREATE TRIGGER on_auth_user_created
   AFTER INSERT ON auth.users
   FOR EACH ROW
   EXECUTE FUNCTION public.handle_new_user();
-```
+\`\`\`
 
 ## 🎯 Profiles Tablosu Yapısı
 
@@ -138,17 +138,17 @@ Opsiyonel sütunlar:
 ## 🐛 Sorun Giderme
 
 ### Trigger çalışmıyor
-```sql
+\`\`\`sql
 -- Trigger'ı kontrol edin
 SELECT * FROM information_schema.triggers
 WHERE trigger_name = 'on_auth_user_created';
 
 -- Trigger yoksa yeniden oluşturun
 -- scripts/49-create-profile-trigger.sql
-```
+\`\`\`
 
 ### Manuel senkronizasyon gerekli
-```sql
+\`\`\`sql
 -- Eksik profilleri manuel ekleyin
 INSERT INTO public.profiles (id, email, created_at, updated_at)
 SELECT
@@ -159,11 +159,11 @@ SELECT
 FROM auth.users au
 LEFT JOIN public.profiles p ON au.id = p.id
 WHERE p.id IS NULL;
-```
+\`\`\`
 
 ### RLS Sorunları
 Eğer admin bile profilleri göremiyor ise:
-```sql
+\`\`\`sql
 -- RLS politikalarını kontrol edin
 SELECT * FROM pg_policies WHERE tablename = 'profiles';
 
@@ -176,7 +176,7 @@ CREATE POLICY "Admins can view all profiles"
       WHERE id = auth.uid() AND is_admin = true
     )
   );
-```
+\`\`\`
 
 ## 📝 Özet
 
