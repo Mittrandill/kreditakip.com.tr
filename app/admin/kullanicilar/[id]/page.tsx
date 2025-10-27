@@ -209,6 +209,16 @@ export default async function UserDetailPage({ params }: PageProps) {
                       <p className="text-white font-medium">{billingInfo.phone}</p>
                     </div>
 
+                    {billingInfo.identity_number && (
+                      <div className="space-y-2">
+                        <div className="flex items-center gap-2 text-white/60">
+                          <User className="h-4 w-4" />
+                          <span className="text-sm">TC Kimlik No</span>
+                        </div>
+                        <p className="text-white font-medium font-mono">{billingInfo.identity_number}</p>
+                      </div>
+                    )}
+
                     <div className="space-y-2">
                       <div className="flex items-center gap-2 text-white/60">
                         <MapPin className="h-4 w-4" />
