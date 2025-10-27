@@ -34,67 +34,73 @@ export default async function InvoicesManagement() {
     console.log("[admin/faturalar] Successfully fetched invoices, count:", invoices?.length || 0)
   }
 
-  // Get users with active/completed subscriptions but no invoices with file_url
-  // This includes both: 1) No invoice at all, 2) Invoice exists but no PDF uploaded
-  const { data: subscriptionsData } = await supabase
-    .from("subscriptions")
-    .select(`
-      id,
-      user_id,
-      plan_type,
-      status,
-      created_at,
-      profiles!subscriptions_user_id_fkey (
-        first_name,
-        last_name,
-        email
-      )
-    `)
-    .in("status", ["active", "cancelled", "expired"])
-    .order("created_at", { ascending: false })
-
-  // Get payment transactions to show amounts
+  // NEW APPROACH: Get successful payment transactions
+  // These are payments that need invoices with PDFs
   const { data: allTransactions } = await supabase
     .from("payment_transactions")
-    .select("subscription_id, amount, currency")
+    .select(`
+      id,
+      payment_id,
+      subscription_id,
+      amount,
+      currency,
+      status,
+      subscriptions!payment_transactions_subscription_id_fkey (
+        id,
+        user_id,
+        plan_type,
+        status,
+        profiles!subscriptions_user_id_fkey (
+          first_name,
+          last_name,
+          email
+        )
+      )
+    `)
+    .eq("status", "completed")
+    .order("created_at", { ascending: false })
 
-  // Create a map of subscription_id to transaction
-  const transactionMap = new Map()
-  allTransactions?.forEach((tx) => {
-    transactionMap.set(tx.subscription_id, tx)
-  })
+  console.log("[admin/faturalar] Total successful payments:", allTransactions?.length || 0)
 
-  // Filter subscriptions that need invoices (no invoice OR invoice without PDF)
-  // Use explicit check: file_url must exist, not be null, and not be empty string
+  // Create a map of payment_id to invoice
   const safeInvoices = invoices || []
-  const invoicesWithPDF = safeInvoices.filter((inv) => {
-    const hasValidPDF = inv.file_url && inv.file_url.trim().length > 0
-    if (hasValidPDF) {
-      console.log(`[admin/faturalar] Invoice ${inv.id} has PDF for subscription ${inv.subscription_id}`)
+  const invoicesByPaymentId = new Map()
+  safeInvoices.forEach((inv) => {
+    if (inv.payment_id) {
+      invoicesByPaymentId.set(inv.payment_id, inv)
     }
-    return hasValidPDF
   })
-
-  const subscriptionIdsWithPDF = new Set(
-    invoicesWithPDF.map((inv) => inv.subscription_id)
-  )
 
   console.log("[admin/faturalar] Total invoices:", safeInvoices.length)
-  console.log("[admin/faturalar] Invoices with valid PDF:", invoicesWithPDF.length)
-  console.log("[admin/faturalar] Subscription IDs with PDF:", Array.from(subscriptionIdsWithPDF))
+  console.log("[admin/faturalar] Invoices with payment_id:", invoicesByPaymentId.size)
 
-  const pendingInvoiceUsers = subscriptionsData?.filter((sub) => {
-    const hasPDF = subscriptionIdsWithPDF.has(sub.id)
-    const userEmail = sub.profiles?.email || 'unknown'
-    console.log(`[admin/faturalar] Subscription ${sub.id} (${userEmail}): hasPDF=${hasPDF}, status=${sub.status}`)
-    return !hasPDF
-  }).map((sub) => ({
-    ...sub,
-    transaction: transactionMap.get(sub.id)
-  })) || []
+  // Filter payments that need invoice PDFs
+  const pendingInvoiceUsers = (allTransactions || [])
+    .filter((tx) => {
+      const invoice = invoicesByPaymentId.get(tx.payment_id)
+      const hasValidPDF = invoice?.file_url && invoice.file_url.trim().length > 0
+
+      const userEmail = tx.subscriptions?.profiles?.email || 'unknown'
+      console.log(`[admin/faturalar] Payment ${tx.payment_id} (${userEmail}): hasInvoice=${!!invoice}, hasValidPDF=${hasValidPDF}`)
+
+      return !hasValidPDF // Show if no invoice or no PDF
+    })
+    .map((tx) => ({
+      id: tx.subscription_id,
+      user_id: tx.subscriptions?.user_id,
+      plan_type: tx.subscriptions?.plan_type,
+      status: tx.subscriptions?.status,
+      created_at: tx.subscriptions?.created_at,
+      profiles: tx.subscriptions?.profiles,
+      transaction: {
+        payment_id: tx.payment_id,
+        amount: tx.amount,
+        currency: tx.currency,
+      },
+    }))
 
   console.log("[admin/faturalar] Pending invoice users count:", pendingInvoiceUsers.length)
-  console.log("[admin/faturalar] Pending invoice subscription IDs:", pendingInvoiceUsers.map(u => u.id))
+  console.log("[admin/faturalar] Pending payment IDs:", pendingInvoiceUsers.map(u => u.transaction.payment_id))
 
   // Get invoice statistics
   const { count: totalInvoices } = await supabase
@@ -257,6 +263,7 @@ export default async function InvoicesManagement() {
                       </td>
                       <td className="py-4 px-4">
                         <InvoiceUploadButton
+                          paymentId={sub.transaction?.payment_id || ""}
                           userId={sub.user_id}
                           subscriptionId={sub.id}
                           amount={sub.transaction?.amount || 0}

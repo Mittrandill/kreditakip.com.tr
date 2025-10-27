@@ -6,6 +6,7 @@ import { Upload, Loader2 } from "lucide-react"
 import { toast } from "sonner"
 
 interface InvoiceUploadButtonProps {
+  paymentId: string
   userId: string
   subscriptionId: string
   amount: number
@@ -15,6 +16,7 @@ interface InvoiceUploadButtonProps {
 }
 
 export function InvoiceUploadButton({
+  paymentId,
   userId,
   subscriptionId,
   amount,
@@ -38,49 +40,23 @@ export function InvoiceUploadButton({
     setLoading(true)
 
     try {
-      console.log("[invoice-upload] Finding existing pending invoice:", {
-        userId,
-        subscriptionId,
-      })
+      console.log("[invoice-upload] Finding invoice by payment_id:", paymentId)
 
-      // 1. Find existing pending invoice for this subscription
-      const findResponse = await fetch(`/api/admin/invoices?subscriptionId=${subscriptionId}`)
+      // 1. Find invoice by payment_id
+      const findResponse = await fetch(`/api/admin/invoices?paymentId=${paymentId}`)
 
       if (!findResponse.ok) {
         throw new Error("Fatura kaydı bulunamadı")
       }
 
       const { invoices } = await findResponse.json()
+      const pendingInvoice = invoices?.[0] // Should be only one invoice per payment_id
 
-      // Find pending invoice without PDF
-      let pendingInvoice = invoices?.find((inv: any) =>
-        inv.subscription_id === subscriptionId && !inv.file_url
-      )
-
-      // If no pending invoice found in first query, try searching by invoice_number
       if (!pendingInvoice) {
-        console.log("[invoice-upload] No pending invoice found in initial search")
-
-        // Try to find by invoice_number (from filename)
-        const invoiceNumber = file.name.replace(/\.pdf$/i, "")
-        const searchByNumberResponse = await fetch(`/api/admin/invoices?invoiceNumber=${invoiceNumber}`)
-
-        if (searchByNumberResponse.ok) {
-          const { invoices: invoicesByNumber } = await searchByNumberResponse.json()
-          pendingInvoice = invoicesByNumber?.find((inv: any) =>
-            inv.subscription_id === subscriptionId && !inv.file_url
-          )
-        }
-
-        // If still not found, invoice doesn't exist at all - this shouldn't happen
-        if (!pendingInvoice) {
-          throw new Error("Bu abonelik için fatura bulunamadı. Lütfen sayfayı yenileyin ve tekrar deneyin.")
-        }
-
-        console.log("[invoice-upload] Found invoice by number:", pendingInvoice.id)
-      } else {
-        console.log("[invoice-upload] Found pending invoice:", pendingInvoice.id)
+        throw new Error("Bu ödeme için fatura bulunamadı. Lütfen sayfayı yenileyin ve tekrar deneyin.")
       }
+
+      console.log("[invoice-upload] Found invoice:", pendingInvoice.id, "Current file_url:", pendingInvoice.file_url)
 
       // 2. Update invoice number from filename if needed
       const invoiceNumber = file.name.replace(/\.pdf$/i, "")
