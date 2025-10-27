@@ -34,31 +34,70 @@ export default async function InvoicesManagement() {
     console.log("[admin/faturalar] Successfully fetched invoices, count:", invoices?.length || 0)
   }
 
-  // NEW APPROACH: Get successful payment transactions
-  // These are payments that need invoices with PDFs
-  const { data: allTransactions } = await supabase
+  // Get successful payment transactions (without joins to avoid FK errors)
+  const { data: rawTransactions, error: transactionsError } = await supabase
     .from("payment_transactions")
-    .select(`
-      id,
-      payment_id,
-      subscription_id,
-      amount,
-      currency,
-      status,
-      subscriptions!payment_transactions_subscription_id_fkey (
-        id,
-        user_id,
-        plan_type,
-        status,
-        profiles!subscriptions_user_id_fkey (
-          first_name,
-          last_name,
-          email
-        )
-      )
-    `)
+    .select("id, payment_id, subscription_id, amount, currency, status, user_id")
     .eq("status", "completed")
     .order("created_at", { ascending: false })
+
+  if (transactionsError) {
+    console.error("[admin/faturalar] Error fetching transactions:", transactionsError)
+  } else {
+    console.log("[admin/faturalar] Raw transactions:", rawTransactions?.length || 0)
+  }
+
+  // Get subscriptions separately
+  const subscriptionIds = [...new Set(rawTransactions?.map(t => t.subscription_id).filter(Boolean) || [])]
+  let subscriptionsData = []
+  if (subscriptionIds.length > 0) {
+    const { data, error: subsError } = await supabase
+      .from("subscriptions")
+      .select("id, user_id, plan_type, status")
+      .in("id", subscriptionIds)
+
+    if (subsError) {
+      console.error("[admin/faturalar] Error fetching subscriptions:", subsError)
+    } else {
+      subscriptionsData = data || []
+    }
+  }
+
+  // Get profiles separately
+  const userIds = [...new Set([
+    ...(rawTransactions?.map(t => t.user_id).filter(Boolean) || []),
+    ...(subscriptionsData?.map((s: any) => s.user_id).filter(Boolean) || [])
+  ])]
+  let profilesData = []
+  if (userIds.length > 0) {
+    const { data, error: profilesError } = await supabase
+      .from("profiles")
+      .select("id, first_name, last_name, email")
+      .in("id", userIds)
+
+    if (profilesError) {
+      console.error("[admin/faturalar] Error fetching profiles:", profilesError)
+    } else {
+      profilesData = data || []
+    }
+  }
+
+  // Create maps for manual join
+  const subscriptionsMap = new Map(subscriptionsData?.map((s: any) => [s.id, s]) || [])
+  const profilesMap = new Map(profilesData?.map((p: any) => [p.id, p]) || [])
+
+  // Manually join the data
+  const allTransactions = rawTransactions?.map(tx => {
+    const subscription = subscriptionsMap.get(tx.subscription_id)
+    const profile = profilesMap.get(subscription?.user_id || tx.user_id)
+    return {
+      ...tx,
+      subscriptions: subscription ? {
+        ...subscription,
+        profiles: profile
+      } : null
+    }
+  })
 
   console.log("[admin/faturalar] Total successful payments:", allTransactions?.length || 0)
 
