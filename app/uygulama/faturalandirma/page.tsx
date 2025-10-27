@@ -6,15 +6,12 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
-import { CreditCard, Download, Calendar, CheckCircle2, XCircle, Clock, Crown, ArrowLeft, Receipt } from "lucide-react"
+import { CreditCard, Download, Calendar, CheckCircle2, XCircle, Clock, Crown, Receipt, Wallet } from "lucide-react"
 import { useAuth } from "@/hooks/use-auth"
 import { useSubscription } from "@/hooks/use-subscription"
 import { createBrowserClient } from "@supabase/ssr"
 
-const supabase = createBrowserClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-)
+const supabase = createBrowserClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!)
 
 interface PaymentTransaction {
   id: string
@@ -127,33 +124,23 @@ export default function FaturalandirmaPage() {
 
   return (
     <div className="flex flex-col gap-4 md:gap-6">
-      {/* Header */}
-      <Card className="bg-gradient-to-r from-slate-600 to-gray-700 text-white border-transparent shadow-xl rounded-xl">
+      <Card className="bg-gradient-to-r from-blue-600 to-indigo-700 text-white border-transparent shadow-xl rounded-xl">
         <CardContent className="p-8">
           <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
             <div>
-              <div className="flex items-center gap-3 mb-2">
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => router.back()}
-                  className="text-white hover:bg-white/20 -ml-2"
-                >
-                  <ArrowLeft className="h-5 w-5" />
-                </Button>
-                <h2 className="text-3xl font-bold flex items-center gap-3">
-                  <Receipt className="h-8 w-8" />
-                  Faturalandırma
-                </h2>
-              </div>
-              <p className="text-slate-100 text-lg ml-11">Abonelik durumunuz ve ödeme geçmişinizi görüntüleyin</p>
+              <h2 className="text-3xl font-bold mb-2 flex items-center gap-3">
+                <Wallet className="h-8 w-8" />
+                Faturalandırma
+              </h2>
+              <p className="text-blue-100 text-lg">Abonelik durumunuzu ve ödeme geçmişinizi görüntüleyin ve yönetin</p>
             </div>
           </div>
         </CardContent>
       </Card>
+      {/* </CHANGE> */}
 
       {/* Subscription Status */}
-      <Card>
+      <Card className="shadow-lg hover:shadow-xl transition-shadow duration-300">
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Crown className="h-5 w-5 text-amber-500" />
@@ -212,7 +199,7 @@ export default function FaturalandirmaPage() {
       </Card>
 
       {/* Payment History */}
-      <Card>
+      <Card className="shadow-lg hover:shadow-xl transition-shadow duration-300">
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Receipt className="h-5 w-5 text-emerald-600" />
@@ -266,7 +253,7 @@ export default function FaturalandirmaPage() {
       </Card>
 
       {/* Invoices */}
-      <Card>
+      <Card className="shadow-lg hover:shadow-xl transition-shadow duration-300">
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Download className="h-5 w-5 text-blue-600" />
@@ -320,11 +307,7 @@ export default function FaturalandirmaPage() {
                       </TableCell>
                       <TableCell className="text-right">
                         {invoice.file_url ? (
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => window.open(invoice.file_url!, "_blank")}
-                          >
+                          <Button variant="outline" size="sm" onClick={() => window.open(invoice.file_url!, "_blank")}>
                             <Download className="h-4 w-4 mr-2" />
                             PDF İndir
                           </Button>

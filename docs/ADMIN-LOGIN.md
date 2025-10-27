@@ -30,17 +30,17 @@ Admin paneli artık kendi giriş sistemi ile korunmaktadır. Normal kullanıcı 
 ### 1. Admin Kullanıcı Oluşturma
 
 Önce normal kayıt sürecini tamamlayın:
-```
+\`\`\`
 1. /kayit-ol sayfasına gidin
 2. E-posta ve şifre ile kayıt olun
 3. Email doğrulamasını yapın
-```
+\`\`\`
 
 ### 2. Admin Yetkisi Verme
 
 Supabase Dashboard > SQL Editor'de:
 
-```sql
+\`\`\`sql
 -- Email ile admin yetkisi verme
 UPDATE public.profiles
 SET is_admin = true
@@ -50,22 +50,22 @@ WHERE email = 'admin@kreditakip.com.tr';
 SELECT id, email, full_name, is_admin
 FROM public.profiles
 WHERE is_admin = true;
-```
+\`\`\`
 
 **Alternatif:** `scripts/47-set-admin-user.sql` dosyasını kullanabilirsiniz.
 
 ### 3. Admin Panel'e Giriş
 
-```
+\`\`\`
 1. https://kreditakip.com.tr/admin adresine gidin
 2. E-posta ve şifrenizi girin
 3. "Admin Girişi" butonuna tıklayın
 4. Dashboard'a yönlendirileceksiniz
-```
+\`\`\`
 
 ## 📁 Dosya Yapısı
 
-```
+\`\`\`
 app/
 ├── admin/
 │   ├── giris/
@@ -82,7 +82,7 @@ components/
 
 lib/
 └── admin-check.ts            # Admin yetki kontrol fonksiyonu
-```
+\`\`\`
 
 ## 🎨 Admin Giriş Sayfası Özellikleri
 
@@ -108,13 +108,13 @@ lib/
 ## 🔄 Admin Panel Akışı
 
 ### Giriş Sonrası
-```
+\`\`\`
 /admin/giris → Auth Check → Admin Check → /admin (Dashboard)
                    ↓              ↓
                  FAIL          FAIL
                    ↓              ↓
               Hata Mesajı    Çıkış + Hata
-```
+\`\`\`
 
 ### Sidebar İçeriği
 - 📊 Dashboard
@@ -134,14 +134,14 @@ lib/
 
 ### checkAdminAccess() Fonksiyonu
 
-```typescript
+\`\`\`typescript
 // lib/admin-check.ts
 
 1. Session var mı? → Yoksa /admin/giris
 2. Profile çekiliyor
 3. is_admin = true mu? → Değilse çıkış yap + /admin/giris
 4. Her şey OK → Session ve profile döndür
-```
+\`\`\`
 
 ### Korunan Sayfalar
 
@@ -156,30 +156,30 @@ Tüm `/admin/*` sayfaları (giriş hariç) `checkAdminAccess()` ile korunur:
 ## 📱 Kullanım Örnekleri
 
 ### Admin Olarak Giriş
-```
+\`\`\`
 1. /admin → /admin/giris (redirect)
 2. E-posta: admin@kreditakip.com.tr
 3. Şifre: ********
 4. Giriş Yap
 5. ✓ Dashboard açılır
-```
+\`\`\`
 
 ### Normal Kullanıcı Denerse
-```
+\`\`\`
 1. /admin → /admin/giris (redirect)
 2. E-posta: user@kreditakip.com.tr
 3. Şifre: ********
 4. Giriş Yap
 5. ✗ "Bu hesabın admin yetkisi bulunmuyor"
 6. Otomatik çıkış yapılır
-```
+\`\`\`
 
 ### Çıkış Yapma
-```
+\`\`\`
 1. Admin Panel → Sidebar → "Çıkış Yap"
 2. Session temizlenir
 3. /admin/giris sayfasına yönlendirilir
-```
+\`\`\`
 
 ## 🎯 Kullanıcı Deneyimi
 
@@ -211,13 +211,13 @@ Tüm `/admin/*` sayfaları (giriş hariç) `checkAdminAccess()` ile korunur:
 - Şifre doğrulama için `/sifremi-unuttum` kullanın
 
 ### "Bu hesabın admin yetkisi bulunmuyor"
-```sql
+\`\`\`sql
 -- Kontrol edin:
 SELECT is_admin FROM profiles WHERE email = 'sizin@email.com';
 
 -- Eğer false ise:
 UPDATE profiles SET is_admin = true WHERE email = 'sizin@email.com';
-```
+\`\`\`
 
 ### Sürekli giriş sayfasına yönlendiriliyor
 - Browser console'u kontrol edin

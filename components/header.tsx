@@ -173,6 +173,10 @@ const PAGE_INFO: Record<string, { title: string; description: string; parent?: s
     description: "Güvenli ödeme ile premium üyeliğe geçin",
     parent: "Premium Üyelik",
   },
+  "/uygulama/faturalandirma": {
+    title: "Faturalandırma",
+    description: "Abonelik durumunuzu ve ödeme geçmişinizi görüntüleyin ve yönetin",
+  },
 }
 
 const typeConfig = {

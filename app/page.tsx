@@ -132,7 +132,8 @@ export default function LandingPage() {
                 Neden <span className="text-emerald-400">Kredi Takip</span>?
               </h2>
               <p className="text-xl text-white/70 max-w-4xl mx-auto leading-relaxed">
-                Gelişmiş teknoloji ve kullanıcı dostu arayüzle kredi yönetiminizi bir üst seviyeye taşıyın
+                Yapay zeka destekli gelişmiş teknoloji ve kullanıcı dostu arayüzle kredi yönetiminizi bir üst seviyeye
+                taşıyın
               </p>
             </div>
 
@@ -164,7 +165,8 @@ export default function LandingPage() {
 
                       <h3 className="text-2xl font-bold text-white mb-4 text-center">Gelişmiş OCR Teknolojisi</h3>
                       <p className="text-white/70 text-center leading-relaxed mb-6">
-                        %99.8 doğruluk oranıyla kredi dökümlerinizi saniyeler içinde dijital formata dönüştürün
+                        Yapay zeka destekli %99.8 doğruluk oranıyla kredi dökümlerinizi saniyeler içinde dijital formata
+                        dönüştürün
                       </p>
 
                       {/* Stats */}
@@ -198,7 +200,8 @@ export default function LandingPage() {
 
                       <h3 className="text-2xl font-bold text-white mb-4 text-center">Akıllı Ödeme Planları</h3>
                       <p className="text-white/70 text-center leading-relaxed mb-6">
-                        AI destekli algoritma ile kişiselleştirilmiş ödeme planları oluşturun ve borcunuzu optimize edin
+                        Yapay zeka destekli algoritma ile kişiselleştirilmiş ödeme planları oluşturun ve borcunuzu
+                        optimize edin
                       </p>
 
                       <div className="flex justify-center gap-6 pt-4 border-t border-white/10">
@@ -330,7 +333,7 @@ export default function LandingPage() {
 
                       <h3 className="text-2xl font-bold text-white mb-4 text-center">Detaylı Analiz</h3>
                       <p className="text-white/70 text-center leading-relaxed mb-6">
-                        Harcama kategorileri, trend analizi ve finansal öngörüler ile tam kontrol
+                        Yapay zeka destekli harcama kategorileri, trend analizi ve finansal öngörüler ile tam kontrol
                       </p>
 
                       <div className="flex justify-center gap-6 pt-4 border-t border-white/10">
@@ -381,31 +384,101 @@ export default function LandingPage() {
 
             {/* Bottom CTA */}
             <div className="text-center mt-20">
-              <div className="inline-flex items-center gap-4 bg-black/20 border border-white/10 rounded-2xl px-8 py-6 backdrop-blur-xl">
-                <div className="flex -space-x-4">
-                  <img
-                    src="/turkish-woman-smiling.png"
-                    alt="User avatar"
-                    className="w-10 h-10 rounded-full border-2 border-white/20 object-cover"
-                  />
-                  <img
-                    src="/turkish-businessman.png"
-                    alt="User avatar"
-                    className="w-10 h-10 rounded-full border-2 border-white/20 object-cover"
-                  />
-                  <img
-                    src="/young-turkish-professional-man.png"
-                    alt="User avatar"
-                    className="w-10 h-10 rounded-full border-2 border-white/20 object-cover"
-                  />
-                  <div className="w-10 h-10 rounded-full border-2 border-white/20 bg-emerald-500/20 flex items-center justify-center text-xs text-white font-medium">
-                    +1M
+              <div className="inline-flex flex-col items-center gap-6 bg-black/20 border border-white/10 rounded-2xl px-8 py-8 backdrop-blur-xl max-w-4xl mx-auto">
+                <div className="text-center mb-2">
+                  <p className="text-white font-semibold text-xl mb-2">25+ Banka Desteği</p>
+                  <p className="text-white/60 text-sm">Türkiye ve dünyadaki tüm bankalarla uyumlu</p>
+                </div>
+
+                {/* Bank Logos Grid */}
+                <div className="grid grid-cols-4 md:grid-cols-6 lg:grid-cols-8 gap-4 items-center">
+                  <div className="w-16 h-16 bg-white/5 rounded-xl p-2 flex items-center justify-center hover:bg-white/10 transition-all">
+                    <img
+                      src="/bank-icons/turkiye-garanti-bankasi.png"
+                      alt="Garanti BBVA"
+                      className="w-full h-full object-contain"
+                    />
+                  </div>
+                  <div className="w-16 h-16 bg-white/5 rounded-xl p-2 flex items-center justify-center hover:bg-white/10 transition-all">
+                    <img src="/bank-icons/akbank.png" alt="Akbank" className="w-full h-full object-contain" />
+                  </div>
+                  <div className="w-16 h-16 bg-white/5 rounded-xl p-2 flex items-center justify-center hover:bg-white/10 transition-all">
+                    <img
+                      src="/bank-icons/turkiye-is-bankasi.png"
+                      alt="İş Bankası"
+                      className="w-full h-full object-contain"
+                    />
+                  </div>
+                  <div className="w-16 h-16 bg-white/5 rounded-xl p-2 flex items-center justify-center hover:bg-white/10 transition-all">
+                    <img
+                      src="/bank-icons/yapi-kredi-bankasi.png"
+                      alt="Yapı Kredi"
+                      className="w-full h-full object-contain"
+                    />
+                  </div>
+                  <div className="w-16 h-16 bg-white/5 rounded-xl p-2 flex items-center justify-center hover:bg-white/10 transition-all">
+                    <img
+                      src="/bank-icons/ziraat-bankasi.png"
+                      alt="Ziraat Bankası"
+                      className="w-full h-full object-contain"
+                    />
+                  </div>
+                  <div className="w-16 h-16 bg-white/5 rounded-xl p-2 flex items-center justify-center hover:bg-white/10 transition-all">
+                    <img src="/bank-icons/vakifbank.png" alt="VakıfBank" className="w-full h-full object-contain" />
+                  </div>
+                  <div className="w-16 h-16 bg-white/5 rounded-xl p-2 flex items-center justify-center hover:bg-white/10 transition-all">
+                    <img
+                      src="/bank-icons/turkiye-halk-bankasi.png"
+                      alt="Halkbank"
+                      className="w-full h-full object-contain"
+                    />
+                  </div>
+                  <div className="w-16 h-16 bg-white/5 rounded-xl p-2 flex items-center justify-center hover:bg-white/10 transition-all">
+                    <img
+                      src="/bank-icons/qnb-finansbank.png"
+                      alt="QNB Finansbank"
+                      className="w-full h-full object-contain"
+                    />
+                  </div>
+                  <div className="w-16 h-16 bg-white/5 rounded-xl p-2 flex items-center justify-center hover:bg-white/10 transition-all">
+                    <img src="/bank-icons/denizbank.png" alt="DenizBank" className="w-full h-full object-contain" />
+                  </div>
+                  <div className="w-16 h-16 bg-white/5 rounded-xl p-2 flex items-center justify-center hover:bg-white/10 transition-all">
+                    <img src="/bank-icons/ing-bank.png" alt="ING" className="w-full h-full object-contain" />
+                  </div>
+                  <div className="w-16 h-16 bg-white/5 rounded-xl p-2 flex items-center justify-center hover:bg-white/10 transition-all">
+                    <img src="/bank-icons/hsbc-bank.png" alt="HSBC" className="w-full h-full object-contain" />
+                  </div>
+                  <div className="w-16 h-16 bg-white/5 rounded-xl p-2 flex items-center justify-center hover:bg-white/10 transition-all">
+                    <img
+                      src="/bank-icons/kuveyt-turk-katilim-bankasi.png"
+                      alt="Kuveyt Türk"
+                      className="w-full h-full object-contain"
+                    />
+                  </div>
+                  <div className="w-16 h-16 bg-white/5 rounded-xl p-2 flex items-center justify-center hover:bg-white/10 transition-all">
+                    <img
+                      src="/bank-icons/albaraka-turk-katilim-bankasi.png"
+                      alt="Albaraka Türk"
+                      className="w-full h-full object-contain"
+                    />
+                  </div>
+                  <div className="w-16 h-16 bg-white/5 rounded-xl p-2 flex items-center justify-center hover:bg-white/10 transition-all">
+                    <img
+                      src="/bank-icons/turkiye-finans-katilim-bankasi.png"
+                      alt="Türkiye Finans"
+                      className="w-full h-full object-contain"
+                    />
+                  </div>
+                  <div className="w-16 h-16 bg-white/5 rounded-xl p-2 flex items-center justify-center hover:bg-white/10 transition-all">
+                    <img src="/bank-icons/fibabanka.png" alt="Fibabanka" className="w-full h-full object-contain" />
+                  </div>
+                  <div className="w-16 h-16 bg-white/5 rounded-xl p-2 flex items-center justify-center hover:bg-white/10 transition-all">
+                    <img src="/bank-icons/odeabank.png" alt="Odeabank" className="w-full h-full object-contain" />
                   </div>
                 </div>
-                <div className="text-left">
-                  <p className="text-white font-semibold">1.2M+ kullanıcı güveniyor</p>
-                  <p className="text-white/60 text-sm">Siz de aramıza katılın</p>
-                </div>
+
+                <p className="text-white/50 text-xs mt-2">ve daha fazlası...</p>
               </div>
             </div>
           </div>
@@ -544,7 +617,7 @@ export default function LandingPage() {
                     <div className="space-y-3 mb-8">
                       <div className="flex items-center gap-3 text-sm text-white/60">
                         <div className="w-2 h-2 bg-teal-400 rounded-full" />
-                        <span>%99.8 doğruluk oranı</span>
+                        <span>Yapay zeka destekli analiz</span>
                       </div>
                       <div className="flex items-center gap-3 text-sm text-white/60">
                         <div className="w-2 h-2 bg-teal-400 rounded-full" />
@@ -686,8 +759,8 @@ export default function LandingPage() {
                     ))}
                   </div>
                   <p className="text-white/80 mb-6">
-                    "KrediTakip sayesinde karmaşık kredi dökümlerimi anlamak çok kolay oldu. Ödeme planım artık çok daha
-                    organize!"
+                    "Kredi Takip sayesinde karmaşık kredi dökümlerimi anlamak çok kolay oldu. Ödeme planım artık çok
+                    daha organize!"
                   </p>
                   <div className="flex items-center">
                     <img
@@ -765,7 +838,7 @@ export default function LandingPage() {
                   Finansal Özgürlüğünüze <span className="text-emerald-400">Başlayın</span>
                 </h2>
                 <p className="text-xl text-white/80 mb-8 max-w-2xl mx-auto">
-                  Kredi yönetiminizi bir sonraki seviyeye taşımak için bugün KrediTakip'e katılın
+                  Yapay zeka destekli kredi yönetimi ile finansal özgürlüğünüze ulaşmak için bugün Kredi Takip'e katılın
                 </p>
                 <div className="flex flex-col sm:flex-row gap-4 justify-center">
                   <Link href="/giris">

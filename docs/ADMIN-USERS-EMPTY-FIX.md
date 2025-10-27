@@ -15,12 +15,12 @@ Profiles tablosunda RLS aktif ama admin kullanıcıların diğer profilleri gör
 
 ### RLS Nasıl Çalışır?
 
-```sql
+\`\`\`sql
 -- Mevcut policy (muhtemelen böyle):
 CREATE POLICY "Users can view their own profile"
   ON public.profiles FOR SELECT
   USING (auth.uid() = id);  -- Sadece kendi ID'si olanı görebilir
-```
+\`\`\`
 
 Bu policy ile:
 - ✅ Kullanıcı kendi profilini görebilir
@@ -33,27 +33,27 @@ Bu policy ile:
 `/admin/kullanicilar` sayfasına gidin. Eğer hata varsa kırmızı bir kutu göreceksiniz.
 
 Örnek hata:
-```json
+\`\`\`json
 {
   "code": "42501",
   "message": "new row violates row-level security policy",
   "details": null,
   "hint": null
 }
-```
+\`\`\`
 
 ### Adım 2: RLS Policy'leri Düzeltin
 
 Supabase Dashboard > SQL Editor'de aşağıdaki script'i çalıştırın:
 
-```sql
+\`\`\`sql
 -- scripts/50-fix-profiles-rls-for-admin.sql dosyasını çalıştırın
-```
+\`\`\`
 
 Bu script:
 
 1. ✅ **SELECT Policy** - Kullanıcılar kendi profilini, adminler herkesi görebilir
-```sql
+\`\`\`sql
 CREATE POLICY "Users can view own profile, admins view all"
   ON public.profiles FOR SELECT
   USING (
@@ -64,7 +64,7 @@ CREATE POLICY "Users can view own profile, admins view all"
       WHERE id = auth.uid() AND is_admin = true
     )
   );
-```
+\`\`\`
 
 2. ✅ **UPDATE Policy** - Kullanıcılar kendi profilini, adminler herkesi güncelleyebilir
 
@@ -81,45 +81,45 @@ CREATE POLICY "Users can view own profile, admins view all"
 ## 🔐 Güvenlik
 
 ### Önceki Durum (Güvensiz)
-```
+\`\`\`
 Admin → profiles tablosu → RLS → Sadece kendi profili
 ❌ Admin başkalarını göremiyor
-```
+\`\`\`
 
 ### Sonraki Durum (Güvenli ve Doğru)
-```
+\`\`\`
 Normal User → profiles → RLS → Sadece kendi profili ✅
 Admin User → profiles → RLS → Tüm profiller ✅
-```
+\`\`\`
 
 ## 🧪 Test
 
 ### Test 1: Normal Kullanıcı
-```sql
+\`\`\`sql
 -- Normal kullanıcı olarak giriş yap
 SELECT * FROM profiles;
 -- Sonuç: Sadece kendi kaydını görür
-```
+\`\`\`
 
 ### Test 2: Admin Kullanıcı
-```sql
+\`\`\`sql
 -- Admin kullanıcı olarak giriş yap
 SELECT * FROM profiles;
 -- Sonuç: Tüm kayıtları görür
-```
+\`\`\`
 
 ## 📊 RLS Policy Kontrolü
 
 Mevcut policy'leri kontrol etmek için:
 
-```sql
+\`\`\`sql
 SELECT
   policyname,
   cmd,
   qual
 FROM pg_policies
 WHERE tablename = 'profiles';
-```
+\`\`\`
 
 Görmek istediğiniz policy'ler:
 - ✅ `Users can view own profile, admins view all` (SELECT)
@@ -130,29 +130,29 @@ Görmek istediğiniz policy'ler:
 ## 🐛 Hala Çalışmıyor mu?
 
 ### 1. RLS Aktif mi?
-```sql
+\`\`\`sql
 SELECT tablename, rowsecurity
 FROM pg_tables
 WHERE tablename = 'profiles';
 -- rowsecurity = true olmalı
-```
+\`\`\`
 
 ### 2. Admin Flag Doğru mu?
-```sql
+\`\`\`sql
 SELECT id, email, is_admin
 FROM profiles
 WHERE email = 'sizin@emailiniz.com';
 -- is_admin = true olmalı
-```
+\`\`\`
 
 ### 3. Session Doğru mu?
-```sql
+\`\`\`sql
 SELECT auth.uid();
 -- Admin kullanıcının ID'sini döndürmeli
-```
+\`\`\`
 
 ### 4. Policy Doğru Uygulandı mı?
-```sql
+\`\`\`sql
 -- Admin kullanıcı olarak:
 SELECT COUNT(*) FROM profiles;
 -- Tüm kullanıcı sayısını döndürmeli
@@ -160,13 +160,13 @@ SELECT COUNT(*) FROM profiles;
 -- Normal kullanıcı olarak:
 SELECT COUNT(*) FROM profiles;
 -- 1 döndürmeli (sadece kendisi)
-```
+\`\`\`
 
 ## 🔄 Manuel Düzeltme
 
 Eğer script çalışmazsa, manuel olarak:
 
-```sql
+\`\`\`sql
 -- 1. Eski policy'leri sil
 DROP POLICY IF EXISTS "Users can view their own profile" ON public.profiles;
 
@@ -184,7 +184,7 @@ CREATE POLICY "Users can view own profile, admins view all"
 
 -- 3. RLS aktif et
 ALTER TABLE public.profiles ENABLE ROW LEVEL SECURITY;
-```
+\`\`\`
 
 ## 📝 Özet
 

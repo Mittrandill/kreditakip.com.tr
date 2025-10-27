@@ -7,9 +7,7 @@ import {
   Heart,
   MapPin,
   Calendar,
-  TrendingUp,
   Shield,
-  Zap,
   Globe,
   ArrowRight,
   Linkedin,
@@ -48,9 +46,9 @@ export default function AboutPage() {
                   Öncüleri
                 </h1>
                 <p className="text-xl text-white/70 mb-8 leading-relaxed">
-                  2024'te kurulan KrediTakip, OCR teknolojisi ile kredi yönetiminde yeni bir dönem başlatıyor. Finansal
-                  verilerinizi dijitalleştiren modern platformumuzla, kullanıcılarımıza güvenli ve kolay kredi takibi
-                  deneyimi sunuyoruz.
+                  2024'te kurulan Kredi Takip, yapay zeka destekli OCR teknolojisi ile kredi yönetiminde yeni bir dönem
+                  başlatıyor. Finansal verilerinizi dijitalleştiren modern platformumuzla, kullanıcılarımıza güvenli ve
+                  kolay kredi takibi deneyimi sunuyoruz.
                 </p>
                 <div className="flex flex-col sm:flex-row gap-4">
                   <Link href="/giris">
@@ -85,7 +83,7 @@ export default function AboutPage() {
                       <div className="text-white/60 text-sm">Kuruluş Yılı</div>
                     </div>
                     <div className="text-center">
-                      <div className="text-4xl font-bold text-emerald-400 mb-2">15+</div>
+                      <div className="text-4xl font-bold text-emerald-400 mb-2">25+</div>
                       <div className="text-white/60 text-sm">Banka Desteği</div>
                     </div>
                     <div className="text-center">
@@ -118,7 +116,8 @@ export default function AboutPage() {
                 Değerlerimiz ve <span className="text-emerald-400">Vizyonumuz</span>
               </h2>
               <p className="text-xl text-white/70 max-w-3xl mx-auto">
-                Finansal teknoloji alanında öncü olmak ve kullanıcılarımızın hayatını kolaylaştırmak için çalışıyoruz
+                Yapay zeka destekli finansal teknoloji alanında öncü olmak ve kullanıcılarımızın hayatını kolaylaştırmak
+                için çalışıyoruz
               </p>
             </div>
 
@@ -131,8 +130,8 @@ export default function AboutPage() {
                   </div>
                   <h3 className="text-2xl font-bold text-white mb-4">Misyonumuz</h3>
                   <p className="text-white/70 leading-relaxed">
-                    Türkiye'deki her bireyin finansal verilerini kolayca yönetebilmesi ve akıllı kararlar alabilmesi
-                    için teknoloji odaklı çözümler sunmak.
+                    Türkiye'deki her bireyin finansal verilerini yapay zeka teknolojisi ile kolayca yönetebilmesi ve
+                    akıllı kararlar alabilmesi için teknoloji odaklı çözümler sunmak.
                   </p>
                 </CardContent>
               </Card>
@@ -145,8 +144,8 @@ export default function AboutPage() {
                   </div>
                   <h3 className="text-2xl font-bold text-white mb-4">Vizyonumuz</h3>
                   <p className="text-white/70 leading-relaxed">
-                    Finansal teknoloji alanında Türkiye'nin lider platformu olmak ve global pazarda tanınan bir marka
-                    haline gelmek.
+                    Yapay zeka destekli finansal teknoloji alanında Türkiye'nin lider platformu olmak ve global pazarda
+                    tanınan bir marka haline gelmek.
                   </p>
                 </CardContent>
               </Card>
@@ -195,8 +194,8 @@ export default function AboutPage() {
                       </div>
                       <h3 className="text-xl font-bold text-white mb-3">Kuruluş ve Geliştirme</h3>
                       <p className="text-white/70">
-                        KrediTakip'in temelleri atıldı. OCR teknolojisi ile kredi yönetimi vizyonu hayata geçirilmeye
-                        başlandı.
+                        Kredi Takip'in temelleri atıldı. Yapay zeka destekli OCR teknolojisi ile kredi yönetimi vizyonu
+                        hayata geçirilmeye başlandı.
                       </p>
                     </div>
                   </div>
@@ -280,24 +279,23 @@ export default function AboutPage() {
           <div className="container mx-auto relative z-10">
             <div className="text-center mb-16">
               <h2 className="text-4xl md:text-5xl font-bold mb-6">
-                Uzman <span className="text-emerald-400">Ekibimiz</span>
+                Ekip <span className="text-emerald-400">Üyeleri</span>
               </h2>
               <p className="text-xl text-white/70 max-w-3xl mx-auto">
-                Finansal teknoloji alanında deneyimli profesyonellerden oluşan ekibimiz
+                Yapay zeka destekli finansal teknoloji vizyonuyla yola çıkan kurucumuz
               </p>
             </div>
 
-            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-              {/* Team Member 1 */}
+            <div className="max-w-md mx-auto">
               <Card className="bg-black/20 border-white/10 backdrop-blur-xl hover:border-emerald-500/30 transition-all duration-500 group">
                 <CardContent className="p-8 text-center">
                   <div className="w-24 h-24 bg-gradient-to-br from-emerald-500/30 to-emerald-500/10 rounded-full flex items-center justify-center mx-auto mb-6 group-hover:from-emerald-500/40 group-hover:to-emerald-500/20 transition-all duration-500">
                     <Users className="w-12 h-12 text-emerald-400" />
                   </div>
-                  <h3 className="text-xl font-bold text-white mb-2">Kurucu Ekip</h3>
-                  <p className="text-emerald-400 font-medium mb-4">Yönetim</p>
+                  <h3 className="text-xl font-bold text-white mb-2">Akın Kaya</h3>
+                  <p className="text-emerald-400 font-medium mb-4">Kurucu</p>
                   <p className="text-white/70 text-sm mb-6">
-                    Fintech ve teknoloji alanında deneyimli profesyonellerden oluşan kurucu ekibimiz.
+                    Yapay zeka ve finansal teknoloji alanında deneyimli, Kredi Takip'i hayata geçiren kurucu.
                   </p>
                   <div className="flex justify-center gap-3">
                     <Link
@@ -315,74 +313,6 @@ export default function AboutPage() {
                     <Link
                       href="mailto:info@kreditakip.com.tr"
                       className="w-8 h-8 bg-white/10 rounded-full flex items-center justify-center hover:bg-emerald-500/20 transition-colors"
-                    >
-                      <Mail className="w-4 h-4 text-white/60" />
-                    </Link>
-                  </div>
-                </CardContent>
-              </Card>
-
-              {/* Team Member 2 */}
-              <Card className="bg-black/20 border-white/10 backdrop-blur-xl hover:border-teal-500/30 transition-all duration-500 group">
-                <CardContent className="p-8 text-center">
-                  <div className="w-24 h-24 bg-gradient-to-br from-teal-500/30 to-teal-500/10 rounded-full flex items-center justify-center mx-auto mb-6 group-hover:from-teal-500/40 group-hover:to-teal-500/20 transition-all duration-500">
-                    <Zap className="w-12 h-12 text-teal-400" />
-                  </div>
-                  <h3 className="text-xl font-bold text-white mb-2">Geliştirme Ekibi</h3>
-                  <p className="text-teal-400 font-medium mb-4">Teknoloji</p>
-                  <p className="text-white/70 text-sm mb-6">
-                    Modern teknolojiler ve AI konusunda uzman yazılım geliştirme ekibimiz.
-                  </p>
-                  <div className="flex justify-center gap-3">
-                    <Link
-                      href="https://linkedin.com/company/kreditakipcomtr"
-                      className="w-8 h-8 bg-white/10 rounded-full flex items-center justify-center hover:bg-teal-500/20 transition-colors"
-                    >
-                      <Linkedin className="w-4 h-4 text-white/60" />
-                    </Link>
-                    <Link
-                      href="https://x.com/kreditakipcomtr"
-                      className="w-8 h-8 bg-white/10 rounded-full flex items-center justify-center hover:bg-teal-500/20 transition-colors"
-                    >
-                      <Twitter className="w-4 h-4 text-white/60" />
-                    </Link>
-                    <Link
-                      href="mailto:info@kreditakip.com.tr"
-                      className="w-8 h-8 bg-white/10 rounded-full flex items-center justify-center hover:bg-teal-500/20 transition-colors"
-                    >
-                      <Mail className="w-4 h-4 text-white/60" />
-                    </Link>
-                  </div>
-                </CardContent>
-              </Card>
-
-              {/* Team Member 3 */}
-              <Card className="bg-black/20 border-white/10 backdrop-blur-xl hover:border-emerald-500/30 transition-all duration-500 group">
-                <CardContent className="p-8 text-center">
-                  <div className="w-24 h-24 bg-gradient-to-br from-emerald-500/30 to-emerald-500/10 rounded-full flex items-center justify-center mx-auto mb-6 group-hover:from-emerald-500/40 group-hover:to-emerald-500/20 transition-all duration-500">
-                    <TrendingUp className="w-12 h-12 text-emerald-400" />
-                  </div>
-                  <h3 className="text-xl font-bold text-white mb-2">Ürün Ekibi</h3>
-                  <p className="text-emerald-400 font-medium mb-4">Ürün & Tasarım</p>
-                  <p className="text-white/70 text-sm mb-6">
-                    Kullanıcı deneyimi ve ürün geliştirme konusunda uzman ekibimiz.
-                  </p>
-                  <div className="flex justify-center gap-3">
-                    <Link
-                      href="https://linkedin.com/company/kreditakipcomtr"
-                      className="w-8 h-8 bg-white/10 rounded-full flex items-center justify-center hover:bg-emerald-500/20 transition-colors"
-                    >
-                      <Linkedin className="w-4 h-4 text-white/60" />
-                    </Link>
-                    <Link
-                      href="https://x.com/kreditakipcomtr"
-                      className="w-8 h-8 bg-white/10 rounded-full flex items-center justify-center hover:bg-teal-500/20 transition-colors"
-                    >
-                      <Twitter className="w-4 h-4 text-white/60" />
-                    </Link>
-                    <Link
-                      href="mailto:info@kreditakip.com.tr"
-                      className="w-8 h-8 bg-white/10 rounded-full flex items-center justify-center hover:bg-teal-500/20 transition-colors"
                     >
                       <Mail className="w-4 h-4 text-white/60" />
                     </Link>
@@ -497,7 +427,7 @@ export default function AboutPage() {
             <div className="bg-black/20 border border-white/10 rounded-3xl p-8 md:p-12 backdrop-blur-xl">
               <div className="text-center mb-12">
                 <h2 className="text-3xl md:text-4xl font-bold mb-4">
-                  Rakamlarla <span className="text-emerald-400">KrediTakip</span>
+                  Rakamlarla <span className="text-emerald-400">Kredi Takip</span>
                 </h2>
                 <p className="text-white/70">Başarılarımızı gösteren önemli istatistikler</p>
               </div>
@@ -512,7 +442,7 @@ export default function AboutPage() {
                   <div className="text-white/60">İşlenen Döküm</div>
                 </div>
                 <div className="text-center">
-                  <div className="text-4xl md:text-5xl font-bold text-emerald-400 mb-2">15+</div>
+                  <div className="text-4xl md:text-5xl font-bold text-emerald-400 mb-2">25+</div>
                   <div className="text-white/60">Banka Desteği</div>
                 </div>
                 <div className="text-center">
@@ -524,7 +454,7 @@ export default function AboutPage() {
               <div className="mt-12 grid md:grid-cols-3 gap-8">
                 <div className="text-center">
                   <div className="text-2xl font-bold text-emerald-400 mb-2">99.5%</div>
-                  <div className="text-white/60 text-sm">OCR Doğruluk Oranı</div>
+                  <div className="text-white/60 text-sm">AI Destekli OCR Doğruluk Oranı</div>
                 </div>
                 <div className="text-center">
                   <div className="text-2xl font-bold text-teal-400 mb-2">{"<5s"}</div>
@@ -550,8 +480,8 @@ export default function AboutPage() {
                   Bizimle <span className="text-emerald-400">Çalışmak</span> İster misiniz?
                 </h2>
                 <p className="text-xl text-white/80 mb-8 max-w-2xl mx-auto">
-                  Finansal teknoloji alanında fark yaratmak ve Türkiye'nin dijital dönüşümüne katkıda bulunmak için
-                  ekibimize katılın
+                  Yapay zeka destekli finansal teknoloji alanında fark yaratmak ve Türkiye'nin dijital dönüşümüne
+                  katkıda bulunmak için ekibimize katılın
                 </p>
                 <div className="flex flex-col sm:flex-row gap-4 justify-center">
                   <Link href="/kariyer">
