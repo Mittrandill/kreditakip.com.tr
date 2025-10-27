@@ -40,8 +40,6 @@ export function InvoiceUploadButton({
     setLoading(true)
 
     try {
-      console.log("[invoice-upload] Finding invoice by iyzico_payment_id:", iyzicoPaymentId)
-
       // 1. Find invoice by payment_id (matches iyzico_payment_id)
       const findResponse = await fetch(`/api/admin/invoices?paymentId=${iyzicoPaymentId}`)
 
@@ -55,8 +53,6 @@ export function InvoiceUploadButton({
       if (!pendingInvoice) {
         throw new Error("Bu ödeme için fatura bulunamadı. Lütfen sayfayı yenileyin ve tekrar deneyin.")
       }
-
-      console.log("[invoice-upload] Found invoice:", pendingInvoice.id, "payment_id:", pendingInvoice.payment_id, "Current file_url:", pendingInvoice.file_url)
 
       // 2. Update invoice number from filename if needed
       const invoiceNumber = file.name.replace(/\.pdf$/i, "")
@@ -90,7 +86,6 @@ export function InvoiceUploadButton({
       }
 
       const uploadResult = await uploadResponse.json()
-      console.log("[invoice-upload] Upload successful:", uploadResult)
 
       // Wait 300ms to ensure database commit completes
       await new Promise(resolve => setTimeout(resolve, 300))
@@ -101,9 +96,7 @@ export function InvoiceUploadButton({
         const { invoices: verifiedInvoices } = await verifyResponse.json()
         const updatedInvoice = verifiedInvoices?.find((inv: any) => inv.id === pendingInvoice.id)
 
-        if (updatedInvoice?.file_url) {
-          console.log("[invoice-upload] Verification successful, file_url confirmed:", updatedInvoice.file_url)
-        } else {
+        if (!updatedInvoice?.file_url) {
           console.warn("[invoice-upload] Warning: file_url not found in verification, but proceeding")
         }
       }
@@ -119,7 +112,6 @@ export function InvoiceUploadButton({
         onSuccess()
       }
     } catch (error) {
-      console.error("[invoice-upload] Error:", error)
       toast.error(error instanceof Error ? error.message : "Bir hata oluştu")
     } finally {
       setLoading(false)

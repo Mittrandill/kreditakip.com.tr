@@ -382,104 +382,192 @@ export default function LandingPage() {
               </div>
             </div>
 
-            {/* Bottom CTA */}
-            <div className="text-center mt-20">
-              <div className="inline-flex flex-col items-center gap-6 bg-black/20 border border-white/10 rounded-2xl px-8 py-8 backdrop-blur-xl max-w-4xl mx-auto">
-                <div className="text-center mb-2">
-                  <p className="text-white font-semibold text-xl mb-2">25+ Banka Desteği</p>
-                  <p className="text-white/60 text-sm">Türkiye ve dünyadaki tüm bankalarla uyumlu</p>
-                </div>
-
-                {/* Bank Logos Grid */}
-                <div className="grid grid-cols-4 md:grid-cols-6 lg:grid-cols-8 gap-4 items-center">
-                  <div className="w-16 h-16 bg-white/5 rounded-xl p-2 flex items-center justify-center hover:bg-white/10 transition-all">
-                    <img
-                      src="/bank-icons/turkiye-garanti-bankasi.png"
-                      alt="Garanti BBVA"
-                      className="w-full h-full object-contain"
-                    />
-                  </div>
-                  <div className="w-16 h-16 bg-white/5 rounded-xl p-2 flex items-center justify-center hover:bg-white/10 transition-all">
-                    <img src="/bank-icons/akbank.png" alt="Akbank" className="w-full h-full object-contain" />
-                  </div>
-                  <div className="w-16 h-16 bg-white/5 rounded-xl p-2 flex items-center justify-center hover:bg-white/10 transition-all">
-                    <img
-                      src="/bank-icons/turkiye-is-bankasi.png"
-                      alt="İş Bankası"
-                      className="w-full h-full object-contain"
-                    />
-                  </div>
-                  <div className="w-16 h-16 bg-white/5 rounded-xl p-2 flex items-center justify-center hover:bg-white/10 transition-all">
-                    <img
-                      src="/bank-icons/yapi-kredi-bankasi.png"
-                      alt="Yapı Kredi"
-                      className="w-full h-full object-contain"
-                    />
-                  </div>
-                  <div className="w-16 h-16 bg-white/5 rounded-xl p-2 flex items-center justify-center hover:bg-white/10 transition-all">
-                    <img
-                      src="/bank-icons/ziraat-bankasi.png"
-                      alt="Ziraat Bankası"
-                      className="w-full h-full object-contain"
-                    />
-                  </div>
-                  <div className="w-16 h-16 bg-white/5 rounded-xl p-2 flex items-center justify-center hover:bg-white/10 transition-all">
-                    <img src="/bank-icons/vakifbank.png" alt="VakıfBank" className="w-full h-full object-contain" />
-                  </div>
-                  <div className="w-16 h-16 bg-white/5 rounded-xl p-2 flex items-center justify-center hover:bg-white/10 transition-all">
-                    <img
-                      src="/bank-icons/turkiye-halk-bankasi.png"
-                      alt="Halkbank"
-                      className="w-full h-full object-contain"
-                    />
-                  </div>
-                  <div className="w-16 h-16 bg-white/5 rounded-xl p-2 flex items-center justify-center hover:bg-white/10 transition-all">
-                    <img
-                      src="/bank-icons/qnb-finansbank.png"
-                      alt="QNB Finansbank"
-                      className="w-full h-full object-contain"
-                    />
-                  </div>
-                  <div className="w-16 h-16 bg-white/5 rounded-xl p-2 flex items-center justify-center hover:bg-white/10 transition-all">
-                    <img src="/bank-icons/denizbank.png" alt="DenizBank" className="w-full h-full object-contain" />
-                  </div>
-                  <div className="w-16 h-16 bg-white/5 rounded-xl p-2 flex items-center justify-center hover:bg-white/10 transition-all">
-                    <img src="/bank-icons/ing-bank.png" alt="ING" className="w-full h-full object-contain" />
-                  </div>
-                  <div className="w-16 h-16 bg-white/5 rounded-xl p-2 flex items-center justify-center hover:bg-white/10 transition-all">
-                    <img src="/bank-icons/hsbc-bank.png" alt="HSBC" className="w-full h-full object-contain" />
-                  </div>
-                  <div className="w-16 h-16 bg-white/5 rounded-xl p-2 flex items-center justify-center hover:bg-white/10 transition-all">
-                    <img
-                      src="/bank-icons/kuveyt-turk-katilim-bankasi.png"
-                      alt="Kuveyt Türk"
-                      className="w-full h-full object-contain"
-                    />
-                  </div>
-                  <div className="w-16 h-16 bg-white/5 rounded-xl p-2 flex items-center justify-center hover:bg-white/10 transition-all">
-                    <img
-                      src="/bank-icons/albaraka-turk-katilim-bankasi.png"
-                      alt="Albaraka Türk"
-                      className="w-full h-full object-contain"
-                    />
-                  </div>
-                  <div className="w-16 h-16 bg-white/5 rounded-xl p-2 flex items-center justify-center hover:bg-white/10 transition-all">
-                    <img
-                      src="/bank-icons/turkiye-finans-katilim-bankasi.png"
-                      alt="Türkiye Finans"
-                      className="w-full h-full object-contain"
-                    />
-                  </div>
-                  <div className="w-16 h-16 bg-white/5 rounded-xl p-2 flex items-center justify-center hover:bg-white/10 transition-all">
-                    <img src="/bank-icons/fibabanka.png" alt="Fibabanka" className="w-full h-full object-contain" />
-                  </div>
-                  <div className="w-16 h-16 bg-white/5 rounded-xl p-2 flex items-center justify-center hover:bg-white/10 transition-all">
-                    <img src="/bank-icons/odeabank.png" alt="Odeabank" className="w-full h-full object-contain" />
-                  </div>
-                </div>
-
-                <p className="text-white/50 text-xs mt-2">ve daha fazlası...</p>
+            {/* Bank Partners - Modern Showcase */}
+            <div className="text-center mt-24 relative">
+              {/* Decorative Background */}
+              <div className="absolute inset-0 -z-10">
+                <div className="absolute top-1/2 left-1/4 w-96 h-96 bg-emerald-500/10 rounded-full blur-[120px]" />
+                <div className="absolute top-1/2 right-1/4 w-96 h-96 bg-teal-500/10 rounded-full blur-[120px]" />
               </div>
+
+              {/* Section Header */}
+              <div className="mb-16">
+                <div className="inline-flex items-center gap-2 bg-black/30 border border-white/10 rounded-full px-6 py-3 backdrop-blur-xl mb-6">
+                  <div className="w-2 h-2 bg-emerald-400 rounded-full animate-pulse" />
+                  <span className="text-white/80 text-sm font-medium">Güvenilir Partnerler</span>
+                </div>
+                <h3 className="text-4xl md:text-5xl font-bold text-white mb-4">
+                  <span className="text-emerald-400">25+</span> Banka Desteği
+                </h3>
+                <p className="text-white/60 text-lg max-w-2xl mx-auto">
+                  Türkiye'nin önde gelen bankalarıyla uyumlu, güvenilir ve hızlı çözümler
+                </p>
+              </div>
+
+              {/* Premium Bank Logos Showcase */}
+              <div className="relative max-w-7xl mx-auto">
+                {/* Gradient Overlay for fade effect */}
+                <div className="absolute left-0 top-0 bottom-0 w-24 bg-gradient-to-r from-[#151515] to-transparent z-10 pointer-events-none" />
+                <div className="absolute right-0 top-0 bottom-0 w-24 bg-gradient-to-l from-[#151515] to-transparent z-10 pointer-events-none" />
+
+                {/* Scrolling Container */}
+                <div className="overflow-hidden py-8">
+                  <div className="flex gap-6 animate-scroll">
+                    {/* First Set */}
+                    <div className="relative group flex-shrink-0">
+                      <div className="absolute inset-0 bg-gradient-to-br from-emerald-500/20 to-transparent rounded-2xl blur-xl group-hover:blur-2xl transition-all duration-500 opacity-0 group-hover:opacity-100" />
+                      <div className="relative w-32 h-32 bg-gradient-to-br from-black/40 to-black/20 backdrop-blur-xl border border-white/10 rounded-2xl p-4 flex items-center justify-center hover:border-emerald-500/30 hover:scale-110 transition-all duration-500 hover:shadow-2xl hover:shadow-emerald-500/20">
+                        <img
+                          src="/bank-icons/turkiye-garanti-bankasi.png"
+                          alt="Garanti BBVA"
+                          className="w-full h-full object-contain filter brightness-90 hover:brightness-110 transition-all duration-500"
+                        />
+                      </div>
+                    </div>
+
+                    <div className="relative group flex-shrink-0">
+                      <div className="absolute inset-0 bg-gradient-to-br from-teal-500/20 to-transparent rounded-2xl blur-xl group-hover:blur-2xl transition-all duration-500 opacity-0 group-hover:opacity-100" />
+                      <div className="relative w-32 h-32 bg-gradient-to-br from-black/40 to-black/20 backdrop-blur-xl border border-white/10 rounded-2xl p-4 flex items-center justify-center hover:border-teal-500/30 hover:scale-110 transition-all duration-500 hover:shadow-2xl hover:shadow-teal-500/20">
+                        <img
+                          src="/bank-icons/akbank.png"
+                          alt="Akbank"
+                          className="w-full h-full object-contain filter brightness-90 hover:brightness-110 transition-all duration-500"
+                        />
+                      </div>
+                    </div>
+
+                    <div className="relative group flex-shrink-0">
+                      <div className="absolute inset-0 bg-gradient-to-br from-emerald-500/20 to-transparent rounded-2xl blur-xl group-hover:blur-2xl transition-all duration-500 opacity-0 group-hover:opacity-100" />
+                      <div className="relative w-32 h-32 bg-gradient-to-br from-black/40 to-black/20 backdrop-blur-xl border border-white/10 rounded-2xl p-4 flex items-center justify-center hover:border-emerald-500/30 hover:scale-110 transition-all duration-500 hover:shadow-2xl hover:shadow-emerald-500/20">
+                        <img
+                          src="/bank-icons/turkiye-is-bankasi.png"
+                          alt="İş Bankası"
+                          className="w-full h-full object-contain filter brightness-90 hover:brightness-110 transition-all duration-500"
+                        />
+                      </div>
+                    </div>
+
+                    <div className="relative group flex-shrink-0">
+                      <div className="absolute inset-0 bg-gradient-to-br from-teal-500/20 to-transparent rounded-2xl blur-xl group-hover:blur-2xl transition-all duration-500 opacity-0 group-hover:opacity-100" />
+                      <div className="relative w-32 h-32 bg-gradient-to-br from-black/40 to-black/20 backdrop-blur-xl border border-white/10 rounded-2xl p-4 flex items-center justify-center hover:border-teal-500/30 hover:scale-110 transition-all duration-500 hover:shadow-2xl hover:shadow-teal-500/20">
+                        <img
+                          src="/bank-icons/yapi-kredi-bankasi.png"
+                          alt="Yapı Kredi"
+                          className="w-full h-full object-contain filter brightness-90 hover:brightness-110 transition-all duration-500"
+                        />
+                      </div>
+                    </div>
+
+                    <div className="relative group flex-shrink-0">
+                      <div className="absolute inset-0 bg-gradient-to-br from-emerald-500/20 to-transparent rounded-2xl blur-xl group-hover:blur-2xl transition-all duration-500 opacity-0 group-hover:opacity-100" />
+                      <div className="relative w-32 h-32 bg-gradient-to-br from-black/40 to-black/20 backdrop-blur-xl border border-white/10 rounded-2xl p-4 flex items-center justify-center hover:border-emerald-500/30 hover:scale-110 transition-all duration-500 hover:shadow-2xl hover:shadow-emerald-500/20">
+                        <img
+                          src="/bank-icons/ziraat-bankasi.png"
+                          alt="Ziraat Bankası"
+                          className="w-full h-full object-contain filter brightness-90 hover:brightness-110 transition-all duration-500"
+                        />
+                      </div>
+                    </div>
+
+                    <div className="relative group flex-shrink-0">
+                      <div className="absolute inset-0 bg-gradient-to-br from-teal-500/20 to-transparent rounded-2xl blur-xl group-hover:blur-2xl transition-all duration-500 opacity-0 group-hover:opacity-100" />
+                      <div className="relative w-32 h-32 bg-gradient-to-br from-black/40 to-black/20 backdrop-blur-xl border border-white/10 rounded-2xl p-4 flex items-center justify-center hover:border-teal-500/30 hover:scale-110 transition-all duration-500 hover:shadow-2xl hover:shadow-teal-500/20">
+                        <img
+                          src="/bank-icons/vakifbank.png"
+                          alt="VakıfBank"
+                          className="w-full h-full object-contain filter brightness-90 hover:brightness-110 transition-all duration-500"
+                        />
+                      </div>
+                    </div>
+
+                    <div className="relative group flex-shrink-0">
+                      <div className="absolute inset-0 bg-gradient-to-br from-emerald-500/20 to-transparent rounded-2xl blur-xl group-hover:blur-2xl transition-all duration-500 opacity-0 group-hover:opacity-100" />
+                      <div className="relative w-32 h-32 bg-gradient-to-br from-black/40 to-black/20 backdrop-blur-xl border border-white/10 rounded-2xl p-4 flex items-center justify-center hover:border-emerald-500/30 hover:scale-110 transition-all duration-500 hover:shadow-2xl hover:shadow-emerald-500/20">
+                        <img
+                          src="/bank-icons/turkiye-halk-bankasi.png"
+                          alt="Halkbank"
+                          className="w-full h-full object-contain filter brightness-90 hover:brightness-110 transition-all duration-500"
+                        />
+                      </div>
+                    </div>
+
+                    <div className="relative group flex-shrink-0">
+                      <div className="absolute inset-0 bg-gradient-to-br from-teal-500/20 to-transparent rounded-2xl blur-xl group-hover:blur-2xl transition-all duration-500 opacity-0 group-hover:opacity-100" />
+                      <div className="relative w-32 h-32 bg-gradient-to-br from-black/40 to-black/20 backdrop-blur-xl border border-white/10 rounded-2xl p-4 flex items-center justify-center hover:border-teal-500/30 hover:scale-110 transition-all duration-500 hover:shadow-2xl hover:shadow-teal-500/20">
+                        <img
+                          src="/bank-icons/qnb-finansbank.png"
+                          alt="QNB Finansbank"
+                          className="w-full h-full object-contain filter brightness-90 hover:brightness-110 transition-all duration-500"
+                        />
+                      </div>
+                    </div>
+
+                    {/* Duplicate for seamless loop */}
+                    <div className="relative group flex-shrink-0">
+                      <div className="absolute inset-0 bg-gradient-to-br from-emerald-500/20 to-transparent rounded-2xl blur-xl group-hover:blur-2xl transition-all duration-500 opacity-0 group-hover:opacity-100" />
+                      <div className="relative w-32 h-32 bg-gradient-to-br from-black/40 to-black/20 backdrop-blur-xl border border-white/10 rounded-2xl p-4 flex items-center justify-center hover:border-emerald-500/30 hover:scale-110 transition-all duration-500 hover:shadow-2xl hover:shadow-emerald-500/20">
+                        <img
+                          src="/bank-icons/turkiye-garanti-bankasi.png"
+                          alt="Garanti BBVA"
+                          className="w-full h-full object-contain filter brightness-90 hover:brightness-110 transition-all duration-500"
+                        />
+                      </div>
+                    </div>
+
+                    <div className="relative group flex-shrink-0">
+                      <div className="absolute inset-0 bg-gradient-to-br from-teal-500/20 to-transparent rounded-2xl blur-xl group-hover:blur-2xl transition-all duration-500 opacity-0 group-hover:opacity-100" />
+                      <div className="relative w-32 h-32 bg-gradient-to-br from-black/40 to-black/20 backdrop-blur-xl border border-white/10 rounded-2xl p-4 flex items-center justify-center hover:border-teal-500/30 hover:scale-110 transition-all duration-500 hover:shadow-2xl hover:shadow-teal-500/20">
+                        <img
+                          src="/bank-icons/akbank.png"
+                          alt="Akbank"
+                          className="w-full h-full object-contain filter brightness-90 hover:brightness-110 transition-all duration-500"
+                        />
+                      </div>
+                    </div>
+
+                    <div className="relative group flex-shrink-0">
+                      <div className="absolute inset-0 bg-gradient-to-br from-emerald-500/20 to-transparent rounded-2xl blur-xl group-hover:blur-2xl transition-all duration-500 opacity-0 group-hover:opacity-100" />
+                      <div className="relative w-32 h-32 bg-gradient-to-br from-black/40 to-black/20 backdrop-blur-xl border border-white/10 rounded-2xl p-4 flex items-center justify-center hover:border-emerald-500/30 hover:scale-110 transition-all duration-500 hover:shadow-2xl hover:shadow-emerald-500/20">
+                        <img
+                          src="/bank-icons/turkiye-is-bankasi.png"
+                          alt="İş Bankası"
+                          className="w-full h-full object-contain filter brightness-90 hover:brightness-110 transition-all duration-500"
+                        />
+                      </div>
+                    </div>
+
+                    <div className="relative group flex-shrink-0">
+                      <div className="absolute inset-0 bg-gradient-to-br from-teal-500/20 to-transparent rounded-2xl blur-xl group-hover:blur-2xl transition-all duration-500 opacity-0 group-hover:opacity-100" />
+                      <div className="relative w-32 h-32 bg-gradient-to-br from-black/40 to-black/20 backdrop-blur-xl border border-white/10 rounded-2xl p-4 flex items-center justify-center hover:border-teal-500/30 hover:scale-110 transition-all duration-500 hover:shadow-2xl hover:shadow-teal-500/20">
+                        <img
+                          src="/bank-icons/yapi-kredi-bankasi.png"
+                          alt="Yapı Kredi"
+                          className="w-full h-full object-contain filter brightness-90 hover:brightness-110 transition-all duration-500"
+                        />
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Stats Row */}
+                <div className="mt-12 flex flex-wrap justify-center gap-8 md:gap-12">
+                  <div className="text-center">
+                    <div className="text-3xl md:text-4xl font-bold text-emerald-400 mb-2">25+</div>
+                    <div className="text-white/60 text-sm">Desteklenen Banka</div>
+                  </div>
+                  <div className="text-center">
+                    <div className="text-3xl md:text-4xl font-bold text-teal-400 mb-2">100%</div>
+                    <div className="text-white/60 text-sm">Uyumluluk Oranı</div>
+                  </div>
+                  <div className="text-center">
+                    <div className="text-3xl md:text-4xl font-bold text-emerald-400 mb-2">1.2M+</div>
+                    <div className="text-white/60 text-sm">İşlenen Döküm</div>
+                  </div>
+                </div>
+
+                <p className="text-white/40 text-sm mt-8">ve daha fazlası...</p>
+              </div>
+
             </div>
           </div>
         </section>
