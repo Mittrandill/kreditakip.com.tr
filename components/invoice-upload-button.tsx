@@ -3,6 +3,7 @@
 import { useState, useRef } from "react"
 import { Button } from "@/components/ui/button"
 import { Upload, Loader2 } from "lucide-react"
+import { toast } from "sonner"
 
 interface InvoiceUploadButtonProps {
   userId: string
@@ -30,7 +31,7 @@ export function InvoiceUploadButton({
 
     // Validate PDF
     if (file.type !== "application/pdf") {
-      alert("Lütfen sadece PDF dosyası yükleyin")
+      toast.error("Lütfen sadece PDF dosyası yükleyin")
       return
     }
 
@@ -52,17 +53,36 @@ export function InvoiceUploadButton({
       const { invoices } = await findResponse.json()
 
       // Find pending invoice without PDF
-      const pendingInvoice = invoices?.find((inv: any) =>
+      let pendingInvoice = invoices?.find((inv: any) =>
         inv.subscription_id === subscriptionId && !inv.file_url
       )
 
+      // If no pending invoice found in first query, try searching by invoice_number
       if (!pendingInvoice) {
-        throw new Error("Bu abonelik için bekleyen fatura bulunamadı")
+        console.log("[invoice-upload] No pending invoice found in initial search")
+
+        // Try to find by invoice_number (from filename)
+        const invoiceNumber = file.name.replace(/\.pdf$/i, "")
+        const searchByNumberResponse = await fetch(`/api/admin/invoices?invoiceNumber=${invoiceNumber}`)
+
+        if (searchByNumberResponse.ok) {
+          const { invoices: invoicesByNumber } = await searchByNumberResponse.json()
+          pendingInvoice = invoicesByNumber?.find((inv: any) =>
+            inv.subscription_id === subscriptionId && !inv.file_url
+          )
+        }
+
+        // If still not found, invoice doesn't exist at all - this shouldn't happen
+        if (!pendingInvoice) {
+          throw new Error("Bu abonelik için fatura bulunamadı. Lütfen sayfayı yenileyin ve tekrar deneyin.")
+        }
+
+        console.log("[invoice-upload] Found invoice by number:", pendingInvoice.id)
+      } else {
+        console.log("[invoice-upload] Found pending invoice:", pendingInvoice.id)
       }
 
-      console.log("[invoice-upload] Found pending invoice:", pendingInvoice.id)
-
-      // 2. Update invoice number from filename
+      // 2. Update invoice number from filename if needed
       const invoiceNumber = file.name.replace(/\.pdf$/i, "")
 
       const updateResponse = await fetch(`/api/admin/invoices/${pendingInvoice.id}`, {
@@ -112,17 +132,19 @@ export function InvoiceUploadButton({
         }
       }
 
-      alert("Fatura başarıyla yüklendi!")
+      toast.success("Fatura başarıyla yüklendi!")
 
-      // Force reload with cache bypass
-      window.location.href = `/admin/faturalar?t=${Date.now()}`
+      // Force reload with cache bypass after a short delay
+      setTimeout(() => {
+        window.location.href = `/admin/faturalar?t=${Date.now()}`
+      }, 500)
 
       if (onSuccess) {
         onSuccess()
       }
     } catch (error) {
       console.error("[invoice-upload] Error:", error)
-      alert(error instanceof Error ? error.message : "Bir hata oluştu")
+      toast.error(error instanceof Error ? error.message : "Bir hata oluştu")
     } finally {
       setLoading(false)
       // Reset file input

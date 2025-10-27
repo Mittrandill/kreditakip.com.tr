@@ -16,17 +16,23 @@ export default async function InvoicesManagement() {
   const supabase = createSupabaseAdmin()
 
   // Get all invoices with user info
-  const { data: invoices } = await supabase
+  const { data: invoices, error: invoicesError } = await supabase
     .from("invoices")
     .select(`
       *,
-      profiles!invoices_user_id_fkey (
+      profiles (
         first_name,
         last_name,
         email
       )
     `)
     .order("invoice_date", { ascending: false })
+
+  if (invoicesError) {
+    console.error("[admin/faturalar] Error fetching invoices:", invoicesError)
+  } else {
+    console.log("[admin/faturalar] Successfully fetched invoices, count:", invoices?.length || 0)
+  }
 
   // Get users with active/completed subscriptions but no invoices with file_url
   // This includes both: 1) No invoice at all, 2) Invoice exists but no PDF uploaded
@@ -60,19 +66,20 @@ export default async function InvoicesManagement() {
 
   // Filter subscriptions that need invoices (no invoice OR invoice without PDF)
   // Use explicit check: file_url must exist, not be null, and not be empty string
-  const invoicesWithPDF = invoices?.filter((inv) => {
+  const safeInvoices = invoices || []
+  const invoicesWithPDF = safeInvoices.filter((inv) => {
     const hasValidPDF = inv.file_url && inv.file_url.trim().length > 0
     if (hasValidPDF) {
       console.log(`[admin/faturalar] Invoice ${inv.id} has PDF for subscription ${inv.subscription_id}`)
     }
     return hasValidPDF
-  }) || []
+  })
 
   const subscriptionIdsWithPDF = new Set(
     invoicesWithPDF.map((inv) => inv.subscription_id)
   )
 
-  console.log("[admin/faturalar] Total invoices:", invoices?.length)
+  console.log("[admin/faturalar] Total invoices:", safeInvoices.length)
   console.log("[admin/faturalar] Invoices with valid PDF:", invoicesWithPDF.length)
   console.log("[admin/faturalar] Subscription IDs with PDF:", Array.from(subscriptionIdsWithPDF))
 
@@ -287,7 +294,7 @@ export default async function InvoicesManagement() {
                 </tr>
               </thead>
               <tbody>
-                {invoices?.map((invoice) => (
+                {safeInvoices.map((invoice) => (
                   <tr key={invoice.id} className="border-b border-white/5 hover:bg-white/5 transition-colors">
                     <td className="py-4 px-4 text-white font-mono">{invoice.invoice_number}</td>
                     <td className="py-4 px-4">
@@ -351,7 +358,7 @@ export default async function InvoicesManagement() {
                     </td>
                   </tr>
                 ))}
-                {!invoices || invoices.length === 0 ? (
+                {safeInvoices.length === 0 ? (
                   <tr>
                     <td colSpan={8} className="py-8 text-center text-white/60">
                       Henüz fatura bulunmuyor

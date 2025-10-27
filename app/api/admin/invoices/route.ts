@@ -9,6 +9,7 @@ export async function GET(request: NextRequest) {
     const supabase = createClient(supabaseUrl, supabaseServiceKey)
     const { searchParams } = new URL(request.url)
     const subscriptionId = searchParams.get("subscriptionId")
+    const invoiceNumber = searchParams.get("invoiceNumber")
 
     let query = supabase
       .from("invoices")
@@ -17,6 +18,11 @@ export async function GET(request: NextRequest) {
     // Filter by subscription if provided
     if (subscriptionId) {
       query = query.eq("subscription_id", subscriptionId)
+    }
+
+    // Filter by invoice number if provided
+    if (invoiceNumber) {
+      query = query.eq("invoice_number", invoiceNumber)
     }
 
     const { data: invoices, error } = await query.order("created_at", { ascending: false })

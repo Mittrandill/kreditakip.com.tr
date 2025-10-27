@@ -2,6 +2,7 @@ import Link from "next/link"
 import { LayoutDashboard, FileText, FolderOpen, Users, Receipt, Home } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { AdminLogoutButton } from "@/components/admin-logout-button"
+import { Toaster } from "sonner"
 
 interface AdminLayoutWrapperProps {
   children: React.ReactNode
@@ -11,6 +12,11 @@ interface AdminLayoutWrapperProps {
 export function AdminLayoutWrapper({ children, userEmail }: AdminLayoutWrapperProps) {
   return (
     <div className="min-h-screen bg-[#151515] text-white">
+      <Toaster
+        position="top-right"
+        theme="dark"
+        richColors
+      />
       <div className="flex">
         {/* Sidebar */}
         <aside className="w-64 min-h-screen bg-black/20 border-r border-white/10 p-6 flex flex-col">
