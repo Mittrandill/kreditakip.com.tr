@@ -89,10 +89,10 @@ export default function AppSidebar() {
   }
 
   return (
-    <div className="flex flex-col h-full bg-white dark:bg-gray-900">
+    <>
       {/* Header */}
       <div
-        className={`border-b border-gray-200 dark:border-gray-700 transition-all duration-200 h-16 flex items-center ${isCollapsed ? "px-3" : "px-4"}`}
+        className={`border-b border-gray-200 dark:border-gray-700 transition-all duration-200 h-16 flex items-center bg-white dark:bg-gray-900 ${isCollapsed ? "px-3" : "px-4"}`}
       >
         <Link href="/uygulama/ana-sayfa" className="flex items-center gap-2">
           <div className="h-8 w-8 flex items-center justify-center flex-shrink-0">
@@ -115,7 +115,7 @@ export default function AppSidebar() {
 
       {/* Main Navigation */}
       <div
-        className={`flex-1 space-y-1 transition-all duration-200 ${isCollapsed ? "px-2 py-2" : "p-2"}`}
+        className={`flex-1 space-y-1 transition-all duration-200 bg-white dark:bg-gray-900 ${isCollapsed ? "px-2 py-2" : "p-2"}`}
       >
         {navItems.map((item) => {
           const isActive = pathname === item.href
@@ -151,7 +151,7 @@ export default function AppSidebar() {
 
       {/* Footer */}
       <div
-        className={`border-t border-gray-200 dark:border-gray-700 space-y-1 transition-all duration-200 ${isCollapsed ? "px-2 py-2" : "p-2"}`}
+        className={`border-t border-gray-200 dark:border-gray-700 space-y-1 transition-all duration-200 bg-white dark:bg-gray-900 ${isCollapsed ? "px-2 py-2" : "p-2"}`}
       >
         {/* Settings Items */}
         {settingsItems.map((item) => {
@@ -304,6 +304,6 @@ export default function AppSidebar() {
           )}
         </div>
       </div>
-    </div>
+    </>
   )
 }
