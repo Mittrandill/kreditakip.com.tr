@@ -39,9 +39,7 @@ import {
   Eye,
   EyeOff,
   Key,
-  Smartphone,
   Monitor,
-  Globe,
   Download,
   Trash2,
   AlertTriangle,
@@ -90,15 +88,10 @@ export default function AyarlarPage() {
   const [showNewPassword, setShowNewPassword] = useState(false)
   const [showConfirmPassword, setShowConfirmPassword] = useState(false)
   const [isChangingPassword, setIsChangingPassword] = useState(false)
-  const [twoFactorEnabled, setTwoFactorEnabled] = useState(false)
 
   // Tercihler state'leri
-  const [language, setLanguage] = useState("tr")
   const [compactView, setCompactView] = useState(false)
   const [animationsEnabled, setAnimationsEnabled] = useState(true)
-  const [emailNotifications, setEmailNotifications] = useState(true)
-  const [smsNotifications, setSmsNotifications] = useState(true)
-  const [pushNotifications, setPushNotifications] = useState(false)
 
   // Abonelik state'leri
   const [invoices, setInvoices] = useState<any[]>([])
@@ -112,30 +105,9 @@ export default function AyarlarPage() {
   const [avatarPreview, setAvatarPreview] = useState<string | null>(null)
   const [isUploadingAvatar, setIsUploadingAvatar] = useState(false)
 
-  // Oturum geçmişi (simulated)
-  const [sessions] = useState([
-    {
-      id: "1",
-      device: "Chrome - Windows",
-      location: "İstanbul, Türkiye",
-      lastActive: "Şimdi",
-      current: true,
-    },
-    {
-      id: "2",
-      device: "Safari - iPhone",
-      location: "İstanbul, Türkiye",
-      lastActive: "2 saat önce",
-      current: false,
-    },
-    {
-      id: "3",
-      device: "Chrome - Android",
-      location: "Ankara, Türkiye",
-      lastActive: "1 gün önce",
-      current: false,
-    },
-  ])
+  // Oturum geçmişi (real data)
+  const [sessions, setSessions] = useState<any[]>([])
+  const [loadingSessions, setLoadingSessions] = useState(true)
 
   useEffect(() => {
     let isMounted = true
@@ -192,11 +164,9 @@ export default function AyarlarPage() {
     }
 
     if (typeof window !== "undefined") {
-      const savedLanguage = localStorage.getItem("language") || "tr"
       const savedCompactView = localStorage.getItem("compactView") === "true"
       const savedAnimations = localStorage.getItem("animationsEnabled") !== "false"
 
-      setLanguage(savedLanguage)
       setCompactView(savedCompactView)
       setAnimationsEnabled(savedAnimations)
     }
@@ -207,6 +177,33 @@ export default function AyarlarPage() {
   }, [user, initialProfile, authLoading])
 
   // Theme is now managed by useThemeSync hook - no need for manual loading
+
+  // Fetch sessions
+  useEffect(() => {
+    let isMounted = true
+    if (user?.id && activeTab === "security" && isMounted) {
+      const fetchSessions = async () => {
+        try {
+          setLoadingSessions(true)
+          const response = await fetch("/api/user/sessions")
+          const data = await response.json()
+          if (isMounted && data.sessions) {
+            setSessions(data.sessions)
+          }
+        } catch (error) {
+          console.error("Error fetching sessions:", error)
+        } finally {
+          if (isMounted) {
+            setLoadingSessions(false)
+          }
+        }
+      }
+      fetchSessions()
+    }
+    return () => {
+      isMounted = false
+    }
+  }, [user, activeTab])
 
   // Finansal Profil State ve Fonksiyonları
   const [financialProfileData, setFinancialProfileData] = useState<Partial<FinancialProfile>>({})
@@ -471,10 +468,27 @@ export default function AyarlarPage() {
     toast({ title: "Başarılı", description: `${enabled ? "Koyu" : "Açık"} tema etkinleştirildi ve kaydedildi.` })
   }
 
-  const handleLanguageChange = (lang: string) => {
-    setLanguage(lang)
-    localStorage.setItem("language", lang)
-    toast({ title: "Başarılı", description: "Dil tercihiniz kaydedildi." })
+  const handleRevokeSession = async (sessionId: string) => {
+    try {
+      const response = await fetch("/api/user/sessions", {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ sessionId }),
+      })
+
+      if (response.ok) {
+        setSessions(sessions.filter((s) => s.id !== sessionId))
+        toast({ title: "Başarılı", description: "Oturum sonlandırıldı." })
+      } else {
+        throw new Error("Oturum sonlandırılamadı")
+      }
+    } catch (error) {
+      toast({
+        title: "Hata",
+        description: "Oturum sonlandırılırken bir hata oluştu.",
+        variant: "destructive",
+      })
+    }
   }
 
   const handleCompactViewToggle = (enabled: boolean) => {
@@ -1541,40 +1555,6 @@ export default function AyarlarPage() {
                   </CardContent>
                 </Card>
 
-                {/* İki Faktörlü Doğrulama */}
-                <Card className="dark:bg-gray-900 dark:border-gray-800">
-                  <CardHeader>
-                    <CardTitle className="flex items-center gap-2 dark:text-white">
-                      <Smartphone className="h-5 w-5 text-emerald-600 dark:text-emerald-400" />
-                      İki Faktörlü Doğrulama (2FA)
-                    </CardTitle>
-                    <CardDescription className="dark:text-gray-400">
-                      Hesabınıza ek güvenlik katmanı ekleyin
-                    </CardDescription>
-                  </CardHeader>
-                  <CardContent className="space-y-4">
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <p className="font-medium dark:text-white">2FA Durumu</p>
-                        <p className="text-sm text-gray-500 dark:text-gray-400">
-                          {twoFactorEnabled ? "İki faktörlü doğrulama etkin" : "İki faktörlü doğrulama devre dışı"}
-                        </p>
-                      </div>
-                      <Switch checked={twoFactorEnabled} onCheckedChange={setTwoFactorEnabled} />
-                    </div>
-                    {twoFactorEnabled && (
-                      <Alert className="dark:bg-gray-800 dark:border-gray-700">
-                        <Smartphone className="h-4 w-4" />
-                        <AlertTitle className="dark:text-white">2FA Etkin</AlertTitle>
-                        <AlertDescription className="dark:text-gray-300">
-                          İki faktörlü doğrulama etkinleştirildi. Giriş yaparken telefonunuzdaki doğrulama kodunu
-                          kullanmanız gerekecek.
-                        </AlertDescription>
-                      </Alert>
-                    )}
-                  </CardContent>
-                </Card>
-
                 {/* Oturum Geçmişi */}
                 <Card className="dark:bg-gray-900 dark:border-gray-800">
                   <CardHeader>
@@ -1587,42 +1567,53 @@ export default function AyarlarPage() {
                     </CardDescription>
                   </CardHeader>
                   <CardContent>
-                    <div className="space-y-4">
-                      {sessions.map((session) => (
-                        <div
-                          key={session.id}
-                          className="flex items-center justify-between p-4 border rounded-lg dark:border-gray-700 dark:bg-gray-800/50"
-                        >
-                          <div className="flex items-center gap-3">
-                            <Monitor className="h-5 w-5 text-gray-400 dark:text-gray-500" />
-                            <div>
-                              <p className="font-medium flex items-center gap-2 dark:text-white">
-                                {session.device}
-                                {session.current && <Badge variant="secondary">Mevcut</Badge>}
-                              </p>
-                              <p className="text-sm text-gray-500 dark:text-gray-400 flex items-center gap-1">
-                                <Location className="h-3 w-3" />
-                                {session.location}
-                              </p>
-                              <p className="text-sm text-gray-500 dark:text-gray-400 flex items-center gap-1">
-                                <Clock className="h-3 w-3" />
-                                {session.lastActive}
-                              </p>
+                    {loadingSessions ? (
+                      <div className="flex items-center justify-center py-8">
+                        <Loader2 className="h-8 w-8 animate-spin text-emerald-600 dark:text-emerald-400" />
+                      </div>
+                    ) : sessions.length === 0 ? (
+                      <div className="text-center py-8">
+                        <p className="text-gray-500 dark:text-gray-400">Aktif oturum bulunamadı</p>
+                      </div>
+                    ) : (
+                      <div className="space-y-4">
+                        {sessions.map((session) => (
+                          <div
+                            key={session.id}
+                            className="flex items-center justify-between p-4 border rounded-lg dark:border-gray-700 dark:bg-gray-800/50"
+                          >
+                            <div className="flex items-center gap-3">
+                              <Monitor className="h-5 w-5 text-gray-400 dark:text-gray-500" />
+                              <div>
+                                <p className="font-medium flex items-center gap-2 dark:text-white">
+                                  {session.device}
+                                  {session.is_current && <Badge variant="secondary">Mevcut</Badge>}
+                                </p>
+                                <p className="text-sm text-gray-500 dark:text-gray-400 flex items-center gap-1">
+                                  <Location className="h-3 w-3" />
+                                  {session.location}
+                                </p>
+                                <p className="text-sm text-gray-500 dark:text-gray-400 flex items-center gap-1">
+                                  <Clock className="h-3 w-3" />
+                                  {session.lastActive}
+                                </p>
+                              </div>
                             </div>
+                            {!session.is_current && (
+                              <Button
+                                variant="outline"
+                                className="border-gray-300 dark:border-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 hover:border-gray-400 bg-transparent"
+                                size="sm"
+                                onClick={() => handleRevokeSession(session.id)}
+                              >
+                                <X className="h-4 w-4 mr-1" />
+                                Sonlandır
+                              </Button>
+                            )}
                           </div>
-                          {!session.current && (
-                            <Button
-                              variant="outline"
-                              className="border-gray-300 dark:border-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 hover:border-gray-400 bg-transparent"
-                              size="sm"
-                            >
-                              <X className="h-4 w-4 mr-1" />
-                              Sonlandır
-                            </Button>
-                          )}
-                        </div>
-                      ))}
-                    </div>
+                        ))}
+                      </div>
+                    )}
                   </CardContent>
                 </Card>
 
@@ -1695,48 +1686,7 @@ export default function AyarlarPage() {
                   </CardContent>
                 </Card>
 
-                {/* Dil ve Bölge */}
-                <Card className="dark:bg-gray-900 dark:border-gray-800">
-                  <CardHeader>
-                    <CardTitle className="flex items-center gap-2 dark:text-white">
-                      <Globe className="h-5 w-5 text-emerald-600 dark:text-emerald-400" />
-                      Dil ve Bölge
-                    </CardTitle>
-                    <CardDescription className="dark:text-gray-400">
-                      Dil ve para birimi tercihlerinizi ayarlayın
-                    </CardDescription>
-                  </CardHeader>
-                  <CardContent className="space-y-4">
-                    <div className="space-y-2">
-                      <Label className="dark:text-gray-200">Dil</Label>
-                      <Select value={language} onValueChange={handleLanguageChange}>
-                        <SelectTrigger className="dark:bg-gray-800 dark:border-gray-700 dark:text-white">
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent className="dark:bg-gray-800 dark:border-gray-700">
-                          <SelectItem value="tr">Türkçe</SelectItem>
-                          <SelectItem value="en">English</SelectItem>
-                          <SelectItem value="de">Deutsch</SelectItem>
-                          <SelectItem value="fr">Français</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
-                    <div className="space-y-2">
-                      <Label className="dark:text-gray-200">Para Birimi</Label>
-                      <Select defaultValue="try">
-                        <SelectTrigger className="dark:bg-gray-800 dark:border-gray-700 dark:text-white">
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent className="dark:bg-gray-800 dark:border-gray-700">
-                          <SelectItem value="try">Türk Lirası (₺)</SelectItem>
-                          <SelectItem value="usd">US Dollar ($)</SelectItem>
-                          <SelectItem value="eur">Euro (€)</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
-                  </CardContent>
-                </Card>
-
+                {/* Bildirim Ayarları */}
                 <Card className="dark:bg-gray-900 dark:border-gray-800">
                   <CardHeader>
                     <CardTitle className="flex items-center gap-2 dark:text-white">
@@ -1748,26 +1698,17 @@ export default function AyarlarPage() {
                     </CardDescription>
                   </CardHeader>
                   <CardContent className="space-y-4">
-                    <div className="p-4 bg-blue-50 dark:bg-blue-900/30 border border-blue-200 dark:border-blue-700/50 rounded-lg">
-                      <div className="flex items-start gap-3">
-                        <Info className="h-5 w-5 text-blue-600 dark:text-blue-400 mt-0.5" />
-                        <div>
-                          <p className="font-medium text-blue-900 dark:text-blue-300">Gelişmiş Bildirim Ayarları</p>
-                          <p className="text-sm text-blue-700 dark:text-blue-400 mt-1">
-                            E-posta hatırlatıcıları, zaman ayarları ve test fonksiyonları için ödeme planı sayfasındaki
-                            hatırlatıcı sekmesini kullanın.
-                          </p>
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            className="mt-3 border-gray-300 dark:border-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 hover:border-gray-400 bg-transparent"
-                            onClick={() => router.push("/uygulama/odeme-plani?tab=hatirlatici")}
-                          >
-                            <Bell className="h-4 w-4 mr-2" />
-                            Bildirim Ayarlarına Git
-                          </Button>
-                        </div>
+                    <div className="flex items-center justify-between p-4 border rounded-lg dark:border-gray-700 dark:bg-gray-800/50">
+                      <div>
+                        <p className="font-medium dark:text-white">Gelişmiş Bildirim Ayarları</p>
+                        <p className="text-sm text-gray-500 dark:text-gray-400">
+                          E-posta hatırlatıcıları, zaman ayarları ve test fonksiyonları
+                        </p>
                       </div>
+                      <Button onClick={() => router.push("/uygulama/odeme-plani?tab=hatirlatici")}>
+                        <Bell className="h-4 w-4 mr-2" />
+                        Bildirim Ayarlarına Git
+                      </Button>
                     </div>
                   </CardContent>
                 </Card>
