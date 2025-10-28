@@ -45,7 +45,6 @@ export function UserInvoices() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [billingInfo, setBillingInfo] = useState<BillingInfo | null>(null)
-  const [loadingBilling, setLoadingBilling] = useState(true)
   const [savingBilling, setSavingBilling] = useState(false)
   const [billingForm, setBillingForm] = useState({
     fullName: "",
@@ -62,13 +61,16 @@ export function UserInvoices() {
   })
 
   useEffect(() => {
-    fetchInvoices()
-    fetchBillingInfo()
+    const loadData = async () => {
+      setLoading(true)
+      await Promise.all([fetchInvoices(), fetchBillingInfo()])
+      setLoading(false)
+    }
+    loadData()
   }, [])
 
   const fetchInvoices = async () => {
     try {
-      setLoading(true)
       const response = await fetch("/api/user/invoices")
 
       if (!response.ok) {
@@ -80,14 +82,11 @@ export function UserInvoices() {
     } catch (err) {
       console.error("Error fetching invoices:", err)
       setError(err instanceof Error ? err.message : "Bir hata oluştu")
-    } finally {
-      setLoading(false)
     }
   }
 
   const fetchBillingInfo = async () => {
     try {
-      setLoadingBilling(true)
       const response = await fetch("/api/user/billing-info")
 
       if (!response.ok) {
@@ -113,8 +112,6 @@ export function UserInvoices() {
       }
     } catch (err) {
       console.error("Error fetching billing info:", err)
-    } finally {
-      setLoadingBilling(false)
     }
   }
 
@@ -208,21 +205,17 @@ export function UserInvoices() {
 
   if (loading) {
     return (
-      <Card className="bg-black/20 border-white/10 backdrop-blur-xl">
-        <CardContent className="py-12">
-          <div className="flex items-center justify-center">
-            <Loader2 className="h-8 w-8 animate-spin text-emerald-400" />
-          </div>
-        </CardContent>
-      </Card>
+      <div className="flex items-center justify-center py-12">
+        <Loader2 className="h-12 w-12 animate-spin text-emerald-600 dark:text-emerald-400" />
+      </div>
     )
   }
 
   if (error) {
     return (
-      <Card className="bg-black/20 border-white/10 backdrop-blur-xl">
+      <Card className="dark:bg-gray-900 dark:border-gray-800">
         <CardContent className="py-12">
-          <div className="text-center text-red-400">{error}</div>
+          <div className="text-center text-red-600 dark:text-red-400">{error}</div>
         </CardContent>
       </Card>
     )
@@ -242,12 +235,7 @@ export function UserInvoices() {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          {loadingBilling ? (
-            <div className="flex items-center justify-center py-8">
-              <Loader2 className="h-8 w-8 animate-spin text-emerald-600 dark:text-emerald-400" />
-            </div>
-          ) : (
-            <div className="space-y-6">
+          <div className="space-y-6">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label htmlFor="fullName" className="dark:text-gray-200">
@@ -428,7 +416,6 @@ export function UserInvoices() {
                 </Button>
               </div>
             </div>
-          )}
         </CardContent>
       </Card>
 
@@ -444,11 +431,7 @@ export function UserInvoices() {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          {loading ? (
-            <div className="flex items-center justify-center py-8">
-              <Loader2 className="h-8 w-8 animate-spin text-emerald-600 dark:text-emerald-400" />
-            </div>
-          ) : invoices.length === 0 ? (
+          {invoices.length === 0 ? (
             <div className="text-center py-12">
               <FileText className="h-16 w-16 mx-auto mb-4 text-gray-300 dark:text-gray-600" />
               <p className="text-gray-600 dark:text-gray-400 text-lg mb-2">Henüz faturanız bulunmuyor</p>
