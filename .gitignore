@@ -29,3 +29,7 @@ nul
 *-test/
 **/*-test/
 **/test/
+
+# documentation and scripts (sensitive information)
+/docs/
+/scripts/
