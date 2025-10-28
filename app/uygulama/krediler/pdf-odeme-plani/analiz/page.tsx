@@ -231,15 +231,14 @@ export default function PDFAnalysisPage() {
     })
   }
 
-  const handleBankSelect = (bankName: string) => {
-    console.log("Manuel banka seçimi:", bankName)
-    handleGeneralEdit("bankName", bankName)
+  const handleBankSelect = (bank: any) => {
+    console.log("Manuel banka seçimi:", bank)
+    handleGeneralEdit("bankName", bank.name)
     setShowBankSelector(false)
 
     // Seçilen bankayı kaydetme işlemi için hazırla
-    const selectedBankForSave = banks.find((bank) => bank.name === bankName)
-    if (selectedBankForSave) {
-      console.log("Manuel seçilen banka ID:", selectedBankForSave.id)
+    if (bank.id) {
+      console.log("Manuel seçilen banka ID:", bank.id)
     }
   }
 
@@ -524,8 +523,9 @@ export default function PDFAnalysisPage() {
             <div className="flex gap-3">
               <Button
                 variant="outline"
+                size="lg"
                 onClick={() => setIsEditing(!isEditing)}
-                className="bg-white/20 border-white/30 text-white hover:bg-white/30"
+                className="bg-transparent border-white/20 text-white hover:bg-white/10 hover:border-transparent hover:text-white dark:bg-transparent dark:border-white/20 dark:text-white dark:hover:bg-white/10 dark:hover:border-transparent dark:hover:text-white"
                 disabled={isSaving}
               >
                 <Edit3 className="mr-2 h-4 w-4" />

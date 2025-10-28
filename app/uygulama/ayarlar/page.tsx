@@ -926,74 +926,50 @@ export default function AyarlarPage() {
                             </p>
                           </div>
                         )}
+
+                        {/* Kullanım İstatistikleri */}
+                        {subscription && (
+                          <div className="mt-4 space-y-3">
+                            <p className="text-sm font-medium text-emerald-100">Kullanım İstatistikleri</p>
+                            <div className="grid grid-cols-1 gap-3">
+                              <div className="p-3 bg-white/10 backdrop-blur-sm rounded-lg">
+                                <div className="flex items-center justify-between mb-2">
+                                  <span className="text-xs font-medium text-white">OCR Analizi</span>
+                                  <Badge variant="outline" className="text-xs bg-white/20 border-white/30 text-white">
+                                    {isPremium ? "Sınırsız" : `${subscription.usage?.ocrAnalysis?.used || 0}/${subscription.usage?.ocrAnalysis?.limit || 1}`}
+                                  </Badge>
+                                </div>
+                                <div className="w-full bg-white/20 rounded-full h-2">
+                                  <div
+                                    className="bg-white h-2 rounded-full transition-all duration-300"
+                                    style={{
+                                      width: isPremium
+                                        ? "100%"
+                                        : `${Math.min(100, ((subscription.usage?.ocrAnalysis?.used || 0) / (subscription.usage?.ocrAnalysis?.limit || 1)) * 100)}%`,
+                                    }}
+                                  ></div>
+                                </div>
+                              </div>
+                              <div className="p-3 bg-white/10 backdrop-blur-sm rounded-lg">
+                                <div className="flex items-center justify-between mb-2">
+                                  <span className="text-xs font-medium text-white">Risk Analizi</span>
+                                  <Badge variant="outline" className="text-xs bg-white/20 border-white/30 text-white">
+                                    {isPremium ? "Sınırsız" : "Premium Gerekli"}
+                                  </Badge>
+                                </div>
+                                <div className="w-full bg-white/20 rounded-full h-2">
+                                  <div
+                                    className="bg-white h-2 rounded-full transition-all duration-300"
+                                    style={{ width: isPremium ? "100%" : "0%" }}
+                                  ></div>
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                        )}
                       </div>
                     </div>
 
-                    {/* Kullanım İstatistikleri */}
-                    {subscription && (
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div className="p-4 border rounded-lg dark:border-gray-700 dark:bg-gray-800/50">
-                          <div className="flex items-center justify-between mb-2">
-                            <span className="text-sm font-medium dark:text-white">OCR Analizi</span>
-                            <Badge variant="outline" className="text-xs dark:border-gray-600">
-                              {isPremium ? "Sınırsız" : `${subscription.usage?.ocrAnalysis?.used || 0}/${subscription.usage?.ocrAnalysis?.limit || 1}`}
-                            </Badge>
-                          </div>
-                          <div className="w-full bg-gray-200 dark:bg-gray-600 rounded-full h-2">
-                            <div
-                              className="bg-gradient-to-r from-emerald-500 to-teal-600 h-2 rounded-full"
-                              style={{
-                                width: isPremium
-                                  ? "100%"
-                                  : `${Math.min(100, ((subscription.usage?.ocrAnalysis?.used || 0) / (subscription.usage?.ocrAnalysis?.limit || 1)) * 100)}%`,
-                              }}
-                            ></div>
-                          </div>
-                        </div>
-                        <div className="p-4 border rounded-lg dark:border-gray-700 dark:bg-gray-800/50">
-                          <div className="flex items-center justify-between mb-2">
-                            <span className="text-sm font-medium dark:text-white">Risk Analizi</span>
-                            <Badge variant="outline" className="text-xs dark:border-gray-600">
-                              {isPremium ? "Sınırsız" : "Premium Gerekli"}
-                            </Badge>
-                          </div>
-                          <div className="w-full bg-gray-200 dark:bg-gray-600 rounded-full h-2">
-                            <div
-                              className="bg-gradient-to-r from-blue-500 to-indigo-600 h-2 rounded-full"
-                              style={{ width: isPremium ? "100%" : "0%" }}
-                            ></div>
-                          </div>
-                        </div>
-                      </div>
-                    )}
-
-                    {/* Plan Türü - Tüm kullanıcılar için göster */}
-                    <div className="p-4 bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 rounded-xl border border-blue-200 dark:border-blue-800">
-                      <div className="flex items-center justify-between">
-                        <div>
-                          <p className="text-sm text-blue-700 dark:text-blue-300 font-medium mb-1">
-                            {isPremium ? "Abonelik Türü" : "Mevcut Plan"}
-                          </p>
-                          <p className="text-2xl font-bold text-blue-900 dark:text-blue-100">
-                            {isPremium
-                              ? subscription?.plan_id === "premium-yearly"
-                                ? "Yıllık Abonelik"
-                                : "Aylık Abonelik"
-                              : "Ücretsiz Plan"}
-                          </p>
-                          <p className="text-sm text-blue-600 dark:text-blue-400 mt-1">
-                            {isPremium
-                              ? subscription?.plan_id === "premium-yearly"
-                                ? "1,990₺/yıl"
-                                : "199₺/ay"
-                              : "0₺ - Sınırlı özellikler"}
-                          </p>
-                        </div>
-                        <div className="p-3 bg-blue-100 dark:bg-blue-800/30 rounded-xl">
-                          <Calendar className="h-8 w-8 text-blue-600 dark:text-blue-400" />
-                        </div>
-                      </div>
-                    </div>
 
                     {/* İptal Uyarısı */}
                     {subscription?.status === "cancelled" && subscription?.expiresAt && (
