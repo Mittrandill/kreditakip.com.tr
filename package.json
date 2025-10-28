@@ -65,6 +65,7 @@
     "mailersend": "latest",
     "next": "14.2.16",
     "next-themes": "latest",
+    "node-mailjet": "latest",
     "react": "^18",
     "react-chartjs-2": "latest",
     "react-day-picker": "latest",

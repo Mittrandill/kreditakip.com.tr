@@ -1,8 +1,7 @@
-import { MailerSend, EmailParams, Sender, Recipient } from "mailersend"
+import Mailjet from "node-mailjet"
 
-const mailerSend = new MailerSend({
-  apiKey: process.env.MAILERSEND_API_KEY || "",
-})
+const mailjet = Mailjet.apiConnect(process.env.MAILJET_API_KEY || "", process.env.MAILJET_SECRET_KEY || "")
+// </CHANGE>
 
 interface InvoiceData {
   userId: string
@@ -331,41 +330,44 @@ export async function sendInvoiceNotification(invoiceData: InvoiceData): Promise
   error?: string
 }> {
   try {
-    if (!process.env.MAILERSEND_API_KEY) {
-      console.error("[invoice-email] MAILERSEND_API_KEY not configured")
+    if (!process.env.MAILJET_API_KEY || !process.env.MAILJET_SECRET_KEY) {
+      console.error("[invoice-email] MAILJET_API_KEY or MAILJET_SECRET_KEY not configured")
       return { success: false, error: "Email service not configured" }
     }
+    // </CHANGE>
 
     const emailTemplate = createInvoiceEmailTemplate(invoiceData)
 
-    const sentFrom = new Sender("bildirim@kreditakip.com.tr", "Kredi Takip - Fatura Bildirimi")
-    const recipients = [new Recipient("info@kreditakip.com.tr", "Kredi Takip Admin")]
-
-    const emailParams = new EmailParams()
-      .setFrom(sentFrom)
-      .setTo(recipients)
-      .setSubject(emailTemplate.subject)
-      .setHtml(emailTemplate.html)
+    const emailData = {
+      Messages: [
+        {
+          From: {
+            Email: "bildirim@kreditakip.com.tr",
+            Name: "Kredi Takip - Fatura Bildirimi",
+          },
+          To: [
+            {
+              Email: "info@kreditakip.com.tr",
+              Name: "Kredi Takip Admin",
+            },
+          ],
+          Subject: emailTemplate.subject,
+          HTMLPart: emailTemplate.html,
+        },
+      ],
+    }
 
     console.log("[invoice-email] Sending invoice notification to info@kreditakip.com.tr")
 
-    const response = await mailerSend.email.send(emailParams)
+    const result = await mailjet.post("send", { version: "v3.1" }).request(emailData)
 
-    if (response.statusCode !== 202) {
-      console.error("[invoice-email] MailerSend error:", response)
-      return {
-        success: false,
-        error: `HTTP ${response.statusCode}`,
-      }
-    }
-
-    const messageId = response.headers?.["x-message-id"] || "unknown"
-    console.log("[invoice-email] Invoice notification sent successfully, messageId:", messageId)
+    console.log("[invoice-email] Invoice notification sent successfully")
 
     return {
       success: true,
-      messageId,
+      messageId: result.body.Messages?.[0]?.To?.[0]?.MessageID || "unknown",
     }
+    // </CHANGE>
   } catch (error: any) {
     console.error("[invoice-email] Error sending invoice notification:", error)
     return {

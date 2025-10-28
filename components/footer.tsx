@@ -1,3 +1,8 @@
+"use client"
+
+import type React from "react"
+
+import { useState } from "react"
 import Link from "next/link"
 import Image from "next/image"
 import { Button } from "@/components/ui/button"
@@ -17,9 +22,43 @@ import {
   Users,
   TrendingUp,
   ArrowRight,
+  CheckCircle,
+  AlertCircle,
 } from "lucide-react"
 
 export default function Footer() {
+  const [email, setEmail] = useState("")
+  const [isSubmitting, setIsSubmitting] = useState(false)
+  const [submitStatus, setSubmitStatus] = useState<{ type: "success" | "error"; message: string } | null>(null)
+
+  const handleNewsletterSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+    setIsSubmitting(true)
+    setSubmitStatus(null)
+
+    try {
+      const response = await fetch("/api/newsletter/subscribe", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email }),
+      })
+
+      const data = await response.json()
+
+      if (response.ok) {
+        setSubmitStatus({ type: "success", message: data.message })
+        setEmail("")
+      } else {
+        setSubmitStatus({ type: "error", message: data.error || "Bir hata oluştu" })
+      }
+    } catch (error) {
+      setSubmitStatus({ type: "error", message: "Bağlantı hatası. Lütfen tekrar deneyin." })
+    } finally {
+      setIsSubmitting(false)
+    }
+  }
+  // </CHANGE>
+
   return (
     <footer className="relative py-20 px-4 md:px-8 lg:px-16 border-t border-white/10 overflow-hidden">
       {/* Background Elements */}
@@ -173,12 +212,46 @@ export default function Footer() {
 
             {/* Newsletter Signup */}
             <div className="space-y-4">
-              <div className="flex gap-2">
-                <Input type="email" placeholder="E-posta adresiniz" className="custom-input flex-1" />
-                <Button className="bg-gradient-to-r from-emerald-500 to-teal-500 text-white hover:from-emerald-600 hover:to-teal-600 px-4">
-                  <Send className="w-4 h-4" />
+              {submitStatus && (
+                <div
+                  className={`p-3 rounded-xl border flex items-start gap-2 text-sm ${
+                    submitStatus.type === "success"
+                      ? "bg-emerald-500/10 border-emerald-500/30 text-emerald-400"
+                      : "bg-red-500/10 border-red-500/30 text-red-400"
+                  }`}
+                >
+                  {submitStatus.type === "success" ? (
+                    <CheckCircle className="w-4 h-4 mt-0.5 flex-shrink-0" />
+                  ) : (
+                    <AlertCircle className="w-4 h-4 mt-0.5 flex-shrink-0" />
+                  )}
+                  <p>{submitStatus.message}</p>
+                </div>
+              )}
+
+              <form onSubmit={handleNewsletterSubmit} className="flex gap-2">
+                <Input
+                  type="email"
+                  placeholder="E-posta adresiniz"
+                  className="custom-input flex-1"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  disabled={isSubmitting}
+                  required
+                />
+                <Button
+                  type="submit"
+                  disabled={isSubmitting}
+                  className="bg-gradient-to-r from-emerald-500 to-teal-500 text-white hover:from-emerald-600 hover:to-teal-600 px-4 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  {isSubmitting ? (
+                    <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                  ) : (
+                    <Send className="w-4 h-4" />
+                  )}
                 </Button>
-              </div>
+              </form>
+
               <p className="text-xs text-white/50">
                 Abone olarak{" "}
                 <Link href="/gizlilik-politikasi" className="text-emerald-400 hover:underline">

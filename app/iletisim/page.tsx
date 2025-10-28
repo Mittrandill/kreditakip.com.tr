@@ -1,13 +1,95 @@
+"use client"
+
+import type React from "react"
+
+import { useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { Card, CardContent } from "@/components/ui/card"
-import { Mail, Phone, MapPin, Clock, MessageCircle, Send, Shield, Headphones } from "lucide-react"
+import {
+  Mail,
+  Phone,
+  MapPin,
+  Clock,
+  MessageCircle,
+  Send,
+  Shield,
+  Headphones,
+  CheckCircle,
+  AlertCircle,
+} from "lucide-react"
 import Header from "@/components/layout/header"
 import Footer from "@/components/footer"
 
 export default function ContactPage() {
+  const [formData, setFormData] = useState({
+    firstName: "",
+    lastName: "",
+    email: "",
+    phone: "",
+    subject: "",
+    message: "",
+    privacy: false,
+  })
+  const [isSubmitting, setIsSubmitting] = useState(false)
+  const [submitStatus, setSubmitStatus] = useState<{ type: "success" | "error"; message: string } | null>(null)
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+    setIsSubmitting(true)
+    setSubmitStatus(null)
+
+    console.log("[v0] Contact form submitting...")
+
+    try {
+      const response = await fetch("/api/contact", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(formData),
+      })
+
+      console.log("[v0] Response status:", response.status)
+
+      const data = await response.json()
+      console.log("[v0] Response data:", data)
+
+      if (response.ok) {
+        setSubmitStatus({ type: "success", message: data.message })
+        setFormData({
+          firstName: "",
+          lastName: "",
+          email: "",
+          phone: "",
+          subject: "",
+          message: "",
+          privacy: false,
+        })
+      } else {
+        const errorMsg = data.details ? `${data.error}\n\nDetay: ${data.details}` : data.error || "Bir hata oluştu"
+        console.error("[v0] Error from API:", errorMsg)
+        setSubmitStatus({ type: "error", message: errorMsg })
+      }
+    } catch (error) {
+      console.error("[v0] Fetch error:", error)
+      setSubmitStatus({
+        type: "error",
+        message: "Bağlantı hatası. Lütfen internet bağlantınızı kontrol edin ve tekrar deneyin.",
+      })
+    } finally {
+      setIsSubmitting(false)
+    }
+  }
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    const { id, value, type } = e.target
+    setFormData((prev) => ({
+      ...prev,
+      [id]: type === "checkbox" ? (e.target as HTMLInputElement).checked : value,
+    }))
+  }
+
   return (
     <div className="min-h-screen w-full bg-[#151515] text-white font-sans">
       <div className="absolute inset-0 -z-0">
@@ -102,19 +184,52 @@ export default function ContactPage() {
                     </p>
                   </div>
 
-                  <form className="space-y-6">
+                  {submitStatus && (
+                    <div
+                      className={`mb-6 p-4 rounded-xl border flex items-start gap-3 ${
+                        submitStatus.type === "success"
+                          ? "bg-emerald-500/10 border-emerald-500/30 text-emerald-400"
+                          : "bg-red-500/10 border-red-500/30 text-red-400"
+                      }`}
+                    >
+                      {submitStatus.type === "success" ? (
+                        <CheckCircle className="w-5 h-5 mt-0.5 flex-shrink-0" />
+                      ) : (
+                        <AlertCircle className="w-5 h-5 mt-0.5 flex-shrink-0" />
+                      )}
+                      <p className="text-sm">{submitStatus.message}</p>
+                    </div>
+                  )}
+
+                  <form onSubmit={handleSubmit} className="space-y-6">
                     <div className="grid md:grid-cols-2 gap-6">
                       <div className="space-y-2">
                         <Label htmlFor="firstName" className="text-white/80">
                           Ad
                         </Label>
-                        <Input id="firstName" placeholder="Adınız" required className="custom-input" />
+                        <Input
+                          id="firstName"
+                          placeholder="Adınız"
+                          required
+                          className="custom-input"
+                          value={formData.firstName}
+                          onChange={handleChange}
+                          disabled={isSubmitting}
+                        />
                       </div>
                       <div className="space-y-2">
                         <Label htmlFor="lastName" className="text-white/80">
                           Soyad
                         </Label>
-                        <Input id="lastName" placeholder="Soyadınız" required className="custom-input" />
+                        <Input
+                          id="lastName"
+                          placeholder="Soyadınız"
+                          required
+                          className="custom-input"
+                          value={formData.lastName}
+                          onChange={handleChange}
+                          disabled={isSubmitting}
+                        />
                       </div>
                     </div>
 
@@ -122,21 +237,46 @@ export default function ContactPage() {
                       <Label htmlFor="email" className="text-white/80">
                         E-posta
                       </Label>
-                      <Input id="email" type="email" placeholder="ornek@mail.com" required className="custom-input" />
+                      <Input
+                        id="email"
+                        type="email"
+                        placeholder="ornek@mail.com"
+                        required
+                        className="custom-input"
+                        value={formData.email}
+                        onChange={handleChange}
+                        disabled={isSubmitting}
+                      />
                     </div>
 
                     <div className="space-y-2">
                       <Label htmlFor="phone" className="text-white/80">
                         Telefon <span className="text-white/50">(Opsiyonel)</span>
                       </Label>
-                      <Input id="phone" type="tel" placeholder="+90 5XX XXX XX XX" className="custom-input" />
+                      <Input
+                        id="phone"
+                        type="tel"
+                        placeholder="+90 5XX XXX XX XX"
+                        className="custom-input"
+                        value={formData.phone}
+                        onChange={handleChange}
+                        disabled={isSubmitting}
+                      />
                     </div>
 
                     <div className="space-y-2">
                       <Label htmlFor="subject" className="text-white/80">
                         Konu
                       </Label>
-                      <Input id="subject" placeholder="Mesajınızın konusu" required className="custom-input" />
+                      <Input
+                        id="subject"
+                        placeholder="Mesajınızın konusu"
+                        required
+                        className="custom-input"
+                        value={formData.subject}
+                        onChange={handleChange}
+                        disabled={isSubmitting}
+                      />
                     </div>
 
                     <div className="space-y-2">
@@ -149,6 +289,9 @@ export default function ContactPage() {
                         rows={6}
                         required
                         className="custom-input resize-none"
+                        value={formData.message}
+                        onChange={handleChange}
+                        disabled={isSubmitting}
                       />
                     </div>
 
@@ -158,6 +301,9 @@ export default function ContactPage() {
                         id="privacy"
                         className="mt-1 w-4 h-4 text-emerald-400 bg-transparent border-white/30 rounded focus:ring-emerald-400 focus:ring-2"
                         required
+                        checked={formData.privacy}
+                        onChange={handleChange}
+                        disabled={isSubmitting}
                       />
                       <Label htmlFor="privacy" className="text-sm text-white/70 leading-relaxed">
                         <span className="text-emerald-400">Gizlilik Politikası</span>'nı okudum ve kabul ediyorum.
@@ -167,10 +313,20 @@ export default function ContactPage() {
 
                     <Button
                       type="submit"
-                      className="w-full bg-gradient-to-r from-emerald-500 to-teal-500 text-white font-bold h-12 text-base hover:from-emerald-600 hover:to-teal-600 flex items-center justify-center gap-2"
+                      disabled={isSubmitting}
+                      className="w-full bg-gradient-to-r from-emerald-500 to-teal-500 text-white font-bold h-12 text-base hover:from-emerald-600 hover:to-teal-600 flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
                     >
-                      <Send className="w-5 h-5" />
-                      Mesaj Gönder
+                      {isSubmitting ? (
+                        <>
+                          <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                          Gönderiliyor...
+                        </>
+                      ) : (
+                        <>
+                          <Send className="w-5 h-5" />
+                          Mesaj Gönder
+                        </>
+                      )}
                     </Button>
                   </form>
                 </div>

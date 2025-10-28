@@ -1,5 +1,8 @@
 "use client"
 
+import type React from "react"
+
+import { useState } from "react"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -20,11 +23,43 @@ import {
   Brain,
   BarChart3,
   Scan,
+  AlertCircle,
 } from "lucide-react"
 import Image from "next/image"
 
 export default function Footer() {
   const currentYear = new Date().getFullYear()
+  const [email, setEmail] = useState("")
+  const [isSubmitting, setIsSubmitting] = useState(false)
+  const [submitStatus, setSubmitStatus] = useState<{ type: "success" | "error"; message: string } | null>(null)
+
+  const handleNewsletterSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+    setIsSubmitting(true)
+    setSubmitStatus(null)
+
+    try {
+      const response = await fetch("/api/newsletter/subscribe", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email }),
+      })
+
+      const data = await response.json()
+
+      if (response.ok) {
+        setSubmitStatus({ type: "success", message: data.message })
+        setEmail("")
+      } else {
+        setSubmitStatus({ type: "error", message: data.error || "Bir hata oluştu" })
+      }
+    } catch (error) {
+      setSubmitStatus({ type: "error", message: "Bağlantı hatası. Lütfen tekrar deneyin." })
+    } finally {
+      setIsSubmitting(false)
+    }
+  }
+  // </CHANGE>
 
   return (
     <footer className="relative bg-gray-900 border-t border-gray-800">
@@ -46,15 +81,49 @@ export default function Footer() {
                 Haftalık kredi analizi raporları, tasarruf ipuçları ve platform güncellemeleri
               </p>
             </div>
-            <div className="flex gap-3">
-              <Input
-                placeholder="E-posta adresiniz"
-                className="bg-gray-800/50 border-gray-700 text-white placeholder:text-gray-500 focus:border-emerald-500"
-              />
-              <Button className="bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600 text-white px-6">
-                <ArrowRight className="h-4 w-4" />
-              </Button>
+
+            <div className="space-y-3">
+              {submitStatus && (
+                <div
+                  className={`p-3 rounded-xl border flex items-start gap-2 text-sm ${
+                    submitStatus.type === "success"
+                      ? "bg-emerald-500/10 border-emerald-500/30 text-emerald-400"
+                      : "bg-red-500/10 border-red-500/30 text-red-400"
+                  }`}
+                >
+                  {submitStatus.type === "success" ? (
+                    <CheckCircle className="w-4 h-4 mt-0.5 flex-shrink-0" />
+                  ) : (
+                    <AlertCircle className="w-4 h-4 mt-0.5 flex-shrink-0" />
+                  )}
+                  <p>{submitStatus.message}</p>
+                </div>
+              )}
+
+              <form onSubmit={handleNewsletterSubmit} className="flex gap-3">
+                <Input
+                  type="email"
+                  placeholder="E-posta adresiniz"
+                  className="bg-gray-800/50 border-gray-700 text-white placeholder:text-gray-500 focus:border-emerald-500"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  disabled={isSubmitting}
+                  required
+                />
+                <Button
+                  type="submit"
+                  disabled={isSubmitting}
+                  className="bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600 text-white px-6 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  {isSubmitting ? (
+                    <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                  ) : (
+                    <ArrowRight className="h-4 w-4" />
+                  )}
+                </Button>
+              </form>
             </div>
+            {/* </CHANGE> */}
           </div>
         </div>
 
