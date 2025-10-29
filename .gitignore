@@ -30,6 +30,6 @@ nul
 **/*-test/
 **/test/
 
-# documentation and scripts (sensitive information)
+# documentation and database scripts (sensitive information)
 /docs/
-/scripts/
+/database-scripts/
