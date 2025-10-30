@@ -1,5 +1,7 @@
 import { createClient } from "@supabase/supabase-js"
-import { NextRequest, NextResponse } from "next/server"
+import { type NextRequest, NextResponse } from "next/server"
+
+export const dynamic = "force-dynamic"
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
 const supabaseServiceKey = process.env.SERVICE_ROLE_KEY!
@@ -28,7 +30,7 @@ export async function GET(request: NextRequest) {
       console.error("[admin/transactions] Error details:", JSON.stringify(error, null, 2))
 
       // If no transaction found, return null instead of error
-      if (error.code === 'PGRST116') {
+      if (error.code === "PGRST116") {
         console.log("[admin/transactions] No transaction found, returning null")
         return NextResponse.json({ transaction: null })
       }

@@ -1,5 +1,7 @@
 import { createSupabaseServer } from "@/lib/supabase-server"
-import { NextRequest, NextResponse } from "next/server"
+import { type NextRequest, NextResponse } from "next/server"
+
+export const dynamic = "force-dynamic"
 
 // GET - List published blog posts (public)
 export async function GET(request: NextRequest) {
@@ -9,8 +11,8 @@ export async function GET(request: NextRequest) {
     // Get query parameters
     const searchParams = request.nextUrl.searchParams
     const category = searchParams.get("category")
-    const limit = parseInt(searchParams.get("limit") || "10")
-    const offset = parseInt(searchParams.get("offset") || "0")
+    const limit = Number.parseInt(searchParams.get("limit") || "10")
+    const offset = Number.parseInt(searchParams.get("offset") || "0")
 
     // Build query - only show published posts
     let query = supabase

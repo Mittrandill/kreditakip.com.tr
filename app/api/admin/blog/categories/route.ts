@@ -1,5 +1,7 @@
 import { createSupabaseServer } from "@/lib/supabase-server"
-import { NextRequest, NextResponse } from "next/server"
+import { type NextRequest, NextResponse } from "next/server"
+
+export const dynamic = "force-dynamic"
 
 // GET - List all blog categories (admin only)
 export async function GET(request: NextRequest) {
@@ -16,11 +18,7 @@ export async function GET(request: NextRequest) {
     }
 
     // Check if user is admin
-    const { data: profile } = await supabase
-      .from("profiles")
-      .select("is_admin")
-      .eq("id", session.user.id)
-      .single()
+    const { data: profile } = await supabase.from("profiles").select("is_admin").eq("id", session.user.id).single()
 
     if (!profile?.is_admin) {
       return NextResponse.json({ error: "Forbidden - Admin access required" }, { status: 403 })
@@ -58,11 +56,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Check if user is admin
-    const { data: profile } = await supabase
-      .from("profiles")
-      .select("is_admin")
-      .eq("id", session.user.id)
-      .single()
+    const { data: profile } = await supabase.from("profiles").select("is_admin").eq("id", session.user.id).single()
 
     if (!profile?.is_admin) {
       return NextResponse.json({ error: "Forbidden - Admin access required" }, { status: 403 })
@@ -73,10 +67,7 @@ export async function POST(request: NextRequest) {
 
     // Validate required fields
     if (!name || !slug) {
-      return NextResponse.json(
-        { error: "Missing required fields: name, slug" },
-        { status: 400 }
-      )
+      return NextResponse.json({ error: "Missing required fields: name, slug" }, { status: 400 })
     }
 
     const { data: category, error } = await supabase
@@ -90,10 +81,7 @@ export async function POST(request: NextRequest) {
 
       // Check for unique constraint violation
       if (error.code === "23505") {
-        return NextResponse.json(
-          { error: "A blog category with this name or slug already exists" },
-          { status: 409 }
-        )
+        return NextResponse.json({ error: "A blog category with this name or slug already exists" }, { status: 409 })
       }
 
       return NextResponse.json({ error: "Failed to create blog category" }, { status: 500 })
