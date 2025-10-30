@@ -128,7 +128,7 @@ export default function RiskAnaliziPage() {
         }
         try {
           const [profileResponse, creditsData, pastAnalysesData] = await Promise.all([
-            fetch(`/api/financial-profile?userId=${userId}`),
+            fetch(`/api/financial-profile`),
             getCredits(userId),
             getRiskAnalyses(userId),
           ])
@@ -142,13 +142,11 @@ export default function RiskAnaliziPage() {
           }
 
           const profileData = await profileResponse.json()
-          console.log("[v0] Financial profile loaded:", profileData)
-
           setFinancialProfile(profileData)
           setCredits(creditsData as Credit[])
           setAllPastAnalyses(pastAnalysesData || [])
 
-          if (!profileData || profileData.monthly_income === null || profileData.monthly_income === undefined) {
+          if (!profileData || profileData.monthly_income === null || profileData.monthly_income === undefined || profileData.monthly_income === 0) {
             setInitialDataError(
               "Risk analizi için finansal profilinizde en azından aylık gelir bilgisi bulunmalıdır. Lütfen Ayarlar > Finansal bölümünden bilgilerinizi güncelleyin.",
             )
@@ -395,14 +393,17 @@ export default function RiskAnaliziPage() {
   }
 
   const canAnalyze =
-    financialProfile && financialProfile.monthly_income !== null && financialProfile.monthly_income !== undefined
+    financialProfile &&
+    financialProfile.monthly_income !== null &&
+    financialProfile.monthly_income !== undefined &&
+    financialProfile.monthly_income > 0
   const heroButtonText = "Kapsamlı Analizi Başlat"
 
   return (
     <div className="flex flex-col gap-4 md:gap-6">
       <AdBanner position="top" className="mb-4" />
 
-      <Card className="bg-gradient-to-r from-red-600 to-rose-700 text-white border-transparent shadow-xl rounded-xl">
+      <Card className="bg-gradient-to-r from-orange-600 to-amber-700 text-white border-transparent shadow-xl rounded-xl">
         <CardContent className="p-6 md:p-8">
           <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
             <div>
@@ -433,7 +434,7 @@ export default function RiskAnaliziPage() {
               <Button
                 variant="outline"
                 size="lg"
-                className="bg-white text-red-700 hover:bg-gray-100 border-white"
+                className="bg-white text-orange-700 hover:bg-gray-100 border-white"
                 onClick={handleAnalyze}
                 disabled={isAnalyzing || initialDataLoading || !canAnalyze}
               >
@@ -530,7 +531,7 @@ export default function RiskAnaliziPage() {
               title="Yüksek Risk"
               value={formatNumber(riskDistribution.high)}
               subtitle="analiz"
-              color="red"
+              color="orange"
               icon={<AlertTriangle />}
             />
           </div>
@@ -605,7 +606,7 @@ export default function RiskAnaliziPage() {
                       variant={viewMode === "cards" ? "default" : "ghost"}
                       size="sm"
                       onClick={() => handleViewModeChange("cards")}
-                      className={`rounded-r-none ${viewMode === "cards" ? "bg-gradient-to-r from-red-600 to-rose-700 hover:from-red-700 hover:to-rose-800 text-white" : "dark:text-gray-300"}`}
+                      className={`rounded-r-none ${viewMode === "cards" ? "bg-gradient-to-r from-orange-600 to-amber-700 hover:from-orange-700 hover:to-amber-800 text-white" : "dark:text-gray-300"}`}
                     >
                       <BsFillGrid3X3GapFill className="h-4 w-4" />
                     </Button>
@@ -613,7 +614,7 @@ export default function RiskAnaliziPage() {
                       variant={viewMode === "table" ? "default" : "ghost"}
                       size="sm"
                       onClick={() => handleViewModeChange("table")}
-                      className={`rounded-l-none ${viewMode === "table" ? "bg-gradient-to-r from-red-600 to-rose-700 hover:from-red-700 hover:to-rose-800 text-white" : "dark:text-gray-300"}`}
+                      className={`rounded-l-none ${viewMode === "table" ? "bg-gradient-to-r from-orange-600 to-amber-700 hover:from-orange-700 hover:to-amber-800 text-white" : "dark:text-gray-300"}`}
                     >
                       <List className="h-4 w-4" />
                     </Button>
@@ -638,7 +639,7 @@ export default function RiskAnaliziPage() {
                       <Button
                         onClick={handleAnalyze}
                         disabled={!canAnalyze}
-                        className="bg-gradient-to-r from-red-600 to-rose-700 hover:from-red-700 hover:to-rose-800"
+                        className="bg-gradient-to-r from-orange-600 to-amber-700 hover:from-orange-700 hover:to-amber-800"
                       >
                         <PlayCircle className="h-5 w-5 mr-2" />
                         İlk Analizimi Oluştur

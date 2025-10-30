@@ -74,7 +74,7 @@ export default function AyarlarPage() {
 
   const { subscription, isPremium, loading: subscriptionLoading } = useSubscription()
 
-  const [profileData, setProfileData] = useState<Partial<Profile>>({})
+  const [profileData, setProfileData] = useState<Partial<Profile> & Record<string, any>>({})
   const [loadingProfile, setLoadingProfile] = useState(true)
   const [isSaving, setIsSaving] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -206,7 +206,7 @@ export default function AyarlarPage() {
   }, [user, activeTab])
 
   // Finansal Profil State ve Fonksiyonları
-  const [financialProfileData, setFinancialProfileData] = useState<Partial<FinancialProfile>>({})
+  const [financialProfileData, setFinancialProfileData] = useState<Partial<FinancialProfile> & Record<string, any>>({})
   const [loadingFinancialProfile, setLoadingFinancialProfile] = useState(true)
   const [isSavingFinancial, setIsSavingFinancial] = useState(false)
 
@@ -919,11 +919,11 @@ export default function AyarlarPage() {
                           </Badge>
                         </div>
 
-                        {isPremium && subscription?.expires_at && (
+                        {isPremium && subscription?.expiresAt && (
                           <div className="flex items-center gap-2 text-emerald-100">
                             <Calendar className="h-4 w-4" />
                             <span className="text-sm">
-                              Bitiş Tarihi: {new Date(subscription.expires_at).toLocaleDateString("tr-TR")}
+                              Bitiş Tarihi: {new Date(subscription.expiresAt).toLocaleDateString("tr-TR")}
                             </span>
                           </div>
                         )}
