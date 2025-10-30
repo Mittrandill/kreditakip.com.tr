@@ -741,8 +741,10 @@ class ModernPDFGenerator {
 
     this.doc.setDrawColor(...COLORS.warning)
     this.doc.setLineWidth(0.5)
+    // @ts-ignore - setLineDash may not be in type definitions
     this.doc.setLineDash([2, 2], 0)
     this.doc.line(avgLineX, barY, avgLineX, barY + 55)
+    // @ts-ignore - setLineDash may not be in type definitions
     this.doc.setLineDash([], 0)
 
     this.doc.setTextColor(...COLORS.warning)
@@ -864,6 +866,7 @@ class ModernPDFGenerator {
   }
 
   private addModernFooter() {
+    // @ts-ignore - getNumberOfPages may not be in type definitions
     const pageCount = this.doc.internal.getNumberOfPages()
 
     for (let i = 1; i <= pageCount; i++) {

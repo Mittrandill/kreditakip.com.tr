@@ -532,6 +532,7 @@ export default function PDFAnalysisPage() {
                 {isEditing ? "Bitir" : "Düzenle"}
               </Button>
               <Button
+                size="lg"
                 onClick={handleSave}
                 disabled={isSaving}
                 className="bg-white/90 text-white-700 hover:bg-white hover:text-white-800 font-semibold shadow-lg border border-white/20 backdrop-blur-sm"

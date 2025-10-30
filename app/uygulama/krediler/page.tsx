@@ -392,7 +392,7 @@ export default function KredilerPage() {
           title="Gecikmiş Kredi"
           value={formatNumber(overdueCreditsCount)}
           subtitle="adet"
-          color="red"
+          color="orange"
           icon={<AlertTriangle />}
         />
       </div>

@@ -230,7 +230,7 @@ export default function Header({ pageTitle }: HeaderProps) {
   const [searchResults, setSearchResults] = useState<any[]>([])
   const [searchOpen, setSearchOpen] = useState(false)
   const [searchLoading, setSearchLoading] = useState(false)
-  const [allCredits, setAllCredits] = useState<Credit[]>([])
+  const [allCredits, setAllCredits] = useState<any[]>([])
   const searchRef = useRef<HTMLDivElement>(null)
 
   // Dinamik sayfa başlığı ve açıklama belirleme

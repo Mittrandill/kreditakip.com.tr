@@ -34,7 +34,8 @@ function extractJsonFromResponse(response: string): any {
   try {
     return JSON.parse(jsonStr)
   } catch (strictErr) {
-    console.warn("[SERVER] Strict JSON.parse failed, falling back to JSON5:", strictErr.message)
+    const errMsg = strictErr instanceof Error ? strictErr.message : String(strictErr)
+    console.warn("[SERVER] Strict JSON.parse failed, falling back to JSON5:", errMsg)
   }
 
   // 2️⃣  Try lenient JSON5 parsing
@@ -42,7 +43,8 @@ function extractJsonFromResponse(response: string): any {
     const parsed = JSON5.parse(jsonStr)
     return parsed
   } catch (json5Err) {
-    console.error("[SERVER] JSON5 parse error:", json5Err.message)
+    const errMsg = json5Err instanceof Error ? json5Err.message : String(json5Err)
+    console.error("[SERVER] JSON5 parse error:", errMsg)
     throw new Error(`Both JSON.parse and JSON5.parse failed: ${json5Err}`)
   }
 }

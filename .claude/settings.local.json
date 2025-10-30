@@ -57,7 +57,13 @@
       "Bash(git fetch:*)",
       "Bash(git add:*)",
       "Bash(git commit:*)",
-      "Bash(dir:*)"
+      "Bash(dir:*)",
+      "Read(//c/Users/akint/Desktop/Screen Shot/**)",
+      "Bash(mkdir:*)",
+      "Bash(npx tsc:*)",
+      "Bash(node scripts/check-financial-profile.js:*)",
+      "Bash(NEXT_PUBLIC_SUPABASE_URL=\"https://oymjjceuiotxfbpwsdym.supabase.co\" SERVICE_ROLE_KEY=\"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im95bWpqY2V1aW90eGZicHdzZHltIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc1MDMxNTc3NiwiZXhwIjoyMDY1ODkxNzc2fQ.ui1Yik3wUs02oogtMBsz2emjW5v6R2pjRW7uw9nmED8\" node:*)",
+      "Bash(NEXT_PUBLIC_SUPABASE_URL=\"https://oymjjceuiotxfbpwsdym.supabase.co\" SERVICE_ROLE_KEY=\"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im95bWpqY2V1aW90eGZicHdzZHltIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc1MDMxNTc3NiwiZXhwIjoyMDY1ODkxNzc2fQ.ui1Yik3wUs02oogtMBsz2emjW5v6R2pjRW7uw9nmED8\" node scripts/check-users.js:*)"
     ],
     "deny": [],
     "ask": []

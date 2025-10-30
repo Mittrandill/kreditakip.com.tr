@@ -469,7 +469,7 @@ export default function BankaciSifrelerimPage() {
   return (
     <div className="flex flex-col gap-4 md:gap-6">
       {/* Hero Section */}
-      <Card className="bg-gradient-to-r from-blue-600 to-indigo-700 text-white border-transparent shadow-xl rounded-xl">
+      <Card className="bg-gradient-to-r from-emerald-600 to-teal-700 text-white border-transparent shadow-xl rounded-xl">
         <CardContent className="p-8">
           <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
             <div>
@@ -477,7 +477,7 @@ export default function BankaciSifrelerimPage() {
                 <Lock className="h-8 w-8" />
                 Bankacılık Şifre Yönetimi
               </h2>
-              <p className="text-blue-100 text-lg">
+              <p className="text-emerald-100 text-lg">
                 Tüm bankacılık şifrelerinizi güvenli bir şekilde saklayın ve yönetin
               </p>
             </div>

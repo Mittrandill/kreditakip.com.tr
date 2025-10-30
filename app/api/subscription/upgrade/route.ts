@@ -62,7 +62,13 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    // Yeni abonelik oluştur
+    // TODO: Yeni abonelik oluştur - createSubscription metodu henüz implement edilmemiş
+    // Subscriptions are created through checkout flow, not directly
+    return NextResponse.json({
+      error: "Direct subscription creation not supported. Please use checkout flow."
+    }, { status: 501 })
+
+    /*
     const result = await iyzicoClient.createSubscription({
       locale: "tr",
       conversationId: `upgrade-${user.id}-${Date.now()}`,
@@ -152,6 +158,7 @@ export async function POST(request: NextRequest) {
         { status: 400 },
       )
     }
+    */
   } catch (error: any) {
     console.error("[iyzipay] Upgrade subscription error:", error)
     return NextResponse.json(

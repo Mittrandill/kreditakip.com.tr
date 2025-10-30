@@ -112,8 +112,8 @@ export default function DashboardPage() {
             setCredits(creditsData || [])
             setUpcomingPayments(upcomingPaymentsData || [])
 
-            // Kredi metrikleri
-            const activeCredits = creditsData?.filter((c) => c.status === "active") || []
+            // Kredi metrikleri (aktif ve gecikmiş kredileri dahil et)
+            const activeCredits = creditsData?.filter((c) => c.status === "active" || c.status === "overdue") || []
             setTotalCredits(activeCredits.length)
             const currentTotalDebt = activeCredits.reduce((sum, c) => sum + c.remaining_debt, 0)
             setTotalDebt(currentTotalDebt)
@@ -219,7 +219,7 @@ export default function DashboardPage() {
                   <div className="flex items-center gap-1 mt-2">
                     <ArrowUpRight className="h-3 w-3 text-emerald-200 dark:text-emerald-100" />
                     <span className="text-xs text-emerald-200 dark:text-emerald-100">
-                      {credits.filter((c) => c.status === "active").length} aktif
+                      {credits.filter((c) => c.status === "active" || c.status === "overdue").length} açık
                     </span>
                   </div>
                 </div>

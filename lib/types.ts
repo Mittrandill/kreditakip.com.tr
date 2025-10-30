@@ -669,18 +669,7 @@ export type PaymentHistory = Database["public"]["Tables"]["payment_history"]["Ro
 export type Notification = Database["public"]["Tables"]["notifications"]["Row"]
 export type User = Database["public"]["Tables"]["users"]["Row"]
 
-export type FinancialProfile = {
-  id: string
-  user_id: string
-  monthly_income: number
-  monthly_expenses: number
-  existing_debt: number
-  credit_score?: number
-  employment_status: string
-  employment_duration_months?: number
-  created_at: string
-  updated_at: string
-}
+export type FinancialProfile = Database["public"]["Tables"]["financial_profiles"]["Row"]
 
 export type RiskAnalysis = Database["public"]["Tables"]["risk_analyses"]["Row"]
 export type RefinancingAnalysis = Database["public"]["Tables"]["refinancing_analyses"]["Row"]

@@ -474,7 +474,7 @@ export default function RaporlarPage() {
     <div className="flex flex-col gap-8">
       {/* Premium Hero Section */}
       <div className="relative overflow-hidden rounded-3xl">
-        <div className="absolute inset-0 bg-gradient-to-br from-emerald-600 via-teal-600 to-cyan-700"></div>
+        <div className="absolute inset-0 bg-gradient-to-br from-teal-600 via-cyan-600 to-blue-700"></div>
         <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent"></div>
         <div className="absolute inset-0 opacity-20">
           <div
@@ -828,39 +828,29 @@ export default function RaporlarPage() {
           title="Aktif Krediler"
           value={summaryMetrics.activeCredits.toString()}
           subtitle={`${summaryMetrics.totalCredits} toplam kredi`}
-          color="emerald"
+          color="blue"
           icon={<CreditCard />}
-          trend={summaryMetrics.activeCredits > 0 ? "up" : "neutral"}
         />
         <MetricCard
           title="Toplam Borç"
           value={formatCurrency(summaryMetrics.totalDebt)}
           subtitle="Kalan borç miktarı"
-          color="red"
+          color="emerald"
           icon={<DollarSign />}
-          trend="down"
         />
         <MetricCard
           title="Aylık Ödeme"
           value={formatCurrency(summaryMetrics.monthlyPayment)}
           subtitle="Toplam aylık taksit"
-          color="blue"
+          color="purple"
           icon={<Wallet />}
-          trend="neutral"
         />
         <MetricCard
           title="Ödeme Performansı"
           value={formatPercent(summaryMetrics.paymentPerformance / 100)}
           subtitle={`${summaryMetrics.overduePayments} geciken ödeme`}
-          color={
-            summaryMetrics.paymentPerformance > 80
-              ? "emerald"
-              : summaryMetrics.paymentPerformance > 60
-                ? "yellow"
-                : "red"
-          }
+          color="orange"
           icon={<Target />}
-          trend={summaryMetrics.paymentPerformance > 80 ? "up" : "down"}
         />
       </div>
 
@@ -980,7 +970,7 @@ export default function RaporlarPage() {
                           innerRadius={50}
                           paddingAngle={5}
                           dataKey="value"
-                          label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
+                          label={({ name, percent }: any) => `${name} ${(percent * 100).toFixed(0)}%`}
                         >
                           {chartData.paymentStatusDistribution.map((entry, index) => (
                             <Cell key={`cell-${index}`} fill={entry.color} />
@@ -1214,7 +1204,7 @@ export default function RaporlarPage() {
                           innerRadius={60}
                           paddingAngle={5}
                           dataKey="value"
-                          label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
+                          label={({ name, percent }: any) => `${name} ${(percent * 100).toFixed(0)}%`}
                         >
                           {chartData.creditTypeDistribution.map((entry, index) => (
                             <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />

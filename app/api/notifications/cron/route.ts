@@ -1,5 +1,6 @@
 import { type NextRequest, NextResponse } from "next/server"
 import { supabase } from "@/lib/supabase"
+import { timingSafeEqual } from "node:crypto"
 
 export const dynamic = "force-dynamic"
 
@@ -35,7 +36,7 @@ export async function GET(request: NextRequest) {
       const secretBuffer = Buffer.from(cronSecret)
 
       if (tokenBuffer.length === secretBuffer.length) {
-        isAuthenticated = crypto.timingSafeEqual(tokenBuffer, secretBuffer)
+        isAuthenticated = timingSafeEqual(new Uint8Array(tokenBuffer), new Uint8Array(secretBuffer))
       }
     } catch (error) {
       console.error("[v0] Error during authentication:", error)
@@ -74,7 +75,7 @@ export async function GET(request: NextRequest) {
         due_date: 0,
         overdue: 0,
       },
-      errors: [],
+      errors: [] as Array<{ userId: string; error: string }>,
     }
 
     for (const user of users) {
@@ -144,7 +145,7 @@ export async function GET(request: NextRequest) {
         console.error(`Error processing user ${user.user_id}:`, error)
         results.errors.push({
           userId: user.user_id,
-          error: error.message,
+          error: error instanceof Error ? error.message : String(error),
         })
       }
     }
@@ -156,14 +157,12 @@ export async function GET(request: NextRequest) {
       totalEmailsSent: totalSent,
       breakdown: results.notifications,
       errors: results.errors.length,
-      testMode,
       timestamp: new Date().toISOString(),
     })
 
     return NextResponse.json({
       success: true,
       message: `Cron job completed. ${totalSent} emails sent to ${results.totalUsers} users.`,
-      testMode,
       results,
     })
   } catch (error) {

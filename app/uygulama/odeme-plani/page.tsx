@@ -5,6 +5,7 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { MetricCard } from "@/components/metric-card"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 import {
   Calendar,
@@ -902,73 +903,36 @@ function PaymentAnalysis({ payments, credits }: { payments: PaymentWithCredit[];
         </div>
       </div>
 
-      {/* Ana Metrikler - Gradient kartlar olduğu için değişiklik yok */}
+      {/* Ana Metrikler */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        <Card className="bg-gradient-to-br from-blue-600 to-blue-700 text-white border-transparent shadow-lg">
-          <CardContent className="p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-blue-100 text-sm font-medium">Bu Ay Ödenecek</p>
-                <p className="text-2xl font-bold mt-1">{formatCurrency(totalMonthlyPayment)}</p>
-                <p className="text-blue-200 text-xs mt-1">{thisMonthPayments.length} taksit</p>
-              </div>
-              <div className="bg-blue-500/30 p-3 rounded-full">
-                <Calendar className="h-6 w-6 text-blue-100" />
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card className="bg-gradient-to-br from-emerald-600 to-emerald-700 text-white border-transparent shadow-lg">
-          <CardContent className="p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-emerald-100 text-sm font-medium">Ortalama Taksit</p>
-                <p className="text-2xl font-bold mt-1">{formatCurrency(averagePayment)}</p>
-                <p className="text-emerald-200 text-xs mt-1">Tüm krediler ortalaması</p>
-              </div>
-              <div className="bg-emerald-500/30 p-3 rounded-full">
-                <TrendingUp className="h-6 w-6 text-emerald-100" />
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card className="bg-gradient-to-br from-orange-600 to-orange-700 text-white border-transparent shadow-lg">
-          <CardContent className="p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-orange-100 text-sm font-medium">Aktif Kredi</p>
-                <p className="text-2xl font-bold mt-1">{credits.length}</p>
-                <p className="text-orange-200 text-xs mt-1">Toplam kredi sayısı</p>
-              </div>
-              <div className="bg-orange-500/30 p-3 rounded-full">
-                <CreditCard className="h-6 w-6 text-orange-100" />
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card
-          className={`bg-gradient-to-br ${overduePayments.length > 0 ? "from-red-600 to-red-700" : "from-gray-600 to-gray-700"} text-white border-transparent shadow-lg`}
-        >
-          <CardContent className="p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className={`text-sm font-medium ${overduePayments.length > 0 ? "text-red-100" : "text-gray-100"}`}>
-                  Gecikmiş Ödeme
-                </p>
-                <p className="text-2xl font-bold mt-1">{formatCurrency(totalOverdueAmount)}</p>
-                <p className={`text-xs mt-1 ${overduePayments.length > 0 ? "text-red-200" : "text-gray-200"}`}>
-                  {overduePayments.length} gecikmiş taksit
-                </p>
-              </div>
-              <div className={`p-3 rounded-full ${overduePayments.length > 0 ? "bg-red-500/30" : "bg-gray-500/30"}`}>
-                <AlertTriangle className={`h-6 w-6 ${overduePayments.length > 0 ? "text-red-100" : "text-gray-100"}`} />
-              </div>
-            </div>
-          </CardContent>
-        </Card>
+        <MetricCard
+          title="Bu Ay Ödenecek"
+          value={formatCurrency(totalMonthlyPayment)}
+          subtitle={`${thisMonthPayments.length} taksit`}
+          color="blue"
+          icon={<Calendar />}
+        />
+        <MetricCard
+          title="Ortalama Taksit"
+          value={formatCurrency(averagePayment)}
+          subtitle="Tüm krediler ortalaması"
+          color="emerald"
+          icon={<TrendingUp />}
+        />
+        <MetricCard
+          title="Aktif Kredi"
+          value={credits.length}
+          subtitle="Toplam kredi sayısı"
+          color="purple"
+          icon={<CreditCard />}
+        />
+        <MetricCard
+          title="Gecikmiş Ödeme"
+          value={formatCurrency(totalOverdueAmount)}
+          subtitle={`${overduePayments.length} gecikmiş taksit`}
+          color="orange"
+          icon={<AlertTriangle />}
+        />
       </div>
 
       {/* Yaklaşan Ödemeler */}
@@ -1580,8 +1544,8 @@ export default function OdemePlaniPage() {
 
   return (
     <div className="flex flex-col gap-4 md:gap-6">
-      {/* Hero Section - Gradient olduğu için değişiklik yok */}
-      <Card className="bg-gradient-to-r from-orange-600 to-red-700 text-white border-transparent shadow-xl rounded-xl">
+      {/* Hero Section */}
+      <Card className="bg-gradient-to-r from-purple-600 to-violet-700 text-white border-transparent shadow-xl rounded-xl">
         <CardContent className="p-8">
           <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
             <div>

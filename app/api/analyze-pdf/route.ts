@@ -299,7 +299,7 @@ export async function POST(request: Request) {
     const response = await result.response
     const text = response.text()
 
-    let paymentPlan
+    let paymentPlan: any
     try {
       paymentPlan = cleanAndParseJSON(text)
 
@@ -385,7 +385,13 @@ export async function POST(request: Request) {
       today.setUTCHours(0, 0, 0, 0)
 
       paymentPlan.installments = paymentPlan.installments.map((installment: any, index: number) => {
-        const res = {
+        const res: {
+          installmentNumber: number;
+          amount: number | null;
+          dueDate: string | null;
+          description: string;
+          isPaid: boolean;
+        } = {
           installmentNumber: Number.isFinite(installment.installmentNumber) ? installment.installmentNumber : index + 1,
           amount: null,
           dueDate: null,

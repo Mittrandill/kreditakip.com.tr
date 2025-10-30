@@ -869,7 +869,7 @@ export async function POST(request: NextRequest) {
         return NextResponse.json(
           {
             success: false,
-            error: error.message,
+            error: error instanceof Error ? error.message : String(error),
           },
           { status: 500 },
         )
@@ -1057,6 +1057,8 @@ export async function POST(request: NextRequest) {
       } catch (error) {
         console.error(`Error sending email for payment ${payment.id}:`, error)
 
+        const errorMessage = error instanceof Error ? error.message : String(error)
+
         await createEmailNotificationRecord(
           userId,
           payment.id,
@@ -1067,7 +1069,7 @@ export async function POST(request: NextRequest) {
           undefined,
           undefined,
           "failed",
-          error.message,
+          errorMessage,
         )
 
         results.push({
@@ -1076,7 +1078,7 @@ export async function POST(request: NextRequest) {
           amount,
           dueDate,
           success: false,
-          error: error.message,
+          error: errorMessage,
         })
       }
     }

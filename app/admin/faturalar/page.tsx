@@ -43,11 +43,11 @@ export default async function InvoicesManagement() {
 
   // Get subscriptions separately
   const subscriptionIds = [...new Set(rawTransactions?.map(t => t.subscription_id).filter(Boolean) || [])]
-  let subscriptionsData = []
+  let subscriptionsData: Array<{id: string, user_id: string, plan_type: string, status: string, created_at?: string}> = []
   if (subscriptionIds.length > 0) {
     const { data, error: subsError } = await supabase
       .from("subscriptions")
-      .select("id, user_id, plan_type, status")
+      .select("id, user_id, plan_type, status, created_at")
       .in("id", subscriptionIds)
 
     if (subsError) {
@@ -60,9 +60,9 @@ export default async function InvoicesManagement() {
   // Get profiles separately
   const userIds = [...new Set([
     ...(rawTransactions?.map(t => t.user_id).filter(Boolean) || []),
-    ...(subscriptionsData?.map((s: any) => s.user_id).filter(Boolean) || [])
+    ...(subscriptionsData?.map((s) => s.user_id).filter(Boolean) || [])
   ])]
-  let profilesData = []
+  let profilesData: Array<{id: string, first_name: string | null, last_name: string | null, email: string | null}> = []
   if (userIds.length > 0) {
     const { data, error: profilesError } = await supabase
       .from("profiles")
@@ -77,8 +77,8 @@ export default async function InvoicesManagement() {
   }
 
   // Create maps for manual join
-  const subscriptionsMap = new Map(subscriptionsData?.map((s: any) => [s.id, s]) || [])
-  const profilesMap = new Map(profilesData?.map((p: any) => [p.id, p]) || [])
+  const subscriptionsMap = new Map(subscriptionsData?.map((s) => [s.id, s]) || [])
+  const profilesMap = new Map(profilesData?.map((p) => [p.id, p]) || [])
 
   // Manually join the data
   const allTransactions = rawTransactions?.map(tx => {
@@ -96,7 +96,7 @@ export default async function InvoicesManagement() {
   console.log("[admin/faturalar] Total successful payments:", allTransactions?.length || 0)
 
   // Enrich invoices with user info from profilesMap
-  const safeInvoices = (invoices || []).map((inv: any) => ({
+  const safeInvoices = (invoices || []).map((inv) => ({
     ...inv,
     profiles: profilesMap.get(inv.user_id)
   }))
@@ -260,7 +260,7 @@ export default async function InvoicesManagement() {
                   </tr>
                 </thead>
                 <tbody>
-                  {pendingInvoiceUsers.map((sub: any) => (
+                  {pendingInvoiceUsers.map((sub) => (
                     <tr key={sub.id} className="border-b border-white/5 hover:bg-white/5 transition-colors">
                       <td className="py-4 px-4">
                         <div>
