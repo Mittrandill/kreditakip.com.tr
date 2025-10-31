@@ -1,4 +1,6 @@
 import { type NextRequest, NextResponse } from "next/server"
+
+export const dynamic = "force-dynamic"
 import { GoogleGenerativeAI } from "@google/generative-ai"
 // Uses json5 for lenient JSON parsing when Gemini returns trailing commas or comments
 import JSON5 from "json5"

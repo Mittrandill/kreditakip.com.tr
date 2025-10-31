@@ -196,15 +196,18 @@ export default function PDFReportModal({ userData, trigger }: PDFReportModalProp
 
           if (existing) {
             existing.amount += debtAmount
+            existing.totalDebt += debtAmount
           } else {
             acc.push({
               bank: bankName,
               amount: debtAmount,
+              totalDebt: debtAmount,
             })
           }
           return acc
         }, [])
         chartData.bankDistribution = bankData
+        chartData.bankComparison = bankData
       }
 
       const sanitizeText = (text: string) => {
@@ -225,14 +228,15 @@ export default function PDFReportModal({ userData, trigger }: PDFReportModalProp
 
       // Generate PDF report data with safe defaults
       const reportData = {
-        reportTitle: sanitizeText(reportTitle),
+        reportTitle: reportTitle,
         period: {
           from: dateFrom,
           to: dateTo,
           type: reportPeriod,
         },
         userData: {
-          name: sanitizeText(userData.summary?.name || "Kullanici"),
+          name: userData.summary?.name || "Kullanici",
+          fullName: userData.summary?.name || "Kullanici",
           email: userData.summary?.email || "email@example.com",
         },
         totalCredits,
@@ -243,18 +247,22 @@ export default function PDFReportModal({ userData, trigger }: PDFReportModalProp
         monthlyPayment,
         credits: filteredCredits.map((credit) => ({
           id: credit.id,
-          bankName: sanitizeText(credit.bankName || credit.banks?.name || "Bilinmeyen Banka"),
-          creditType: sanitizeText(credit.creditType || credit.credit_types?.name || "Diger"),
+          bankName: credit.bankName || credit.banks?.name || "Bilinmeyen Banka",
+          creditType: credit.creditType || credit.credit_types?.name || "Diger",
           remainingDebt: credit.remainingDebt || credit.remaining_debt || 0,
           monthlyPayment: credit.monthlyPayment || credit.monthly_payment || 0,
           interestRate: credit.interestRate || credit.interest_rate || 0,
           status: credit.status || "unknown",
           amount: credit.amount || credit.initial_amount || 0,
+          total_installments: credit.total_installments || credit.installment_count || 0,
+          remaining_installments: credit.remaining_installments || 0,
+          payment_progress: credit.payment_progress || 0,
+          logo_url: credit.banks?.logo_url || null,
         })),
         selectedReports: Object.keys(chartOptions).filter((key) => chartOptions[key as keyof typeof chartOptions]),
         chartData,
         selectedBanks: [
-          ...new Set(filteredCredits.map((c) => sanitizeText(c.bankName || c.banks?.name || "")).filter(Boolean)),
+          ...new Set(filteredCredits.map((c) => c.bankName || c.banks?.name || "").filter(Boolean)),
         ],
       }
 

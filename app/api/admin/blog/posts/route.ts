@@ -1,4 +1,6 @@
 import { createSupabaseServer } from "@/lib/supabase-server"
+
+export const dynamic = "force-dynamic"
 import { NextRequest, NextResponse } from "next/server"
 
 // GET - List all blog posts (admin only)

@@ -1,6 +1,8 @@
 import { createSupabaseServer } from "@/lib/supabase-server"
 import { NextRequest, NextResponse } from "next/server"
 
+export const dynamic = "force-dynamic"
+
 // GET - Get single blog post (admin only)
 export async function GET(request: NextRequest, { params }: { params: { id: string } }) {
   try {

@@ -1,5 +1,7 @@
 import { type NextRequest, NextResponse } from "next/server"
 
+export const dynamic = "force-dynamic"
+
 /**
  * ⚠️ DEPRECATED - PCI-DSS VIOLATION
  * This endpoint is deprecated due to PCI-DSS compliance issues.

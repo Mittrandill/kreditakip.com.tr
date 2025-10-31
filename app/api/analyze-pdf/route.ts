@@ -1,4 +1,6 @@
 import { GoogleGenerativeAI } from "@google/generative-ai"
+
+export const dynamic = "force-dynamic"
 import { mapBankName } from "@/lib/utils/bank-mapper"
 import { createServerClient } from "@/lib/supabase/server"
 

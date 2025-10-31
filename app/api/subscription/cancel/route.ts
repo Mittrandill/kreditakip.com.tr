@@ -2,6 +2,7 @@ import { type NextRequest, NextResponse } from "next/server"
 import { IyzipaySubscriptionClient } from "@/lib/iyzipay-client"
 import { createClient } from "@supabase/supabase-js"
 
+export const dynamic = "force-dynamic"
 export const runtime = "nodejs"
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!

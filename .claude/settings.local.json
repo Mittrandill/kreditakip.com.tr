@@ -58,12 +58,13 @@
       "Bash(git add:*)",
       "Bash(git commit:*)",
       "Bash(dir:*)",
-      "Read(//c/Users/akint/Desktop/Screen Shot/**)",
-      "Bash(mkdir:*)",
-      "Bash(npx tsc:*)",
-      "Bash(node scripts/check-financial-profile.js:*)",
-      "Bash(NEXT_PUBLIC_SUPABASE_URL=\"https://oymjjceuiotxfbpwsdym.supabase.co\" SERVICE_ROLE_KEY=\"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im95bWpqY2V1aW90eGZicHdzZHltIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc1MDMxNTc3NiwiZXhwIjoyMDY1ODkxNzc2fQ.ui1Yik3wUs02oogtMBsz2emjW5v6R2pjRW7uw9nmED8\" node:*)",
-      "Bash(NEXT_PUBLIC_SUPABASE_URL=\"https://oymjjceuiotxfbpwsdym.supabase.co\" SERVICE_ROLE_KEY=\"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im95bWpqY2V1aW90eGZicHdzZHltIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc1MDMxNTc3NiwiZXhwIjoyMDY1ODkxNzc2fQ.ui1Yik3wUs02oogtMBsz2emjW5v6R2pjRW7uw9nmED8\" node scripts/check-users.js:*)"
+      "Bash(git stash:*)",
+      "Bash(for file in app/api/admin/blog/categories/route.ts app/api/admin/transactions/route.ts app/api/blog/posts/route.ts app/api/financial-profile/route.ts app/api/subscription/status/route.ts app/api/user/invoices/route.ts)",
+      "Bash(do echo \"=== $file ===\")",
+      "Bash(head:*)",
+      "Bash(for file in app/api/subscription/cancel/route.ts app/api/subscription/upgrade/route.ts app/api/subscription/plans/route.ts app/api/subscription/initialize/route.ts app/api/subscription/increment-usage/route.ts app/api/subscription/check-feature/route.ts app/api/payment/direct/route.ts app/api/payment/initialize/route.ts app/api/payment/callback/route.ts)",
+      "Bash(do if [ -f \"$file\" ])",
+      "Bash(then head -5 \"$file\")"
     ],
     "deny": [],
     "ask": []

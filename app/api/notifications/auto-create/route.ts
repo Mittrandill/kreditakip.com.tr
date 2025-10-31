@@ -1,4 +1,6 @@
 import { type NextRequest, NextResponse } from "next/server"
+
+export const dynamic = "force-dynamic"
 import { createWeeklyPaymentNotifications } from "@/lib/api/notifications"
 
 export async function POST(request: NextRequest) {

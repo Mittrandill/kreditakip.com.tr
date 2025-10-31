@@ -32,20 +32,17 @@ export default function Header() {
         </nav>
 
         <div className="hidden md:flex items-center gap-4">
-          <Link href="/giris">
-            <Button
-              variant="outline"
-              size="lg"
-              className="bg-transparent border-white/20 text-white hover:bg-white/10 hover:border-transparent hover:text-white dark:bg-transparent dark:border-white/20 dark:text-white dark:hover:bg-white/10 dark:hover:border-transparent dark:hover:text-white"
-            >
-              Giriş Yap
-            </Button>
-          </Link>
-          <Link href="/kayit-ol">
-            <Button className="bg-brand-green text-white font-semibold hover:bg-brand-green/90" size="lg">
-              Kayıt Ol
-            </Button>
-          </Link>
+          <Button
+            variant="outline"
+            size="lg"
+            className="bg-transparent border-white/20 text-white hover:bg-white/10 hover:border-transparent hover:text-white dark:bg-transparent dark:border-white/20 dark:text-white dark:hover:bg-white/10 dark:hover:border-transparent dark:hover:text-white"
+            asChild
+          >
+            <Link href="/giris">Giriş Yap</Link>
+          </Button>
+          <Button className="bg-brand-green text-white font-semibold hover:bg-brand-green/90" size="lg" asChild>
+            <Link href="/kayit-ol">Kayıt Ol</Link>
+          </Button>
         </div>
 
         <button
@@ -90,23 +87,25 @@ export default function Header() {
             </Link>
 
             <div className="flex flex-col gap-3 pt-4 border-t border-white/10">
-              <Link href="/giris" onClick={() => setMobileMenuOpen(false)}>
-                <Button
-                  variant="outline"
-                  size="default"
-                  className="w-full bg-transparent border-white/20 text-white hover:bg-white/10 hover:border-transparent hover:text-white dark:bg-transparent dark:border-white/20 dark:text-white dark:hover:bg-white/10 dark:hover:border-transparent dark:hover:text-white"
-                >
+              <Button
+                variant="outline"
+                size="default"
+                className="w-full bg-transparent border-white/20 text-white hover:bg-white/10 hover:border-transparent hover:text-white dark:bg-transparent dark:border-white/20 dark:text-white dark:hover:bg-white/10 dark:hover:border-transparent dark:hover:text-white"
+                asChild
+              >
+                <Link href="/giris" onClick={() => setMobileMenuOpen(false)}>
                   Giriş Yap
-                </Button>
-              </Link>
-              <Link href="/kayit-ol" onClick={() => setMobileMenuOpen(false)}>
-                <Button
-                  className="w-full bg-brand-green text-white font-semibold hover:bg-brand-green/90"
-                  size="default"
-                >
+                </Link>
+              </Button>
+              <Button
+                className="w-full bg-brand-green text-white font-semibold hover:bg-brand-green/90"
+                size="default"
+                asChild
+              >
+                <Link href="/kayit-ol" onClick={() => setMobileMenuOpen(false)}>
                   Kayıt Ol
-                </Button>
-              </Link>
+                </Link>
+              </Button>
             </div>
           </nav>
         </div>

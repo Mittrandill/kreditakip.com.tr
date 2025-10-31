@@ -1,4 +1,6 @@
 import { NextResponse } from "next/server"
+
+export const dynamic = "force-dynamic"
 import { createServerClient } from "@/lib/supabase/server"
 
 export async function POST(request: Request) {

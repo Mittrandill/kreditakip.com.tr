@@ -1,4 +1,6 @@
 import { type NextRequest, NextResponse } from "next/server"
+
+export const dynamic = "force-dynamic"
 import { IyzipaySubscriptionClient } from "@/lib/iyzipay-client"
 import { createClient } from "@supabase/supabase-js"
 import { sendInvoiceNotification } from "@/lib/email/invoice-notification"
