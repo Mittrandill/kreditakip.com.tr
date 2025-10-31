@@ -61,56 +61,216 @@ export async function POST(request: NextRequest) {
             <!DOCTYPE html>
             <html lang="tr">
             <head>
-              <meta charset="UTF-8">
-              <style>
-                body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
-                .container { max-width: 600px; margin: 0 auto; padding: 20px; }
-                .header { background: linear-gradient(135deg, #10b981 0%, #14b8a6 100%); color: white; padding: 30px; text-align: center; border-radius: 10px 10px 0 0; }
-                .content { background: #f8fafc; padding: 30px; border-radius: 0 0 10px 10px; }
-                .field { margin-bottom: 20px; padding: 15px; background: white; border-radius: 8px; border-left: 4px solid #10b981; }
-                .label { font-weight: bold; color: #10b981; margin-bottom: 5px; }
-                .value { color: #1e293b; }
-                .footer { text-align: center; margin-top: 20px; padding-top: 20px; border-top: 1px solid #e2e8f0; color: #64748b; font-size: 12px; }
-              </style>
+                <meta charset="UTF-8">
+                <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                <title>İletişim Formu</title>
+                <style>
+                    * { margin: 0; padding: 0; box-sizing: border-box; }
+                    body {
+                        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+                        line-height: 1.6;
+                        color: #ffffff;
+                        background: linear-gradient(135deg, #151515 0%, #1a1a1a 100%);
+                        min-height: 100vh;
+                        padding: 20px;
+                    }
+                    .email-container {
+                        max-width: 600px;
+                        margin: 0 auto;
+                        background: linear-gradient(135deg, #1a1a1a 0%, #151515 100%);
+                        border-radius: 20px;
+                        overflow: hidden;
+                        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+                        border: 1px solid rgba(255, 255, 255, 0.1);
+                    }
+                    .header {
+                        background: linear-gradient(135deg, #059669 0%, #10b981 100%);
+                        padding: 40px 30px;
+                        text-align: center;
+                        position: relative;
+                        overflow: hidden;
+                    }
+                    .header::before {
+                        content: '';
+                        position: absolute;
+                        top: -50%;
+                        left: -50%;
+                        width: 200%;
+                        height: 200%;
+                        background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%);
+                    }
+                    .logo-container { position: relative; z-index: 2; margin-bottom: 10px; }
+                    .logo { width: 250px; height: auto; display: block; margin: 0 auto; }
+                    .brand-tagline {
+                        font-size: 14px;
+                        color: rgba(255, 255, 255, 0.9);
+                        font-weight: 500;
+                        margin-top: 10px;
+                        position: relative;
+                        z-index: 2;
+                    }
+                    .welcome-badge {
+                        display: inline-block;
+                        background: rgba(255, 255, 255, 0.2);
+                        padding: 8px 20px;
+                        border-radius: 25px;
+                        font-size: 14px;
+                        font-weight: 600;
+                        margin-top: 15px;
+                        backdrop-filter: blur(10px);
+                        border: 1px solid rgba(255, 255, 255, 0.3);
+                        position: relative;
+                        z-index: 2;
+                    }
+                    .content {
+                        padding: 50px 40px;
+                        background: #151515;
+                        position: relative;
+                    }
+                    .content::before {
+                        content: '';
+                        position: absolute;
+                        top: 0;
+                        left: 0;
+                        right: 0;
+                        height: 1px;
+                        background: linear-gradient(90deg, transparent 0%, #10b981 50%, transparent 100%);
+                    }
+                    .title {
+                        font-size: 28px;
+                        font-weight: 700;
+                        color: #ffffff;
+                        margin-bottom: 25px;
+                        text-align: center;
+                        line-height: 1.3;
+                    }
+                    .title .highlight {
+                        color: #10b981;
+                        background: linear-gradient(135deg, #059669, #10b981);
+                        -webkit-background-clip: text;
+                        -webkit-text-fill-color: transparent;
+                        background-clip: text;
+                    }
+                    .message-details {
+                        background: linear-gradient(135deg, rgba(16, 185, 129, 0.1) 0%, rgba(5, 150, 105, 0.05) 100%);
+                        border: 1px solid rgba(16, 185, 129, 0.2);
+                        border-radius: 15px;
+                        padding: 30px;
+                        margin: 35px 0;
+                    }
+                    .detail-row {
+                        display: flex;
+                        justify-content: space-between;
+                        padding: 15px 0;
+                        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+                    }
+                    .detail-row:last-child { border-bottom: none; }
+                    .detail-label {
+                        font-size: 14px;
+                        color: rgba(255, 255, 255, 0.7);
+                        font-weight: 600;
+                    }
+                    .detail-value {
+                        font-size: 14px;
+                        color: #10b981;
+                        font-weight: 500;
+                    }
+                    .message-content {
+                        background: rgba(255, 255, 255, 0.05);
+                        border: 1px solid rgba(255, 255, 255, 0.1);
+                        border-radius: 10px;
+                        padding: 20px;
+                        margin-top: 20px;
+                    }
+                    .message-label {
+                        font-size: 12px;
+                        color: rgba(255, 255, 255, 0.5);
+                        text-transform: uppercase;
+                        letter-spacing: 1px;
+                        margin-bottom: 10px;
+                    }
+                    .message-text {
+                        font-size: 15px;
+                        color: rgba(255, 255, 255, 0.9);
+                        line-height: 1.7;
+                    }
+                    .footer {
+                        background: #0a0a0a;
+                        padding: 40px 30px;
+                        text-align: center;
+                        border-top: 1px solid rgba(255, 255, 255, 0.1);
+                    }
+                    .footer-brand {
+                        font-size: 18px;
+                        font-weight: 700;
+                        color: #10b981;
+                        margin-bottom: 10px;
+                    }
+                    .footer-note {
+                        font-size: 12px;
+                        color: rgba(255, 255, 255, 0.5);
+                        line-height: 1.5;
+                    }
+                    @media (max-width: 600px) {
+                        .email-container { margin: 10px; border-radius: 15px; }
+                        .header { padding: 30px 20px; }
+                        .content { padding: 30px 25px; }
+                        .logo { width: 200px; }
+                        .title { font-size: 24px; }
+                        .detail-row { flex-direction: column; gap: 5px; }
+                    }
+                </style>
             </head>
             <body>
-              <div class="container">
-                <div class="header">
-                  <h1>📧 Yeni İletişim Formu Mesajı</h1>
+                <div class="email-container">
+                    <div class="header">
+                        <div class="logo-container">
+                            <img src="https://oymjjceuiotxfbpwsdym.supabase.co/storage/v1/object/public/Logo/logo-white.png" alt="Kredi Takip Logo" class="logo" />
+                            <div class="brand-tagline">Kredi Yönetiminin Geleceği</div>
+                            <div class="welcome-badge">📧 Yeni Mesaj!</div>
+                        </div>
+                    </div>
+
+                    <div class="content">
+                        <h1 class="title">
+                            Yeni <span class="highlight">İletişim Formu</span> Mesajı
+                        </h1>
+
+                        <div class="message-details">
+                            <div class="detail-row">
+                                <div class="detail-label">👤 Ad Soyad</div>
+                                <div class="detail-value">${firstName} ${lastName}</div>
+                            </div>
+                            <div class="detail-row">
+                                <div class="detail-label">📧 E-posta</div>
+                                <div class="detail-value">${email}</div>
+                            </div>
+                            ${phone ? `
+                            <div class="detail-row">
+                                <div class="detail-label">📱 Telefon</div>
+                                <div class="detail-value">${phone}</div>
+                            </div>
+                            ` : ''}
+                            <div class="detail-row">
+                                <div class="detail-label">📋 Konu</div>
+                                <div class="detail-value">${subject}</div>
+                            </div>
+                        </div>
+
+                        <div class="message-content">
+                            <div class="message-label">Mesaj İçeriği</div>
+                            <div class="message-text">${message.replace(/\n/g, "<br>")}</div>
+                        </div>
+                    </div>
+
+                    <div class="footer">
+                        <div class="footer-brand">Kredi Takip</div>
+                        <div class="footer-note">
+                            Bu mesaj kreditakip.com.tr iletişim formundan gönderilmiştir.<br>
+                            © ${new Date().getFullYear()} Kredi Takip - Tüm hakları saklıdır.
+                        </div>
+                    </div>
                 </div>
-                <div class="content">
-                  <div class="field">
-                    <div class="label">Ad Soyad:</div>
-                    <div class="value">${firstName} ${lastName}</div>
-                  </div>
-                  <div class="field">
-                    <div class="label">E-posta:</div>
-                    <div class="value">${email}</div>
-                  </div>
-                  ${
-                    phone
-                      ? `
-                  <div class="field">
-                    <div class="label">Telefon:</div>
-                    <div class="value">${phone}</div>
-                  </div>
-                  `
-                      : ""
-                  }
-                  <div class="field">
-                    <div class="label">Konu:</div>
-                    <div class="value">${subject}</div>
-                  </div>
-                  <div class="field">
-                    <div class="label">Mesaj:</div>
-                    <div class="value">${message.replace(/\n/g, "<br>")}</div>
-                  </div>
-                  <div class="footer">
-                    <p>Bu mesaj kreditakip.com.tr iletişim formundan gönderilmiştir.</p>
-                    <p>© ${new Date().getFullYear()} Kredi Takip - Tüm hakları saklıdır</p>
-                  </div>
-                </div>
-              </div>
             </body>
             </html>
           `,

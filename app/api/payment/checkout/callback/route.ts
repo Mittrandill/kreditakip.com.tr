@@ -4,6 +4,7 @@ export const dynamic = "force-dynamic"
 import { IyzipaySubscriptionClient } from "@/lib/iyzipay-client"
 import { createClient } from "@supabase/supabase-js"
 import { sendInvoiceNotification } from "@/lib/email/invoice-notification"
+import { sendNewSubscriptionNotification } from "@/lib/email/subscription-notification"
 
 export const runtime = "nodejs"
 
@@ -237,6 +238,35 @@ export async function POST(request: NextRequest) {
         // Don't fail - subscription is created
       } else {
         console.log("[checkout-callback] Billing info saved successfully")
+      }
+    }
+
+    // Send NEW SUBSCRIPTION notification email to admin
+    console.log("[checkout-callback] Sending subscription notification email to info@kreditakip.com.tr")
+
+    const { data: userProfile } = await supabase
+      .from("profiles")
+      .select("first_name, last_name, email")
+      .eq("id", userId)
+      .single()
+
+    if (userProfile) {
+      const userName = `${userProfile.first_name || ''} ${userProfile.last_name || ''}`.trim() || userProfile.email
+
+      const subscriptionEmailResult = await sendNewSubscriptionNotification({
+        userName,
+        userEmail: userProfile.email,
+        planName: plan.name,
+        amount: plan.price,
+        currency: plan.currency || "TRY",
+        startDate: startDate.toISOString(),
+        expiresAt: expiresAt.toISOString(),
+      })
+
+      if (subscriptionEmailResult.success) {
+        console.log("[checkout-callback] Subscription notification sent successfully")
+      } else {
+        console.error("[checkout-callback] Failed to send subscription notification:", subscriptionEmailResult.error)
       }
     }
 
