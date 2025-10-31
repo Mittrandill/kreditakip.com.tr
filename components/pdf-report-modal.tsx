@@ -717,40 +717,6 @@ export default function PDFReportModal({ userData, trigger }: PDFReportModalProp
                       </div>
                     </div>
 
-                    <div className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-gray-50 to-gray-100 border border-gray-200 shadow-lg">
-                      <div className="absolute inset-0 bg-gradient-to-r from-emerald-500/5 to-blue-500/5"></div>
-                      <div className="relative p-6">
-                        <div className="flex items-center justify-between">
-                          <div className="flex items-center gap-8">
-                            <div className="flex items-center gap-3">
-                              <div className="w-10 h-10 bg-emerald-100 rounded-xl flex items-center justify-center">
-                                <Settings className="h-5 w-5 text-emerald-600" />
-                              </div>
-                              <div>
-                                <div className="font-semibold text-gray-900">{selectedSectionsCount}</div>
-                                <div className="text-sm text-gray-600">Icerik Bolumu</div>
-                              </div>
-                            </div>
-                            <div className="flex items-center gap-3">
-                              <div className="w-10 h-10 bg-blue-100 rounded-xl flex items-center justify-center">
-                                <BarChart3 className="h-5 w-5 text-blue-600" />
-                              </div>
-                              <div>
-                                <div className="font-semibold text-gray-900">{selectedChartsCount}</div>
-                                <div className="text-sm text-gray-600">Grafik</div>
-                              </div>
-                            </div>
-                          </div>
-                          <div className="flex items-center gap-2">
-                            <div className="w-3 h-3 bg-emerald-500 rounded-full animate-pulse"></div>
-                            <Badge className="bg-emerald-100 text-emerald-700 border-emerald-200 font-semibold px-4 py-1">
-                              Hazir
-                            </Badge>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-
                     <div className="relative">
                       <Button
                         onClick={handleGenerateReport}

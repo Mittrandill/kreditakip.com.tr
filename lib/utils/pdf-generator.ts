@@ -167,8 +167,8 @@ class ModernPDFGenerator {
 
     // Logo section with modern container
     const logoY = this.pageHeight * 0.28
-    const logoWidth = 60
-    const logoHeight = 20
+    const logoHeight = 66
+    const logoWidth = 341 
 
     try {
       // Load logo image
@@ -181,31 +181,6 @@ class ModernPDFGenerator {
           reader.readAsDataURL(logoBlob)
         })
 
-        // White container for logo with subtle shadow
-        this.doc.setFillColor(255, 255, 255)
-        this.doc.setGState(this.doc.GState({ opacity: 0.12 }))
-        this.doc.roundedRect(
-          this.pageWidth / 2 - logoWidth / 2 - 8,
-          logoY - logoHeight / 2 - 8,
-          logoWidth + 16,
-          logoHeight + 16,
-          8,
-          8,
-          "F"
-        )
-        this.doc.setGState(this.doc.GState({ opacity: 1 }))
-
-        // Main logo container
-        this.doc.setFillColor(255, 255, 255)
-        this.doc.roundedRect(
-          this.pageWidth / 2 - logoWidth / 2,
-          logoY - logoHeight / 2,
-          logoWidth,
-          logoHeight,
-          6,
-          6,
-          "F"
-        )
 
         // Add logo image
         this.doc.addImage(
@@ -244,7 +219,7 @@ class ModernPDFGenerator {
     this.doc.text(safeText("KREDİ PORTFÖY"), this.pageWidth / 2, titleY, { align: "center" })
 
     this.doc.setFontSize(36)
-    this.doc.text(safeText("RAPORU"), this.pageWidth / 2, titleY + 14, { align: "center" })
+    this.doc.text(safeText("RAPORU"), this.pageWidth / 2, titleY + 42, { align: "center" })
 
     // Elegant separator line
     this.doc.setDrawColor(...COLORS.white)
@@ -253,9 +228,9 @@ class ModernPDFGenerator {
     const lineWidth = 80
     this.doc.line(
       this.pageWidth / 2 - lineWidth / 2,
-      titleY + 22,
+      titleY + 54,
       this.pageWidth / 2 + lineWidth / 2,
-      titleY + 22
+      titleY + 54
     )
     this.doc.setGState(this.doc.GState({ opacity: 1 }))
 
@@ -263,7 +238,7 @@ class ModernPDFGenerator {
     this.doc.setFontSize(13)
     this.doc.setFont("helvetica", "normal")
     this.doc.setGState(this.doc.GState({ opacity: 0.9 }))
-    this.doc.text(safeText("Detaylı Finansal Analiz ve Değerlendirme"), this.pageWidth / 2, titleY + 34, { align: "center" })
+    this.doc.text(safeText("Detaylı Finansal Analiz ve Değerlendirme"), this.pageWidth / 2, titleY + 66, { align: "center" })
     this.doc.setGState(this.doc.GState({ opacity: 1 }))
 
     // Modern info card
@@ -351,30 +326,7 @@ class ModernPDFGenerator {
     // Footer section with branding
     const footerY = this.pageHeight - 35
 
-    // Footer line
-    this.doc.setDrawColor(...COLORS.white)
-    this.doc.setLineWidth(0.3)
-    this.doc.setGState(this.doc.GState({ opacity: 0.3 }))
-    this.doc.line(
-      this.pageWidth * 0.3,
-      footerY - 5,
-      this.pageWidth * 0.7,
-      footerY - 5
-    )
-    this.doc.setGState(this.doc.GState({ opacity: 1 }))
 
-    // Website
-    this.doc.setTextColor(...COLORS.white)
-    this.doc.setFontSize(11)
-    this.doc.setFont("helvetica", "bold")
-    this.doc.text("kreditakip.com.tr", this.pageWidth / 2, footerY + 5, { align: "center" })
-
-    // Tagline
-    this.doc.setFontSize(8)
-    this.doc.setFont("helvetica", "normal")
-    this.doc.setGState(this.doc.GState({ opacity: 0.7 }))
-    this.doc.text(safeText("Finansal Özgürlüğe Giden Yol"), this.pageWidth / 2, footerY + 13, { align: "center" })
-    this.doc.setGState(this.doc.GState({ opacity: 1 }))
 
     // Start a new page for content
     this.addPage()
@@ -1094,7 +1046,7 @@ class ModernPDFGenerator {
     const cardHeight = 55
     const spacing = 10
 
-    for (let i = 0; i < Math.min(bankSummary.length, 6); i++) {
+    for (let i = 0; i < bankSummary.length; i++) {
       const bank = bankSummary[i]
       const row = Math.floor(i / 2)
       const col = i % 2
@@ -1196,8 +1148,8 @@ class ModernPDFGenerator {
     }
 
     // Calculate how many rows we used
-    const rows = Math.ceil(Math.min(bankSummary.length, 6) / 2)
-    this.currentY += rows * (cardHeight + spacing)
+    const rows = Math.ceil(bankSummary.length / 2)
+    this.currentY += rows * (cardHeight + spacing) + 20 // Extra spacing before next section
   }
 
   private calculateBankSummary() {

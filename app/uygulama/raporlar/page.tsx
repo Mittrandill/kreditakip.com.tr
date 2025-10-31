@@ -581,14 +581,6 @@ export default function RaporlarPage() {
                   </Button>
                 }
               />
-              <Button
-                variant="outline"
-                size="lg"
-                className="bg-white/20 dark:bg-white/15 text-white border-white/30 dark:border-white/20 hover:bg-white/30 dark:hover:bg-white/25 backdrop-blur-sm h-12 px-6"
-              >
-                <Settings className="h-5 w-5 mr-2" />
-                Rapor Ayarları
-              </Button>
             </div>
           </div>
         </div>
