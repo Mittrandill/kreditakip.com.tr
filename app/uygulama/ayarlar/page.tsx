@@ -88,6 +88,10 @@ export default function AyarlarPage() {
   const [showNewPassword, setShowNewPassword] = useState(false)
   const [showConfirmPassword, setShowConfirmPassword] = useState(false)
   const [isChangingPassword, setIsChangingPassword] = useState(false)
+  const [passwordChangeStatus, setPasswordChangeStatus] = useState<{
+    type: "success" | "error" | null
+    message: string
+  }>({ type: null, message: "" })
 
   // Tercihler state'leri
   const [compactView, setCompactView] = useState(false)
@@ -429,17 +433,23 @@ export default function AyarlarPage() {
 
   // Password change handler
   const handlePasswordChange = async () => {
+    // Clear previous status
+    setPasswordChangeStatus({ type: null, message: "" })
+
     if (!newPassword || !confirmPassword) {
+      setPasswordChangeStatus({ type: "error", message: "Lütfen tüm alanları doldurun." })
       toast({ title: "Hata", description: "Lütfen tüm alanları doldurun.", variant: "destructive" })
       return
     }
 
     if (newPassword !== confirmPassword) {
+      setPasswordChangeStatus({ type: "error", message: "Yeni şifreler eşleşmiyor." })
       toast({ title: "Hata", description: "Yeni şifreler eşleşmiyor.", variant: "destructive" })
       return
     }
 
     if (newPassword.length < 6) {
+      setPasswordChangeStatus({ type: "error", message: "Şifre en az 6 karakter olmalıdır." })
       toast({ title: "Hata", description: "Şifre en az 6 karakter olmalıdır.", variant: "destructive" })
       return
     }
@@ -452,10 +462,21 @@ export default function AyarlarPage() {
       setCurrentPassword("")
       setNewPassword("")
       setConfirmPassword("")
+      setPasswordChangeStatus({
+        type: "success",
+        message: "✓ Şifreniz başarıyla değiştirildi! Artık yeni şifrenizle giriş yapabilirsiniz.",
+      })
       toast({ title: "Başarılı", description: "Şifreniz başarıyla değiştirildi." })
+
+      // Clear success message after 5 seconds
+      setTimeout(() => {
+        setPasswordChangeStatus({ type: null, message: "" })
+      }, 5000)
     } catch (error: any) {
       console.error("Password change error:", error)
-      toast({ title: "Hata", description: "Şifre değiştirilirken bir hata oluştu.", variant: "destructive" })
+      const errorMessage = error.message || "Şifre değiştirilirken bir hata oluştu."
+      setPasswordChangeStatus({ type: "error", message: errorMessage })
+      toast({ title: "Hata", description: errorMessage, variant: "destructive" })
     } finally {
       setIsChangingPassword(false)
     }
@@ -509,13 +530,61 @@ export default function AyarlarPage() {
     })
   }
 
-  // Data export handler
+  // Data export handler - Export ALL user data
   const handleDataExport = async () => {
     try {
+      if (!user?.id) {
+        toast({ title: "Hata", description: "Kullanıcı oturumu bulunamadı", variant: "destructive" })
+        return
+      }
+
+      toast({ title: "Veriler hazırlanıyor...", description: "Lütfen bekleyin" })
+
+      // Fetch all user data from Supabase
+      const [
+        { data: credits },
+        { data: creditCards },
+        { data: accounts },
+        { data: paymentHistory },
+        { data: riskAnalyses },
+        { data: refinancingAnalyses },
+        { data: subscription },
+        { data: usageTracking },
+      ] = await Promise.all([
+        supabase.from("credits").select("*").eq("user_id", user.id),
+        supabase.from("credit_cards").select("*").eq("user_id", user.id),
+        supabase.from("accounts").select("*").eq("user_id", user.id),
+        supabase.from("payment_history").select("*").eq("user_id", user.id),
+        supabase.from("risk_analyses").select("*").eq("user_id", user.id),
+        supabase.from("refinancing_analyses").select("*").eq("user_id", user.id),
+        supabase.from("subscriptions").select("*").eq("user_id", user.id),
+        supabase.from("usage_tracking").select("*").eq("user_id", user.id),
+      ])
+
       const exportData = {
+        exportInfo: {
+          exportDate: new Date().toISOString(),
+          userName: `${profileData.first_name || ""} ${profileData.last_name || ""}`.trim(),
+          email: profileData.email,
+          version: "1.0.0",
+        },
         profile: profileData,
         financialProfile: financialProfileData,
-        exportDate: new Date().toISOString(),
+        credits: credits || [],
+        creditCards: creditCards || [],
+        accounts: accounts || [],
+        paymentHistory: paymentHistory || [],
+        riskAnalyses: riskAnalyses || [],
+        refinancingAnalyses: refinancingAnalyses || [],
+        subscription: subscription || [],
+        usageTracking: usageTracking || [],
+        statistics: {
+          totalCredits: credits?.length || 0,
+          totalCreditCards: creditCards?.length || 0,
+          totalAccounts: accounts?.length || 0,
+          totalPayments: paymentHistory?.length || 0,
+          totalRiskAnalyses: riskAnalyses?.length || 0,
+        },
       }
 
       const blob = new Blob([JSON.stringify(exportData, null, 2)], { type: "application/json" })
@@ -1552,6 +1621,32 @@ export default function AyarlarPage() {
                       {isChangingPassword ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
                       {isChangingPassword ? "Değiştiriliyor..." : "Şifreyi Değiştir"}
                     </Button>
+
+                    {/* Password Change Status Feedback */}
+                    {passwordChangeStatus.type && (
+                      <Alert
+                        className={
+                          passwordChangeStatus.type === "success"
+                            ? "border-green-500 bg-green-50 dark:bg-green-950 dark:border-green-700"
+                            : "border-red-500 bg-red-50 dark:bg-red-950 dark:border-red-700"
+                        }
+                      >
+                        {passwordChangeStatus.type === "success" ? (
+                          <Check className="h-4 w-4 text-green-600 dark:text-green-400" />
+                        ) : (
+                          <AlertCircle className="h-4 w-4 text-red-600 dark:text-red-400" />
+                        )}
+                        <AlertDescription
+                          className={
+                            passwordChangeStatus.type === "success"
+                              ? "text-green-800 dark:text-green-200"
+                              : "text-red-800 dark:text-red-200"
+                          }
+                        >
+                          {passwordChangeStatus.message}
+                        </AlertDescription>
+                      </Alert>
+                    )}
                   </CardContent>
                 </Card>
 
@@ -1726,13 +1821,34 @@ export default function AyarlarPage() {
                   </CardHeader>
                   <CardContent className="space-y-4">
                     <div className="flex items-center justify-between p-4 border rounded-lg dark:border-gray-700 dark:bg-gray-800/50">
-                      <div>
-                        <p className="font-medium dark:text-white">Verilerimi Dışa Aktar</p>
-                        <p className="text-sm text-gray-500 dark:text-gray-400">
-                          Tüm verilerinizi JSON formatında indirin
+                      <div className="flex-1">
+                        <p className="font-medium dark:text-white flex items-center gap-2">
+                          <Download className="h-5 w-5 text-emerald-600 dark:text-emerald-400" />
+                          Verilerimi Dışa Aktar
                         </p>
+                        <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
+                          Tüm kredilerinizi, kredi kartlarınızı, hesaplarınızı, ödeme geçmişinizi, risk
+                          analizlerinizi ve profil bilgilerinizi JSON formatında yedekleyin
+                        </p>
+                        <div className="flex flex-wrap gap-2 mt-2">
+                          <span className="text-xs bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400 px-2 py-1 rounded">
+                            Krediler
+                          </span>
+                          <span className="text-xs bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400 px-2 py-1 rounded">
+                            Kredi Kartları
+                          </span>
+                          <span className="text-xs bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400 px-2 py-1 rounded">
+                            Hesaplar
+                          </span>
+                          <span className="text-xs bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400 px-2 py-1 rounded">
+                            Ödeme Geçmişi
+                          </span>
+                          <span className="text-xs bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400 px-2 py-1 rounded">
+                            Risk Analizleri
+                          </span>
+                        </div>
                       </div>
-                      <Button onClick={handleDataExport}>
+                      <Button onClick={handleDataExport} className="ml-4">
                         <Download className="h-4 w-4 mr-2" />
                         Dışa Aktar
                       </Button>
