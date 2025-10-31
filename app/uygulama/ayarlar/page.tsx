@@ -80,6 +80,10 @@ export default function AyarlarPage() {
   const [error, setError] = useState<string | null>(null)
   const [activeTab, setActiveTab] = useState("profile")
 
+  // Avatar upload state
+  const [avatarPreview, setAvatarPreview] = useState<string | null>(null)
+  const [isUploadingAvatar, setIsUploadingAvatar] = useState(false)
+
   // Güvenlik state'leri
   const [currentPassword, setCurrentPassword] = useState("")
   const [newPassword, setNewPassword] = useState("")
@@ -103,11 +107,6 @@ export default function AyarlarPage() {
   const [showUpgradeDialog, setShowUpgradeDialog] = useState(false)
   const [isCancelling, setIsCancelling] = useState(false)
   const [showCancelDialog, setShowCancelDialog] = useState(false)
-
-  // Profil fotoğrafı state'leri
-  const [avatarFile, setAvatarFile] = useState<File | null>(null)
-  const [avatarPreview, setAvatarPreview] = useState<string | null>(null)
-  const [isUploadingAvatar, setIsUploadingAvatar] = useState(false)
 
   // Oturum geçmişi (real data)
   const [sessions, setSessions] = useState<any[]>([])
@@ -354,82 +353,70 @@ export default function AyarlarPage() {
   // Avatar upload handler
   const handleAvatarChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
-    if (file) {
-      if (file.size > 10 * 1024 * 1024) {
-        // Increased initial limit to 10MB before compression
-        toast({ title: "Hata", description: "Dosya boyutu 10MB'dan büyük olamaz.", variant: "destructive" })
-        return
-      }
+    if (!file || !user) return
 
-      try {
-        const compressedFile = await compressImage(file, 400, 0.8)
-        setAvatarFile(compressedFile)
-
-        const reader = new FileReader()
-        reader.onload = (e) => {
-          setAvatarPreview(e.target?.result as string)
-        }
-        reader.readAsDataURL(compressedFile)
-
-        toast({
-          title: "Resim hazırlandı",
-          description: `Dosya boyutu: ${(compressedFile.size / 1024).toFixed(0)}KB`,
-        })
-      } catch (error) {
-        toast({ title: "Hata", description: "Resim işlenirken bir hata oluştu.", variant: "destructive" })
-      }
+    if (file.size > 10 * 1024 * 1024) {
+      toast({ title: "Hata", description: "Dosya boyutu 10MB'dan büyük olamaz.", variant: "destructive" })
+      return
     }
-  }
-
-  const handleAvatarUpload = async () => {
-    if (!avatarFile || !user) return
 
     setIsUploadingAvatar(true)
+
     try {
-      // Dosya uzantısını al
-      const fileExt = avatarFile.name.split(".").pop()
+      // Optimize image
+      const compressedFile = await compressImage(file, 400, 0.8)
+
+      // Show preview
+      const reader = new FileReader()
+      reader.onload = (e) => {
+        setAvatarPreview(e.target?.result as string)
+      }
+      reader.readAsDataURL(compressedFile)
+
+      toast({
+        title: "Resim optimize ediliyor...",
+        description: `Dosya boyutu: ${(compressedFile.size / 1024).toFixed(0)}KB`,
+      })
+
+      // Upload immediately
+      const fileExt = compressedFile.name.split(".").pop()
       const fileName = `${Date.now()}-${Math.random().toString(36).substring(2)}.${fileExt}`
-      // User ID ile klasör oluştur
       const filePath = `${user.id}/${fileName}`
 
-      console.log("Uploading to path:", filePath)
-      console.log("User ID:", user.id)
-
-      const { data, error: uploadError } = await supabase.storage.from("avatars").upload(filePath, avatarFile, {
+      const { error: uploadError } = await supabase.storage.from("avatars").upload(filePath, compressedFile, {
         cacheControl: "3600",
         upsert: false,
       })
 
       if (uploadError) {
         console.error("Upload error:", uploadError)
-        throw uploadError
+        toast({ title: "Hata", description: "Yükleme başarısız: " + uploadError.message, variant: "destructive" })
+        setIsUploadingAvatar(false)
+        return
       }
-
-      console.log("Upload successful:", data)
 
       const {
         data: { publicUrl },
       } = supabase.storage.from("avatars").getPublicUrl(filePath)
 
-      console.log("Public URL:", publicUrl)
-
       await updateProfile(user.id, { avatar_url: publicUrl })
       setProfileData((prev) => ({ ...prev, avatar_url: publicUrl }))
-      setAvatarFile(null)
-      setAvatarPreview(null)
 
-      toast({ title: "Başarılı", description: "Profil fotoğrafınız güncellendi." })
-    } catch (error: any) {
-      console.error("Avatar upload error:", error)
       toast({
-        title: "Hata",
-        description: error.message || "Fotoğraf yüklenirken bir hata oluştu.",
-        variant: "destructive",
+        title: "Başarılı",
+        description: "Profil fotoğrafınız güncellendi.",
       })
+
+      // Clear preview after successful upload
+      setTimeout(() => setAvatarPreview(null), 2000)
+    } catch (error) {
+      console.error("Avatar upload error:", error)
+      toast({ title: "Hata", description: "Resim yüklenirken bir hata oluştu.", variant: "destructive" })
     } finally {
       setIsUploadingAvatar(false)
     }
   }
+
 
   // Password change handler
   const handlePasswordChange = async () => {
@@ -825,8 +812,17 @@ export default function AyarlarPage() {
                       <div className="space-y-2">
                         <Label htmlFor="avatar" className="cursor-pointer">
                           <div className="flex items-center space-x-2 px-4 py-2 border border-gray-300 dark:border-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 hover:border-gray-400 bg-transparent rounded-md transition-colors">
-                            <Upload className="h-4 w-4" />
-                            <span>Fotoğraf Seç</span>
+                            {isUploadingAvatar ? (
+                              <>
+                                <Loader2 className="h-4 w-4 animate-spin" />
+                                <span>Yükleniyor...</span>
+                              </>
+                            ) : (
+                              <>
+                                <Upload className="h-4 w-4" />
+                                <span>Fotoğraf Seç</span>
+                              </>
+                            )}
                           </div>
                         </Label>
                         <Input
@@ -835,48 +831,15 @@ export default function AyarlarPage() {
                           accept="image/*"
                           onChange={handleAvatarChange}
                           className="hidden"
+                          disabled={isUploadingAvatar}
                         />
                         <p className="text-xs text-muted-foreground dark:text-gray-400">
                           JPG, PNG, GIF veya WebP. Maksimum 10MB.
                           <br />
-                          Resim otomatik olarak optimize edilecek.
+                          Seçilen fotoğraf otomatik olarak optimize edilip yüklenecek.
                         </p>
                       </div>
                     </div>
-                    {avatarFile && (
-                      <div className="flex space-x-2">
-                        <Button
-                          variant="outline"
-                          className="border-gray-300 dark:border-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 hover:border-gray-400 bg-transparent"
-                          onClick={handleAvatarUpload}
-                          disabled={isUploadingAvatar}
-                          size="sm"
-                        >
-                          {isUploadingAvatar ? (
-                            <>
-                              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                              Yükleniyor...
-                            </>
-                          ) : (
-                            <>
-                              <Upload className="mr-2 h-4 w-4" />
-                              Fotoğrafı Yükle
-                            </>
-                          )}
-                        </Button>
-                        <Button
-                          variant="outline"
-                          className="border-gray-300 dark:border-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 hover:border-gray-400 bg-transparent"
-                          size="sm"
-                          onClick={() => {
-                            setAvatarFile(null)
-                            setAvatarPreview(null)
-                          }}
-                        >
-                          İptal
-                        </Button>
-                      </div>
-                    )}
 
                     {/* Form Alanları */}
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
