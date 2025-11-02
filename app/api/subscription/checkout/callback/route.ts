@@ -16,7 +16,6 @@ const supabaseServiceKey = process.env.SERVICE_ROLE_KEY!
  */
 export async function POST(request: NextRequest) {
   try {
-    console.log("[subscription-callback] Recurring subscription callback received")
 
     // Build base URL from environment or request
     const baseUrl = process.env.NEXT_PUBLIC_APP_URL || `${request.nextUrl.protocol}//${request.nextUrl.host}`
@@ -29,7 +28,6 @@ export async function POST(request: NextRequest) {
       return NextResponse.redirect(`${baseUrl}/uygulama/ayarlar?payment=failed&reason=no_token`, 303)
     }
 
-    console.log("[subscription-callback] Token:", token)
 
     // Initialize Iyzico client
     const iyzipayClient = new IyzipaySubscriptionClient({
@@ -41,7 +39,6 @@ export async function POST(request: NextRequest) {
     // Retrieve subscription result from Iyzico
     const result = await iyzipayClient.retrieveSubscriptionCheckoutFormResult(token)
 
-    console.log("[subscription-callback] Subscription result:", {
       status: result.status,
       subscriptionStatus: result.data?.subscriptionStatus,
       referenceCode: result.data?.referenceCode,
@@ -81,7 +78,6 @@ export async function POST(request: NextRequest) {
     const userId = pendingSubscription.user_id
     const planId = pendingSubscription.plan_id
 
-    console.log("[subscription-callback] Creating subscription record for user:", userId)
 
     // Get plan details
     const { data: plan } = await supabase.from("subscription_plans").select("*").eq("id", planId).single()
@@ -104,7 +100,6 @@ export async function POST(request: NextRequest) {
       expiresAt.setFullYear(expiresAt.getFullYear() + 100)
     }
 
-    console.log("[subscription-callback] Calculated dates:", {
       startDate: startDate.toISOString(),
       expiresAt: expiresAt.toISOString(),
       billingPeriod: plan.billing_period,
@@ -139,7 +134,6 @@ export async function POST(request: NextRequest) {
       return NextResponse.redirect(`${baseUrl}/uygulama/ayarlar?payment=failed&reason=subscription_error`, 303)
     }
 
-    console.log("[subscription-callback] Subscription created successfully:", newSubscription.id)
 
     // Update usage limits for premium users
     const premiumLimit = plan.billing_period === "yearly" ? 9999999 : 999999
@@ -219,7 +213,6 @@ export async function POST(request: NextRequest) {
     if (invoiceError) {
       console.error("[subscription-callback] Failed to create invoice:", invoiceError)
     } else {
-      console.log("[subscription-callback] Invoice created:", invoiceNumber)
     }
 
     // Send subscription notification email
@@ -243,14 +236,11 @@ export async function POST(request: NextRequest) {
       })
 
       if (emailResult.success) {
-        console.log("[subscription-callback] Subscription notification sent successfully")
       } else {
         console.error("[subscription-callback] Failed to send subscription notification:", emailResult.error)
       }
     }
 
-    console.log("[subscription-callback] Recurring subscription activated successfully")
-    console.log("[subscription-callback] Redirecting to success page")
 
     // Redirect to success page
     return NextResponse.redirect(`${baseUrl}/uygulama/odeme/basarili`, 303)

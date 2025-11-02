@@ -12,8 +12,6 @@ export const runtime = "nodejs"
  */
 export async function POST(request: NextRequest) {
   try {
-    console.log("[checkout] Checkout form initialization requested")
-
     // Authenticate user
     const supabase = await createServerClient()
     const {
@@ -79,12 +77,6 @@ export async function POST(request: NextRequest) {
     const baseUrl = process.env.NEXT_PUBLIC_APP_URL || `${request.nextUrl.protocol}//${request.nextUrl.host}`
     const callbackUrl = `${baseUrl}/api/payment/checkout/callback`
 
-    console.log("[checkout] Initializing RECURRING SUBSCRIPTION checkout form")
-    console.log("[checkout] Plan:", plan.name)
-    console.log("[checkout] Price:", plan.price)
-    console.log("[checkout] User:", user.id)
-    console.log("[checkout] Callback URL:", callbackUrl)
-
     // Get pricing plan reference code from environment
     const pricingPlanReferenceCode = process.env.IYZICO_PLAN_REFERENCE_CODE
 
@@ -92,8 +84,6 @@ export async function POST(request: NextRequest) {
       console.error("[checkout] Missing pricing plan reference code")
       return NextResponse.json({ error: "Pricing plan not configured" }, { status: 500 })
     }
-
-    console.log("[checkout] Using pricing plan reference code:", pricingPlanReferenceCode)
 
     // Initialize RECURRING SUBSCRIPTION checkout form (PCI-DSS compliant - NO card data here!)
     const result = await iyzipayClient.initializeSubscriptionCheckoutForm(
@@ -146,10 +136,6 @@ export async function POST(request: NextRequest) {
       console.error("[checkout] Failed to save pending payment:", insertError)
       // Continue anyway - payment can still succeed
     }
-
-    console.log("[checkout] Checkout form initialized successfully")
-    console.log("[checkout] Token:", result.token)
-    console.log("[checkout] Payment page URL:", result.paymentPageUrl)
 
     // Return checkout form content or payment page URL
     return NextResponse.json({

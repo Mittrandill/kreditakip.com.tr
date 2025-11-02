@@ -21,12 +21,10 @@ const supabaseServiceKey = process.env.SERVICE_ROLE_KEY!
  */
 export async function POST(request: NextRequest) {
   try {
-    console.log("[iyzico-webhook] Webhook received")
 
     // Get webhook payload
     const payload = await request.json()
 
-    console.log("[iyzico-webhook] Webhook payload:", {
       iyziEventType: payload.iyziEventType,
       status: payload.status,
       subscriptionReferenceCode: payload.subscriptionReferenceCode,
@@ -82,13 +80,11 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Subscription not found" }, { status: 404 })
     }
 
-    console.log("[iyzico-webhook] Found subscription:", subscription.id)
 
     // Handle event based on type
     switch (eventType) {
       case "subscription_renewed":
       case "payment_succeeded":
-        console.log("[iyzico-webhook] Handling subscription renewal/payment success")
 
         // Extend subscription expiry date
         const currentExpiry = new Date(subscription.expires_at)
@@ -132,12 +128,10 @@ export async function POST(request: NextRequest) {
             created_at: new Date().toISOString(),
           })
 
-          console.log("[iyzico-webhook] Subscription renewed until:", newExpiry.toISOString())
         }
         break
 
       case "subscription_cancelled":
-        console.log("[iyzico-webhook] Handling subscription cancellation")
 
         await supabase
           .from("subscriptions")
@@ -147,11 +141,9 @@ export async function POST(request: NextRequest) {
           })
           .eq("id", subscription.id)
 
-        console.log("[iyzico-webhook] Subscription cancelled:", subscription.id)
         break
 
       case "subscription_expired":
-        console.log("[iyzico-webhook] Handling subscription expiration")
 
         await supabase
           .from("subscriptions")
@@ -170,11 +162,9 @@ export async function POST(request: NextRequest) {
           })
           .eq("user_id", subscription.user_id)
 
-        console.log("[iyzico-webhook] Subscription expired:", subscription.id)
         break
 
       case "payment_failed":
-        console.log("[iyzico-webhook] Handling payment failure")
 
         // Log failed payment
         await supabase.from("payment_transactions").insert({
@@ -195,11 +185,9 @@ export async function POST(request: NextRequest) {
         //   .update({ status: "payment_failed" })
         //   .eq("id", subscription.id)
 
-        console.log("[iyzico-webhook] Payment failed for subscription:", subscription.id)
         break
 
       default:
-        console.log("[iyzico-webhook] Unhandled event type:", eventType)
     }
 
     // Mark webhook as processed
@@ -209,7 +197,6 @@ export async function POST(request: NextRequest) {
       .eq("subscription_reference", subscriptionReference)
       .eq("status", "received")
 
-    console.log("[iyzico-webhook] Webhook processed successfully")
 
     return NextResponse.json({ success: true, message: "Webhook processed" })
   } catch (error: any) {

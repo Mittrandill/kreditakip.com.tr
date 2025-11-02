@@ -17,29 +17,16 @@ const supabaseServiceKey = process.env.SERVICE_ROLE_KEY!
  */
 export async function POST(request: NextRequest) {
   try {
-    console.log("[checkout-callback] ===== PAYMENT CALLBACK RECEIVED =====")
-    console.log("[checkout-callback] URL:", request.url)
-    console.log("[checkout-callback] Method:", request.method)
-    console.log("[checkout-callback] Headers:", Object.fromEntries(request.headers.entries()))
-
     // Build base URL from environment or request
     const baseUrl = process.env.NEXT_PUBLIC_APP_URL || `${request.nextUrl.protocol}//${request.nextUrl.host}`
 
     const body = await request.formData()
     const token = body.get("token") as string
 
-    // Log all form data received
-    console.log("[checkout-callback] Form data received:")
-    for (const [key, value] of body.entries()) {
-      console.log(`  ${key}: ${value}`)
-    }
-
     if (!token) {
       console.error("[checkout-callback] No token in callback")
       return NextResponse.redirect(`${baseUrl}/uygulama/ayarlar?payment=failed&reason=no_token`, 303)
     }
-
-    console.log("[checkout-callback] Token:", token)
 
     // Initialize Iyzico client
     const iyzipayClient = new IyzipaySubscriptionClient({
@@ -49,25 +36,10 @@ export async function POST(request: NextRequest) {
     })
 
     // Retrieve RECURRING SUBSCRIPTION result from Iyzico
-    console.log("[checkout-callback] About to retrieve subscription result from İyzico...")
     const result = await iyzipayClient.retrieveSubscriptionCheckoutFormResult(token)
 
-    console.log("[checkout-callback] Subscription result received:", {
-      status: result.status,
-      errorCode: result.errorCode,
-      errorMessage: result.errorMessage,
-      errorGroup: result.errorGroup,
-      subscriptionStatus: result.data?.subscriptionStatus,
-      referenceCode: result.data?.referenceCode,
-      customerReferenceCode: result.data?.customerReferenceCode,
-    })
-
     if (result.status !== "success" || !result.data) {
-      console.error("[checkout-callback] ===== SUBSCRIPTION CREATION FAILED =====")
-      console.error("[checkout-callback] Error code:", result.errorCode)
-      console.error("[checkout-callback] Error message:", result.errorMessage)
-      console.error("[checkout-callback] Error group:", result.errorGroup)
-      console.error("[checkout-callback] Full result:", JSON.stringify(result, null, 2))
+      console.error("[checkout-callback] Subscription creation failed:", result.errorCode, result.errorMessage)
       return NextResponse.redirect(
         `${baseUrl}/uygulama/ayarlar?payment=failed&reason=${encodeURIComponent(result.errorMessage || "unknown")}`,
         303,
@@ -114,8 +86,6 @@ export async function POST(request: NextRequest) {
       return NextResponse.redirect(`${baseUrl}/uygulama/ayarlar?payment=failed&reason=payment_not_found`, 303)
     }
 
-    console.log("[checkout-callback] Creating subscription for user:", userId)
-
     // Get plan details
     const { data: plan } = await supabase.from("subscription_plans").select("*").eq("id", planId).single()
 
@@ -124,29 +94,19 @@ export async function POST(request: NextRequest) {
       return NextResponse.redirect(`${baseUrl}/uygulama/ayarlar?payment=failed&reason=plan_not_found`, 303)
     }
 
-    console.log("[checkout-callback] Plan details:", { planId, billing_period: plan.billing_period })
-
     // Calculate expiry date based on subscription start date from iyzico
     const startDate = new Date(subscriptionData.startDate || Date.now())
     const expiresAt = new Date(startDate)
 
     // Check billing_period from plan
     if (plan.billing_period === "yearly") {
-      console.log("[checkout-callback] Setting yearly expiry (+ 1 year)")
       expiresAt.setFullYear(expiresAt.getFullYear() + 1)
     } else if (plan.billing_period === "monthly") {
-      console.log("[checkout-callback] Setting monthly expiry (+ 1 month)")
       expiresAt.setMonth(expiresAt.getMonth() + 1)
     } else {
       // lifetime
-      console.log("[checkout-callback] Setting lifetime expiry (+ 100 years)")
       expiresAt.setFullYear(expiresAt.getFullYear() + 100)
     }
-
-    console.log("[checkout-callback] Calculated dates:", {
-      startDate: startDate.toISOString(),
-      expiresAt: expiresAt.toISOString(),
-    })
 
     // Check if user already has an active subscription
     const { data: existingSubscription } = await supabase
@@ -161,7 +121,6 @@ export async function POST(request: NextRequest) {
 
     if (existingSubscription) {
       // Update existing active subscription
-      console.log("[checkout-callback] Updating existing subscription:", existingSubscription.id)
       const { data, error } = await supabase
         .from("subscriptions")
         .update({
@@ -183,7 +142,6 @@ export async function POST(request: NextRequest) {
       subError = error
     } else {
       // Create new subscription
-      console.log("[checkout-callback] Creating new subscription")
       const { data, error } = await supabase
         .from("subscriptions")
         .insert({
@@ -279,8 +237,6 @@ export async function POST(request: NextRequest) {
     if (txError) {
       console.error("[checkout-callback] Failed to create transaction record:", txError)
       // Don't fail - subscription is created
-    } else {
-      console.log("[checkout-callback] Payment transaction record created successfully")
     }
 
     // Create pending invoice for admin to upload PDF
@@ -301,14 +257,11 @@ export async function POST(request: NextRequest) {
     if (invoiceError) {
       console.error("[checkout-callback] Failed to create invoice:", invoiceError)
       // Don't fail - subscription is created
-    } else {
-      console.log("[checkout-callback] Pending invoice created:", invoiceNumber)
     }
 
     // Save billing info to billing_info table for admin panel
     if (billingInfoMetadata?.billingInfo) {
       const billingInfo = billingInfoMetadata.billingInfo
-      console.log("[checkout-callback] Saving billing info to database")
 
       const { error: billingError } = await supabase
         .from("billing_info")
@@ -334,13 +287,10 @@ export async function POST(request: NextRequest) {
       if (billingError) {
         console.error("[checkout-callback] Failed to save billing info:", billingError)
         // Don't fail - subscription is created
-      } else {
-        console.log("[checkout-callback] Billing info saved successfully")
       }
     }
 
     // Send NEW SUBSCRIPTION notification email to admin
-    console.log("[checkout-callback] Sending subscription notification email to info@kreditakip.com.tr")
 
     const { data: userProfile } = await supabase
       .from("profiles")
@@ -361,16 +311,13 @@ export async function POST(request: NextRequest) {
         expiresAt: expiresAt.toISOString(),
       })
 
-      if (subscriptionEmailResult.success) {
-        console.log("[checkout-callback] Subscription notification sent successfully")
-      } else {
+      if (!subscriptionEmailResult.success) {
         console.error("[checkout-callback] Failed to send subscription notification:", subscriptionEmailResult.error)
       }
     }
 
     // Send invoice notification email to admin
     if (billingInfoMetadata?.billingInfo) {
-      console.log("[checkout-callback] Sending invoice notification email to info@kreditakip.com.tr")
 
       const emailResult = await sendInvoiceNotification({
         userId,
@@ -385,16 +332,11 @@ export async function POST(request: NextRequest) {
         expiresAt: expiresAt.toISOString(),
       })
 
-      if (emailResult.success) {
-        console.log("[checkout-callback] Invoice notification sent successfully, messageId:", emailResult.messageId)
-      } else {
+      if (!emailResult.success) {
         console.error("[checkout-callback] Failed to send invoice notification:", emailResult.error)
         // Don't fail - subscription is created, email is not critical
       }
     }
-
-    console.log("[checkout-callback] Subscription created successfully")
-    console.log("[checkout-callback] Redirecting to success page")
 
     // Redirect to success page with 303 See Other to convert POST to GET
     return NextResponse.redirect(`${baseUrl}/uygulama/odeme/basarili`, 303)

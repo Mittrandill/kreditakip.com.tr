@@ -69,7 +69,11 @@
       "WebSearch",
       "WebFetch(domain:github.com)",
       "Bash(nul)",
-      "WebFetch(domain:dev.iyzipay.com)"
+      "WebFetch(domain:dev.iyzipay.com)",
+      "Bash(for file in \"app/api/subscription/checkout/callback/route.ts\" \"app/api/subscription/checkout/initialize/route.ts\" \"app/api/webhook/iyzico/route.ts\")",
+      "Bash(for file in callback/route.ts initialize/route.ts)",
+      "Bash(do sed -i '/console\\.log(/d' \"$file\")",
+      "Bash(echo:*)"
     ],
     "deny": [],
     "ask": []

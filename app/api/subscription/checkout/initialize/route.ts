@@ -13,7 +13,6 @@ export const runtime = "nodejs"
  */
 export async function POST(request: NextRequest) {
   try {
-    console.log("[subscription-checkout] Recurring subscription checkout form initialization requested")
 
     // Authenticate user
     const supabase = await createServerClient()
@@ -98,12 +97,6 @@ export async function POST(request: NextRequest) {
     const baseUrl = process.env.NEXT_PUBLIC_APP_URL || `${request.nextUrl.protocol}//${request.nextUrl.host}`
     const callbackUrl = `${baseUrl}/api/subscription/checkout/callback`
 
-    console.log("[subscription-checkout] Initializing recurring subscription checkout form")
-    console.log("[subscription-checkout] Plan:", plan.name)
-    console.log("[subscription-checkout] Plan ID:", planId)
-    console.log("[subscription-checkout] Pricing Plan Reference Code:", pricingPlanReferenceCode)
-    console.log("[subscription-checkout] User:", user.id)
-    console.log("[subscription-checkout] Callback URL:", callbackUrl)
 
     // Initialize subscription checkout form
     const result = await iyzipayClient.initializeSubscriptionCheckoutForm(
@@ -168,8 +161,6 @@ export async function POST(request: NextRequest) {
       // Don't fail - subscription is more important
     }
 
-    console.log("[subscription-checkout] Subscription checkout form initialized successfully")
-    console.log("[subscription-checkout] Token:", result.token)
 
     // Return checkout form content
     return NextResponse.json({
