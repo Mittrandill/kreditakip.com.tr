@@ -336,6 +336,7 @@ export default function RaporlarPage() {
           existing.value += credit.remaining_debt || 0
           existing.count += 1
           existing.monthlyPayment += credit.monthly_payment || 0
+          existing.totalInterest += credit.interest_rate || 0
           existing.logoUrl = existing.logoUrl || credit.banks?.logo_url
         } else {
           acc.push({
@@ -343,6 +344,7 @@ export default function RaporlarPage() {
             value: credit.remaining_debt || 0,
             count: 1,
             monthlyPayment: credit.monthly_payment || 0,
+            totalInterest: credit.interest_rate || 0,
             averageInterest: credit.interest_rate || 0,
             logoUrl: credit.banks?.logo_url,
             fullName: credit.banks?.name,
@@ -350,6 +352,10 @@ export default function RaporlarPage() {
         }
         return acc
       }, [])
+      .map((item) => ({
+        ...item,
+        averageInterest: item.count > 0 ? item.totalInterest / item.count : 0,
+      }))
       .sort((a, b) => b.value - a.value)
 
     // Credit type distribution
@@ -377,7 +383,7 @@ export default function RaporlarPage() {
         bank: credit.banks?.name?.replace("Bankası", "").replace("Bank", "").trim() || "Bilinmeyen",
         rate: credit.interest_rate || 0,
         amount: credit.remaining_debt || 0,
-        monthlyInterest: ((credit.remaining_debt || 0) * (credit.interest_rate || 0)) / 1200,
+        monthlyInterest: ((credit.interest_rate || 0) / 12 / 100) * (credit.remaining_debt || 0),
         creditType: credit.credit_types?.name || "Diğer",
         logoUrl: credit.banks?.logo_url,
         fullBankName: credit.banks?.name,
@@ -461,7 +467,7 @@ export default function RaporlarPage() {
     return (
       <div className="flex flex-col items-center justify-center min-h-[calc(100vh-150px)]">
         <AlertTriangle className="h-12 w-12 text-red-500 mb-4" />
-        <p className="text-lg text-red-600 mb-4">{error}</p>
+        <p className="text-lg text-red-600 dark:text-red-400 mb-4">{error}</p>
         <Button onClick={fetchData} className="mt-4">
           <RefreshCw className="h-4 w-4 mr-2" />
           Tekrar Dene
@@ -470,12 +476,35 @@ export default function RaporlarPage() {
     )
   }
 
+  // Empty state
+  if (!loading && credits.length === 0) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-[calc(100vh-150px)] p-8">
+        <div className="text-center max-w-md">
+          <div className="mb-6">
+            <div className="mx-auto w-20 h-20 bg-gray-100 dark:bg-gray-800 rounded-full flex items-center justify-center">
+              <BarChart3 className="h-10 w-10 text-gray-400 dark:text-gray-500" />
+            </div>
+          </div>
+          <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-3">Henüz Veri Yok</h2>
+          <p className="text-gray-600 dark:text-gray-400 mb-6">
+            Raporlarınızı görebilmek için önce kredi ekleyin ve ödemelerinizi kaydedin.
+          </p>
+          <Button onClick={() => router.push("/uygulama/krediler/kredi-ekle")} className="bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700">
+            <CreditCard className="h-4 w-4 mr-2" />
+            İlk Krediyi Ekle
+          </Button>
+        </div>
+      </div>
+    )
+  }
+
   return (
     <div className="flex flex-col gap-8">
       {/* Premium Hero Section */}
       <div className="relative overflow-hidden rounded-3xl">
-        <div className="absolute inset-0 bg-gradient-to-br from-teal-600 via-cyan-600 to-blue-700"></div>
-        <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent"></div>
+        <div className="absolute inset-0 bg-gradient-to-br from-emerald-600 via-teal-600 to-cyan-700 dark:from-emerald-700 dark:via-teal-700 dark:to-cyan-800"></div>
+        <div className="absolute inset-0 bg-gradient-to-t from-black/20 dark:from-black/30 to-transparent"></div>
         <div className="absolute inset-0 opacity-20">
           <div
             className="absolute inset-0"
