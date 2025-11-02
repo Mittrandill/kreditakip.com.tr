@@ -2,7 +2,9 @@
 
 import type React from "react"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useCallback } from "react"
+import Cropper from "react-easy-crop"
+import type { Area } from "react-easy-crop"
 import { useRouter } from "next/navigation"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs"
@@ -83,6 +85,12 @@ export default function AyarlarPage() {
   // Avatar upload state
   const [avatarPreview, setAvatarPreview] = useState<string | null>(null)
   const [isUploadingAvatar, setIsUploadingAvatar] = useState(false)
+  const [showCropModal, setShowCropModal] = useState(false)
+  const [selectedImageFile, setSelectedImageFile] = useState<File | null>(null)
+  const [imageSrc, setImageSrc] = useState<string | null>(null)
+  const [crop, setCrop] = useState({ x: 0, y: 0 })
+  const [zoom, setZoom] = useState(1)
+  const [croppedAreaPixels, setCroppedAreaPixels] = useState<any>(null)
 
   // Güvenlik state'leri
   const [currentPassword, setCurrentPassword] = useState("")
@@ -360,11 +368,14 @@ export default function AyarlarPage() {
       return
     }
 
+    console.log("[Avatar Upload] Starting upload process...")
     setIsUploadingAvatar(true)
 
     try {
       // Optimize image
+      console.log("[Avatar Upload] Compressing image...")
       const compressedFile = await compressImage(file, 400, 0.8)
+      console.log("[Avatar Upload] Compression complete:", compressedFile.size, "bytes")
 
       // Show preview
       const reader = new FileReader()
@@ -383,36 +394,43 @@ export default function AyarlarPage() {
       const fileName = `${Date.now()}-${Math.random().toString(36).substring(2)}.${fileExt}`
       const filePath = `${user.id}/${fileName}`
 
+      console.log("[Avatar Upload] Uploading to:", filePath)
       const { error: uploadError } = await supabase.storage.from("avatars").upload(filePath, compressedFile, {
         cacheControl: "3600",
         upsert: false,
       })
 
       if (uploadError) {
-        console.error("Upload error:", uploadError)
+        console.error("[Avatar Upload] Upload error:", uploadError)
         toast({ title: "Hata", description: "Yükleme başarısız: " + uploadError.message, variant: "destructive" })
-        setIsUploadingAvatar(false)
         return
       }
 
+      console.log("[Avatar Upload] Upload successful, getting public URL...")
       const {
         data: { publicUrl },
       } = supabase.storage.from("avatars").getPublicUrl(filePath)
 
+      console.log("[Avatar Upload] Public URL:", publicUrl)
+      console.log("[Avatar Upload] Updating profile...")
+
       await updateProfile(user.id, { avatar_url: publicUrl })
       setProfileData((prev) => ({ ...prev, avatar_url: publicUrl }))
+
+      console.log("[Avatar Upload] Profile updated successfully")
+
+      // Clear preview immediately and use the uploaded URL
+      setAvatarPreview(null)
 
       toast({
         title: "Başarılı",
         description: "Profil fotoğrafınız güncellendi.",
       })
-
-      // Clear preview after successful upload
-      setTimeout(() => setAvatarPreview(null), 2000)
     } catch (error) {
-      console.error("Avatar upload error:", error)
+      console.error("[Avatar Upload] Error:", error)
       toast({ title: "Hata", description: "Resim yüklenirken bir hata oluştu.", variant: "destructive" })
     } finally {
+      console.log("[Avatar Upload] Process complete, resetting upload state")
       setIsUploadingAvatar(false)
     }
   }

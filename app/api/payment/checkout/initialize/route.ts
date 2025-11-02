@@ -79,15 +79,25 @@ export async function POST(request: NextRequest) {
     const baseUrl = process.env.NEXT_PUBLIC_APP_URL || `${request.nextUrl.protocol}//${request.nextUrl.host}`
     const callbackUrl = `${baseUrl}/api/payment/checkout/callback`
 
-    console.log("[checkout] Initializing checkout form")
+    console.log("[checkout] Initializing RECURRING SUBSCRIPTION checkout form")
     console.log("[checkout] Plan:", plan.name)
     console.log("[checkout] Price:", plan.price)
     console.log("[checkout] User:", user.id)
     console.log("[checkout] Callback URL:", callbackUrl)
 
-    // Initialize checkout form (PCI-DSS compliant - NO card data here!)
-    const result = await iyzipayClient.initializeCheckoutForm(
-      plan.price.toString(),
+    // Get pricing plan reference code from environment
+    const pricingPlanReferenceCode = process.env.IYZICO_PLAN_REFERENCE_CODE
+
+    if (!pricingPlanReferenceCode) {
+      console.error("[checkout] Missing pricing plan reference code")
+      return NextResponse.json({ error: "Pricing plan not configured" }, { status: 500 })
+    }
+
+    console.log("[checkout] Using pricing plan reference code:", pricingPlanReferenceCode)
+
+    // Initialize RECURRING SUBSCRIPTION checkout form (PCI-DSS compliant - NO card data here!)
+    const result = await iyzipayClient.initializeSubscriptionCheckoutForm(
+      pricingPlanReferenceCode,
       user.id,
       planId,
       billingInfo,
@@ -105,7 +115,7 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // Save pending payment record with billing info
+    // Save both pending_payments and pending_subscriptions for compatibility
     const { error: insertError } = await supabaseAdmin.from("pending_payments").insert({
       user_id: user.id,
       plan_id: planId,
@@ -114,11 +124,22 @@ export async function POST(request: NextRequest) {
       token: result.token,
       conversation_id: result.conversationId,
       status: "pending",
-      payment_method: "iyzico_checkout",
+      payment_method: "iyzico_subscription",
       metadata: {
         billingInfo,
       },
       created_at: new Date().toISOString(),
+    })
+
+    // Also save to pending_subscriptions
+    await supabaseAdmin.from("pending_subscriptions").insert({
+      user_id: user.id,
+      plan_id: planId,
+      token: result.token,
+      conversation_id: result.conversationId,
+      status: "pending",
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
     })
 
     if (insertError) {

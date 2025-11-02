@@ -64,7 +64,12 @@
       "Bash(head:*)",
       "Bash(for file in app/api/subscription/cancel/route.ts app/api/subscription/upgrade/route.ts app/api/subscription/plans/route.ts app/api/subscription/initialize/route.ts app/api/subscription/increment-usage/route.ts app/api/subscription/check-feature/route.ts app/api/payment/direct/route.ts app/api/payment/initialize/route.ts app/api/payment/callback/route.ts)",
       "Bash(do if [ -f \"$file\" ])",
-      "Bash(then head -5 \"$file\")"
+      "Bash(then head -5 \"$file\")",
+      "WebFetch(domain:docs.iyzico.com)",
+      "WebSearch",
+      "WebFetch(domain:github.com)",
+      "Bash(nul)",
+      "WebFetch(domain:dev.iyzipay.com)"
     ],
     "deny": [],
     "ask": []

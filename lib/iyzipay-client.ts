@@ -460,4 +460,149 @@ export class IyzipaySubscriptionClient {
 
     return result
   }
+
+  /**
+   * PCI-DSS UYUMLU: RECURRING SUBSCRIPTION Checkout Form başlatma
+   * Bu metod recurring subscription için iyzico'nun güvenli checkout form'unu başlatır
+   * Kullanıcı kart bilgilerini iyzico'nun sayfasında girer, sunucuya gelmez
+   */
+  async initializeSubscriptionCheckoutForm(
+    pricingPlanReferenceCode: string,
+    userId: string,
+    planId: string,
+    billingInfo: BillingInfo,
+    callbackUrl: string,
+  ): Promise<any> {
+    const uri = "/v2/subscription/checkoutform/initialize"
+    const url = `${this.config.uri}${uri}`
+
+    const [firstName, ...lastNameParts] = billingInfo.fullName.split(" ")
+    const lastName = lastNameParts.join(" ") || firstName
+
+    const formattedPhone = billingInfo.phone.startsWith("0")
+      ? "+90" + billingInfo.phone.substring(1)
+      : billingInfo.phone.startsWith("+")
+        ? billingInfo.phone
+        : "+90" + billingInfo.phone
+
+    const conversationId = `sub_checkout_${userId}_${Date.now()}`
+
+    // Try with 'customer' object - subscription API might expect different format
+    const requestBody = {
+      locale: "tr",
+      conversationId,
+      pricingPlanReferenceCode,
+      subscriptionInitialStatus: "ACTIVE",
+      callbackUrl,
+      customer: {
+        name: firstName,
+        surname: lastName,
+        gsmNumber: formattedPhone,
+        email: billingInfo.email,
+        identityNumber: billingInfo.identityNumber,
+        shippingAddress: {
+          contactName: billingInfo.fullName,
+          city: billingInfo.city,
+          country: "Turkey",
+          address: billingInfo.address,
+          zipCode: billingInfo.zipCode || "",
+        },
+        billingAddress: {
+          contactName: billingInfo.fullName,
+          city: billingInfo.city,
+          country: "Turkey",
+          address: billingInfo.address,
+          zipCode: billingInfo.zipCode || "",
+        },
+      },
+    }
+
+    const body = JSON.stringify(requestBody)
+    const authString = this.generateAuthString(uri, body)
+
+    console.log("[iyzipay-subscription] Initializing Subscription Checkout Form")
+    console.log("[iyzipay-subscription] Request URL:", url)
+    console.log("[iyzipay-subscription] Pricing Plan Reference Code:", pricingPlanReferenceCode)
+    console.log("[iyzipay-subscription] Conversation ID:", conversationId)
+    console.log("[iyzipay-subscription] User ID:", userId)
+    console.log("[iyzipay-subscription] Callback URL:", callbackUrl)
+    console.log("[iyzipay-subscription] Full Request Body:", JSON.stringify(requestBody, null, 2))
+
+    const response = await fetch(url, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: authString,
+        "x-iyzi-rnd": crypto.randomBytes(16).toString("hex"),
+      },
+      body,
+    })
+
+    const result = await response.json()
+
+    console.log("[iyzipay-subscription] Subscription Checkout Form response:", JSON.stringify(result, null, 2))
+
+    if (result.status !== "success") {
+      console.error("[iyzipay-subscription] Failed to initialize checkout form:", result)
+      throw new Error(result.errorMessage || "Failed to initialize subscription checkout form")
+    }
+
+    // Normalize response - iyzico returns 'htmlContent' not 'checkoutFormContent'
+    if (result.htmlContent && !result.checkoutFormContent) {
+      result.checkoutFormContent = result.htmlContent
+    }
+
+    return result
+  }
+
+  /**
+   * PCI-DSS UYUMLU: RECURRING SUBSCRIPTION Checkout Form sonucunu retrieve etme
+   * Kullanıcı ödemeyi tamamladıktan sonra subscription bilgilerini alır
+   *
+   * IMPORTANT: Bu endpoint GET request kullanır (POST değil!)
+   * Documentation: GET /v2/subscription/checkoutform/{token}
+   */
+  async retrieveSubscriptionCheckoutFormResult(token: string): Promise<any> {
+    const uri = `/v2/subscription/checkoutform/${token}`
+    const url = `${this.config.uri}${uri}`
+
+    // GET request için boş body ile auth string oluştur
+    const authString = this.generateAuthString(uri, "")
+
+    console.log("[iyzipay-subscription] ===== RETRIEVING SUBSCRIPTION RESULT =====")
+    console.log("[iyzipay-subscription] Token:", token)
+    console.log("[iyzipay-subscription] Full URL:", url)
+    console.log("[iyzipay-subscription] Method: GET (not POST!)")
+
+    const response = await fetch(url, {
+      method: "GET",
+      headers: {
+        Accept: "application/json",
+        Authorization: authString,
+        "x-iyzi-rnd": crypto.randomBytes(16).toString("hex"),
+      },
+    })
+
+    console.log("[iyzipay-subscription] Response HTTP status:", response.status)
+    console.log("[iyzipay-subscription] Response headers:", Object.fromEntries(response.headers.entries()))
+
+    const result = await response.json()
+
+    console.log("[iyzipay-subscription] ===== FULL RAW RESPONSE =====")
+    console.log(JSON.stringify(result, null, 2))
+    console.log("[iyzipay-subscription] ===== END RAW RESPONSE =====")
+
+    console.log("[iyzipay-subscription] Parsed result summary:", {
+      status: result.status,
+      errorCode: result.errorCode,
+      errorMessage: result.errorMessage,
+      errorGroup: result.errorGroup,
+      subscriptionReferenceCode: result.data?.referenceCode,
+      subscriptionStatus: result.data?.subscriptionStatus,
+      customerReferenceCode: result.data?.customerReferenceCode,
+      startDate: result.data?.startDate,
+    })
+
+    return result
+  }
 }

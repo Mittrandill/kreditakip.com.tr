@@ -71,6 +71,7 @@
     "react-day-picker": "latest",
     "react-dom": "^18",
     "react-dropzone": "latest",
+    "react-easy-crop": "^5.5.3",
     "react-hook-form": "latest",
     "react-icons": "latest",
     "react-markdown": "latest",

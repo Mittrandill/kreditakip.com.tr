@@ -17,13 +17,22 @@ const supabaseServiceKey = process.env.SERVICE_ROLE_KEY!
  */
 export async function POST(request: NextRequest) {
   try {
-    console.log("[checkout-callback] Payment callback received")
+    console.log("[checkout-callback] ===== PAYMENT CALLBACK RECEIVED =====")
+    console.log("[checkout-callback] URL:", request.url)
+    console.log("[checkout-callback] Method:", request.method)
+    console.log("[checkout-callback] Headers:", Object.fromEntries(request.headers.entries()))
 
     // Build base URL from environment or request
     const baseUrl = process.env.NEXT_PUBLIC_APP_URL || `${request.nextUrl.protocol}//${request.nextUrl.host}`
 
     const body = await request.formData()
     const token = body.get("token") as string
+
+    // Log all form data received
+    console.log("[checkout-callback] Form data received:")
+    for (const [key, value] of body.entries()) {
+      console.log(`  ${key}: ${value}`)
+    }
 
     if (!token) {
       console.error("[checkout-callback] No token in callback")
@@ -39,25 +48,35 @@ export async function POST(request: NextRequest) {
       uri: process.env.IYZICO_BASE_URL!,
     })
 
-    // Retrieve payment result from Iyzico
-    const result = await iyzipayClient.retrieveCheckoutFormResult(token)
+    // Retrieve RECURRING SUBSCRIPTION result from Iyzico
+    console.log("[checkout-callback] About to retrieve subscription result from İyzico...")
+    const result = await iyzipayClient.retrieveSubscriptionCheckoutFormResult(token)
 
-    console.log("[checkout-callback] Payment result:", {
+    console.log("[checkout-callback] Subscription result received:", {
       status: result.status,
-      paymentStatus: result.paymentStatus,
-      paymentId: result.paymentId,
-      fraudStatus: result.fraudStatus,
+      errorCode: result.errorCode,
+      errorMessage: result.errorMessage,
+      errorGroup: result.errorGroup,
+      subscriptionStatus: result.data?.subscriptionStatus,
+      referenceCode: result.data?.referenceCode,
+      customerReferenceCode: result.data?.customerReferenceCode,
     })
 
-    if (result.status !== "success" || result.paymentStatus !== "SUCCESS") {
-      console.error("[checkout-callback] Payment failed:", result.errorMessage)
+    if (result.status !== "success" || !result.data) {
+      console.error("[checkout-callback] ===== SUBSCRIPTION CREATION FAILED =====")
+      console.error("[checkout-callback] Error code:", result.errorCode)
+      console.error("[checkout-callback] Error message:", result.errorMessage)
+      console.error("[checkout-callback] Error group:", result.errorGroup)
+      console.error("[checkout-callback] Full result:", JSON.stringify(result, null, 2))
       return NextResponse.redirect(
         `${baseUrl}/uygulama/ayarlar?payment=failed&reason=${encodeURIComponent(result.errorMessage || "unknown")}`,
-        303
+        303,
       )
     }
 
-    // Payment successful - create subscription
+    const subscriptionData = result.data
+
+    // Subscription successful - create subscription record
     const supabase = createClient(supabaseUrl, supabaseServiceKey, {
       auth: {
         autoRefreshToken: false,
@@ -65,20 +84,35 @@ export async function POST(request: NextRequest) {
       },
     })
 
-    // Get pending payment info
-    const { data: pendingPayment } = await supabase
-      .from("pending_payments")
-      .select("*")
-      .eq("token", token)
-      .single()
+    // Try pending_payments first (old flow), then pending_subscriptions (new flow)
+    let userId: string | null = null
+    let planId: string | null = null
+    let billingInfoMetadata: any = null
 
-    if (!pendingPayment) {
-      console.error("[checkout-callback] Pending payment not found")
-      return NextResponse.redirect(`${baseUrl}/uygulama/ayarlar?payment=failed&reason=payment_not_found`, 303)
+    const { data: pendingPayment } = await supabase.from("pending_payments").select("*").eq("token", token).single()
+
+    if (pendingPayment) {
+      userId = pendingPayment.user_id
+      planId = pendingPayment.plan_id
+      billingInfoMetadata = pendingPayment.metadata
+    } else {
+      // Check pending_subscriptions
+      const { data: pendingSubscription } = await supabase
+        .from("pending_subscriptions")
+        .select("*")
+        .eq("token", token)
+        .single()
+
+      if (pendingSubscription) {
+        userId = pendingSubscription.user_id
+        planId = pendingSubscription.plan_id
+      }
     }
 
-    const userId = pendingPayment.user_id
-    const planId = pendingPayment.plan_id
+    if (!userId || !planId) {
+      console.error("[checkout-callback] Pending payment/subscription not found")
+      return NextResponse.redirect(`${baseUrl}/uygulama/ayarlar?payment=failed&reason=payment_not_found`, 303)
+    }
 
     console.log("[checkout-callback] Creating subscription for user:", userId)
 
@@ -90,19 +124,23 @@ export async function POST(request: NextRequest) {
       return NextResponse.redirect(`${baseUrl}/uygulama/ayarlar?payment=failed&reason=plan_not_found`, 303)
     }
 
-    console.log("[checkout-callback] Plan details:", { planId, billing_interval: plan.billing_interval })
+    console.log("[checkout-callback] Plan details:", { planId, billing_period: plan.billing_period })
 
-    // Calculate expiry date
-    const startDate = new Date()
+    // Calculate expiry date based on subscription start date from iyzico
+    const startDate = new Date(subscriptionData.startDate || Date.now())
     const expiresAt = new Date(startDate)
 
-    // Check billing_interval from plan
-    if (plan.billing_interval === "yearly" || plan.billing_interval === 12) {
+    // Check billing_period from plan
+    if (plan.billing_period === "yearly") {
       console.log("[checkout-callback] Setting yearly expiry (+ 1 year)")
       expiresAt.setFullYear(expiresAt.getFullYear() + 1)
-    } else {
+    } else if (plan.billing_period === "monthly") {
       console.log("[checkout-callback] Setting monthly expiry (+ 1 month)")
       expiresAt.setMonth(expiresAt.getMonth() + 1)
+    } else {
+      // lifetime
+      console.log("[checkout-callback] Setting lifetime expiry (+ 100 years)")
+      expiresAt.setFullYear(expiresAt.getFullYear() + 100)
     }
 
     console.log("[checkout-callback] Calculated dates:", {
@@ -110,24 +148,63 @@ export async function POST(request: NextRequest) {
       expiresAt: expiresAt.toISOString(),
     })
 
-    // Create subscription
-    const { data: newSubscription, error: subError } = await supabase
+    // Check if user already has an active subscription
+    const { data: existingSubscription } = await supabase
       .from("subscriptions")
-      .insert({
-        user_id: userId,
-        plan_id: planId,
-        plan_type: "premium",
-        status: "active",
-        start_date: startDate.toISOString(),
-        expires_at: expiresAt.toISOString(),
-        payment_method: "iyzico_checkout",
-        iyzico_payment_id: result.paymentId,
-        iyzico_subscription_reference: result.paymentId,
-        created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString(),
-      })
-      .select()
+      .select("*")
+      .eq("user_id", userId)
+      .eq("status", "active")
       .single()
+
+    let newSubscription
+    let subError
+
+    if (existingSubscription) {
+      // Update existing active subscription
+      console.log("[checkout-callback] Updating existing subscription:", existingSubscription.id)
+      const { data, error } = await supabase
+        .from("subscriptions")
+        .update({
+          plan_id: planId,
+          plan_type: "premium",
+          status: "active",
+          start_date: startDate.toISOString(),
+          expires_at: expiresAt.toISOString(),
+          payment_method: "iyzico_subscription",
+          iyzico_subscription_reference: subscriptionData.referenceCode,
+          iyzico_subscription_id: subscriptionData.referenceCode,
+          updated_at: new Date().toISOString(),
+        })
+        .eq("id", existingSubscription.id)
+        .select()
+        .single()
+
+      newSubscription = data
+      subError = error
+    } else {
+      // Create new subscription
+      console.log("[checkout-callback] Creating new subscription")
+      const { data, error } = await supabase
+        .from("subscriptions")
+        .insert({
+          user_id: userId,
+          plan_id: planId,
+          plan_type: "premium",
+          status: "active",
+          start_date: startDate.toISOString(),
+          expires_at: expiresAt.toISOString(),
+          payment_method: "iyzico_subscription",
+          iyzico_subscription_reference: subscriptionData.referenceCode,
+          iyzico_subscription_id: subscriptionData.referenceCode,
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString(),
+        })
+        .select()
+        .single()
+
+      newSubscription = data
+      subError = error
+    }
 
     if (subError || !newSubscription) {
       console.error("[checkout-callback] Subscription creation failed:", subError)
@@ -135,45 +212,66 @@ export async function POST(request: NextRequest) {
     }
 
     // Update usage limits
-    const premiumLimit = plan.billing_interval === "yearly" ? 9999999 : 999999
+    const premiumLimit = plan.billing_period === "yearly" ? 9999999 : 999999
 
-    const { error: usageError } = await supabase
-      .from("usage_tracking")
-      .upsert(
+    const { error: usageError } = await supabase.from("usage_tracking").upsert(
+      [
         {
           user_id: userId,
           feature_type: "ocr_analysis",
           limit_count: premiumLimit,
           used_count: 0,
+          reset_at: expiresAt.toISOString(),
           updated_at: new Date().toISOString(),
         },
-        { onConflict: "user_id,feature_type" },
-      )
+        {
+          user_id: userId,
+          feature_type: "risk_analysis",
+          limit_count: premiumLimit,
+          used_count: 0,
+          reset_at: expiresAt.toISOString(),
+          updated_at: new Date().toISOString(),
+        },
+      ],
+      { onConflict: "user_id,feature_type" },
+    )
 
     if (usageError) {
       console.error("[checkout-callback] Usage update failed:", usageError)
       // Don't fail - subscription is created
     }
 
-    // Mark pending payment as completed
+    // Mark pending payment/subscription as completed
+    if (pendingPayment) {
+      await supabase
+        .from("pending_payments")
+        .update({
+          status: "completed",
+          completed_at: new Date().toISOString(),
+        })
+        .eq("token", token)
+    }
+
     await supabase
-      .from("pending_payments")
+      .from("pending_subscriptions")
       .update({
         status: "completed",
-        completed_at: new Date().toISOString(),
+        subscription_reference: subscriptionData.referenceCode,
+        updated_at: new Date().toISOString(),
       })
       .eq("token", token)
 
-    // Create payment transaction / invoice record
+    // Create payment transaction record for recurring subscription
     const { error: txError } = await supabase.from("payment_transactions").insert({
       user_id: userId,
       subscription_id: newSubscription.id,
+      plan_id: planId,
       amount: plan.price,
       currency: plan.currency || "TRY",
       status: "completed",
-      payment_method: "iyzico_checkout",
-      iyzico_payment_id: result.paymentId || null,
-      iyzico_conversation_id: result.conversationId || null,
+      payment_method: "iyzico_subscription",
+      iyzico_payment_id: subscriptionData.referenceCode,
+      iyzico_conversation_id: token,
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString(),
     })
@@ -186,18 +284,18 @@ export async function POST(request: NextRequest) {
     }
 
     // Create pending invoice for admin to upload PDF
-    const invoiceNumber = `INV-${new Date().toISOString().split('T')[0].replace(/-/g, '')}-${newSubscription.id.slice(0, 8).toUpperCase()}`
+    const invoiceNumber = `INV-${new Date().toISOString().split("T")[0].replace(/-/g, "")}-${newSubscription.id.slice(0, 8).toUpperCase()}`
     const { error: invoiceError } = await supabase.from("invoices").insert({
       user_id: userId,
       subscription_id: newSubscription.id,
-      payment_id: result.paymentId,
+      payment_id: subscriptionData.referenceCode,
       invoice_number: invoiceNumber,
-      invoice_date: new Date().toISOString().split('T')[0],
-      due_date: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+      invoice_date: new Date().toISOString().split("T")[0],
+      due_date: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString().split("T")[0],
       amount: plan.price,
       currency: plan.currency || "TRY",
-      status: "pending", // Pending until admin uploads PDF
-      description: `Abonelik Ödemesi - ${plan.name}`,
+      status: "pending",
+      description: `Recurring Abonelik - ${plan.name}`,
     })
 
     if (invoiceError) {
@@ -208,8 +306,8 @@ export async function POST(request: NextRequest) {
     }
 
     // Save billing info to billing_info table for admin panel
-    if (pendingPayment.metadata?.billingInfo) {
-      const billingInfo = pendingPayment.metadata.billingInfo
+    if (billingInfoMetadata?.billingInfo) {
+      const billingInfo = billingInfoMetadata.billingInfo
       console.log("[checkout-callback] Saving billing info to database")
 
       const { error: billingError } = await supabase
@@ -271,7 +369,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Send invoice notification email to admin
-    if (pendingPayment.metadata?.billingInfo) {
+    if (billingInfoMetadata?.billingInfo) {
       console.log("[checkout-callback] Sending invoice notification email to info@kreditakip.com.tr")
 
       const emailResult = await sendInvoiceNotification({
@@ -281,8 +379,8 @@ export async function POST(request: NextRequest) {
         planId: plan.id,
         amount: plan.price,
         currency: plan.currency || "TRY",
-        paymentId: result.paymentId,
-        billingInfo: pendingPayment.metadata.billingInfo,
+        paymentId: subscriptionData.referenceCode,
+        billingInfo: billingInfoMetadata.billingInfo,
         paymentDate: new Date().toISOString(),
         expiresAt: expiresAt.toISOString(),
       })

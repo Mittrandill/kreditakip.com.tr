@@ -158,9 +158,32 @@ export default function PaymentPage() {
         // Redirect to Iyzico's secure payment page
         window.location.href = data.paymentPageUrl
       } else if (data.success && data.checkoutFormContent) {
-        // Alternative: Show checkout form in modal (not recommended)
-        console.warn("[checkout] Inline checkout form received but not implemented")
-        throw new Error("Ödeme sayfası yönlendirmesi başarısız oldu. Lütfen tekrar deneyin.")
+        console.log("[checkout] Rendering Iyzico checkout form")
+        // Inject iyzico checkout form JavaScript into the page
+        const checkoutContainer = document.getElementById("iyzipay-checkout-form")
+        if (checkoutContainer) {
+          checkoutContainer.innerHTML = data.checkoutFormContent
+
+          // Execute the scripts
+          const scripts = checkoutContainer.getElementsByTagName("script")
+          for (let i = 0; i < scripts.length; i++) {
+            const script = scripts[i]
+            const newScript = document.createElement("script")
+            if (script.src) {
+              newScript.src = script.src
+            } else {
+              newScript.textContent = script.textContent
+            }
+            document.body.appendChild(newScript)
+          }
+
+          // Hide the form, show the checkout container
+          const formElement = document.querySelector("form")
+          if (formElement) {
+            formElement.style.display = "none"
+          }
+        }
+        setIsProcessing(false)
       } else {
         throw new Error(data.error || "Ödeme başlatılamadı")
       }
@@ -516,6 +539,9 @@ export default function PaymentPage() {
           </div>
         </div>
       </form>
+
+      {/* Iyzico Subscription Checkout Form Container - Popup Mode */}
+      <div id="iyzipay-checkout-form" className="popup"></div>
     </div>
   )
 }

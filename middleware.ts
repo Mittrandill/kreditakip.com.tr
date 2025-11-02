@@ -45,10 +45,10 @@ export async function middleware(request: NextRequest) {
   // Control referrer information
   headers.set("Referrer-Policy", "strict-origin-when-cross-origin")
 
-  // Content Security Policy - adjust as needed
+  // Content Security Policy - İyzico için tüm gerekli domain'ler eklendi
   headers.set(
     "Content-Security-Policy",
-    "default-src 'self'; script-src 'self' 'unsafe-eval' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; font-src 'self' data:; connect-src 'self' https://*.supabase.co https://api.iyzipay.com https://sandbox-api.iyzipay.com https://generativelanguage.googleapis.com; frame-ancestors 'none';",
+    "default-src 'self'; script-src 'self' 'unsafe-eval' 'unsafe-inline' https://sandbox-static.iyzipay.com https://static.iyzipay.com; style-src 'self' 'unsafe-inline' https://sandbox-static.iyzipay.com https://static.iyzipay.com https://cdn.iyzipay.com; img-src 'self' data: https:; font-src 'self' data: https://cdn.iyzipay.com; connect-src 'self' https://*.supabase.co https://api.iyzipay.com https://sandbox-api.iyzipay.com https://sandbox-merchantgw.iyzipay.com https://sandbox-consumerapigw.iyzipay.com https://countly.iyzico.com https://o120955.ingest.sentry.io https://generativelanguage.googleapis.com; frame-src 'self' https://sandbox-api.iyzipay.com https://api.iyzipay.com; frame-ancestors 'none';",
   )
 
   // Permissions Policy (formerly Feature Policy)
