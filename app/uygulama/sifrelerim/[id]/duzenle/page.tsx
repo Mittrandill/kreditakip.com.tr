@@ -275,7 +275,7 @@ export default function SifreDuzenlePage() {
                 <Button
                   variant="outline"
                   size="icon"
-                  className="bg-white/20 border-white/30 text-white hover:bg-white/30"
+                  className="bg-transparent border-white/20 text-white hover:bg-white/10 hover:border-transparent hover:text-white dark:bg-transparent dark:border-white/20 dark:text-white dark:hover:bg-white/10 dark:hover:border-transparent dark:hover:text-white"
                 >
                   <ArrowLeft className="h-4 w-4" />
                 </Button>
