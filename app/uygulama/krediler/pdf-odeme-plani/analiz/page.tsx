@@ -272,10 +272,6 @@ export default function PDFAnalysisPage() {
       // 1. Doğru bankayı bul - YENİ AKILLI EŞLEŞTİRME
       let selectedBank = null
       if (paymentPlan.bankName) {
-          "Mevcut bankalar:",
-          banks.map((b) => ({ id: b.id, name: b.name })),
-        )
-
         // Akıllı banka eşleştirme kullan
         selectedBank = findBestBankMatch(paymentPlan.bankName, banks)
 

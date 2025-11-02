@@ -79,12 +79,6 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Failed to update invoice" }, { status: 500 })
     }
 
-      id: updatedInvoice.id,
-      subscription_id: updatedInvoice.subscription_id,
-      file_url: updatedInvoice.file_url,
-      status: updatedInvoice.status,
-    })
-
     // Revalidate the invoices page to clear Next.js cache
     revalidatePath("/admin/faturalar")
 

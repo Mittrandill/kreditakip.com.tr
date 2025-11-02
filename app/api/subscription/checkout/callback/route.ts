@@ -39,12 +39,6 @@ export async function POST(request: NextRequest) {
     // Retrieve subscription result from Iyzico
     const result = await iyzipayClient.retrieveSubscriptionCheckoutFormResult(token)
 
-      status: result.status,
-      subscriptionStatus: result.data?.subscriptionStatus,
-      referenceCode: result.data?.referenceCode,
-      customerReferenceCode: result.data?.customerReferenceCode,
-    })
-
     if (result.status !== "success" || !result.data) {
       console.error("[subscription-callback] Subscription creation failed:", result.errorMessage)
       return NextResponse.redirect(
@@ -99,11 +93,6 @@ export async function POST(request: NextRequest) {
       // lifetime
       expiresAt.setFullYear(expiresAt.getFullYear() + 100)
     }
-
-      startDate: startDate.toISOString(),
-      expiresAt: expiresAt.toISOString(),
-      billingPeriod: plan.billing_period,
-    })
 
     // Create or update subscription in database
     const { data: newSubscription, error: subError } = await supabase

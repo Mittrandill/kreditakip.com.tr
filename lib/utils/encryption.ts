@@ -4,8 +4,7 @@ const PRIMARY_KEY = process.env.NEXT_PUBLIC_ENCRYPTION_KEY || process.env.ENCRYP
 
 if (!PRIMARY_KEY) {
   throw new Error(
-    "🔐 ENCRYPTION_KEY bulunamadı! .env dosyasına NEXT_PUBLIC_ENCRYPTION_KEY veya ENCRYPTION_KEY ekleyin.\n" +
-      'Örnek: NEXT_PUBLIC_ENCRYPTION_KEY="your-secure-random-key-here"\n' +
+    `🔐 ENCRYPTION_KEY bulunamadı! .env dosyasına NEXT_PUBLIC_ENCRYPTION_KEY veya ENCRYPTION_KEY ekleyin.\nÖrnek: NEXT_PUBLIC_ENCRYPTION_KEY="your-secure-random-key-here"`
   )
 }
 

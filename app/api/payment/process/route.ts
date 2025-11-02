@@ -75,9 +75,6 @@ export async function POST(request: NextRequest) {
     let paymentResponse
     try {
       paymentResponse = await iyzicoClient.initializeCheckoutForm(paymentRequest)
-        status: paymentResponse.status,
-        hasToken: !!paymentResponse.token,
-      })
     } catch (iyzicoError) {
       console.error("[v0] iyzico API error:", iyzicoError)
       return NextResponse.json(

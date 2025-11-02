@@ -53,16 +53,6 @@ export async function POST(request: NextRequest) {
 
     const { userId, subscriptionId, invoiceNumber, invoiceDate, amount, currency, status, description } = body
 
-      userId,
-      subscriptionId,
-      invoiceNumber,
-      invoiceDate,
-      amount,
-      currency,
-      status,
-      description
-    })
-
     if (!userId || !invoiceNumber || amount === undefined || amount === null) {
       console.error("[admin/invoices POST] Missing required fields:", {
         hasUserId: !!userId,

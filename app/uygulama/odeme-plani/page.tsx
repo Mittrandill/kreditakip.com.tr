@@ -443,12 +443,6 @@ function PaymentsList({
             : "Taksit bekliyor olarak işaretlendi.",
         duration: 3000,
       })
-
-        paymentId,
-        newStatus,
-        installmentNumber: paymentToUpdate.installment_number,
-        amount: paymentToUpdate.total_payment,
-      })
     } catch (error) {
       console.error("Error updating payment status:", error)
 

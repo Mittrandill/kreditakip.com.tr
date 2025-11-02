@@ -54,18 +54,9 @@ export async function POST(request: Request) {
       profile.last_name || "Adı",
     )
 
-      conversationId: paymentRequest.conversationId,
-      price: paymentRequest.price,
-      buyerEmail: paymentRequest.buyer.email,
-    })
-
     let paymentResponse
     try {
       paymentResponse = await iyzicoClient.initializeCheckoutForm(paymentRequest)
-        status: paymentResponse.status,
-        hasToken: !!paymentResponse.token,
-        hasUrl: !!paymentResponse.paymentPageUrl,
-      })
     } catch (iyzicoError) {
       console.error("[v0] iyzico API error:", iyzicoError)
       return NextResponse.json(

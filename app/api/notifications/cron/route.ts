@@ -146,13 +146,6 @@ export async function GET(request: NextRequest) {
 
     const totalSent = Object.values(results.notifications).reduce((sum, count) => sum + count, 0)
 
-      totalUsers: results.totalUsers,
-      totalEmailsSent: totalSent,
-      breakdown: results.notifications,
-      errors: results.errors.length,
-      timestamp: new Date().toISOString(),
-    })
-
     return NextResponse.json({
       success: true,
       message: `Cron job completed. ${totalSent} emails sent to ${results.totalUsers} users.`,

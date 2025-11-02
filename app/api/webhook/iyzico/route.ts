@@ -25,11 +25,6 @@ export async function POST(request: NextRequest) {
     // Get webhook payload
     const payload = await request.json()
 
-      iyziEventType: payload.iyziEventType,
-      status: payload.status,
-      subscriptionReferenceCode: payload.subscriptionReferenceCode,
-    })
-
     // Create Supabase admin client
     const supabase = createClient(supabaseUrl, supabaseServiceKey, {
       auth: {

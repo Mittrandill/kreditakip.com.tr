@@ -118,26 +118,12 @@ class IyzicoClient {
     const body = JSON.stringify(request)
     const randomString = this.generateRandomString()
 
-      baseUrl: this.config.baseUrl,
-      hasApiKey: !!this.config.apiKey,
-      hasSecretKey: !!this.config.secretKey,
-      apiKeyLength: this.config.apiKey.length,
-      secretKeyLength: this.config.secretKey.length,
-      randomString: randomString,
-    })
-
     if (!this.config.apiKey || !this.config.secretKey) {
       throw new Error("iyzico API credentials are not configured")
     }
 
     try {
       const authHeader = await this.generateAuthString(randomString, uri, body)
-
-        uri,
-        authHeaderPrefix: authHeader.substring(0, 20),
-        randomStringLength: randomString.length,
-        requestBodyPreview: body.substring(0, 100),
-      })
 
       const response = await fetch(`${this.config.baseUrl}${uri}`, {
         method: "POST",
@@ -158,14 +144,6 @@ class IyzicoClient {
       }
 
       const data = await response.json()
-
-        status: data.status,
-        hasToken: !!data.token,
-        hasCheckoutFormContent: !!data.checkoutFormContent,
-        hasPaymentPageUrl: !!data.paymentPageUrl,
-        errorCode: data.errorCode,
-        errorMessage: data.errorMessage,
-      })
 
       if (data.status !== "success") {
         console.error("[v0] iyzico error:", data.errorMessage, data.errorCode)
@@ -242,12 +220,6 @@ class IyzicoClient {
 
       const data = await response.json()
 
-        status: data.status,
-        paymentId: data.paymentId,
-        errorCode: data.errorCode,
-        errorMessage: data.errorMessage,
-      })
-
       return data
     } catch (error) {
       console.error("[v0] iyzico payment error:", error)
@@ -287,12 +259,6 @@ class IyzicoClient {
       }
 
       const data = await response.json()
-
-        status: data.status,
-        paymentId: data.paymentId,
-        errorCode: data.errorCode,
-        errorMessage: data.errorMessage,
-      })
 
       return data
     } catch (error) {

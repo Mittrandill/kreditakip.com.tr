@@ -100,25 +100,10 @@ export default function RegisterPage() {
     setError(null)
 
     try {
-        email: formData.email,
-        hasPassword: !!formData.password,
-        userData: {
-          first_name: formData.firstName,
-          last_name: formData.lastName,
-          phone: formData.phone,
-        },
-      })
-
       const data = await signUp(formData.email, formData.password, {
         first_name: formData.firstName,
         last_name: formData.lastName,
         phone: formData.phone,
-      })
-
-        user: data?.user
-          ? { id: data.user.id, email: data.user.email, email_confirmed_at: data.user.email_confirmed_at }
-          : null,
-        session: data?.session ? "exists" : "null",
       })
 
       if (data?.user) {
