@@ -166,31 +166,25 @@ export default function AppSidebar() {
     <div className="flex flex-col h-full bg-gradient-to-b from-gray-50 to-white dark:from-gray-900 dark:to-gray-950 border-r border-gray-200/50 dark:border-gray-800/50">
       {/* Header with Logo */}
       <div className="h-16 bg-gray-50 dark:bg-gray-900 border-b border-gray-200/50 dark:border-gray-800/50">
-        <div className={`h-full flex items-center transition-all duration-300 ${isCollapsed ? "px-2 justify-center" : "px-6"}`}>
+        <div className={`h-full flex items-center justify-center transition-all duration-300 ${isCollapsed ? "px-2" : "px-6"}`}>
           <Link href="/uygulama/ana-sayfa" className="flex items-center gap-3 group">
             {/* Logo Icon */}
             <div className="relative flex-shrink-0">
               <Image
                 src="/images/favicon.svg"
                 alt="KrediTakip"
-                width={28}
-                height={28}
-                className="h-7 w-7 group-hover:scale-110 transition-transform duration-300"
+                width={isCollapsed ? 32 : 36}
+                height={isCollapsed ? 32 : 36}
+                className={`${isCollapsed ? "h-8 w-8" : "h-9 w-9"} group-hover:scale-110 transition-transform duration-300`}
               />
             </div>
 
             {/* Brand Name */}
             <div className={`transition-all duration-300 ${isCollapsed ? "opacity-0 w-0 overflow-hidden" : "opacity-100"}`}>
-              <div className="flex flex-col">
+              <div className="flex items-center gap-2">
                 <span className="text-lg font-bold text-gray-900 dark:text-white tracking-tight">Kredi Takip</span>
                 {isPremium && (
-                  <div className="flex items-center gap-1.5 mt-0.5">
-                    <div className="flex items-center gap-1 px-2 py-0.5 bg-gradient-to-r from-amber-400 to-orange-500 rounded-full">
-                      <Crown className="h-3 w-3 text-white" />
-                      <span className="text-[10px] font-bold text-white tracking-wide">PREMIUM</span>
-                    </div>
-                    <Sparkles className="h-3 w-3 text-amber-300 animate-pulse" />
-                  </div>
+                  <Crown className="h-4 w-4 text-amber-500 flex-shrink-0" />
                 )}
               </div>
             </div>

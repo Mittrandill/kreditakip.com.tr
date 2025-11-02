@@ -21,6 +21,7 @@ import {
   FileText,
   Shield,
   Calendar,
+  CalendarIcon,
   DollarSign,
   Percent,
   Hash,
@@ -42,6 +43,7 @@ import { useToast } from "@/hooks/use-toast"
 import BankLogo from "@/components/bank-logo"
 import BankSelector from "@/components/bank-selector"
 import { CreditTypeSelector } from "@/components/credit-type-selector"
+import { CalendarModal } from "@/components/calendar-modal"
 
 interface PopulatedCredit extends Credit {
   banks: Pick<Bank, "id" | "name" | "logo_url" | "contact_phone" | "contact_email" | "website"> | null
@@ -114,6 +116,8 @@ export default function KrediDuzenlePage() {
 
   const [showBankSelector, setShowBankSelector] = useState(false)
   const [showCreditTypeSelector, setShowCreditTypeSelector] = useState(false)
+  const [showStartDateCalendar, setShowStartDateCalendar] = useState(false)
+  const [showEndDateCalendar, setShowEndDateCalendar] = useState(false)
 
   useEffect(() => {
     let isMounted = true
@@ -295,6 +299,23 @@ export default function KrediDuzenlePage() {
     setEditingPlanData({})
   }
 
+  const handleStartDateSelect = (date: Date) => {
+    handleInputChange("start_date", date.toISOString().split("T")[0])
+    setShowStartDateCalendar(false)
+  }
+
+  const handleEndDateSelect = (date: Date) => {
+    handleInputChange("end_date", date.toISOString().split("T")[0])
+    setShowEndDateCalendar(false)
+  }
+
+  const formatDateDisplay = (dateString: string) => {
+    if (!dateString) return "Tarih seçiniz"
+    const date = new Date(dateString)
+    const months = ["Ocak", "Şubat", "Mart", "Nisan", "Mayıs", "Haziran", "Temmuz", "Ağustos", "Eylül", "Ekim", "Kasım", "Aralık"]
+    return `${date.getDate()} ${months[date.getMonth()]} ${date.getFullYear()}`
+  }
+
   const getStatusBadge = (status: string) => {
     switch (status) {
       case "paid":
@@ -329,8 +350,8 @@ export default function KrediDuzenlePage() {
   if (authLoading || loadingData) {
     return (
       <div className="flex flex-col gap-4 md:gap-6 items-center justify-center min-h-[calc(100vh-150px)]">
-        <Loader2 className="h-12 w-12 animate-spin text-emerald-600" />
-        <p className="text-lg text-gray-600">Kredi bilgileri yükleniyor...</p>
+        <Loader2 className="h-12 w-12 animate-spin text-emerald-600 dark:text-emerald-400" />
+        <p className="text-lg text-gray-600 dark:text-gray-400">Kredi bilgileri yükleniyor...</p>
       </div>
     )
   }
@@ -423,13 +444,13 @@ export default function KrediDuzenlePage() {
       </div>
 
       {/* Modern Tabs - Kredi Detay Sayfasıyla Aynı Tasarım */}
-      <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+      <div className="bg-white dark:bg-gray-900 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-800 overflow-hidden">
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <div className="border-b border-gray-100 bg-gray-100">
+          <div className="border-b border-gray-100 dark:border-gray-800 bg-gray-100 dark:bg-gray-800">
             <TabsList className="grid grid-cols-2 bg-transparent h-auto p-2 gap-2">
               <TabsTrigger
                 value="credit-info"
-                className="flex items-center gap-2 py-3 px-4 data-[state=active]:text-emerald-600 rounded-xl transition-all duration-200 hover:bg-gray-100"
+                className="flex items-center gap-2 py-3 px-4 data-[state=active]:text-emerald-600 dark:data-[state=active]:text-emerald-400 rounded-xl transition-all duration-200 hover:bg-gray-100 dark:hover:bg-gray-700"
               >
                 <CreditCard className="h-4 w-4" />
                 <span className="hidden sm:inline font-medium">Kredi Bilgileri</span>
@@ -437,7 +458,7 @@ export default function KrediDuzenlePage() {
               </TabsTrigger>
               <TabsTrigger
                 value="payment-plan"
-                className="flex items-center gap-2 py-3 px-4 data-[state=active]:text-emerald-600 rounded-xl transition-all duration-200 hover:bg-gray-100"
+                className="flex items-center gap-2 py-3 px-4 data-[state=active]:text-emerald-600 dark:data-[state=active]:text-emerald-400 rounded-xl transition-all duration-200 hover:bg-gray-100 dark:hover:bg-gray-700"
               >
                 <CalendarDays className="h-4 w-4" />
                 <span className="hidden sm:inline font-medium">Ödeme Planı</span>
@@ -450,9 +471,9 @@ export default function KrediDuzenlePage() {
             {activeTab === "credit-info" && (
               <div className="space-y-6">
                 {/* Temel Kredi Bilgileri */}
-                <Card className="shadow-sm border-gray-200">
+                <Card className="shadow-sm border-gray-200 dark:border-gray-800">
                   <CardHeader>
-                    <CardTitle className="flex items-center gap-2 text-gray-900">
+                    <CardTitle className="flex items-center gap-2 text-gray-900 dark:text-white">
                       Temel Kredi Bilgileri
                     </CardTitle>
                     <CardDescription>Kredinin temel bilgilerini düzenleyin</CardDescription>
@@ -579,9 +600,9 @@ export default function KrediDuzenlePage() {
                 </Card>
 
                 {/* Finansal Bilgiler */}
-                <Card className="shadow-sm border-gray-200">
+                <Card className="shadow-sm border-gray-200 dark:border-gray-800">
                   <CardHeader>
-                    <CardTitle className="flex items-center gap-2 text-gray-900">
+                    <CardTitle className="flex items-center gap-2 text-gray-900 dark:text-white">
                       Finansal Bilgiler
                     </CardTitle>
                     <CardDescription>Kredinin finansal detaylarını düzenleyin</CardDescription>
@@ -663,10 +684,10 @@ export default function KrediDuzenlePage() {
                 </Card>
 
                 {/* Tarih ve Taksit Bilgileri */}
-                <Card className="shadow-sm border-gray-200">
+                <Card className="shadow-sm border-gray-200 dark:border-gray-800">
                   <CardHeader>
-                    <CardTitle className="flex items-center gap-2 text-gray-900">
-                     
+                    <CardTitle className="flex items-center gap-2 text-gray-900 dark:text-white">
+
                       Tarih ve Taksit Bilgileri
                     </CardTitle>
                     <CardDescription>Kredi tarihlerini ve taksit bilgilerini düzenleyin</CardDescription>
@@ -675,21 +696,27 @@ export default function KrediDuzenlePage() {
                     <div className="grid md:grid-cols-2 gap-6">
                       <div className="space-y-2">
                         <Label htmlFor="start_date">Başlangıç Tarihi</Label>
-                        <Input
-                          id="start_date"
-                          type="date"
-                          value={formData.start_date}
-                          onChange={(e) => handleInputChange("start_date", e.target.value)}
-                        />
+                        <Button
+                          type="button"
+                          variant="outline"
+                          className="w-full justify-start h-10"
+                          onClick={() => setShowStartDateCalendar(true)}
+                        >
+                          <CalendarIcon className="mr-2 h-4 w-4" />
+                          {formatDateDisplay(formData.start_date)}
+                        </Button>
                       </div>
                       <div className="space-y-2">
                         <Label htmlFor="end_date">Bitiş Tarihi</Label>
-                        <Input
-                          id="end_date"
-                          type="date"
-                          value={formData.end_date}
-                          onChange={(e) => handleInputChange("end_date", e.target.value)}
-                        />
+                        <Button
+                          type="button"
+                          variant="outline"
+                          className="w-full justify-start h-10"
+                          onClick={() => setShowEndDateCalendar(true)}
+                        >
+                          <CalendarIcon className="mr-2 h-4 w-4" />
+                          {formatDateDisplay(formData.end_date)}
+                        </Button>
                       </div>
                       <div className="space-y-2">
                         <Label htmlFor="total_installments">Toplam Taksit Sayısı</Label>
@@ -720,10 +747,10 @@ export default function KrediDuzenlePage() {
                 </Card>
 
                 {/* Teminat ve Sigorta */}
-                <Card className="shadow-sm border-gray-200">
+                <Card className="shadow-sm border-gray-200 dark:border-gray-800">
                   <CardHeader>
-                    <CardTitle className="flex items-center gap-2 text-gray-900">
-                    
+                    <CardTitle className="flex items-center gap-2 text-gray-900 dark:text-white">
+
                       Teminat ve Sigorta
                     </CardTitle>
                     <CardDescription>Teminat ve sigorta bilgilerini düzenleyin</CardDescription>
@@ -756,10 +783,10 @@ export default function KrediDuzenlePage() {
             {/* Ödeme Planı Tab */}
             {activeTab === "payment-plan" && (
               <div className="space-y-6">
-                <Card className="shadow-sm border-gray-200">
+                <Card className="shadow-sm border-gray-200 dark:border-gray-800">
                   <CardHeader>
-                    <CardTitle className="flex items-center gap-2 text-gray-900">
-                      <CalendarDays className="h-5 w-5 text-blue-600" />
+                    <CardTitle className="flex items-center gap-2 text-gray-900 dark:text-white">
+                      <CalendarDays className="h-5 w-5 text-blue-600 dark:text-blue-400" />
                       Ödeme Planı
                     </CardTitle>
                     <CardDescription>Kredinin ödeme planını görüntüleyin ve düzenleyin</CardDescription>
@@ -767,13 +794,13 @@ export default function KrediDuzenlePage() {
                   <CardContent>
                     {loadingPaymentPlans ? (
                       <div className="flex items-center justify-center py-8">
-                        <Loader2 className="h-8 w-8 animate-spin text-blue-600" />
-                        <span className="ml-2 text-gray-600">Ödeme planı yükleniyor...</span>
+                        <Loader2 className="h-8 w-8 animate-spin text-blue-600 dark:text-blue-400" />
+                        <span className="ml-2 text-gray-600 dark:text-gray-400">Ödeme planı yükleniyor...</span>
                       </div>
                     ) : paymentPlans.length === 0 ? (
                       <div className="text-center py-8">
-                        <CalendarDays className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-                        <p className="text-gray-600">Bu kredi için ödeme planı bulunamadı.</p>
+                        <CalendarDays className="h-12 w-12 text-gray-400 dark:text-gray-600 mx-auto mb-4" />
+                        <p className="text-gray-600 dark:text-gray-400">Bu kredi için ödeme planı bulunamadı.</p>
                       </div>
                     ) : (
                       <div className="overflow-x-auto">
@@ -940,6 +967,25 @@ export default function KrediDuzenlePage() {
           onSelect={handleCreditTypeSelect}
           selectedCreditType={selectedCreditType}
           creditTypes={creditTypes}
+        />
+      )}
+
+      {/* Calendar Modals */}
+      {showStartDateCalendar && (
+        <CalendarModal
+          onDateSelect={handleStartDateSelect}
+          onClose={() => setShowStartDateCalendar(false)}
+          initialDate={formData.start_date ? new Date(formData.start_date) : undefined}
+          title="Başlangıç Tarihi"
+        />
+      )}
+
+      {showEndDateCalendar && (
+        <CalendarModal
+          onDateSelect={handleEndDateSelect}
+          onClose={() => setShowEndDateCalendar(false)}
+          initialDate={formData.end_date ? new Date(formData.end_date) : undefined}
+          title="Bitiş Tarihi"
         />
       )}
     </div>
