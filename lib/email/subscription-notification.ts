@@ -60,7 +60,6 @@ export async function sendNewSubscriptionNotification(data: SubscriptionEmailDat
     }
 
     const result = await response.json()
-    console.log("[subscription-email] Email sent successfully")
     return { success: true, result }
   } catch (error: any) {
     console.error("[subscription-email] Error:", error)

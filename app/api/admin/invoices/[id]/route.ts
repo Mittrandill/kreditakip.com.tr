@@ -15,7 +15,6 @@ export async function PATCH(
     const body = await request.json()
     const invoiceId = params.id
 
-    console.log("[admin/invoices/[id] PATCH] Updating invoice:", invoiceId)
 
     const { data: invoice, error } = await supabase
       .from("invoices")

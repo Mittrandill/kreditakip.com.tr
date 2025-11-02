@@ -444,7 +444,6 @@ function PaymentsList({
         duration: 3000,
       })
 
-      console.log("🎉 Payment status updated successfully:", {
         paymentId,
         newStatus,
         installmentNumber: paymentToUpdate.installment_number,

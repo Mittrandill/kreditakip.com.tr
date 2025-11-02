@@ -358,11 +358,9 @@ export async function sendInvoiceNotification(invoiceData: InvoiceData): Promise
       ],
     }
 
-    console.log("[invoice-email] Sending invoice notification to info@kreditakip.com.tr")
 
     const result = await mailjet.post("send", { version: "v3.1" }).request(emailData)
 
-    console.log("[invoice-email] Invoice notification sent successfully")
 
     return {
       success: true,

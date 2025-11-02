@@ -368,14 +368,11 @@ export default function AyarlarPage() {
       return
     }
 
-    console.log("[Avatar Upload] Starting upload process...")
     setIsUploadingAvatar(true)
 
     try {
       // Optimize image
-      console.log("[Avatar Upload] Compressing image...")
       const compressedFile = await compressImage(file, 400, 0.8)
-      console.log("[Avatar Upload] Compression complete:", compressedFile.size, "bytes")
 
       // Show preview
       const reader = new FileReader()
@@ -394,7 +391,6 @@ export default function AyarlarPage() {
       const fileName = `${Date.now()}-${Math.random().toString(36).substring(2)}.${fileExt}`
       const filePath = `${user.id}/${fileName}`
 
-      console.log("[Avatar Upload] Uploading to:", filePath)
       const { error: uploadError } = await supabase.storage.from("avatars").upload(filePath, compressedFile, {
         cacheControl: "3600",
         upsert: false,
@@ -406,18 +402,14 @@ export default function AyarlarPage() {
         return
       }
 
-      console.log("[Avatar Upload] Upload successful, getting public URL...")
       const {
         data: { publicUrl },
       } = supabase.storage.from("avatars").getPublicUrl(filePath)
 
-      console.log("[Avatar Upload] Public URL:", publicUrl)
-      console.log("[Avatar Upload] Updating profile...")
 
       await updateProfile(user.id, { avatar_url: publicUrl })
       setProfileData((prev) => ({ ...prev, avatar_url: publicUrl }))
 
-      console.log("[Avatar Upload] Profile updated successfully")
 
       // Clear preview immediately and use the uploaded URL
       setAvatarPreview(null)
@@ -430,7 +422,6 @@ export default function AyarlarPage() {
       console.error("[Avatar Upload] Error:", error)
       toast({ title: "Hata", description: "Resim yüklenirken bir hata oluştu.", variant: "destructive" })
     } finally {
-      console.log("[Avatar Upload] Process complete, resetting upload state")
       setIsUploadingAvatar(false)
     }
   }

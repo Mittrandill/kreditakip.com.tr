@@ -7,7 +7,6 @@ const Iyzipay = require("iyzipay")
 
 export async function POST(request: NextRequest) {
   try {
-    console.log("[v0] Payment API called")
 
     const supabase = await createClient()
 
@@ -16,19 +15,15 @@ export async function POST(request: NextRequest) {
       error: authError,
     } = await supabase.auth.getUser()
 
-    console.log("[v0] Auth check - User:", user?.id, "Error:", authError?.message)
 
     if (authError || !user) {
-      console.log("[v0] Auth failed - authError:", authError, "user:", user)
       return NextResponse.json({ status: "error", message: "Unauthorized" }, { status: 401 })
     }
 
-    console.log("[v0] User authenticated:", user.id)
 
     const body = await request.json()
     const { price, cardDetails, billingInfo } = body
 
-    console.log("[v0] Request body:", { price, hasBillingInfo: !!billingInfo, hasCardDetails: !!cardDetails })
 
     if (!price || !cardDetails) {
       return NextResponse.json(
@@ -48,7 +43,6 @@ export async function POST(request: NextRequest) {
     }
 
     if (billingInfo) {
-      console.log("[v0] Saving billing info")
       const { error: billingError } = await supabase.from("billing_info").upsert(
         {
           user_id: user.id,
@@ -72,11 +66,9 @@ export async function POST(request: NextRequest) {
       if (billingError) {
         console.error("[v0] Billing info save error:", billingError)
       } else {
-        console.log("[v0] Billing info saved successfully")
       }
     }
 
-    console.log("[v0] Initializing iyzipay")
     const iyzipay = new Iyzipay({
       apiKey: process.env.IYZICO_API_KEY,
       secretKey: process.env.IYZICO_SECRET_KEY,
@@ -149,8 +141,6 @@ export async function POST(request: NextRequest) {
       ],
     }
 
-    console.log("[v0] Sending payment request to iyzipay")
-    console.log("[v0] Payment request:", JSON.stringify(paymentRequest, null, 2))
 
     const paymentResult: any = await new Promise((resolve, reject) => {
       iyzipay.payment.create(paymentRequest, (err: any, result: any) => {
@@ -158,16 +148,13 @@ export async function POST(request: NextRequest) {
           console.error("[v0] Iyzipay callback error:", err)
           reject(err)
         } else {
-          console.log("[v0] Iyzipay callback result:", JSON.stringify(result, null, 2))
           resolve(result)
         }
       })
     })
 
-    console.log("[v0] Payment result status:", paymentResult.status)
 
     if (paymentResult.status === "success") {
-      console.log("[v0] Payment successful, updating subscription")
 
       const endDate = new Date()
       endDate.setMonth(endDate.getMonth() + 1)
@@ -190,7 +177,6 @@ export async function POST(request: NextRequest) {
       if (subError) {
         console.error("[v0] Subscription update error:", subError)
       } else {
-        console.log("[v0] Subscription updated successfully")
       }
 
       const { error: paymentError } = await supabase.from("payments").insert({
@@ -206,7 +192,6 @@ export async function POST(request: NextRequest) {
       if (paymentError) {
         console.error("[v0] Payment record error:", paymentError)
       } else {
-        console.log("[v0] Payment recorded successfully")
       }
 
       return NextResponse.json({

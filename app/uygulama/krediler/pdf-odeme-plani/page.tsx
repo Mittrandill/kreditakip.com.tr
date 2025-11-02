@@ -119,7 +119,6 @@ export default function PDFOdemePlaniPage() {
       const formData = new FormData()
       formData.append("pdf", file)
 
-      console.log("PDF analizi başlıyor...")
       const response = await fetch("/api/analyze-pdf", {
         method: "POST",
         body: formData,

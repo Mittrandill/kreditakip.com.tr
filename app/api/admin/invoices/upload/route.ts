@@ -60,7 +60,6 @@ export async function POST(request: NextRequest) {
     } = supabase.storage.from("invoices").getPublicUrl(fileName)
 
     // Update invoice with file URL and mark as paid
-    console.log("[invoice-upload] Updating invoice with file_url:", publicUrl)
 
     const { data: updatedInvoice, error: updateError } = await supabase
       .from("invoices")
@@ -80,7 +79,6 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Failed to update invoice" }, { status: 500 })
     }
 
-    console.log("[invoice-upload] Invoice updated successfully:", {
       id: updatedInvoice.id,
       subscription_id: updatedInvoice.subscription_id,
       file_url: updatedInvoice.file_url,
@@ -89,7 +87,6 @@ export async function POST(request: NextRequest) {
 
     // Revalidate the invoices page to clear Next.js cache
     revalidatePath("/admin/faturalar")
-    console.log("[invoice-upload] Revalidated path: /admin/faturalar")
 
     return NextResponse.json({ url: publicUrl, path: data.path, invoice: updatedInvoice })
   } catch (error) {

@@ -12,7 +12,6 @@ export async function GET(request: NextRequest) {
     const { searchParams } = new URL(request.url)
     const subscriptionId = searchParams.get("subscriptionId")
 
-    console.log("[admin/transactions] Fetching transaction for subscription:", subscriptionId)
 
     if (!subscriptionId) {
       console.error("[admin/transactions] Missing subscriptionId")
@@ -31,14 +30,12 @@ export async function GET(request: NextRequest) {
 
       // If no transaction found, return null instead of error
       if (error.code === "PGRST116") {
-        console.log("[admin/transactions] No transaction found, returning null")
         return NextResponse.json({ transaction: null })
       }
 
       return NextResponse.json({ error: "Failed to fetch transaction" }, { status: 500 })
     }
 
-    console.log("[admin/transactions] Transaction found:", transaction?.id)
     return NextResponse.json({ transaction })
   } catch (error) {
     console.error("[admin/transactions] Exception:", error)

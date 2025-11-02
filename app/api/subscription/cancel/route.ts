@@ -10,8 +10,6 @@ const supabaseServiceKey = process.env.SERVICE_ROLE_KEY!
 
 export async function POST(request: NextRequest) {
   try {
-    console.log("[iyzipay] ========================================")
-    console.log("[iyzipay] Subscription cancel API called")
 
     const body = await request.json()
     const { userId } = body
@@ -21,7 +19,6 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "User ID required" }, { status: 400 })
     }
 
-    console.log("[iyzipay] Processing cancellation for user:", userId)
 
     // Service Role Client kullan (authentication bypass)
     const supabase = createClient(supabaseUrl, supabaseServiceKey, {
@@ -45,7 +42,6 @@ export async function POST(request: NextRequest) {
     }
 
     if (!subscriptions || subscriptions.length === 0) {
-      console.log("[iyzipay] No active subscription found for user:", userId)
       return NextResponse.json({ error: "Aktif abonelik bulunamadı" }, { status: 404 })
     }
 
@@ -53,8 +49,6 @@ export async function POST(request: NextRequest) {
 
     // NOT: Normal payment API kullanıldığı için iyzico'da iptal etmiyoruz
     // Sadece veritabanında cancelled olarak işaretliyoruz
-    console.log("[iyzipay] Cancelling subscription in database (no iyzico cancel needed for one-time payments)")
-    console.log("[iyzipay] Subscription ID to cancel:", subscription.id)
 
     // Veritabanında aboneliği güncelle - ID ile güncelle
     const { error: updateError } = await supabase
@@ -74,12 +68,10 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    console.log("[iyzipay] Subscription cancelled successfully in database")
 
     // NOT: Usage limits'i hemen düşürmüyoruz
     // Kullanıcı iptal etse bile expires_at tarihine kadar premium özelliklerden yararlanabilmeli
     // Limits otomatik olarak subscription status API'sinde kontrol edilecek
-    console.log("[iyzipay] User will keep premium features until:", subscription.expires_at)
 
     return NextResponse.json({
       success: true,

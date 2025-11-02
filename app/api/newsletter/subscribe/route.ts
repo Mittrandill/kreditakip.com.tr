@@ -5,13 +5,10 @@ import { createClient } from "@supabase/supabase-js"
 
 export async function POST(request: NextRequest) {
   try {
-    console.log("[v0] Newsletter subscription API called")
 
     const MAILJET_API_KEY = process.env.MAILJET_API_KEY
     const MAILJET_SECRET_KEY = process.env.MAILJET_SECRET_KEY
 
-    console.log("[v0] Newsletter - Mailjet API Key exists:", !!MAILJET_API_KEY)
-    console.log("[v0] Newsletter - Mailjet Secret Key exists:", !!MAILJET_SECRET_KEY)
 
     if (!MAILJET_API_KEY || !MAILJET_SECRET_KEY) {
       console.error("[v0] Newsletter - HATA: Mailjet API anahtarları eksik!")
@@ -29,24 +26,20 @@ export async function POST(request: NextRequest) {
     const supabase = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.SERVICE_ROLE_KEY!)
 
     const body = await request.json()
-    console.log("[v0] Newsletter request for email:", body.email)
 
     const { email } = body
 
     // Validation
     if (!email) {
-      console.log("[v0] Newsletter - Validation failed: email missing")
       return NextResponse.json({ error: "E-posta adresi gereklidir" }, { status: 400 })
     }
 
     // Email validation
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
     if (!emailRegex.test(email)) {
-      console.log("[v0] Newsletter - Validation failed: invalid email format")
       return NextResponse.json({ error: "Geçerli bir e-posta adresi girin" }, { status: 400 })
     }
 
-    console.log("[v0] Newsletter - Checking existing subscription in database...")
 
     // Check if already subscribed in database
     const { data: existingSubscriber } = await supabase
@@ -56,11 +49,9 @@ export async function POST(request: NextRequest) {
       .maybeSingle()
 
     if (existingSubscriber?.is_active) {
-      console.log("[v0] Newsletter - Email already subscribed")
       return NextResponse.json({ error: "Bu e-posta adresi zaten bültenimize kayıtlı" }, { status: 400 })
     }
 
-    console.log("[v0] Newsletter - Adding contact to Mailjet...")
 
     // Add to Mailjet contact list
     try {
@@ -82,12 +73,9 @@ export async function POST(request: NextRequest) {
         throw new Error(`Mailjet contact error: ${contactResponse.status}`)
       }
 
-      console.log("[v0] Newsletter - Contact added to Mailjet successfully")
     } catch (mailjetError: any) {
-      console.log("[v0] Newsletter - Mailjet contact error (continuing):", mailjetError.message)
     }
 
-    console.log("[v0] Newsletter - Saving to database...")
 
     // Save to database
     if (existingSubscriber) {
@@ -98,17 +86,14 @@ export async function POST(request: NextRequest) {
           subscribed_at: new Date().toISOString(),
         })
         .eq("id", existingSubscriber.id)
-      console.log("[v0] Newsletter - Subscription reactivated")
     } else {
       await supabase.from("newsletter_subscribers").insert({
         email,
         is_active: true,
         subscribed_at: new Date().toISOString(),
       })
-      console.log("[v0] Newsletter - New subscription created")
     }
 
-    console.log("[v0] Newsletter - Sending welcome email...")
 
     // Send welcome email
     const welcomeEmail = {
@@ -213,7 +198,6 @@ export async function POST(request: NextRequest) {
       throw new Error(`Welcome email error: ${emailResponse.status}`)
     }
 
-    console.log("[v0] Newsletter - Welcome email sent successfully")
 
     return NextResponse.json({
       success: true,

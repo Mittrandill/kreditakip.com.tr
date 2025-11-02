@@ -33,7 +33,6 @@ export async function POST(request: NextRequest) {
 
   /* DISABLED CODE - PCI-DSS VIOLATION
   try {
-    console.log("[iyzipay] Subscription initialize API called")
 
     const body = await request.json()
     const { userId, billingInfo, cardInfo, planId } = body
@@ -48,13 +47,10 @@ export async function POST(request: NextRequest) {
     const price = isYearly ? "1990.00" : "199.00"
     const daysToAdd = isYearly ? 365 : 30
 
-    console.log("[iyzipay] Selected plan:", { planId, price, daysToAdd })
 
-    console.log("[iyzipay] Processing subscription for user:", userId)
 
     const supabase = createServiceRoleClient()
 
-    console.log("[iyzipay] Billing info received:", {
       ...billingInfo,
       taxNumber: billingInfo.taxNumber ? "****" : undefined,
     })
@@ -70,7 +66,6 @@ export async function POST(request: NextRequest) {
     }
 
     // Fatura bilgilerini kaydet
-    console.log("[iyzipay] Saving billing info to database")
     const { error: billingError } = await supabase.from("billing_info").upsert(
       {
         user_id: userId,
@@ -94,7 +89,6 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Failed to save billing information" }, { status: 500 })
     }
 
-    console.log("[iyzipay] Billing info saved successfully")
 
     const iyzicoClient = new IyzipaySubscriptionClient({
       apiKey,
@@ -103,7 +97,6 @@ export async function POST(request: NextRequest) {
     })
 
     // Normal payment API kullan (subscription API yerine)
-    console.log("[iyzipay] Processing payment with normal payment API")
     const result = await iyzicoClient.createPayment(
       userId,
       {
@@ -114,12 +107,10 @@ export async function POST(request: NextRequest) {
       price,
     )
 
-    console.log("[iyzipay] Payment result:", result)
 
     if (result.status === "success") {
       const paymentId = result.paymentId
 
-      console.log("[iyzipay] Payment successful, creating subscription record")
 
       // Subscription kaydı oluştur
       const startDate = new Date()
@@ -149,7 +140,6 @@ export async function POST(request: NextRequest) {
       }
 
       // Payment transaction kaydı oluştur
-      console.log("[iyzipay] Creating payment transaction record")
       const { error: paymentError } = await supabase.from("payment_transactions").insert({
         user_id: userId,
         subscription_id: subscriptionData?.id,
@@ -177,7 +167,6 @@ export async function POST(request: NextRequest) {
         })
         .eq("user_id", userId)
 
-      console.log("[iyzipay] Subscription activated successfully")
 
       return NextResponse.json({
         success: true,

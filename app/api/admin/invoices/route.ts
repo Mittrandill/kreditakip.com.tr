@@ -50,11 +50,9 @@ export async function POST(request: NextRequest) {
     const supabase = createClient(supabaseUrl, supabaseServiceKey)
     const body = await request.json()
 
-    console.log("[admin/invoices POST] Request body:", JSON.stringify(body, null, 2))
 
     const { userId, subscriptionId, invoiceNumber, invoiceDate, amount, currency, status, description } = body
 
-    console.log("[admin/invoices POST] Parsed fields:", {
       userId,
       subscriptionId,
       invoiceNumber,

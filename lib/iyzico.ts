@@ -118,7 +118,6 @@ class IyzicoClient {
     const body = JSON.stringify(request)
     const randomString = this.generateRandomString()
 
-    console.log("[v0] Initializing iyzico payment with config:", {
       baseUrl: this.config.baseUrl,
       hasApiKey: !!this.config.apiKey,
       hasSecretKey: !!this.config.secretKey,
@@ -134,7 +133,6 @@ class IyzicoClient {
     try {
       const authHeader = await this.generateAuthString(randomString, uri, body)
 
-      console.log("[v0] Request details:", {
         uri,
         authHeaderPrefix: authHeader.substring(0, 20),
         randomStringLength: randomString.length,
@@ -152,7 +150,6 @@ class IyzicoClient {
         body: body,
       })
 
-      console.log("[v0] iyzico response status:", response.status)
 
       if (!response.ok) {
         const errorText = await response.text()
@@ -162,7 +159,6 @@ class IyzicoClient {
 
       const data = await response.json()
 
-      console.log("[v0] iyzico response data:", {
         status: data.status,
         hasToken: !!data.token,
         hasCheckoutFormContent: !!data.checkoutFormContent,
@@ -218,7 +214,6 @@ class IyzicoClient {
     const body = JSON.stringify(request)
     const randomString = this.generateRandomString()
 
-    console.log("[v0] Creating direct payment with iyzico")
 
     if (!this.config.apiKey || !this.config.secretKey) {
       throw new Error("iyzico API credentials are not configured")
@@ -238,7 +233,6 @@ class IyzicoClient {
         body: body,
       })
 
-      console.log("[v0] iyzico direct payment response status:", response.status)
 
       if (!response.ok) {
         const errorText = await response.text()
@@ -248,7 +242,6 @@ class IyzicoClient {
 
       const data = await response.json()
 
-      console.log("[v0] iyzico payment response:", {
         status: data.status,
         paymentId: data.paymentId,
         errorCode: data.errorCode,
@@ -267,7 +260,6 @@ class IyzicoClient {
     const body = JSON.stringify(request)
     const randomString = this.generateRandomString()
 
-    console.log("[v0] Creating direct payment with iyzico")
 
     if (!this.config.apiKey || !this.config.secretKey) {
       throw new Error("iyzico API credentials are not configured")
@@ -287,7 +279,6 @@ class IyzicoClient {
         body: body,
       })
 
-      console.log("[v0] iyzico direct payment response status:", response.status)
 
       if (!response.ok) {
         const errorText = await response.text()
@@ -297,7 +288,6 @@ class IyzicoClient {
 
       const data = await response.json()
 
-      console.log("[v0] iyzico direct payment response:", {
         status: data.status,
         paymentId: data.paymentId,
         errorCode: data.errorCode,

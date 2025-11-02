@@ -7,13 +7,11 @@ const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
 const supabaseServiceKey = process.env.SERVICE_ROLE_KEY!
 
 export async function POST(request: NextRequest) {
-  console.log("[v0] Payment process started")
 
   try {
     const body = await request.json()
     const { userId, billingInfo } = body
 
-    console.log("[v0] Processing payment for user:", userId)
 
     // Create Supabase admin client
     const supabase = createClient(supabaseUrl, supabaseServiceKey)
@@ -26,11 +24,9 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Kullanıcı bulunamadı" }, { status: 404 })
     }
 
-    console.log("[v0] Profile verified:", profile.email)
 
     // Save billing information first
     if (billingInfo) {
-      console.log("[v0] Saving billing information")
       const { error: billingError } = await supabase.from("billing_info").upsert(
         {
           user_id: userId,
@@ -52,7 +48,6 @@ export async function POST(request: NextRequest) {
         console.error("[v0] Billing info save error:", billingError)
         return NextResponse.json({ error: "Fatura bilgileri kaydedilemedi: " + billingError.message }, { status: 500 })
       }
-      console.log("[v0] Billing information saved successfully")
     }
 
     // Check iyzico credentials
@@ -76,12 +71,10 @@ export async function POST(request: NextRequest) {
       billingInfo?.fullName?.split(" ").slice(1).join(" ") || profile.last_name || "Adı",
     )
 
-    console.log("[v0] Initializing iyzico payment")
 
     let paymentResponse
     try {
       paymentResponse = await iyzicoClient.initializeCheckoutForm(paymentRequest)
-      console.log("[v0] iyzico response:", {
         status: paymentResponse.status,
         hasToken: !!paymentResponse.token,
       })
@@ -119,7 +112,6 @@ export async function POST(request: NextRequest) {
       console.error("[v0] Transaction record error:", transactionError)
     }
 
-    console.log("[v0] Payment initialized successfully")
 
     return NextResponse.json({
       success: true,

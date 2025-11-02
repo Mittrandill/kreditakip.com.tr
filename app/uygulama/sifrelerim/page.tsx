@@ -161,7 +161,6 @@ export default function BankaciSifrelerimPage() {
 
           if (isMounted && data) {
             setAllCredentials(data || [])
-            console.log("🔐 Şifreler yüklendi:", data?.length || 0, "adet")
           }
         } catch (err) {
           console.error("Credentials data fetch error:", err)
@@ -1095,7 +1094,6 @@ function PasswordDisplay({
         .then((password) => {
           if (password) {
             setDecryptedPassword(password)
-            console.log("Password decrypted successfully:", password.substring(0, 2) + "***")
           } else {
             setDecryptError("Şifre çözülemedi")
           }

@@ -727,11 +727,8 @@ class ModernPDFGenerator {
   private async addSelectedCharts() {
     const selectedReports = this.data.selectedReports || []
 
-    console.log("Selected Reports:", selectedReports)
-    console.log("Chart Data:", this.data.chartData)
 
     if (selectedReports.length === 0) {
-      console.log("No charts selected, skipping chart section")
       return // No charts selected
     }
 
@@ -755,7 +752,6 @@ class ModernPDFGenerator {
 
     // Payment Trend Chart
     if (selectedReports.includes("paymentTrend")) {
-      console.log("Drawing Payment Trend Chart")
       const beforeY = this.currentY
       this.checkPageBreak(chartHeight + 10)
       if (this.currentY !== beforeY) chartsInRow = 0 // Reset if page changed
@@ -775,7 +771,6 @@ class ModernPDFGenerator {
 
     // Debt Distribution Chart
     if (selectedReports.includes("debtDistribution")) {
-      console.log("Drawing Debt Distribution Chart")
       const beforeY = this.currentY
       this.checkPageBreak(chartHeight + 10)
       if (this.currentY !== beforeY) chartsInRow = 0 // Reset if page changed
@@ -795,7 +790,6 @@ class ModernPDFGenerator {
 
     // Bank Comparison Chart
     if (selectedReports.includes("bankComparison")) {
-      console.log("Drawing Bank Comparison Chart")
       const beforeY = this.currentY
       this.checkPageBreak(chartHeight + 10)
       if (this.currentY !== beforeY) chartsInRow = 0 // Reset if page changed
@@ -815,7 +809,6 @@ class ModernPDFGenerator {
 
     // Interest Comparison Chart
     if (selectedReports.includes("interestComparison")) {
-      console.log("Drawing Interest Comparison Chart")
       const beforeY = this.currentY
       this.checkPageBreak(chartHeight + 10)
       if (this.currentY !== beforeY) chartsInRow = 0 // Reset if page changed
@@ -835,7 +828,6 @@ class ModernPDFGenerator {
 
     // Payment Progress Chart (full width)
     if (selectedReports.includes("paymentProgress")) {
-      console.log("Drawing Payment Progress Chart")
       if (chartsInRow > 0) {
         this.currentY += chartHeight + spacing
         chartsInRow = 0
@@ -1927,7 +1919,6 @@ export async function generatePDFReport(data: any): Promise<void> {
 
     doc.save(filename)
 
-    console.log("PDF basariyla olusturuldu:", filename)
   } catch (error) {
     console.error("PDF olusturma hatasi:", error)
     throw error
@@ -1981,7 +1972,6 @@ export async function generateCreditReport(data: {
 
     doc.save(filename)
 
-    console.log("PDF basariyla olusturuldu:", filename)
   } catch (error) {
     console.error("PDF olusturma hatasi:", error)
     throw error

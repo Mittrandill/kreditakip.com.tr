@@ -47,15 +47,12 @@ export default function FaturalandirmaPage() {
   useEffect(() => {
     async function fetchData() {
       if (!user) {
-        console.log("[faturalandirma] No user found, waiting...")
         return
       }
 
-      console.log("[faturalandirma] Fetching data for user:", user.id)
 
       try {
         // Fetch transactions
-        console.log("[faturalandirma] Fetching transactions...")
         const { data: transactionsData, error: transactionsError } = await supabase
           .from("payment_transactions")
           .select("*")
@@ -66,11 +63,9 @@ export default function FaturalandirmaPage() {
           console.error("[faturalandirma] Transactions error:", transactionsError)
           throw transactionsError
         }
-        console.log("[faturalandirma] Transactions fetched:", transactionsData?.length || 0)
         setTransactions(transactionsData || [])
 
         // Fetch invoices
-        console.log("[faturalandirma] Fetching invoices...")
         const { data: invoicesData, error: invoicesError } = await supabase
           .from("invoices")
           .select("*")
@@ -81,8 +76,6 @@ export default function FaturalandirmaPage() {
           console.error("[faturalandirma] Invoices error:", invoicesError)
           throw invoicesError
         }
-        console.log("[faturalandirma] Invoices fetched:", invoicesData?.length || 0)
-        console.log("[faturalandirma] Invoices data:", invoicesData)
         setInvoices(invoicesData || [])
       } catch (error) {
         console.error("[faturalandirma] Error fetching data:", error)

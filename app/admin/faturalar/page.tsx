@@ -24,7 +24,6 @@ export default async function InvoicesManagement() {
   if (invoicesError) {
     console.error("[admin/faturalar] Error fetching invoices:", invoicesError)
   } else {
-    console.log("[admin/faturalar] Successfully fetched invoices, count:", invoices?.length || 0)
   }
 
   // Get successful payment transactions (without joins to avoid FK errors)
@@ -38,7 +37,6 @@ export default async function InvoicesManagement() {
   if (transactionsError) {
     console.error("[admin/faturalar] Error fetching transactions:", transactionsError)
   } else {
-    console.log("[admin/faturalar] Raw transactions:", rawTransactions?.length || 0)
   }
 
   // Get subscriptions separately
@@ -93,7 +91,6 @@ export default async function InvoicesManagement() {
     }
   })
 
-  console.log("[admin/faturalar] Total successful payments:", allTransactions?.length || 0)
 
   // Enrich invoices with user info from profilesMap
   const safeInvoices = (invoices || []).map((inv) => ({
@@ -109,8 +106,6 @@ export default async function InvoicesManagement() {
     }
   })
 
-  console.log("[admin/faturalar] Total invoices:", safeInvoices.length)
-  console.log("[admin/faturalar] Invoices mapped by payment_id:", invoicesByPaymentId.size)
 
   // Filter payments that need invoice PDFs
   // Match: payment_transactions.iyzico_payment_id === invoices.payment_id
@@ -120,7 +115,6 @@ export default async function InvoicesManagement() {
       const hasValidPDF = invoice?.file_url && invoice.file_url.trim().length > 0
 
       const userEmail = tx.subscriptions?.profiles?.email || 'unknown'
-      console.log(`[admin/faturalar] Payment ${tx.iyzico_payment_id} (${userEmail}): hasInvoice=${!!invoice}, hasValidPDF=${hasValidPDF}`)
 
       return !hasValidPDF // Show if no invoice or no PDF
     })
@@ -140,8 +134,6 @@ export default async function InvoicesManagement() {
       },
     }))
 
-  console.log("[admin/faturalar] Pending invoice users count:", pendingInvoiceUsers.length)
-  console.log("[admin/faturalar] Pending iyzico_payment_ids:", pendingInvoiceUsers.map(u => u.transaction.iyzico_payment_id))
 
   // Get invoice statistics
   const { count: totalInvoices } = await supabase

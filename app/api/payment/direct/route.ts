@@ -41,7 +41,6 @@ export async function POST(request: NextRequest) {
     const body = await request.json()
     const { userId, billingInfo, cardDetails } = body
 
-    console.log("[v0] Processing direct payment for user:", userId)
 
     // Validate required fields
     if (
@@ -65,11 +64,9 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Kullanıcı bulunamadı" }, { status: 404 })
     }
 
-    console.log("[v0] Profile verified:", profile.email)
 
     // Save billing information first
     if (billingInfo) {
-      console.log("[v0] Saving billing information")
       const { error: billingError } = await supabase.from("billing_info").upsert(
         {
           user_id: userId,
@@ -91,7 +88,6 @@ export async function POST(request: NextRequest) {
         console.error("[v0] Billing info save error:", billingError)
         return NextResponse.json({ error: "Fatura bilgileri kaydedilemedi: " + billingError.message }, { status: 500 })
       }
-      console.log("[v0] Billing information saved successfully")
     }
 
     // Check iyzico credentials
@@ -130,12 +126,10 @@ export async function POST(request: NextRequest) {
       },
     )
 
-    console.log("[v0] Processing direct payment with iyzico")
 
     let paymentResponse
     try {
       paymentResponse = await iyzicoClient.createPayment(paymentRequest)
-      console.log("[v0] iyzico response:", {
         status: paymentResponse.status,
         paymentId: paymentResponse.paymentId,
       })
@@ -172,7 +166,6 @@ export async function POST(request: NextRequest) {
     }
 
     // Payment successful - update subscription
-    console.log("[v0] Payment successful, updating subscription")
 
     const subscriptionEndDate = new Date()
     subscriptionEndDate.setMonth(subscriptionEndDate.getMonth() + 1)
@@ -211,7 +204,6 @@ export async function POST(request: NextRequest) {
       iyzico_payment_id: paymentResponse.paymentId,
     })
 
-    console.log("[v0] Payment completed successfully")
 
     return NextResponse.json({
       success: true,

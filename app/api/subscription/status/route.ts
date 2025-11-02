@@ -9,7 +9,6 @@ const supabaseServiceKey = process.env.SERVICE_ROLE_KEY!
 
 export async function GET(request: NextRequest) {
   try {
-    console.log("[v0] Subscription status API called")
 
     // SECURITY FIX: Use authenticated user instead of query parameter
     const supabaseAuth = await createServerClient()
@@ -19,12 +18,10 @@ export async function GET(request: NextRequest) {
     } = await supabaseAuth.auth.getUser()
 
     if (authError || !user) {
-      console.log("[v0] Unauthorized: No authenticated user")
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
     }
 
     const userId = user.id
-    console.log("[v0] Fetching subscription for authenticated user:", userId)
 
     const supabase = createClient(supabaseUrl, supabaseServiceKey, {
       auth: {
@@ -42,7 +39,6 @@ export async function GET(request: NextRequest) {
       .limit(1)
       .maybeSingle()
 
-    console.log("[v0] Subscription query result:", { subscription, subError })
 
     // Abonelik bitiş kontrolü - süresi dolmuşsa otomatik iptal et
     if (subscription && subscription.expires_at) {
@@ -50,7 +46,6 @@ export async function GET(request: NextRequest) {
       const now = new Date()
 
       if (expiresAt < now) {
-        console.log("[v0] Subscription expired, updating status to expired")
 
         // Aboneliği "expired" olarak güncelle
         await supabase
@@ -79,14 +74,12 @@ export async function GET(request: NextRequest) {
     // Get usage tracking
     const { data: usage, error: usageError } = await supabase.from("usage_tracking").select("*").eq("user_id", userId)
 
-    console.log("[v0] Usage tracking result:", { usage, usageError })
 
     const response = {
       subscription,
       usage,
     }
 
-    console.log("[v0] Returning subscription status:", response)
 
     return NextResponse.json(response)
   } catch (error) {

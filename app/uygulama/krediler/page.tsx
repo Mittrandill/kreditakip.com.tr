@@ -176,7 +176,6 @@ export default function KredilerPage() {
             )
 
             setAllCredits(updatedCredits || [])
-            console.log("💳 Krediler yüklendi ve güncellendi:", updatedCredits?.length || 0, "adet")
           }
         } catch (err) {
           console.error("Krediler data fetch error:", err)

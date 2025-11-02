@@ -6,7 +6,6 @@ if (!PRIMARY_KEY) {
   throw new Error(
     "🔐 ENCRYPTION_KEY bulunamadı! .env dosyasına NEXT_PUBLIC_ENCRYPTION_KEY veya ENCRYPTION_KEY ekleyin.\n" +
       'Örnek: NEXT_PUBLIC_ENCRYPTION_KEY="your-secure-random-key-here"\n' +
-      "Güvenli bir key oluşturmak için: node -e \"console.log(require('crypto').randomBytes(32).toString('base64'))\")",
   )
 }
 

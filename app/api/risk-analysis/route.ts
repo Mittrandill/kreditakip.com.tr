@@ -17,7 +17,6 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Kullanıcı ID gereklidir" }, { status: 400 })
     }
 
-    console.log("[v0] Risk analysis requested for user:", userId)
 
     const supabaseAdmin = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.SERVICE_ROLE_KEY!, {
       auth: {
@@ -37,7 +36,6 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Kullanıcı bulunamadı" }, { status: 404 })
     }
 
-    console.log("[v0] User verified:", profile.email)
 
     const { data: subscription } = await supabaseAdmin
       .from("subscriptions")
@@ -47,7 +45,6 @@ export async function POST(request: NextRequest) {
 
     const isPremium = subscription?.plan_type === "premium" && subscription?.status === "active"
 
-    console.log("[v0] User subscription status:", { isPremium, plan: subscription?.plan_type })
 
     if (!isPremium) {
       const { data: canUse, error: checkError } = await supabaseAdmin.rpc("can_use_feature", {
@@ -114,7 +111,6 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    console.log("[v0] Performing risk analysis...")
     const analysisData = await performComprehensiveRiskAnalysis(userId, financialProfile)
 
     if (!isPremium) {
@@ -128,7 +124,6 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    console.log("[v0] Risk analysis completed successfully")
     return NextResponse.json(analysisData)
   } catch (error) {
     console.error("[v0] Risk analysis error:", error)

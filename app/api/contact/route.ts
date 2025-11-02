@@ -4,13 +4,10 @@ export const dynamic = "force-dynamic"
 
 export async function POST(request: NextRequest) {
   try {
-    console.log("[v0] Contact form API called")
 
     const MAILJET_API_KEY = process.env.MAILJET_API_KEY
     const MAILJET_SECRET_KEY = process.env.MAILJET_SECRET_KEY
 
-    console.log("[v0] Mailjet API Key exists:", !!MAILJET_API_KEY)
-    console.log("[v0] Mailjet Secret Key exists:", !!MAILJET_SECRET_KEY)
 
     if (!MAILJET_API_KEY || !MAILJET_SECRET_KEY) {
       console.error("[v0] HATA: Mailjet API anahtarları eksik!")
@@ -24,24 +21,20 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json()
-    console.log("[v0] Request body received")
 
     const { firstName, lastName, email, phone, subject, message } = body
 
     // Validation
     if (!firstName || !lastName || !email || !subject || !message) {
-      console.log("[v0] Validation failed: missing required fields")
       return NextResponse.json({ error: "Lütfen tüm zorunlu alanları doldurun" }, { status: 400 })
     }
 
     // Email validation
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
     if (!emailRegex.test(email)) {
-      console.log("[v0] Validation failed: invalid email format")
       return NextResponse.json({ error: "Geçerli bir e-posta adresi girin" }, { status: 400 })
     }
 
-    console.log("[v0] Preparing to send email via Mailjet REST API...")
 
     const emailData = {
       Messages: [
@@ -292,7 +285,6 @@ export async function POST(request: NextRequest) {
     // Create Basic Auth header
     const auth = Buffer.from(`${MAILJET_API_KEY}:${MAILJET_SECRET_KEY}`).toString("base64")
 
-    console.log("[v0] Sending email to Mailjet API...")
 
     const response = await fetch("https://api.mailjet.com/v3.1/send", {
       method: "POST",
@@ -303,7 +295,6 @@ export async function POST(request: NextRequest) {
       body: JSON.stringify(emailData),
     })
 
-    console.log("[v0] Mailjet response status:", response.status)
 
     if (!response.ok) {
       const errorText = await response.text()
@@ -312,7 +303,6 @@ export async function POST(request: NextRequest) {
     }
 
     const result = await response.json()
-    console.log("[v0] Email sent successfully:", result)
 
     return NextResponse.json({
       success: true,

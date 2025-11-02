@@ -100,7 +100,6 @@ export default function RegisterPage() {
     setError(null)
 
     try {
-      console.log("[v0] SignUp attempt with:", {
         email: formData.email,
         hasPassword: !!formData.password,
         userData: {
@@ -116,7 +115,6 @@ export default function RegisterPage() {
         phone: formData.phone,
       })
 
-      console.log("[v0] SignUp response:", {
         user: data?.user
           ? { id: data.user.id, email: data.user.email, email_confirmed_at: data.user.email_confirmed_at }
           : null,

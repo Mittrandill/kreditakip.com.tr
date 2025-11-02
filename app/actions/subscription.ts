@@ -5,7 +5,6 @@ import { createClient } from "@/lib/supabase/server"
 
 export async function cancelSubscription() {
   try {
-    console.log("[server-action] Cancel subscription called")
 
     // Kullanıcı kontrolü
     const supabase = await createClient()
@@ -14,7 +13,6 @@ export async function cancelSubscription() {
       error: authError,
     } = await supabase.auth.getUser()
 
-    console.log("[server-action] Auth check result:", {
       hasUser: !!user,
       userId: user?.id,
       hasError: !!authError,
@@ -62,9 +60,7 @@ export async function cancelSubscription() {
     })
 
     // Aboneliği iptal et
-    console.log("[server-action] Cancelling subscription:", subscriptionRef)
     const result = await iyzicoClient.cancelSubscription(subscriptionRef)
-    console.log("[server-action] Cancel result:", JSON.stringify(result, null, 2))
 
     if (result.status === "success") {
       // Veritabanında aboneliği güncelle

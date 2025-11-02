@@ -106,7 +106,6 @@ export default function PaymentDetailPage({ params }: { params: { id: string } }
 
   const handleDownload = () => {
     // TODO: Implement PDF download functionality
-    console.log("Download payment receipt")
   }
 
   if (loading) {

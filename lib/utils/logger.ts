@@ -13,7 +13,6 @@ export const logger = {
    */
   info: (message: string, ...args: any[]) => {
     if (isDevelopment) {
-      console.log(`[INFO] ${message}`, ...args)
     }
   },
 
@@ -22,7 +21,6 @@ export const logger = {
    */
   debug: (message: string, ...args: any[]) => {
     if (isDevelopment) {
-      console.log(`[DEBUG] ${message}`, ...args)
     }
   },
 
@@ -50,7 +48,6 @@ export const logger = {
    * Log payment-related events (always logged for audit purposes)
    */
   payment: (message: string, ...args: any[]) => {
-    console.log(`[PAYMENT] ${message}`, ...args)
     // In production, send to audit log/database
   },
 
@@ -58,7 +55,6 @@ export const logger = {
    * Log security-related events (always logged for audit purposes)
    */
   security: (message: string, ...args: any[]) => {
-    console.log(`[SECURITY] ${message}`, ...args)
     // In production, send to security monitoring system
   },
 }

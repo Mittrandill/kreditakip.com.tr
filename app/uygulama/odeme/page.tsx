@@ -104,7 +104,6 @@ export default function PaymentPage() {
     setIsProcessing(true)
 
     try {
-      console.log("[checkout] Initializing PCI-DSS compliant checkout")
 
       if (!user) {
         throw new Error("Kullanıcı oturumu bulunamadı. Lütfen tekrar giriş yapın.")
@@ -154,11 +153,9 @@ export default function PaymentPage() {
       }
 
       if (data.success && data.paymentPageUrl) {
-        console.log("[checkout] Redirecting to Iyzico payment page")
         // Redirect to Iyzico's secure payment page
         window.location.href = data.paymentPageUrl
       } else if (data.success && data.checkoutFormContent) {
-        console.log("[checkout] Rendering Iyzico checkout form")
         // Inject iyzico checkout form JavaScript into the page
         const checkoutContainer = document.getElementById("iyzipay-checkout-form")
         if (checkoutContainer) {

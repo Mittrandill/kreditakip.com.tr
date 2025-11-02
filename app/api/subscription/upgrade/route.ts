@@ -9,7 +9,6 @@ export const runtime = "nodejs"
 
 export async function POST(request: NextRequest) {
   try {
-    console.log("[iyzipay] Subscription upgrade API called")
 
     const body = await request.json()
     const { newPlanId, cardInfo, billingInfo } = body
@@ -57,7 +56,6 @@ export async function POST(request: NextRequest) {
     if (currentSubscription.plan_type === "premium" && currentSubscription.iyzico_subscription_reference) {
       try {
         await iyzicoClient.cancelSubscription(currentSubscription.iyzico_subscription_reference)
-        console.log("[iyzipay] Previous subscription cancelled")
       } catch (error) {
         console.error("[iyzipay] Error cancelling previous subscription:", error)
         // Devam et, yeni abonelik oluştur

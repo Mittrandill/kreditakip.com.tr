@@ -41,7 +41,6 @@ export default function ContactPage() {
     setIsSubmitting(true)
     setSubmitStatus(null)
 
-    console.log("[v0] Contact form submitting...")
 
     try {
       const response = await fetch("/api/contact", {
@@ -50,10 +49,8 @@ export default function ContactPage() {
         body: JSON.stringify(formData),
       })
 
-      console.log("[v0] Response status:", response.status)
 
       const data = await response.json()
-      console.log("[v0] Response data:", data)
 
       if (response.ok) {
         setSubmitStatus({ type: "success", message: data.message })

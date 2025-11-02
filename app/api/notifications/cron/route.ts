@@ -6,14 +6,11 @@ export const dynamic = "force-dynamic"
 
 export async function GET(request: NextRequest) {
   try {
-    console.log("[v0] Cron job started at:", new Date().toISOString())
 
     // SECURITY FIX: Remove test mode bypass and query parameter authentication
     const cronSecret = process.env.CRON_SECRET
     const authHeader = request.headers.get("authorization")
 
-    console.log("[v0] Auth header present:", !!authHeader)
-    console.log("[v0] CRON_SECRET configured:", !!cronSecret)
 
     if (!cronSecret) {
       console.error("[v0] CRON_SECRET environment variable not set")
@@ -22,7 +19,6 @@ export async function GET(request: NextRequest) {
 
     // Only accept Bearer token in Authorization header
     if (!authHeader || !authHeader.startsWith("Bearer ")) {
-      console.log("[v0] Authentication failed: Missing or invalid Authorization header")
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
     }
 
@@ -44,11 +40,9 @@ export async function GET(request: NextRequest) {
     }
 
     if (!isAuthenticated) {
-      console.log("[v0] Authentication failed: Invalid token")
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
     }
 
-    console.log("[v0] Authentication successful")
 
     if (!process.env.MAILERSEND_API_KEY) {
       console.error("[v0] MAILERSEND_API_KEY environment variable not set")
@@ -152,7 +146,6 @@ export async function GET(request: NextRequest) {
 
     const totalSent = Object.values(results.notifications).reduce((sum, count) => sum + count, 0)
 
-    console.log(`[v0] Cron job completed successfully:`, {
       totalUsers: results.totalUsers,
       totalEmailsSent: totalSent,
       breakdown: results.notifications,

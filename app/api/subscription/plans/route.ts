@@ -15,11 +15,9 @@ const CACHE_DURATION = 5 * 60 * 1000 // 5 minutes
 
 export async function GET(request: NextRequest) {
   try {
-    console.log("[API] Subscription plans API called")
 
     // Return cached data if available and fresh
     if (plansCache && Date.now() - plansCacheTime < CACHE_DURATION) {
-      console.log("[API] Returning cached plans")
       return NextResponse.json({
         success: true,
         plans: plansCache,
@@ -72,7 +70,6 @@ export async function GET(request: NextRequest) {
     plansCache = transformedPlans
     plansCacheTime = Date.now()
 
-    console.log("[API] Returning plans from database:", transformedPlans)
 
     return NextResponse.json({
       success: true,
