@@ -500,73 +500,21 @@ export default function RaporlarPage() {
   }
 
   return (
-    <div className="flex flex-col gap-8">
-      {/* Premium Hero Section */}
-      <div className="relative overflow-hidden rounded-3xl">
-        <div className="absolute inset-0 bg-gradient-to-br from-emerald-600 via-teal-600 to-cyan-700 dark:from-emerald-700 dark:via-teal-700 dark:to-cyan-800"></div>
-        <div className="absolute inset-0 bg-gradient-to-t from-black/20 dark:from-black/30 to-transparent"></div>
-        <div className="absolute inset-0 opacity-20">
-          <div
-            className="absolute inset-0"
-            style={{
-              backgroundImage: `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fillRule='evenodd'%3E%3Cg fill='%23ffffff' fillOpacity='0.1'%3E%3Ccircle cx='30' cy='30' r='2'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")`,
-            }}
-          ></div>
-        </div>
-
-        <div className="relative p-8 lg:p-12">
-          <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-8">
-            <div className="space-y-6">
-              <div className="flex items-center gap-4">
-                <div className="p-4 bg-white/20 rounded-2xl backdrop-blur-sm border border-white/30">
-                  <BarChart3 className="h-10 w-10 text-white" />
-                </div>
-                <div>
-                  <h1 className="text-4xl lg:text-5xl font-bold mb-2 text-white">Finansal Raporlar</h1>
-                  <p className="text-emerald-100 text-xl">Detaylı analiz ve akıllı öngörüler</p>
-                </div>
-              </div>
-
-              <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-                <div className="bg-white/15 rounded-xl p-4 backdrop-blur-sm border border-white/20">
-                  <div className="text-3xl font-bold mb-1 text-white">{summaryMetrics.totalCredits}</div>
-                  <div className="text-sm text-emerald-100">Toplam Kredi</div>
-                  <div className="flex items-center gap-1 mt-2">
-                    <ArrowUpRight className="h-3 w-3 text-emerald-200" />
-                    <span className="text-xs text-emerald-200">{summaryMetrics.activeCredits} aktif</span>
-                  </div>
-                </div>
-                <div className="bg-white/15 rounded-xl p-4 backdrop-blur-sm border border-white/20">
-                  <div className="text-3xl font-bold mb-1 text-white">{formatCurrency(summaryMetrics.totalDebt)}</div>
-                  <div className="text-sm text-emerald-100">Toplam Borç</div>
-                  <div className="flex items-center gap-1 mt-2">
-                    <ArrowDownRight className="h-3 w-3 text-red-300" />
-                    <span className="text-xs text-emerald-200">Kalan borç</span>
-                  </div>
-                </div>
-                <div className="bg-white/15 rounded-xl p-4 backdrop-blur-sm border border-white/20">
-                  <div className="text-3xl font-bold mb-1 text-white">
-                    {formatPercent(summaryMetrics.paymentPerformance / 100)}
-                  </div>
-                  <div className="text-sm text-emerald-100">Performans</div>
-                  <div className="flex items-center gap-1 mt-2">
-                    <Target className="h-3 w-3 text-emerald-200" />
-                    <span className="text-xs text-emerald-200">Ödeme başarısı</span>
-                  </div>
-                </div>
-                <div className="bg-white/15 rounded-xl p-4 backdrop-blur-sm border border-white/20">
-                  <div className="text-3xl font-bold mb-1 text-white">{summaryMetrics.upcomingPayments}</div>
-                  <div className="text-sm text-emerald-100">Yaklaşan</div>
-                  <div className="flex items-center gap-1 mt-2">
-                    <Clock className="h-3 w-3 text-yellow-300" />
-                    <span className="text-xs text-emerald-200">7 gün içinde</span>
-                  </div>
-                </div>
-              </div>
+    <div className="flex flex-col gap-4 md:gap-6">
+      {/* Hero Section */}
+      <Card className="bg-gradient-to-r from-emerald-600 to-teal-700 dark:from-emerald-700 dark:to-teal-800 text-white border-transparent shadow-xl rounded-xl">
+        <CardContent className="p-8">
+          <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+            <div>
+              <h2 className="text-3xl font-bold mb-2 flex items-center gap-3">
+                <BarChart3 className="h-8 w-8" />
+                Finansal Raporlar ve Analiz
+              </h2>
+              <p className="text-emerald-100 text-lg">
+                Detaylı kredi analizi, grafikler ve akıllı öngörülerle finansal durumunuzu takip edin
+              </p>
             </div>
-
-            <div className="flex flex-col gap-4">
-              <PDFReportModal
+            <PDFReportModal
                 userData={{
                   credits: filteredCredits.map((credit) => ({
                     id: credit.id,
@@ -601,9 +549,9 @@ export default function RaporlarPage() {
                 }}
                 trigger={
                   <Button
-                    variant="outline"
+                    variant="outline-white"
                     size="lg"
-                className="bg-transparent border-white/20 text-white hover:bg-white/10 hover:border-transparent hover:text-white dark:bg-transparent dark:border-white/20 dark:text-white dark:hover:bg-white/10 dark:hover:border-transparent dark:hover:text-white"
+                    className="shrink-0"
                   >
                     <Download className="h-5 w-5 mr-2" />
                     PDF Rapor İndir
@@ -612,7 +560,39 @@ export default function RaporlarPage() {
               />
             </div>
           </div>
-        </div>
+        </CardContent>
+      </Card>
+
+      {/* Stats Cards */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <MetricCard
+          title="Toplam Kredi"
+          value={summaryMetrics.totalCredits.toString()}
+          subtitle={`${summaryMetrics.activeCredits} aktif kredi`}
+          color="blue"
+          icon={<CreditCard className="h-5 w-5" />}
+        />
+        <MetricCard
+          title="Toplam Borç"
+          value={formatCurrency(summaryMetrics.totalDebt)}
+          subtitle="Kalan borç tutarı"
+          color="purple"
+          icon={<DollarSign className="h-5 w-5" />}
+        />
+        <MetricCard
+          title="Ödeme Performansı"
+          value={formatPercent(summaryMetrics.paymentPerformance / 100)}
+          subtitle="Ödeme başarı oranı"
+          color="emerald"
+          icon={<Target className="h-5 w-5" />}
+        />
+        <MetricCard
+          title="Yaklaşan Ödemeler"
+          value={summaryMetrics.upcomingPayments.toString()}
+          subtitle="7 gün içinde"
+          color="orange"
+          icon={<Clock className="h-5 w-5" />}
+        />
       </div>
 
       {/* Premium Filters */}
