@@ -558,7 +558,6 @@ export default function RaporlarPage() {
                   </Button>
                 }
               />
-            </div>
           </div>
         </CardContent>
       </Card>
