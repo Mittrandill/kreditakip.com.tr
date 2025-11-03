@@ -551,7 +551,7 @@ export default function RaporlarPage() {
                   <Button
                     variant="outline-white"
                     size="lg"
-                    className="shrink-0"
+                className="bg-transparent border-white/20 text-white hover:bg-white/10 hover:border-transparent hover:text-white dark:bg-transparent dark:border-white/20 dark:text-white dark:hover:bg-white/10 dark:hover:border-transparent dark:hover:text-white"
                   >
                     <Download className="h-5 w-5 mr-2" />
                     PDF Rapor İndir

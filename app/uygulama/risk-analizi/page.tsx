@@ -434,7 +434,7 @@ export default function RiskAnaliziPage() {
               <Button
                 variant="outline"
                 size="lg"
-                className="bg-white text-orange-700 hover:bg-gray-100 border-white"
+                className="bg-transparent border-white/20 text-white hover:bg-white/10 hover:border-transparent hover:text-white dark:bg-transparent dark:border-white/20 dark:text-white dark:hover:bg-white/10 dark:hover:border-transparent dark:hover:text-white"
                 onClick={handleAnalyze}
                 disabled={isAnalyzing || initialDataLoading || !canAnalyze}
               >
