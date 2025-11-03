@@ -1,6 +1,7 @@
 "use client"
 
 import { useState, useEffect, useMemo } from "react"
+import dynamic from "next/dynamic"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -39,8 +40,8 @@ import {
 import { format, subMonths, startOfMonth, endOfMonth, isWithinInterval } from "date-fns"
 import { tr } from "date-fns/locale"
 import { useAuth } from "@/hooks/use-auth"
-import { useSubscription } from "@/hooks/use-subscription" // Import subscription hook
-import { useRouter } from "next/navigation" // Import router
+import { useSubscription } from "@/hooks/use-subscription"
+import { useRouter } from "next/navigation"
 import { getCredits } from "@/lib/api/credits"
 import { getAllPayments } from "@/lib/api/payments"
 import type { Credit, Bank, CreditType, PaymentPlan } from "@/lib/types"
@@ -48,31 +49,48 @@ import { formatCurrency, formatPercent } from "@/lib/format"
 import PDFReportModal from "@/components/pdf-report-modal"
 import { MetricCard } from "@/components/metric-card"
 import BankLogo from "@/components/bank-logo"
-import {
-  BarChart,
-  Bar,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  Tooltip,
-  ResponsiveContainer,
-  PieChart as RechartsPieChart,
-  Cell,
-  Pie,
-  LineChart,
-  Line,
-  Legend,
-  Area,
-  AreaChart,
-  ComposedChart,
-  ReferenceLine,
-} from "recharts"
+
+// Dynamic import for Recharts components to reduce initial bundle size
+const BarChart = dynamic(() => import("recharts").then((mod) => ({ default: mod.BarChart })), { ssr: false })
+const Bar = dynamic(() => import("recharts").then((mod) => ({ default: mod.Bar })), { ssr: false })
+const XAxis = dynamic(() => import("recharts").then((mod) => ({ default: mod.XAxis })), { ssr: false })
+const YAxis = dynamic(() => import("recharts").then((mod) => ({ default: mod.YAxis })), { ssr: false })
+const CartesianGrid = dynamic(() => import("recharts").then((mod) => ({ default: mod.CartesianGrid })), { ssr: false })
+const Tooltip = dynamic(() => import("recharts").then((mod) => ({ default: mod.Tooltip })), { ssr: false })
+const ResponsiveContainer = dynamic(() => import("recharts").then((mod) => ({ default: mod.ResponsiveContainer })), { ssr: false })
+const RechartsPieChart = dynamic(() => import("recharts").then((mod) => ({ default: mod.PieChart })), { ssr: false })
+const Cell = dynamic(() => import("recharts").then((mod) => ({ default: mod.Cell })), { ssr: false })
+const Pie = dynamic(() => import("recharts").then((mod) => ({ default: mod.Pie })), { ssr: false })
+const LineChart = dynamic(() => import("recharts").then((mod) => ({ default: mod.LineChart })), { ssr: false })
+const Line = dynamic(() => import("recharts").then((mod) => ({ default: mod.Line })), { ssr: false })
+const Legend = dynamic(() => import("recharts").then((mod) => ({ default: mod.Legend })), { ssr: false })
+const Area = dynamic(() => import("recharts").then((mod) => ({ default: mod.Area })), { ssr: false })
+const AreaChart = dynamic(() => import("recharts").then((mod) => ({ default: mod.AreaChart })), { ssr: false })
+const ComposedChart = dynamic(() => import("recharts").then((mod) => ({ default: mod.ComposedChart })), { ssr: false })
+const ReferenceLine = dynamic(() => import("recharts").then((mod) => ({ default: mod.ReferenceLine })), { ssr: false })
 
 const COLORS = ["#10B981", "#3B82F6", "#F59E0B", "#EF4444", "#8B5CF6", "#06B6D4", "#F97316", "#84CC16"]
 
 interface PopulatedCredit extends Credit {
   banks: Pick<Bank, "id" | "name" | "logo_url"> | null
   credit_types: Pick<CreditType, "id" | "name"> | null
+}
+
+interface BankDistribution {
+  name: string
+  value: number
+  count: number
+  monthlyPayment: number
+  totalInterest: number
+  averageInterest: number
+  logoUrl?: string
+  fullName?: string
+}
+
+interface CreditTypeDistribution {
+  name: string
+  value: number
+  count: number
 }
 
 interface PopulatedPayment extends PaymentPlan {
@@ -328,7 +346,7 @@ export default function RaporlarPage() {
 
     // Bank distribution
     const bankDistribution = filteredCredits
-      .reduce((acc: any[], credit) => {
+      .reduce((acc: BankDistribution[], credit) => {
         const bankName = credit.banks?.name || "Bilinmeyen Banka"
         const shortName = bankName.replace("Bankası", "").replace("Bank", "").trim()
         const existing = acc.find((item) => item.name === shortName)
@@ -360,7 +378,7 @@ export default function RaporlarPage() {
 
     // Credit type distribution
     const creditTypeDistribution = filteredCredits
-      .reduce((acc: any[], credit) => {
+      .reduce((acc: CreditTypeDistribution[], credit) => {
         const typeName = credit.credit_types?.name || "Diğer"
         const existing = acc.find((item) => item.name === typeName)
         if (existing) {
@@ -415,7 +433,7 @@ export default function RaporlarPage() {
     return { banks, creditTypes, statuses }
   }, [credits])
 
-  const updateFilter = (key: keyof FilterState, value: any) => {
+  const updateFilter = <K extends keyof FilterState>(key: K, value: FilterState[K]) => {
     setFilters((prev) => ({ ...prev, [key]: value }))
   }
 
@@ -926,8 +944,8 @@ export default function RaporlarPage() {
                         <XAxis dataKey="month" stroke="#6B7280" fontSize={12} />
                         <YAxis stroke="#6B7280" fontSize={12} tickFormatter={(value) => formatCurrency(value)} />
                         <Tooltip
-                          formatter={(value: any, name: string) => [
-                            formatCurrency(value),
+                          formatter={(value: number | string, name: string) => [
+                            formatCurrency(Number(value)),
                             name === "toplam"
                               ? "Toplam"
                               : name === "odenen"
@@ -973,13 +991,13 @@ export default function RaporlarPage() {
                           innerRadius={50}
                           paddingAngle={5}
                           dataKey="value"
-                          label={({ name, percent }: any) => `${name} ${(percent * 100).toFixed(0)}%`}
+                          label={({ name, percent }: { name: string; percent: number }) => `${name} ${(percent * 100).toFixed(0)}%`}
                         >
                           {chartData.paymentStatusDistribution.map((entry, index) => (
                             <Cell key={`cell-${index}`} fill={entry.color} />
                           ))}
                         </Pie>
-                        <Tooltip formatter={(value: any) => [value, "Ödeme Sayısı"]} />
+                        <Tooltip formatter={(value: number) => [value, "Ödeme Sayısı"]} />
                       </RechartsPieChart>
                     </ResponsiveContainer>
                   </CardContent>
@@ -1112,7 +1130,7 @@ export default function RaporlarPage() {
                       <XAxis dataKey="month" stroke="#6B7280" />
                       <YAxis stroke="#6B7280" tickFormatter={(value) => formatCurrency(value)} />
                       <Tooltip
-                        formatter={(value: any, name: string) => [
+                        formatter={(value: number | string, name: string) => [
                           formatCurrency(value),
                           name === "odenen" ? "Ödenen" : "Bekleyen",
                         ]}
@@ -1170,7 +1188,7 @@ export default function RaporlarPage() {
                         <XAxis dataKey="name" stroke="#6B7280" fontSize={12} />
                         <YAxis stroke="#6B7280" fontSize={12} tickFormatter={(value) => formatCurrency(value)} />
                         <Tooltip
-                          formatter={(value: any, name: string) => [
+                          formatter={(value: number | string, name: string) => [
                             name === "value" ? formatCurrency(value) : value,
                             name === "value" ? "Borç Tutarı" : name === "count" ? "Kredi Sayısı" : "Aylık Ödeme",
                           ]}
@@ -1207,13 +1225,13 @@ export default function RaporlarPage() {
                           innerRadius={60}
                           paddingAngle={5}
                           dataKey="value"
-                          label={({ name, percent }: any) => `${name} ${(percent * 100).toFixed(0)}%`}
+                          label={({ name, percent }: { name: string; percent: number }) => `${name} ${(percent * 100).toFixed(0)}%`}
                         >
                           {chartData.creditTypeDistribution.map((entry, index) => (
                             <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                           ))}
                         </Pie>
-                        <Tooltip formatter={(value: any) => [formatCurrency(value), "Borç Tutarı"]} />
+                        <Tooltip formatter={(value: number) => [formatCurrency(value), "Borç Tutarı"]} />
                       </RechartsPieChart>
                     </ResponsiveContainer>
                   </CardContent>
@@ -1266,7 +1284,7 @@ export default function RaporlarPage() {
                       <XAxis dataKey="month" stroke="#6B7280" />
                       <YAxis stroke="#6B7280" tickFormatter={(value) => `${value}%`} />
                       <Tooltip
-                        formatter={(value: any, name: string) => [`${value.toFixed(1)}%`, "Ödeme Oranı"]}
+                        formatter={(value: number | string, name: string) => [`${value.toFixed(1)}%`, "Ödeme Oranı"]}
                         contentStyle={{
                           backgroundColor: "white",
                           border: "1px solid #E5E7EB",
@@ -1276,7 +1294,7 @@ export default function RaporlarPage() {
                       />
                       <Line
                         type="monotone"
-                        dataKey={(data: any) => (data.toplam > 0 ? (data.odenen / data.toplam) * 100 : 0)}
+                        dataKey={(data: { toplam: number; odenen: number }) => (data.toplam > 0 ? (data.odenen / data.toplam) * 100 : 0)}
                         stroke="#10B981"
                         strokeWidth={3}
                         dot={{ fill: "#10B981", strokeWidth: 2, r: 6 }}
@@ -1309,7 +1327,7 @@ export default function RaporlarPage() {
                       <XAxis dataKey="bank" stroke="#6B7280" fontSize={12} />
                       <YAxis stroke="#6B7280" fontSize={12} tickFormatter={(value) => `%${value}`} />
                       <Tooltip
-                        formatter={(value: any, name: string) => [
+                        formatter={(value: number | string, name: string) => [
                           name === "rate" ? `%${value}` : formatCurrency(value),
                           name === "rate" ? "Faiz Oranı" : name === "amount" ? "Borç Tutarı" : "Aylık Faiz",
                         ]}
@@ -1385,7 +1403,7 @@ export default function RaporlarPage() {
                         <XAxis dataKey="name" stroke="#6B7280" fontSize={12} />
                         <YAxis stroke="#6B7280" fontSize={12} tickFormatter={(value) => formatCurrency(value)} />
                         <Tooltip
-                          formatter={(value: any) => [formatCurrency(value), "Aylık Ödeme"]}
+                          formatter={(value: number) => [formatCurrency(value), "Aylık Ödeme"]}
                           contentStyle={{
                             backgroundColor: "white",
                             border: "1px solid #E5E7EB",
