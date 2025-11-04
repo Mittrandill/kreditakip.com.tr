@@ -364,7 +364,7 @@ export async function sendInvoiceNotification(invoiceData: InvoiceData): Promise
 
     return {
       success: true,
-      messageId: result.body.Messages?.[0]?.To?.[0]?.MessageID || "unknown",
+      messageId: (result.body as any).Messages?.[0]?.To?.[0]?.MessageID || "unknown",
     }
     // </CHANGE>
   } catch (error: any) {

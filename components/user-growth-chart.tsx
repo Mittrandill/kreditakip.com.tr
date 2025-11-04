@@ -45,7 +45,7 @@ export function UserGrowthChart() {
   return (
     <div className="h-64 w-full">
       <h3 className="text-lg font-semibold text-white/90 mb-2">Kullananların Kredi Ödeme Başarısı</h3>
-      <ResponsiveContainer width="100%" height="100%">
+      <ResponsiveContainer width="100%" height={220} minHeight={220}>
         <AreaChart data={data} margin={{ top: 5, right: 20, bottom: 5, left: 0 }}>
           <defs>
             <linearGradient id="colorSuccess" x1="0" y1="0" x2="0" y2="1">
@@ -72,13 +72,13 @@ export function UserGrowthChart() {
             strokeWidth={2}
             fillOpacity={1}
             fill="url(#colorSuccess)"
-            dot={(props) => {
+            dot={((props: any) => {
               const { cx, cy, payload } = props
               if (payload.month === "Haz") {
                 return <circle cx={cx} cy={cy} r={5} fill="#50f1be" stroke="white" strokeWidth={2} />
               }
               return null
-            }}
+            }) as any}
             activeDot={{ r: 6, fill: "#50f1be", stroke: "white" }}
           />
         </AreaChart>

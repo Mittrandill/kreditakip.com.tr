@@ -43,7 +43,16 @@ import Image from "next/image"
 import { useState, useEffect } from "react"
 import { getNotifications } from "@/lib/api/notifications"
 
-const navItems = [
+interface NavItem {
+  href: string
+  label: string
+  icon: any
+  gradient: string
+  hoverGradient: string
+  badge?: string
+}
+
+const navItems: NavItem[] = [
   {
     href: "/uygulama/ana-sayfa",
     label: "Ana Sayfa",

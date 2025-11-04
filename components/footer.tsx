@@ -310,10 +310,10 @@ export default function Footer() {
         <div className="border-t border-white/10 pt-8">
           <div className="flex flex-col md:flex-row justify-between items-center gap-6">
             <div className="flex flex-col md:flex-row items-center gap-6">
-              <p className="text-white/60 text-sm">© 2024 KrediTakip. Tüm hakları saklıdır.</p>
+              <p className="text-white/60 text-sm">© 2025 kreditakip.com.tr Tüm hakları saklıdır.</p>
               <div className="flex items-center gap-2 text-xs text-white/50">
                 <TrendingUp className="w-4 h-4 text-emerald-400" />
-                <span>v2.1.0 - Son güncelleme: 15 Ocak 2024</span>
+                <span>v1.0.0 - Son güncelleme: 1 Kasım 2025</span>
               </div>
             </div>
             <div className="flex items-center gap-6">

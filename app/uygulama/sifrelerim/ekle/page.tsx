@@ -14,7 +14,7 @@ import { Alert, AlertDescription } from "@/components/ui/alert"
 import { ArrowLeft, Eye, EyeOff, Shield, Loader2, Plus, Shuffle, AlertCircle, Lock, Clock, Zap } from "lucide-react"
 import { useAuth } from "@/hooks/use-auth"
 import { useToast } from "@/hooks/use-toast"
-import { createBankingCredential } from "@/lib/api/banking-credentials"
+import { createBankingCredential } from "@/app/actions/banking-credentials"
 import BankSelector from "@/components/bank-selector"
 import Link from "next/link"
 
@@ -123,14 +123,11 @@ export default function SifreEklePage() {
       await createBankingCredential(user.id, {
         credential_name: formData.credentialName,
         bank_id: formData.bankId,
-        bank_name: selectedBank?.name || "",
-        bank_logo_url: selectedBank?.logo_url || null,
         credential_type: formData.credentialType as "internet_banking" | "mobile_banking" | "phone_banking" | "other",
-        username: formData.username || null,
+        username: formData.username || undefined,
         password: formData.password,
-        notes: formData.notes || null,
+        notes: formData.notes || undefined,
         password_change_frequency_days: formData.passwordChangeFrequency,
-        last_password_change_date: new Date().toISOString(),
       })
 
       toast({

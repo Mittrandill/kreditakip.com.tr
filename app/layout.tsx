@@ -1,8 +1,11 @@
 import type React from "react"
-import type { Metadata } from "next"
+import type { Metadata, Viewport } from "next"
 import { Poppins } from "next/font/google"
 import "./globals.css"
 import { cn } from "@/lib/utils"
+import { CookieConsent } from "@/components/cookie-consent"
+import { Analytics } from "@vercel/analytics/react"
+import { SpeedInsights } from "@vercel/speed-insights/next"
 
 const poppins = Poppins({
   subsets: ["latin"],
@@ -88,6 +91,17 @@ export const metadata: Metadata = {
     generator: 'v0.app'
 }
 
+export const viewport: Viewport = {
+  width: 'device-width',
+  initialScale: 1,
+  maximumScale: 5,
+  userScalable: true,
+  themeColor: [
+    { media: '(prefers-color-scheme: light)', color: '#10b981' },
+    { media: '(prefers-color-scheme: dark)', color: '#059669' },
+  ],
+}
+
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -95,7 +109,12 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="tr" suppressHydrationWarning>
-      <body className={cn("font-sans antialiased", poppins.variable)}>{children}</body>
+      <body className={cn("font-sans antialiased", poppins.variable)}>
+        {children}
+        <CookieConsent />
+        <Analytics />
+        <SpeedInsights />
+      </body>
     </html>
   )
 }

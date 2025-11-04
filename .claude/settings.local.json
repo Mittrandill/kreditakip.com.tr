@@ -5,7 +5,10 @@
       "Bash(git add:*)",
       "Bash(git push:*)",
       "Bash(git commit:*)",
-      "Bash(git restore:*)"
+      "Bash(git restore:*)",
+      "Bash(npm install)",
+      "Bash(npm audit:*)",
+      "Bash(npm run lint:*)"
     ],
     "deny": [],
     "ask": []

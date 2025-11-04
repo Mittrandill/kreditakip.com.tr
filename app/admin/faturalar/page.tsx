@@ -292,7 +292,7 @@ export default async function InvoicesManagement() {
                         )}
                       </td>
                       <td className="py-4 px-4 text-white/80">
-                        {new Date(sub.created_at).toLocaleDateString("tr-TR")}
+                        {sub.created_at ? new Date(sub.created_at).toLocaleDateString("tr-TR") : "-"}
                       </td>
                       <td className="py-4 px-4">
                         <InvoiceUploadButton

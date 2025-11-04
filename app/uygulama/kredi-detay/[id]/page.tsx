@@ -86,7 +86,7 @@ import {
 } from "@/components/ui/alert-dialog"
 
 interface PopulatedCredit extends Credit {
-  banks: Pick<Bank, "id" | "name" | "logo_url" | "contact_phone" | "contact_email" | "website"> | null
+  banks: Pick<Bank, "id" | "name" | "logo_url"> | null
   credit_types: Pick<CreditType, "id" | "name" | "description"> | null
 }
 
@@ -626,7 +626,7 @@ export default function KrediDetayPage() {
               <div className="flex items-center gap-4">
                 <BankLogo
                   bankName={krediDetay.banks?.name || "Bilinmeyen Banka"}
-                  logoUrl={krediDetay.banks?.logo_url}
+                  logoUrl={krediDetay.banks?.logo_url ?? undefined}
                   size="lg"
                   className="bg-white/20 border-2 border-white"
                 />
@@ -859,7 +859,7 @@ export default function KrediDetayPage() {
                       <div className="flex items-center gap-4 mb-4">
                         <BankLogo
                           bankName={krediDetay.banks?.name || "Bilinmeyen Banka"}
-                          logoUrl={krediDetay.banks?.logo_url}
+                          logoUrl={krediDetay.banks?.logo_url ?? undefined}
                           size="md"
                         />
                         <div>
@@ -867,24 +867,6 @@ export default function KrediDetayPage() {
                             {krediDetay.banks?.name || "N/A"}
                           </p>
                           <p className="text-sm text-gray-500 dark:text-gray-400">{krediDetay.branch_name || "N/A"}</p>
-                        </div>
-                      </div>
-                      <div className="space-y-3">
-                        <div className="flex items-center gap-2 text-sm">
-                          <Phone className="h-4 w-4 text-gray-400" />
-                          <span className="text-gray-600 dark:text-gray-300">
-                            {krediDetay.banks?.contact_phone || "N/A"}
-                          </span>
-                        </div>
-                        <div className="flex items-center gap-2 text-sm">
-                          <Mail className="h-4 w-4 text-gray-400" />
-                          <span className="text-gray-600 dark:text-gray-300">
-                            {krediDetay.banks?.contact_email || "N/A"}
-                          </span>
-                        </div>
-                        <div className="flex items-center gap-2 text-sm">
-                          <MapPin className="h-4 w-4 text-gray-400" />
-                          <span className="text-gray-600 dark:text-gray-300">{krediDetay.banks?.website || "N/A"}</span>
                         </div>
                       </div>
                     </CardContent>
@@ -1185,7 +1167,7 @@ export default function KrediDetayPage() {
                               </div>
                               <div className="text-xs text-gray-500 dark:text-gray-500 mt-1">
                                 Kanal: {odeme.payment_channel || "Bilinmiyor"} • Referans:{" "}
-                                {odeme.reference_number || "N/A"}
+                                {odeme.transaction_id || "N/A"}
                               </div>
                             </div>
                           </div>

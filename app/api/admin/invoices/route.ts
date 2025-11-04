@@ -2,11 +2,16 @@ import { createClient } from "@supabase/supabase-js"
 
 export const dynamic = "force-dynamic"
 import { NextRequest, NextResponse } from "next/server"
+import { checkAdminAPI } from "@/lib/admin-check"
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
 const supabaseServiceKey = process.env.SERVICE_ROLE_KEY!
 
 export async function GET(request: NextRequest) {
+  // SECURITY: Check admin authentication
+  const adminCheck = await checkAdminAPI(request)
+  if (adminCheck) return adminCheck
+
   try {
     const supabase = createClient(supabaseUrl, supabaseServiceKey)
     const { searchParams } = new URL(request.url)
@@ -46,6 +51,10 @@ export async function GET(request: NextRequest) {
 }
 
 export async function POST(request: NextRequest) {
+  // SECURITY: Check admin authentication
+  const adminCheck = await checkAdminAPI(request)
+  if (adminCheck) return adminCheck
+
   try {
     const supabase = createClient(supabaseUrl, supabaseServiceKey)
     const body = await request.json()

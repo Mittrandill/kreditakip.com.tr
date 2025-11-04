@@ -44,11 +44,11 @@ import { useToast } from "@/hooks/use-toast"
 import {
   getBankingCredentials,
   deleteBankingCredential,
+  decryptCredentialPassword,
   updateLastUsedDate,
-  decryptPassword,
-  maskPassword,
   type BankingCredential,
-} from "@/lib/api/banking-credentials"
+} from "@/app/actions/banking-credentials"
+import { maskPassword } from "@/lib/utils/password"
 import { formatDistanceToNow } from "date-fns"
 import { tr } from "date-fns/locale"
 
@@ -157,7 +157,7 @@ export default function BankaciSifrelerimPage() {
         setLoadingData(true)
         setError(null)
         try {
-          const { data } = await getBankingCredentials(user.id, 1, 1000) // Get all credentials
+          const data = await getBankingCredentials(user.id) // Get all credentials
 
           if (isMounted && data) {
             setAllCredentials(data || [])
@@ -386,7 +386,7 @@ export default function BankaciSifrelerimPage() {
     if (!user) return
 
     try {
-      const decryptedPassword = await decryptPassword(credential.encrypted_password)
+      const decryptedPassword = await decryptCredentialPassword(user.id, credential.id)
       if (!decryptedPassword) {
         toast({
           title: "Hata",
@@ -674,7 +674,7 @@ export default function BankaciSifrelerimPage() {
                               <div className="relative">
                                 <BankLogo
                                   bankName={credential.bank_name || "Bilinmeyen Banka"}
-                                  logoUrl={credential.bank_logo_url}
+                                  logoUrl={credential.bank_logo_url ?? undefined}
                                   size="md"
                                   className="ring-2 ring-white shadow-lg"
                                 />
@@ -871,7 +871,7 @@ export default function BankaciSifrelerimPage() {
                               <div className="flex items-center gap-3">
                                 <BankLogo
                                   bankName={credential.bank_name || "Bilinmeyen Banka"}
-                                  logoUrl={credential.bank_logo_url}
+                                  logoUrl={credential.bank_logo_url ?? undefined}
                                   size="md"
                                   className="ring-1 ring-emerald-200 dark:ring-emerald-700 bg-white dark:bg-gray-800"
                                 />
@@ -1081,16 +1081,17 @@ function PasswordDisplay({
   onCopy: () => void
   isCopied: boolean
 }) {
+  const { user } = useAuth()
   const [decryptedPassword, setDecryptedPassword] = useState<string | null>(null)
   const [isDecrypting, setIsDecrypting] = useState(false)
   const [decryptError, setDecryptError] = useState<string | null>(null)
 
   useEffect(() => {
-    if (isVisible && !decryptedPassword && !isDecrypting) {
+    if (isVisible && !decryptedPassword && !isDecrypting && user?.id) {
       setIsDecrypting(true)
       setDecryptError(null)
 
-      decryptPassword(credential.encrypted_password)
+      decryptCredentialPassword(user.id, credential.id)
         .then((password) => {
           if (password) {
             setDecryptedPassword(password)
@@ -1105,7 +1106,7 @@ function PasswordDisplay({
         })
         .finally(() => setIsDecrypting(false))
     }
-  }, [isVisible, credential.encrypted_password, decryptedPassword, isDecrypting])
+  }, [isVisible, credential.id, decryptedPassword, isDecrypting, user?.id])
 
   const displayPassword = () => {
     if (isDecrypting) return "Çözülüyor..."

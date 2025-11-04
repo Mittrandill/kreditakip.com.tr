@@ -105,7 +105,7 @@ export async function POST(request: NextRequest) {
       read_time,
     } = body
 
-    // Validate required fields
+    // SECURITY: Validate required fields
     if (!title || !slug || !content) {
       return NextResponse.json(
         { error: "Missing required fields: title, slug, content" },
@@ -113,12 +113,50 @@ export async function POST(request: NextRequest) {
       )
     }
 
+    // SECURITY: Length validation to prevent abuse
+    if (
+      title.length > 200 ||
+      slug.length > 200 ||
+      (excerpt && excerpt.length > 500) ||
+      content.length > 100000 // 100KB limit for content
+    ) {
+      return NextResponse.json(
+        { error: "Input field(s) exceed maximum length" },
+        { status: 400 }
+      )
+    }
+
+    // SECURITY: Validate slug format (alphanumeric and hyphens only)
+    const slugRegex = /^[a-z0-9-]+$/
+    if (!slugRegex.test(slug)) {
+      return NextResponse.json(
+        { error: "Slug must contain only lowercase letters, numbers, and hyphens" },
+        { status: 400 }
+      )
+    }
+
+    // SECURITY: Sanitize title and excerpt (basic XSS prevention)
+    const sanitizeBasicText = (text: string) => {
+      return text
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;")
+    }
+
+    const safeTitle = sanitizeBasicText(title)
+    const safeExcerpt = excerpt ? sanitizeBasicText(excerpt) : null
+
+    // NOTE: Content is assumed to be Markdown and will be safely rendered
+    // by react-markdown on the frontend. If HTML is needed, implement
+    // proper HTML sanitization using a library like DOMPurify.
+
     // Create the blog post
     const postData: any = {
-      title,
+      title: safeTitle,
       slug,
-      excerpt,
-      content,
+      excerpt: safeExcerpt,
+      content, // Markdown content - rendered safely by react-markdown
       featured_image,
       category_id: category_id || null,
       author_id: session.user.id,

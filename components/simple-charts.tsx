@@ -187,7 +187,7 @@ export function SimpleDonutChart({ data, centerText, centerSubtext }: MiniDonutC
       <div className="h-[280px]">
         <ResponsiveContainer width="100%" height="100%">
           <PieChart>
-            <Pie data={data} cx="50%" cy="50%" innerRadius={70} outerRadius={120} paddingAngle={3} dataKey="tutar">
+            <Pie data={data as any} cx="50%" cy="50%" innerRadius={70} outerRadius={120} paddingAngle={3} dataKey="tutar">
               {data.map((entry, index) => (
                 <Cell key={`cell-${index}`} fill={entry.fill} stroke="#ffffff" strokeWidth={2} />
               ))}

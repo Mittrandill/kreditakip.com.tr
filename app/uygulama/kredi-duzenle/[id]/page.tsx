@@ -46,7 +46,7 @@ import { CreditTypeSelector } from "@/components/credit-type-selector"
 import { CalendarModal } from "@/components/calendar-modal"
 
 interface PopulatedCredit extends Credit {
-  banks: Pick<Bank, "id" | "name" | "logo_url" | "contact_phone" | "contact_email" | "website"> | null
+  banks: Pick<Bank, "id" | "name" | "logo_url"> | null
   credit_types: Pick<CreditType, "id" | "name" | "description"> | null
 }
 
@@ -217,7 +217,7 @@ export default function KrediDuzenlePage() {
     }))
   }
 
-  const handleBankSelect = (bank: Bank) => {
+  const handleBankSelect = (bank: { id: string }) => {
     setFormData((prev) => ({
       ...prev,
       bank_id: bank.id,
@@ -956,7 +956,11 @@ export default function KrediDuzenlePage() {
 
       {/* Bank Selector Modal */}
       {showBankSelector && (
-        <BankSelector banks={banks} onBankSelect={handleBankSelect} onSkip={() => setShowBankSelector(false)} />
+        <BankSelector
+          banks={banks.map(b => ({ ...b, logo_url: b.logo_url ?? undefined }))}
+          onBankSelect={handleBankSelect}
+          onSkip={() => setShowBankSelector(false)}
+        />
       )}
 
       {/* Credit Type Selector Modal */}
@@ -965,8 +969,8 @@ export default function KrediDuzenlePage() {
           open={showCreditTypeSelector}
           onOpenChange={setShowCreditTypeSelector}
           onSelect={handleCreditTypeSelect}
-          selectedCreditType={selectedCreditType}
-          creditTypes={creditTypes}
+          selectedCreditType={selectedCreditType as any}
+          creditTypes={creditTypes as any}
         />
       )}
 

@@ -187,9 +187,9 @@ export default function PDFOdemePlaniPage() {
     }
   }
 
-  const handleBankSelect = (bankName: string) => {
+  const handleBankSelect = (bank: { name: string }) => {
     if (analysisResult) {
-      const updatedResult = { ...analysisResult, bankName }
+      const updatedResult = { ...analysisResult, bankName: bank.name }
       router.push(`/uygulama/krediler/pdf-odeme-plani/analiz?data=${encodeURIComponent(JSON.stringify(updatedResult))}`)
     }
     setShowBankSelector(false)

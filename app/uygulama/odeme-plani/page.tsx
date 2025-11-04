@@ -40,9 +40,95 @@ interface PaymentWithCredit extends PaymentPlan {
   }
 }
 
-const getBankColor = (index: number): string => {
-  const colors = ["#2563eb", "#d97706", "#dc2626", "#9333ea", "#0891b2", "#be185d", "#7c2d12"]
-  return colors[index % colors.length]
+// Türkiye'deki bankaların marka renklerine yakın renk paleti
+const BANK_BRAND_COLORS: Record<string, string> = {
+  // Devlet Bankaları
+  "Ziraat Bankası": "#DC2626", // Kırmızı
+  "Türkiye Halk Bankası": "#E30613", // Kırmızı
+  "Vakıfbank": "#D97706", // Koyu Sarı
+  "Türkiye Vakıflar Bankası": "#D97706", // Koyu Sarı
+  "Türkiye Vakıflar Bankası T.A.O.": "#D97706", // Koyu Sarı
+  "Vakıf Katılım Bankası": "#0066B3", // Mavi
+
+  // Özel Bankalar
+  "Akbank": "#ED1C24", // Kırmızı
+  "Türkiye İş Bankası": "#1C6BAB", // Mavi
+  "Türkiye Garanti Bankası": "#00A551", // Yeşil
+  "Yapı ve Kredi Bankası": "#004B93", // Koyu Mavi
+  "QNB Finansbank": "#8B1538", // Bordo
+  "Denizbank": "#00A0DF", // Açık Mavi
+  "ING Bank": "#FF6200", // Turuncu
+  "TEB": "#0078BE", // Mavi
+  "HSBC Bank": "#DB0011", // Kırmızı
+  "Şekerbank": "#E30613", // Kırmızı
+  "Anadolubank": "#003D79", // Mavi
+  "Fibabanka": "#00539F", // Mavi
+  "Turkish Bank": "#C1272D", // Kırmızı
+  "Alternatif Bank": "#FF6600", // Turuncu
+  "Burgan Bank": "#006BA6", // Mavi
+  "Odea Bank": "#00AAD2", // Turkuaz
+
+  // Katılım Bankaları
+  "Albaraka Türk Katılım Bankası": "#006938", // Yeşil
+  "Kuveyt Türk Katılım Bankası": "#009640", // Yeşil
+  "Türkiye Finans Katılım Bankası": "#0072BC", // Mavi
+  "Ziraat Katılım Bankası": "#6BA539", // Açık Yeşil
+  "Emlak Katılım Bankası": "#003D79", // Mavi
+
+  // Yabancı Bankalar
+  "Citibank": "#003B6F", // Koyu Mavi
+  "Deutsche Bank": "#0018A8", // Koyu Mavi
+  "ICBC Turkey Bank": "#C8102E", // Kırmızı
+  "Bank of China Turkey": "#BA0C2F", // Kırmızı
+  "JPMorgan Chase Bank": "#117ACA", // Mavi
+  "Société Générale": "#E60028", // Kırmızı
+  "Rabobank": "#FF6200", // Turuncu
+  "MUFG Bank Turkey": "#DA291C", // Kırmızı
+
+  // Kalkınma ve Yatırım Bankaları
+  "Türkiye Kalkınma ve Yatırım Bankası": "#003B71", // Koyu Mavi
+  "Türkiye Sınai Kalkınma Bankası": "#005EB8", // Mavi
+  "İller Bankası": "#00529B", // Mavi
+  "Türk Eximbank": "#00447C", // Koyu Mavi
+  "Aktif Yatırım Bankası": "#E31837", // Kırmızı
+}
+
+// Fallback renkler - marka rengi bulunamazsa kullanılacak
+const FALLBACK_COLORS = [
+  "#2563eb", "#dc2626", "#059669", "#d97706", "#7c3aed",
+  "#db2777", "#0891b2", "#4f46e5", "#ea580c", "#15803d",
+  "#9333ea", "#be185d", "#0e7490", "#6366f1", "#c2410c",
+  "#047857", "#a21caf", "#0369a1", "#4338ca", "#b45309",
+]
+
+const getBankColor = (bankName: string | undefined): string => {
+  // Eğer banka adı yoksa varsayılan renk döndür
+  if (!bankName) {
+    return FALLBACK_COLORS[0]
+  }
+
+  // Önce marka rengini kontrol et
+  if (BANK_BRAND_COLORS[bankName]) {
+    return BANK_BRAND_COLORS[bankName]
+  }
+
+  // Kısmi eşleşme dene (örn: "Türkiye Garanti Bankası A.Ş." için)
+  for (const [key, color] of Object.entries(BANK_BRAND_COLORS)) {
+    if (bankName.toLowerCase().includes(key.toLowerCase()) ||
+        key.toLowerCase().includes(bankName.toLowerCase())) {
+      return color
+    }
+  }
+
+  // Marka rengi bulunamazsa hash ile fallback renklerinden seç
+  let hash = 0
+  for (let i = 0; i < bankName.length; i++) {
+    const char = bankName.charCodeAt(i)
+    hash = ((hash << 5) - hash) + char
+    hash = hash & hash
+  }
+  const index = Math.abs(hash) % FALLBACK_COLORS.length
+  return FALLBACK_COLORS[index]
 }
 
 function CalendarView({ payments }: { payments: PaymentWithCredit[] }) {
@@ -54,7 +140,8 @@ function CalendarView({ payments }: { payments: PaymentWithCredit[] }) {
   const firstDay = new Date(currentYear, currentMonth, 1)
   const lastDay = new Date(currentYear, currentMonth + 1, 0)
   const daysInMonth = lastDay.getDate()
-  const startingDayOfWeek = firstDay.getDay() === 0 ? 6 : firstDay.getDay() - 1
+  // Pazartesi'den başlatmak için: Pazar = 6, Pazartesi = 0, Salı = 1, ...
+  const startingDayOfWeek = (firstDay.getDay() + 6) % 7
 
   // Filtreleme uygula
   const filteredPayments = payments.filter((payment) => {
@@ -67,10 +154,14 @@ function CalendarView({ payments }: { payments: PaymentWithCredit[] }) {
     return true
   })
 
-  const uniqueBanks = Array.from(new Set(filteredPayments.map((p) => p.credits.banks.name))).map((bankName, index) => ({
-    name: bankName,
-    color: getBankColor(index),
-  }))
+  // Her banka için benzersiz renk - banka marka rengine göre
+  const uniqueBanks = Array.from(
+    new Map(filteredPayments.map((p) => [p.credits.bank_id, {
+      id: p.credits.bank_id,
+      name: p.credits.banks.name,
+      color: getBankColor(p.credits.banks.name),
+    }])).values()
+  )
 
   const paymentsByDay = filteredPayments.reduce(
     (acc, payment) => {
@@ -100,7 +191,7 @@ function CalendarView({ payments }: { payments: PaymentWithCredit[] }) {
     "Aralık",
   ]
 
-  const dayNames = ["Paz", "Pzt", "Sal", "Çar", "Per", "Cum", "Cmt"]
+  const dayNames = ["Pzt", "Sal", "Çar", "Per", "Cum", "Cmt", "Paz"]
 
   const handlePrevMonth = () => {
     setCurrentDate(new Date(currentYear, currentMonth - 1, 1))
@@ -231,7 +322,7 @@ function CalendarView({ payments }: { payments: PaymentWithCredit[] }) {
 
               <div className="space-y-1 overflow-y-auto max-h-20">
                 {dayPayments.map((payment, idx) => {
-                  const bankColor = getBankColor(uniqueBanks.findIndex((b) => b.name === payment.credits.banks.name))
+                  const bankColor = getBankColor(payment.credits.banks.name)
                   const isOverdue = new Date(payment.due_date) < new Date() && payment.status === "pending"
                   const isPaid = payment.status === "paid"
 
@@ -332,13 +423,14 @@ function PaymentsList({
 
   const itemsPerPage = 10
 
-  // Unique banks for filter
-  const uniqueBanks = Array.from(new Set(payments.map((p) => p.credits.banks.name)))
-    .sort()
-    .map((bankName, index) => ({
-      name: bankName,
-      color: getBankColor(index),
-    }))
+  // Unique banks for filter - banka marka rengine göre
+  const uniqueBanks = Array.from(
+    new Map(payments.map((p) => [p.credits.bank_id, {
+      id: p.credits.bank_id,
+      name: p.credits.banks.name,
+      color: getBankColor(p.credits.banks.name),
+    }])).values()
+  ).sort((a, b) => a.name.localeCompare(b.name, 'tr'))
 
   useEffect(() => {
     let filtered = [...payments]
@@ -427,6 +519,7 @@ function PaymentsList({
           payment_channel: "Manuel İşaretleme",
           transaction_id: `TKS-${paymentToUpdate.installment_number}-${Date.now()}`,
           status: "completed",
+          notes: null,
         })
       }
 
@@ -676,7 +769,7 @@ function PaymentsList({
                     <div className="flex items-center gap-3">
                       <BankLogo
                         bankName={payment.credits.banks.name}
-                        logoUrl={payment.credits.banks.logo_url}
+                        logoUrl={payment.credits.banks.logo_url ?? undefined}
                         size="sm"
                       />
                       <div>
@@ -951,7 +1044,7 @@ function PaymentAnalysis({ payments, credits }: { payments: PaymentWithCredit[];
                   <div className="flex items-center gap-2">
                     <BankLogo
                       bankName={payment.credits.banks.name}
-                      logoUrl={payment.credits.banks.logo_url}
+                      logoUrl={payment.credits.banks.logo_url ?? undefined}
                       size="sm"
                     />
                     <span className="font-medium text-white">{payment.credits.banks.name}</span>
@@ -988,7 +1081,7 @@ function PaymentAnalysis({ payments, credits }: { payments: PaymentWithCredit[];
                     <div key={bankName} className="space-y-2">
                       <div className="flex items-center justify-between">
                         <div className="flex items-center gap-2">
-                          <BankLogo bankName={bankName} logoUrl={bankPayments[0]?.credits.banks.logo_url} size="sm" />
+                          <BankLogo bankName={bankName} logoUrl={bankPayments[0]?.credits.banks.logo_url ?? undefined} size="sm" />
                           <span className="font-medium text-sm dark:text-white">{bankName}</span>
                         </div>
                         <span className="text-sm font-semibold dark:text-white">{formatCurrency(data.total)}</span>
@@ -1389,7 +1482,7 @@ function ReminderSettings({ payments }: { payments: PaymentWithCredit[] }) {
                     <div className="flex items-center gap-3">
                       <BankLogo
                         bankName={payment.credits.banks.name}
-                        logoUrl={payment.credits.banks.logo_url}
+                        logoUrl={payment.credits.banks.logo_url ?? undefined}
                         size="sm"
                       />
                       <div>
@@ -1546,7 +1639,7 @@ export default function OdemePlaniPage() {
                 <Calendar className="h-8 w-8" />
                 Ödeme Planı Yönetimi
               </h2>
-              <p className="text-orange-100 text-lg">
+              <p className="text-white-100 text-lg">
                 Tüm kredilerinizin ödeme planlarını görüntüleyin, takip edin ve hatırlatıcılar oluşturun
               </p>
             </div>

@@ -100,6 +100,7 @@ export async function getAllPayments(userId: string, monthsBack = 12, monthsForw
         id,
         credit_code,
         user_id,
+        bank_id,
         banks (
           name,
           logo_url

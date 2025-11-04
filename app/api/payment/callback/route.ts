@@ -27,6 +27,26 @@ export async function POST(request: Request) {
     const conversationId = paymentResult.conversationId
     const userId = conversationId.split("_")[1]
 
+    // SECURITY: Verify that the authenticated user matches the payment user (IDOR protection)
+    const { data: { user: authenticatedUser }, error: authError } = await supabase.auth.getUser()
+
+    if (authError || !authenticatedUser) {
+      console.error("[payment-callback] Authentication error:", authError)
+      return NextResponse.redirect(
+        `${process.env.NEXT_PUBLIC_SITE_URL}/uygulama/premium?error=unauthorized`
+      )
+    }
+
+    if (authenticatedUser.id !== userId) {
+      console.error(
+        "[payment-callback] IDOR attempt detected - user mismatch:",
+        { authenticatedUser: authenticatedUser.id, paymentUser: userId }
+      )
+      return NextResponse.redirect(
+        `${process.env.NEXT_PUBLIC_SITE_URL}/uygulama/premium?error=unauthorized`
+      )
+    }
+
     // Update payment transaction
     const { error: transactionError } = await supabase
       .from("payment_transactions")

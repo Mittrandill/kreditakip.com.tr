@@ -42,6 +42,23 @@ import { tr } from "date-fns/locale"
 
 const ITEMS_PER_PAGE = 10
 
+interface NotificationStats {
+  total: number
+  unread: number
+  read: number
+  warnings: number
+  success: number
+}
+
+interface Notification {
+  id: string
+  title: string
+  message: string
+  type: string
+  is_read: boolean
+  created_at: string
+}
+
 const typeConfig = {
   info: {
     icon: Info,
@@ -80,13 +97,19 @@ const typeConfig = {
 export default function BildirimlerPage() {
   const { user } = useAuth()
   const router = useRouter()
-  const [notifications, setNotifications] = useState<any[]>([])
-  const [stats, setStats] = useState<any>({})
+  const [notifications, setNotifications] = useState<Notification[]>([])
+  const [stats, setStats] = useState<NotificationStats>({
+    total: 0,
+    unread: 0,
+    read: 0,
+    warnings: 0,
+    success: 0,
+  })
   const [loading, setLoading] = useState(true)
   const [searchTerm, setSearchTerm] = useState("")
   const [showUnreadOnly, setShowUnreadOnly] = useState(false)
   const [currentPage, setCurrentPage] = useState(1)
-  const [selectedNotification, setSelectedNotification] = useState<any>(null)
+  const [selectedNotification, setSelectedNotification] = useState<Notification | null>(null)
   const [sheetOpen, setSheetOpen] = useState(false)
 
   const loadNotifications = async () => {
@@ -100,7 +123,14 @@ export default function BildirimlerPage() {
       ])
 
       setNotifications(notificationsData || [])
-      setStats(statsData || {})
+      const defaultStats: NotificationStats = {
+        total: 0,
+        unread: 0,
+        read: 0,
+        warnings: 0,
+        success: 0,
+      }
+      setStats({ ...defaultStats, ...statsData } as NotificationStats)
     } catch (error) {
       console.error("Error loading notifications:", error)
       toast.error("Bildirimler yüklenirken hata oluştu")
@@ -170,7 +200,7 @@ export default function BildirimlerPage() {
     }
   }
 
-  const handleViewNotification = async (notification: any) => {
+  const handleViewNotification = async (notification: Notification) => {
     setSelectedNotification(notification)
     setSheetOpen(true)
 

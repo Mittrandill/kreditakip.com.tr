@@ -498,7 +498,7 @@ export default function PDFReportModal({ userData, trigger }: PDFReportModalProp
                             </Button>
                           </PopoverTrigger>
                           <PopoverContent className="w-auto p-0" align="start">
-                            <Calendar mode="single" selected={dateTo} onSelect={setDateTo} initialFocus locale={tr} />
+                            <Calendar mode="single" selected={dateTo} onSelect={setDateTo as any} initialFocus locale={tr} />
                           </PopoverContent>
                         </Popover>
                       </div>

@@ -1,15 +1,24 @@
 // Simple and reliable encryption utilities
-// SECURITY FIX: Use environment variable instead of hardcoded key
-const PRIMARY_KEY = process.env.NEXT_PUBLIC_ENCRYPTION_KEY || process.env.ENCRYPTION_KEY
+// SECURITY: Server-side only encryption - DO NOT use in client components
+// This module should only be imported in API routes and server components
+
+/**
+ * IMPORTANT SECURITY NOTE:
+ * This encryption utility uses server-side environment variables only.
+ * DO NOT import this in client components as it will fail.
+ * For client-side operations, use API routes that handle encryption server-side.
+ */
+
+const PRIMARY_KEY = process.env.ENCRYPTION_KEY
 
 if (!PRIMARY_KEY) {
   throw new Error(
-    `🔐 ENCRYPTION_KEY bulunamadı! .env dosyasına NEXT_PUBLIC_ENCRYPTION_KEY veya ENCRYPTION_KEY ekleyin.\nÖrnek: NEXT_PUBLIC_ENCRYPTION_KEY="your-secure-random-key-here"`
+    `🔐 ENCRYPTION_KEY bulunamadı! .env dosyasına ENCRYPTION_KEY ekleyin.\nÖrnek: ENCRYPTION_KEY="your-secure-random-key-here"\n\n⚠️ GÜVENLİK UYARISI: Asla NEXT_PUBLIC_ENCRYPTION_KEY kullanmayın - bu client-side'a expose olur!`
   )
 }
 
-const FALLBACK_KEY_1 = process.env.NEXT_PUBLIC_ENCRYPTION_KEY_FALLBACK_1
-const FALLBACK_KEY_2 = process.env.NEXT_PUBLIC_ENCRYPTION_KEY_FALLBACK_2
+const FALLBACK_KEY_1 = process.env.ENCRYPTION_KEY_FALLBACK_1
+const FALLBACK_KEY_2 = process.env.ENCRYPTION_KEY_FALLBACK_2
 
 const FALLBACK_KEYS: string[] = [PRIMARY_KEY, FALLBACK_KEY_1, FALLBACK_KEY_2].filter(Boolean) as string[]
 

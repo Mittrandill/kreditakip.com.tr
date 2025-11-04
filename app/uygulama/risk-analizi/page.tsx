@@ -202,7 +202,7 @@ export default function RiskAnaliziPage() {
         const scoreB = b.overall_risk_score || ""
         comparison = scoreA.localeCompare(scoreB)
       } else if (sortBy === "debt_to_income_ratio") {
-        comparison = (parseFloat(a.debt_to_income_ratio) || 0) - (parseFloat(b.debt_to_income_ratio) || 0)
+        comparison = (parseFloat(a.debt_to_income_ratio || "0") || 0) - (parseFloat(b.debt_to_income_ratio || "0") || 0)
       } else if (sortBy === "monthly_income") {
         comparison = (a.monthly_income || 0) - (b.monthly_income || 0)
       } else if (sortBy === "total_debt_amount") {

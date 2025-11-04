@@ -777,8 +777,9 @@ export default function PDFAnalysisPage() {
       {showBankSelector && <BankSelector onBankSelect={handleBankSelect} onSkip={() => setShowBankSelector(false)} />}
       {showCreditTypeSelector && (
         <CreditTypeSelector
-          onCreditTypeSelect={handleCreditTypeSelect}
-          onSkip={() => setShowCreditTypeSelector(false)}
+          open={showCreditTypeSelector}
+          onOpenChange={setShowCreditTypeSelector}
+          onSelect={handleCreditTypeSelect}
         />
       )}
     </div>

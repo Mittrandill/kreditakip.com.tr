@@ -5,6 +5,7 @@ import { UserGrowthChart } from "@/components/user-growth-chart"
 import Header from "@/components/layout/header"
 import Footer from "@/components/footer"
 import Link from "next/link"
+import Image from "next/image"
 import { StructuredData } from "@/components/seo/structured-data"
 import type { Metadata } from "next"
 
@@ -390,91 +391,167 @@ export default function LandingPage() {
                   <p className="text-white/60 text-sm">Türkiye ve dünyadaki tüm bankalarla uyumlu</p>
                 </div>
 
-                {/* Bank Logos Grid */}
+                {/* Bank Logos Grid - Optimized with Next.js Image */}
                 <div className="grid grid-cols-4 md:grid-cols-6 lg:grid-cols-8 gap-4 items-center">
                   <div className="w-16 h-16 bg-white/5 rounded-xl p-2 flex items-center justify-center hover:bg-white/10 transition-all">
-                    <img
+                    <Image
                       src="/bank-icons/turkiye-garanti-bankasi.png"
-                      alt="Garanti BBVA"
-                      className="w-full h-full object-contain"
+                      alt="Garanti BBVA Bankası Logosu"
+                      width={48}
+                      height={48}
+                      className="object-contain"
+                      loading="lazy"
                     />
                   </div>
                   <div className="w-16 h-16 bg-white/5 rounded-xl p-2 flex items-center justify-center hover:bg-white/10 transition-all">
-                    <img src="/bank-icons/akbank.png" alt="Akbank" className="w-full h-full object-contain" />
+                    <Image
+                      src="/bank-icons/akbank.png"
+                      alt="Akbank Logosu"
+                      width={48}
+                      height={48}
+                      className="object-contain"
+                      loading="lazy"
+                    />
                   </div>
                   <div className="w-16 h-16 bg-white/5 rounded-xl p-2 flex items-center justify-center hover:bg-white/10 transition-all">
-                    <img
+                    <Image
                       src="/bank-icons/turkiye-is-bankasi.png"
-                      alt="İş Bankası"
-                      className="w-full h-full object-contain"
+                      alt="Türkiye İş Bankası Logosu"
+                      width={48}
+                      height={48}
+                      className="object-contain"
+                      loading="lazy"
                     />
                   </div>
                   <div className="w-16 h-16 bg-white/5 rounded-xl p-2 flex items-center justify-center hover:bg-white/10 transition-all">
-                    <img
+                    <Image
                       src="/bank-icons/yapi-kredi-bankasi.png"
-                      alt="Yapı Kredi"
-                      className="w-full h-full object-contain"
+                      alt="Yapı Kredi Bankası Logosu"
+                      width={48}
+                      height={48}
+                      className="object-contain"
+                      loading="lazy"
                     />
                   </div>
                   <div className="w-16 h-16 bg-white/5 rounded-xl p-2 flex items-center justify-center hover:bg-white/10 transition-all">
-                    <img
+                    <Image
                       src="/bank-icons/ziraat-bankasi.png"
-                      alt="Ziraat Bankası"
-                      className="w-full h-full object-contain"
+                      alt="Ziraat Bankası Logosu"
+                      width={48}
+                      height={48}
+                      className="object-contain"
+                      loading="lazy"
                     />
                   </div>
                   <div className="w-16 h-16 bg-white/5 rounded-xl p-2 flex items-center justify-center hover:bg-white/10 transition-all">
-                    <img src="/bank-icons/vakifbank.png" alt="VakıfBank" className="w-full h-full object-contain" />
+                    <Image
+                      src="/bank-icons/vakifbank.png"
+                      alt="VakıfBank Logosu"
+                      width={48}
+                      height={48}
+                      className="object-contain"
+                      loading="lazy"
+                    />
                   </div>
                   <div className="w-16 h-16 bg-white/5 rounded-xl p-2 flex items-center justify-center hover:bg-white/10 transition-all">
-                    <img
+                    <Image
                       src="/bank-icons/turkiye-halk-bankasi.png"
-                      alt="Halkbank"
-                      className="w-full h-full object-contain"
+                      alt="Halkbank Logosu"
+                      width={48}
+                      height={48}
+                      className="object-contain"
+                      loading="lazy"
                     />
                   </div>
                   <div className="w-16 h-16 bg-white/5 rounded-xl p-2 flex items-center justify-center hover:bg-white/10 transition-all">
-                    <img
+                    <Image
                       src="/bank-icons/qnb-finansbank.png"
-                      alt="QNB Finansbank"
-                      className="w-full h-full object-contain"
+                      alt="QNB Finansbank Logosu"
+                      width={48}
+                      height={48}
+                      className="object-contain"
+                      loading="lazy"
                     />
                   </div>
                   <div className="w-16 h-16 bg-white/5 rounded-xl p-2 flex items-center justify-center hover:bg-white/10 transition-all">
-                    <img src="/bank-icons/denizbank.png" alt="DenizBank" className="w-full h-full object-contain" />
+                    <Image
+                      src="/bank-icons/denizbank.png"
+                      alt="DenizBank Logosu"
+                      width={48}
+                      height={48}
+                      className="object-contain"
+                      loading="lazy"
+                    />
                   </div>
                   <div className="w-16 h-16 bg-white/5 rounded-xl p-2 flex items-center justify-center hover:bg-white/10 transition-all">
-                    <img src="/bank-icons/ing-bank.png" alt="ING" className="w-full h-full object-contain" />
+                    <Image
+                      src="/bank-icons/ing-bank.png"
+                      alt="ING Bank Logosu"
+                      width={48}
+                      height={48}
+                      className="object-contain"
+                      loading="lazy"
+                    />
                   </div>
                   <div className="w-16 h-16 bg-white/5 rounded-xl p-2 flex items-center justify-center hover:bg-white/10 transition-all">
-                    <img src="/bank-icons/hsbc-bank.png" alt="HSBC" className="w-full h-full object-contain" />
+                    <Image
+                      src="/bank-icons/hsbc-bank.png"
+                      alt="HSBC Bank Logosu"
+                      width={48}
+                      height={48}
+                      className="object-contain"
+                      loading="lazy"
+                    />
                   </div>
                   <div className="w-16 h-16 bg-white/5 rounded-xl p-2 flex items-center justify-center hover:bg-white/10 transition-all">
-                    <img
+                    <Image
                       src="/bank-icons/kuveyt-turk-katilim-bankasi.png"
-                      alt="Kuveyt Türk"
-                      className="w-full h-full object-contain"
+                      alt="Kuveyt Türk Katılım Bankası Logosu"
+                      width={48}
+                      height={48}
+                      className="object-contain"
+                      loading="lazy"
                     />
                   </div>
                   <div className="w-16 h-16 bg-white/5 rounded-xl p-2 flex items-center justify-center hover:bg-white/10 transition-all">
-                    <img
+                    <Image
                       src="/bank-icons/albaraka-turk-katilim-bankasi.png"
-                      alt="Albaraka Türk"
-                      className="w-full h-full object-contain"
+                      alt="Albaraka Türk Katılım Bankası Logosu"
+                      width={48}
+                      height={48}
+                      className="object-contain"
+                      loading="lazy"
                     />
                   </div>
                   <div className="w-16 h-16 bg-white/5 rounded-xl p-2 flex items-center justify-center hover:bg-white/10 transition-all">
-                    <img
+                    <Image
                       src="/bank-icons/turkiye-finans-katilim-bankasi.png"
-                      alt="Türkiye Finans"
-                      className="w-full h-full object-contain"
+                      alt="Türkiye Finans Katılım Bankası Logosu"
+                      width={48}
+                      height={48}
+                      className="object-contain"
+                      loading="lazy"
                     />
                   </div>
                   <div className="w-16 h-16 bg-white/5 rounded-xl p-2 flex items-center justify-center hover:bg-white/10 transition-all">
-                    <img src="/bank-icons/fibabanka.png" alt="Fibabanka" className="w-full h-full object-contain" />
+                    <Image
+                      src="/bank-icons/fibabanka.png"
+                      alt="Fibabanka Logosu"
+                      width={48}
+                      height={48}
+                      className="object-contain"
+                      loading="lazy"
+                    />
                   </div>
                   <div className="w-16 h-16 bg-white/5 rounded-xl p-2 flex items-center justify-center hover:bg-white/10 transition-all">
-                    <img src="/bank-icons/odeabank.png" alt="Odeabank" className="w-full h-full object-contain" />
+                    <Image
+                      src="/bank-icons/odeabank.png"
+                      alt="Odeabank Logosu"
+                      width={48}
+                      height={48}
+                      className="object-contain"
+                      loading="lazy"
+                    />
                   </div>
                 </div>
 
@@ -763,10 +840,13 @@ export default function LandingPage() {
                     daha organize!"
                   </p>
                   <div className="flex items-center">
-                    <img
+                    <Image
                       src="/professional-turkish-woman.png"
-                      alt="Ayşe Yılmaz"
-                      className="w-12 h-12 rounded-full object-cover mr-4"
+                      alt="Ayşe Yılmaz - Müşteri Yorumu"
+                      width={48}
+                      height={48}
+                      className="rounded-full object-cover mr-4"
+                      loading="lazy"
                     />
                     <div>
                       <p className="text-white font-semibold">Ayşe Yılmaz</p>
@@ -787,10 +867,13 @@ export default function LandingPage() {
                     "OCR teknolojisi gerçekten etkileyici. Saniyeler içinde tüm bilgilerimi dijital ortama aktardı."
                   </p>
                   <div className="flex items-center">
-                    <img
+                    <Image
                       src="/turkish-businessman.png"
-                      alt="Mehmet Kaya"
-                      className="w-12 h-12 rounded-full object-cover mr-4"
+                      alt="Mehmet Kaya - Müşteri Yorumu"
+                      width={48}
+                      height={48}
+                      className="rounded-full object-cover mr-4"
+                      loading="lazy"
                     />
                     <div>
                       <p className="text-white font-semibold">Mehmet Kaya</p>
@@ -811,10 +894,13 @@ export default function LandingPage() {
                     "Finansal durumumu bu kadar net görebileceğimi hiç düşünmemiştim. Harika bir uygulama!"
                   </p>
                   <div className="flex items-center">
-                    <img
-                      src="/placeholder.svg?height=48&width=48"
-                      alt="Elif Özkan"
-                      className="w-12 h-12 rounded-full object-cover mr-4"
+                    <Image
+                       src="/professional-turkish-woman.png"
+                      alt="Elif Özkan - Müşteri Yorumu"
+                      width={48}
+                      height={48}
+                      className="rounded-full object-cover mr-4"
+                      loading="lazy"
                     />
                     <div>
                       <p className="text-white font-semibold">Elif Özkan</p>

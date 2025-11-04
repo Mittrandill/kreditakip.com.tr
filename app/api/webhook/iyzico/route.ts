@@ -1,11 +1,46 @@
 import { type NextRequest, NextResponse } from "next/server"
 import { createClient } from "@supabase/supabase-js"
+import crypto from "crypto"
 
 export const dynamic = "force-dynamic"
 export const runtime = "nodejs"
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
 const supabaseServiceKey = process.env.SERVICE_ROLE_KEY!
+const iyzicoSecretKey = process.env.IYZICO_SECRET_KEY!
+
+/**
+ * Verifies İyzico webhook signature to prevent forgery attacks
+ */
+function verifyWebhookSignature(
+  payload: any,
+  signature: string | null,
+  secret: string
+): boolean {
+  if (!signature) {
+    console.error("[iyzico-webhook] Missing signature header")
+    return false
+  }
+
+  try {
+    // İyzico typically uses HMAC-SHA256 for webhook signatures
+    // The signature is usually computed from the raw payload
+    const payloadString = JSON.stringify(payload)
+    const expectedSignature = crypto
+      .createHmac("sha256", secret)
+      .update(payloadString)
+      .digest("hex")
+
+    // Use timing-safe comparison to prevent timing attacks
+    return crypto.timingSafeEqual(
+      Buffer.from(signature),
+      Buffer.from(expectedSignature)
+    )
+  } catch (error) {
+    console.error("[iyzico-webhook] Signature verification error:", error)
+    return false
+  }
+}
 
 /**
  * İyzico Webhook Handler
@@ -21,9 +56,19 @@ const supabaseServiceKey = process.env.SERVICE_ROLE_KEY!
  */
 export async function POST(request: NextRequest) {
   try {
-
     // Get webhook payload
     const payload = await request.json()
+
+    // SECURITY: Verify webhook signature to prevent forgery
+    const signature = request.headers.get("x-iyzico-signature")
+
+    if (!verifyWebhookSignature(payload, signature, iyzicoSecretKey)) {
+      console.error("[iyzico-webhook] Invalid webhook signature - possible forgery attempt")
+      return NextResponse.json(
+        { error: "Invalid signature" },
+        { status: 401 }
+      )
+    }
 
     // Create Supabase admin client
     const supabase = createClient(supabaseUrl, supabaseServiceKey, {

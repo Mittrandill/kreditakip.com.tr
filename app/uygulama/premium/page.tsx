@@ -142,10 +142,10 @@ export default function PremiumPage() {
                 <Check className="h-5 w-5 mr-2" />
                 {subscription.plan_id === "premium-yearly" ? "Yıllık Premium" : "Aylık Premium"}
               </Badge>
-              {subscription.expires_at && (
+              {subscription.expiresAt && (
                 <Badge className="bg-white/15 text-white/90 border-white/20 backdrop-blur-sm px-6 py-3 text-base">
                   <Crown className="h-4 w-4 mr-2" />
-                  {new Date(subscription.expires_at).toLocaleDateString("tr-TR")} tarihine kadar geçerli
+                  {new Date(subscription.expiresAt).toLocaleDateString("tr-TR")} tarihine kadar geçerli
                 </Badge>
               )}
             </div>

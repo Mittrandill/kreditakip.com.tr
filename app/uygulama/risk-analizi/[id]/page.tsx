@@ -72,14 +72,14 @@ const CHART_COLORS = ["#10B981", "#3B82F6", "#F59E0B", "#EF4444", "#8B5CF6", "#0
 
 const getSeverityBadgeVariant = (
   severity: string | undefined,
-): "destructive" | "warning" | "success" | "secondary" | "info" | "outline" | "default" => {
+): "destructive" | "outline" | "default" | "secondary" => {
   switch (severity?.toLowerCase()) {
     case "yüksek":
       return "destructive"
     case "orta":
-      return "warning"
+      return "outline"
     case "düşük":
-      return "success"
+      return "default"
     default:
       return "secondary"
   }
@@ -256,7 +256,6 @@ export default function RiskAnalysisDetailPage() {
       toast({
         title: "Başarılı",
         description: "Risk analizi başarıyla silindi.",
-        variant: "success",
       })
       router.push("/uygulama/risk-analizi")
     } catch (err: any) {
@@ -507,9 +506,9 @@ export default function RiskAnalysisDetailPage() {
                     <Badge
                       variant={
                         analysisData.debtToIncomeRatio.assessment === "İyi"
-                          ? "success"
+                          ? "default"
                           : analysisData.debtToIncomeRatio.assessment === "Orta"
-                            ? "warning"
+                            ? "outline"
                             : analysisData.debtToIncomeRatio.assessment === "Yüksek" ||
                                 analysisData.debtToIncomeRatio.assessment === "İyileştirilmeli"
                               ? "destructive"
@@ -564,7 +563,7 @@ export default function RiskAnalysisDetailPage() {
                     <Badge
                       variant={
                         analysisData.cashFlowAnalysis.assessment === "Pozitif"
-                          ? "success"
+                          ? "default"
                           : analysisData.cashFlowAnalysis.assessment === "Negatif"
                             ? "destructive"
                             : "secondary"
@@ -739,7 +738,7 @@ export default function RiskAnalysisDetailPage() {
                   <div className="flex items-center">
                     <strong className="mr-2">Değerlendirme:</strong>
                     <Badge
-                      variant={analysisData.assetLiabilityAnalysis.assessment === "Sağlıklı" ? "success" : "warning"}
+                      variant={analysisData.assetLiabilityAnalysis.assessment === "Sağlıklı" ? "default" : "outline"}
                     >
                       {analysisData.assetLiabilityAnalysis.assessment}
                     </Badge>
@@ -790,7 +789,7 @@ export default function RiskAnalysisDetailPage() {
                 <div className="space-y-3">
                   <div className="flex items-center">
                     <strong className="mr-2">Değerlendirme:</strong>
-                    <Badge variant={analysisData.savingsAnalysis.assessment === "Yeterli" ? "success" : "warning"}>
+                    <Badge variant={analysisData.savingsAnalysis.assessment === "Yeterli" ? "default" : "outline"}>
                       {analysisData.savingsAnalysis.assessment}
                     </Badge>
                   </div>
@@ -820,7 +819,7 @@ export default function RiskAnalysisDetailPage() {
                   <div className="mt-3 pt-3 border-t border-gray-200 dark:border-gray-700 space-y-2">
                     <div className="flex items-center">
                       <strong className="mr-2">Değerlendirme:</strong>
-                      <Badge variant={analysisData.creditUtilization.assessment === "İyi" ? "success" : "warning"}>
+                      <Badge variant={analysisData.creditUtilization.assessment === "İyi" ? "default" : "outline"}>
                         {analysisData.creditUtilization.assessment}
                       </Badge>
                     </div>
@@ -863,7 +862,7 @@ export default function RiskAnalysisDetailPage() {
                                 innerRadius={40}
                                 paddingAngle={5}
                                 dataKey="value"
-                                label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
+                                label={(({ name, percent }: { name: string; percent: number }) => `${name} ${(percent * 100).toFixed(0)}%`) as any}
                               >
                                 {analysisData.chartsData.debtBreakdown.map((entry, index) => (
                                   <Cell
@@ -940,7 +939,7 @@ export default function RiskAnalysisDetailPage() {
                                 innerRadius={40}
                                 paddingAngle={5}
                                 dataKey="value"
-                                label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
+                                label={(({ name, percent }: { name: string; percent: number }) => `${name} ${(percent * 100).toFixed(0)}%`) as any}
                               >
                                 {analysisData.chartsData.assetAllocation.map((entry, index) => (
                                   <Cell

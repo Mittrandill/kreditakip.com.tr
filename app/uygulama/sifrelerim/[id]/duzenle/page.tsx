@@ -17,9 +17,9 @@ import { useToast } from "@/hooks/use-toast"
 import {
   getBankingCredential,
   updateBankingCredential,
-  decryptPassword,
+  decryptCredentialPassword,
   type BankingCredential,
-} from "@/lib/api/banking-credentials"
+} from "@/app/actions/banking-credentials"
 import BankSelector from "@/components/bank-selector"
 import Link from "next/link"
 
@@ -96,7 +96,7 @@ export default function SifreDuzenlePage() {
       setCredential(data)
       setSelectedBank({
         id: data.bank_id,
-        name: data.bank_name,
+        name: data.bank_name || "",
         logo_url: data.bank_logo_url || undefined,
       })
 
@@ -104,7 +104,7 @@ export default function SifreDuzenlePage() {
       let decryptedPassword = ""
       if (data.encrypted_password) {
         try {
-          decryptedPassword = (await decryptPassword(data.encrypted_password)) || ""
+          decryptedPassword = (await decryptCredentialPassword(user.id, credentialId)) || ""
         } catch (error) {
           console.error("Password decryption error:", error)
           toast({
@@ -199,14 +199,11 @@ export default function SifreDuzenlePage() {
       await updateBankingCredential(user.id, credential.id, {
         credential_name: formData.credentialName,
         bank_id: formData.bankId,
-        bank_name: selectedBank?.name || "",
-        bank_logo_url: selectedBank?.logo_url || null,
         credential_type: formData.credentialType as "internet_banking" | "mobile_banking" | "phone_banking" | "other",
-        username: formData.username || null,
+        username: formData.username || undefined,
         password: formData.password,
-        notes: formData.notes || null,
+        notes: formData.notes || undefined,
         password_change_frequency_days: formData.passwordChangeFrequency,
-        last_password_change_date: new Date().toISOString(),
       })
 
       toast({

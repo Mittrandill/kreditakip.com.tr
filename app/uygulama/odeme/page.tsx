@@ -23,40 +23,12 @@ export default function PaymentPage() {
   const { toast } = useToast()
   const { refresh: refreshSubscription } = useSubscription()
   const { user, loading: authLoading } = useAuth()
+  const searchParams = useSearchParams()
+
+  // All hooks must be called at the top level
   const [isProcessing, setIsProcessing] = useState(false)
   const [selectedCityCode, setSelectedCityCode] = useState("")
   const [availableDistricts, setAvailableDistricts] = useState<string[]>([])
-  const searchParams = useSearchParams()
-
-  // Plan bilgisini al
-  const planId = searchParams.get("plan")
-
-  // Plan seçilmeden ödeme sayfasına erişimi engelle
-  useEffect(() => {
-    if (!planId && !authLoading) {
-      toast({
-        title: "Plan Seçilmedi",
-        description: "Lütfen önce bir plan seçin.",
-        variant: "destructive",
-      })
-      router.push("/uygulama/premium")
-    }
-  }, [planId, authLoading, router, toast])
-
-  const selectedPlan = planId ? getPlanById(planId) : null
-
-  if (!selectedPlan) {
-    return null
-  }
-
-  useEffect(() => {
-    if (selectedCityCode && cityDistricts[selectedCityCode]) {
-      setAvailableDistricts(cityDistricts[selectedCityCode])
-    } else {
-      setAvailableDistricts([])
-    }
-  }, [selectedCityCode])
-
   const [billingInfo, setBillingInfo] = useState({
     fullName: "",
     email: user?.email || "",
@@ -70,12 +42,42 @@ export default function PaymentPage() {
     taxNumber: "",
   })
 
+  // Plan bilgisini al
+  const planId = searchParams.get("plan")
+  const selectedPlan = planId ? getPlanById(planId) : null
+
+  // Plan seçilmeden ödeme sayfasına erişimi engelle
+  useEffect(() => {
+    if (!planId && !authLoading) {
+      toast({
+        title: "Plan Seçilmedi",
+        description: "Lütfen önce bir plan seçin.",
+        variant: "destructive",
+      })
+      router.push("/uygulama/premium")
+    }
+  }, [planId, authLoading, router, toast])
+
+  // City districts effect
+  useEffect(() => {
+    if (selectedCityCode && cityDistricts[selectedCityCode]) {
+      setAvailableDistricts(cityDistricts[selectedCityCode])
+    } else {
+      setAvailableDistricts([])
+    }
+  }, [selectedCityCode])
+
   // Pre-fill email from user
   useEffect(() => {
     if (user?.email && !billingInfo.email) {
       setBillingInfo((prev) => ({ ...prev, email: user.email! }))
     }
   }, [user, billingInfo.email])
+
+  // Early return after all hooks
+  if (!selectedPlan) {
+    return null
+  }
 
   const handleBillingChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target

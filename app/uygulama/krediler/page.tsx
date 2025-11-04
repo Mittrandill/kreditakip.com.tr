@@ -534,7 +534,7 @@ export default function KredilerPage() {
                             <div className="relative">
                               <BankLogo
                                 bankName={kredi.banks?.name || "Bilinmeyen Banka"}
-                                logoUrl={kredi.banks?.logo_url}
+                                logoUrl={kredi.banks?.logo_url ?? undefined}
                                 size="md"
                                 className="ring-2 ring-white dark:ring-gray-600 shadow-lg"
                               />
@@ -733,7 +733,7 @@ export default function KredilerPage() {
                             <div className="flex items-center gap-3">
                               <BankLogo
                                 bankName={kredi.banks?.name || "Bilinmeyen Banka"}
-                                logoUrl={kredi.banks?.logo_url}
+                                logoUrl={kredi.banks?.logo_url ?? undefined}
                                 size="md"
                                 className="ring-1 ring-emerald-200 dark:ring-gray-700 bg-white dark:bg-gray-800"
                               />

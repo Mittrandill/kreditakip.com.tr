@@ -179,7 +179,7 @@ export async function createPaymentReminders(userId: string) {
 
 export async function createUpcomingPaymentNotifications(userId: string) {
   try {
-    const notifications = []
+    const notifications: any[] = []
 
     // 1 gün sonra vadesi gelenler için bildirim
     const oneDayLater = new Date()

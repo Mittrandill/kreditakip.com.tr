@@ -254,7 +254,7 @@ export default function PaymentDetailPage({ params }: { params: { id: string } }
                 <div className="flex justify-between">
                   <span className="text-gray-600 dark:text-gray-400">Referans No:</span>
                   <span className="font-medium text-gray-900 dark:text-gray-100 font-mono">
-                    {payment.reference_number || "N/A"}
+                    {payment.transaction_id || "N/A"}
                   </span>
                 </div>
                 {payment.transaction_id && (

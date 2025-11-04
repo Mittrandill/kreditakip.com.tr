@@ -1,13 +1,49 @@
 import { type NextRequest, NextResponse } from "next/server"
+import { rateLimit, getClientIp, RateLimits } from "@/lib/rate-limit"
 
 export const dynamic = "force-dynamic"
 
+/**
+ * HTML entity escaping to prevent XSS
+ */
+function escapeHtml(unsafe: string): string {
+  return unsafe
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#039;")
+}
+
 export async function POST(request: NextRequest) {
   try {
+    // SECURITY: Rate limiting to prevent spam
+    const clientIp = getClientIp(request.headers)
+    const rateLimitResult = rateLimit({
+      identifier: `contact:${clientIp}`,
+      ...RateLimits.CONTACT_FORM
+    })
+
+    if (!rateLimitResult.success) {
+      return NextResponse.json(
+        {
+          error: "Çok fazla istek gönderdiniz. Lütfen daha sonra tekrar deneyin.",
+          retryAfter: rateLimitResult.reset
+        },
+        {
+          status: 429,
+          headers: {
+            'Retry-After': rateLimitResult.reset.toString(),
+            'X-RateLimit-Limit': rateLimitResult.limit.toString(),
+            'X-RateLimit-Remaining': rateLimitResult.remaining.toString(),
+            'X-RateLimit-Reset': rateLimitResult.reset.toString()
+          }
+        }
+      )
+    }
 
     const MAILJET_API_KEY = process.env.MAILJET_API_KEY
     const MAILJET_SECRET_KEY = process.env.MAILJET_SECRET_KEY
-
 
     if (!MAILJET_API_KEY || !MAILJET_SECRET_KEY) {
       console.error("[v0] HATA: Mailjet API anahtarları eksik!")
@@ -24,9 +60,16 @@ export async function POST(request: NextRequest) {
 
     const { firstName, lastName, email, phone, subject, message } = body
 
-    // Validation
+    // SECURITY: Enhanced validation with length limits
     if (!firstName || !lastName || !email || !subject || !message) {
       return NextResponse.json({ error: "Lütfen tüm zorunlu alanları doldurun" }, { status: 400 })
+    }
+
+    // Length validation to prevent abuse
+    if (firstName.length > 50 || lastName.length > 50 ||
+        subject.length > 200 || message.length > 2000 ||
+        (phone && phone.length > 20)) {
+      return NextResponse.json({ error: "Girilen değerler çok uzun" }, { status: 400 })
     }
 
     // Email validation
@@ -34,6 +77,14 @@ export async function POST(request: NextRequest) {
     if (!emailRegex.test(email)) {
       return NextResponse.json({ error: "Geçerli bir e-posta adresi girin" }, { status: 400 })
     }
+
+    // SECURITY: Sanitize inputs to prevent XSS
+    const safeFirstName = escapeHtml(firstName)
+    const safeLastName = escapeHtml(lastName)
+    const safeEmail = escapeHtml(email)
+    const safePhone = phone ? escapeHtml(phone) : ""
+    const safeSubject = escapeHtml(subject)
+    const safeMessage = escapeHtml(message)
 
 
     const emailData = {
@@ -49,7 +100,7 @@ export async function POST(request: NextRequest) {
               Name: "Kredi Takip Destek",
             },
           ],
-          Subject: `İletişim Formu: ${subject}`,
+          Subject: `İletişim Formu: ${safeSubject}`,
           HTMLPart: `
             <!DOCTYPE html>
             <html lang="tr">
@@ -232,27 +283,27 @@ export async function POST(request: NextRequest) {
                         <div class="message-details">
                             <div class="detail-row">
                                 <div class="detail-label">👤 Ad Soyad</div>
-                                <div class="detail-value">${firstName} ${lastName}</div>
+                                <div class="detail-value">${safeFirstName} ${safeLastName}</div>
                             </div>
                             <div class="detail-row">
                                 <div class="detail-label">📧 E-posta</div>
-                                <div class="detail-value">${email}</div>
+                                <div class="detail-value">${safeEmail}</div>
                             </div>
-                            ${phone ? `
+                            ${safePhone ? `
                             <div class="detail-row">
                                 <div class="detail-label">📱 Telefon</div>
-                                <div class="detail-value">${phone}</div>
+                                <div class="detail-value">${safePhone}</div>
                             </div>
                             ` : ''}
                             <div class="detail-row">
                                 <div class="detail-label">📋 Konu</div>
-                                <div class="detail-value">${subject}</div>
+                                <div class="detail-value">${safeSubject}</div>
                             </div>
                         </div>
 
                         <div class="message-content">
                             <div class="message-label">Mesaj İçeriği</div>
-                            <div class="message-text">${message.replace(/\n/g, "<br>")}</div>
+                            <div class="message-text">${safeMessage.replace(/\n/g, "<br>")}</div>
                         </div>
                     </div>
 
@@ -269,14 +320,14 @@ export async function POST(request: NextRequest) {
           `,
           TextPart: `
             Yeni İletişim Formu Mesajı
-            
-            Ad Soyad: ${firstName} ${lastName}
-            E-posta: ${email}
-            ${phone ? `Telefon: ${phone}` : ""}
-            Konu: ${subject}
-            
+
+            Ad Soyad: ${safeFirstName} ${safeLastName}
+            E-posta: ${safeEmail}
+            ${safePhone ? `Telefon: ${safePhone}` : ""}
+            Konu: ${safeSubject}
+
             Mesaj:
-            ${message}
+            ${safeMessage}
           `,
         },
       ],
