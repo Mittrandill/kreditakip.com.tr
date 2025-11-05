@@ -10,7 +10,8 @@
       "Bash(npm audit:*)",
       "Bash(npm run lint:*)",
       "Bash(tree:*)",
-      "Bash(nul)"
+      "Bash(nul)",
+      "Bash(npm run build:*)"
     ],
     "deny": [],
     "ask": []

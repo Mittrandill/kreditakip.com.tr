@@ -1,5 +1,6 @@
 import { type NextRequest, NextResponse } from "next/server"
 import { createSupabaseAdmin } from "@/lib/supabase-server"
+import { createWeeklyPaymentNotifications, createOverduePaymentNotifications } from "@/lib/api/notifications-server"
 import { timingSafeEqual } from "node:crypto"
 
 export const dynamic = "force-dynamic"
@@ -64,7 +65,11 @@ export async function GET(request: NextRequest) {
 
     const results = {
       totalUsers: users.length,
-      notifications: {
+      appNotifications: {
+        reminder: 0,
+        overdue: 0,
+      },
+      emailNotifications: {
         "3_days_before": 0,
         "1_day_before": 0,
         due_date: 0,
@@ -73,6 +78,26 @@ export async function GET(request: NextRequest) {
       errors: [] as Array<{ userId: string; error: string }>,
     }
 
+    // ADIM 1: Önce tüm kullanıcılar için uygulama içi bildirimler oluştur
+    console.log("[cron] Creating app notifications for all users...")
+    for (const user of users) {
+      try {
+        // Hatırlatma bildirimleri oluştur (3 gün içinde vadesi gelenler)
+        const reminderNotifs = await createWeeklyPaymentNotifications(user.user_id)
+        results.appNotifications.reminder += reminderNotifs?.length || 0
+
+        // Gecikme bildirimleri oluştur (vadesi geçmiş olanlar)
+        const overdueNotifs = await createOverduePaymentNotifications(user.user_id)
+        results.appNotifications.overdue += overdueNotifs?.length || 0
+
+        console.log(`[cron] User ${user.user_id}: ${reminderNotifs?.length || 0} reminders, ${overdueNotifs?.length || 0} overdue`)
+      } catch (error) {
+        console.error(`[cron] Error creating app notifications for user ${user.user_id}:`, error)
+      }
+    }
+
+    // ADIM 2: Email tercihine göre email bildirimleri gönder
+    console.log("[cron] Sending email notifications...")
     for (const user of users) {
       try {
         if (user.email_3_days_before) {
@@ -84,7 +109,7 @@ export async function GET(request: NextRequest) {
 
           if (response.ok) {
             const result = await response.json()
-            results.notifications["3_days_before"] += result.emailsSent || 0
+            results.emailNotifications["3_days_before"] += result.emailsSent || 0
           } else {
             console.error(`Failed to send 3_days_before notification for user ${user.user_id}:`, await response.text())
           }
@@ -99,7 +124,7 @@ export async function GET(request: NextRequest) {
 
           if (response.ok) {
             const result = await response.json()
-            results.notifications["1_day_before"] += result.emailsSent || 0
+            results.emailNotifications["1_day_before"] += result.emailsSent || 0
           } else {
             console.error(`Failed to send 1_day_before notification for user ${user.user_id}:`, await response.text())
           }
@@ -114,7 +139,7 @@ export async function GET(request: NextRequest) {
 
           if (response.ok) {
             const result = await response.json()
-            results.notifications["due_date"] += result.emailsSent || 0
+            results.emailNotifications["due_date"] += result.emailsSent || 0
           } else {
             console.error(`Failed to send due_date notification for user ${user.user_id}:`, await response.text())
           }
@@ -129,7 +154,7 @@ export async function GET(request: NextRequest) {
 
           if (response.ok) {
             const result = await response.json()
-            results.notifications["overdue"] += result.emailsSent || 0
+            results.emailNotifications["overdue"] += result.emailsSent || 0
           } else {
             console.error(`Failed to send overdue notification for user ${user.user_id}:`, await response.text())
           }
@@ -145,11 +170,12 @@ export async function GET(request: NextRequest) {
       }
     }
 
-    const totalSent = Object.values(results.notifications).reduce((sum, count) => sum + count, 0)
+    const totalAppNotifs = results.appNotifications.reminder + results.appNotifications.overdue
+    const totalEmails = Object.values(results.emailNotifications).reduce((sum, count) => sum + count, 0)
 
     return NextResponse.json({
       success: true,
-      message: `Cron job completed. ${totalSent} emails sent to ${results.totalUsers} users.`,
+      message: `Cron job completed. ${totalAppNotifs} app notifications created, ${totalEmails} emails sent to ${results.totalUsers} users.`,
       results,
     })
   } catch (error) {
