@@ -367,13 +367,13 @@ export async function createWeeklyPaymentNotifications(userId: string) {
     // Bugünün tarihi
     const today = new Date().toISOString().split("T")[0]
 
-    // BUGÜN oluşturulan bildirimleri kontrol et - aynı gün için tekrar oluşturma
+    // Sadece okunmamış bildirimleri kontrol et - okunan/silinen bildirimler için yeni bildirim oluşturabilir
     const { data: existingNotifications } = await supabase
       .from("notifications")
       .select("payment_plan_id")
       .eq("user_id", userId)
+      .eq("is_read", false) // Sadece okunmamış bildirimleri kontrol et
       .not("payment_plan_id", "is", null)
-      .gte("created_at", today) // Sadece bugün oluşturulanları kontrol et
 
     const existingPaymentPlanIds = new Set(existingNotifications?.map((n) => n.payment_plan_id) || [])
 
