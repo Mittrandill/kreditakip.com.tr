@@ -112,11 +112,17 @@ export default function BildirimlerPage() {
   const [selectedNotification, setSelectedNotification] = useState<Notification | null>(null)
   const [sheetOpen, setSheetOpen] = useState(false)
 
-  const loadNotifications = async () => {
+  const loadNotifications = async (includeAutoCreate = false) => {
     if (!user?.id) return
 
     try {
       setLoading(true)
+
+      // Eğer talep edilirse önce otomatik bildirim oluştur
+      if (includeAutoCreate) {
+        await autoCreateNotifications()
+      }
+
       const [notificationsData, statsData] = await Promise.all([
         getNotifications(user.id),
         getNotificationStats(user.id),
@@ -139,7 +145,7 @@ export default function BildirimlerPage() {
     }
   }
 
-  // Otomatik bildirim oluşturma - sayfa yüklendiğinde çalışır
+  // Otomatik bildirim oluşturma - sadece yenile butonuna basıldığında çalışır
   const autoCreateNotifications = async () => {
     if (!user?.id) return
 
@@ -155,10 +161,9 @@ export default function BildirimlerPage() {
 
       if (response.ok) {
         const result = await response.json()
-
-        // Eğer yeni bildirimler oluşturulduysa sayfayı yenile
+        // Yeni bildirimler oluşturulduysa toast göster
         if (result.notifications && result.notifications.length > 0) {
-          await loadNotifications()
+          toast.success(`${result.notifications.length} yeni bildirim oluşturuldu`)
         }
       }
     } catch (error) {
@@ -257,7 +262,8 @@ export default function BildirimlerPage() {
 
   useEffect(() => {
     loadNotifications()
-    autoCreateNotifications()
+    // Otomatik bildirim oluşturmayı kaldırdık - bu her reload'da yeni bildirim oluşturuyordu
+    // Bunun yerine sadece cron job veya kullanıcı manual olarak yenilediğinde çalışsın
   }, [user?.id])
 
   // Sayfa değiştiğinde en üste scroll
@@ -357,7 +363,7 @@ export default function BildirimlerPage() {
             <div className="flex items-center gap-2 flex-wrap">
               <Button
                 variant="outline"
-                onClick={loadNotifications}
+                onClick={() => loadNotifications(true)}
                 className="gap-2 bg-transparent dark:bg-transparent dark:border-gray-700 dark:text-gray-300 dark:hover:bg-gray-800"
               >
                 <RefreshCw className="h-4 w-4" />

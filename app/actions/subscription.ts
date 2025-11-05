@@ -13,6 +13,7 @@ export async function cancelSubscription() {
       error: authError,
     } = await supabase.auth.getUser()
 
+    // eslint-disable-next-line no-console
     console.log('[cancelSubscription] Auth check:', {
       hasUser: !!user,
       userId: user?.id,
