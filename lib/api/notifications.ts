@@ -14,6 +14,7 @@ export async function getNotifications(userId: string) {
       )
     `)
     .eq("user_id", userId)
+    .is("deleted_at", null) // Sadece silinmemiş bildirimleri getir
     .order("created_at", { ascending: false })
 
   if (error) {
@@ -79,9 +80,10 @@ export async function markAllNotificationsAsRead(userId: string) {
 }
 
 export async function deleteNotification(userId: string, notificationId: string) {
+  // Soft delete - deleted_at alanını güncelle
   const { data, error } = await supabase
     .from("notifications")
-    .delete()
+    .update({ deleted_at: new Date().toISOString() })
     .eq("id", notificationId)
     .eq("user_id", userId)
 
@@ -97,6 +99,7 @@ export async function getNotificationStats(userId: string) {
     .from("notifications")
     .select("id, is_read")
     .eq("user_id", userId)
+    .is("deleted_at", null) // Sadece silinmemiş bildirimleri say
 
   if (allError) {
     throw allError
