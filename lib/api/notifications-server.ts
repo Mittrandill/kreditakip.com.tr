@@ -151,13 +151,13 @@ export async function createOverduePaymentNotifications(userId: string) {
         const diffTime = todayDate.getTime() - dueDate.getTime()
         const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24))
 
-        let title = "Geciken Kredi Taksiti"
+        let title = "⚠️ Geciken Ödeme Bildirimi"
         let type = "error"
 
         if (diffDays === 1) {
-          title = "Geciken Kredi Taksiti - 1 Gün"
+          title = "⚠️ Geciken Ödeme Bildirimi - 1 Gün"
         } else if (diffDays > 1) {
-          title = `Geciken Kredi Taksiti - ${diffDays} Gün`
+          title = `⚠️ Geciken Ödeme Bildirimi - ${diffDays} Gün`
         }
 
         return {
