@@ -8,7 +8,9 @@
       "Bash(git restore:*)",
       "Bash(npm install)",
       "Bash(npm audit:*)",
-      "Bash(npm run lint:*)"
+      "Bash(npm run lint:*)",
+      "Bash(tree:*)",
+      "Bash(nul)"
     ],
     "deny": [],
     "ask": []

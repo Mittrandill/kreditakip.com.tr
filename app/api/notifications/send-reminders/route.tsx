@@ -1,12 +1,14 @@
 import { type NextRequest, NextResponse } from "next/server"
 import { MailerSend, EmailParams, Sender, Recipient } from "mailersend"
-import { supabase } from "@/lib/supabase"
+import { createSupabaseAdmin } from "@/lib/supabase-server"
 import { getNotificationPreferences } from "@/lib/api/notification-preferences"
 import { getAllPayments } from "@/lib/api/payments"
 
 const mailerSend = new MailerSend({
   apiKey: process.env.MAILERSEND_API_KEY || "",
 })
+
+const supabase = createSupabaseAdmin()
 
 async function checkEmailAlreadySent(
   userId: string,

@@ -1,5 +1,5 @@
 import { type NextRequest, NextResponse } from "next/server"
-import { supabase } from "@/lib/supabase"
+import { createSupabaseAdmin } from "@/lib/supabase-server"
 import { timingSafeEqual } from "node:crypto"
 
 export const dynamic = "force-dynamic"
@@ -51,6 +51,7 @@ export async function GET(request: NextRequest) {
 
     const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://kreditakip.com.tr"
 
+    const supabase = createSupabaseAdmin()
     const { data: users, error: usersError } = await supabase
       .from("notification_preferences")
       .select("user_id, email_3_days_before, email_1_day_before, email_on_due_date, email_overdue")
