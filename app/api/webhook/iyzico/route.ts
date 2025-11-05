@@ -32,9 +32,10 @@ function verifyWebhookSignature(
       .digest("hex")
 
     // Use timing-safe comparison to prevent timing attacks
+    // Convert to Uint8Array for timingSafeEqual
     return crypto.timingSafeEqual(
-      Buffer.from(signature),
-      Buffer.from(expectedSignature)
+      new Uint8Array(Buffer.from(signature)),
+      new Uint8Array(Buffer.from(expectedSignature))
     )
   } catch (error) {
     console.error("[iyzico-webhook] Signature verification error:", error)

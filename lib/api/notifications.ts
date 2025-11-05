@@ -167,6 +167,7 @@ export async function createPaymentReminders(userId: string) {
       if (error) {
         // Unique constraint violation - bu payment_plan için zaten bildirim var, ignore et
         if (error.code === "23505") {
+          // eslint-disable-next-line no-console
           console.log(`[createPaymentReminders] Duplicate notification ignored for user ${userId}`)
           return []
         }
@@ -352,6 +353,7 @@ export async function createUpcomingPaymentNotifications(userId: string) {
       if (error) {
         // Unique constraint violation - bu payment_plan için zaten bildirim var, ignore et
         if (error.code === "23505") {
+          // eslint-disable-next-line no-console
           console.log(`[createUpcomingPaymentNotifications] Duplicate notification ignored for user ${userId}`)
           return []
         }
