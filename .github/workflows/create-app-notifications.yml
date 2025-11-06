@@ -22,11 +22,17 @@ jobs:
           echo "Using site URL: $SITE_URL"
           echo "Calling endpoint: $SITE_URL/api/notifications/create-app-notifications"
 
+          # Debug: Check if CRON_SECRET is set (show length only for security)
+          echo "Debug: CRON_SECRET length: ${#CRON_SECRET}"
+
+          # Debug: Show first 8 characters of secret (for verification)
+          echo "Debug: CRON_SECRET prefix: ${CRON_SECRET:0:8}..."
+
           response=$(curl -s -w "HTTPSTATUS:%{http_code}" \
             -L \
             --max-time 30 \
             --connect-timeout 10 \
-            -H "Authorization: Bearer ${{ secrets.CRON_SECRET }}" \
+            -H "Authorization: Bearer ${CRON_SECRET}" \
             -H "Content-Type: application/json" \
             "$SITE_URL/api/notifications/create-app-notifications")
 
