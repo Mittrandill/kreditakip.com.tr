@@ -12,50 +12,39 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Create App Notifications
-        run: |
-          echo "📱 Creating in-app notifications..."
+    - name: Checkout code
+      uses: actions/checkout@v4
 
-          SITE_URL="${{ vars.NEXT_PUBLIC_SITE_URL || 'https://kreditakip.com.tr' }}"
-          SITE_URL="${SITE_URL%/}"
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '18'
 
-          echo "Using site URL: $SITE_URL"
-          echo "Calling endpoint: $SITE_URL/api/notifications/create-app-notifications"
+    - name: Install dependencies
+      run: |
+        npm install @supabase/supabase-js
 
-          # Debug: Check if CRON_SECRET is set (show length only for security)
-          echo "Debug: CRON_SECRET length: ${#CRON_SECRET}"
+    - name: Create App Notifications
+      env:
+        NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
+        SERVICE_ROLE_KEY: ${{ secrets.SERVICE_ROLE_KEY }}
+      run: |
+        echo "📂 Current working directory: $(pwd)"
+        echo "📋 Listing scripts directory:"
+        ls -la scripts/
+        echo "🔍 Verifying script file exists:"
+        if [ -f "scripts/create-app-notifications.js" ]; then
+          echo "✅ Script file found"
+        else
+          echo "❌ Script file not found"
+          exit 1
+        fi
+        echo "🚀 Running app notification script..."
+        node scripts/create-app-notifications.js
 
-          # Debug: Show first 8 characters of secret (for verification)
-          echo "Debug: CRON_SECRET prefix: ${CRON_SECRET:0:8}..."
-
-          response=$(curl -s -w "HTTPSTATUS:%{http_code}" \
-            -L \
-            --max-time 30 \
-            --connect-timeout 10 \
-            -H "Authorization: Bearer ${CRON_SECRET}" \
-            -H "Content-Type: application/json" \
-            "$SITE_URL/api/notifications/create-app-notifications")
-
-          http_code=$(echo "$response" | grep -o "HTTPSTATUS:[0-9]*" | cut -d: -f2)
-          response_body=$(echo "$response" | sed 's/HTTPSTATUS:[0-9]*$//')
-
-          echo "HTTP Status: $http_code"
-          echo "Response: $response_body"
-
-          if [ "$http_code" -eq 200 ]; then
-            echo "✅ App notifications created successfully"
-            echo "$response_body" | jq '.' 2>/dev/null || echo "$response_body"
-          else
-            echo "❌ Failed to create app notifications (HTTP $http_code)"
-            exit 1
-          fi
-        env:
-          CRON_SECRET: ${{ secrets.CRON_SECRET }}
-
-      - name: Notify on failure
-        if: failure()
-        run: |
-          echo "🚨 App notification creation failed!"
-          echo "Please check the logs and verify:"
-          echo "1. CRON_SECRET is properly set in repository secrets"
-          echo "2. The API endpoint is accessible and deployed"
+    - name: Workflow Summary
+      if: always()
+      run: |
+        echo "📊 App Notification Workflow Summary"
+        echo "======================================"
+        echo "Workflow completed at: $(date)"
