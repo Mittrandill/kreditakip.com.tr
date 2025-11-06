@@ -4,15 +4,5 @@
     "app/api/**/*.ts": {
       "maxDuration": 30
     }
-  },
-  "crons": [
-    {
-      "path": "/api/notifications/cron",
-      "schedule": "0 9 * * *"
-    },
-    {
-      "path": "/api/notifications/cron",
-      "schedule": "0 18 * * *"
-    }
-  ]
+  }
 }
