@@ -496,7 +496,10 @@ async function sendNotifications() {
     const oneDayLater = new Date(today.getTime() + 24 * 60 * 60 * 1000).toISOString().split("T")[0]
     const threeDaysLater = new Date(today.getTime() + 3 * 24 * 60 * 60 * 1000).toISOString().split("T")[0]
 
-    // Get all payment plans for today, 1 day, and 3 days from now
+    // 30 gün öncesine kadar gecikmiş ödemeleri de dahil et
+    const thirtyDaysAgo = new Date(today.getTime() - 30 * 24 * 60 * 60 * 1000).toISOString().split("T")[0]
+
+    // Get all payment plans: overdue (son 30 gün), bugün, yarın, 3 gün sonra
     const { data: paymentPlans, error: paymentsError } = await supabase
       .from("payment_plans")
       .select(`
@@ -516,14 +519,15 @@ async function sendNotifications() {
           )
         )
       `)
-      .in("due_date", [todayStr, oneDayLater, threeDaysLater])
+      .gte("due_date", thirtyDaysAgo)
+      .lte("due_date", threeDaysLater)
       .eq("status", "pending")
 
     if (paymentsError) {
       throw new Error(`Payment plans fetch error: ${paymentsError.message}`)
     }
 
-    console.log(`💳 Found ${paymentPlans?.length || 0} payment plans for notification dates`)
+    console.log(`💳 Found ${paymentPlans?.length || 0} payment plans (overdue + upcoming)`)
 
     for (const profile of profiles || []) {
       try {
@@ -538,8 +542,13 @@ async function sendNotifications() {
           let shouldSend = false
           let notificationType = ""
 
+          // Geciken ödemeler (vadesi geçmiş)
+          if (diffDays < 0) {
+            shouldSend = true
+            notificationType = "overdue"
+          }
           // Bugün vadesi gelenler
-          if (diffDays === 0) {
+          else if (diffDays === 0) {
             shouldSend = true
             notificationType = "due_today"
           }
@@ -556,14 +565,17 @@ async function sendNotifications() {
 
           if (shouldSend) {
             // Bugün aynı ödeme için email gönderilmiş mi kontrol et
+            // email_sent_at kontrolü de ekledik
             const { data: existingNotification } = await supabase
               .from("notifications")
               .select("id")
               .eq("user_id", profile.id)
               .eq("payment_plan_id", payment.id)
               .eq("notification_type", "email")
-              .gte("created_at", todayStr)
-              .single()
+              .gte("email_sent_at", todayStr)
+              .not("email_sent_at", "is", null)
+              .limit(1)
+              .maybeSingle()
 
             if (existingNotification) {
               console.log(`⏭️ Email already sent today for payment ${payment.id}`)
