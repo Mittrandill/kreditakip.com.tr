@@ -1,0 +1,55 @@
+name: Create App Notifications
+
+on:
+  schedule:
+    # Her gün 09:00 ve 18:00 UTC'de çalış (12:00 ve 21:00 Türkiye saati)
+    - cron: '0 9 * * *'
+    - cron: '0 18 * * *'
+  workflow_dispatch: # Manuel tetikleme için
+
+jobs:
+  create-notifications:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Create App Notifications
+        run: |
+          echo "📱 Creating in-app notifications..."
+
+          SITE_URL="${{ vars.NEXT_PUBLIC_SITE_URL || 'https://kreditakip.com.tr' }}"
+          SITE_URL="${SITE_URL%/}"
+
+          echo "Using site URL: $SITE_URL"
+          echo "Calling endpoint: $SITE_URL/api/notifications/create-app-notifications"
+
+          response=$(curl -s -w "HTTPSTATUS:%{http_code}" \
+            -L \
+            --max-time 30 \
+            --connect-timeout 10 \
+            -H "Authorization: Bearer ${{ secrets.CRON_SECRET }}" \
+            -H "Content-Type: application/json" \
+            "$SITE_URL/api/notifications/create-app-notifications")
+
+          http_code=$(echo "$response" | grep -o "HTTPSTATUS:[0-9]*" | cut -d: -f2)
+          response_body=$(echo "$response" | sed 's/HTTPSTATUS:[0-9]*$//')
+
+          echo "HTTP Status: $http_code"
+          echo "Response: $response_body"
+
+          if [ "$http_code" -eq 200 ]; then
+            echo "✅ App notifications created successfully"
+            echo "$response_body" | jq '.' 2>/dev/null || echo "$response_body"
+          else
+            echo "❌ Failed to create app notifications (HTTP $http_code)"
+            exit 1
+          fi
+        env:
+          CRON_SECRET: ${{ secrets.CRON_SECRET }}
+
+      - name: Notify on failure
+        if: failure()
+        run: |
+          echo "🚨 App notification creation failed!"
+          echo "Please check the logs and verify:"
+          echo "1. CRON_SECRET is properly set in repository secrets"
+          echo "2. The API endpoint is accessible and deployed"
