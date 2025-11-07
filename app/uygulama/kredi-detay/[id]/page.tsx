@@ -86,7 +86,7 @@ import {
 } from "@/components/ui/alert-dialog"
 
 interface PopulatedCredit extends Credit {
-  banks: Pick<Bank, "id" | "name" | "logo_url" | "contact_phone" | "contact_email" | "website"> | null
+  banks: Pick<Bank, "id" | "name" | "logo_url"> | null
   credit_types: Pick<CreditType, "id" | "name" | "description"> | null
 }
 
