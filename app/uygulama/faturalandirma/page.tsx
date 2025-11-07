@@ -6,6 +6,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
+import { PaginationModern } from "@/components/ui/pagination-modern"
 import { CreditCard, Download, Calendar, CheckCircle2, XCircle, Clock, Crown, Receipt, Wallet } from "lucide-react"
 import { useAuth } from "@/hooks/use-auth"
 import { useSubscription } from "@/hooks/use-subscription"
@@ -43,6 +44,11 @@ export default function FaturalandirmaPage() {
   const [transactions, setTransactions] = useState<PaymentTransaction[]>([])
   const [invoices, setInvoices] = useState<Invoice[]>([])
   const [loading, setLoading] = useState(true)
+
+  // Pagination states
+  const [transactionsPage, setTransactionsPage] = useState(1)
+  const [invoicesPage, setInvoicesPage] = useState(1)
+  const itemsPerPage = 8
 
   useEffect(() => {
     async function fetchData() {
@@ -87,6 +93,17 @@ export default function FaturalandirmaPage() {
     fetchData()
   }, [user])
 
+  // Pagination calculations
+  const totalTransactionsPages = Math.ceil(transactions.length / itemsPerPage)
+  const startTransactionsIndex = (transactionsPage - 1) * itemsPerPage
+  const endTransactionsIndex = startTransactionsIndex + itemsPerPage
+  const currentTransactions = transactions.slice(startTransactionsIndex, endTransactionsIndex)
+
+  const totalInvoicesPages = Math.ceil(invoices.length / itemsPerPage)
+  const startInvoicesIndex = (invoicesPage - 1) * itemsPerPage
+  const endInvoicesIndex = startInvoicesIndex + itemsPerPage
+  const currentInvoices = invoices.slice(startInvoicesIndex, endInvoicesIndex)
+
   const getStatusBadge = (status: string) => {
     switch (status) {
       case "completed":
@@ -117,7 +134,7 @@ export default function FaturalandirmaPage() {
 
   return (
     <div className="flex flex-col gap-4 md:gap-6">
-      <Card className="bg-gradient-to-r from-blue-600 to-indigo-700 text-white border-transparent shadow-xl rounded-xl">
+      <Card className="bg-gradient-to-r from-emerald-600 to-teal-700 dark:from-emerald-700 dark:to-teal-800 text-white border-transparent shadow-xl rounded-xl">
         <CardContent className="p-8">
           <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
             <div>
@@ -125,12 +142,11 @@ export default function FaturalandirmaPage() {
                 <Wallet className="h-8 w-8" />
                 Faturalandırma
               </h2>
-              <p className="text-blue-100 text-lg">Abonelik durumunuzu ve ödeme geçmişinizi görüntüleyin ve yönetin</p>
+              <p className="text-emerald-100 text-lg">Abonelik durumunuzu ve ödeme geçmişinizi görüntüleyin ve yönetin</p>
             </div>
           </div>
         </CardContent>
       </Card>
-      {/* </CHANGE> */}
 
       {/* Subscription Status */}
       <Card className="shadow-lg hover:shadow-xl transition-shadow duration-300">
@@ -202,44 +218,61 @@ export default function FaturalandirmaPage() {
         </CardHeader>
         <CardContent>
           {loading ? (
-            <p className="text-gray-500 text-center py-8">Yükleniyor...</p>
+            <p className="text-gray-500 dark:text-white/60 text-center py-8">Yükleniyor...</p>
           ) : transactions.length === 0 ? (
-            <p className="text-gray-500 text-center py-8">Henüz ödeme kaydı bulunmuyor</p>
+            <p className="text-gray-500 dark:text-white/60 text-center py-8">Henüz ödeme kaydı bulunmuyor</p>
           ) : (
-            <div className="overflow-x-auto">
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Tarih</TableHead>
-                    <TableHead>Tutar</TableHead>
-                    <TableHead>Ödeme Yöntemi</TableHead>
-                    <TableHead>Durum</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {transactions.map((transaction) => (
-                    <TableRow key={transaction.id}>
-                      <TableCell>
-                        {new Date(transaction.created_at).toLocaleDateString("tr-TR", {
-                          year: "numeric",
-                          month: "long",
-                          day: "numeric",
-                        })}
-                      </TableCell>
-                      <TableCell className="font-medium">
-                        {Number.parseFloat(transaction.amount).toFixed(2)} {transaction.currency}
-                      </TableCell>
-                      <TableCell>
-                        <div className="flex items-center gap-2">
-                          <CreditCard className="h-4 w-4" />
-                          {transaction.payment_method === "credit_card" ? "Kredi Kartı" : transaction.payment_method}
-                        </div>
-                      </TableCell>
-                      <TableCell>{getStatusBadge(transaction.status)}</TableCell>
+            <div className="space-y-4">
+              <div className="overflow-x-auto">
+                <Table>
+                  <TableHeader>
+                    <TableRow className="bg-white dark:bg-black/20">
+                      <TableHead className="font-semibold text-gray-700 dark:text-white/70">Tarih</TableHead>
+                      <TableHead className="font-semibold text-gray-700 dark:text-white/70">Tutar</TableHead>
+                      <TableHead className="font-semibold text-gray-700 dark:text-white/70">Ödeme Yöntemi</TableHead>
+                      <TableHead className="font-semibold text-gray-700 dark:text-white/70">Durum</TableHead>
                     </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
+                  </TableHeader>
+                  <TableBody>
+                    {currentTransactions.map((transaction, index) => (
+                      <TableRow
+                        key={transaction.id}
+                        className={`hover:bg-emerald-50 dark:hover:bg-white/10 transition-colors duration-150 ease-in-out ${
+                          index % 2 === 0 ? "bg-white dark:bg-black/20" : "bg-gray-50/50 dark:bg-black/10"
+                        }`}
+                      >
+                        <TableCell className="text-gray-900 dark:text-white">
+                          {new Date(transaction.created_at).toLocaleDateString("tr-TR", {
+                            year: "numeric",
+                            month: "long",
+                            day: "numeric",
+                          })}
+                        </TableCell>
+                        <TableCell className="font-semibold text-gray-900 dark:text-white">
+                          {Number.parseFloat(transaction.amount).toFixed(2)} {transaction.currency}
+                        </TableCell>
+                        <TableCell className="text-gray-600 dark:text-white/70">
+                          <div className="flex items-center gap-2">
+                            <CreditCard className="h-4 w-4" />
+                            {transaction.payment_method === "credit_card" ? "Kredi Kartı" : transaction.payment_method}
+                          </div>
+                        </TableCell>
+                        <TableCell>{getStatusBadge(transaction.status)}</TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </div>
+              {transactions.length > itemsPerPage && (
+                <PaginationModern
+                  currentPage={transactionsPage}
+                  totalPages={totalTransactionsPages}
+                  totalItems={transactions.length}
+                  itemsPerPage={itemsPerPage}
+                  onPageChange={setTransactionsPage}
+                  itemName="ödeme"
+                />
+              )}
             </div>
           )}
         </CardContent>
@@ -256,65 +289,92 @@ export default function FaturalandirmaPage() {
         </CardHeader>
         <CardContent>
           {loading ? (
-            <p className="text-gray-500 text-center py-8">Yükleniyor...</p>
+            <p className="text-gray-500 dark:text-white/60 text-center py-8">Yükleniyor...</p>
           ) : invoices.length === 0 ? (
-            <p className="text-gray-500 text-center py-8">Henüz fatura bulunmuyor</p>
+            <p className="text-gray-500 dark:text-white/60 text-center py-8">Henüz fatura bulunmuyor</p>
           ) : (
-            <div className="overflow-x-auto">
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Fatura No</TableHead>
-                    <TableHead>Tarih</TableHead>
-                    <TableHead>Tutar</TableHead>
-                    <TableHead>Durum</TableHead>
-                    <TableHead className="text-right">Fatura</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {invoices.map((invoice) => (
-                    <TableRow key={invoice.id}>
-                      <TableCell className="font-mono font-medium">{invoice.invoice_number}</TableCell>
-                      <TableCell>
-                        {new Date(invoice.invoice_date).toLocaleDateString("tr-TR", {
-                          year: "numeric",
-                          month: "long",
-                          day: "numeric",
-                        })}
-                      </TableCell>
-                      <TableCell className="font-medium">
-                        {Number(invoice.amount).toFixed(2)} {invoice.currency}
-                      </TableCell>
-                      <TableCell>
-                        {invoice.status === "paid" ? (
-                          <Badge className="bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400">
-                            <CheckCircle2 className="h-3 w-3 mr-1" />
-                            Ödendi
-                          </Badge>
-                        ) : (
-                          <Badge className="bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400">
-                            <Clock className="h-3 w-3 mr-1" />
-                            Hazırlanıyor
-                          </Badge>
-                        )}
-                      </TableCell>
-                      <TableCell className="text-right">
-                        {invoice.file_url ? (
-                          <Button variant="outline" size="sm" onClick={() => window.open(invoice.file_url!, "_blank")}>
-                            <Download className="h-4 w-4 mr-2" />
-                            PDF İndir
-                          </Button>
-                        ) : (
-                          <Button variant="ghost" size="sm" disabled>
-                            <Clock className="h-4 w-4 mr-2" />
-                            PDF Hazırlanıyor
-                          </Button>
-                        )}
-                      </TableCell>
+            <div className="space-y-4">
+              <div className="overflow-x-auto">
+                <Table>
+                  <TableHeader>
+                    <TableRow className="bg-white dark:bg-black/20">
+                      <TableHead className="font-semibold text-gray-700 dark:text-white/70">Fatura No</TableHead>
+                      <TableHead className="font-semibold text-gray-700 dark:text-white/70">Tarih</TableHead>
+                      <TableHead className="font-semibold text-gray-700 dark:text-white/70">Tutar</TableHead>
+                      <TableHead className="font-semibold text-gray-700 dark:text-white/70">Durum</TableHead>
+                      <TableHead className="text-right font-semibold text-gray-700 dark:text-white/70">Fatura</TableHead>
                     </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
+                  </TableHeader>
+                  <TableBody>
+                    {currentInvoices.map((invoice, index) => (
+                      <TableRow
+                        key={invoice.id}
+                        className={`hover:bg-emerald-50 dark:hover:bg-white/10 transition-colors duration-150 ease-in-out ${
+                          index % 2 === 0 ? "bg-white dark:bg-black/20" : "bg-gray-50/50 dark:bg-black/10"
+                        }`}
+                      >
+                        <TableCell className="font-mono font-semibold text-gray-900 dark:text-white">{invoice.invoice_number}</TableCell>
+                        <TableCell className="text-gray-900 dark:text-white">
+                          {new Date(invoice.invoice_date).toLocaleDateString("tr-TR", {
+                            year: "numeric",
+                            month: "long",
+                            day: "numeric",
+                          })}
+                        </TableCell>
+                        <TableCell className="font-semibold text-gray-900 dark:text-white">
+                          {Number(invoice.amount).toFixed(2)} {invoice.currency}
+                        </TableCell>
+                        <TableCell>
+                          {invoice.status === "paid" ? (
+                            <Badge className="bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400">
+                              <CheckCircle2 className="h-3 w-3 mr-1" />
+                              Ödendi
+                            </Badge>
+                          ) : (
+                            <Badge className="bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400">
+                              <Clock className="h-3 w-3 mr-1" />
+                              Hazırlanıyor
+                            </Badge>
+                          )}
+                        </TableCell>
+                        <TableCell className="text-right">
+                          {invoice.file_url ? (
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => window.open(invoice.file_url!, "_blank")}
+                              className="dark:bg-black/20 dark:text-white dark:border-white/10 dark:hover:bg-white/10"
+                            >
+                              <Download className="h-4 w-4 mr-2" />
+                              PDF İndir
+                            </Button>
+                          ) : (
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              disabled
+                              className="dark:text-white/60"
+                            >
+                              <Clock className="h-4 w-4 mr-2" />
+                              PDF Hazırlanıyor
+                            </Button>
+                          )}
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </div>
+              {invoices.length > itemsPerPage && (
+                <PaginationModern
+                  currentPage={invoicesPage}
+                  totalPages={totalInvoicesPages}
+                  totalItems={invoices.length}
+                  itemsPerPage={itemsPerPage}
+                  onPageChange={setInvoicesPage}
+                  itemName="fatura"
+                />
+              )}
             </div>
           )}
         </CardContent>
