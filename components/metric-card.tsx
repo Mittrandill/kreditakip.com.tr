@@ -12,13 +12,13 @@ interface MetricCardProps {
 }
 
 const colorVariants = {
-  blue: "bg-gradient-to-br from-blue-600 to-blue-700 dark:from-blue-900/30 dark:via-blue-950 dark:to-zinc-950",
-  green: "bg-gradient-to-br from-green-600 to-green-700 dark:from-green-900/30 dark:via-green-950 dark:to-zinc-950",
-  orange: "bg-gradient-to-br from-orange-600 to-orange-700 dark:from-orange-900/30 dark:via-orange-950 dark:to-zinc-950",
-  purple: "bg-gradient-to-br from-purple-600 to-purple-700 dark:from-purple-900/30 dark:via-purple-950 dark:to-zinc-950",
-  teal: "bg-gradient-to-br from-teal-600 to-teal-700 dark:from-teal-900/30 dark:via-teal-950 dark:to-zinc-950",
-  red: "bg-gradient-to-br from-red-600 to-red-700 dark:from-red-900/30 dark:via-red-950 dark:to-zinc-950",
-  emerald: "bg-gradient-to-br from-emerald-600 to-emerald-700 dark:from-emerald-900/30 dark:via-emerald-950 dark:to-zinc-950",
+  blue: "bg-gradient-to-br from-blue-600 to-blue-700 dark:from-emerald-600 dark:to-teal-700",
+  green: "bg-gradient-to-br from-green-600 to-green-700 dark:from-emerald-600 dark:to-teal-700",
+  orange: "bg-gradient-to-br from-orange-600 to-orange-700 dark:from-emerald-600 dark:to-teal-700",
+  purple: "bg-gradient-to-br from-purple-600 to-purple-700 dark:from-emerald-600 dark:to-teal-700",
+  teal: "bg-gradient-to-br from-teal-600 to-teal-700 dark:from-emerald-600 dark:to-teal-700",
+  red: "bg-gradient-to-br from-red-600 to-red-700 dark:from-emerald-600 dark:to-teal-700",
+  emerald: "bg-gradient-to-br from-emerald-600 to-emerald-700 dark:from-emerald-600 dark:to-teal-700",
 }
 
 export function MetricCard({ title, value, subtitle, color, icon, change, changeType }: MetricCardProps) {
