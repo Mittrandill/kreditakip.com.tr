@@ -44,9 +44,6 @@ import {
   History,
   BarChart3,
   Settings,
-  Phone,
-  Mail,
-  MapPin,
   Loader2,
   AlertCircle,
   AlertTriangle,
@@ -866,48 +863,6 @@ export default function KrediDetayPage() {
                           </p>
                           <p className="text-sm text-gray-500 dark:text-white/60">{krediDetay.branch_name || "Şube Bilgisi Yok"}</p>
                         </div>
-                      </div>
-
-                      {/* İletişim Bilgileri */}
-                      <div className="space-y-3 pt-3 border-t dark:border-white/10">
-                        {krediDetay.banks?.contact_phone && (
-                          <div className="flex items-center gap-3 text-sm">
-                            <Phone className="h-4 w-4 text-gray-400 dark:text-white/60" />
-                            <a
-                              href={`tel:${krediDetay.banks.contact_phone}`}
-                              className="text-gray-700 dark:text-white/80 hover:text-teal-600 dark:hover:text-teal-400 transition-colors"
-                            >
-                              {krediDetay.banks.contact_phone}
-                            </a>
-                          </div>
-                        )}
-                        {krediDetay.banks?.contact_email && (
-                          <div className="flex items-center gap-3 text-sm">
-                            <Mail className="h-4 w-4 text-gray-400 dark:text-white/60" />
-                            <a
-                              href={`mailto:${krediDetay.banks.contact_email}`}
-                              className="text-gray-700 dark:text-white/80 hover:text-teal-600 dark:hover:text-teal-400 transition-colors"
-                            >
-                              {krediDetay.banks.contact_email}
-                            </a>
-                          </div>
-                        )}
-                        {krediDetay.banks?.website && (
-                          <div className="flex items-center gap-3 text-sm">
-                            <MapPin className="h-4 w-4 text-gray-400 dark:text-white/60" />
-                            <a
-                              href={krediDetay.banks.website}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="text-gray-700 dark:text-white/80 hover:text-teal-600 dark:hover:text-teal-400 transition-colors"
-                            >
-                              Web Sitesi
-                            </a>
-                          </div>
-                        )}
-                        {!krediDetay.banks?.contact_phone && !krediDetay.banks?.contact_email && !krediDetay.banks?.website && (
-                          <p className="text-sm text-gray-500 dark:text-white/60 italic">İletişim bilgisi bulunmuyor</p>
-                        )}
                       </div>
                     </CardContent>
                   </Card>
