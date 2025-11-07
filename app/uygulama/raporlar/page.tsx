@@ -614,7 +614,7 @@ export default function RaporlarPage() {
       </div>
 
       {/* Premium Filters */}
-      <Card className="shadow-xl border-0 bg-gradient-to-br from-slate-50 to-gray-100 dark:from-gray-900 dark:to-gray-800">
+      <Card className="shadow-xl border-0 bg-gradient-to-br from-slate-50 to-gray-100 dark:from-emerald-950 dark:to-emerald-900/30">
         <CardHeader className="pb-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
@@ -734,12 +734,12 @@ export default function RaporlarPage() {
             </Popover>
 
             {/* Quick Stats */}
-            <div className="flex items-center justify-center gap-4 text-sm text-gray-600 dark:text-white/70 bg-gradient-to-r from-gray-50 to-slate-100 dark:from-gray-800 dark:to-gray-700 rounded-lg px-4 py-2">
+            <div className="flex items-center justify-center gap-4 text-sm text-gray-600 dark:text-white/70 bg-gradient-to-r from-gray-50 to-slate-100 dark:from-emerald-900/20 dark:to-emerald-900/10 rounded-lg px-4 py-2">
               <div className="flex items-center gap-1">
                 <CreditCard className="h-4 w-4" />
                 <span>{filteredCredits.length} kredi</span>
               </div>
-              <div className="w-px h-4 bg-gray-300 dark:bg-gray-600"></div>
+              <div className="w-px h-4 bg-gray-300 dark:bg-white/30"></div>
               <div className="flex items-center gap-1">
                 <Activity className="h-4 w-4" />
                 <span>{filteredPayments.length} ödeme</span>
@@ -898,7 +898,7 @@ export default function RaporlarPage() {
           <div className="p-6">
             <TabsContent value="overview" className="space-y-6 mt-0">
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                <Card className="shadow-xl border-0 bg-gradient-to-br from-white to-blue-50 dark:from-gray-900 dark:to-blue-950">
+                <Card className="shadow-xl border-0 bg-gradient-to-br from-white to-blue-50 dark:from-emerald-950 dark:to-blue-950">
                   <CardHeader className="pb-4">
                     <CardTitle className="flex items-center gap-2 text-lg dark:text-white">
                       <div className="p-2 bg-gradient-to-r from-blue-500 to-indigo-600 rounded-lg">
@@ -941,7 +941,7 @@ export default function RaporlarPage() {
                   </CardContent>
                 </Card>
 
-                <Card className="shadow-xl border-0 bg-gradient-to-br from-white to-emerald-50 dark:from-gray-900 dark:to-emerald-950">
+                <Card className="shadow-xl border-0 bg-gradient-to-br from-white to-emerald-50 dark:from-emerald-950 dark:to-emerald-900/30">
                   <CardHeader className="pb-4">
                     <CardTitle className="flex items-center gap-2 text-lg dark:text-white">
                       <div className="p-2 bg-gradient-to-r from-emerald-500 to-teal-600 rounded-lg">
@@ -1073,7 +1073,7 @@ export default function RaporlarPage() {
             </TabsContent>
 
             <TabsContent value="trends" className="space-y-6 mt-0">
-              <Card className="shadow-xl border-0 bg-gradient-to-br from-white to-purple-50 dark:from-gray-900 dark:to-purple-950">
+              <Card className="shadow-xl border-0 bg-gradient-to-br from-white to-purple-50 dark:from-emerald-950 dark:to-purple-950">
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2 text-xl dark:text-white">
                     <div className="p-2 bg-gradient-to-r from-purple-500 to-pink-600 rounded-lg">
@@ -1139,7 +1139,7 @@ export default function RaporlarPage() {
 
             <TabsContent value="distribution" className="space-y-6 mt-0">
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                <Card className="shadow-xl border-0 bg-gradient-to-br from-white to-blue-50 dark:from-gray-900 dark:to-blue-950">
+                <Card className="shadow-xl border-0 bg-gradient-to-br from-white to-blue-50 dark:from-emerald-950 dark:to-blue-950">
                   <CardHeader>
                     <CardTitle className="flex items-center gap-2 text-lg dark:text-white">
                       <div className="p-2 bg-gradient-to-r from-blue-500 to-indigo-600 rounded-lg">
@@ -1172,7 +1172,7 @@ export default function RaporlarPage() {
                   </CardContent>
                 </Card>
 
-                <Card className="shadow-xl border-0 bg-gradient-to-br from-white to-emerald-50 dark:from-gray-900 dark:to-emerald-950">
+                <Card className="shadow-xl border-0 bg-gradient-to-br from-white to-emerald-50 dark:from-emerald-950 dark:to-emerald-900/30">
                   <CardHeader>
                     <CardTitle className="flex items-center gap-2 text-lg dark:text-white">
                       <div className="p-2 bg-gradient-to-r from-emerald-500 to-teal-600 rounded-lg">
@@ -1207,7 +1207,7 @@ export default function RaporlarPage() {
             </TabsContent>
 
             <TabsContent value="performance" className="space-y-6 mt-0">
-              <Card className="shadow-xl border-0 bg-gradient-to-br from-white to-orange-50 dark:from-gray-900 dark:to-orange-950">
+              <Card className="shadow-xl border-0 bg-gradient-to-br from-white to-orange-50 dark:from-emerald-950 dark:to-orange-950">
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2 text-xl dark:text-white">
                     <div className="p-2 bg-gradient-to-r from-orange-500 to-red-600 rounded-lg">
@@ -1275,7 +1275,7 @@ export default function RaporlarPage() {
             </TabsContent>
 
             <TabsContent value="analysis" className="space-y-6 mt-0">
-              <Card className="shadow-xl border-0 bg-gradient-to-br from-white to-purple-50 dark:from-gray-900 dark:to-purple-950">
+              <Card className="shadow-xl border-0 bg-gradient-to-br from-white to-purple-50 dark:from-emerald-950 dark:to-purple-950">
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2 text-xl dark:text-white">
                     <div className="p-2 bg-gradient-to-r from-purple-500 to-pink-600 rounded-lg">
@@ -1314,7 +1314,7 @@ export default function RaporlarPage() {
 
             <TabsContent value="comparison" className="space-y-6 mt-0">
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                <Card className="shadow-xl border-0 bg-gradient-to-br from-white to-indigo-50 dark:from-gray-900 dark:to-indigo-950">
+                <Card className="shadow-xl border-0 bg-gradient-to-br from-white to-indigo-50 dark:from-emerald-950 dark:to-indigo-950">
                   <CardHeader>
                     <CardTitle className="flex items-center gap-2 text-lg dark:text-white">
                       <div className="p-2 bg-gradient-to-r from-indigo-500 to-purple-600 rounded-lg">
@@ -1328,7 +1328,7 @@ export default function RaporlarPage() {
                       {chartData.bankDistribution.slice(0, 5).map((bank, index) => (
                         <div
                           key={bank.name}
-                          className="flex items-center justify-between p-4 bg-gradient-to-r from-gray-50 to-slate-100 dark:from-gray-800 dark:to-gray-700 rounded-xl border dark:border-white/10 shadow-sm"
+                          className="flex items-center justify-between p-4 bg-gradient-to-r from-gray-50 to-slate-100 dark:from-emerald-900/20 dark:to-emerald-900/10 rounded-xl border dark:border-white/10 shadow-sm"
                         >
                           <div className="flex items-center gap-4">
                             <div className="w-10 h-10 rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-sm font-bold text-white">
@@ -1354,7 +1354,7 @@ export default function RaporlarPage() {
                   </CardContent>
                 </Card>
 
-                <Card className="shadow-xl border-0 bg-gradient-to-br from-white to-green-50 dark:from-gray-900 dark:to-green-950">
+                <Card className="shadow-xl border-0 bg-gradient-to-br from-white to-green-50 dark:from-emerald-950 dark:to-green-950">
                   <CardHeader>
                     <CardTitle className="flex items-center gap-2 text-lg dark:text-white">
                       <div className="p-2 bg-gradient-to-r from-green-500 to-emerald-600 rounded-lg">

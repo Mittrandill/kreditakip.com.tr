@@ -554,25 +554,25 @@ export default function Header({ pageTitle }: HeaderProps) {
   }
 
   return (
-    <header className="sticky top-0 z-50 flex h-16 items-center gap-4 border-b bg-white/80 dark:bg-gray-900/80 backdrop-blur-md supports-[backdrop-filter]:bg-white/60 dark:supports-[backdrop-filter]:bg-gray-900/60 px-4 sm:px-6 md:px-8 shadow-sm border-emerald-100 dark:border-gray-700">
+    <header className="sticky top-0 z-50 flex h-16 items-center gap-4 border-b bg-white/80 dark:bg-black/20 backdrop-blur-md supports-[backdrop-filter]:bg-white/60 dark:supports-[backdrop-filter]:bg-black/20 px-4 sm:px-6 md:px-8 shadow-sm border-emerald-100 dark:border-white/10">
       {isMobile ? (
         <Sheet>
           <SheetTrigger asChild>
             <Button
               variant="outline"
               size="icon"
-              className="shrink-0 md:hidden bg-transparent border-gray-200 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-800"
+              className="shrink-0 md:hidden bg-transparent border-gray-200 dark:border-white/10 hover:bg-gray-100 dark:hover:bg-emerald-900/20"
             >
-              <Menu className="h-5 w-5 text-gray-700 dark:text-gray-300" />
+              <Menu className="h-5 w-5 text-gray-700 dark:text-white/70" />
               <span className="sr-only">Toggle navigation menu</span>
             </Button>
           </SheetTrigger>
           <SheetContent
             side="left"
-            className="flex flex-col p-0 w-80 bg-white dark:bg-gray-900 border-gray-200 dark:border-gray-700"
+            className="flex flex-col p-0 w-80 bg-white dark:bg-black/20 border-gray-200 dark:border-white/10"
           >
             {/* Mobile Header */}
-            <div className="p-4 border-b border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900">
+            <div className="p-4 border-b border-gray-200 dark:border-white/10 bg-white dark:bg-black/20">
               <Link
                 href="/uygulama/ana-sayfa"
                 className="flex items-center gap-2 text-lg font-semibold text-gray-900 dark:text-white"
@@ -583,7 +583,7 @@ export default function Header({ pageTitle }: HeaderProps) {
             </div>
 
             {/* Mobile Navigation */}
-            <div className="flex-1 p-2 space-y-1 bg-white dark:bg-gray-900">
+            <div className="flex-1 p-2 space-y-1 bg-white dark:bg-black/20">
               {navItems.map((item) => {
                 const isActive = pathname === item.href
                 return (
@@ -593,7 +593,7 @@ export default function Header({ pageTitle }: HeaderProps) {
                     className={`flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-all duration-200 ${
                       isActive
                         ? "bg-gradient-to-r from-emerald-600 to-teal-700 dark:from-emerald-500 dark:to-teal-600 text-white shadow-sm"
-                        : "hover:bg-emerald-50 dark:hover:bg-emerald-900/30 text-gray-700 dark:text-gray-300 hover:text-emerald-700 dark:hover:text-emerald-400"
+                        : "hover:bg-emerald-50 dark:hover:bg-emerald-900/30 text-gray-700 dark:text-white/70 hover:text-emerald-700 dark:hover:text-emerald-400"
                     }`}
                   >
                     <item.icon className="h-5 w-5 flex-shrink-0" />
@@ -604,7 +604,7 @@ export default function Header({ pageTitle }: HeaderProps) {
             </div>
 
             {/* Mobile Footer */}
-            <div className="p-2 border-t border-gray-200 dark:border-gray-700 space-y-1 bg-white dark:bg-gray-900">
+            <div className="p-2 border-t border-gray-200 dark:border-white/10 space-y-1 bg-white dark:bg-black/20">
               {settingsItems.map((item) => {
                 const isActive = pathname === item.href
                 return (
@@ -614,7 +614,7 @@ export default function Header({ pageTitle }: HeaderProps) {
                     className={`flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-all duration-200 ${
                       isActive
                         ? "bg-gradient-to-r from-emerald-600 to-teal-700 dark:from-emerald-500 dark:to-teal-600 text-white shadow-sm"
-                        : "hover:bg-emerald-50 dark:hover:bg-emerald-900/30 text-gray-700 dark:text-gray-300 hover:text-emerald-700 dark:hover:text-emerald-400"
+                        : "hover:bg-emerald-50 dark:hover:bg-emerald-900/30 text-gray-700 dark:text-white/70 hover:text-emerald-700 dark:hover:text-emerald-400"
                     }`}
                   >
                     <item.icon className="h-5 w-5 flex-shrink-0" />
@@ -626,14 +626,14 @@ export default function Header({ pageTitle }: HeaderProps) {
               {/* Yardım & Destek Link */}
               <button
                 onClick={() => window.open("https://www.kreditakip.com.tr/sss", "_blank")}
-                className="w-full flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-all duration-200 hover:bg-emerald-50 dark:hover:bg-emerald-900/30 text-gray-700 dark:text-gray-300 hover:text-emerald-700 dark:hover:text-emerald-400"
+                className="w-full flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-all duration-200 hover:bg-emerald-50 dark:hover:bg-emerald-900/30 text-gray-700 dark:text-white/70 hover:text-emerald-700 dark:hover:text-emerald-400"
               >
                 <HelpCircle className="h-5 w-5 flex-shrink-0" />
                 <span>Yardım & Destek</span>
               </button>
 
               {/* Mobile User Section */}
-              <div className="pt-2 border-t border-gray-200 dark:border-gray-700">
+              <div className="pt-2 border-t border-gray-200 dark:border-white/10">
                 <div className="flex items-center gap-3 px-3 py-2">
                   <Avatar className="h-8 w-8">
                     <AvatarImage
@@ -673,17 +673,17 @@ export default function Header({ pageTitle }: HeaderProps) {
         <div className="flex flex-col gap-1 min-w-0">
           {/* Breadcrumb */}
           {pageInfo.parent && (
-            <div className="hidden lg:flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400">
+            <div className="hidden lg:flex items-center gap-2 text-sm text-gray-500 dark:text-white/60">
               <span className="font-medium">{pageInfo.parent}</span>
               <svg
-                className="w-3 h-3 text-gray-400 dark:text-gray-500"
+                className="w-3 h-3 text-gray-400 dark:text-white/60"
                 fill="none"
                 stroke="currentColor"
                 viewBox="0 0 24 24"
               >
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
               </svg>
-              <span className="font-medium text-gray-700 dark:text-gray-300">{pageInfo.title}</span>
+              <span className="font-medium text-gray-700 dark:text-white/70">{pageInfo.title}</span>
             </div>
           )}
 
@@ -695,7 +695,7 @@ export default function Header({ pageTitle }: HeaderProps) {
               </h1>
             )}
             {pageInfo.description && (
-              <p className="text-sm text-gray-500 dark:text-gray-400 truncate max-w-[400px] hidden md:block leading-tight">
+              <p className="text-sm text-gray-500 dark:text-white/60 truncate max-w-[400px] hidden md:block leading-tight">
                 {pageInfo.description}
               </p>
             )}
@@ -704,25 +704,25 @@ export default function Header({ pageTitle }: HeaderProps) {
 
         <form className="ml-auto flex-1 sm:flex-initial">
           <div className="relative" ref={searchRef}>
-            <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-gray-400 dark:text-gray-500 pointer-events-none" />
+            <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-gray-400 dark:text-white/60 pointer-events-none" />
             <Input
               type="search"
               placeholder="Ara..."
               value={searchQuery}
               onChange={handleSearchChange}
               onKeyDown={handleSearchKeyDown}
-              className="pl-8 sm:w-[300px] md:w-[200px] lg:w-[300px] rounded-lg bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 focus-visible:border-emerald-500 dark:focus-visible:border-emerald-400 focus-visible:shadow-[0_0_0_0.5px_rgb(16,185,129)] dark:focus-visible:shadow-[0_0_0_0.5px_rgb(52,211,153)] transition-all duration-200 text-gray-900 dark:text-white placeholder:text-gray-500 dark:placeholder:text-gray-400"
+              className="pl-8 sm:w-[300px] md:w-[200px] lg:w-[300px] rounded-lg bg-white dark:bg-black/10 border border-gray-200 dark:border-white/10 focus-visible:border-emerald-500 dark:focus-visible:border-emerald-400 focus-visible:shadow-[0_0_0_0.5px_rgb(16,185,129)] dark:focus-visible:shadow-[0_0_0_0.5px_rgb(52,211,153)] transition-all duration-200 text-gray-900 dark:text-white placeholder:text-gray-500 dark:placeholder:text-white/50"
               aria-label="Search"
               autoComplete="off"
               spellCheck="false"
             />
 
             {searchOpen && searchQuery.length >= 2 && (
-              <div className="absolute top-full left-0 right-0 mt-2 bg-white dark:bg-gray-800 rounded-lg shadow-2xl border border-gray-200 dark:border-gray-700 z-50 max-h-96 overflow-y-auto">
+              <div className="absolute top-full left-0 right-0 mt-2 bg-white dark:bg-black/20 dark:backdrop-blur-xl rounded-lg shadow-2xl border border-gray-200 dark:border-white/10 z-50 max-h-96 overflow-y-auto">
                 {searchLoading ? (
                   <div className="p-4 text-center">
                     <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-emerald-600 mx-auto"></div>
-                    <p className="text-sm text-gray-500 dark:text-gray-400 mt-2">Aranıyor...</p>
+                    <p className="text-sm text-gray-500 dark:text-white/60 mt-2">Aranıyor...</p>
                   </div>
                 ) : searchResults.length > 0 ? (
                   <div className="py-2">
@@ -730,7 +730,7 @@ export default function Header({ pageTitle }: HeaderProps) {
                       <button
                         key={`${result.type}-${result.id}`}
                         onClick={() => handleSearchResultClick(result)}
-                        className="w-full px-4 py-3 text-left hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors duration-150 flex items-center gap-3"
+                        className="w-full px-4 py-3 text-left hover:bg-gray-50 dark:hover:bg-emerald-900/20 transition-colors duration-150 flex items-center gap-3"
                       >
                         <div className="flex-shrink-0">
                           {result.type === "credit" && result.icon ? (
@@ -738,7 +738,7 @@ export default function Header({ pageTitle }: HeaderProps) {
                               bankName={result.title}
                               logoUrl={result.icon}
                               size="sm"
-                              className="ring-1 ring-gray-200 dark:ring-gray-600"
+                              className="ring-1 ring-gray-200 dark:ring-emerald-900/30"
                             />
                           ) : (
                             <div className="w-8 h-8 bg-emerald-100 dark:bg-emerald-900 rounded-lg flex items-center justify-center">
@@ -774,20 +774,20 @@ export default function Header({ pageTitle }: HeaderProps) {
                               </Badge>
                             )}
                           </div>
-                          <p className="text-sm text-gray-500 dark:text-gray-400 truncate">{result.subtitle}</p>
+                          <p className="text-sm text-gray-500 dark:text-white/60 truncate">{result.subtitle}</p>
                           {result.description && (
-                            <p className="text-xs text-gray-400 dark:text-gray-500 truncate">{result.description}</p>
+                            <p className="text-xs text-gray-400 dark:text-white/60 truncate">{result.description}</p>
                           )}
                         </div>
-                        <ArrowRight className="h-4 w-4 text-gray-400 dark:text-gray-500 flex-shrink-0" />
+                        <ArrowRight className="h-4 w-4 text-gray-400 dark:text-white/60 flex-shrink-0" />
                       </button>
                     ))}
                   </div>
                 ) : (
                   <div className="p-4 text-center">
-                    <Search className="h-8 w-8 text-gray-400 dark:text-gray-500 mx-auto mb-2" />
-                    <p className="text-sm text-gray-500 dark:text-gray-400">"{searchQuery}" için sonuç bulunamadı</p>
-                    <p className="text-xs text-gray-400 dark:text-gray-500 mt-1">
+                    <Search className="h-8 w-8 text-gray-400 dark:text-white/60 mx-auto mb-2" />
+                    <p className="text-sm text-gray-500 dark:text-white/60">"{searchQuery}" için sonuç bulunamadı</p>
+                    <p className="text-xs text-gray-400 dark:text-white/60 mt-1">
                       Kredi, banka adı veya sayfa adı arayın
                     </p>
                   </div>
@@ -801,14 +801,14 @@ export default function Header({ pageTitle }: HeaderProps) {
         <Button
           variant="ghost"
           size="icon"
-          className="rounded-full h-10 w-10 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+          className="rounded-full h-10 w-10 hover:bg-gray-100 dark:hover:bg-emerald-900/20 transition-colors"
           onClick={toggleTheme}
           aria-label="Tema değiştir"
         >
           {isDarkMode ? (
-            <Sun className="h-5 w-5 text-gray-600 dark:text-gray-400" />
+            <Sun className="h-5 w-5 text-gray-600 dark:text-white/60" />
           ) : (
-            <Moon className="h-5 w-5 text-gray-600 dark:text-gray-400" />
+            <Moon className="h-5 w-5 text-gray-600 dark:text-white/60" />
           )}
         </Button>
 
@@ -821,7 +821,7 @@ export default function Header({ pageTitle }: HeaderProps) {
             aria-label="Notifications"
             onClick={toggleNotifications}
           >
-            <Bell className="h-5 w-5 text-gray-600 dark:text-gray-400" />
+            <Bell className="h-5 w-5 text-gray-600 dark:text-white/60" />
             {unreadCount > 0 && (
               <span className="absolute -top-1 -right-1 h-5 w-5 rounded-full bg-gradient-to-r from-red-500 to-red-600 text-white text-xs flex items-center justify-center font-bold shadow-lg animate-pulse">
                 {unreadCount > 9 ? "9+" : unreadCount}
@@ -830,7 +830,7 @@ export default function Header({ pageTitle }: HeaderProps) {
           </Button>
 
           {notificationOpen && (
-            <div className="absolute right-0 top-full mt-3 w-80 bg-white dark:bg-gray-800 rounded-2xl shadow-2xl border border-gray-100 dark:border-gray-700 z-50 overflow-hidden backdrop-blur-sm">
+            <div className="absolute right-0 top-full mt-3 w-80 bg-white dark:bg-black/20 dark:backdrop-blur-xl rounded-2xl shadow-2xl border border-gray-100 dark:border-white/10 z-50 overflow-hidden backdrop-blur-sm">
               {/* Header */}
               <div className="bg-gradient-to-r from-emerald-600 to-blue-600 dark:from-emerald-500 dark:to-blue-500 p-4 text-white">
                 <div className="flex items-center justify-between">
@@ -869,14 +869,14 @@ export default function Header({ pageTitle }: HeaderProps) {
               </div>
 
               {/* Notifications List */}
-              <div className="max-h-80 overflow-y-auto bg-white dark:bg-gray-800">
+              <div className="max-h-80 overflow-y-auto bg-white dark:bg-black/20">
                 {notifications.length === 0 ? (
                   <div className="p-6 text-center">
-                    <div className="w-12 h-12 bg-gray-100 dark:bg-gray-800 rounded-full flex items-center justify-center mx-auto mb-3">
-                      <Bell className="h-6 w-6 text-gray-400 dark:text-gray-500" />
+                    <div className="w-12 h-12 bg-gray-100 dark:bg-black/10 rounded-full flex items-center justify-center mx-auto mb-3">
+                      <Bell className="h-6 w-6 text-gray-400 dark:text-white/60" />
                     </div>
-                    <h4 className="font-medium text-gray-700 dark:text-gray-300 mb-1">Henüz bildirim yok</h4>
-                    <p className="text-xs text-gray-500 dark:text-gray-400">Yeni bildirimler burada görünecek</p>
+                    <h4 className="font-medium text-gray-700 dark:text-white/70 mb-1">Henüz bildirim yok</h4>
+                    <p className="text-xs text-gray-500 dark:text-white/60">Yeni bildirimler burada görünecek</p>
                   </div>
                 ) : (
                   <div className="p-2 space-y-1">
@@ -891,7 +891,7 @@ export default function Header({ pageTitle }: HeaderProps) {
                             relative p-3 rounded-lg cursor-pointer transition-all duration-200 group
                             ${
                               notification.is_read
-                                ? "bg-gray-50 dark:bg-gray-800 hover:bg-gray-100 dark:hover:bg-gray-700"
+                                ? "bg-gray-50 dark:bg-black/10 hover:bg-gray-100 dark:hover:bg-emerald-900/20"
                                 : "bg-blue-50 dark:bg-blue-900/20 hover:bg-blue-100 dark:hover:bg-blue-900/30 border border-blue-200 dark:border-blue-800"
                             }
                           `}
@@ -899,7 +899,7 @@ export default function Header({ pageTitle }: HeaderProps) {
                         >
                           <div className="flex items-start gap-3">
                             <div
-                              className={`p-1.5 rounded-lg bg-white dark:bg-gray-800 shadow-sm ${config.color} flex-shrink-0`}
+                              className={`p-1.5 rounded-lg bg-white dark:bg-black/10 shadow-sm ${config.color} flex-shrink-0`}
                             >
                               <Icon className="h-3 w-3" />
                             </div>
@@ -909,7 +909,7 @@ export default function Header({ pageTitle }: HeaderProps) {
                                 <h4
                                   className={`font-medium text-sm leading-tight ${
                                     notification.is_read
-                                      ? "text-gray-600 dark:text-gray-400"
+                                      ? "text-gray-600 dark:text-white/60"
                                       : "text-gray-900 dark:text-white"
                                   }`}
                                 >
@@ -923,15 +923,15 @@ export default function Header({ pageTitle }: HeaderProps) {
                               <p
                                 className={`text-xs leading-relaxed mb-2 line-clamp-2 ${
                                   notification.is_read
-                                    ? "text-gray-500 dark:text-gray-400"
-                                    : "text-gray-700 dark:text-gray-300"
+                                    ? "text-gray-500 dark:text-white/60"
+                                    : "text-gray-700 dark:text-white/70"
                                 }`}
                               >
                                 {notification.message}
                               </p>
 
                               <div className="flex justify-end">
-                                <span className="text-xs text-gray-400 dark:text-gray-500">
+                                <span className="text-xs text-gray-400 dark:text-white/60">
                                   {formatDistanceToNow(new Date(notification.created_at), {
                                     addSuffix: true,
                                     locale: tr,
@@ -949,7 +949,7 @@ export default function Header({ pageTitle }: HeaderProps) {
 
               {/* Footer */}
               {notifications.length > 0 && (
-                <div className="p-3 bg-gray-50 dark:bg-gray-700 border-t border-gray-200 dark:border-gray-600">
+                <div className="p-3 bg-gray-50 dark:bg-emerald-900/20 border-t border-gray-200 dark:border-white/10">
                   <Link href="/uygulama/bildirimler" onClick={() => setNotificationOpen(false)}>
                     <Button className="w-full bg-gradient-to-r from-emerald-600 to-blue-600 dark:from-emerald-500 dark:to-blue-500 hover:from-emerald-700 hover:to-blue-700 dark:hover:from-emerald-600 dark:hover:to-blue-600 text-white rounded-lg gap-2 transition-all duration-300 text-sm py-2">
                       Tüm Bildirimleri Görüntüle
@@ -967,7 +967,7 @@ export default function Header({ pageTitle }: HeaderProps) {
             <Button
               variant="ghost"
               size="icon"
-              className="rounded-full h-9 w-9 hover:bg-gray-100 dark:hover:bg-gray-800"
+              className="rounded-full h-9 w-9 hover:bg-gray-100 dark:hover:bg-emerald-900/20"
               disabled={loading}
             >
               <Avatar className="h-8 w-8">
@@ -984,7 +984,7 @@ export default function Header({ pageTitle }: HeaderProps) {
           </DropdownMenuTrigger>
           <DropdownMenuContent
             align="end"
-            className="w-56 bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700 shadow-lg"
+            className="w-56 bg-white dark:bg-black/20 dark:backdrop-blur-xl border-gray-200 dark:border-white/10 shadow-lg"
           >
             <DropdownMenuLabel className="text-gray-900 dark:text-white">
               {loading
@@ -993,39 +993,39 @@ export default function Header({ pageTitle }: HeaderProps) {
                   ? `${profile.first_name} ${profile.last_name}`
                   : user?.email || "Hesabım"}
             </DropdownMenuLabel>
-            <DropdownMenuSeparator className="bg-gray-200 dark:bg-gray-700" />
+            <DropdownMenuSeparator className="bg-gray-200 dark:bg-emerald-900/20" />
             <DropdownMenuItem
               onClick={() => router.push("/uygulama/ayarlar")}
-              className="text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 focus:bg-gray-100 dark:focus:bg-gray-700"
+              className="text-gray-700 dark:text-white/70 hover:bg-gray-100 dark:hover:bg-emerald-900/20 focus:bg-gray-100 dark:focus:bg-emerald-900/20"
             >
               <UserIcon className="mr-2 h-4 w-4" />
               <span>Profil</span>
             </DropdownMenuItem>
             <DropdownMenuItem
               onClick={() => router.push("/uygulama/ayarlar")}
-              className="text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 focus:bg-gray-100 dark:focus:bg-gray-700"
+              className="text-gray-700 dark:text-white/70 hover:bg-gray-100 dark:hover:bg-emerald-900/20 focus:bg-gray-100 dark:focus:bg-emerald-900/20"
             >
               <Settings className="mr-2 h-4 w-4" />
               <span>Ayarlar</span>
             </DropdownMenuItem>
             <DropdownMenuItem
               onClick={() => router.push("/uygulama/faturalandirma")}
-              className="text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 focus:bg-gray-100 dark:focus:bg-gray-700 cursor-pointer"
+              className="text-gray-700 dark:text-white/70 hover:bg-gray-100 dark:hover:bg-emerald-900/20 focus:bg-gray-100 dark:focus:bg-emerald-900/20 cursor-pointer"
             >
               <Briefcase className="mr-2 h-4 w-4" />
               <span>Faturalama</span>
             </DropdownMenuItem>
             <DropdownMenuItem
               onClick={() => window.open("https://www.kreditakip.com.tr/sss", "_blank")}
-              className="text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 focus:bg-gray-100 dark:focus:bg-gray-700 cursor-pointer"
+              className="text-gray-700 dark:text-white/70 hover:bg-gray-100 dark:hover:bg-emerald-900/20 focus:bg-gray-100 dark:focus:bg-emerald-900/20 cursor-pointer"
             >
               <HelpCircle className="mr-2 h-4 w-4" />
               <span>Destek</span>
             </DropdownMenuItem>
-            <DropdownMenuSeparator className="bg-gray-200 dark:bg-gray-700" />
+            <DropdownMenuSeparator className="bg-gray-200 dark:bg-emerald-900/20" />
             <DropdownMenuItem
               onClick={handleSignOut}
-              className="text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 focus:bg-gray-100 dark:focus:bg-gray-700"
+              className="text-gray-700 dark:text-white/70 hover:bg-gray-100 dark:hover:bg-emerald-900/20 focus:bg-gray-100 dark:focus:bg-emerald-900/20"
             >
               <LogOut className="mr-2 h-4 w-4" />
               <span>Çıkış Yap</span>

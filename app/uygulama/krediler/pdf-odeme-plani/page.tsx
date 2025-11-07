@@ -260,7 +260,7 @@ export default function PDFOdemePlaniPage() {
       </Card>
 
       <Card className="shadow-lg border-gray-200 dark:border-white/10 rounded-2xl overflow-hidden dark:bg-black/20">
-        <CardHeader className="bg-gradient-to-r from-gray-50 to-purple-50 dark:from-gray-800 dark:to-purple-900/30 border-b dark:border-white/10">
+        <CardHeader className="bg-gradient-to-r from-gray-50 to-purple-50 dark:from-emerald-900/20 dark:to-purple-900/30 border-b dark:border-white/10">
           <CardTitle className="flex items-center gap-2 dark:text-white">
             <FileText className="h-5 w-5 text-purple-600 dark:text-purple-400" />
             PDF Dosyası Yükle
@@ -376,7 +376,7 @@ export default function PDFOdemePlaniPage() {
             transition={{ duration: 0.6, delay: 0.5 + index * 0.1 }}
             whileHover={{ y: -5 }}
           >
-            <Card className="text-center p-6 border-0 shadow-lg hover:shadow-xl transition-all duration-300 rounded-2xl dark:bg-black/20 dark:border-gray-800">
+            <Card className="text-center p-6 border-0 shadow-lg hover:shadow-xl transition-all duration-300 rounded-2xl dark:bg-black/20 dark:border-white/10">
               <motion.div
                 className={`w-14 h-14 bg-gradient-to-br ${feature.color} rounded-2xl flex items-center justify-center mx-auto mb-4`}
                 whileHover={{ scale: 1.1, rotate: 5 }}

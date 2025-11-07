@@ -172,9 +172,9 @@ export default function AppSidebar() {
   }
 
   return (
-    <div className="flex flex-col h-full bg-gradient-to-b from-gray-50 to-white dark:from-gray-900 dark:to-gray-950 border-r border-gray-200/50 dark:border-gray-800/50">
+    <div className="flex flex-col h-full bg-gradient-to-b from-gray-50 to-white dark:from-emerald-950/30 dark:to-emerald-950/50 border-r border-gray-200/50 dark:border-white/10">
       {/* Header with Logo */}
-      <div className="h-16 bg-gray-50 dark:bg-gray-900 border-b border-gray-200/50 dark:border-gray-800/50">
+      <div className="h-16 bg-gray-50 dark:bg-black/20 border-b border-gray-200/50 dark:border-white/10">
         <div className={`h-full flex items-center justify-center transition-all duration-300 ${isCollapsed ? "px-2" : "px-6"}`}>
           <Link href="/uygulama/ana-sayfa" className="flex items-center gap-3 group">
             {/* Logo Icon */}
@@ -216,7 +216,7 @@ export default function AppSidebar() {
                   ${isCollapsed ? "justify-center h-12 w-12" : "gap-3.5 px-4 h-12"}
                   ${isActive
                     ? `bg-gradient-to-r ${item.gradient} text-white shadow-lg shadow-${item.gradient.split(' ')[1]}/30`
-                    : "text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800/50"
+                    : "text-gray-700 dark:text-white/70 hover:bg-gray-100 dark:hover:bg-emerald-900/20"
                   }
                 `}
               >
@@ -228,7 +228,7 @@ export default function AppSidebar() {
                     <div className="absolute inset-0 bg-white/20 rounded-lg blur-md"></div>
                   )}
                   <Icon className={`relative h-5 w-5 flex-shrink-0 transition-all duration-300 ${
-                    isActive ? "text-white" : "text-gray-600 dark:text-gray-400 group-hover/link:text-emerald-600 dark:group-hover/link:text-emerald-400"
+                    isActive ? "text-white" : "text-gray-600 dark:text-white/40 group-hover/link:text-emerald-600 dark:group-hover/link:text-emerald-400"
                   }`} />
                 </div>
 
@@ -275,7 +275,7 @@ export default function AppSidebar() {
       </div>
 
       {/* Footer Section */}
-      <div className={`border-t border-gray-200/50 dark:border-gray-800/50 space-y-1.5 py-3 ${isCollapsed ? "px-2" : "px-3"}`}>
+      <div className={`border-t border-gray-200/50 dark:border-white/10 space-y-1.5 py-3 ${isCollapsed ? "px-2" : "px-3"}`}>
         {/* Settings Items */}
         {settingsItems.map((item) => {
           const isActive = pathname === item.href
@@ -290,7 +290,7 @@ export default function AppSidebar() {
                   ${isCollapsed ? "justify-center h-10 w-10" : "gap-3 px-4 h-10"}
                   ${isActive
                     ? "bg-gradient-to-r from-emerald-500 to-teal-600 text-white shadow-lg shadow-emerald-500/30"
-                    : "text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800/50 hover:text-gray-900 dark:hover:text-gray-200"
+                    : "text-gray-600 dark:text-white/60 hover:bg-gray-100 dark:hover:bg-emerald-900/20 hover:text-gray-900 dark:hover:text-gray-200"
                   }
                 `}
               >
@@ -301,7 +301,7 @@ export default function AppSidebar() {
                     <div className="absolute inset-0 bg-white/20 rounded-lg blur-md"></div>
                   )}
                   <Icon className={`relative h-5 w-5 flex-shrink-0 transition-all duration-300 ${
-                    isActive ? "text-white" : "text-gray-600 dark:text-gray-400 group-hover/link:text-emerald-600 dark:group-hover/link:text-emerald-400"
+                    isActive ? "text-white" : "text-gray-600 dark:text-white/40 group-hover/link:text-emerald-600 dark:group-hover/link:text-emerald-400"
                   }`} />
                   {item.label === "Bildirimler" && unreadCount > 0 && (
                     <div className="absolute -top-1 -right-1 min-w-[18px] h-[18px] px-1 bg-red-500 rounded-full border-2 border-white dark:border-gray-900 flex items-center justify-center z-10">
@@ -345,14 +345,14 @@ export default function AppSidebar() {
             className={`
               relative flex items-center rounded-xl transition-all duration-300 group/link
               ${isCollapsed ? "justify-center h-10 w-10" : "gap-3 px-4 h-10"}
-              text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800/50 hover:text-gray-900 dark:hover:text-gray-200
+              text-gray-600 dark:text-white/60 hover:bg-gray-100 dark:hover:bg-emerald-900/20 hover:text-gray-900 dark:hover:text-gray-200
             `}
           >
             <div className="relative flex items-center justify-center transition-all duration-300 group-hover/link:scale-105">
               {isCollapsed ? (
-                <PanelLeftOpen className="h-5 w-5 flex-shrink-0 text-gray-600 dark:text-gray-400 group-hover/link:text-emerald-600 dark:group-hover/link:text-emerald-400 transition-all duration-300" />
+                <PanelLeftOpen className="h-5 w-5 flex-shrink-0 text-gray-600 dark:text-white/40 group-hover/link:text-emerald-600 dark:group-hover/link:text-emerald-400 transition-all duration-300" />
               ) : (
-                <PanelLeftClose className="h-5 w-5 flex-shrink-0 text-gray-600 dark:text-gray-400 group-hover/link:text-emerald-600 dark:group-hover/link:text-emerald-400 transition-all duration-300" />
+                <PanelLeftClose className="h-5 w-5 flex-shrink-0 text-gray-600 dark:text-white/40 group-hover/link:text-emerald-600 dark:group-hover/link:text-emerald-400 transition-all duration-300" />
               )}
             </div>
             {!isCollapsed && (
@@ -416,7 +416,7 @@ export default function AppSidebar() {
                           ? `${profile.first_name} ${profile.last_name}`
                           : user?.email || "Kullanıcı"}
                     </span>
-                    <span className="truncate text-xs text-gray-500 dark:text-gray-400">
+                    <span className="truncate text-xs text-gray-500 dark:text-white/60">
                       {isPremium ? "Premium Üye" : "Ücretsiz"}
                     </span>
                   </div>
@@ -431,7 +431,7 @@ export default function AppSidebar() {
             <DropdownMenuContent
               side={isCollapsed ? "right" : "top"}
               align="start"
-              className="w-64 bg-white dark:bg-gray-900 border-gray-200 dark:border-gray-800 shadow-xl"
+              className="w-64 bg-white dark:bg-black/20 dark:backdrop-blur-xl border-gray-200 dark:border-white/10 shadow-xl"
             >
               <DropdownMenuLabel className="text-gray-900 dark:text-white">
                 <div className="flex items-center gap-2">
@@ -439,17 +439,17 @@ export default function AppSidebar() {
                   {isPremium && <Crown className="h-4 w-4 text-amber-500" />}
                 </div>
               </DropdownMenuLabel>
-              <DropdownMenuSeparator className="bg-gray-200 dark:bg-gray-800" />
+              <DropdownMenuSeparator className="bg-gray-200 dark:bg-emerald-900/20" />
               <DropdownMenuItem
                 onClick={() => router.push("/uygulama/ayarlar")}
-                className="text-gray-700 dark:text-gray-300 hover:bg-emerald-50 dark:hover:bg-emerald-950/30 focus:bg-emerald-50 dark:focus:bg-emerald-950/30 cursor-pointer"
+                className="text-gray-700 dark:text-white/70 hover:bg-emerald-50 dark:hover:bg-emerald-950/30 focus:bg-emerald-50 dark:focus:bg-emerald-950/30 cursor-pointer"
               >
                 <UserIcon className="mr-3 h-4 w-4" />
                 Profil Ayarları
               </DropdownMenuItem>
               <DropdownMenuItem
                 onClick={() => router.push("/uygulama/faturalandirma")}
-                className="text-gray-700 dark:text-gray-300 hover:bg-emerald-50 dark:hover:bg-emerald-950/30 focus:bg-emerald-50 dark:focus:bg-emerald-950/30 cursor-pointer"
+                className="text-gray-700 dark:text-white/70 hover:bg-emerald-50 dark:hover:bg-emerald-950/30 focus:bg-emerald-50 dark:focus:bg-emerald-950/30 cursor-pointer"
               >
                 <Briefcase className="mr-3 h-4 w-4" />
                 Faturalandırma
@@ -465,12 +465,12 @@ export default function AppSidebar() {
               )}
               <DropdownMenuItem
                 onClick={() => window.open("https://www.kreditakip.com.tr/sss", "_blank")}
-                className="text-gray-700 dark:text-gray-300 hover:bg-emerald-50 dark:hover:bg-emerald-950/30 focus:bg-emerald-50 dark:focus:bg-emerald-950/30 cursor-pointer"
+                className="text-gray-700 dark:text-white/70 hover:bg-emerald-50 dark:hover:bg-emerald-950/30 focus:bg-emerald-50 dark:focus:bg-emerald-950/30 cursor-pointer"
               >
                 <HelpCircle className="mr-3 h-4 w-4" />
                 Yardım & Destek
               </DropdownMenuItem>
-              <DropdownMenuSeparator className="bg-gray-200 dark:bg-gray-800" />
+              <DropdownMenuSeparator className="bg-gray-200 dark:bg-emerald-900/20" />
               <DropdownMenuItem
                 onClick={handleSignOut}
                 className="text-red-600 dark:text-red-500 hover:bg-red-50 dark:hover:bg-red-950/30 focus:bg-red-50 dark:focus:bg-red-950/30 font-medium cursor-pointer"

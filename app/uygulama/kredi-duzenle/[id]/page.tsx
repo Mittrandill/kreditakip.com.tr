@@ -799,7 +799,7 @@ export default function KrediDuzenlePage() {
                       </div>
                     ) : paymentPlans.length === 0 ? (
                       <div className="text-center py-8">
-                        <CalendarDays className="h-12 w-12 text-gray-400 dark:text-gray-600 mx-auto mb-4" />
+                        <CalendarDays className="h-12 w-12 text-gray-400 dark:text-white/40 mx-auto mb-4" />
                         <p className="text-gray-600 dark:text-white/60">Bu kredi için ödeme planı bulunamadı.</p>
                       </div>
                     ) : (

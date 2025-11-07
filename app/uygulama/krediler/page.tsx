@@ -503,7 +503,7 @@ export default function KredilerPage() {
           <div className="p-6 dark:bg-black/20">
             {currentItems.length === 0 && !loadingData && (
               <div className="text-center py-10">
-                <CreditCard className="mx-auto h-12 w-12 text-gray-400 dark:text-gray-600" />
+                <CreditCard className="mx-auto h-12 w-12 text-gray-400 dark:text-white/40" />
                 <h3 className="mt-2 text-sm font-medium text-gray-900 dark:text-white">Kredi Bulunamadı</h3>
                 <p className="mt-1 text-sm text-gray-500 dark:text-white/60">
                   {activeTab === "tumKrediler" ? "Hiç kredi eklenmemiş." : "Bu filtreye uygun kredi bulunamadı."}
@@ -528,7 +528,7 @@ export default function KredilerPage() {
                       key={kredi.id}
                       className="shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 rounded-xl border-gray-200 dark:border-white/10 overflow-hidden dark:bg-black/10"
                     >
-                      <CardHeader className="pb-3 bg-gradient-to-r from-gray-50 to-gray-100 dark:from-gray-800 dark:to-gray-700">
+                      <CardHeader className="pb-3 bg-gradient-to-r from-gray-50 to-gray-100 dark:from-emerald-900/20 dark:to-emerald-900/10">
                         <div className="flex items-center justify-between">
                           <div className="flex items-center gap-3">
                             <div className="relative">
@@ -536,7 +536,7 @@ export default function KredilerPage() {
                                 bankName={kredi.banks?.name || "Bilinmeyen Banka"}
                                 logoUrl={kredi.banks?.logo_url ?? undefined}
                                 size="md"
-                                className="ring-2 ring-white dark:ring-gray-600 shadow-lg"
+                                className="ring-2 ring-white dark:ring-white/20 shadow-lg"
                               />
                               <div className="absolute -bottom-1 -right-1 w-4 h-4 bg-emerald-500 rounded-full flex items-center justify-center">
                                 <CheckCircle className="h-2.5 w-2.5 text-white" />
@@ -735,7 +735,7 @@ export default function KredilerPage() {
                                 bankName={kredi.banks?.name || "Bilinmeyen Banka"}
                                 logoUrl={kredi.banks?.logo_url ?? undefined}
                                 size="md"
-                                className="ring-1 ring-emerald-200 dark:ring-gray-700 bg-white dark:bg-black/10"
+                                className="ring-1 ring-emerald-200 dark:ring-emerald-900/30 bg-white dark:bg-black/10"
                               />
                               <div>
                                 <span className="font-medium text-gray-900 dark:text-white block">

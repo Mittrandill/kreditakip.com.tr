@@ -301,7 +301,7 @@ function CalendarView({ payments }: { payments: PaymentWithCredit[] }) {
                 isToday
                   ? "bg-blue-50 dark:bg-blue-900/30 border-blue-300 dark:border-blue-700 shadow-md ring-2 ring-blue-200 dark:ring-blue-800"
                   : dayPayments.length > 0
-                    ? "bg-white dark:bg-black/20 border-gray-300 dark:border-white/10 hover:border-gray-400 dark:hover:border-gray-600"
+                    ? "bg-white dark:bg-black/20 border-gray-300 dark:border-white/10 hover:border-gray-400 dark:hover:border-white/20"
                     : "bg-gray-50/50 dark:bg-black/10/50 border-gray-200 dark:border-white/10"
               }`}
             >
@@ -316,7 +316,7 @@ function CalendarView({ payments }: { payments: PaymentWithCredit[] }) {
               >
                 {day}
                 {isToday && (
-                  <span className="ml-1 text-xs bg-gray-600 dark:bg-gray-700 text-white px-1 rounded">Bugün</span>
+                  <span className="ml-1 text-xs bg-gray-600 dark:bg-emerald-900/30 text-white px-1 rounded">Bugün</span>
                 )}
               </div>
 
@@ -367,7 +367,7 @@ function CalendarView({ payments }: { payments: PaymentWithCredit[] }) {
       {uniqueBanks.length > 0 && (
         <div className="mt-6">
           <h4 className="text-sm font-semibold text-gray-700 dark:text-white/70 mb-3 flex items-center gap-2">
-            <div className="w-2 h-2 bg-gray-400 dark:bg-gray-600 rounded-full"></div>
+            <div className="w-2 h-2 bg-gray-400 dark:bg-white/40 rounded-full"></div>
             Banka Renk Kodları
           </h4>
           <div className="flex flex-wrap gap-3">
@@ -835,7 +835,7 @@ function PaymentsList({
 
       {currentPayments.length === 0 && (
         <div className="text-center py-12 text-gray-500 dark:text-white/60">
-          <Calendar className="h-16 w-16 mx-auto mb-4 text-gray-400 dark:text-gray-600" />
+          <Calendar className="h-16 w-16 mx-auto mb-4 text-gray-400 dark:text-white/40" />
           <h3 className="font-medium text-gray-900 dark:text-white mb-2">Ödeme Bulunamadı</h3>
           <p className="text-sm">Seçilen filtrelere uygun ödeme bulunmuyor</p>
         </div>
@@ -1086,7 +1086,7 @@ function PaymentAnalysis({ payments, credits }: { payments: PaymentWithCredit[];
                         </div>
                         <span className="text-sm font-semibold dark:text-white">{formatCurrency(data.total)}</span>
                       </div>
-                      <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
+                      <div className="w-full bg-gray-200 dark:bg-emerald-900/20 rounded-full h-2">
                         <div
                           className="bg-gradient-to-r from-blue-500 to-blue-600 h-2 rounded-full transition-all duration-300"
                           style={{
@@ -1122,7 +1122,7 @@ function PaymentAnalysis({ payments, credits }: { payments: PaymentWithCredit[];
                     </span>
                     <span className="text-sm font-semibold dark:text-white">{formatCurrency(month.total)}</span>
                   </div>
-                  <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
+                  <div className="w-full bg-gray-200 dark:bg-emerald-900/20 rounded-full h-2">
                     <div className="flex h-2 rounded-full overflow-hidden">
                       <div
                         className="bg-emerald-500 transition-all duration-300"
@@ -1519,7 +1519,7 @@ function ReminderSettings({ payments }: { payments: PaymentWithCredit[] }) {
             </div>
           ) : (
             <div className="text-center py-8 text-gray-500 dark:text-white/60">
-              <Bell className="h-12 w-12 mx-auto mb-3 text-gray-400 dark:text-gray-600" />
+              <Bell className="h-12 w-12 mx-auto mb-3 text-gray-400 dark:text-white/40" />
               <p className="font-medium dark:text-white/70">Yaklaşan ödeme yok</p>
               <p className="text-sm">Önümüzdeki 7 gün içinde vadesi gelen ödeme bulunmuyor</p>
             </div>
@@ -1713,28 +1713,28 @@ export default function OdemePlaniPage() {
             <TabsList className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 bg-transparent h-auto p-2 gap-2">
               <TabsTrigger
                 value="takvim"
-                className="flex items-center gap-2 py-3 px-4 data-[state=active]:text-emerald-600 dark:data-[state=active]:text-emerald-400 data-[state=active]:bg-white dark:data-[state=active]:bg-gray-900 data-[state=active]:shadow-sm rounded-xl transition-all duration-200 hover:bg-gray-100 dark:hover:bg-white/10 dark:text-white/60"
+                className="flex items-center gap-2 py-3 px-4 data-[state=active]:text-emerald-600 dark:data-[state=active]:text-emerald-400 data-[state=active]:bg-white dark:data-[state=active]:bg-emerald-900/20 data-[state=active]:shadow-sm rounded-xl transition-all duration-200 hover:bg-gray-100 dark:hover:bg-white/10 dark:text-white/60"
               >
                 <Calendar className="h-4 w-4" />
                 <span className="hidden sm:inline font-medium">Takvim</span>
               </TabsTrigger>
               <TabsTrigger
                 value="liste"
-                className="flex items-center gap-2 py-3 px-4 data-[state=active]:text-emerald-600 dark:data-[state=active]:text-emerald-400 data-[state=active]:bg-white dark:data-[state=active]:bg-gray-900 data-[state=active]:shadow-sm rounded-xl transition-all duration-200 hover:bg-gray-100 dark:hover:bg-white/10 dark:text-white/60"
+                className="flex items-center gap-2 py-3 px-4 data-[state=active]:text-emerald-600 dark:data-[state=active]:text-emerald-400 data-[state=active]:bg-white dark:data-[state=active]:bg-emerald-900/20 data-[state=active]:shadow-sm rounded-xl transition-all duration-200 hover:bg-gray-100 dark:hover:bg-white/10 dark:text-white/60"
               >
                 <CreditCard className="h-4 w-4" />
                 <span className="hidden sm:inline font-medium">Liste</span>
               </TabsTrigger>
               <TabsTrigger
                 value="analiz"
-                className="flex items-center gap-2 py-3 px-4 data-[state=active]:text-emerald-600 dark:data-[state=active]:text-emerald-400 data-[state=active]:bg-white dark:data-[state=active]:bg-gray-900 data-[state=active]:shadow-sm rounded-xl transition-all duration-200 hover:bg-gray-100 dark:hover:bg-white/10 dark:text-white/60"
+                className="flex items-center gap-2 py-3 px-4 data-[state=active]:text-emerald-600 dark:data-[state=active]:text-emerald-400 data-[state=active]:bg-white dark:data-[state=active]:bg-emerald-900/20 data-[state=active]:shadow-sm rounded-xl transition-all duration-200 hover:bg-gray-100 dark:hover:bg-white/10 dark:text-white/60"
               >
                 <TrendingUp className="h-4 w-4" />
                 <span className="hidden sm:inline font-medium">Analiz</span>
               </TabsTrigger>
               <TabsTrigger
                 value="hatirlatici"
-                className="flex items-center gap-2 py-3 px-4 data-[state=active]:text-emerald-600 dark:data-[state=active]:text-emerald-400 data-[state=active]:bg-white dark:data-[state=active]:bg-gray-900 data-[state=active]:shadow-sm rounded-xl transition-all duration-200 hover:bg-gray-100 dark:hover:bg-white/10 dark:text-white/60"
+                className="flex items-center gap-2 py-3 px-4 data-[state=active]:text-emerald-600 dark:data-[state=active]:text-emerald-400 data-[state=active]:bg-white dark:data-[state=active]:bg-emerald-900/20 data-[state=active]:shadow-sm rounded-xl transition-all duration-200 hover:bg-gray-100 dark:hover:bg-white/10 dark:text-white/60"
               >
                 <Bell className="h-4 w-4" />
                 <span className="hidden sm:inline font-medium">Hatırlatıcı</span>

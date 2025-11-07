@@ -1149,7 +1149,7 @@ export default function AyarlarPage() {
                     <div className="py-4">
                       <div className="space-y-3">
                         <div className="p-4 bg-gray-50 dark:bg-black/10 rounded-lg">
-                          <p className="text-sm font-medium text-gray-900 dark:text-gray-100 mb-2">Mevcut Abonelik:</p>
+                          <p className="text-sm font-medium text-gray-900 dark:text-white mb-2">Mevcut Abonelik:</p>
                           <div className="flex items-center justify-between">
                             <span className="text-base text-gray-700 dark:text-white/70">
                               {subscription?.plan_id === "premium-yearly" ? "Yıllık Premium" : "Aylık Premium"}
@@ -1734,7 +1734,7 @@ export default function AyarlarPage() {
                       </div>
                       <Switch checked={theme === "dark"} onCheckedChange={handleDarkModeToggle} />
                     </div>
-                    <Separator className="dark:bg-gray-700" />
+                    <Separator className="dark:bg-white/10" />
                     <div className="flex items-center justify-between">
                       <div>
                         <p className="font-medium dark:text-white">Kompakt Görünüm</p>
@@ -1742,7 +1742,7 @@ export default function AyarlarPage() {
                       </div>
                       <Switch checked={compactView} onCheckedChange={handleCompactViewToggle} />
                     </div>
-                    <Separator className="dark:bg-gray-700" />
+                    <Separator className="dark:bg-white/10" />
                     <div className="flex items-center justify-between">
                       <div>
                         <p className="font-medium dark:text-white">Animasyonlar</p>
