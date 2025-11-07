@@ -744,7 +744,7 @@ export default function KrediDetayPage() {
             <TabsList className="grid grid-cols-5 bg-transparent h-auto p-2 gap-2">
               <TabsTrigger
                 value="genel"
-                className="flex items-center gap-2 py-3 px-4 data-[state=active]:text-emerald-600 rounded-xl transition-all duration-200 hover:bg-gray-100 dark:hover:bg-black/10"
+                className="flex items-center gap-2 py-3 px-4 data-[state=active]:text-emerald-600 dark:data-[state=active]:text-emerald-400 data-[state=active]:bg-emerald-100 dark:data-[state=active]:bg-emerald-900/20 rounded-xl transition-all duration-200 hover:bg-gray-100 dark:hover:bg-black/10"
               >
                 <FileText className="h-4 w-4" />
                 <span className="hidden sm:inline font-medium">Genel Bilgiler</span>
@@ -752,7 +752,7 @@ export default function KrediDetayPage() {
               </TabsTrigger>
               <TabsTrigger
                 value="odeme-plani"
-                className="flex items-center gap-2 py-3 px-4 data-[state=active]:text-emerald-600 rounded-xl transition-all duration-200 hover:bg-gray-100 dark:hover:bg-black/10"
+                className="flex items-center gap-2 py-3 px-4 data-[state=active]:text-emerald-600 dark:data-[state=active]:text-emerald-400 data-[state=active]:bg-emerald-100 dark:data-[state=active]:bg-emerald-900/20 rounded-xl transition-all duration-200 hover:bg-gray-100 dark:hover:bg-black/10"
               >
                 <Calendar className="h-4 w-4" />
                 <span className="hidden sm:inline font-medium">Ödeme Planı</span>
@@ -760,7 +760,7 @@ export default function KrediDetayPage() {
               </TabsTrigger>
               <TabsTrigger
                 value="gecmis"
-                className="flex items-center gap-2 py-3 px-4 data-[state=active]:text-emerald-600 rounded-xl transition-all duration-200 hover:bg-gray-100 dark:hover:bg-black/10"
+                className="flex items-center gap-2 py-3 px-4 data-[state=active]:text-emerald-600 dark:data-[state=active]:text-emerald-400 data-[state=active]:bg-emerald-100 dark:data-[state=active]:bg-emerald-900/20 rounded-xl transition-all duration-200 hover:bg-gray-100 dark:hover:bg-black/10"
               >
                 <History className="h-4 w-4" />
                 <span className="hidden sm:inline font-medium">Ödeme Geçmişi</span>
@@ -768,7 +768,7 @@ export default function KrediDetayPage() {
               </TabsTrigger>
               <TabsTrigger
                 value="grafikler"
-                className="flex items-center gap-2 py-3 px-4 data-[state=active]:text-emerald-600 rounded-xl transition-all duration-200 hover:bg-gray-100 dark:hover:bg-black/10"
+                className="flex items-center gap-2 py-3 px-4 data-[state=active]:text-emerald-600 dark:data-[state=active]:text-emerald-400 data-[state=active]:bg-emerald-100 dark:data-[state=active]:bg-emerald-900/20 rounded-xl transition-all duration-200 hover:bg-gray-100 dark:hover:bg-black/10"
               >
                 <BarChart3 className="h-4 w-4" />
                 <span className="hidden sm:inline font-medium">Grafikler</span>
@@ -776,7 +776,7 @@ export default function KrediDetayPage() {
               </TabsTrigger>
               <TabsTrigger
                 value="ayarlar"
-                className="flex items-center gap-2 py-3 px-4 data-[state=active]:text-emerald-600 rounded-xl transition-all duration-200 hover:bg-gray-100 dark:hover:bg-black/10"
+                className="flex items-center gap-2 py-3 px-4 data-[state=active]:text-emerald-600 dark:data-[state=active]:text-emerald-400 data-[state=active]:bg-emerald-100 dark:data-[state=active]:bg-emerald-900/20 rounded-xl transition-all duration-200 hover:bg-gray-100 dark:hover:bg-black/10"
               >
                 <Settings className="h-4 w-4" />
                 <span className="hidden sm:inline font-medium">Ayarlar</span>

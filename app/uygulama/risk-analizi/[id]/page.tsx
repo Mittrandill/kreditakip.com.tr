@@ -150,7 +150,7 @@ const SectionCard: React.FC<{
   <Collapsible defaultOpen={defaultOpen}>
     <Card className="border-0 shadow-lg overflow-hidden">
       <CollapsibleTrigger className="w-full">
-        <CardHeader className="bg-gray-50 dark:bg-black/10/50 hover:bg-gray-100 dark:hover:bg-black/10 transition-colors">
+        <CardHeader className="bg-gray-50 dark:bg-black/10 hover:bg-gray-100 dark:hover:bg-black/10 transition-colors">
           <div className="flex items-center justify-between">
             <div className="flex items-center">
               <span className={`p-2 bg-gradient-to-r ${iconGradient} text-white rounded-lg mr-4 shadow-lg`}>
@@ -445,13 +445,13 @@ export default function RiskAnalysisDetailPage() {
       {/* Modern Tabs */}
       <div className="bg-white dark:bg-black/20 rounded-2xl shadow-xl border border-gray-200 dark:border-white/10 overflow-hidden">
         <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full">
-          <div className="border-b border-gray-200 dark:border-white/10 bg-gray-50 dark:bg-black/10/50">
+          <div className="border-b border-gray-200 dark:border-white/10 bg-gray-50 dark:bg-emerald-900/10">
             <TabsList className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-1 p-1 h-auto">
               {["summary", "factors", "recommendations", "details", "outlook"].map((tab) => (
                 <TabsTrigger
                   key={tab}
                   value={tab}
-                  className="flex items-center justify-center gap-2 py-2.5 px-3 data-[state=active]:bg-white dark:data-[state=active]:bg-gray-700 data-[state=active]:text-emerald-600 data-[state=active]:shadow-sm rounded-lg transition-all duration-200 hover:bg-gray-100 dark:hover:bg-black/10/70 text-xs sm:text-sm"
+                  className="flex items-center justify-center gap-2 py-2.5 px-3 data-[state=active]:bg-white dark:data-[state=active]:bg-emerald-900/20 data-[state=active]:text-emerald-600 dark:data-[state=active]:text-emerald-400 data-[state=active]:shadow-sm rounded-lg transition-all duration-200 hover:bg-gray-100 dark:hover:bg-white/10 text-xs sm:text-sm"
                 >
                   {tab === "summary" && (
                     <>

@@ -285,7 +285,7 @@ function CalendarView({ payments }: { payments: PaymentWithCredit[] }) {
         ))}
 
         {Array.from({ length: startingDayOfWeek }, (_, i) => (
-          <div key={`empty-${i}`} className="p-2 h-32 bg-gray-50/30 dark:bg-black/10/30 rounded-lg"></div>
+          <div key={`empty-${i}`} className="p-2 h-32 bg-gray-50/30 dark:bg-black/10 rounded-lg"></div>
         ))}
 
         {Array.from({ length: daysInMonth }, (_, i) => {
@@ -302,7 +302,7 @@ function CalendarView({ payments }: { payments: PaymentWithCredit[] }) {
                   ? "bg-blue-50 dark:bg-blue-900/30 border-blue-300 dark:border-blue-700 shadow-md ring-2 ring-blue-200 dark:ring-blue-800"
                   : dayPayments.length > 0
                     ? "bg-white dark:bg-black/20 border-gray-300 dark:border-white/10 hover:border-gray-400 dark:hover:border-white/20"
-                    : "bg-gray-50/50 dark:bg-black/10/50 border-gray-200 dark:border-white/10"
+                    : "bg-gray-50/50 dark:bg-black/10 border-gray-200 dark:border-white/10"
               }`}
             >
               <div
@@ -762,7 +762,7 @@ function PaymentsList({
                 <tr
                   key={payment.id}
                   className={`hover:bg-gray-50 dark:hover:bg-white/10 transition-colors duration-150 ease-in-out border-b border-gray-100 dark:border-white/10 ${
-                    index % 2 === 0 ? "bg-white dark:bg-black/20" : "bg-gray-50/50 dark:bg-black/10/50"
+                    index % 2 === 0 ? "bg-white dark:bg-black/20" : "bg-gray-50/50 dark:bg-black/10"
                   }`}
                 >
                   <td className="p-4">
@@ -1709,7 +1709,7 @@ export default function OdemePlaniPage() {
 
       <div className="bg-white dark:bg-black/20 rounded-2xl shadow-sm border border-gray-100 dark:border-white/10 overflow-hidden">
         <Tabs value={selectedTab} onValueChange={setSelectedTab} className="w-full">
-          <div className="border-b border-gray-100 dark:border-white/10 bg-gray-50/50 dark:bg-black/10/50">
+          <div className="border-b border-gray-100 dark:border-white/10 bg-gray-50/50 dark:bg-emerald-900/10">
             <TabsList className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 bg-transparent h-auto p-2 gap-2">
               <TabsTrigger
                 value="takvim"

@@ -236,7 +236,7 @@ export default function PremiumPage() {
               </div>
 
               {/* Toggle Switch */}
-              <div className="flex items-center justify-center gap-3 p-4 bg-white/50 dark:bg-black/20/50 rounded-xl border border-emerald-200 dark:border-emerald-800">
+              <div className="flex items-center justify-center gap-3 p-4 bg-white/50 dark:bg-black/20 rounded-xl border border-emerald-200 dark:border-emerald-800">
                 <span className={`text-sm font-medium transition-colors ${!isYearly ? "text-emerald-600 dark:text-emerald-400" : "text-gray-500"}`}>
                   Aylık
                 </span>
