@@ -259,13 +259,13 @@ export default function PDFOdemePlaniPage() {
         </div>
       </Card>
 
-      <Card className="shadow-lg border-gray-200 dark:border-gray-700 rounded-2xl overflow-hidden dark:bg-gray-900">
-        <CardHeader className="bg-gradient-to-r from-gray-50 to-purple-50 dark:from-gray-800 dark:to-purple-900/30 border-b dark:border-gray-700">
+      <Card className="shadow-lg border-gray-200 dark:border-white/10 rounded-2xl overflow-hidden dark:bg-black/20">
+        <CardHeader className="bg-gradient-to-r from-gray-50 to-purple-50 dark:from-gray-800 dark:to-purple-900/30 border-b dark:border-white/10">
           <CardTitle className="flex items-center gap-2 dark:text-white">
             <FileText className="h-5 w-5 text-purple-600 dark:text-purple-400" />
             PDF Dosyası Yükle
           </CardTitle>
-          <CardDescription className="dark:text-gray-400">Bankanızdan aldığınız ödeme planı PDF'ini yükleyin</CardDescription>
+          <CardDescription className="dark:text-white/60">Bankanızdan aldığınız ödeme planı PDF'ini yükleyin</CardDescription>
         </CardHeader>
         <CardContent className="p-8">
           <div
@@ -293,12 +293,12 @@ export default function PDFOdemePlaniPage() {
                 </>
               ) : (
                 <>
-                  <Upload className="h-16 w-16 text-gray-400 dark:text-gray-500" />
+                  <Upload className="h-16 w-16 text-gray-400 dark:text-white/60" />
                   <div>
-                    <p className="text-xl font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    <p className="text-xl font-medium text-gray-700 dark:text-white/70 mb-2">
                       {isDragActive ? "Dosyayı buraya bırakın" : "PDF dosyasını sürükleyin veya seçin"}
                     </p>
-                    <p className="text-sm text-gray-500 dark:text-gray-400">Maksimum 10MB - Küçük dosyalar daha hızlı</p>
+                    <p className="text-sm text-gray-500 dark:text-white/60">Maksimum 10MB - Küçük dosyalar daha hızlı</p>
                   </div>
                 </>
               )}
@@ -316,10 +316,10 @@ export default function PDFOdemePlaniPage() {
             <div className="space-y-4 mt-6">
               <div className="flex items-center gap-2">
                 <Loader2 className="mr-2 h-5 w-5 animate-spin text-purple-600 dark:text-purple-400" />
-                <span className="text-sm font-medium dark:text-gray-300">PDF hızlı analiz ediliyor...</span>
+                <span className="text-sm font-medium dark:text-white/70">PDF hızlı analiz ediliyor...</span>
               </div>
               <Progress value={progress} className="h-3" />
-              <p className="text-xs text-gray-500 dark:text-gray-400">Optimize edilmiş AI ile 3-5 saniyede tamamlanacak</p>
+              <p className="text-xs text-gray-500 dark:text-white/60">Optimize edilmiş AI ile 3-5 saniyede tamamlanacak</p>
             </div>
           )}
 
@@ -376,7 +376,7 @@ export default function PDFOdemePlaniPage() {
             transition={{ duration: 0.6, delay: 0.5 + index * 0.1 }}
             whileHover={{ y: -5 }}
           >
-            <Card className="text-center p-6 border-0 shadow-lg hover:shadow-xl transition-all duration-300 rounded-2xl dark:bg-gray-900 dark:border-gray-800">
+            <Card className="text-center p-6 border-0 shadow-lg hover:shadow-xl transition-all duration-300 rounded-2xl dark:bg-black/20 dark:border-white/10">
               <motion.div
                 className={`w-14 h-14 bg-gradient-to-br ${feature.color} rounded-2xl flex items-center justify-center mx-auto mb-4`}
                 whileHover={{ scale: 1.1, rotate: 5 }}
@@ -385,7 +385,7 @@ export default function PDFOdemePlaniPage() {
                 <feature.icon className="h-7 w-7 text-white" />
               </motion.div>
               <h3 className="font-bold text-lg mb-2 text-gray-900 dark:text-white">{feature.title}</h3>
-              <p className="text-gray-600 dark:text-gray-400">{feature.description}</p>
+              <p className="text-gray-600 dark:text-white/60">{feature.description}</p>
             </Card>
           </motion.div>
         ))}

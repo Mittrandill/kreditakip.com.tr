@@ -63,17 +63,17 @@ export default function PaymentSuccessPage() {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center min-h-screen bg-gray-50 dark:bg-gray-900">
+      <div className="flex items-center justify-center min-h-screen bg-gray-50 dark:bg-[#151515]">
         <div className="text-center space-y-4">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-emerald-600 mx-auto"></div>
-          <p className="text-gray-600 dark:text-gray-400">Yükleniyor...</p>
+          <p className="text-gray-600 dark:text-white/60">Yükleniyor...</p>
         </div>
       </div>
     )
   }
 
   return (
-    <div className="fixed inset-0 z-50 overflow-y-auto bg-gray-50 dark:bg-gray-900">
+    <div className="fixed inset-0 z-50 overflow-y-auto bg-gray-50 dark:bg-[#151515]">
       <div className="min-h-screen flex items-center justify-center p-4 py-12">
         <div
           className={`max-w-2xl w-full space-y-8 transition-all duration-1000 ${
@@ -95,7 +95,7 @@ export default function PaymentSuccessPage() {
           <h1 className="text-4xl md:text-5xl font-bold bg-gradient-to-r from-emerald-600 to-teal-600 bg-clip-text text-transparent">
             Tebrikler! 🎉
           </h1>
-          <p className="text-xl md:text-2xl text-gray-700 dark:text-gray-300">
+          <p className="text-xl md:text-2xl text-gray-700 dark:text-white/70">
             Premium üyeliğiniz başarıyla aktif edildi
           </p>
         </div>
@@ -112,7 +112,7 @@ export default function PaymentSuccessPage() {
           <CardContent className="pt-6 space-y-4">
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-1">
-                <p className="text-sm text-gray-500 dark:text-gray-400">Plan</p>
+                <p className="text-sm text-gray-500 dark:text-white/60">Plan</p>
                 <p className="font-semibold text-emerald-600 dark:text-emerald-400">
                   {subscription?.planType === "premium"
                     ? subscription?.plan_id === "premium-yearly"
@@ -124,11 +124,11 @@ export default function PaymentSuccessPage() {
                 </p>
               </div>
               <div className="space-y-1">
-                <p className="text-sm text-gray-500 dark:text-gray-400">Durum</p>
+                <p className="text-sm text-gray-500 dark:text-white/60">Durum</p>
                 <p className="font-semibold text-emerald-600 dark:text-emerald-400">Aktif</p>
               </div>
               <div className="space-y-1">
-                <p className="text-sm text-gray-500 dark:text-gray-400">Başlangıç</p>
+                <p className="text-sm text-gray-500 dark:text-white/60">Başlangıç</p>
                 <p className="font-medium">
                   {subscription?.startDate
                     ? new Date(subscription.startDate).toLocaleDateString("tr-TR", {
@@ -140,7 +140,7 @@ export default function PaymentSuccessPage() {
                 </p>
               </div>
               <div className="space-y-1">
-                <p className="text-sm text-gray-500 dark:text-gray-400">Bitiş</p>
+                <p className="text-sm text-gray-500 dark:text-white/60">Bitiş</p>
                 <p className="font-medium">
                   {subscription?.expiresAt
                     ? new Date(subscription.expiresAt).toLocaleDateString("tr-TR", {

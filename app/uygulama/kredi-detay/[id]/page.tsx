@@ -590,7 +590,7 @@ export default function KrediDetayPage() {
     return (
       <div className="flex flex-col gap-4 md:gap-6 items-center justify-center min-h-[calc(100vh-150px)]">
         <Loader2 className="h-12 w-12 animate-spin text-emerald-600" />
-        <p className="text-lg text-gray-600 dark:text-gray-400">Kredi detayları yükleniyor...</p>
+        <p className="text-lg text-gray-600 dark:text-white/60">Kredi detayları yükleniyor...</p>
       </div>
     )
   }
@@ -738,13 +738,13 @@ export default function KrediDetayPage() {
       </div>
 
       {/* Modern Tabs */}
-      <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 overflow-hidden">
+      <div className="bg-white dark:bg-black/10 rounded-2xl shadow-sm border border-gray-100 dark:border-white/10 overflow-hidden">
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <div className="border-b border-gray-100 dark:border-gray-700 bg-gray-100 dark:bg-gray-900">
+          <div className="border-b border-gray-100 dark:border-white/10 bg-gray-100 dark:bg-black/20">
             <TabsList className="grid grid-cols-5 bg-transparent h-auto p-2 gap-2">
               <TabsTrigger
                 value="genel"
-                className="flex items-center gap-2 py-3 px-4 data-[state=active]:text-emerald-600 rounded-xl transition-all duration-200 hover:bg-gray-100 dark:hover:bg-gray-800"
+                className="flex items-center gap-2 py-3 px-4 data-[state=active]:text-emerald-600 rounded-xl transition-all duration-200 hover:bg-gray-100 dark:hover:bg-black/10"
               >
                 <FileText className="h-4 w-4" />
                 <span className="hidden sm:inline font-medium">Genel Bilgiler</span>
@@ -752,7 +752,7 @@ export default function KrediDetayPage() {
               </TabsTrigger>
               <TabsTrigger
                 value="odeme-plani"
-                className="flex items-center gap-2 py-3 px-4 data-[state=active]:text-emerald-600 rounded-xl transition-all duration-200 hover:bg-gray-100 dark:hover:bg-gray-800"
+                className="flex items-center gap-2 py-3 px-4 data-[state=active]:text-emerald-600 rounded-xl transition-all duration-200 hover:bg-gray-100 dark:hover:bg-black/10"
               >
                 <Calendar className="h-4 w-4" />
                 <span className="hidden sm:inline font-medium">Ödeme Planı</span>
@@ -760,7 +760,7 @@ export default function KrediDetayPage() {
               </TabsTrigger>
               <TabsTrigger
                 value="gecmis"
-                className="flex items-center gap-2 py-3 px-4 data-[state=active]:text-emerald-600 rounded-xl transition-all duration-200 hover:bg-gray-100 dark:hover:bg-gray-800"
+                className="flex items-center gap-2 py-3 px-4 data-[state=active]:text-emerald-600 rounded-xl transition-all duration-200 hover:bg-gray-100 dark:hover:bg-black/10"
               >
                 <History className="h-4 w-4" />
                 <span className="hidden sm:inline font-medium">Ödeme Geçmişi</span>
@@ -768,7 +768,7 @@ export default function KrediDetayPage() {
               </TabsTrigger>
               <TabsTrigger
                 value="grafikler"
-                className="flex items-center gap-2 py-3 px-4 data-[state=active]:text-emerald-600 rounded-xl transition-all duration-200 hover:bg-gray-100 dark:hover:bg-gray-800"
+                className="flex items-center gap-2 py-3 px-4 data-[state=active]:text-emerald-600 rounded-xl transition-all duration-200 hover:bg-gray-100 dark:hover:bg-black/10"
               >
                 <BarChart3 className="h-4 w-4" />
                 <span className="hidden sm:inline font-medium">Grafikler</span>
@@ -776,7 +776,7 @@ export default function KrediDetayPage() {
               </TabsTrigger>
               <TabsTrigger
                 value="ayarlar"
-                className="flex items-center gap-2 py-3 px-4 data-[state=active]:text-emerald-600 rounded-xl transition-all duration-200 hover:bg-gray-100 dark:hover:bg-gray-800"
+                className="flex items-center gap-2 py-3 px-4 data-[state=active]:text-emerald-600 rounded-xl transition-all duration-200 hover:bg-gray-100 dark:hover:bg-black/10"
               >
                 <Settings className="h-4 w-4" />
                 <span className="hidden sm:inline font-medium">Ayarlar</span>
@@ -789,7 +789,7 @@ export default function KrediDetayPage() {
             {activeTab === "genel" && (
               <div className="space-y-6">
                 <div className="grid md:grid-cols-2 gap-6">
-                  <Card className="shadow-sm border-gray-200 dark:border-gray-700 dark:bg-gray-900">
+                  <Card className="shadow-sm border-gray-200 dark:border-white/10 dark:bg-black/20">
                     <CardHeader>
                       <CardTitle className="flex items-center gap-2 text-gray-900 dark:text-gray-100">
                         <CreditCard className="h-5 w-5 text-teal-600" />
@@ -799,47 +799,47 @@ export default function KrediDetayPage() {
                     <CardContent className="space-y-4">
                       <div className="grid grid-cols-2 gap-4">
                         <div>
-                          <p className="text-sm text-gray-500 dark:text-gray-400">Kredi Kodu</p>
+                          <p className="text-sm text-gray-500 dark:text-white/60">Kredi Kodu</p>
                           <p className="font-medium text-gray-900 dark:text-gray-100">{krediDetay.credit_code}</p>
                         </div>
                         <div>
-                          <p className="text-sm text-gray-500 dark:text-gray-400">Hesap No</p>
+                          <p className="text-sm text-gray-500 dark:text-white/60">Hesap No</p>
                           <p className="font-medium text-gray-900 dark:text-gray-100">
                             {krediDetay.account_number || "N/A"}
                           </p>
                         </div>
                         <div>
-                          <p className="text-sm text-gray-500 dark:text-gray-400">Başlangıç Tutarı</p>
+                          <p className="text-sm text-gray-500 dark:text-white/60">Başlangıç Tutarı</p>
                           <p className="font-medium text-gray-900 dark:text-gray-100">
                             {formatCurrency(krediDetay.initial_amount)}
                           </p>
                         </div>
                         <div>
-                          <p className="text-sm text-gray-500 dark:text-gray-400">Kredi Notu</p>
+                          <p className="text-sm text-gray-500 dark:text-white/60">Kredi Notu</p>
                           <Badge className="bg-gradient-to-r from-emerald-600 to-teal-700 text-white border-transparent hover:from-emerald-700 hover:to-teal-800">
                             {krediDetay.credit_score || "N/A"}
                           </Badge>
                         </div>
                         <div>
-                          <p className="text-sm text-gray-500 dark:text-gray-400">Başlangıç Tarihi</p>
+                          <p className="text-sm text-gray-500 dark:text-white/60">Başlangıç Tarihi</p>
                           <p className="font-medium text-gray-900 dark:text-gray-100">
                             {new Date(krediDetay.start_date).toLocaleDateString("tr-TR")}
                           </p>
                         </div>
                         <div>
-                          <p className="text-sm text-gray-500 dark:text-gray-400">Bitiş Tarihi</p>
+                          <p className="text-sm text-gray-500 dark:text-white/60">Bitiş Tarihi</p>
                           <p className="font-medium text-gray-900 dark:text-gray-100">
                             {new Date(krediDetay.end_date).toLocaleDateString("tr-TR")}
                           </p>
                         </div>
                         <div>
-                          <p className="text-sm text-gray-500 dark:text-gray-400">Teminat</p>
+                          <p className="text-sm text-gray-500 dark:text-white/60">Teminat</p>
                           <p className="font-medium text-gray-900 dark:text-gray-100">
                             {krediDetay.collateral || "N/A"}
                           </p>
                         </div>
                         <div>
-                          <p className="text-sm text-gray-500 dark:text-gray-400">Sigorta</p>
+                          <p className="text-sm text-gray-500 dark:text-white/60">Sigorta</p>
                           <Badge className="bg-gradient-to-r from-blue-600 to-indigo-700 text-white border-transparent hover:from-blue-700 hover:to-indigo-800 capitalize">
                             {krediDetay.insurance_status || "N/A"}
                           </Badge>
@@ -848,7 +848,7 @@ export default function KrediDetayPage() {
                     </CardContent>
                   </Card>
 
-                  <Card className="shadow-sm border-gray-200 dark:border-gray-700 dark:bg-gray-900">
+                  <Card className="shadow-sm border-gray-200 dark:border-white/10 dark:bg-black/20">
                     <CardHeader>
                       <CardTitle className="flex items-center gap-2 text-gray-900 dark:text-gray-100">
                         <Building className="h-5 w-5 text-teal-600" />
@@ -866,7 +866,7 @@ export default function KrediDetayPage() {
                           <p className="font-semibold text-gray-900 dark:text-gray-100">
                             {krediDetay.banks?.name || "N/A"}
                           </p>
-                          <p className="text-sm text-gray-500 dark:text-gray-400">{krediDetay.branch_name || "N/A"}</p>
+                          <p className="text-sm text-gray-500 dark:text-white/60">{krediDetay.branch_name || "N/A"}</p>
                         </div>
                       </div>
                     </CardContent>
@@ -941,7 +941,7 @@ export default function KrediDetayPage() {
                 <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                   <div>
                     <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">Ödeme Planı</h3>
-                    <p className="text-sm text-gray-600 dark:text-gray-400">
+                    <p className="text-sm text-gray-600 dark:text-white/60">
                       Toplam {odemePlani.length} taksit • Sayfa {currentPage} / {totalPages}
                     </p>
                   </div>
@@ -978,7 +978,7 @@ export default function KrediDetayPage() {
                         return (
                           <div
                             key={taksit.id}
-                            className="flex items-center justify-between p-4 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl hover:border-gray-300 dark:hover:border-gray-600 hover:shadow-sm transition-all"
+                            className="flex items-center justify-between p-4 bg-white dark:bg-black/20 border border-gray-200 dark:border-white/10 rounded-xl hover:border-gray-300 dark:hover:border-gray-600 hover:shadow-sm transition-all"
                           >
                             <div className="flex items-center gap-4">
                               <div className="bg-gradient-to-br from-teal-500 to-emerald-600 text-white rounded-full w-12 h-12 flex items-center justify-center font-bold text-lg shadow-lg">
@@ -991,10 +991,10 @@ export default function KrediDetayPage() {
                                     Taksit #{taksit.installment_number}
                                   </span>
                                 </div>
-                                <div className="text-sm text-gray-600 dark:text-gray-400 mt-1">
+                                <div className="text-sm text-gray-600 dark:text-white/60 mt-1">
                                   Vade: {new Date(taksit.due_date).toLocaleDateString("tr-TR")}
                                 </div>
-                                <div className="text-xs text-gray-500 dark:text-gray-500 mt-1">
+                                <div className="text-xs text-gray-500 dark:text-white/60 mt-1">
                                   Ana Para: {formatCurrency(taksit.principal_amount)} • Faiz:{" "}
                                   {formatCurrency(taksit.interest_amount)}
                                 </div>
@@ -1006,7 +1006,7 @@ export default function KrediDetayPage() {
                                 <div className="font-bold text-gray-900 dark:text-gray-100 text-lg">
                                   {formatCurrency(taksit.total_payment)}
                                 </div>
-                                <div className="text-xs text-gray-500 dark:text-gray-500">
+                                <div className="text-xs text-gray-500 dark:text-white/60">
                                   Kalan: {formatCurrency(taksit.remaining_debt)}
                                 </div>
                               </div>
@@ -1112,7 +1112,7 @@ export default function KrediDetayPage() {
                     </div>
                   </>
                 ) : (
-                  <div className="text-center py-12 text-gray-500 dark:text-gray-400">
+                  <div className="text-center py-12 text-gray-500 dark:text-white/60">
                     <Calendar className="h-16 w-16 mx-auto mb-4 text-gray-400 dark:text-gray-600" />
                     <h3 className="font-medium text-gray-900 dark:text-gray-100 mb-2">Ödeme Planı Bulunamadı</h3>
                     <p className="text-sm">Bu kredi için ödeme planı bulunmuyor</p>
@@ -1127,7 +1127,7 @@ export default function KrediDetayPage() {
                 <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                   <div>
                     <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">Ödeme Geçmişi</h3>
-                    <p className="text-sm text-gray-600 dark:text-gray-400">
+                    <p className="text-sm text-gray-600 dark:text-white/60">
                       Toplam {odemeGecmisi.length} ödeme • Sayfa {currentPageHistory} / {totalHistoryPages}
                     </p>
                   </div>
@@ -1144,7 +1144,7 @@ export default function KrediDetayPage() {
                       {currentHistoryItems.map((odeme, index) => (
                         <div
                           key={odeme.id}
-                          className="flex items-center justify-between p-4 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl hover:border-gray-300 dark:hover:border-gray-600 hover:shadow-sm transition-all"
+                          className="flex items-center justify-between p-4 bg-white dark:bg-black/20 border border-gray-200 dark:border-white/10 rounded-xl hover:border-gray-300 dark:hover:border-gray-600 hover:shadow-sm transition-all"
                         >
                           <div className="flex items-center gap-4">
                             <div className="bg-gradient-to-br from-emerald-500 to-teal-600 p-3 rounded-full shadow-lg">
@@ -1157,7 +1157,7 @@ export default function KrediDetayPage() {
                                   Ödeme #{startIndexHistory + index + 1}
                                 </span>
                               </div>
-                              <div className="text-sm text-gray-600 dark:text-gray-400 mt-1">
+                              <div className="text-sm text-gray-600 dark:text-white/60 mt-1">
                                 {new Date(odeme.payment_date).toLocaleDateString("tr-TR", {
                                   weekday: "long",
                                   year: "numeric",
@@ -1165,7 +1165,7 @@ export default function KrediDetayPage() {
                                   day: "numeric",
                                 })}
                               </div>
-                              <div className="text-xs text-gray-500 dark:text-gray-500 mt-1">
+                              <div className="text-xs text-gray-500 dark:text-white/60 mt-1">
                                 Kanal: {odeme.payment_channel || "Bilinmiyor"} • Referans:{" "}
                                 {odeme.transaction_id || "N/A"}
                               </div>
@@ -1175,7 +1175,7 @@ export default function KrediDetayPage() {
                           <div className="flex items-center gap-4">
                             <div className="text-right">
                               <div className="font-bold text-emerald-600 text-xl">{formatCurrency(odeme.amount)}</div>
-                              <div className="text-xs text-gray-500 dark:text-gray-500">
+                              <div className="text-xs text-gray-500 dark:text-white/60">
                                 {new Date(odeme.payment_date).toLocaleTimeString("tr-TR", {
                                   hour: "2-digit",
                                   minute: "2-digit",
@@ -1412,7 +1412,7 @@ export default function KrediDetayPage() {
                     </div>
                   </>
                 ) : (
-                  <div className="text-center py-12 text-gray-500 dark:text-gray-400">
+                  <div className="text-center py-12 text-gray-500 dark:text-white/60">
                     <History className="h-16 w-16 mx-auto mb-4 text-gray-400 dark:text-gray-600" />
                     <h3 className="font-medium text-gray-900 dark:text-gray-100 mb-2">Ödeme Geçmişi Bulunamadı</h3>
                     <p className="text-sm">Bu kredi için henüz ödeme yapılmamış</p>
@@ -1425,13 +1425,13 @@ export default function KrediDetayPage() {
             {activeTab === "grafikler" && (
               <div className="space-y-6">
                 <div className="grid md:grid-cols-2 gap-6">
-                  <Card className="shadow-sm border-gray-200 dark:border-gray-700 dark:bg-gray-900">
+                  <Card className="shadow-sm border-gray-200 dark:border-white/10 dark:bg-black/20">
                     <CardHeader>
                       <CardTitle className="flex items-center gap-2 text-gray-900 dark:text-gray-100">
                         <TrendingUp className="h-5 w-5 text-teal-600" />
                         Borç Azalış Grafiği
                       </CardTitle>
-                      <CardDescription className="dark:text-gray-400">
+                      <CardDescription className="dark:text-white/60">
                         Aylık borç azalışı ve ödenen tutar analizi
                       </CardDescription>
                     </CardHeader>
@@ -1487,13 +1487,13 @@ export default function KrediDetayPage() {
                     </CardContent>
                   </Card>
 
-                  <Card className="shadow-sm border-gray-200 dark:border-gray-700 dark:bg-gray-900">
+                  <Card className="shadow-sm border-gray-200 dark:border-white/10 dark:bg-black/20">
                     <CardHeader>
                       <CardTitle className="flex items-center gap-2 text-gray-900 dark:text-gray-100">
                         <BarChart3 className="h-5 w-5 text-teal-600" />
                         Faiz/Ana Para Dağılımı
                       </CardTitle>
-                      <CardDescription className="dark:text-gray-400">
+                      <CardDescription className="dark:text-white/60">
                         Ödeme dağılımınızın detaylı analizi
                       </CardDescription>
                     </CardHeader>
@@ -1570,13 +1570,13 @@ export default function KrediDetayPage() {
 
                 {/* Additional Charts Row */}
                 <div className="grid md:grid-cols-2 gap-6">
-                  <Card className="shadow-sm border-gray-200 dark:border-gray-700 dark:bg-gray-900">
+                  <Card className="shadow-sm border-gray-200 dark:border-white/10 dark:bg-black/20">
                     <CardHeader>
                       <CardTitle className="flex items-center gap-2 text-gray-900 dark:text-gray-100">
                         <Calendar className="h-5 w-5 text-teal-600" />
                         Aylık Ödeme Trendi
                       </CardTitle>
-                      <CardDescription className="dark:text-gray-400">Son 6 ayın ödeme performansı</CardDescription>
+                      <CardDescription className="dark:text-white/60">Son 6 ayın ödeme performansı</CardDescription>
                     </CardHeader>
                     <CardContent>
                       <ChartContainer
@@ -1622,13 +1622,13 @@ export default function KrediDetayPage() {
                     </CardContent>
                   </Card>
 
-                  <Card className="shadow-sm border-gray-200 dark:border-gray-700 dark:bg-gray-900">
+                  <Card className="shadow-sm border-gray-200 dark:border-white/10 dark:bg-black/20">
                     <CardHeader>
                       <CardTitle className="flex items-center gap-2 text-gray-900 dark:text-gray-100">
                         <Target className="h-5 w-5 text-teal-600" />
                         Ödeme İlerlemesi
                       </CardTitle>
-                      <CardDescription className="dark:text-gray-400">Kredi tamamlanma durumu</CardDescription>
+                      <CardDescription className="dark:text-white/60">Kredi tamamlanma durumu</CardDescription>
                     </CardHeader>
                     <CardContent className="flex flex-col items-center justify-center h-[250px]">
                       <div className="relative w-32 h-32 mb-4">
@@ -1662,7 +1662,7 @@ export default function KrediDetayPage() {
                         </div>
                       </div>
                       <div className="text-center">
-                        <p className="text-sm text-gray-600 dark:text-gray-400 mb-2">Tamamlanan Ödeme</p>
+                        <p className="text-sm text-gray-600 dark:text-white/60 mb-2">Tamamlanan Ödeme</p>
                         <p className="text-lg font-semibold text-gray-900 dark:text-gray-100">
                           {(krediDetay?.total_installments || 0) - (krediDetay?.remaining_installments || 0)} /{" "}
                           {krediDetay?.total_installments || 0} Taksit
@@ -1678,10 +1678,10 @@ export default function KrediDetayPage() {
             {activeTab === "ayarlar" && (
               <div className="space-y-6">
                 <div className="grid md:grid-cols-2 gap-6">
-                  <Card className="shadow-sm border-gray-200 dark:border-gray-700 dark:bg-gray-900">
+                  <Card className="shadow-sm border-gray-200 dark:border-white/10 dark:bg-black/20">
                     <CardHeader>
                       <CardTitle className="text-gray-900 dark:text-gray-100">Bildirim Ayarları</CardTitle>
-                      <CardDescription className="dark:text-gray-400">
+                      <CardDescription className="dark:text-white/60">
                         Bu kredi için bildirim tercihleriniz
                       </CardDescription>
                     </CardHeader>
@@ -1689,7 +1689,7 @@ export default function KrediDetayPage() {
                       <div className="flex items-center justify-between">
                         <div>
                           <p className="font-medium text-gray-900 dark:text-gray-100">Ödeme Hatırlatması</p>
-                          <p className="text-sm text-gray-500 dark:text-gray-400">
+                          <p className="text-sm text-gray-500 dark:text-white/60">
                             Ödeme tarihi yaklaştığında bildirim al
                           </p>
                         </div>
@@ -1698,7 +1698,7 @@ export default function KrediDetayPage() {
                       <div className="flex items-center justify-between">
                         <div>
                           <p className="font-medium text-gray-900 dark:text-gray-100">Faiz Oranı Değişikliği</p>
-                          <p className="text-sm text-gray-500 dark:text-gray-400">
+                          <p className="text-sm text-gray-500 dark:text-white/60">
                             Faiz oranı değiştiğinde bildirim al
                           </p>
                         </div>
@@ -1707,17 +1707,17 @@ export default function KrediDetayPage() {
                       <div className="flex items-center justify-between">
                         <div>
                           <p className="font-medium text-gray-900 dark:text-gray-100">Aylık Rapor</p>
-                          <p className="text-sm text-gray-500 dark:text-gray-400">Aylık kredi raporu gönder</p>
+                          <p className="text-sm text-gray-500 dark:text-white/60">Aylık kredi raporu gönder</p>
                         </div>
                         <Switch />
                       </div>
                     </CardContent>
                   </Card>
 
-                  <Card className="shadow-sm border-gray-200 dark:border-gray-700 dark:bg-gray-900">
+                  <Card className="shadow-sm border-gray-200 dark:border-white/10 dark:bg-black/20">
                     <CardHeader>
                       <CardTitle className="text-gray-900 dark:text-gray-100">Hızlı İşlemler</CardTitle>
-                      <CardDescription className="dark:text-gray-400">
+                      <CardDescription className="dark:text-white/60">
                         Bu kredi için yapabileceğiniz işlemler
                       </CardDescription>
                     </CardHeader>
