@@ -351,7 +351,7 @@ export default function KrediDuzenlePage() {
     return (
       <div className="flex flex-col gap-4 md:gap-6 items-center justify-center min-h-[calc(100vh-150px)]">
         <Loader2 className="h-12 w-12 animate-spin text-emerald-600 dark:text-emerald-400" />
-        <p className="text-lg text-gray-600 dark:text-gray-400">Kredi bilgileri yükleniyor...</p>
+        <p className="text-lg text-gray-600 dark:text-white/60">Kredi bilgileri yükleniyor...</p>
       </div>
     )
   }
@@ -444,13 +444,13 @@ export default function KrediDuzenlePage() {
       </div>
 
       {/* Modern Tabs - Kredi Detay Sayfasıyla Aynı Tasarım */}
-      <div className="bg-white dark:bg-gray-900 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-800 overflow-hidden">
+      <div className="bg-white dark:bg-black/20 rounded-2xl shadow-sm border border-gray-100 dark:border-white/10 overflow-hidden">
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <div className="border-b border-gray-100 dark:border-gray-800 bg-gray-100 dark:bg-gray-800">
+          <div className="border-b border-gray-100 dark:border-white/10 bg-gray-100 dark:bg-black/10">
             <TabsList className="grid grid-cols-2 bg-transparent h-auto p-2 gap-2">
               <TabsTrigger
                 value="credit-info"
-                className="flex items-center gap-2 py-3 px-4 data-[state=active]:text-emerald-600 dark:data-[state=active]:text-emerald-400 rounded-xl transition-all duration-200 hover:bg-gray-100 dark:hover:bg-gray-700"
+                className="flex items-center gap-2 py-3 px-4 data-[state=active]:text-emerald-600 dark:data-[state=active]:text-emerald-400 rounded-xl transition-all duration-200 hover:bg-gray-100 dark:hover:bg-black/10"
               >
                 <CreditCard className="h-4 w-4" />
                 <span className="hidden sm:inline font-medium">Kredi Bilgileri</span>
@@ -458,7 +458,7 @@ export default function KrediDuzenlePage() {
               </TabsTrigger>
               <TabsTrigger
                 value="payment-plan"
-                className="flex items-center gap-2 py-3 px-4 data-[state=active]:text-emerald-600 dark:data-[state=active]:text-emerald-400 rounded-xl transition-all duration-200 hover:bg-gray-100 dark:hover:bg-gray-700"
+                className="flex items-center gap-2 py-3 px-4 data-[state=active]:text-emerald-600 dark:data-[state=active]:text-emerald-400 rounded-xl transition-all duration-200 hover:bg-gray-100 dark:hover:bg-black/10"
               >
                 <CalendarDays className="h-4 w-4" />
                 <span className="hidden sm:inline font-medium">Ödeme Planı</span>
@@ -471,7 +471,7 @@ export default function KrediDuzenlePage() {
             {activeTab === "credit-info" && (
               <div className="space-y-6">
                 {/* Temel Kredi Bilgileri */}
-                <Card className="shadow-sm border-gray-200 dark:border-gray-800">
+                <Card className="shadow-sm border-gray-200 dark:border-white/10">
                   <CardHeader>
                     <CardTitle className="flex items-center gap-2 text-gray-900 dark:text-white">
                       Temel Kredi Bilgileri
@@ -600,7 +600,7 @@ export default function KrediDuzenlePage() {
                 </Card>
 
                 {/* Finansal Bilgiler */}
-                <Card className="shadow-sm border-gray-200 dark:border-gray-800">
+                <Card className="shadow-sm border-gray-200 dark:border-white/10">
                   <CardHeader>
                     <CardTitle className="flex items-center gap-2 text-gray-900 dark:text-white">
                       Finansal Bilgiler
@@ -684,7 +684,7 @@ export default function KrediDuzenlePage() {
                 </Card>
 
                 {/* Tarih ve Taksit Bilgileri */}
-                <Card className="shadow-sm border-gray-200 dark:border-gray-800">
+                <Card className="shadow-sm border-gray-200 dark:border-white/10">
                   <CardHeader>
                     <CardTitle className="flex items-center gap-2 text-gray-900 dark:text-white">
 
@@ -747,7 +747,7 @@ export default function KrediDuzenlePage() {
                 </Card>
 
                 {/* Teminat ve Sigorta */}
-                <Card className="shadow-sm border-gray-200 dark:border-gray-800">
+                <Card className="shadow-sm border-gray-200 dark:border-white/10">
                   <CardHeader>
                     <CardTitle className="flex items-center gap-2 text-gray-900 dark:text-white">
 
@@ -783,7 +783,7 @@ export default function KrediDuzenlePage() {
             {/* Ödeme Planı Tab */}
             {activeTab === "payment-plan" && (
               <div className="space-y-6">
-                <Card className="shadow-sm border-gray-200 dark:border-gray-800">
+                <Card className="shadow-sm border-gray-200 dark:border-white/10">
                   <CardHeader>
                     <CardTitle className="flex items-center gap-2 text-gray-900 dark:text-white">
                       <CalendarDays className="h-5 w-5 text-blue-600 dark:text-blue-400" />
@@ -795,12 +795,12 @@ export default function KrediDuzenlePage() {
                     {loadingPaymentPlans ? (
                       <div className="flex items-center justify-center py-8">
                         <Loader2 className="h-8 w-8 animate-spin text-blue-600 dark:text-blue-400" />
-                        <span className="ml-2 text-gray-600 dark:text-gray-400">Ödeme planı yükleniyor...</span>
+                        <span className="ml-2 text-gray-600 dark:text-white/60">Ödeme planı yükleniyor...</span>
                       </div>
                     ) : paymentPlans.length === 0 ? (
                       <div className="text-center py-8">
                         <CalendarDays className="h-12 w-12 text-gray-400 dark:text-gray-600 mx-auto mb-4" />
-                        <p className="text-gray-600 dark:text-gray-400">Bu kredi için ödeme planı bulunamadı.</p>
+                        <p className="text-gray-600 dark:text-white/60">Bu kredi için ödeme planı bulunamadı.</p>
                       </div>
                     ) : (
                       <div className="overflow-x-auto">

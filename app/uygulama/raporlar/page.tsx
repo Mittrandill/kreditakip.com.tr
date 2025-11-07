@@ -500,12 +500,12 @@ export default function RaporlarPage() {
       <div className="flex flex-col items-center justify-center min-h-[calc(100vh-150px)] p-8">
         <div className="text-center max-w-md">
           <div className="mb-6">
-            <div className="mx-auto w-20 h-20 bg-gray-100 dark:bg-gray-800 rounded-full flex items-center justify-center">
-              <BarChart3 className="h-10 w-10 text-gray-400 dark:text-gray-500" />
+            <div className="mx-auto w-20 h-20 bg-gray-100 dark:bg-black/10 rounded-full flex items-center justify-center">
+              <BarChart3 className="h-10 w-10 text-gray-400 dark:text-white/60" />
             </div>
           </div>
           <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-3">Henüz Veri Yok</h2>
-          <p className="text-gray-600 dark:text-gray-400 mb-6">
+          <p className="text-gray-600 dark:text-white/60 mb-6">
             Raporlarınızı görebilmek için önce kredi ekleyin ve ödemelerinizi kaydedin.
           </p>
           <Button onClick={() => router.push("/uygulama/krediler/kredi-ekle")} className="bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700">
@@ -623,7 +623,7 @@ export default function RaporlarPage() {
               </div>
               <div>
                 <CardTitle className="text-xl dark:text-white">Akıllı Filtreler</CardTitle>
-                <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">Verilerinizi detaylı analiz edin</p>
+                <p className="text-sm text-gray-500 dark:text-white/60 mt-1">Verilerinizi detaylı analiz edin</p>
               </div>
             </div>
             <div className="flex items-center gap-2">
@@ -658,12 +658,12 @@ export default function RaporlarPage() {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
             {/* Search */}
             <div className="relative">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400 dark:text-gray-500" />
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400 dark:text-white/60" />
               <Input
                 placeholder="Banka veya kredi türü ara..."
                 value={filters.searchTerm}
                 onChange={(e) => updateFilter("searchTerm", e.target.value)}
-                className="pl-10 h-11 bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700 focus:border-emerald-500 focus:ring-emerald-500 dark:text-white"
+                className="pl-10 h-11 bg-white dark:bg-black/10 border-gray-200 dark:border-white/10 focus:border-emerald-500 focus:ring-emerald-500 dark:text-white"
               />
             </div>
 
@@ -672,8 +672,8 @@ export default function RaporlarPage() {
               value={filters.dateRange.preset}
               onValueChange={(value) => updateFilter("dateRange", { ...filters.dateRange, preset: value })}
             >
-              <SelectTrigger className="h-11 bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700 dark:text-white">
-                <Calendar className="h-4 w-4 mr-2 text-gray-500 dark:text-gray-400" />
+              <SelectTrigger className="h-11 bg-white dark:bg-black/10 border-gray-200 dark:border-white/10 dark:text-white">
+                <Calendar className="h-4 w-4 mr-2 text-gray-500 dark:text-white/60" />
                 <SelectValue placeholder="Zaman dilimi" />
               </SelectTrigger>
               <SelectContent>
@@ -691,13 +691,13 @@ export default function RaporlarPage() {
               <PopoverTrigger asChild>
                 <Button
                   variant="outline"
-                  className="justify-start h-11 bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700 dark:text-white"
+                  className="justify-start h-11 bg-white dark:bg-black/10 border-gray-200 dark:border-white/10 dark:text-white"
                 >
-                  <Building2 className="h-4 w-4 mr-2 text-gray-500 dark:text-gray-400" />
+                  <Building2 className="h-4 w-4 mr-2 text-gray-500 dark:text-white/60" />
                   Bankalar {filters.banks.length > 0 && `(${filters.banks.length})`}
                 </Button>
               </PopoverTrigger>
-              <PopoverContent className="w-80 p-4 dark:bg-gray-800 dark:border-gray-700">
+              <PopoverContent className="w-80 p-4 dark:bg-black/10 dark:border-white/10">
                 <div className="space-y-3">
                   <div className="flex items-center justify-between">
                     <Label className="font-medium dark:text-white">Banka Seçimi</Label>
@@ -723,7 +723,7 @@ export default function RaporlarPage() {
                             updateFilter("banks", newBanks)
                           }}
                         />
-                        <Label htmlFor={`bank-${bank}`} className="text-sm cursor-pointer flex-1 dark:text-gray-300">
+                        <Label htmlFor={`bank-${bank}`} className="text-sm cursor-pointer flex-1 dark:text-white/70">
                           {bank}
                         </Label>
                       </div>
@@ -734,7 +734,7 @@ export default function RaporlarPage() {
             </Popover>
 
             {/* Quick Stats */}
-            <div className="flex items-center justify-center gap-4 text-sm text-gray-600 dark:text-gray-300 bg-gradient-to-r from-gray-50 to-slate-100 dark:from-gray-800 dark:to-gray-700 rounded-lg px-4 py-2">
+            <div className="flex items-center justify-center gap-4 text-sm text-gray-600 dark:text-white/70 bg-gradient-to-r from-gray-50 to-slate-100 dark:from-gray-800 dark:to-gray-700 rounded-lg px-4 py-2">
               <div className="flex items-center gap-1">
                 <CreditCard className="h-4 w-4" />
                 <span>{filteredCredits.length} kredi</span>
@@ -749,7 +749,7 @@ export default function RaporlarPage() {
 
           {/* Advanced Filters */}
           {expandedFilters && (
-            <div className="border-t dark:border-gray-700 pt-6">
+            <div className="border-t dark:border-white/10 pt-6">
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {/* Credit Type Filter */}
                 <div className="space-y-3">
@@ -767,7 +767,7 @@ export default function RaporlarPage() {
                             updateFilter("creditTypes", newTypes)
                           }}
                         />
-                        <Label htmlFor={`type-${type}`} className="text-sm cursor-pointer dark:text-gray-300">
+                        <Label htmlFor={`type-${type}`} className="text-sm cursor-pointer dark:text-white/70">
                           {type}
                         </Label>
                       </div>
@@ -789,7 +789,7 @@ export default function RaporlarPage() {
                           min: Number(e.target.value) || 0,
                         })
                       }
-                      className="flex-1 dark:bg-gray-800 dark:border-gray-700 dark:text-white"
+                      className="flex-1 dark:bg-black/10 dark:border-white/10 dark:text-white"
                     />
                     <Minus className="h-4 w-4 text-gray-400" />
                     <Input
@@ -802,7 +802,7 @@ export default function RaporlarPage() {
                           max: Number(e.target.value) || 10000000,
                         })
                       }
-                      className="flex-1 dark:bg-gray-800 dark:border-gray-700 dark:text-white"
+                      className="flex-1 dark:bg-black/10 dark:border-white/10 dark:text-white"
                     />
                   </div>
                 </div>
@@ -821,7 +821,7 @@ export default function RaporlarPage() {
                           min: Number(e.target.value) || 0,
                         })
                       }
-                      className="flex-1 dark:bg-gray-800 dark:border-gray-700 dark:text-white"
+                      className="flex-1 dark:bg-black/10 dark:border-white/10 dark:text-white"
                     />
                     <Minus className="h-4 w-4 text-gray-400" />
                     <Input
@@ -834,7 +834,7 @@ export default function RaporlarPage() {
                           max: Number(e.target.value) || 50,
                         })
                       }
-                      className="flex-1 dark:bg-gray-800 dark:border-gray-700 dark:text-white"
+                      className="flex-1 dark:bg-black/10 dark:border-white/10 dark:text-white"
                     />
                   </div>
                 </div>
@@ -846,48 +846,48 @@ export default function RaporlarPage() {
 
     
       {/* Premium Tabs */}
-      <div className="bg-white dark:bg-gray-900 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-800 overflow-hidden">
+      <div className="bg-white dark:bg-black/20 rounded-2xl shadow-sm border border-gray-100 dark:border-white/10 overflow-hidden">
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <div className="border-b border-gray-100 dark:border-gray-800 bg-gray-50/50 dark:bg-gray-800/50">
+          <div className="border-b border-gray-100 dark:border-white/10 bg-gray-50/50 dark:bg-black/10/50">
             <TabsList className="grid grid-cols-3 lg:grid-cols-6 bg-transparent h-auto p-2 gap-2">
               <TabsTrigger
                 value="overview"
-                className="flex items-center gap-2 py-3 px-4 data-[state=active]:text-emerald-600 dark:data-[state=active]:text-emerald-400 rounded-xl transition-all duration-200 hover:bg-gray-100 dark:hover:bg-gray-700"
+                className="flex items-center gap-2 py-3 px-4 data-[state=active]:text-emerald-600 dark:data-[state=active]:text-emerald-400 rounded-xl transition-all duration-200 hover:bg-gray-100 dark:hover:bg-black/10"
               >
                 <Eye className="h-4 w-4" />
                 <span className="font-medium">Genel Bakış</span>
               </TabsTrigger>
               <TabsTrigger
                 value="trends"
-                className="flex items-center gap-2 py-3 px-4 data-[state=active]:text-emerald-600 dark:data-[state=active]:text-emerald-400 rounded-xl transition-all duration-200 hover:bg-gray-100 dark:hover:bg-gray-700"
+                className="flex items-center gap-2 py-3 px-4 data-[state=active]:text-emerald-600 dark:data-[state=active]:text-emerald-400 rounded-xl transition-all duration-200 hover:bg-gray-100 dark:hover:bg-black/10"
               >
                 <TrendingUp className="h-4 w-4" />
                 <span className="font-medium">Trendler</span>
               </TabsTrigger>
               <TabsTrigger
                 value="distribution"
-                className="flex items-center gap-2 py-3 px-4 data-[state=active]:text-emerald-600 dark:data-[state=active]:text-emerald-400 rounded-xl transition-all duration-200 hover:bg-gray-100 dark:hover:bg-gray-700"
+                className="flex items-center gap-2 py-3 px-4 data-[state=active]:text-emerald-600 dark:data-[state=active]:text-emerald-400 rounded-xl transition-all duration-200 hover:bg-gray-100 dark:hover:bg-black/10"
               >
                 <PieChart className="h-4 w-4" />
                 <span className="font-medium">Dağılım</span>
               </TabsTrigger>
               <TabsTrigger
                 value="performance"
-                className="flex items-center gap-2 py-3 px-4 data-[state=active]:text-emerald-600 dark:data-[state=active]:text-emerald-400 rounded-xl transition-all duration-200 hover:bg-gray-100 dark:hover:bg-gray-700"
+                className="flex items-center gap-2 py-3 px-4 data-[state=active]:text-emerald-600 dark:data-[state=active]:text-emerald-400 rounded-xl transition-all duration-200 hover:bg-gray-100 dark:hover:bg-black/10"
               >
                 <Activity className="h-4 w-4" />
                 <span className="font-medium">Performans</span>
               </TabsTrigger>
               <TabsTrigger
                 value="analysis"
-                className="flex items-center gap-2 py-3 px-4 data-[state=active]:text-emerald-600 dark:data-[state=active]:text-emerald-400 rounded-xl transition-all duration-200 hover:bg-gray-100 dark:hover:bg-gray-700"
+                className="flex items-center gap-2 py-3 px-4 data-[state=active]:text-emerald-600 dark:data-[state=active]:text-emerald-400 rounded-xl transition-all duration-200 hover:bg-gray-100 dark:hover:bg-black/10"
               >
                 <Target className="h-4 w-4" />
                 <span className="font-medium">Analiz</span>
               </TabsTrigger>
               <TabsTrigger
                 value="comparison"
-                className="flex items-center gap-2 py-3 px-4 data-[state=active]:text-emerald-600 dark:data-[state=active]:text-emerald-400 rounded-xl transition-all duration-200 hover:bg-gray-100 dark:hover:bg-gray-700"
+                className="flex items-center gap-2 py-3 px-4 data-[state=active]:text-emerald-600 dark:data-[state=active]:text-emerald-400 rounded-xl transition-all duration-200 hover:bg-gray-100 dark:hover:bg-black/10"
               >
                 <Building2 className="h-4 w-4" />
                 <span className="font-medium">Karşılaştırma</span>
@@ -1081,7 +1081,7 @@ export default function RaporlarPage() {
                     </div>
                     Detaylı Trend Analizi
                   </CardTitle>
-                  <p className="text-gray-600 dark:text-gray-300">12 aylık ödeme performansı ve trend analizi</p>
+                  <p className="text-gray-600 dark:text-white/70">12 aylık ödeme performansı ve trend analizi</p>
                 </CardHeader>
                 <CardContent>
                   <ResponsiveContainer width="100%" height={400}>
@@ -1283,7 +1283,7 @@ export default function RaporlarPage() {
                     </div>
                     Faiz Oranı Analizi
                   </CardTitle>
-                  <p className="text-gray-600 dark:text-gray-300">
+                  <p className="text-gray-600 dark:text-white/70">
                     Kredilerinizin faiz oranları ve piyasa karşılaştırması
                   </p>
                 </CardHeader>
@@ -1328,7 +1328,7 @@ export default function RaporlarPage() {
                       {chartData.bankDistribution.slice(0, 5).map((bank, index) => (
                         <div
                           key={bank.name}
-                          className="flex items-center justify-between p-4 bg-gradient-to-r from-gray-50 to-slate-100 dark:from-gray-800 dark:to-gray-700 rounded-xl border dark:border-gray-700 shadow-sm"
+                          className="flex items-center justify-between p-4 bg-gradient-to-r from-gray-50 to-slate-100 dark:from-gray-800 dark:to-gray-700 rounded-xl border dark:border-white/10 shadow-sm"
                         >
                           <div className="flex items-center gap-4">
                             <div className="w-10 h-10 rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-sm font-bold text-white">
@@ -1338,13 +1338,13 @@ export default function RaporlarPage() {
                               <BankLogo bankName={bank.fullName || bank.name} logoUrl={bank.logoUrl} size="sm" />
                               <div>
                                 <div className="font-semibold text-gray-900 dark:text-white">{bank.name}</div>
-                                <div className="text-sm text-gray-500 dark:text-gray-400">{bank.count} kredi</div>
+                                <div className="text-sm text-gray-500 dark:text-white/60">{bank.count} kredi</div>
                               </div>
                             </div>
                           </div>
                           <div className="text-right">
                             <div className="font-bold text-lg dark:text-white">{formatCurrency(bank.value)}</div>
-                            <div className="text-sm text-gray-500 dark:text-gray-400">
+                            <div className="text-sm text-gray-500 dark:text-white/60">
                               Ort. %{bank.averageInterest.toFixed(1)} faiz
                             </div>
                           </div>

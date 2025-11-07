@@ -112,7 +112,7 @@ export default function PremiumPage() {
       <div className="flex items-center justify-center min-h-[60vh]">
         <div className="text-center space-y-4">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-emerald-600 mx-auto"></div>
-          <p className="text-gray-600 dark:text-gray-400">Yükleniyor...</p>
+          <p className="text-gray-600 dark:text-white/60">Yükleniyor...</p>
         </div>
       </div>
     )
@@ -156,7 +156,7 @@ export default function PremiumPage() {
       <div className="max-w-4xl mx-auto">
         <div className="grid md:grid-cols-2 gap-8 items-stretch">
           {/* Free Plan */}
-          <Card className="relative border-2 border-gray-200 dark:border-gray-700 hover:shadow-lg transition-shadow flex flex-col">
+          <Card className="relative border-2 border-gray-200 dark:border-white/10 hover:shadow-lg transition-shadow flex flex-col">
             <CardHeader className="space-y-4">
               <div className="flex items-center justify-between">
                 <CardTitle className="text-2xl">Ücretsiz</CardTitle>
@@ -167,7 +167,7 @@ export default function PremiumPage() {
               <CardDescription className="text-base">Temel özellikler ile başlayın</CardDescription>
               <div className="pt-4">
                 <p className="text-5xl font-bold">
-                  0₺<span className="text-lg font-normal text-gray-600 dark:text-gray-400">/ay</span>
+                  0₺<span className="text-lg font-normal text-gray-600 dark:text-white/60">/ay</span>
                 </p>
               </div>
             </CardHeader>
@@ -183,7 +183,7 @@ export default function PremiumPage() {
                   <div className="p-1 bg-red-100 dark:bg-red-900/30 rounded-full">
                     <X className="h-4 w-4 text-red-600 dark:text-red-400" />
                   </div>
-                  <span className="text-sm text-gray-500 dark:text-gray-400">Risk analizi yok</span>
+                  <span className="text-sm text-gray-500 dark:text-white/60">Risk analizi yok</span>
                 </div>
                 <div className="flex items-start gap-3">
                   <div className="p-1 bg-emerald-100 dark:bg-emerald-900/30 rounded-full">
@@ -201,7 +201,7 @@ export default function PremiumPage() {
                   <div className="p-1 bg-red-100 dark:bg-red-900/30 rounded-full">
                     <X className="h-4 w-4 text-red-600 dark:text-red-400" />
                   </div>
-                  <span className="text-sm text-gray-500 dark:text-gray-400">Reklamlar gösterilir</span>
+                  <span className="text-sm text-gray-500 dark:text-white/60">Reklamlar gösterilir</span>
                 </div>
               </div>
               {!isPremium && (
@@ -236,7 +236,7 @@ export default function PremiumPage() {
               </div>
 
               {/* Toggle Switch */}
-              <div className="flex items-center justify-center gap-3 p-4 bg-white/50 dark:bg-gray-900/50 rounded-xl border border-emerald-200 dark:border-emerald-800">
+              <div className="flex items-center justify-center gap-3 p-4 bg-white/50 dark:bg-black/20/50 rounded-xl border border-emerald-200 dark:border-emerald-800">
                 <span className={`text-sm font-medium transition-colors ${!isYearly ? "text-emerald-600 dark:text-emerald-400" : "text-gray-500"}`}>
                   Aylık
                 </span>
@@ -257,13 +257,13 @@ export default function PremiumPage() {
 
               <div className="pt-4">
                 {isYearly && yearlyPlan?.originalPrice && (
-                  <p className="text-xl text-gray-500 dark:text-gray-400 line-through text-center">
+                  <p className="text-xl text-gray-500 dark:text-white/60 line-through text-center">
                     {yearlyPlan.originalPrice}₺/yıllık
                   </p>
                 )}
                 <p className="text-5xl font-bold text-center">
                   {selectedPlan?.price}₺
-                  <span className="text-lg font-normal text-gray-600 dark:text-gray-400">
+                  <span className="text-lg font-normal text-gray-600 dark:text-white/60">
                     /{isYearly ? "yıl" : "ay"}
                   </span>
                 </p>
@@ -276,7 +276,7 @@ export default function PremiumPage() {
                   </div>
                 )}
                 {!isYearly && (
-                  <p className="text-sm text-gray-600 dark:text-gray-400 text-center mt-2">
+                  <p className="text-sm text-gray-600 dark:text-white/60 text-center mt-2">
                     Yıllık plan ile %17 indirim kazanın
                   </p>
                 )}
@@ -430,10 +430,10 @@ export default function PremiumPage() {
           </DialogHeader>
           <div className="py-4">
             <div className="space-y-3">
-              <div className="p-4 bg-gray-50 dark:bg-gray-800 rounded-lg">
+              <div className="p-4 bg-gray-50 dark:bg-black/10 rounded-lg">
                 <p className="text-sm font-medium text-gray-900 dark:text-gray-100 mb-2">Mevcut Plan:</p>
                 <div className="flex items-center justify-between">
-                  <span className="text-base text-gray-700 dark:text-gray-300">
+                  <span className="text-base text-gray-700 dark:text-white/70">
                     {subscription?.plan_id === "premium-yearly" ? "Yıllık Premium" : "Aylık Premium"}
                   </span>
                   <Badge variant="outline">
@@ -453,7 +453,7 @@ export default function PremiumPage() {
                 </div>
               </div>
             </div>
-            <p className="text-sm text-gray-600 dark:text-gray-400 mt-4">
+            <p className="text-sm text-gray-600 dark:text-white/60 mt-4">
               Plan değişikliği hemen gerçekleşecek ve yeni ödeme döngüsü başlayacaktır.
             </p>
           </div>
@@ -461,7 +461,7 @@ export default function PremiumPage() {
             <Button
               variant="outline"
               onClick={() => setShowConfirmDialog(false)}
-              className="border-gray-300 dark:border-gray-700"
+              className="border-gray-300 dark:border-white/10"
             >
               İptal
             </Button>

@@ -454,7 +454,7 @@ export default function RiskAnaliziPage() {
         <Alert variant="destructive" className="shadow-md dark:bg-red-900/30 dark:border-red-700/50">
           <AlertTriangle className="h-4 w-4" />
           <ShadcnAlertTitle className="dark:text-white">Eksik Bilgi</ShadcnAlertTitle>
-          <ShadcnAlertDescription className="dark:text-gray-300">
+          <ShadcnAlertDescription className="dark:text-white/70">
             {initialDataError || "Risk analizi için finansal profilinizde en azından aylık gelir bilgisi bulunmalıdır."}
             <Button
               variant="link"
@@ -468,7 +468,7 @@ export default function RiskAnaliziPage() {
       )}
 
       {isAnalyzing && (
-        <Card className="shadow-lg dark:bg-gray-900 dark:border-gray-800">
+        <Card className="shadow-lg dark:bg-black/20 dark:border-white/10">
           <CardContent className="p-8 text-center">
             <div className="flex flex-col items-center gap-4">
               <RefreshCw className="h-16 w-16 animate-spin text-red-600" />
@@ -476,16 +476,16 @@ export default function RiskAnaliziPage() {
                 <h3 className="text-xl font-semibold text-gray-900 dark:text-white">
                   Kapsamlı Risk Analizi Hazırlanıyor
                 </h3>
-                <p className="text-gray-600 dark:text-gray-300">{totalFinancialInstruments} kredi analiz ediliyor...</p>
+                <p className="text-gray-600 dark:text-white/70">{totalFinancialInstruments} kredi analiz ediliyor...</p>
               </div>
               <div className="w-full max-w-md">
-                <div className="flex justify-between text-sm text-gray-500 dark:text-gray-400 mb-1">
+                <div className="flex justify-between text-sm text-gray-500 dark:text-white/60 mb-1">
                   <span>İlerleme</span>
                   <span>{Math.round(analysisProgress)}%</span>
                 </div>
                 <Progress value={analysisProgress} className="h-2" />
               </div>
-              <p className="text-sm text-gray-500 dark:text-gray-400">Krediler kapsamlı analiz yapılıyor</p>
+              <p className="text-sm text-gray-500 dark:text-white/60">Krediler kapsamlı analiz yapılıyor</p>
             </div>
           </CardContent>
         </Card>
@@ -495,7 +495,7 @@ export default function RiskAnaliziPage() {
         <Alert variant="destructive" className="shadow-md dark:bg-red-900/30 dark:border-red-700/50">
           <AlertTriangle className="h-4 w-4" />
           <ShadcnAlertTitle className="dark:text-white">Analiz Hatası</ShadcnAlertTitle>
-          <ShadcnAlertDescription className="dark:text-gray-300">{analysisError}</ShadcnAlertDescription>
+          <ShadcnAlertDescription className="dark:text-white/70">{analysisError}</ShadcnAlertDescription>
         </Alert>
       )}
 
@@ -536,41 +536,41 @@ export default function RiskAnaliziPage() {
             />
           </div>
 
-          <div className="bg-white dark:bg-gray-900 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-800 overflow-hidden mt-6">
+          <div className="bg-white dark:bg-black/20 rounded-2xl shadow-sm border border-gray-100 dark:border-white/10 overflow-hidden mt-6">
             <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full">
-              <div className="border-b border-gray-100 dark:border-gray-800 bg-gray-50/50 dark:bg-gray-800/50">
+              <div className="border-b border-gray-100 dark:border-white/10 bg-gray-50/50 dark:bg-black/10/50">
                 <TabsList className="grid grid-cols-2 sm:grid-cols-4 bg-transparent h-auto p-2 gap-2">
                   <TabsTrigger
                     value="tumAnalizler"
-                    className="flex items-center gap-2 py-3 px-4 data-[state=active]:text-emerald-600 dark:data-[state=active]:text-emerald-400 rounded-xl transition-all duration-200 hover:bg-gray-100 dark:hover:bg-gray-700 dark:text-gray-300"
+                    className="flex items-center gap-2 py-3 px-4 data-[state=active]:text-emerald-600 dark:data-[state=active]:text-emerald-400 rounded-xl transition-all duration-200 hover:bg-gray-100 dark:hover:bg-black/10 dark:text-white/70"
                   >
                     <ListChecks className="h-4 w-4" />
                     Tümü ({totalAnalysesCount})
                   </TabsTrigger>
                   <TabsTrigger
                     value="dusukRisk"
-                    className="flex items-center gap-2 py-3 px-4 data-[state=active]:text-emerald-600 dark:data-[state=active]:text-emerald-400 rounded-xl transition-all duration-200 hover:bg-gray-100 dark:hover:bg-gray-700 dark:text-gray-300"
+                    className="flex items-center gap-2 py-3 px-4 data-[state=active]:text-emerald-600 dark:data-[state=active]:text-emerald-400 rounded-xl transition-all duration-200 hover:bg-gray-100 dark:hover:bg-black/10 dark:text-white/70"
                   >
                     <CheckCircle className="h-4 w-4" />
                     Düşük ({riskDistribution.low})
                   </TabsTrigger>
                   <TabsTrigger
                     value="ortaRisk"
-                    className="flex items-center gap-2 py-3 px-4 data-[state=active]:text-emerald-600 dark:data-[state=active]:text-emerald-400 rounded-xl transition-all duration-200 hover:bg-gray-100 dark:hover:bg-gray-700 dark:text-gray-300"
+                    className="flex items-center gap-2 py-3 px-4 data-[state=active]:text-emerald-600 dark:data-[state=active]:text-emerald-400 rounded-xl transition-all duration-200 hover:bg-gray-100 dark:hover:bg-black/10 dark:text-white/70"
                   >
                     <Clock className="h-4 w-4" />
                     Orta ({riskDistribution.medium})
                   </TabsTrigger>
                   <TabsTrigger
                     value="yuksekRisk"
-                    className="flex items-center gap-2 py-3 px-4 data-[state=active]:text-emerald-600 dark:data-[state=active]:text-emerald-400 rounded-xl transition-all duration-200 hover:bg-gray-100 dark:hover:bg-gray-700 dark:text-gray-300"
+                    className="flex items-center gap-2 py-3 px-4 data-[state=active]:text-emerald-600 dark:data-[state=active]:text-emerald-400 rounded-xl transition-all duration-200 hover:bg-gray-100 dark:hover:bg-black/10 dark:text-white/70"
                   >
                     <AlertTriangle className="h-4 w-4" />
                     Yüksek ({riskDistribution.high})
                   </TabsTrigger>
                 </TabsList>
               </div>
-              <div className="p-4 border-b border-gray-100 dark:border-gray-800 bg-white dark:bg-gray-900">
+              <div className="p-4 border-b border-gray-100 dark:border-white/10 bg-white dark:bg-black/20">
                 <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                   <div className="flex gap-2">
                     <div className="relative">
@@ -586,7 +586,7 @@ export default function RiskAnaliziPage() {
                       <DropdownMenuTrigger asChild>
                         <Button
                           variant="outline"
-                          className="flex items-center gap-2 bg-transparent dark:text-gray-300 dark:border-gray-700"
+                          className="flex items-center gap-2 bg-transparent dark:text-white/70 dark:border-white/10"
                         >
                           <ArrowUpDown className="h-4 w-4" />
                           Sırala: {sortBy === "created_at" ? "Tarih" : "Risk Skoru"} (
@@ -601,12 +601,12 @@ export default function RiskAnaliziPage() {
                       </DropdownMenuContent>
                     </DropdownMenu>
                   </div>
-                  <div className="flex border rounded-lg dark:border-gray-700">
+                  <div className="flex border rounded-lg dark:border-white/10">
                     <Button
                       variant={viewMode === "cards" ? "default" : "ghost"}
                       size="sm"
                       onClick={() => handleViewModeChange("cards")}
-                      className={`rounded-r-none ${viewMode === "cards" ? "bg-gradient-to-r from-orange-600 to-amber-700 hover:from-orange-700 hover:to-amber-800 text-white" : "dark:text-gray-300"}`}
+                      className={`rounded-r-none ${viewMode === "cards" ? "bg-gradient-to-r from-orange-600 to-amber-700 hover:from-orange-700 hover:to-amber-800 text-white" : "dark:text-white/70"}`}
                     >
                       <BsFillGrid3X3GapFill className="h-4 w-4" />
                     </Button>
@@ -614,23 +614,23 @@ export default function RiskAnaliziPage() {
                       variant={viewMode === "table" ? "default" : "ghost"}
                       size="sm"
                       onClick={() => handleViewModeChange("table")}
-                      className={`rounded-l-none ${viewMode === "table" ? "bg-gradient-to-r from-orange-600 to-amber-700 hover:from-orange-700 hover:to-amber-800 text-white" : "dark:text-gray-300"}`}
+                      className={`rounded-l-none ${viewMode === "table" ? "bg-gradient-to-r from-orange-600 to-amber-700 hover:from-orange-700 hover:to-amber-800 text-white" : "dark:text-white/70"}`}
                     >
                       <List className="h-4 w-4" />
                     </Button>
                   </div>
                 </div>
               </div>
-              <div className="p-6 dark:bg-gray-900">
+              <div className="p-6 dark:bg-black/20">
                 {currentPastAnalyses.length === 0 && (
                   <div className="text-center py-12">
-                    <div className="mx-auto w-24 h-24 bg-gray-100 dark:bg-gray-800 rounded-full flex items-center justify-center mb-4">
-                      <History className="h-12 w-12 text-gray-400 dark:text-gray-500" />
+                    <div className="mx-auto w-24 h-24 bg-gray-100 dark:bg-black/10 rounded-full flex items-center justify-center mb-4">
+                      <History className="h-12 w-12 text-gray-400 dark:text-white/60" />
                     </div>
                     <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">
                       {totalAnalysesCount === 0 ? "Henüz Risk Analizi Yok" : "Bu Filtreye Uygun Analiz Bulunamadı"}
                     </h3>
-                    <p className="text-gray-500 dark:text-gray-400 mb-6 max-w-md mx-auto">
+                    <p className="text-gray-500 dark:text-white/60 mb-6 max-w-md mx-auto">
                       {totalAnalysesCount === 0
                         ? "İlk risk analizinizi oluşturmak için yukarıdaki 'Kapsamlı Analizi Başlat' butonuna tıklayın."
                         : "Farklı filtreler deneyebilir veya arama terimini değiştirebilirsiniz."}
@@ -654,7 +654,7 @@ export default function RiskAnaliziPage() {
                       {currentPastAnalyses.map((pa) => (
                         <Card
                           key={pa.id}
-                          className="shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 rounded-xl border-gray-200 dark:border-gray-700 dark:bg-gray-800 cursor-pointer"
+                          className="shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 rounded-xl border-gray-200 dark:border-white/10 dark:bg-black/10 cursor-pointer"
                           onClick={() => viewAnalysisDetails(pa.id)}
                         >
                           <CardHeader className="pb-3">
@@ -669,20 +669,20 @@ export default function RiskAnaliziPage() {
                           </CardHeader>
                           <CardContent className="space-y-3">
                             <div>
-                              <p className="text-sm text-gray-500 dark:text-gray-400">Risk Skoru</p>
+                              <p className="text-sm text-gray-500 dark:text-white/60">Risk Skoru</p>
                               <p className="text-lg font-semibold text-gray-900 dark:text-white">
                                 {pa.overall_risk_score || "N/A"}
                               </p>
                             </div>
                             <div>
-                              <p className="text-sm text-gray-500 dark:text-gray-400">Borç/Gelir Oranı</p>
+                              <p className="text-sm text-gray-500 dark:text-white/60">Borç/Gelir Oranı</p>
                               <p className="text-lg font-semibold text-gray-900 dark:text-white">
                                 {pa.debt_to_income_ratio || "N/A"}
                               </p>
                             </div>
                             <div>
                               <div className="flex justify-between text-sm mb-2">
-                                <span className="text-gray-500 dark:text-gray-400">Risk Seviyesi</span>
+                                <span className="text-gray-500 dark:text-white/60">Risk Seviyesi</span>
                                 <span className="font-medium text-gray-900 dark:text-white">
                                   {getRiskBadgeText(pa.overall_risk_color)}
                                 </span>
@@ -696,7 +696,7 @@ export default function RiskAnaliziPage() {
                               <Button
                                 size="sm"
                                 variant="outline"
-                                className="flex-1 bg-transparent dark:text-gray-300 dark:border-gray-700 dark:hover:bg-gray-700"
+                                className="flex-1 bg-transparent dark:text-white/70 dark:border-white/10 dark:hover:bg-black/10"
                                 onClick={(e) => {
                                   e.stopPropagation()
                                   viewAnalysisDetails(pa.id)
@@ -708,7 +708,7 @@ export default function RiskAnaliziPage() {
                               <Button
                                 size="sm"
                                 variant="outline"
-                                className="text-red-600 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-900/30 bg-transparent dark:border-gray-700"
+                                className="text-red-600 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-900/30 bg-transparent dark:border-white/10"
                                 onClick={(e) => {
                                   e.stopPropagation()
                                   openDeleteDialog(pa)
@@ -738,9 +738,9 @@ export default function RiskAnaliziPage() {
                     <div className="overflow-x-auto">
                       <Table>
                         <TableHeader>
-                          <TableRow className="bg-white dark:bg-gray-900 dark:border-gray-800">
+                          <TableRow className="bg-white dark:bg-black/20 dark:border-white/10">
                             <TableHead
-                              className="dark:text-gray-300 cursor-pointer hover:text-red-600 dark:hover:text-red-400"
+                              className="dark:text-white/70 cursor-pointer hover:text-red-600 dark:hover:text-red-400"
                               onClick={() => handleSort("created_at")}
                             >
                               <div className="flex items-center gap-1">
@@ -749,7 +749,7 @@ export default function RiskAnaliziPage() {
                               </div>
                             </TableHead>
                             <TableHead
-                              className="dark:text-gray-300 cursor-pointer hover:text-red-600 dark:hover:text-red-400"
+                              className="dark:text-white/70 cursor-pointer hover:text-red-600 dark:hover:text-red-400"
                               onClick={() => handleSort("overall_risk_score")}
                             >
                               <div className="flex items-center gap-1">
@@ -757,9 +757,9 @@ export default function RiskAnaliziPage() {
                                 <ArrowUpDown className="h-3 w-3" />
                               </div>
                             </TableHead>
-                            <TableHead className="dark:text-gray-300">Risk Seviyesi</TableHead>
+                            <TableHead className="dark:text-white/70">Risk Seviyesi</TableHead>
                             <TableHead
-                              className="dark:text-gray-300 cursor-pointer hover:text-red-600 dark:hover:text-red-400"
+                              className="dark:text-white/70 cursor-pointer hover:text-red-600 dark:hover:text-red-400"
                               onClick={() => handleSort("debt_to_income_ratio")}
                             >
                               <div className="flex items-center gap-1">
@@ -768,7 +768,7 @@ export default function RiskAnaliziPage() {
                               </div>
                             </TableHead>
                             <TableHead
-                              className="dark:text-gray-300 cursor-pointer hover:text-red-600 dark:hover:text-red-400"
+                              className="dark:text-white/70 cursor-pointer hover:text-red-600 dark:hover:text-red-400"
                               onClick={() => handleSort("monthly_income")}
                             >
                               <div className="flex items-center gap-1">
@@ -777,7 +777,7 @@ export default function RiskAnaliziPage() {
                               </div>
                             </TableHead>
                             <TableHead
-                              className="dark:text-gray-300 cursor-pointer hover:text-red-600 dark:hover:text-red-400"
+                              className="dark:text-white/70 cursor-pointer hover:text-red-600 dark:hover:text-red-400"
                               onClick={() => handleSort("total_debt_amount")}
                             >
                               <div className="flex items-center gap-1">
@@ -785,30 +785,30 @@ export default function RiskAnaliziPage() {
                                 <ArrowUpDown className="h-3 w-3" />
                               </div>
                             </TableHead>
-                            <TableHead className="text-right dark:text-gray-300">İşlemler</TableHead>
+                            <TableHead className="text-right dark:text-white/70">İşlemler</TableHead>
                           </TableRow>
                         </TableHeader>
                         <TableBody>
                           {currentPastAnalyses.map((pa) => (
                             <TableRow
                               key={pa.id}
-                              className="hover:bg-gray-50 dark:hover:bg-gray-800 cursor-pointer dark:border-gray-800"
+                              className="hover:bg-gray-50 dark:hover:bg-black/10 cursor-pointer dark:border-white/10"
                               onClick={() => viewAnalysisDetails(pa.id)}
                             >
-                              <TableCell className="font-medium dark:text-gray-300">
+                              <TableCell className="font-medium dark:text-white/70">
                                 {format(new Date(pa.created_at), "dd.MM.yyyy HH:mm")}
                               </TableCell>
-                              <TableCell className="dark:text-gray-300">{pa.overall_risk_score || "N/A"}</TableCell>
+                              <TableCell className="dark:text-white/70">{pa.overall_risk_score || "N/A"}</TableCell>
                               <TableCell>
                                 <Badge className={getRiskBadgeClass(pa.overall_risk_color)}>
                                   {getRiskBadgeText(pa.overall_risk_color)}
                                 </Badge>
                               </TableCell>
-                              <TableCell className="dark:text-gray-300">{pa.debt_to_income_ratio || "N/A"}</TableCell>
-                              <TableCell className="dark:text-gray-300">
+                              <TableCell className="dark:text-white/70">{pa.debt_to_income_ratio || "N/A"}</TableCell>
+                              <TableCell className="dark:text-white/70">
                                 {formatCurrency(pa.monthly_income || 0)}
                               </TableCell>
-                              <TableCell className="dark:text-gray-300">
+                              <TableCell className="dark:text-white/70">
                                 {formatCurrency(pa.total_debt_amount || 0)}
                               </TableCell>
                               <TableCell className="text-right">
@@ -816,7 +816,7 @@ export default function RiskAnaliziPage() {
                                   <DropdownMenuTrigger asChild>
                                     <Button
                                       variant="ghost"
-                                      className="h-8 w-8 p-0 dark:text-gray-300"
+                                      className="h-8 w-8 p-0 dark:text-white/70"
                                       onClick={(e) => e.stopPropagation()}
                                     >
                                       <MoreHorizontal className="h-4 w-4" />
