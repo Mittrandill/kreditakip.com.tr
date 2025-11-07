@@ -1,13 +1,14 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useMemo } from "react"
 import { useRouter } from "next/navigation"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
+import { Input } from "@/components/ui/input"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { PaginationModern } from "@/components/ui/pagination-modern"
-import { CreditCard, Download, Calendar, CheckCircle2, XCircle, Clock, Crown, Receipt, Wallet } from "lucide-react"
+import { CreditCard, Download, CheckCircle2, XCircle, Clock, Receipt, Wallet, DollarSign, ArrowUpDown, Search } from "lucide-react"
 import { useAuth } from "@/hooks/use-auth"
 import { useSubscription } from "@/hooks/use-subscription"
 import { createBrowserClient } from "@supabase/ssr"
@@ -45,6 +46,13 @@ export default function FaturalandirmaPage() {
   const [invoices, setInvoices] = useState<Invoice[]>([])
   const [loading, setLoading] = useState(true)
 
+  // Search and sorting states
+  const [searchTerm, setSearchTerm] = useState("")
+  const [transactionsSortBy, setTransactionsSortBy] = useState("tarih")
+  const [transactionsSortOrder, setTransactionsSortOrder] = useState<"asc" | "desc">("desc")
+  const [invoicesSortBy, setInvoicesSortBy] = useState("tarih")
+  const [invoicesSortOrder, setInvoicesSortOrder] = useState<"asc" | "desc">("desc")
+
   // Pagination states
   const [transactionsPage, setTransactionsPage] = useState(1)
   const [invoicesPage, setInvoicesPage] = useState(1)
@@ -55,7 +63,6 @@ export default function FaturalandirmaPage() {
       if (!user) {
         return
       }
-
 
       try {
         // Fetch transactions
@@ -93,47 +100,130 @@ export default function FaturalandirmaPage() {
     fetchData()
   }, [user])
 
+  // Filtered and sorted transactions
+  const filteredAndSortedTransactions = useMemo(() => {
+    let filtered = transactions.filter((transaction) => {
+      const searchLower = searchTerm.toLowerCase()
+      return (
+        transaction.amount.toLowerCase().includes(searchLower) ||
+        transaction.currency.toLowerCase().includes(searchLower) ||
+        transaction.payment_method.toLowerCase().includes(searchLower) ||
+        transaction.status.toLowerCase().includes(searchLower)
+      )
+    })
+
+    // Sort
+    filtered.sort((a, b) => {
+      let comparison = 0
+      if (transactionsSortBy === "tarih") {
+        comparison = new Date(a.created_at).getTime() - new Date(b.created_at).getTime()
+      } else if (transactionsSortBy === "tutar") {
+        comparison = Number.parseFloat(a.amount) - Number.parseFloat(b.amount)
+      } else if (transactionsSortBy === "durum") {
+        comparison = a.status.localeCompare(b.status)
+      }
+      return transactionsSortOrder === "asc" ? comparison : -comparison
+    })
+
+    return filtered
+  }, [transactions, searchTerm, transactionsSortBy, transactionsSortOrder])
+
+  // Filtered and sorted invoices
+  const filteredAndSortedInvoices = useMemo(() => {
+    let filtered = invoices.filter((invoice) => {
+      const searchLower = searchTerm.toLowerCase()
+      return (
+        invoice.invoice_number.toLowerCase().includes(searchLower) ||
+        invoice.amount.toString().toLowerCase().includes(searchLower) ||
+        invoice.currency.toLowerCase().includes(searchLower) ||
+        invoice.status.toLowerCase().includes(searchLower)
+      )
+    })
+
+    // Sort
+    filtered.sort((a, b) => {
+      let comparison = 0
+      if (invoicesSortBy === "tarih") {
+        comparison = new Date(a.invoice_date).getTime() - new Date(b.invoice_date).getTime()
+      } else if (invoicesSortBy === "tutar") {
+        comparison = a.amount - b.amount
+      } else if (invoicesSortBy === "faturaNo") {
+        comparison = a.invoice_number.localeCompare(b.invoice_number)
+      } else if (invoicesSortBy === "durum") {
+        comparison = a.status.localeCompare(b.status)
+      }
+      return invoicesSortOrder === "asc" ? comparison : -comparison
+    })
+
+    return filtered
+  }, [invoices, searchTerm, invoicesSortBy, invoicesSortOrder])
+
   // Pagination calculations
-  const totalTransactionsPages = Math.ceil(transactions.length / itemsPerPage)
+  const totalTransactionsPages = Math.ceil(filteredAndSortedTransactions.length / itemsPerPage)
   const startTransactionsIndex = (transactionsPage - 1) * itemsPerPage
   const endTransactionsIndex = startTransactionsIndex + itemsPerPage
-  const currentTransactions = transactions.slice(startTransactionsIndex, endTransactionsIndex)
+  const currentTransactions = filteredAndSortedTransactions.slice(startTransactionsIndex, endTransactionsIndex)
 
-  const totalInvoicesPages = Math.ceil(invoices.length / itemsPerPage)
+  const totalInvoicesPages = Math.ceil(filteredAndSortedInvoices.length / itemsPerPage)
   const startInvoicesIndex = (invoicesPage - 1) * itemsPerPage
   const endInvoicesIndex = startInvoicesIndex + itemsPerPage
-  const currentInvoices = invoices.slice(startInvoicesIndex, endInvoicesIndex)
+  const currentInvoices = filteredAndSortedInvoices.slice(startInvoicesIndex, endInvoicesIndex)
+
+  const handleTransactionsSort = (column: string) => {
+    if (transactionsSortBy === column) {
+      setTransactionsSortOrder(transactionsSortOrder === "asc" ? "desc" : "asc")
+    } else {
+      setTransactionsSortBy(column)
+      setTransactionsSortOrder("asc")
+    }
+  }
+
+  const handleInvoicesSort = (column: string) => {
+    if (invoicesSortBy === column) {
+      setInvoicesSortOrder(invoicesSortOrder === "asc" ? "desc" : "asc")
+    } else {
+      setInvoicesSortBy(column)
+      setInvoicesSortOrder("asc")
+    }
+  }
 
   const getStatusBadge = (status: string) => {
     switch (status) {
       case "completed":
+      case "paid":
         return (
-          <Badge className="bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400">
-            <CheckCircle2 className="h-3 w-3 mr-1" />
-            Tamamlandı
+          <Badge className="bg-gradient-to-r from-emerald-600 to-teal-700 text-white border-transparent hover:from-emerald-700 hover:to-teal-800 flex items-center gap-1">
+            <CheckCircle2 className="h-3 w-3" />
+            {status === "completed" ? "Tamamlandı" : "Ödendi"}
           </Badge>
         )
       case "pending":
         return (
-          <Badge className="bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400">
-            <Clock className="h-3 w-3 mr-1" />
+          <Badge className="bg-gradient-to-r from-orange-600 to-amber-700 text-white border-transparent hover:from-orange-700 hover:to-amber-800 flex items-center gap-1">
+            <Clock className="h-3 w-3" />
             Beklemede
           </Badge>
         )
       case "failed":
         return (
-          <Badge className="bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400">
-            <XCircle className="h-3 w-3 mr-1" />
+          <Badge className="bg-gradient-to-r from-red-600 to-rose-700 text-white border-transparent hover:from-red-700 hover:to-rose-800 flex items-center gap-1">
+            <XCircle className="h-3 w-3" />
             Başarısız
           </Badge>
         )
       default:
-        return <Badge>{status}</Badge>
+        return (
+          <Badge className="bg-gradient-to-r from-gray-600 to-slate-700 text-white border-transparent flex items-center gap-1">
+            <Clock className="h-3 w-3" />
+            Hazırlanıyor
+          </Badge>
+        )
     }
   }
 
   return (
     <div className="flex flex-col gap-4 md:gap-6">
+      {/* Hero Section */}
       <Card className="bg-gradient-to-r from-emerald-600 to-teal-700 dark:from-emerald-700 dark:to-teal-800 text-white border-transparent shadow-xl rounded-xl">
         <CardContent className="p-8">
           <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
@@ -142,68 +232,24 @@ export default function FaturalandirmaPage() {
                 <Wallet className="h-8 w-8" />
                 Faturalandırma
               </h2>
-              <p className="text-emerald-100 text-lg">Abonelik durumunuzu ve ödeme geçmişinizi görüntüleyin ve yönetin</p>
+              <p className="text-emerald-100 text-lg">Ödeme geçmişinizi ve faturalarınızı görüntüleyin ve yönetin</p>
             </div>
           </div>
         </CardContent>
       </Card>
 
-      {/* Subscription Status */}
-      <Card className="shadow-lg hover:shadow-xl transition-shadow duration-300">
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Crown className="h-5 w-5 text-amber-500" />
-            Mevcut Abonelik
-          </CardTitle>
-          <CardDescription>Abonelik durumunuz ve detayları</CardDescription>
-        </CardHeader>
-        <CardContent>
-          {subscriptionLoading ? (
-            <p className="text-gray-500">Yükleniyor...</p>
-          ) : isPremium ? (
-            <div className="space-y-4">
-              <div className="flex items-center justify-between p-4 bg-gradient-to-r from-amber-50 to-orange-50 dark:from-amber-900/20 dark:to-orange-900/20 rounded-lg border-2 border-amber-200 dark:border-amber-700">
-                <div className="flex items-center gap-3">
-                  <div className="p-2 bg-gradient-to-br from-amber-500 to-orange-600 rounded-lg">
-                    <Crown className="h-6 w-6 text-white" />
-                  </div>
-                  <div>
-                    <h3 className="font-bold text-lg text-amber-900 dark:text-amber-100">Premium Üyelik</h3>
-                    <p className="text-sm text-amber-700 dark:text-amber-300">Tüm özelliklere sınırsız erişim</p>
-                  </div>
-                </div>
-                <Badge className="bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400">Aktif</Badge>
-              </div>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="p-4 border rounded-lg">
-                  <p className="text-sm text-gray-500 dark:text-white/60 mb-1">Ödeme Yöntemi</p>
-                  <div className="flex items-center gap-2">
-                    <CreditCard className="h-4 w-4" />
-                    <p className="font-medium">Kredi Kartı</p>
-                  </div>
-                </div>
-                <div className="p-4 border rounded-lg">
-                  <p className="text-sm text-gray-500 dark:text-white/60 mb-1">Bitiş Tarihi</p>
-                  <div className="flex items-center gap-2">
-                    <Calendar className="h-4 w-4" />
-                    <p className="font-medium">
-                      {subscription?.expiresAt
-                        ? new Date(subscription.expiresAt).toLocaleDateString("tr-TR")
-                        : "Süresiz"}
-                    </p>
-                  </div>
-                </div>
-              </div>
-            </div>
-          ) : (
-            <div className="text-center py-8">
-              <p className="text-gray-500 mb-4">Aktif premium aboneliğiniz bulunmuyor</p>
-              <Button onClick={() => router.push("/uygulama/premium")}>
-                <Crown className="h-4 w-4 mr-2" />
-                Premium'a Geç
-              </Button>
-            </div>
-          )}
+      {/* Search Bar */}
+      <Card className="shadow-lg">
+        <CardContent className="p-4">
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400 dark:text-white/60" />
+            <Input
+              placeholder="Ödeme veya fatura ara..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="pl-10 dark:bg-black/10 dark:border-white/10 dark:text-white"
+            />
+          </div>
         </CardContent>
       </Card>
 
@@ -211,7 +257,7 @@ export default function FaturalandirmaPage() {
       <Card className="shadow-lg hover:shadow-xl transition-shadow duration-300">
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
-            <Receipt className="h-5 w-5 text-emerald-600" />
+            <DollarSign className="h-5 w-5 text-emerald-600 dark:text-emerald-400" />
             Ödeme Geçmişi
           </CardTitle>
           <CardDescription>Geçmiş ödemelerinizi görüntüleyin</CardDescription>
@@ -219,18 +265,47 @@ export default function FaturalandirmaPage() {
         <CardContent>
           {loading ? (
             <p className="text-gray-500 dark:text-white/60 text-center py-8">Yükleniyor...</p>
-          ) : transactions.length === 0 ? (
-            <p className="text-gray-500 dark:text-white/60 text-center py-8">Henüz ödeme kaydı bulunmuyor</p>
+          ) : filteredAndSortedTransactions.length === 0 ? (
+            <div className="text-center py-12">
+              <DollarSign className="mx-auto h-12 w-12 text-gray-400 dark:text-white/40 mb-4" />
+              <p className="text-gray-500 dark:text-white/60">
+                {searchTerm ? "Arama kriterlerine uygun ödeme bulunamadı" : "Henüz ödeme kaydı bulunmuyor"}
+              </p>
+            </div>
           ) : (
             <div className="space-y-4">
               <div className="overflow-x-auto">
                 <Table>
                   <TableHeader>
                     <TableRow className="bg-white dark:bg-black/20">
-                      <TableHead className="font-semibold text-gray-700 dark:text-white/70">Tarih</TableHead>
-                      <TableHead className="font-semibold text-gray-700 dark:text-white/70">Tutar</TableHead>
+                      <TableHead
+                        className="font-semibold text-gray-700 dark:text-white/70 cursor-pointer hover:text-emerald-600 dark:hover:text-emerald-400"
+                        onClick={() => handleTransactionsSort("tarih")}
+                      >
+                        <div className="flex items-center gap-1">
+                          Tarih
+                          <ArrowUpDown className="h-3 w-3" />
+                        </div>
+                      </TableHead>
+                      <TableHead
+                        className="font-semibold text-gray-700 dark:text-white/70 cursor-pointer hover:text-emerald-600 dark:hover:text-emerald-400"
+                        onClick={() => handleTransactionsSort("tutar")}
+                      >
+                        <div className="flex items-center gap-1">
+                          Tutar
+                          <ArrowUpDown className="h-3 w-3" />
+                        </div>
+                      </TableHead>
                       <TableHead className="font-semibold text-gray-700 dark:text-white/70">Ödeme Yöntemi</TableHead>
-                      <TableHead className="font-semibold text-gray-700 dark:text-white/70">Durum</TableHead>
+                      <TableHead
+                        className="font-semibold text-gray-700 dark:text-white/70 cursor-pointer hover:text-emerald-600 dark:hover:text-emerald-400"
+                        onClick={() => handleTransactionsSort("durum")}
+                      >
+                        <div className="flex items-center gap-1">
+                          Durum
+                          <ArrowUpDown className="h-3 w-3" />
+                        </div>
+                      </TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
@@ -242,11 +317,14 @@ export default function FaturalandirmaPage() {
                         }`}
                       >
                         <TableCell className="text-gray-900 dark:text-white">
-                          {new Date(transaction.created_at).toLocaleDateString("tr-TR", {
-                            year: "numeric",
-                            month: "long",
-                            day: "numeric",
-                          })}
+                          <div className="flex items-center gap-2">
+                            <DollarSign className="h-4 w-4 text-emerald-600 dark:text-emerald-400" />
+                            {new Date(transaction.created_at).toLocaleDateString("tr-TR", {
+                              year: "numeric",
+                              month: "long",
+                              day: "numeric",
+                            })}
+                          </div>
                         </TableCell>
                         <TableCell className="font-semibold text-gray-900 dark:text-white">
                           {Number.parseFloat(transaction.amount).toFixed(2)} {transaction.currency}
@@ -263,11 +341,11 @@ export default function FaturalandirmaPage() {
                   </TableBody>
                 </Table>
               </div>
-              {transactions.length > itemsPerPage && (
+              {filteredAndSortedTransactions.length > itemsPerPage && (
                 <PaginationModern
                   currentPage={transactionsPage}
                   totalPages={totalTransactionsPages}
-                  totalItems={transactions.length}
+                  totalItems={filteredAndSortedTransactions.length}
                   itemsPerPage={itemsPerPage}
                   onPageChange={setTransactionsPage}
                   itemName="ödeme"
@@ -282,7 +360,7 @@ export default function FaturalandirmaPage() {
       <Card className="shadow-lg hover:shadow-xl transition-shadow duration-300">
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
-            <Download className="h-5 w-5 text-blue-600" />
+            <Receipt className="h-5 w-5 text-blue-600 dark:text-blue-400" />
             Faturalarım
           </CardTitle>
           <CardDescription>Faturalarınızı görüntüleyin ve indirin</CardDescription>
@@ -290,19 +368,56 @@ export default function FaturalandirmaPage() {
         <CardContent>
           {loading ? (
             <p className="text-gray-500 dark:text-white/60 text-center py-8">Yükleniyor...</p>
-          ) : invoices.length === 0 ? (
-            <p className="text-gray-500 dark:text-white/60 text-center py-8">Henüz fatura bulunmuyor</p>
+          ) : filteredAndSortedInvoices.length === 0 ? (
+            <div className="text-center py-12">
+              <Receipt className="mx-auto h-12 w-12 text-gray-400 dark:text-white/40 mb-4" />
+              <p className="text-gray-500 dark:text-white/60">
+                {searchTerm ? "Arama kriterlerine uygun fatura bulunamadı" : "Henüz fatura bulunmuyor"}
+              </p>
+            </div>
           ) : (
             <div className="space-y-4">
               <div className="overflow-x-auto">
                 <Table>
                   <TableHeader>
                     <TableRow className="bg-white dark:bg-black/20">
-                      <TableHead className="font-semibold text-gray-700 dark:text-white/70">Fatura No</TableHead>
-                      <TableHead className="font-semibold text-gray-700 dark:text-white/70">Tarih</TableHead>
-                      <TableHead className="font-semibold text-gray-700 dark:text-white/70">Tutar</TableHead>
-                      <TableHead className="font-semibold text-gray-700 dark:text-white/70">Durum</TableHead>
-                      <TableHead className="text-right font-semibold text-gray-700 dark:text-white/70">Fatura</TableHead>
+                      <TableHead
+                        className="font-semibold text-gray-700 dark:text-white/70 cursor-pointer hover:text-emerald-600 dark:hover:text-emerald-400"
+                        onClick={() => handleInvoicesSort("faturaNo")}
+                      >
+                        <div className="flex items-center gap-1">
+                          Fatura No
+                          <ArrowUpDown className="h-3 w-3" />
+                        </div>
+                      </TableHead>
+                      <TableHead
+                        className="font-semibold text-gray-700 dark:text-white/70 cursor-pointer hover:text-emerald-600 dark:hover:text-emerald-400"
+                        onClick={() => handleInvoicesSort("tarih")}
+                      >
+                        <div className="flex items-center gap-1">
+                          Tarih
+                          <ArrowUpDown className="h-3 w-3" />
+                        </div>
+                      </TableHead>
+                      <TableHead
+                        className="font-semibold text-gray-700 dark:text-white/70 cursor-pointer hover:text-emerald-600 dark:hover:text-emerald-400"
+                        onClick={() => handleInvoicesSort("tutar")}
+                      >
+                        <div className="flex items-center gap-1">
+                          Tutar
+                          <ArrowUpDown className="h-3 w-3" />
+                        </div>
+                      </TableHead>
+                      <TableHead
+                        className="font-semibold text-gray-700 dark:text-white/70 cursor-pointer hover:text-emerald-600 dark:hover:text-emerald-400"
+                        onClick={() => handleInvoicesSort("durum")}
+                      >
+                        <div className="flex items-center gap-1">
+                          Durum
+                          <ArrowUpDown className="h-3 w-3" />
+                        </div>
+                      </TableHead>
+                      <TableHead className="text-right font-semibold text-gray-700 dark:text-white/70">İşlemler</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
@@ -313,7 +428,12 @@ export default function FaturalandirmaPage() {
                           index % 2 === 0 ? "bg-white dark:bg-black/20" : "bg-gray-50/50 dark:bg-black/10"
                         }`}
                       >
-                        <TableCell className="font-mono font-semibold text-gray-900 dark:text-white">{invoice.invoice_number}</TableCell>
+                        <TableCell className="font-mono font-semibold text-gray-900 dark:text-white">
+                          <div className="flex items-center gap-2">
+                            <Receipt className="h-4 w-4 text-blue-600 dark:text-blue-400" />
+                            {invoice.invoice_number}
+                          </div>
+                        </TableCell>
                         <TableCell className="text-gray-900 dark:text-white">
                           {new Date(invoice.invoice_date).toLocaleDateString("tr-TR", {
                             year: "numeric",
@@ -324,19 +444,7 @@ export default function FaturalandirmaPage() {
                         <TableCell className="font-semibold text-gray-900 dark:text-white">
                           {Number(invoice.amount).toFixed(2)} {invoice.currency}
                         </TableCell>
-                        <TableCell>
-                          {invoice.status === "paid" ? (
-                            <Badge className="bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400">
-                              <CheckCircle2 className="h-3 w-3 mr-1" />
-                              Ödendi
-                            </Badge>
-                          ) : (
-                            <Badge className="bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400">
-                              <Clock className="h-3 w-3 mr-1" />
-                              Hazırlanıyor
-                            </Badge>
-                          )}
-                        </TableCell>
+                        <TableCell>{getStatusBadge(invoice.status)}</TableCell>
                         <TableCell className="text-right">
                           {invoice.file_url ? (
                             <Button
@@ -349,14 +457,9 @@ export default function FaturalandirmaPage() {
                               PDF İndir
                             </Button>
                           ) : (
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              disabled
-                              className="dark:text-white/60"
-                            >
+                            <Button variant="ghost" size="sm" disabled className="dark:text-white/60">
                               <Clock className="h-4 w-4 mr-2" />
-                              PDF Hazırlanıyor
+                              Hazırlanıyor
                             </Button>
                           )}
                         </TableCell>
@@ -365,11 +468,11 @@ export default function FaturalandirmaPage() {
                   </TableBody>
                 </Table>
               </div>
-              {invoices.length > itemsPerPage && (
+              {filteredAndSortedInvoices.length > itemsPerPage && (
                 <PaginationModern
                   currentPage={invoicesPage}
                   totalPages={totalInvoicesPages}
-                  totalItems={invoices.length}
+                  totalItems={filteredAndSortedInvoices.length}
                   itemsPerPage={itemsPerPage}
                   onPageChange={setInvoicesPage}
                   itemName="fatura"
