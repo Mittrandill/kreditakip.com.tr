@@ -431,8 +431,8 @@ export default function PDFAnalysisPage() {
   if (error) {
     return (
       <div className="flex flex-col items-center justify-center min-h-[calc(100vh-150px)]">
-        <AlertCircle className="h-12 w-12 text-red-500 mb-4" />
-        <p className="text-lg text-red-600">{error}</p>
+        <AlertCircle className="h-12 w-12 text-red-500 dark:text-red-400 mb-4" />
+        <p className="text-lg text-red-600 dark:text-red-400">{error}</p>
         <Button onClick={() => router.back()} className="mt-4">
           Geri Dön
         </Button>
@@ -443,8 +443,8 @@ export default function PDFAnalysisPage() {
   if (!paymentPlan) {
     return (
       <div className="flex flex-col gap-4 md:gap-6 items-center justify-center min-h-[calc(100vh-150px)]">
-        <Loader2 className="h-12 w-12 animate-spin text-purple-600" />
-        <p className="text-lg text-gray-600">Analiz sonuçları yükleniyor...</p>
+        <Loader2 className="h-12 w-12 animate-spin text-emerald-600" />
+        <p className="text-lg text-gray-600 dark:text-white/70">Analiz sonuçları yükleniyor...</p>
       </div>
     )
   }
@@ -465,7 +465,7 @@ export default function PDFAnalysisPage() {
   return (
     <div className="flex flex-col gap-6">
       {/* Hero Section */}
-      <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-purple-600 via-indigo-600 to-blue-700 p-8 text-white shadow-2xl">
+      <div className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-emerald-600 to-teal-700 p-8 text-white shadow-2xl">
         <div className="absolute inset-0 bg-black/10"></div>
         <div className="relative z-10">
           <div className="flex items-center justify-between mb-6">
@@ -480,7 +480,7 @@ export default function PDFAnalysisPage() {
               </Button>
               <div>
                 <h1 className="text-3xl md:text-4xl font-bold mb-2">AI Ödeme Planı Analizi</h1>
-                <p className="text-purple-100 text-lg">
+                <p className="text-emerald-100 text-lg">
                   Gelişmiş OCR teknolojisi ile %99.9 doğruluk oranında çıkarılan plan
                 </p>
               </div>
@@ -526,13 +526,13 @@ export default function PDFAnalysisPage() {
               </span>
             </div>
             <Progress value={progressPercentage} className="h-3 bg-white/20" />
-            <p className="text-xs text-purple-100 mt-1">%{progressPercentage.toFixed(1)} tamamlandı</p>
+            <p className="text-xs text-emerald-100 mt-1">%{progressPercentage.toFixed(1)} tamamlandı</p>
           </div>
 
           {/* Success Alert */}
-          <Alert className="border-emerald-200 bg-emerald-50/90 backdrop-blur-sm">
-            <Sparkles className="h-4 w-4 text-emerald-600" />
-            <AlertDescription className="text-emerald-800">
+          <Alert className="border-emerald-200 bg-emerald-50/90 backdrop-blur-sm dark:border-emerald-400/30 dark:bg-emerald-900/30">
+            <Sparkles className="h-4 w-4 text-emerald-600 dark:text-emerald-300" />
+            <AlertDescription className="text-emerald-800 dark:text-emerald-100">
               <strong>Analiz Tamamlandı!</strong> {totalInstallments} taksit tespit edildi.
               {paymentPlan.interestRate
                 ? ` Faiz oranı: %${paymentPlan.interestRate}`
@@ -574,24 +574,24 @@ export default function PDFAnalysisPage() {
           title="İlerleme"
           value={`%${progressPercentage.toFixed(1)}`}
           subtitle={`${paidInstallments}/${totalInstallments} taksit`}
-          color="purple"
+          color="emerald"
           icon={<TrendingUp />}
         />
       </div>
 
       {/* General Information */}
-      <Card className="shadow-lg border-gray-200">
+      <Card className="shadow-lg border-gray-200 dark:border-white/10 dark:bg-black/20">
         <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Building2 className="h-5 w-5 text-purple-600" />
+          <CardTitle className="flex items-center gap-2 dark:text-white">
+            <Building2 className="h-5 w-5 text-emerald-600 dark:text-emerald-400" />
             Kredi Bilgileri
           </CardTitle>
-          <CardDescription>Kredi ve banka bilgilerini kontrol edin ve düzenleyin</CardDescription>
+          <CardDescription className="dark:text-white/60">Kredi ve banka bilgilerini kontrol edin ve düzenleyin</CardDescription>
         </CardHeader>
         <CardContent className="space-y-6">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
             <div className="space-y-2">
-              <Label>Banka</Label>
+              <Label className="dark:text-white/80">Banka</Label>
               <div className="flex items-center gap-3">
                 {paymentPlan.bankName ? (
                   <>
@@ -600,10 +600,10 @@ export default function PDFAnalysisPage() {
                       logoUrl={banks.find((bank) => bank.name === paymentPlan.bankName)?.logo_url}
                       size="sm"
                     />
-                    <span className="font-medium">{paymentPlan.bankName}</span>
+                    <span className="font-medium dark:text-white/90">{paymentPlan.bankName}</span>
                   </>
                 ) : (
-                  <span className="text-gray-500">Banka seçilmedi</span>
+                  <span className="text-gray-500 dark:text-white/60">Banka seçilmedi</span>
                 )}
                 {isEditing && (
                   <Button variant="outline" size="sm" onClick={() => setShowBankSelector(true)}>
@@ -614,16 +614,16 @@ export default function PDFAnalysisPage() {
             </div>
 
             <div className="space-y-2">
-              <Label>Kredi Türü</Label>
+              <Label className="dark:text-white/80">Kredi Türü</Label>
               <div className="flex items-center gap-3">
                 {selectedCreditType ? (
                   <div className="flex flex-col">
-                    <span className="font-medium">{selectedCreditType.name}</span>
-                    <span className="text-xs text-gray-500">{selectedCreditType.category}</span>
+                    <span className="font-medium dark:text-white/90">{selectedCreditType.name}</span>
+                    <span className="text-xs text-gray-500 dark:text-white/60">{selectedCreditType.category}</span>
                   </div>
                 ) : (
                   <div className="flex flex-col">
-                    <span className="text-gray-500">Kredi türü yükleniyor...</span>
+                    <span className="text-gray-500 dark:text-white/60">Kredi türü yükleniyor...</span>
                   </div>
                 )}
                 {isEditing && (
@@ -635,7 +635,7 @@ export default function PDFAnalysisPage() {
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="loanAmount">Kullanılan Kredi Tutarı</Label>
+              <Label htmlFor="loanAmount" className="dark:text-white/80">Kullanılan Kredi Tutarı</Label>
               <Input
                 id="loanAmount"
                 type="number"
@@ -648,8 +648,8 @@ export default function PDFAnalysisPage() {
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="interestRate">
-                Faiz Oranı (%) {paymentPlan.isVariableRate && <span className="text-orange-600">(Değişken)</span>}
+              <Label htmlFor="interestRate" className="dark:text-white/80">
+                Faiz Oranı (%) {paymentPlan.isVariableRate && <span className="text-orange-600 dark:text-orange-400">(Değişken)</span>}
               </Label>
               <Input
                 id="interestRate"
@@ -667,13 +667,13 @@ export default function PDFAnalysisPage() {
       </Card>
 
       {/* Payment Plan Table */}
-      <Card className="shadow-lg border-gray-200">
+      <Card className="shadow-lg border-gray-200 dark:border-white/10 dark:bg-black/20">
         <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Calendar className="h-5 w-5 text-purple-600" />
+          <CardTitle className="flex items-center gap-2 dark:text-white">
+            <Calendar className="h-5 w-5 text-emerald-600 dark:text-emerald-400" />
             Ödeme Planı Detayları
           </CardTitle>
-          <CardDescription>Taksit bilgilerini kontrol edin ve ödeme durumlarını güncelleyin</CardDescription>
+          <CardDescription className="dark:text-white/60">Taksit bilgilerini kontrol edin ve ödeme durumlarını güncelleyin</CardDescription>
         </CardHeader>
         <CardContent>
           <div className="overflow-x-auto">
@@ -745,7 +745,7 @@ export default function PDFAnalysisPage() {
           {/* Pagination */}
           {totalPages > 1 && (
             <div className="flex items-center justify-between mt-4">
-              <div className="text-sm text-gray-500">
+              <div className="text-sm text-gray-500 dark:text-white/60">
                 Sayfa {currentPage} / {totalPages} ({paymentPlan.installments.length} taksit)
               </div>
               <div className="flex gap-2">

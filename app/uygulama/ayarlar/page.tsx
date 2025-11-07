@@ -774,7 +774,7 @@ export default function AyarlarPage() {
                 className="flex items-center gap-2 py-3 px-4 data-[state=active]:text-emerald-600 dark:data-[state=active]:text-emerald-400 data-[state=active]:bg-white dark:data-[state=active]:bg-emerald-900/20 data-[state=active]:shadow-sm rounded-xl transition-all duration-200 hover:bg-gray-100 dark:hover:bg-white/10 dark:text-white/60"
               >
                 <FileText className="h-4 w-4" />
-                <span className="font-medium">Faturalar</span>
+                <span className="font-medium">Fatura Bilgileri</span>
               </TabsTrigger>
               <TabsTrigger
                 value="financial"
@@ -1078,7 +1078,7 @@ export default function AyarlarPage() {
                           </Button>
                           <Button
                             variant="outline"
-                            className="bg-transparent border-white/20 text-white hover:bg-white/10 hover:border-transparent hover:text-white dark:bg-transparent dark:border-white/20 dark:text-white dark:hover:bg-white/10 dark:hover:border-transparent dark:hover:text-white"
+                            className="border-gray-300 dark:border-white/10 text-gray-700 dark:text-white/70 hover:bg-gray-50 dark:hover:bg-white/10 hover:border-gray-400 bg-transparent"
                             onClick={() => setShowCancelDialog(true)}
                             disabled={isCancelling}
                           >
@@ -1087,36 +1087,6 @@ export default function AyarlarPage() {
                           </Button>
                         </>
                       )}
-                    </div>
-                  </CardContent>
-                </Card>
-
-                {/* Faturalama */}
-                <Card className="dark:bg-black/20 dark:border-white/10">
-                  <CardHeader>
-                    <CardTitle className="flex items-center gap-2 dark:text-white">
-                      <FileText className="h-5 w-5 text-emerald-600 dark:text-emerald-400" />
-                      Faturalama
-                    </CardTitle>
-                    <CardDescription className="dark:text-white/60">
-                      Ödeme geçmişinizi ve faturalarınızı görüntüleyin
-                    </CardDescription>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="flex items-center justify-between p-4 border rounded-lg dark:border-white/10 dark:bg-black/10">
-                      <div>
-                        <p className="font-medium dark:text-white mb-1">Fatura Geçmişi</p>
-                        <p className="text-sm text-gray-500 dark:text-white/60">
-                          Tüm ödeme işlemlerinizi ve faturalarınızı görüntüleyin
-                        </p>
-                      </div>
-                      <Button
-                        onClick={() => router.push("/uygulama/faturalandirma")}
-                        className="bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 dark:from-emerald-500 dark:to-teal-600 dark:hover:from-emerald-600 dark:hover:to-teal-700 text-white"
-                      >
-                        <FileText className="h-4 w-4 mr-2" />
-                        Faturalara Git
-                      </Button>
                     </div>
                   </CardContent>
                 </Card>

@@ -320,21 +320,21 @@ export default function KrediDuzenlePage() {
     switch (status) {
       case "paid":
         return (
-          <Badge variant="default" className="bg-green-100 text-green-800 border-green-200">
+          <Badge className="bg-gradient-to-r from-emerald-600 to-teal-700 text-white border-transparent hover:from-emerald-700 hover:to-teal-800">
             <CheckCircle className="w-3 h-3 mr-1" />
             Ödendi
           </Badge>
         )
       case "pending":
         return (
-          <Badge variant="secondary" className="bg-yellow-100 text-yellow-800 border-yellow-200">
+          <Badge className="bg-gradient-to-r from-yellow-500 to-amber-600 text-white border-transparent hover:from-yellow-600 hover:to-amber-700">
             <Clock className="w-3 h-3 mr-1" />
             Bekliyor
           </Badge>
         )
       case "overdue":
         return (
-          <Badge variant="destructive" className="bg-red-100 text-red-800 border-red-200">
+          <Badge className="bg-gradient-to-r from-red-600 to-rose-700 text-white border-transparent hover:from-red-700 hover:to-rose-800">
             <AlertCircle className="w-3 h-3 mr-1" />
             Gecikmiş
           </Badge>
@@ -371,7 +371,7 @@ export default function KrediDuzenlePage() {
   return (
     <div className="flex flex-col gap-4 md:gap-6">
       {/* Hero Section */}
-      <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-blue-600 via-indigo-600 to-purple-700 p-8 text-white shadow-2xl">
+      <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-teal-600 via-emerald-600 to-teal-700 p-8 text-white shadow-2xl">
         <div className="absolute inset-0 bg-black/10"></div>
         <div className="relative z-10">
           <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6">
@@ -392,10 +392,10 @@ export default function KrediDuzenlePage() {
                 />
                 <div>
                   <h1 className="text-3xl md:text-4xl font-bold mb-2">Kredi Düzenle</h1>
-                  <p className="text-blue-100 text-lg">
+                  <p className="text-teal-100 text-lg">
                     {formData.credit_code} - {selectedBank?.name || krediDetay.banks?.name || "N/A"}
                   </p>
-                  <p className="text-blue-200 text-sm">
+                  <p className="text-teal-200 text-sm">
                     {selectedCreditType?.name || krediDetay.credit_types?.name || "N/A"}
                   </p>
                 </div>
@@ -403,14 +403,16 @@ export default function KrediDuzenlePage() {
             </div>
             <div className="flex flex-wrap gap-3">
               <Button
+                size="lg"
+                className="bg-white/90 text-white-700 hover:bg-white hover:text-white-800 font-semibold shadow-lg border border-white/20 backdrop-blur-sm"
                 onClick={handleSave}
-                disabled={saving}
-                className="bg-blue-600 hover:bg-blue-700 text-white font-semibold shadow-lg border border-blue-500/20"
+                disabled={saving}    
               >
                 {saving ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Save className="mr-2 h-4 w-4" />}
                 {saving ? "Kaydediliyor..." : "Kaydet"}
               </Button>
               <Button
+                size="lg"
                 variant="outline"
                 onClick={() => router.back()}
                 className="bg-transparent border-white/20 text-white hover:bg-white/10 hover:border-transparent hover:text-white dark:bg-transparent dark:border-white/20 dark:text-white dark:hover:bg-white/10 dark:hover:border-transparent dark:hover:text-white"
@@ -424,19 +426,19 @@ export default function KrediDuzenlePage() {
           {/* Özet Bilgiler */}
           <div className="grid grid-cols-2 md:grid-cols-4 gap-6 mt-8">
             <div className="text-center">
-              <p className="text-blue-100 text-sm mb-1">Başlangıç Tutarı</p>
+              <p className="text-teal-100 text-sm mb-1">Başlangıç Tutarı</p>
               <p className="text-2xl md:text-3xl font-bold">{formatCurrency(formData.initial_amount)}</p>
             </div>
             <div className="text-center">
-              <p className="text-blue-100 text-sm mb-1">Kalan Borç</p>
+              <p className="text-teal-100 text-sm mb-1">Kalan Borç</p>
               <p className="text-2xl md:text-3xl font-bold">{formatCurrency(formData.remaining_debt)}</p>
             </div>
             <div className="text-center">
-              <p className="text-blue-100 text-sm mb-1">Aylık Ödeme</p>
+              <p className="text-teal-100 text-sm mb-1">Aylık Ödeme</p>
               <p className="text-2xl md:text-3xl font-bold">{formatCurrency(formData.monthly_payment)}</p>
             </div>
             <div className="text-center">
-              <p className="text-blue-100 text-sm mb-1">Faiz Oranı</p>
+              <p className="text-teal-100 text-sm mb-1">Faiz Oranı</p>
               <p className="text-2xl md:text-3xl font-bold">%{formData.interest_rate}</p>
             </div>
           </div>
@@ -490,6 +492,7 @@ export default function KrediDuzenlePage() {
                           value={formData.credit_code}
                           onChange={(e) => handleInputChange("credit_code", e.target.value)}
                           placeholder="Kredi kodunu girin"
+                          className="dark:bg-black/10 dark:border-white/10 dark:text-white"
                         />
                       </div>
                       <div className="space-y-2">
@@ -502,6 +505,7 @@ export default function KrediDuzenlePage() {
                           value={formData.account_number}
                           onChange={(e) => handleInputChange("account_number", e.target.value)}
                           placeholder="Hesap numarasını girin"
+                          className="dark:bg-black/10 dark:border-white/10 dark:text-white"
                         />
                       </div>
                       <div className="space-y-2">
@@ -514,6 +518,7 @@ export default function KrediDuzenlePage() {
                           value={formData.customer_number}
                           onChange={(e) => handleInputChange("customer_number", e.target.value)}
                           placeholder="Müşteri numarasını girin"
+                          className="dark:bg-black/10 dark:border-white/10 dark:text-white"
                         />
                       </div>
                       <div className="space-y-2">
@@ -526,6 +531,7 @@ export default function KrediDuzenlePage() {
                           value={formData.credit_score}
                           onChange={(e) => handleInputChange("credit_score", e.target.value)}
                           placeholder="Kredi notunu girin"
+                          className="dark:bg-black/10 dark:border-white/10 dark:text-white"
                         />
                       </div>
                     </div>
@@ -593,6 +599,7 @@ export default function KrediDuzenlePage() {
                           value={formData.branch_name}
                           onChange={(e) => handleInputChange("branch_name", e.target.value)}
                           placeholder="Şube adını girin"
+                          className="dark:bg-black/10 dark:border-white/10 dark:text-white"
                         />
                       </div>
                     </div>
@@ -617,6 +624,7 @@ export default function KrediDuzenlePage() {
                           value={formData.initial_amount}
                           onChange={(e) => handleInputChange("initial_amount", Number.parseFloat(e.target.value) || 0)}
                           placeholder="0"
+                          className="dark:bg-black/10 dark:border-white/10 dark:text-white"
                         />
                       </div>
                       <div className="space-y-2">
@@ -627,6 +635,7 @@ export default function KrediDuzenlePage() {
                           value={formData.remaining_debt}
                           onChange={(e) => handleInputChange("remaining_debt", Number.parseFloat(e.target.value) || 0)}
                           placeholder="0"
+                          className="dark:bg-black/10 dark:border-white/10 dark:text-white"
                         />
                       </div>
                       <div className="space-y-2">
@@ -637,6 +646,7 @@ export default function KrediDuzenlePage() {
                           value={formData.monthly_payment}
                           onChange={(e) => handleInputChange("monthly_payment", Number.parseFloat(e.target.value) || 0)}
                           placeholder="0"
+                          className="dark:bg-black/10 dark:border-white/10 dark:text-white"
                         />
                       </div>
                       <div className="space-y-2">
@@ -647,6 +657,7 @@ export default function KrediDuzenlePage() {
                           value={formData.total_payback}
                           onChange={(e) => handleInputChange("total_payback", Number.parseFloat(e.target.value) || 0)}
                           placeholder="0"
+                          className="dark:bg-black/10 dark:border-white/10 dark:text-white"
                         />
                       </div>
                       <div className="space-y-2">
@@ -661,6 +672,7 @@ export default function KrediDuzenlePage() {
                           value={formData.interest_rate}
                           onChange={(e) => handleInputChange("interest_rate", Number.parseFloat(e.target.value) || 0)}
                           placeholder="0.00"
+                          className="dark:bg-black/10 dark:border-white/10 dark:text-white"
                         />
                       </div>
                       <div className="space-y-2">
@@ -728,6 +740,7 @@ export default function KrediDuzenlePage() {
                             handleInputChange("total_installments", Number.parseInt(e.target.value) || 0)
                           }
                           placeholder="0"
+                          className="dark:bg-black/10 dark:border-white/10 dark:text-white"
                         />
                       </div>
                       <div className="space-y-2">
@@ -740,6 +753,7 @@ export default function KrediDuzenlePage() {
                             handleInputChange("remaining_installments", Number.parseInt(e.target.value) || 0)
                           }
                           placeholder="0"
+                          className="dark:bg-black/10 dark:border-white/10 dark:text-white"
                         />
                       </div>
                     </div>
@@ -764,6 +778,7 @@ export default function KrediDuzenlePage() {
                         onChange={(e) => handleInputChange("collateral", e.target.value)}
                         placeholder="Teminat bilgilerini girin"
                         rows={3}
+                        className="dark:bg-black/10 dark:border-white/10 dark:text-white"
                       />
                     </div>
                     <div className="space-y-2">
@@ -773,6 +788,7 @@ export default function KrediDuzenlePage() {
                         value={formData.insurance_status}
                         onChange={(e) => handleInputChange("insurance_status", e.target.value)}
                         placeholder="Sigorta durumunu girin"
+                        className="dark:bg-black/10 dark:border-white/10 dark:text-white"
                       />
                     </div>
                   </CardContent>
@@ -786,7 +802,6 @@ export default function KrediDuzenlePage() {
                 <Card className="shadow-sm border-gray-200 dark:border-white/10">
                   <CardHeader>
                     <CardTitle className="flex items-center gap-2 text-gray-900 dark:text-white">
-                      <CalendarDays className="h-5 w-5 text-blue-600 dark:text-blue-400" />
                       Ödeme Planı
                     </CardTitle>
                     <CardDescription>Kredinin ödeme planını görüntüleyin ve düzenleyin</CardDescription>
@@ -794,7 +809,7 @@ export default function KrediDuzenlePage() {
                   <CardContent>
                     {loadingPaymentPlans ? (
                       <div className="flex items-center justify-center py-8">
-                        <Loader2 className="h-8 w-8 animate-spin text-blue-600 dark:text-blue-400" />
+                        <Loader2 className="h-8 w-8 animate-spin text-emerald-600 dark:text-emerald-400" />
                         <span className="ml-2 text-gray-600 dark:text-white/60">Ödeme planı yükleniyor...</span>
                       </div>
                     ) : paymentPlans.length === 0 ? (
@@ -829,7 +844,7 @@ export default function KrediDuzenlePage() {
                                       onChange={(e) =>
                                         setEditingPlanData((prev) => ({ ...prev, due_date: e.target.value }))
                                       }
-                                      className="w-32"
+                                      className="w-32 dark:bg-black/10 dark:border-white/10 dark:text-white"
                                     />
                                   ) : (
                                     new Date(plan.due_date).toLocaleDateString("tr-TR")
@@ -846,7 +861,7 @@ export default function KrediDuzenlePage() {
                                           principal_amount: Number.parseFloat(e.target.value) || 0,
                                         }))
                                       }
-                                      className="w-24"
+                                      className="w-24 dark:bg-black/10 dark:border-white/10 dark:text-white"
                                     />
                                   ) : (
                                     formatCurrency(plan.principal_amount)
@@ -863,7 +878,7 @@ export default function KrediDuzenlePage() {
                                           interest_amount: Number.parseFloat(e.target.value) || 0,
                                         }))
                                       }
-                                      className="w-24"
+                                      className="w-24 dark:bg-black/10 dark:border-white/10 dark:text-white"
                                     />
                                   ) : (
                                     formatCurrency(plan.interest_amount)
@@ -880,7 +895,7 @@ export default function KrediDuzenlePage() {
                                           total_payment: Number.parseFloat(e.target.value) || 0,
                                         }))
                                       }
-                                      className="w-24"
+                                      className="w-24 dark:bg-black/10 dark:border-white/10 dark:text-white"
                                     />
                                   ) : (
                                     formatCurrency(plan.total_payment)
@@ -948,7 +963,7 @@ export default function KrediDuzenlePage() {
           <X className="mr-2 h-4 w-4" />
           İptal
         </Button>
-        <Button onClick={handleSave} disabled={saving} className="bg-blue-600 hover:bg-blue-700 text-white">
+        <Button onClick={handleSave} disabled={saving} className="bg-gradient-to-r from-emerald-600 to-teal-700 hover:from-emerald-700 hover:to-teal-800 text-white">
           {saving ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Save className="mr-2 h-4 w-4" />}
           {saving ? "Kaydediliyor..." : "Değişiklikleri Kaydet"}
         </Button>

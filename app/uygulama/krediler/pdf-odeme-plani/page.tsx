@@ -209,7 +209,7 @@ export default function PDFOdemePlaniPage() {
       <AdBanner position="top" className="mb-6" />
 
       <Card className="overflow-hidden border-0 shadow-xl rounded-2xl">
-        <div className="bg-gradient-to-r from-purple-600 to-indigo-700 p-8 text-white relative">
+        <div className="bg-gradient-to-r from-emerald-600 to-teal-700 p-8 text-white relative">
           <div className="absolute top-0 right-0 w-64 h-64 bg-white opacity-5 rounded-full -mt-32 -mr-32"></div>
           <div className="absolute bottom-0 left-0 w-40 h-40 bg-white opacity-5 rounded-full -mb-20 -ml-20"></div>
 
@@ -225,11 +225,11 @@ export default function PDFOdemePlaniPage() {
               </Button>
               <div>
                 <h1 className="text-3xl md:text-4xl font-bold mb-2">PDF Ödeme Planı Analizi</h1>
-                <p className="text-purple-100 text-lg">
+                <p className="text-emerald-100 text-lg">
                   Gelişmiş AI teknolojisi ile ödeme planınızı otomatik olarak çıkarın
                 </p>
                 {processingTime && (
-                  <p className="text-purple-100 text-sm mt-1">
+                  <p className="text-emerald-100 text-sm mt-1">
                     Son analiz: {(processingTime / 1000).toFixed(1)} saniye
                   </p>
                 )}
@@ -237,19 +237,19 @@ export default function PDFOdemePlaniPage() {
             </div>
             <div className="flex flex-wrap gap-4">
               <div className="bg-white/10 backdrop-blur-sm p-3 rounded-xl">
-                <div className="flex items-center gap-2 text-purple-100">
+                <div className="flex items-center gap-2 text-emerald-100">
                   <Shield className="h-5 w-5" />
                   <span>Güvenli ve Hızlı</span>
                 </div>
               </div>
               <div className="bg-white/10 backdrop-blur-sm p-3 rounded-xl">
-                <div className="flex items-center gap-2 text-purple-100">
+                <div className="flex items-center gap-2 text-emerald-100">
                   <Zap className="h-5 w-5" />
                   <span>Optimize Edilmiş OCR</span>
                 </div>
               </div>
               <div className="bg-white/10 backdrop-blur-sm p-3 rounded-xl">
-                <div className="flex items-center gap-2 text-purple-100">
+                <div className="flex items-center gap-2 text-emerald-100">
                   <Clock className="h-5 w-5" />
                   <span>3-5 Saniye Analiz</span>
                 </div>
@@ -260,9 +260,8 @@ export default function PDFOdemePlaniPage() {
       </Card>
 
       <Card className="shadow-lg border-gray-200 dark:border-white/10 rounded-2xl overflow-hidden dark:bg-black/20">
-        <CardHeader className="bg-gradient-to-r from-gray-50 to-purple-50 dark:from-emerald-900/20 dark:to-purple-900/30 border-b dark:border-white/10">
+        <CardHeader className="bg-gradient-to-r from-gray-50 to-emerald-50 dark:from-emerald-900/20 dark:to-teal-900/30 border-b dark:border-white/10">
           <CardTitle className="flex items-center gap-2 dark:text-white">
-            <FileText className="h-5 w-5 text-purple-600 dark:text-purple-400" />
             PDF Dosyası Yükle
           </CardTitle>
           <CardDescription className="dark:text-white/60">Bankanızdan aldığınız ödeme planı PDF'ini yükleyin</CardDescription>
@@ -272,10 +271,10 @@ export default function PDFOdemePlaniPage() {
             {...getRootProps()}
             className={`border-2 border-dashed rounded-2xl p-12 text-center cursor-pointer transition-all duration-200 ${
               isDragActive
-                ? "border-purple-500 bg-purple-50 dark:bg-purple-900/20 dark:border-purple-400"
+                ? "border-emerald-500 bg-emerald-50 dark:bg-emerald-900/20 dark:border-emerald-400"
                 : file
                   ? "border-green-500 bg-green-50 dark:bg-green-900/20 dark:border-green-400"
-                  : "border-gray-300 dark:border-white/10 hover:border-purple-400 dark:hover:border-purple-500 hover:bg-purple-50/50 dark:hover:bg-purple-900/20"
+                  : "border-gray-300 dark:border-white/10 hover:border-emerald-400 dark:hover:border-emerald-500 hover:bg-emerald-50/50 dark:hover:bg-emerald-900/20"
             }`}
           >
             <input {...getInputProps()} />
@@ -315,7 +314,7 @@ export default function PDFOdemePlaniPage() {
           {isAnalyzing && (
             <div className="space-y-4 mt-6">
               <div className="flex items-center gap-2">
-                <Loader2 className="mr-2 h-5 w-5 animate-spin text-purple-600 dark:text-purple-400" />
+                <Loader2 className="mr-2 h-5 w-5 animate-spin text-emerald-600 dark:text-emerald-400" />
                 <span className="text-sm font-medium dark:text-white/70">PDF hızlı analiz ediliyor...</span>
               </div>
               <Progress value={progress} className="h-3" />
@@ -326,7 +325,7 @@ export default function PDFOdemePlaniPage() {
           <Button
             onClick={analyzeFile}
             disabled={!file || isAnalyzing}
-            className="w-full mt-8 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 h-14 text-lg font-semibold"
+            className="w-full mt-8 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 h-14 text-lg font-semibold"
           >
             {isAnalyzing ? (
               <>
@@ -376,7 +375,7 @@ export default function PDFOdemePlaniPage() {
             transition={{ duration: 0.6, delay: 0.5 + index * 0.1 }}
             whileHover={{ y: -5 }}
           >
-            <Card className="text-center p-6 border-0 shadow-lg hover:shadow-xl transition-all duration-300 rounded-2xl dark:bg-black/20 dark:border-white/10">
+            <Card className="text-center p-6 shadow-lg hover:shadow-xl transition-all duration-300 rounded-2xl dark:bg-black/20 dark:border-white/10 border-gray-200">
               <motion.div
                 className={`w-14 h-14 bg-gradient-to-br ${feature.color} rounded-2xl flex items-center justify-center mx-auto mb-4`}
                 whileHover={{ scale: 1.1, rotate: 5 }}

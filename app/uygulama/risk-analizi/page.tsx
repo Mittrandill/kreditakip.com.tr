@@ -375,7 +375,7 @@ export default function RiskAnaliziPage() {
   if (authLoading || (userId && initialDataLoading)) {
     return (
       <div className="flex items-center justify-center min-h-[200px]">
-        <Loader2 className="h-8 w-8 animate-spin text-red-600" />
+        <Loader2 className="h-8 w-8 animate-spin text-emerald-600 dark:text-emerald-400" />
       </div>
     )
   }
@@ -471,7 +471,7 @@ export default function RiskAnaliziPage() {
         <Card className="shadow-lg dark:bg-black/20 dark:border-white/10">
           <CardContent className="p-8 text-center">
             <div className="flex flex-col items-center gap-4">
-              <RefreshCw className="h-16 w-16 animate-spin text-red-600" />
+              <RefreshCw className="h-16 w-16 animate-spin text-emerald-600 dark:text-emerald-400" />
               <div className="space-y-2">
                 <h3 className="text-xl font-semibold text-gray-900 dark:text-white">
                   Kapsamlı Risk Analizi Hazırlanıyor
@@ -574,12 +574,14 @@ export default function RiskAnaliziPage() {
                 <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                   <div className="flex gap-2">
                     <div className="relative">
-                      <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+                      <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-gray-400 dark:text-white/60" />
                       <Input
                         placeholder="Analiz ara..."
                         value={searchTerm}
                         onChange={(e) => handleSearchChange(e.target.value)}
-                        className="pl-8 w-[250px] custom-input"
+                        className="pl-8 w-[250px] bg-white dark:bg-black/10 border border-gray-200 dark:border-white/10 focus-visible:border-emerald-500 dark:focus-visible:border-emerald-400 focus-visible:shadow-[0_0_0_0.5px_rgb(16,185,129)] dark:focus-visible:shadow-[0_0_0_0.5px_rgb(52,211,153)] transition-all duration-200 text-gray-900 dark:text-white placeholder:text-gray-500 dark:placeholder:text-white/50"
+                        autoComplete="off"
+                        spellCheck="false"
                       />
                     </div>
                     <DropdownMenu>
@@ -606,7 +608,7 @@ export default function RiskAnaliziPage() {
                       variant={viewMode === "cards" ? "default" : "ghost"}
                       size="sm"
                       onClick={() => handleViewModeChange("cards")}
-                      className={`rounded-r-none ${viewMode === "cards" ? "bg-gradient-to-r from-orange-600 to-amber-700 hover:from-orange-700 hover:to-amber-800 text-white" : "dark:text-white/70"}`}
+                      className={`rounded-r-none ${viewMode === "cards" ? "bg-gradient-to-r from-emerald-600 to-teal-700 hover:from-emerald-700 hover:to-teal-800 text-white" : "dark:text-white/70"}`}
                     >
                       <BsFillGrid3X3GapFill className="h-4 w-4" />
                     </Button>
@@ -614,7 +616,7 @@ export default function RiskAnaliziPage() {
                       variant={viewMode === "table" ? "default" : "ghost"}
                       size="sm"
                       onClick={() => handleViewModeChange("table")}
-                      className={`rounded-l-none ${viewMode === "table" ? "bg-gradient-to-r from-orange-600 to-amber-700 hover:from-orange-700 hover:to-amber-800 text-white" : "dark:text-white/70"}`}
+                      className={`rounded-l-none ${viewMode === "table" ? "bg-gradient-to-r from-emerald-600 to-teal-700 hover:from-emerald-700 hover:to-teal-800 text-white" : "dark:text-white/70"}`}
                     >
                       <List className="h-4 w-4" />
                     </Button>
@@ -639,7 +641,7 @@ export default function RiskAnaliziPage() {
                       <Button
                         onClick={handleAnalyze}
                         disabled={!canAnalyze}
-                        className="bg-gradient-to-r from-orange-600 to-amber-700 hover:from-orange-700 hover:to-amber-800"
+                        className="bg-gradient-to-r from-emerald-600 to-teal-700 hover:from-emerald-700 hover:to-teal-800"
                       >
                         <PlayCircle className="h-5 w-5 mr-2" />
                         İlk Analizimi Oluştur
@@ -740,7 +742,7 @@ export default function RiskAnaliziPage() {
                         <TableHeader>
                           <TableRow className="bg-white dark:bg-black/20 dark:border-white/10">
                             <TableHead
-                              className="dark:text-white/70 cursor-pointer hover:text-red-600 dark:hover:text-red-400"
+                              className="dark:text-white/70 cursor-pointer hover:text-emerald-600 dark:hover:text-emerald-400"
                               onClick={() => handleSort("created_at")}
                             >
                               <div className="flex items-center gap-1">
@@ -749,7 +751,7 @@ export default function RiskAnaliziPage() {
                               </div>
                             </TableHead>
                             <TableHead
-                              className="dark:text-white/70 cursor-pointer hover:text-red-600 dark:hover:text-red-400"
+                              className="dark:text-white/70 cursor-pointer hover:text-emerald-600 dark:hover:text-emerald-400"
                               onClick={() => handleSort("overall_risk_score")}
                             >
                               <div className="flex items-center gap-1">
@@ -759,7 +761,7 @@ export default function RiskAnaliziPage() {
                             </TableHead>
                             <TableHead className="dark:text-white/70">Risk Seviyesi</TableHead>
                             <TableHead
-                              className="dark:text-white/70 cursor-pointer hover:text-red-600 dark:hover:text-red-400"
+                              className="dark:text-white/70 cursor-pointer hover:text-emerald-600 dark:hover:text-emerald-400"
                               onClick={() => handleSort("debt_to_income_ratio")}
                             >
                               <div className="flex items-center gap-1">
@@ -768,7 +770,7 @@ export default function RiskAnaliziPage() {
                               </div>
                             </TableHead>
                             <TableHead
-                              className="dark:text-white/70 cursor-pointer hover:text-red-600 dark:hover:text-red-400"
+                              className="dark:text-white/70 cursor-pointer hover:text-emerald-600 dark:hover:text-emerald-400"
                               onClick={() => handleSort("monthly_income")}
                             >
                               <div className="flex items-center gap-1">
@@ -777,7 +779,7 @@ export default function RiskAnaliziPage() {
                               </div>
                             </TableHead>
                             <TableHead
-                              className="dark:text-white/70 cursor-pointer hover:text-red-600 dark:hover:text-red-400"
+                              className="dark:text-white/70 cursor-pointer hover:text-emerald-600 dark:hover:text-emerald-400"
                               onClick={() => handleSort("total_debt_amount")}
                             >
                               <div className="flex items-center gap-1">

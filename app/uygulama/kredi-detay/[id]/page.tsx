@@ -86,7 +86,7 @@ import {
 } from "@/components/ui/alert-dialog"
 
 interface PopulatedCredit extends Credit {
-  banks: Pick<Bank, "id" | "name" | "logo_url"> | null
+  banks: Pick<Bank, "id" | "name" | "logo_url" | "contact_phone" | "contact_email" | "website"> | null
   credit_types: Pick<CreditType, "id" | "name" | "description"> | null
 }
 
@@ -792,7 +792,6 @@ export default function KrediDetayPage() {
                   <Card className="shadow-sm border-gray-200 dark:border-white/10 dark:bg-black/20">
                     <CardHeader>
                       <CardTitle className="flex items-center gap-2 text-gray-900 dark:text-white">
-                        <CreditCard className="h-5 w-5 text-teal-600" />
                         Kredi Bilgileri
                       </CardTitle>
                     </CardHeader>
@@ -851,7 +850,6 @@ export default function KrediDetayPage() {
                   <Card className="shadow-sm border-gray-200 dark:border-white/10 dark:bg-black/20">
                     <CardHeader>
                       <CardTitle className="flex items-center gap-2 text-gray-900 dark:text-white">
-                        <Building className="h-5 w-5 text-teal-600" />
                         Banka Bilgileri
                       </CardTitle>
                     </CardHeader>
@@ -866,8 +864,50 @@ export default function KrediDetayPage() {
                           <p className="font-semibold text-gray-900 dark:text-white">
                             {krediDetay.banks?.name || "N/A"}
                           </p>
-                          <p className="text-sm text-gray-500 dark:text-white/60">{krediDetay.branch_name || "N/A"}</p>
+                          <p className="text-sm text-gray-500 dark:text-white/60">{krediDetay.branch_name || "Şube Bilgisi Yok"}</p>
                         </div>
+                      </div>
+
+                      {/* İletişim Bilgileri */}
+                      <div className="space-y-3 pt-3 border-t dark:border-white/10">
+                        {krediDetay.banks?.contact_phone && (
+                          <div className="flex items-center gap-3 text-sm">
+                            <Phone className="h-4 w-4 text-gray-400 dark:text-white/60" />
+                            <a
+                              href={`tel:${krediDetay.banks.contact_phone}`}
+                              className="text-gray-700 dark:text-white/80 hover:text-teal-600 dark:hover:text-teal-400 transition-colors"
+                            >
+                              {krediDetay.banks.contact_phone}
+                            </a>
+                          </div>
+                        )}
+                        {krediDetay.banks?.contact_email && (
+                          <div className="flex items-center gap-3 text-sm">
+                            <Mail className="h-4 w-4 text-gray-400 dark:text-white/60" />
+                            <a
+                              href={`mailto:${krediDetay.banks.contact_email}`}
+                              className="text-gray-700 dark:text-white/80 hover:text-teal-600 dark:hover:text-teal-400 transition-colors"
+                            >
+                              {krediDetay.banks.contact_email}
+                            </a>
+                          </div>
+                        )}
+                        {krediDetay.banks?.website && (
+                          <div className="flex items-center gap-3 text-sm">
+                            <MapPin className="h-4 w-4 text-gray-400 dark:text-white/60" />
+                            <a
+                              href={krediDetay.banks.website}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="text-gray-700 dark:text-white/80 hover:text-teal-600 dark:hover:text-teal-400 transition-colors"
+                            >
+                              Web Sitesi
+                            </a>
+                          </div>
+                        )}
+                        {!krediDetay.banks?.contact_phone && !krediDetay.banks?.contact_email && !krediDetay.banks?.website && (
+                          <p className="text-sm text-gray-500 dark:text-white/60 italic">İletişim bilgisi bulunmuyor</p>
+                        )}
                       </div>
                     </CardContent>
                   </Card>
@@ -1428,7 +1468,6 @@ export default function KrediDetayPage() {
                   <Card className="shadow-sm border-gray-200 dark:border-white/10 dark:bg-black/20">
                     <CardHeader>
                       <CardTitle className="flex items-center gap-2 text-gray-900 dark:text-white">
-                        <TrendingUp className="h-5 w-5 text-teal-600" />
                         Borç Azalış Grafiği
                       </CardTitle>
                       <CardDescription className="dark:text-white/60">
@@ -1490,7 +1529,6 @@ export default function KrediDetayPage() {
                   <Card className="shadow-sm border-gray-200 dark:border-white/10 dark:bg-black/20">
                     <CardHeader>
                       <CardTitle className="flex items-center gap-2 text-gray-900 dark:text-white">
-                        <BarChart3 className="h-5 w-5 text-teal-600" />
                         Faiz/Ana Para Dağılımı
                       </CardTitle>
                       <CardDescription className="dark:text-white/60">
@@ -1573,7 +1611,6 @@ export default function KrediDetayPage() {
                   <Card className="shadow-sm border-gray-200 dark:border-white/10 dark:bg-black/20">
                     <CardHeader>
                       <CardTitle className="flex items-center gap-2 text-gray-900 dark:text-white">
-                        <Calendar className="h-5 w-5 text-teal-600" />
                         Aylık Ödeme Trendi
                       </CardTitle>
                       <CardDescription className="dark:text-white/60">Son 6 ayın ödeme performansı</CardDescription>
@@ -1625,7 +1662,6 @@ export default function KrediDetayPage() {
                   <Card className="shadow-sm border-gray-200 dark:border-white/10 dark:bg-black/20">
                     <CardHeader>
                       <CardTitle className="flex items-center gap-2 text-gray-900 dark:text-white">
-                        <Target className="h-5 w-5 text-teal-600" />
                         Ödeme İlerlemesi
                       </CardTitle>
                       <CardDescription className="dark:text-white/60">Kredi tamamlanma durumu</CardDescription>

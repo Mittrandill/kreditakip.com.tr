@@ -24,6 +24,8 @@ import {
   Clock,
   AlertCircle,
   Calendar,
+  FileText,
+  Lock,
 } from "lucide-react"
 import { AdBanner } from "@/components/ad-banner"
 
@@ -259,9 +261,9 @@ export default function DashboardPage() {
                 className="bg-transparent border-white/20 text-white hover:bg-white/10 hover:border-transparent hover:text-white dark:bg-transparent dark:border-white/20 dark:text-white dark:hover:bg-white/10 dark:hover:border-transparent dark:hover:text-white"
                 asChild
               >
-                <Link href="/uygulama/ayarlar">
-                  <Settings className="h-5 w-5 mr-2" />
-                  Ayarlar
+                <Link href="/uygulama/krediler/pdf-odeme-plani">
+                  <FileText className="h-5 w-5 mr-2" />
+                  PDF OCR Analizi
                 </Link>
               </Button>
               <Button
@@ -270,9 +272,9 @@ export default function DashboardPage() {
                 className="bg-transparent border-white/20 text-white hover:bg-white/10 hover:border-transparent hover:text-white dark:bg-transparent dark:border-white/20 dark:text-white dark:hover:bg-white/10 dark:hover:border-transparent dark:hover:text-white"
                 asChild
               >
-                <Link href="/uygulama/bildirimler">
-                  <Bell className="h-5 w-5 mr-2" />
-                  Bildirimler
+                <Link href="/uygulama/sifrelerim">
+                  <Lock className="h-5 w-5 mr-2" />
+                  Güvenli Şifre Sakla
                 </Link>
               </Button>
             </div>

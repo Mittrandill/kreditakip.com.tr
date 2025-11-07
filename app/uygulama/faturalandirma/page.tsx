@@ -105,7 +105,7 @@ export default function FaturalandirmaPage() {
     let filtered = transactions.filter((transaction) => {
       const searchLower = searchTerm.toLowerCase()
       return (
-        transaction.amount.toLowerCase().includes(searchLower) ||
+        transaction.amount.toString().toLowerCase().includes(searchLower) ||
         transaction.currency.toLowerCase().includes(searchLower) ||
         transaction.payment_method.toLowerCase().includes(searchLower) ||
         transaction.status.toLowerCase().includes(searchLower)
@@ -247,7 +247,9 @@ export default function FaturalandirmaPage() {
               placeholder="Ödeme veya fatura ara..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="pl-10 dark:bg-black/10 dark:border-white/10 dark:text-white"
+              className="pl-10 bg-white dark:bg-black/10 border border-gray-200 dark:border-white/10 focus-visible:border-emerald-500 dark:focus-visible:border-emerald-400 focus-visible:shadow-[0_0_0_0.5px_rgb(16,185,129)] dark:focus-visible:shadow-[0_0_0_0.5px_rgb(52,211,153)] transition-all duration-200 text-gray-900 dark:text-white placeholder:text-gray-500 dark:placeholder:text-white/50"
+              autoComplete="off"
+              spellCheck="false"
             />
           </div>
         </CardContent>
@@ -257,7 +259,6 @@ export default function FaturalandirmaPage() {
       <Card className="shadow-lg hover:shadow-xl transition-shadow duration-300">
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
-            <DollarSign className="h-5 w-5 text-emerald-600 dark:text-emerald-400" />
             Ödeme Geçmişi
           </CardTitle>
           <CardDescription>Geçmiş ödemelerinizi görüntüleyin</CardDescription>
@@ -360,7 +361,6 @@ export default function FaturalandirmaPage() {
       <Card className="shadow-lg hover:shadow-xl transition-shadow duration-300">
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
-            <Receipt className="h-5 w-5 text-blue-600 dark:text-blue-400" />
             Faturalarım
           </CardTitle>
           <CardDescription>Faturalarınızı görüntüleyin ve indirin</CardDescription>

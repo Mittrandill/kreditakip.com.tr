@@ -285,48 +285,44 @@ export default function BildirimlerPage() {
   }
 
   return (
-    <div className="space-y-8">
+    <div className="flex flex-col gap-4 md:gap-6">
       {/* Hero Section */}
-      <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-purple-600 via-blue-600 to-emerald-600 p-8 text-white">
-        <div className="absolute inset-0 bg-black/20"></div>
-        <div className="relative z-10">
-          <div className="flex items-center justify-between">
-            <div className="space-y-4">
-              <div className="flex items-center gap-3">
-                <div className="p-3 bg-white/20 rounded-2xl backdrop-blur-sm">
-                  <BellRing className="h-8 w-8" />
-                </div>
-                <div>
-                  <h1 className="text-3xl md:text-4xl font-bold">Bildirimler</h1>
-                  <p className="text-white/90 text-lg">Ödemeler, hatırlatmalar ve önemli güncellemeler</p>
-                </div>
-              </div>
-
-              <div className="flex items-center gap-4 flex-wrap">
-                <Badge variant="outline" className="bg-white/20 text-white border-white/30">
-                  {stats.total || 0} Toplam Bildirim
-                </Badge>
-                {stats.unread > 0 && <Badge className="bg-red-500 text-white">{stats.unread} Okunmamış</Badge>}
-              </div>
-            </div>
-
-            <div className="hidden md:block">
-              <div className="w-32 h-32 bg-white/10 rounded-full flex items-center justify-center backdrop-blur-sm">
-                <Bell className="h-16 w-16 text-white/80" />
-              </div>
+      <Card className="bg-gradient-to-r from-emerald-600 to-teal-700 text-white border-transparent shadow-xl rounded-xl">
+        <CardContent className="p-8">
+          <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+            <div>
+              <h2 className="text-3xl font-bold mb-2 flex items-center gap-3">
+                <BellRing className="h-8 w-8" />
+                Bildirimler
+              </h2>
+              <p className="text-emerald-100 text-lg">Ödemeler, hatırlatmalar ve önemli güncellemeler</p>
             </div>
           </div>
-        </div>
-      </div>
+        </CardContent>
+      </Card>
 
       {/* Stats Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
         <MetricCard
           title="Toplam Bildirim"
           value={stats.total || 0}
           subtitle="Tüm bildirimler"
           color="blue"
           icon={<Bell />}
+        />
+        <MetricCard
+          title="Başarılı"
+          value={stats.success || 0}
+          subtitle="Tamamlanan işlemler"
+          color="emerald"
+          icon={<CheckCircle />}
+        />
+        <MetricCard
+          title="Uyarılar"
+          value={stats.warnings || 0}
+          subtitle="Önemli hatırlatmalar"
+          color="purple"
+          icon={<AlertTriangle />}
         />
         <MetricCard
           title="Okunmamış"
@@ -336,20 +332,6 @@ export default function BildirimlerPage() {
           icon={<BellRing />}
           change={stats.unread > 0 ? `${stats.unread} yeni` : "Hepsi okundu"}
           changeType={stats.unread > 0 ? "negative" : "positive"}
-        />
-        <MetricCard
-          title="Uyarılar"
-          value={stats.warnings || 0}
-          subtitle="Önemli hatırlatmalar"
-          color="red"
-          icon={<AlertTriangle />}
-        />
-        <MetricCard
-          title="Başarılı"
-          value={stats.success || 0}
-          subtitle="Tamamlanan işlemler"
-          color="emerald"
-          icon={<CheckCircle />}
         />
       </div>
 
@@ -361,14 +343,7 @@ export default function BildirimlerPage() {
             <CardTitle className="text-xl font-bold text-gray-800 dark:text-white">Bildirim Listesi</CardTitle>
 
             <div className="flex items-center gap-2 flex-wrap">
-              <Button
-                variant="outline"
-                onClick={() => loadNotifications(true)}
-                className="gap-2 bg-transparent dark:bg-transparent dark:border-white/10 dark:text-white/70 dark:hover:bg-white/10"
-              >
-                <RefreshCw className="h-4 w-4" />
-                Yenile
-              </Button>
+         
 
               {stats.unread > 0 && (
                 <Button variant="default" onClick={handleMarkAllAsRead} className="gap-2">
@@ -387,7 +362,7 @@ export default function BildirimlerPage() {
                 placeholder="Bildirim ara..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-10 bg-white dark:bg-black/10 border border-gray-200 dark:border-white/10 dark:text-white focus-visible:border-emerald-500 focus-visible:shadow-[0_0_0_0.5px_rgb(16,185,129)] transition-all duration-200"
+                className="pl-10 bg-white dark:bg-black/10 border border-gray-200 dark:border-white/10 focus-visible:border-emerald-500 dark:focus-visible:border-emerald-400 focus-visible:shadow-[0_0_0_0.5px_rgb(16,185,129)] dark:focus-visible:shadow-[0_0_0_0.5px_rgb(52,211,153)] transition-all duration-200 text-gray-900 dark:text-white placeholder:text-gray-500 dark:placeholder:text-white/50"
                 autoComplete="off"
                 spellCheck="false"
               />

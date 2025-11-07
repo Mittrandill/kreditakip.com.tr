@@ -440,6 +440,7 @@ export default function KrediEklePage() {
                       value={formData.credit_code}
                       onChange={(e) => handleInputChange("credit_code", e.target.value)}
                       placeholder="Kredi kodunu giriniz"
+                      className="dark:bg-black/10 dark:border-white/10 dark:text-white"
                     />
                     {errors.credit_code && <p className="text-sm text-red-600">{errors.credit_code}</p>}
                   </div>
@@ -451,6 +452,7 @@ export default function KrediEklePage() {
                       value={formData.account_number}
                       onChange={(e) => handleInputChange("account_number", e.target.value)}
                       placeholder="Hesap numarasını giriniz"
+                      className="dark:bg-black/10 dark:border-white/10 dark:text-white"
                     />
                   </div>
                 </div>
@@ -475,6 +477,7 @@ export default function KrediEklePage() {
                       value={formData.initial_amount || ""}
                       onChange={(e) => handleInputChange("initial_amount", Number.parseFloat(e.target.value) || 0)}
                       placeholder="0.00"
+                      className="dark:bg-black/10 dark:border-white/10 dark:text-white"
                     />
                     {errors.initial_amount && <p className="text-sm text-red-600">{errors.initial_amount}</p>}
                   </div>
@@ -490,6 +493,7 @@ export default function KrediEklePage() {
                       value={formData.interest_rate || ""}
                       onChange={(e) => handleInputChange("interest_rate", Number.parseFloat(e.target.value) || 0)}
                       placeholder="0.00"
+                      className="dark:bg-black/10 dark:border-white/10 dark:text-white"
                     />
                     {errors.interest_rate && <p className="text-sm text-red-600">{errors.interest_rate}</p>}
                   </div>
@@ -504,6 +508,7 @@ export default function KrediEklePage() {
                       value={formData.monthly_payment || ""}
                       onChange={(e) => handleInputChange("monthly_payment", Number.parseFloat(e.target.value) || 0)}
                       placeholder="0.00"
+                      className="dark:bg-black/10 dark:border-white/10 dark:text-white"
                     />
                     {errors.monthly_payment && <p className="text-sm text-red-600">{errors.monthly_payment}</p>}
                   </div>
@@ -517,6 +522,7 @@ export default function KrediEklePage() {
                       value={formData.total_installments || ""}
                       onChange={(e) => handleInputChange("total_installments", Number.parseInt(e.target.value) || 0)}
                       placeholder="0"
+                      className="dark:bg-black/10 dark:border-white/10 dark:text-white"
                     />
                     {errors.total_installments && <p className="text-sm text-red-600">{errors.total_installments}</p>}
                   </div>
@@ -566,6 +572,7 @@ export default function KrediEklePage() {
                       value={formData.branch_name}
                       onChange={(e) => handleInputChange("branch_name", e.target.value)}
                       placeholder="Şube adını giriniz"
+                      className="dark:bg-black/10 dark:border-white/10 dark:text-white"
                     />
                   </div>
 
@@ -576,6 +583,7 @@ export default function KrediEklePage() {
                       value={formData.customer_number}
                       onChange={(e) => handleInputChange("customer_number", e.target.value)}
                       placeholder="Müşteri numarasını giriniz"
+                      className="dark:bg-black/10 dark:border-white/10 dark:text-white"
                     />
                   </div>
 
@@ -603,6 +611,7 @@ export default function KrediEklePage() {
                       value={formData.credit_score}
                       onChange={(e) => handleInputChange("credit_score", e.target.value)}
                       placeholder="Kredi notunuzu giriniz"
+                      className="dark:bg-black/10 dark:border-white/10 dark:text-white"
                     />
                   </div>
 
@@ -614,6 +623,7 @@ export default function KrediEklePage() {
                       onChange={(e) => handleInputChange("collateral", e.target.value)}
                       placeholder="Teminat bilgilerini giriniz"
                       rows={3}
+                      className="dark:bg-black/10 dark:border-white/10 dark:text-white"
                     />
                   </div>
                 </div>
@@ -623,47 +633,47 @@ export default function KrediEklePage() {
 
           {/* Özet Kartı */}
           <div className="space-y-6">
-            <Card className="sticky top-6">
+            <Card className="sticky top-6 shadow-lg dark:bg-black/20 dark:border-white/10">
               <CardHeader>
-                <CardTitle>Kredi Özeti</CardTitle>
-                <CardDescription>Girilen bilgilerin özeti</CardDescription>
+                <CardTitle className="dark:text-white">Kredi Özeti</CardTitle>
+                <CardDescription className="dark:text-white/60">Girilen bilgilerin özeti</CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="space-y-3">
                   <div className="flex justify-between text-sm">
-                    <span className="text-gray-600">Kredi Tutarı:</span>
-                    <span className="font-medium">{formatCurrency(formData.initial_amount)}</span>
+                    <span className="text-gray-600 dark:text-white/70">Kredi Tutarı:</span>
+                    <span className="font-medium dark:text-white">{formatCurrency(formData.initial_amount)}</span>
                   </div>
                   <div className="flex justify-between text-sm">
-                    <span className="text-gray-600">Aylık Ödeme:</span>
-                    <span className="font-medium">{formatCurrency(formData.monthly_payment)}</span>
+                    <span className="text-gray-600 dark:text-white/70">Aylık Ödeme:</span>
+                    <span className="font-medium dark:text-white">{formatCurrency(formData.monthly_payment)}</span>
                   </div>
                   <div className="flex justify-between text-sm">
-                    <span className="text-gray-600">Faiz Oranı:</span>
-                    <span className="font-medium">%{formData.interest_rate}</span>
+                    <span className="text-gray-600 dark:text-white/70">Faiz Oranı:</span>
+                    <span className="font-medium dark:text-white">%{formData.interest_rate}</span>
                   </div>
                   <div className="flex justify-between text-sm">
-                    <span className="text-gray-600">Toplam Taksit:</span>
-                    <span className="font-medium">{formData.total_installments}</span>
+                    <span className="text-gray-600 dark:text-white/70">Toplam Taksit:</span>
+                    <span className="font-medium dark:text-white">{formData.total_installments}</span>
                   </div>
-                  <div className="border-t pt-3">
+                  <div className="border-t dark:border-white/10 pt-3">
                     <div className="flex justify-between text-sm font-semibold">
-                      <span>Toplam Geri Ödeme:</span>
-                      <span className="text-emerald-600">{formatCurrency(calculateTotalPayback())}</span>
+                      <span className="dark:text-white">Toplam Geri Ödeme:</span>
+                      <span className="text-emerald-600 dark:text-emerald-400">{formatCurrency(calculateTotalPayback())}</span>
                     </div>
                   </div>
                   <div className="flex justify-between text-sm">
-                    <span className="text-gray-600">Kalan Borç:</span>
-                    <span className="font-medium text-orange-600">{formatCurrency(calculateRemainingDebt())}</span>
+                    <span className="text-gray-600 dark:text-white/70">Kalan Borç:</span>
+                    <span className="font-medium text-orange-600 dark:text-orange-400">{formatCurrency(calculateRemainingDebt())}</span>
                   </div>
                   <div className="flex justify-between text-sm">
-                    <span className="text-gray-600">Kalan Taksit:</span>
-                    <span className="font-medium">{calculateRemainingInstallments()}</span>
+                    <span className="text-gray-600 dark:text-white/70">Kalan Taksit:</span>
+                    <span className="font-medium dark:text-white">{calculateRemainingInstallments()}</span>
                   </div>
                   {calculateEndDate() && (
                     <div className="flex justify-between text-sm">
-                      <span className="text-gray-600">Bitiş Tarihi:</span>
-                      <span className="font-medium">
+                      <span className="text-gray-600 dark:text-white/70">Bitiş Tarihi:</span>
+                      <span className="font-medium dark:text-white">
                         {turkishMonths[calculateEndDate()!.getMonth()]} {calculateEndDate()!.getFullYear()}
                       </span>
                     </div>
@@ -686,7 +696,7 @@ export default function KrediEklePage() {
                   </Button>
 
                   <Link href="/uygulama/krediler" className="block">
-                    <Button type="button" variant="outline" className="w-full bg-transparent">
+                    <Button type="button" variant="outline" className="w-full bg-transparent dark:bg-transparent dark:border-white/10 dark:text-white dark:hover:bg-white/10">
                       İptal
                     </Button>
                   </Link>

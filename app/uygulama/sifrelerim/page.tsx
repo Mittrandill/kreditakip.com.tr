@@ -476,7 +476,7 @@ export default function BankaciSifrelerimPage() {
                 <Lock className="h-8 w-8" />
                 Bankacılık Şifre Yönetimi
               </h2>
-              <p className="text-emerald-100 text-lg">
+              <p className="text-white-100 text-lg">
                 Tüm bankacılık şifrelerinizi güvenli bir şekilde saklayın ve yönetin
               </p>
             </div>
@@ -580,12 +580,14 @@ export default function BankaciSifrelerimPage() {
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
               <div className="flex gap-2">
                 <div className="relative">
-                  <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+                  <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-gray-400 dark:text-white/60" />
                   <Input
                     placeholder="Şifre ara..."
                     value={searchTerm}
                     onChange={(e) => handleSearchChange(e.target.value)}
-                    className="pl-8 w-[250px]"
+                    className="pl-8 w-[250px] bg-white dark:bg-black/10 border border-gray-200 dark:border-white/10 focus-visible:border-emerald-500 dark:focus-visible:border-emerald-400 focus-visible:shadow-[0_0_0_0.5px_rgb(16,185,129)] dark:focus-visible:shadow-[0_0_0_0.5px_rgb(52,211,153)] transition-all duration-200 text-gray-900 dark:text-white placeholder:text-gray-500 dark:placeholder:text-white/50"
+                    autoComplete="off"
+                    spellCheck="false"
                   />
                 </div>
                 <DropdownMenu>

@@ -245,7 +245,7 @@ export default function SifreEklePage() {
                       placeholder="Örn: QNB Finansbank İnternet Bankacılığı"
                       value={formData.credentialName}
                       onChange={(e) => setFormData((prev) => ({ ...prev, credentialName: e.target.value }))}
-                      className={`h-10 ${errors.credentialName ? "border-red-500" : ""}`}
+                      className={`h-10 dark:bg-black/10 dark:border-white/10 dark:text-white ${errors.credentialName ? "border-red-500" : ""}`}
                     />
                     {errors.credentialName && <p className="text-sm text-red-600">{errors.credentialName}</p>}
                   </div>
@@ -307,7 +307,7 @@ export default function SifreEklePage() {
                       placeholder="Kullanıcı adınız (opsiyonel)"
                       value={formData.username}
                       onChange={(e) => setFormData((prev) => ({ ...prev, username: e.target.value }))}
-                      className="h-10"
+                      className="h-10 dark:bg-black/10 dark:border-white/10 dark:text-white"
                     />
                   </div>
 
@@ -324,7 +324,7 @@ export default function SifreEklePage() {
                           placeholder="Şifrenizi girin"
                           value={formData.password}
                           onChange={(e) => setFormData((prev) => ({ ...prev, password: e.target.value }))}
-                          className={`h-10 pr-10 ${errors.password ? "border-red-500" : ""}`}
+                          className={`h-10 pr-10 dark:bg-black/10 dark:border-white/10 dark:text-white ${errors.password ? "border-red-500" : ""}`}
                         />
                         <Button
                           type="button"
@@ -392,6 +392,7 @@ export default function SifreEklePage() {
                       value={formData.notes}
                       onChange={(e) => setFormData((prev) => ({ ...prev, notes: e.target.value }))}
                       rows={3}
+                      className="dark:bg-black/10 dark:border-white/10 dark:text-white"
                     />
                   </div>
                 </div>
@@ -400,34 +401,34 @@ export default function SifreEklePage() {
           </div>
 
           <div className="space-y-6">
-            <Card className="sticky top-6">
+            <Card className="sticky top-6 shadow-lg dark:bg-black/20 dark:border-white/10">
               <CardHeader>
-                <CardTitle>Güvenlik Bilgileri</CardTitle>
-                <CardDescription>Şifre güvenliği ve yönetimi</CardDescription>
+                <CardTitle className="dark:text-white">Güvenlik Bilgileri</CardTitle>
+                <CardDescription className="dark:text-white/60">Şifre güvenliği ve yönetimi</CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="space-y-3">
                   <div className="flex items-start gap-3 text-sm">
-                    <Shield className="h-4 w-4 text-emerald-600 mt-0.5 flex-shrink-0" />
-                    <span className="text-gray-600">Mevcut şifrelerinizi güvenli bir şekilde saklayın</span>
+                    <Shield className="h-4 w-4 text-emerald-600 dark:text-emerald-400 mt-0.5 flex-shrink-0" />
+                    <span className="text-gray-600 dark:text-white/70">Mevcut şifrelerinizi güvenli bir şekilde saklayın</span>
                   </div>
                   <div className="flex items-start gap-3 text-sm">
-                    <Lock className="h-4 w-4 text-emerald-600 mt-0.5 flex-shrink-0" />
-                    <span className="text-gray-600">Sayısal şifreler de desteklenmektedir</span>
+                    <Lock className="h-4 w-4 text-emerald-600 dark:text-emerald-400 mt-0.5 flex-shrink-0" />
+                    <span className="text-gray-600 dark:text-white/70">Sayısal şifreler de desteklenmektedir</span>
                   </div>
                   <div className="flex items-start gap-3 text-sm">
-                    <Clock className="h-4 w-4 text-emerald-600 mt-0.5 flex-shrink-0" />
-                    <span className="text-gray-600">Otomatik hatırlatmalar ile şifre yönetimi</span>
+                    <Clock className="h-4 w-4 text-emerald-600 dark:text-emerald-400 mt-0.5 flex-shrink-0" />
+                    <span className="text-gray-600 dark:text-white/70">Otomatik hatırlatmalar ile şifre yönetimi</span>
                   </div>
                   <div className="flex items-start gap-3 text-sm">
-                    <AlertCircle className="h-4 w-4 text-amber-600 mt-0.5 flex-shrink-0" />
-                    <span className="text-gray-600">Şifrelerinizi düzenli olarak güncelleyin</span>
+                    <AlertCircle className="h-4 w-4 text-amber-600 dark:text-amber-400 mt-0.5 flex-shrink-0" />
+                    <span className="text-gray-600 dark:text-white/70">Şifrelerinizi düzenli olarak güncelleyin</span>
                   </div>
                 </div>
 
-                <Alert className="bg-emerald-50 border-emerald-200">
-                  <Shield className="h-4 w-4 text-emerald-600" />
-                  <AlertDescription className="text-emerald-700">
+                <Alert className="bg-emerald-50 dark:bg-emerald-900/20 border-emerald-200 dark:border-emerald-800">
+                  <Shield className="h-4 w-4 text-emerald-600 dark:text-emerald-400" />
+                  <AlertDescription className="text-emerald-700 dark:text-emerald-300">
                     Tüm şifreleriniz AES-256 şifreleme ile güvenli bir şekilde saklanmaktadır.
                   </AlertDescription>
                 </Alert>
@@ -451,7 +452,7 @@ export default function SifreEklePage() {
                     <Button
                       type="button"
                       variant="outline"
-                      className="w-full bg-transparent border-white/20 hover:bg-white/10 hover:border-white/30"
+                      className="w-full bg-transparent dark:bg-transparent dark:border-white/10 dark:text-white dark:hover:bg-white/10"
                     >
                       İptal
                     </Button>

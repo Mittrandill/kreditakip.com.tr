@@ -528,7 +528,7 @@ export default function RaporlarPage() {
                 <BarChart3 className="h-8 w-8" />
                 Finansal Raporlar ve Analiz
               </h2>
-              <p className="text-emerald-100 text-lg">
+              <p className="text-white-100 text-lg">
                 Detaylı kredi analizi, grafikler ve akıllı öngörülerle finansal durumunuzu takip edin
               </p>
             </div>
@@ -663,7 +663,9 @@ export default function RaporlarPage() {
                 placeholder="Banka veya kredi türü ara..."
                 value={filters.searchTerm}
                 onChange={(e) => updateFilter("searchTerm", e.target.value)}
-                className="pl-10 h-11 bg-white dark:bg-black/10 border-gray-200 dark:border-white/10 focus:border-emerald-500 focus:ring-emerald-500 dark:text-white"
+                className="pl-10 h-11 bg-white dark:bg-black/10 border border-gray-200 dark:border-white/10 focus-visible:border-emerald-500 dark:focus-visible:border-emerald-400 focus-visible:shadow-[0_0_0_0.5px_rgb(16,185,129)] dark:focus-visible:shadow-[0_0_0_0.5px_rgb(52,211,153)] transition-all duration-200 text-gray-900 dark:text-white placeholder:text-gray-500 dark:placeholder:text-white/50"
+                autoComplete="off"
+                spellCheck="false"
               />
             </div>
 
