@@ -112,9 +112,9 @@ export default function PaymentDetailPage({ params }: { params: { id: string } }
     return (
       <div className="flex flex-col gap-4 md:gap-6 items-center justify-center min-h-[calc(100vh-150px)]">
         <div className="animate-pulse space-y-6 w-full max-w-4xl">
-          <div className="h-8 bg-gray-200 dark:bg-gray-700 rounded w-1/3"></div>
-          <div className="h-64 bg-gray-200 dark:bg-gray-700 rounded"></div>
-          <div className="h-48 bg-gray-200 dark:bg-gray-700 rounded"></div>
+          <div className="h-8 bg-gray-200 dark:bg-white/10 rounded w-1/3"></div>
+          <div className="h-64 bg-gray-200 dark:bg-white/10 rounded"></div>
+          <div className="h-48 bg-gray-200 dark:bg-white/10 rounded"></div>
         </div>
       </div>
     )

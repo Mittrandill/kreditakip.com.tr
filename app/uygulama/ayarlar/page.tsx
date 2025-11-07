@@ -757,42 +757,42 @@ export default function AyarlarPage() {
             <TabsList className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 bg-transparent h-auto p-2 gap-2">
               <TabsTrigger
                 value="profile"
-                className="flex items-center gap-2 py-3 px-4 data-[state=active]:text-emerald-600 dark:data-[state=active]:text-emerald-400 rounded-xl transition-all duration-200 hover:bg-gray-100 dark:hover:bg-black/10"
+                className="flex items-center gap-2 py-3 px-4 data-[state=active]:text-emerald-600 dark:data-[state=active]:text-emerald-400 rounded-xl transition-all duration-200 hover:bg-gray-100 dark:hover:bg-white/10"
               >
                 <User className="h-4 w-4" />
                 <span className="font-medium">Profil</span>
               </TabsTrigger>
               <TabsTrigger
                 value="subscription"
-                className="flex items-center gap-2 py-3 px-4 data-[state=active]:text-emerald-600 dark:data-[state=active]:text-emerald-400 rounded-xl transition-all duration-200 hover:bg-gray-100 dark:hover:bg-black/10"
+                className="flex items-center gap-2 py-3 px-4 data-[state=active]:text-emerald-600 dark:data-[state=active]:text-emerald-400 rounded-xl transition-all duration-200 hover:bg-gray-100 dark:hover:bg-white/10"
               >
                 <Crown className="h-4 w-4" />
                 <span className="font-medium">Abonelik</span>
               </TabsTrigger>
               <TabsTrigger
                 value="invoices"
-                className="flex items-center gap-2 py-3 px-4 data-[state=active]:text-emerald-600 dark:data-[state=active]:text-emerald-400 rounded-xl transition-all duration-200 hover:bg-gray-100 dark:hover:bg-black/10"
+                className="flex items-center gap-2 py-3 px-4 data-[state=active]:text-emerald-600 dark:data-[state=active]:text-emerald-400 rounded-xl transition-all duration-200 hover:bg-gray-100 dark:hover:bg-white/10"
               >
                 <FileText className="h-4 w-4" />
                 <span className="font-medium">Faturalar</span>
               </TabsTrigger>
               <TabsTrigger
                 value="financial"
-                className="flex items-center gap-2 py-3 px-4 data-[state=active]:text-emerald-600 dark:data-[state=active]:text-emerald-400 rounded-xl transition-all duration-200 hover:bg-gray-100 dark:hover:bg-black/10"
+                className="flex items-center gap-2 py-3 px-4 data-[state=active]:text-emerald-600 dark:data-[state=active]:text-emerald-400 rounded-xl transition-all duration-200 hover:bg-gray-100 dark:hover:bg-white/10"
               >
                 <DollarSign className="h-4 w-4" />
                 <span className="font-medium">Finansal</span>
               </TabsTrigger>
               <TabsTrigger
                 value="security"
-                className="flex items-center gap-2 py-3 px-4 data-[state=active]:text-emerald-600 dark:data-[state=active]:text-emerald-400 rounded-xl transition-all duration-200 hover:bg-gray-100 dark:hover:bg-black/10"
+                className="flex items-center gap-2 py-3 px-4 data-[state=active]:text-emerald-600 dark:data-[state=active]:text-emerald-400 rounded-xl transition-all duration-200 hover:bg-gray-100 dark:hover:bg-white/10"
               >
                 <Shield className="h-4 w-4" />
                 <span className="font-medium">Güvenlik</span>
               </TabsTrigger>
               <TabsTrigger
                 value="preferences"
-                className="flex items-center gap-2 py-3 px-4 data-[state=active]:text-emerald-600 dark:data-[state=active]:text-emerald-400 rounded-xl transition-all duration-200 hover:bg-gray-100 dark:hover:bg-black/10"
+                className="flex items-center gap-2 py-3 px-4 data-[state=active]:text-emerald-600 dark:data-[state=active]:text-emerald-400 rounded-xl transition-all duration-200 hover:bg-gray-100 dark:hover:bg-white/10"
               >
                 <Settings className="h-4 w-4" />
                 <span className="font-medium">Tercihler</span>
@@ -820,7 +820,7 @@ export default function AyarlarPage() {
                       </Avatar>
                       <div className="space-y-2">
                         <Label htmlFor="avatar" className="cursor-pointer">
-                          <div className="flex items-center space-x-2 px-4 py-2 border border-gray-300 dark:border-white/10 text-gray-700 dark:text-white/70 hover:bg-gray-50 dark:hover:bg-black/10 hover:border-gray-400 bg-transparent rounded-md transition-colors">
+                          <div className="flex items-center space-x-2 px-4 py-2 border border-gray-300 dark:border-white/10 text-gray-700 dark:text-white/70 hover:bg-gray-50 dark:hover:bg-white/10 hover:border-gray-400 bg-transparent rounded-md transition-colors">
                             {isUploadingAvatar ? (
                               <>
                                 <Loader2 className="h-4 w-4 animate-spin" />
@@ -853,7 +853,7 @@ export default function AyarlarPage() {
                     {/* Form Alanları */}
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <div className="space-y-2">
-                        <Label htmlFor="first_name" className="dark:text-gray-200">
+                        <Label htmlFor="first_name" className="dark:text-white">
                           Ad
                         </Label>
                         <Input
@@ -864,7 +864,7 @@ export default function AyarlarPage() {
                         />
                       </div>
                       <div className="space-y-2">
-                        <Label htmlFor="last_name" className="dark:text-gray-200">
+                        <Label htmlFor="last_name" className="dark:text-white">
                           Soyad
                         </Label>
                         <Input
@@ -875,7 +875,7 @@ export default function AyarlarPage() {
                         />
                       </div>
                       <div className="space-y-2">
-                        <Label htmlFor="email" className="dark:text-gray-200">
+                        <Label htmlFor="email" className="dark:text-white">
                           E-posta
                         </Label>
                         <div className="relative">
@@ -891,7 +891,7 @@ export default function AyarlarPage() {
                         </div>
                       </div>
                       <div className="space-y-2">
-                        <Label htmlFor="phone" className="dark:text-gray-200">
+                        <Label htmlFor="phone" className="dark:text-white">
                           Telefon
                         </Label>
                         <div className="relative">
@@ -907,7 +907,7 @@ export default function AyarlarPage() {
                     </div>
 
                     <div className="space-y-2">
-                      <Label htmlFor="address" className="dark:text-gray-200">
+                      <Label htmlFor="address" className="dark:text-white">
                         Adres
                       </Label>
                       <div className="relative">
@@ -1230,7 +1230,7 @@ export default function AyarlarPage() {
                     <>
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div className="space-y-2">
-                          <Label htmlFor="monthly_income" className="dark:text-gray-200">
+                          <Label htmlFor="monthly_income" className="dark:text-white">
                             Aylık Net Gelir (₺)
                           </Label>
                           <Input
@@ -1246,7 +1246,7 @@ export default function AyarlarPage() {
                           </p>
                         </div>
                         <div className="space-y-2">
-                          <Label htmlFor="monthly_expenses" className="dark:text-gray-200">
+                          <Label htmlFor="monthly_expenses" className="dark:text-white">
                             Aylık Ortalama Gider (₺)
                           </Label>
                           <Input
@@ -1262,7 +1262,7 @@ export default function AyarlarPage() {
                           </p>
                         </div>
                         <div className="space-y-2">
-                          <Label htmlFor="emergency_fund" className="dark:text-gray-200">
+                          <Label htmlFor="emergency_fund" className="dark:text-white">
                             Acil Durum Fonu (₺)
                           </Label>
                           <Input
@@ -1278,7 +1278,7 @@ export default function AyarlarPage() {
                           </p>
                         </div>
                         <div className="space-y-2">
-                          <Label htmlFor="investment_portfolio" className="dark:text-gray-200">
+                          <Label htmlFor="investment_portfolio" className="dark:text-white">
                             Yatırım Portföyü (₺)
                           </Label>
                           <Input
@@ -1294,7 +1294,7 @@ export default function AyarlarPage() {
                           </p>
                         </div>
                         <div className="space-y-2">
-                          <Label htmlFor="real_estate_value" className="dark:text-gray-200">
+                          <Label htmlFor="real_estate_value" className="dark:text-white">
                             Gayrimenkul Değeri (₺)
                           </Label>
                           <Input
@@ -1310,7 +1310,7 @@ export default function AyarlarPage() {
                           </p>
                         </div>
                         <div className="space-y-2">
-                          <Label htmlFor="vehicle_value" className="dark:text-gray-200">
+                          <Label htmlFor="vehicle_value" className="dark:text-white">
                             Araç Değeri (₺)
                           </Label>
                           <Input
@@ -1326,7 +1326,7 @@ export default function AyarlarPage() {
                           </p>
                         </div>
                         <div className="space-y-2">
-                          <Label htmlFor="credit_card_debt" className="dark:text-gray-200">
+                          <Label htmlFor="credit_card_debt" className="dark:text-white">
                             Kredi Kartı Borcu (₺)
                           </Label>
                           <Input
@@ -1342,7 +1342,7 @@ export default function AyarlarPage() {
                           </p>
                         </div>
                         <div className="space-y-2">
-                          <Label htmlFor="other_monthly_obligations" className="dark:text-gray-200">
+                          <Label htmlFor="other_monthly_obligations" className="dark:text-white">
                             Diğer Aylık Yükümlülükler (₺)
                           </Label>
                           <Input
@@ -1358,7 +1358,7 @@ export default function AyarlarPage() {
                           </p>
                         </div>
                         <div className="space-y-2">
-                          <Label htmlFor="employment_duration_months" className="dark:text-gray-200">
+                          <Label htmlFor="employment_duration_months" className="dark:text-white">
                             Mevcut İşteki Çalışma Süresi (Ay)
                           </Label>
                           <Input
@@ -1374,7 +1374,7 @@ export default function AyarlarPage() {
                           </p>
                         </div>
                         <div className="space-y-2">
-                          <Label htmlFor="dependents_count" className="dark:text-gray-200">
+                          <Label htmlFor="dependents_count" className="dark:text-white">
                             Bakmakla Yükümlü Kişi Sayısı
                           </Label>
                           <Input
@@ -1390,7 +1390,7 @@ export default function AyarlarPage() {
                       </div>
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div className="space-y-2">
-                          <Label htmlFor="employment_status" className="dark:text-gray-200">
+                          <Label htmlFor="employment_status" className="dark:text-white">
                             Çalışma Durumu
                           </Label>
                           <Select
@@ -1413,7 +1413,7 @@ export default function AyarlarPage() {
                           </Select>
                         </div>
                         <div className="space-y-2">
-                          <Label htmlFor="housing_status" className="dark:text-gray-200">
+                          <Label htmlFor="housing_status" className="dark:text-white">
                             Konut Durumu
                           </Label>
                           <Select
@@ -1434,7 +1434,7 @@ export default function AyarlarPage() {
                         </div>
                       </div>
                       <div className="space-y-2">
-                        <Label htmlFor="other_debt_obligations" className="dark:text-gray-200">
+                        <Label htmlFor="other_debt_obligations" className="dark:text-white">
                           Diğer Borç Yükümlülükleri
                         </Label>
                         <Textarea
@@ -1446,7 +1446,7 @@ export default function AyarlarPage() {
                         />
                       </div>
                       <div className="space-y-2">
-                        <Label htmlFor="savings_goals" className="dark:text-gray-200">
+                        <Label htmlFor="savings_goals" className="dark:text-white">
                           Tasarruf Hedefleri
                         </Label>
                         <Textarea
@@ -1458,7 +1458,7 @@ export default function AyarlarPage() {
                         />
                       </div>
                       <div className="space-y-2">
-                        <Label htmlFor="risk_tolerance" className="dark:text-gray-200">
+                        <Label htmlFor="risk_tolerance" className="dark:text-white">
                           Risk Toleransı
                         </Label>
                         <Select
@@ -1478,7 +1478,7 @@ export default function AyarlarPage() {
                       <div className="pt-4">
                         <Button
                           variant="outline"
-                          className="border-gray-300 dark:border-white/10 text-gray-700 dark:text-white/70 hover:bg-gray-50 dark:hover:bg-black/10 hover:border-gray-400 bg-transparent"
+                          className="border-gray-300 dark:border-white/10 text-gray-700 dark:text-white/70 hover:bg-gray-50 dark:hover:bg-white/10 hover:border-gray-400 bg-transparent"
                           onClick={handleSaveFinancialProfile}
                           disabled={isSavingFinancial}
                         >
@@ -1518,7 +1518,7 @@ export default function AyarlarPage() {
                   </CardHeader>
                   <CardContent className="space-y-4">
                     <div className="space-y-2">
-                      <Label htmlFor="current-password" className="dark:text-gray-200">
+                      <Label htmlFor="current-password" className="dark:text-white">
                         Mevcut Şifre
                       </Label>
                       <div className="relative">
@@ -1542,7 +1542,7 @@ export default function AyarlarPage() {
                       </div>
                     </div>
                     <div className="space-y-2">
-                      <Label htmlFor="new-password" className="dark:text-gray-200">
+                      <Label htmlFor="new-password" className="dark:text-white">
                         Yeni Şifre
                       </Label>
                       <div className="relative">
@@ -1566,7 +1566,7 @@ export default function AyarlarPage() {
                       </div>
                     </div>
                     <div className="space-y-2">
-                      <Label htmlFor="confirm-password" className="dark:text-gray-200">
+                      <Label htmlFor="confirm-password" className="dark:text-white">
                         Yeni Şifre (Tekrar)
                       </Label>
                       <div className="relative">
@@ -1669,7 +1669,7 @@ export default function AyarlarPage() {
                             {!session.is_current && (
                               <Button
                                 variant="outline"
-                                className="border-gray-300 dark:border-white/10 text-gray-700 dark:text-white/70 hover:bg-gray-50 dark:hover:bg-black/10 hover:border-gray-400 bg-transparent"
+                                className="border-gray-300 dark:border-white/10 text-gray-700 dark:text-white/70 hover:bg-gray-50 dark:hover:bg-white/10 hover:border-gray-400 bg-transparent"
                                 size="sm"
                                 onClick={() => handleRevokeSession(session.id)}
                               >

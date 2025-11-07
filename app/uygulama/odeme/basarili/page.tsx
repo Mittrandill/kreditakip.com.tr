@@ -63,7 +63,7 @@ export default function PaymentSuccessPage() {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center min-h-screen bg-gray-50 dark:bg-[#151515]">
+      <div className="flex items-center justify-center min-h-screen bg-gray-50 dark:bg-black/20">
         <div className="text-center space-y-4">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-emerald-600 mx-auto"></div>
           <p className="text-gray-600 dark:text-white/60">Yükleniyor...</p>
@@ -73,7 +73,7 @@ export default function PaymentSuccessPage() {
   }
 
   return (
-    <div className="fixed inset-0 z-50 overflow-y-auto bg-gray-50 dark:bg-[#151515]">
+    <div className="fixed inset-0 z-50 overflow-y-auto bg-gray-50 dark:bg-black/20">
       <div className="min-h-screen flex items-center justify-center p-4 py-12">
         <div
           className={`max-w-2xl w-full space-y-8 transition-all duration-1000 ${

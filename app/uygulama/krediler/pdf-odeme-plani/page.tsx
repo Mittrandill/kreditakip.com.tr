@@ -275,7 +275,7 @@ export default function PDFOdemePlaniPage() {
                 ? "border-purple-500 bg-purple-50 dark:bg-purple-900/20 dark:border-purple-400"
                 : file
                   ? "border-green-500 bg-green-50 dark:bg-green-900/20 dark:border-green-400"
-                  : "border-gray-300 dark:border-gray-600 hover:border-purple-400 dark:hover:border-purple-500 hover:bg-purple-50/50 dark:hover:bg-purple-900/20"
+                  : "border-gray-300 dark:border-white/10 hover:border-purple-400 dark:hover:border-purple-500 hover:bg-purple-50/50 dark:hover:bg-purple-900/20"
             }`}
           >
             <input {...getInputProps()} />
@@ -376,7 +376,7 @@ export default function PDFOdemePlaniPage() {
             transition={{ duration: 0.6, delay: 0.5 + index * 0.1 }}
             whileHover={{ y: -5 }}
           >
-            <Card className="text-center p-6 border-0 shadow-lg hover:shadow-xl transition-all duration-300 rounded-2xl dark:bg-black/20 dark:border-white/10">
+            <Card className="text-center p-6 border-0 shadow-lg hover:shadow-xl transition-all duration-300 rounded-2xl dark:bg-black/20 dark:border-gray-800">
               <motion.div
                 className={`w-14 h-14 bg-gradient-to-br ${feature.color} rounded-2xl flex items-center justify-center mx-auto mb-4`}
                 whileHover={{ scale: 1.1, rotate: 5 }}

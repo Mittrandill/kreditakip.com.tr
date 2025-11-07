@@ -211,7 +211,7 @@ function CalendarView({ payments }: { payments: PaymentWithCredit[] }) {
             variant="outline"
             size="sm"
             onClick={handlePrevMonth}
-            className="flex items-center gap-2 bg-white dark:bg-black/10 text-gray-900 dark:text-white border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-black/10"
+            className="flex items-center gap-2 bg-white dark:bg-black/10 text-gray-900 dark:text-white border-gray-300 dark:border-white/10 hover:bg-gray-50 dark:hover:bg-white/10"
           >
             <ChevronLeft className="h-4 w-4" />
             Önceki
@@ -225,7 +225,7 @@ function CalendarView({ payments }: { payments: PaymentWithCredit[] }) {
             variant="outline"
             size="sm"
             onClick={handleNextMonth}
-            className="flex items-center gap-2 bg-white dark:bg-black/10 text-gray-900 dark:text-white border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-black/10"
+            className="flex items-center gap-2 bg-white dark:bg-black/10 text-gray-900 dark:text-white border-gray-300 dark:border-white/10 hover:bg-gray-50 dark:hover:bg-white/10"
           >
             Sonraki
             <ChevronRight className="h-4 w-4" />
@@ -238,7 +238,7 @@ function CalendarView({ payments }: { payments: PaymentWithCredit[] }) {
               <Button
                 variant="outline"
                 size="sm"
-                className="bg-white dark:bg-black/10 text-gray-900 dark:text-white border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-black/10"
+                className="bg-white dark:bg-black/10 text-gray-900 dark:text-white border-gray-300 dark:border-white/10 hover:bg-gray-50 dark:hover:bg-white/10"
               >
                 <Filter className="h-4 w-4 mr-2" />
                 Filtrele: {filterStatus === "all" ? "Tümü" : filterStatus === "paid" ? "Ödendi" : filterStatus === "pending" ? "Bekliyor" : "Gecikmiş"}
@@ -247,25 +247,25 @@ function CalendarView({ payments }: { payments: PaymentWithCredit[] }) {
             <DropdownMenuContent align="end" className="dark:bg-black/10 dark:border-white/10">
               <DropdownMenuItem
                 onClick={() => setFilterStatus("all")}
-                className="dark:text-white dark:hover:bg-black/10"
+                className="dark:text-white dark:hover:bg-white/10"
               >
                 Tümü
               </DropdownMenuItem>
               <DropdownMenuItem
                 onClick={() => setFilterStatus("paid")}
-                className="dark:text-white dark:hover:bg-black/10"
+                className="dark:text-white dark:hover:bg-white/10"
               >
                 Ödendi
               </DropdownMenuItem>
               <DropdownMenuItem
                 onClick={() => setFilterStatus("pending")}
-                className="dark:text-white dark:hover:bg-black/10"
+                className="dark:text-white dark:hover:bg-white/10"
               >
                 Bekliyor
               </DropdownMenuItem>
               <DropdownMenuItem
                 onClick={() => setFilterStatus("overdue")}
-                className="dark:text-white dark:hover:bg-black/10"
+                className="dark:text-white dark:hover:bg-white/10"
               >
                 Gecikmiş
               </DropdownMenuItem>
@@ -630,7 +630,7 @@ function PaymentsList({
         </div>
         <Button
           variant="outline"
-          className="gap-2 min-w-[140px] bg-transparent dark:border-white/10 dark:text-white/70 dark:hover:bg-black/10"
+          className="gap-2 min-w-[140px] bg-transparent dark:border-white/10 dark:text-white/70 dark:hover:bg-white/10"
           onClick={exportToExcel}
         >
           <Download className="h-4 w-4" />
@@ -656,7 +656,7 @@ function PaymentsList({
           <DropdownMenuTrigger asChild>
             <Button
               variant="outline"
-              className="gap-2 min-w-[140px] bg-transparent dark:border-white/10 dark:text-white/70 dark:hover:bg-black/10"
+              className="gap-2 min-w-[140px] bg-transparent dark:border-white/10 dark:text-white/70 dark:hover:bg-white/10"
             >
               <Filter className="h-4 w-4" />
               {statusFilter === "all"
@@ -671,7 +671,7 @@ function PaymentsList({
           <DropdownMenuContent align="end" className="w-48 dark:bg-black/20 dark:border-white/10">
             <DropdownMenuItem
               onClick={() => setStatusFilter("all")}
-              className="dark:hover:bg-black/10 dark:text-white/70"
+              className="dark:hover:bg-white/10 dark:text-white/70"
             >
               <span className="flex items-center justify-between w-full">
                 Tüm Durumlar
@@ -682,7 +682,7 @@ function PaymentsList({
             </DropdownMenuItem>
             <DropdownMenuItem
               onClick={() => setStatusFilter("pending")}
-              className="dark:hover:bg-black/10 dark:text-white/70"
+              className="dark:hover:bg-white/10 dark:text-white/70"
             >
               <span className="flex items-center justify-between w-full">
                 Bekleyen
@@ -693,7 +693,7 @@ function PaymentsList({
             </DropdownMenuItem>
             <DropdownMenuItem
               onClick={() => setStatusFilter("overdue")}
-              className="dark:hover:bg-black/10 dark:text-white/70"
+              className="dark:hover:bg-white/10 dark:text-white/70"
             >
               <span className="flex items-center justify-between w-full">
                 Geciken
@@ -710,7 +710,7 @@ function PaymentsList({
           <DropdownMenuTrigger asChild>
             <Button
               variant="outline"
-              className="gap-2 min-w-[140px] bg-transparent dark:border-white/10 dark:text-white/70 dark:hover:bg-black/10"
+              className="gap-2 min-w-[140px] bg-transparent dark:border-white/10 dark:text-white/70 dark:hover:bg-white/10"
             >
               <CreditCard className="h-4 w-4" />
               {bankFilter === "all" ? "Tüm Bankalar" : bankFilter}
@@ -719,7 +719,7 @@ function PaymentsList({
           <DropdownMenuContent align="end" className="w-48 dark:bg-black/20 dark:border-white/10">
             <DropdownMenuItem
               onClick={() => setBankFilter("all")}
-              className="dark:hover:bg-black/10 dark:text-white/70"
+              className="dark:hover:bg-white/10 dark:text-white/70"
             >
               Tüm Bankalar
             </DropdownMenuItem>
@@ -727,7 +727,7 @@ function PaymentsList({
               <DropdownMenuItem
                 key={bank.name}
                 onClick={() => setBankFilter(bank.name)}
-                className="dark:hover:bg-black/10 dark:text-white/70"
+                className="dark:hover:bg-white/10 dark:text-white/70"
               >
                 <div className="flex items-center gap-2">
                   <BankLogo bankName={bank.name} size="sm" />
@@ -761,7 +761,7 @@ function PaymentsList({
               return (
                 <tr
                   key={payment.id}
-                  className={`hover:bg-gray-50 dark:hover:bg-black/10 transition-colors duration-150 ease-in-out border-b border-gray-100 dark:border-white/10 ${
+                  className={`hover:bg-gray-50 dark:hover:bg-white/10 transition-colors duration-150 ease-in-out border-b border-gray-100 dark:border-white/10 ${
                     index % 2 === 0 ? "bg-white dark:bg-black/20" : "bg-gray-50/50 dark:bg-black/10/50"
                   }`}
                 >
@@ -853,7 +853,7 @@ function PaymentsList({
               size="sm"
               onClick={() => setCurrentPage(currentPage - 1)}
               disabled={currentPage === 1}
-              className="dark:border-white/10 dark:text-white/70 dark:hover:bg-black/10"
+              className="dark:border-white/10 dark:text-white/70 dark:hover:bg-white/10"
             >
               <ChevronLeft className="h-4 w-4" />
               Önceki
@@ -877,7 +877,7 @@ function PaymentsList({
                     key={pageNum}
                     variant={currentPage === pageNum ? "default" : "outline"}
                     size="sm"
-                    className="w-8 h-8 p-0 dark:border-white/10 dark:text-white/70 dark:hover:bg-black/10"
+                    className="w-8 h-8 p-0 dark:border-white/10 dark:text-white/70 dark:hover:bg-white/10"
                     onClick={() => setCurrentPage(pageNum)}
                   >
                     {pageNum}
@@ -891,7 +891,7 @@ function PaymentsList({
               size="sm"
               onClick={() => setCurrentPage(currentPage + 1)}
               disabled={currentPage === totalPages}
-              className="dark:border-white/10 dark:text-white/70 dark:hover:bg-black/10"
+              className="dark:border-white/10 dark:text-white/70 dark:hover:bg-white/10"
             >
               Sonraki
               <ChevronRight className="h-4 w-4" />
@@ -1299,7 +1299,7 @@ function ReminderSettings({ payments }: { payments: PaymentWithCredit[] }) {
                   disabled={updating === "email_3_days_before"}
                   className={
                     !preferences.email_3_days_before
-                      ? "dark:border-white/10 dark:text-white/70 dark:hover:bg-black/10"
+                      ? "dark:border-white/10 dark:text-white/70 dark:hover:bg-white/10"
                       : ""
                   }
                 >
@@ -1327,7 +1327,7 @@ function ReminderSettings({ payments }: { payments: PaymentWithCredit[] }) {
                   disabled={updating === "email_1_day_before"}
                   className={
                     !preferences.email_1_day_before
-                      ? "dark:border-white/10 dark:text-white/70 dark:hover:bg-black/10"
+                      ? "dark:border-white/10 dark:text-white/70 dark:hover:bg-white/10"
                       : ""
                   }
                 >
@@ -1355,7 +1355,7 @@ function ReminderSettings({ payments }: { payments: PaymentWithCredit[] }) {
                   disabled={updating === "email_on_due_date"}
                   className={
                     !preferences.email_on_due_date
-                      ? "dark:border-white/10 dark:text-white/70 dark:hover:bg-black/10"
+                      ? "dark:border-white/10 dark:text-white/70 dark:hover:bg-white/10"
                       : ""
                   }
                 >
@@ -1382,7 +1382,7 @@ function ReminderSettings({ payments }: { payments: PaymentWithCredit[] }) {
                   onClick={() => togglePreference("email_overdue", preferences.email_overdue)}
                   disabled={updating === "email_overdue"}
                   className={
-                    !preferences.email_overdue ? "dark:border-white/10 dark:text-white/70 dark:hover:bg-black/10" : ""
+                    !preferences.email_overdue ? "dark:border-white/10 dark:text-white/70 dark:hover:bg-white/10" : ""
                   }
                 >
                   {updating === "email_overdue" ? (
@@ -1417,7 +1417,7 @@ function ReminderSettings({ payments }: { payments: PaymentWithCredit[] }) {
                 onClick={() => togglePreference("email_enabled", preferences.email_enabled)}
                 disabled={updating === "email_enabled"}
                 className={
-                  !preferences.email_enabled ? "dark:border-white/10 dark:text-white/70 dark:hover:bg-black/10" : ""
+                  !preferences.email_enabled ? "dark:border-white/10 dark:text-white/70 dark:hover:bg-white/10" : ""
                 }
               >
                 {updating === "email_enabled" ? (
@@ -1713,28 +1713,28 @@ export default function OdemePlaniPage() {
             <TabsList className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 bg-transparent h-auto p-2 gap-2">
               <TabsTrigger
                 value="takvim"
-                className="flex items-center gap-2 py-3 px-4 data-[state=active]:text-emerald-600 dark:data-[state=active]:text-emerald-400 data-[state=active]:bg-white dark:data-[state=active]:bg-gray-900 data-[state=active]:shadow-sm rounded-xl transition-all duration-200 hover:bg-gray-100 dark:hover:bg-black/10 dark:text-white/60"
+                className="flex items-center gap-2 py-3 px-4 data-[state=active]:text-emerald-600 dark:data-[state=active]:text-emerald-400 data-[state=active]:bg-white dark:data-[state=active]:bg-gray-900 data-[state=active]:shadow-sm rounded-xl transition-all duration-200 hover:bg-gray-100 dark:hover:bg-white/10 dark:text-white/60"
               >
                 <Calendar className="h-4 w-4" />
                 <span className="hidden sm:inline font-medium">Takvim</span>
               </TabsTrigger>
               <TabsTrigger
                 value="liste"
-                className="flex items-center gap-2 py-3 px-4 data-[state=active]:text-emerald-600 dark:data-[state=active]:text-emerald-400 data-[state=active]:bg-white dark:data-[state=active]:bg-gray-900 data-[state=active]:shadow-sm rounded-xl transition-all duration-200 hover:bg-gray-100 dark:hover:bg-black/10 dark:text-white/60"
+                className="flex items-center gap-2 py-3 px-4 data-[state=active]:text-emerald-600 dark:data-[state=active]:text-emerald-400 data-[state=active]:bg-white dark:data-[state=active]:bg-gray-900 data-[state=active]:shadow-sm rounded-xl transition-all duration-200 hover:bg-gray-100 dark:hover:bg-white/10 dark:text-white/60"
               >
                 <CreditCard className="h-4 w-4" />
                 <span className="hidden sm:inline font-medium">Liste</span>
               </TabsTrigger>
               <TabsTrigger
                 value="analiz"
-                className="flex items-center gap-2 py-3 px-4 data-[state=active]:text-emerald-600 dark:data-[state=active]:text-emerald-400 data-[state=active]:bg-white dark:data-[state=active]:bg-gray-900 data-[state=active]:shadow-sm rounded-xl transition-all duration-200 hover:bg-gray-100 dark:hover:bg-black/10 dark:text-white/60"
+                className="flex items-center gap-2 py-3 px-4 data-[state=active]:text-emerald-600 dark:data-[state=active]:text-emerald-400 data-[state=active]:bg-white dark:data-[state=active]:bg-gray-900 data-[state=active]:shadow-sm rounded-xl transition-all duration-200 hover:bg-gray-100 dark:hover:bg-white/10 dark:text-white/60"
               >
                 <TrendingUp className="h-4 w-4" />
                 <span className="hidden sm:inline font-medium">Analiz</span>
               </TabsTrigger>
               <TabsTrigger
                 value="hatirlatici"
-                className="flex items-center gap-2 py-3 px-4 data-[state=active]:text-emerald-600 dark:data-[state=active]:text-emerald-400 data-[state=active]:bg-white dark:data-[state=active]:bg-gray-900 data-[state=active]:shadow-sm rounded-xl transition-all duration-200 hover:bg-gray-100 dark:hover:bg-black/10 dark:text-white/60"
+                className="flex items-center gap-2 py-3 px-4 data-[state=active]:text-emerald-600 dark:data-[state=active]:text-emerald-400 data-[state=active]:bg-white dark:data-[state=active]:bg-gray-900 data-[state=active]:shadow-sm rounded-xl transition-all duration-200 hover:bg-gray-100 dark:hover:bg-white/10 dark:text-white/60"
               >
                 <Bell className="h-4 w-4" />
                 <span className="hidden sm:inline font-medium">Hatırlatıcı</span>

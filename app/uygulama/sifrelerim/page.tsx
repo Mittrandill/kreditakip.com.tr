@@ -534,7 +534,7 @@ export default function BankaciSifrelerimPage() {
             <TabsList className="grid grid-cols-5 bg-transparent h-auto p-2 gap-2">
               <TabsTrigger
                 value="tumSifreler"
-                className="flex items-center gap-2 py-3 px-4 data-[state=active]:text-emerald-600 dark:data-[state=active]:text-emerald-400 rounded-xl transition-all duration-200 hover:bg-gray-100 dark:hover:bg-black/10"
+                className="flex items-center gap-2 py-3 px-4 data-[state=active]:text-emerald-600 dark:data-[state=active]:text-emerald-400 rounded-xl transition-all duration-200 hover:bg-gray-100 dark:hover:bg-white/10"
               >
                 <Key className="h-4 w-4" />
                 <span className="hidden sm:inline font-medium">Tüm Şifreler</span>
@@ -542,7 +542,7 @@ export default function BankaciSifrelerimPage() {
               </TabsTrigger>
               <TabsTrigger
                 value="internetBankaciligi"
-                className="flex items-center gap-2 py-3 px-4 data-[state=active]:text-emerald-600 dark:data-[state=active]:text-emerald-400 rounded-xl transition-all duration-200 hover:bg-gray-100 dark:hover:bg-black/10"
+                className="flex items-center gap-2 py-3 px-4 data-[state=active]:text-emerald-600 dark:data-[state=active]:text-emerald-400 rounded-xl transition-all duration-200 hover:bg-gray-100 dark:hover:bg-white/10"
               >
                 <Globe className="h-4 w-4" />
                 <span className="hidden sm:inline font-medium">İnternet</span>
@@ -550,7 +550,7 @@ export default function BankaciSifrelerimPage() {
               </TabsTrigger>
               <TabsTrigger
                 value="mobilBankaciligi"
-                className="flex items-center gap-2 py-3 px-4 data-[state=active]:text-emerald-600 dark:data-[state=active]:text-emerald-400 rounded-xl transition-all duration-200 hover:bg-gray-100 dark:hover:bg-black/10"
+                className="flex items-center gap-2 py-3 px-4 data-[state=active]:text-emerald-600 dark:data-[state=active]:text-emerald-400 rounded-xl transition-all duration-200 hover:bg-gray-100 dark:hover:bg-white/10"
               >
                 <Smartphone className="h-4 w-4" />
                 <span className="hidden sm:inline font-medium">Mobil</span>
@@ -558,7 +558,7 @@ export default function BankaciSifrelerimPage() {
               </TabsTrigger>
               <TabsTrigger
                 value="telefonBankaciligi"
-                className="flex items-center gap-2 py-3 px-4 data-[state=active]:text-emerald-600 dark:data-[state=active]:text-emerald-400 rounded-xl transition-all duration-200 hover:bg-gray-100 dark:hover:bg-black/10"
+                className="flex items-center gap-2 py-3 px-4 data-[state=active]:text-emerald-600 dark:data-[state=active]:text-emerald-400 rounded-xl transition-all duration-200 hover:bg-gray-100 dark:hover:bg-white/10"
               >
                 <Phone className="h-4 w-4" />
                 <span className="hidden sm:inline font-medium">Telefon</span>
@@ -566,7 +566,7 @@ export default function BankaciSifrelerimPage() {
               </TabsTrigger>
               <TabsTrigger
                 value="diger"
-                className="flex items-center gap-2 py-3 px-4 data-[state=active]:text-emerald-600 dark:data-[state=active]:text-emerald-400 rounded-xl transition-all duration-200 hover:bg-gray-100 dark:hover:bg-black/10"
+                className="flex items-center gap-2 py-3 px-4 data-[state=active]:text-emerald-600 dark:data-[state=active]:text-emerald-400 rounded-xl transition-all duration-200 hover:bg-gray-100 dark:hover:bg-white/10"
               >
                 <Settings className="h-4 w-4" />
                 <span className="hidden sm:inline font-medium">Diğer</span>
@@ -599,13 +599,13 @@ export default function BankaciSifrelerimPage() {
                   <DropdownMenuContent align="start" className="dark:bg-black/10 dark:border-white/10">
                     <DropdownMenuItem
                       onClick={() => handleSort("sonKullanim")}
-                      className="dark:text-white dark:hover:bg-black/10"
+                      className="dark:text-white dark:hover:bg-white/10"
                     >
                       Son Kullanıma Göre
                     </DropdownMenuItem>
                     <DropdownMenuItem
                       onClick={() => handleSort("bankaAdi")}
-                      className="dark:text-white dark:hover:bg-black/10"
+                      className="dark:text-white dark:hover:bg-white/10"
                     >
                       Banka Adına Göre
                     </DropdownMenuItem>
@@ -863,7 +863,7 @@ export default function BankaciSifrelerimPage() {
                         return (
                           <TableRow
                             key={credential.id}
-                            className={`hover:bg-emerald-50 dark:hover:bg-black/10 transition-colors duration-150 ease-in-out ${
+                            className={`hover:bg-emerald-50 dark:hover:bg-white/10 transition-colors duration-150 ease-in-out ${
                               index % 2 === 0 ? "bg-white dark:bg-black/20" : "bg-gray-50/50 dark:bg-black/10/50"
                             }`}
                           >
@@ -1027,7 +1027,7 @@ export default function BankaciSifrelerimPage() {
               placeholder="Yeni şifrenizi girin..."
               value={newPassword}
               onChange={(e) => setNewPassword(e.target.value)}
-              className="dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+              className="dark:bg-gray-700 dark:border-white/10 dark:text-white"
               disabled={isUpdatingPassword}
             />
           </div>
@@ -1039,7 +1039,7 @@ export default function BankaciSifrelerimPage() {
                 setNewPassword("")
               }}
               disabled={isUpdatingPassword}
-              className="dark:bg-gray-700 dark:text-white/70 dark:hover:bg-gray-600"
+              className="dark:bg-gray-700 dark:text-white dark:hover:bg-gray-600"
             >
               İptal
             </AlertDialogCancel>

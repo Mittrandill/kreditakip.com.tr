@@ -364,7 +364,7 @@ export default function BildirimlerPage() {
               <Button
                 variant="outline"
                 onClick={() => loadNotifications(true)}
-                className="gap-2 bg-transparent dark:bg-transparent dark:border-white/10 dark:text-white/70 dark:hover:bg-black/10"
+                className="gap-2 bg-transparent dark:bg-transparent dark:border-white/10 dark:text-white/70 dark:hover:bg-white/10"
               >
                 <RefreshCw className="h-4 w-4" />
                 Yenile
@@ -411,7 +411,7 @@ export default function BildirimlerPage() {
               <div className="w-24 h-24 bg-gray-100 dark:bg-black/10 rounded-full flex items-center justify-center mx-auto mb-4">
                 <Bell className="h-12 w-12 text-gray-400 dark:text-white/60" />
               </div>
-              <h3 className="text-xl font-semibold text-gray-700 dark:text-white/70 mb-2">
+              <h3 className="text-xl font-semibold text-gray-700 dark:text-white mb-2">
                 {searchTerm || showUnreadOnly
                   ? "Filtre kriterlerine uygun bildirim bulunamadı"
                   : "Henüz bildiriminiz yok"}
@@ -514,7 +514,7 @@ export default function BildirimlerPage() {
                                 {!notification.is_read && (
                                   <DropdownMenuItem
                                     onClick={() => handleMarkAsRead(notification.id)}
-                                    className="dark:text-white/70 dark:hover:bg-black/10"
+                                    className="dark:text-white dark:hover:bg-white/10"
                                   >
                                     <Check className="mr-2 h-4 w-4" />
                                     Okundu İşaretle
@@ -522,13 +522,13 @@ export default function BildirimlerPage() {
                                 )}
                                 <DropdownMenuItem
                                   onClick={() => handleViewNotification(notification)}
-                                  className="dark:text-white/70 dark:hover:bg-black/10"
+                                  className="dark:text-white dark:hover:bg-white/10"
                                 >
                                   <Eye className="mr-2 h-4 w-4" />
                                   Detayları Gör
                                 </DropdownMenuItem>
                                 <DropdownMenuItem
-                                  className="text-red-600 dark:text-red-400 dark:hover:bg-black/10"
+                                  className="text-red-600 dark:text-red-400 dark:hover:bg-white/10"
                                   onClick={() => handleDelete(notification.id)}
                                 >
                                   <Trash2 className="mr-2 h-4 w-4" />
