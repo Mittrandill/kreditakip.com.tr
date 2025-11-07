@@ -128,7 +128,7 @@ export default function PaymentDetailPage({ params }: { params: { id: string } }
             <div className="text-red-600 dark:text-red-400 mb-4">
               <FileText className="h-12 w-12 mx-auto" />
             </div>
-            <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-2">Ödeme Detayı Bulunamadı</h3>
+            <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">Ödeme Detayı Bulunamadı</h3>
             <p className="text-gray-600 dark:text-white/60 mb-4">
               {error || "Aradığınız ödeme detayı bulunamadı veya erişim izniniz bulunmuyor."}
             </p>
@@ -219,14 +219,14 @@ export default function PaymentDetailPage({ params }: { params: { id: string } }
           {/* Payment Information */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div className="space-y-4">
-              <h3 className="font-semibold text-gray-900 dark:text-gray-100 flex items-center gap-2">
+              <h3 className="font-semibold text-gray-900 dark:text-white flex items-center gap-2">
                 <CreditCard className="h-5 w-5 text-emerald-600" />
                 Ödeme Bilgileri
               </h3>
               <div className="space-y-3">
                 <div className="flex justify-between">
                   <span className="text-gray-600 dark:text-white/60">Ödeme Tarihi:</span>
-                  <span className="font-medium text-gray-900 dark:text-gray-100">
+                  <span className="font-medium text-gray-900 dark:text-white">
                     {new Date(payment.payment_date).toLocaleDateString("tr-TR", {
                       weekday: "long",
                       year: "numeric",
@@ -237,7 +237,7 @@ export default function PaymentDetailPage({ params }: { params: { id: string } }
                 </div>
                 <div className="flex justify-between">
                   <span className="text-gray-600 dark:text-white/60">Ödeme Saati:</span>
-                  <span className="font-medium text-gray-900 dark:text-gray-100">
+                  <span className="font-medium text-gray-900 dark:text-white">
                     {new Date(payment.created_at).toLocaleTimeString("tr-TR", {
                       hour: "2-digit",
                       minute: "2-digit",
@@ -247,20 +247,20 @@ export default function PaymentDetailPage({ params }: { params: { id: string } }
                 </div>
                 <div className="flex justify-between">
                   <span className="text-gray-600 dark:text-white/60">Ödeme Kanalı:</span>
-                  <span className="font-medium text-gray-900 dark:text-gray-100">
+                  <span className="font-medium text-gray-900 dark:text-white">
                     {payment.payment_channel || "Belirtilmemiş"}
                   </span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-gray-600 dark:text-white/60">Referans No:</span>
-                  <span className="font-medium text-gray-900 dark:text-gray-100 font-mono">
+                  <span className="font-medium text-gray-900 dark:text-white font-mono">
                     {payment.transaction_id || "N/A"}
                   </span>
                 </div>
                 {payment.transaction_id && (
                   <div className="flex justify-between">
                     <span className="text-gray-600 dark:text-white/60">İşlem ID:</span>
-                    <span className="font-medium text-gray-900 dark:text-gray-100 font-mono text-sm">
+                    <span className="font-medium text-gray-900 dark:text-white font-mono text-sm">
                       {payment.transaction_id}
                     </span>
                   </div>
@@ -269,31 +269,31 @@ export default function PaymentDetailPage({ params }: { params: { id: string } }
             </div>
 
             <div className="space-y-4">
-              <h3 className="font-semibold text-gray-900 dark:text-gray-100 flex items-center gap-2">
+              <h3 className="font-semibold text-gray-900 dark:text-white flex items-center gap-2">
                 <Building2 className="h-5 w-5 text-blue-600" />
                 Kredi Bilgileri
               </h3>
               <div className="space-y-3">
                 <div className="flex justify-between">
                   <span className="text-gray-600 dark:text-white/60">Banka:</span>
-                  <span className="font-medium text-gray-900 dark:text-gray-100">{payment.credits.banks.name}</span>
+                  <span className="font-medium text-gray-900 dark:text-white">{payment.credits.banks.name}</span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-gray-600 dark:text-white/60">Kredi Türü:</span>
-                  <span className="font-medium text-gray-900 dark:text-gray-100">
+                  <span className="font-medium text-gray-900 dark:text-white">
                     {payment.credits.credit_types.name}
                   </span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-gray-600 dark:text-white/60">Kredi Kodu:</span>
-                  <span className="font-medium text-gray-900 dark:text-gray-100 font-mono">
+                  <span className="font-medium text-gray-900 dark:text-white font-mono">
                     {payment.credits.credit_code}
                   </span>
                 </div>
                 {payment.credits.account_number && (
                   <div className="flex justify-between">
                     <span className="text-gray-600 dark:text-white/60">Hesap No:</span>
-                    <span className="font-medium text-gray-900 dark:text-gray-100 font-mono">
+                    <span className="font-medium text-gray-900 dark:text-white font-mono">
                       {payment.credits.account_number}
                     </span>
                   </div>
@@ -306,13 +306,13 @@ export default function PaymentDetailPage({ params }: { params: { id: string } }
 
           {/* Payment Amount Breakdown */}
           <div className="space-y-4">
-            <h3 className="font-semibold text-gray-900 dark:text-gray-100 flex items-center gap-2">
+            <h3 className="font-semibold text-gray-900 dark:text-white flex items-center gap-2">
               <Hash className="h-5 w-5 text-purple-600" />
               Ödeme Detayı
             </h3>
             <div className="bg-gray-50 dark:bg-black/10 rounded-lg p-4">
               <div className="flex justify-between items-center">
-                <span className="text-lg font-medium text-gray-900 dark:text-gray-100">Ödenen Tutar:</span>
+                <span className="text-lg font-medium text-gray-900 dark:text-white">Ödenen Tutar:</span>
                 <span className="text-2xl font-bold text-emerald-600">{formatCurrency(payment.amount)}</span>
               </div>
             </div>
@@ -323,7 +323,7 @@ export default function PaymentDetailPage({ params }: { params: { id: string } }
             <>
               <Separator />
               <div className="space-y-4">
-                <h3 className="font-semibold text-gray-900 dark:text-gray-100 flex items-center gap-2">
+                <h3 className="font-semibold text-gray-900 dark:text-white flex items-center gap-2">
                   <FileText className="h-5 w-5 text-orange-600" />
                   Notlar
                 </h3>

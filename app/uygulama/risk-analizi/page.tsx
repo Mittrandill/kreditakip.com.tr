@@ -542,28 +542,28 @@ export default function RiskAnaliziPage() {
                 <TabsList className="grid grid-cols-2 sm:grid-cols-4 bg-transparent h-auto p-2 gap-2">
                   <TabsTrigger
                     value="tumAnalizler"
-                    className="flex items-center gap-2 py-3 px-4 data-[state=active]:text-emerald-600 dark:data-[state=active]:text-emerald-400 rounded-xl transition-all duration-200 hover:bg-gray-100 dark:hover:bg-white/10 dark:text-white/70"
+                    className="flex items-center gap-2 py-3 px-4 data-[state=active]:text-emerald-600 dark:data-[state=active]:text-emerald-400 rounded-xl transition-all duration-200 hover:bg-gray-100 dark:hover:bg-white/10 dark:text-white/60"
                   >
                     <ListChecks className="h-4 w-4" />
                     Tümü ({totalAnalysesCount})
                   </TabsTrigger>
                   <TabsTrigger
                     value="dusukRisk"
-                    className="flex items-center gap-2 py-3 px-4 data-[state=active]:text-emerald-600 dark:data-[state=active]:text-emerald-400 rounded-xl transition-all duration-200 hover:bg-gray-100 dark:hover:bg-white/10 dark:text-white/70"
+                    className="flex items-center gap-2 py-3 px-4 data-[state=active]:text-emerald-600 dark:data-[state=active]:text-emerald-400 rounded-xl transition-all duration-200 hover:bg-gray-100 dark:hover:bg-white/10 dark:text-white/60"
                   >
                     <CheckCircle className="h-4 w-4" />
                     Düşük ({riskDistribution.low})
                   </TabsTrigger>
                   <TabsTrigger
                     value="ortaRisk"
-                    className="flex items-center gap-2 py-3 px-4 data-[state=active]:text-emerald-600 dark:data-[state=active]:text-emerald-400 rounded-xl transition-all duration-200 hover:bg-gray-100 dark:hover:bg-white/10 dark:text-white/70"
+                    className="flex items-center gap-2 py-3 px-4 data-[state=active]:text-emerald-600 dark:data-[state=active]:text-emerald-400 rounded-xl transition-all duration-200 hover:bg-gray-100 dark:hover:bg-white/10 dark:text-white/60"
                   >
                     <Clock className="h-4 w-4" />
                     Orta ({riskDistribution.medium})
                   </TabsTrigger>
                   <TabsTrigger
                     value="yuksekRisk"
-                    className="flex items-center gap-2 py-3 px-4 data-[state=active]:text-emerald-600 dark:data-[state=active]:text-emerald-400 rounded-xl transition-all duration-200 hover:bg-gray-100 dark:hover:bg-white/10 dark:text-white/70"
+                    className="flex items-center gap-2 py-3 px-4 data-[state=active]:text-emerald-600 dark:data-[state=active]:text-emerald-400 rounded-xl transition-all duration-200 hover:bg-gray-100 dark:hover:bg-white/10 dark:text-white/60"
                   >
                     <AlertTriangle className="h-4 w-4" />
                     Yüksek ({riskDistribution.high})

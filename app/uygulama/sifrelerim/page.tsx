@@ -668,7 +668,7 @@ export default function BankaciSifrelerimPage() {
                         key={credential.id}
                         className="shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 rounded-xl border-gray-200 dark:border-white/10 overflow-hidden"
                       >
-                        <CardHeader className="pb-3 bg-gradient-to-r from-gray-50 to-gray-100 dark:from-gray-800 dark:to-gray-700">
+                        <CardHeader className="pb-3 bg-gradient-to-r from-gray-50 to-gray-100 dark:from-emerald-900/20 dark:to-emerald-900/10">
                           <div className="flex items-center justify-between">
                             <div className="flex items-center gap-3">
                               <div className="relative">
@@ -1027,7 +1027,7 @@ export default function BankaciSifrelerimPage() {
               placeholder="Yeni şifrenizi girin..."
               value={newPassword}
               onChange={(e) => setNewPassword(e.target.value)}
-              className="dark:bg-gray-700 dark:border-white/10 dark:text-white"
+              className="dark:bg-black/20 dark:border-white/10 dark:text-white"
               disabled={isUpdatingPassword}
             />
           </div>
@@ -1039,7 +1039,7 @@ export default function BankaciSifrelerimPage() {
                 setNewPassword("")
               }}
               disabled={isUpdatingPassword}
-              className="dark:bg-gray-700 dark:text-white dark:hover:bg-gray-600"
+              className="dark:bg-black/20 dark:text-white dark:hover:bg-white/10"
             >
               İptal
             </AlertDialogCancel>
@@ -1117,7 +1117,7 @@ function PasswordDisplay({
 
   return (
     <div className="flex items-center gap-2">
-      <code className="bg-gray-100 dark:bg-black/10 px-2 py-1 rounded text-sm font-mono max-w-[120px] truncate text-gray-900 dark:text-gray-100">
+      <code className="bg-gray-100 dark:bg-black/10 px-2 py-1 rounded text-sm font-mono max-w-[120px] truncate text-gray-900 dark:text-white">
         {displayPassword()}
       </code>
       <div className="flex gap-1">

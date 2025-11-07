@@ -296,7 +296,7 @@ export default function PremiumPage() {
               </div>
               {isPremium && subscription?.plan_id === (isYearly ? "premium-yearly" : "premium-monthly") ? (
                 <Button
-                  className="w-full bg-gray-400 dark:bg-gray-600 cursor-not-allowed shadow-lg mt-auto opacity-60"
+                  className="w-full bg-gray-400 dark:bg-emerald-900/40 cursor-not-allowed shadow-lg mt-auto opacity-60"
                   disabled
                   size="lg"
                 >
@@ -431,7 +431,7 @@ export default function PremiumPage() {
           <div className="py-4">
             <div className="space-y-3">
               <div className="p-4 bg-gray-50 dark:bg-black/10 rounded-lg">
-                <p className="text-sm font-medium text-gray-900 dark:text-gray-100 mb-2">Mevcut Plan:</p>
+                <p className="text-sm font-medium text-gray-900 dark:text-white mb-2">Mevcut Plan:</p>
                 <div className="flex items-center justify-between">
                   <span className="text-base text-gray-700 dark:text-white/70">
                     {subscription?.plan_id === "premium-yearly" ? "Yıllık Premium" : "Aylık Premium"}

@@ -653,7 +653,7 @@ export default function DashboardPage() {
         </CardContent>
       </Card>
 
-      <Card className="relative overflow-hidden border-0 bg-gradient-to-br from-slate-700 via-gray-800 to-zinc-900 dark:from-slate-800 dark:via-gray-900 dark:to-zinc-950 shadow-2xl dark:shadow-slate-900/20 rounded-2xl">
+      <Card className="relative overflow-hidden border-0 bg-gradient-to-br from-slate-700 via-gray-800 to-zinc-900 dark:from-emerald-900/30 dark:via-emerald-950 dark:to-zinc-950 shadow-2xl dark:shadow-slate-900/20 rounded-2xl">
         <div className="absolute top-0 right-0 w-64 h-64 bg-white/5 rounded-full -translate-y-32 translate-x-32"></div>
         <div className="absolute bottom-0 left-0 w-48 h-48 bg-white/5 rounded-full translate-y-24 -translate-x-24"></div>
         <CardHeader className="relative">

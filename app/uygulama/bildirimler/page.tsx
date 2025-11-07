@@ -491,7 +491,7 @@ export default function BildirimlerPage() {
                                 <div className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse"></div>
                               )}
                               <Badge
-                                className={`${!notification.is_read ? "bg-emerald-500 text-white" : "bg-gray-100 dark:bg-black/10 text-gray-600 dark:text-white/70"} text-xs px-2 py-1`}
+                                className={`${!notification.is_read ? "bg-emerald-500 text-white" : "bg-gray-100 dark:bg-black/10 text-gray-600 dark:text-white/60"} text-xs px-2 py-1`}
                               >
                                 {notification.is_read ? "Okundu" : "Yeni"}
                               </Badge>

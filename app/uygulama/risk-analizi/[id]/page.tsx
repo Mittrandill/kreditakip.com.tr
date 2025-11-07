@@ -157,7 +157,7 @@ const SectionCard: React.FC<{
                 {icon}
               </span>
               <div>
-                <CardTitle className="text-xl font-semibold text-gray-800 dark:text-gray-100">{title}</CardTitle>
+                <CardTitle className="text-xl font-semibold text-gray-800 dark:text-white">{title}</CardTitle>
                 {description && (
                   <CardDescription className="text-sm text-gray-500 dark:text-white/60">{description}</CardDescription>
                 )}
