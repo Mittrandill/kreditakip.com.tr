@@ -403,7 +403,7 @@ export default function RiskAnaliziPage() {
     <div className="flex flex-col gap-4 md:gap-6">
       <AdBanner position="top" className="mb-4" />
 
-      <Card className="bg-gradient-to-r from-orange-600 to-amber-700 text-white border-transparent shadow-xl rounded-xl">
+      <Card className="bg-gradient-to-r from-emerald-600 to-teal-700 dark:from-emerald-700 dark:to-teal-800 text-white border-transparent shadow-xl rounded-xl">
         <CardContent className="p-6 md:p-8">
           <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
             <div>
@@ -542,28 +542,28 @@ export default function RiskAnaliziPage() {
                 <TabsList className="grid grid-cols-2 sm:grid-cols-4 bg-transparent h-auto p-2 gap-2">
                   <TabsTrigger
                     value="tumAnalizler"
-                    className="flex items-center gap-2 py-3 px-4 data-[state=active]:text-emerald-600 dark:data-[state=active]:text-emerald-400 data-[state=active]:bg-emerald-100 dark:data-[state=active]:bg-emerald-900/20 rounded-xl transition-all duration-200 hover:bg-gray-100 dark:hover:bg-white/10 dark:text-white/60"
+                    className="flex items-center gap-2 py-3 px-4 data-[state=active]:text-emerald-600 dark:data-[state=active]:text-emerald-400 data-[state=active]:bg-white dark:data-[state=active]:bg-emerald-900/20 data-[state=active]:shadow-sm rounded-xl transition-all duration-200 hover:bg-gray-100 dark:hover:bg-white/10 dark:text-white/60"
                   >
                     <ListChecks className="h-4 w-4" />
                     Tümü ({totalAnalysesCount})
                   </TabsTrigger>
                   <TabsTrigger
                     value="dusukRisk"
-                    className="flex items-center gap-2 py-3 px-4 data-[state=active]:text-emerald-600 dark:data-[state=active]:text-emerald-400 data-[state=active]:bg-emerald-100 dark:data-[state=active]:bg-emerald-900/20 rounded-xl transition-all duration-200 hover:bg-gray-100 dark:hover:bg-white/10 dark:text-white/60"
+                    className="flex items-center gap-2 py-3 px-4 data-[state=active]:text-emerald-600 dark:data-[state=active]:text-emerald-400 data-[state=active]:bg-white dark:data-[state=active]:bg-emerald-900/20 data-[state=active]:shadow-sm rounded-xl transition-all duration-200 hover:bg-gray-100 dark:hover:bg-white/10 dark:text-white/60"
                   >
                     <CheckCircle className="h-4 w-4" />
                     Düşük ({riskDistribution.low})
                   </TabsTrigger>
                   <TabsTrigger
                     value="ortaRisk"
-                    className="flex items-center gap-2 py-3 px-4 data-[state=active]:text-emerald-600 dark:data-[state=active]:text-emerald-400 data-[state=active]:bg-emerald-100 dark:data-[state=active]:bg-emerald-900/20 rounded-xl transition-all duration-200 hover:bg-gray-100 dark:hover:bg-white/10 dark:text-white/60"
+                    className="flex items-center gap-2 py-3 px-4 data-[state=active]:text-emerald-600 dark:data-[state=active]:text-emerald-400 data-[state=active]:bg-white dark:data-[state=active]:bg-emerald-900/20 data-[state=active]:shadow-sm rounded-xl transition-all duration-200 hover:bg-gray-100 dark:hover:bg-white/10 dark:text-white/60"
                   >
                     <Clock className="h-4 w-4" />
                     Orta ({riskDistribution.medium})
                   </TabsTrigger>
                   <TabsTrigger
                     value="yuksekRisk"
-                    className="flex items-center gap-2 py-3 px-4 data-[state=active]:text-emerald-600 dark:data-[state=active]:text-emerald-400 data-[state=active]:bg-emerald-100 dark:data-[state=active]:bg-emerald-900/20 rounded-xl transition-all duration-200 hover:bg-gray-100 dark:hover:bg-white/10 dark:text-white/60"
+                    className="flex items-center gap-2 py-3 px-4 data-[state=active]:text-emerald-600 dark:data-[state=active]:text-emerald-400 data-[state=active]:bg-white dark:data-[state=active]:bg-emerald-900/20 data-[state=active]:shadow-sm rounded-xl transition-all duration-200 hover:bg-gray-100 dark:hover:bg-white/10 dark:text-white/60"
                   >
                     <AlertTriangle className="h-4 w-4" />
                     Yüksek ({riskDistribution.high})
