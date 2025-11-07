@@ -1631,7 +1631,7 @@ export default function OdemePlaniPage() {
   return (
     <div className="flex flex-col gap-4 md:gap-6">
       {/* Hero Section */}
-      <Card className="bg-gradient-to-r from-purple-600 to-violet-700 text-white border-transparent shadow-xl rounded-xl">
+      <Card className="bg-gradient-to-r from-emerald-600 to-teal-700 dark:from-emerald-700 dark:to-teal-800 text-white border-transparent shadow-xl rounded-xl">
         <CardContent className="p-8">
           <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
             <div>
