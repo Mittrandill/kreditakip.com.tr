@@ -20,7 +20,7 @@ export default function UygulamaLayout({
           <SidebarProvider defaultOpen={true}>
         <div className="min-h-screen flex w-full bg-gray-50 dark:bg-[#151515] relative">
           {/* Gradient Background Effects for Dark Mode */}
-          <div className="absolute inset-0 -z-0 dark:block hidden">
+          <div className="absolute inset-0 -z-0 dark:block hidden pointer-events-none">
             <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[80vw] h-[80vh] bg-emerald-500/20 blur-[150px] rounded-full" />
             <div className="absolute bottom-0 right-1/4 w-[60vw] h-[60vh] bg-teal-500/15 blur-[120px] rounded-full" />
           </div>

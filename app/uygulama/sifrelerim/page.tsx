@@ -534,7 +534,7 @@ export default function BankaciSifrelerimPage() {
             <TabsList className="grid grid-cols-5 bg-transparent h-auto p-2 gap-2">
               <TabsTrigger
                 value="tumSifreler"
-                className="flex items-center gap-2 py-3 px-4 data-[state=active]:text-emerald-600 dark:data-[state=active]:text-emerald-400 data-[state=active]:bg-emerald-100 dark:data-[state=active]:bg-emerald-900/20 rounded-xl transition-all duration-200 hover:bg-gray-100 dark:hover:bg-white/10"
+                className="flex items-center gap-2 py-3 px-4 data-[state=active]:text-emerald-600 dark:data-[state=active]:text-emerald-400 data-[state=active]:bg-white dark:data-[state=active]:bg-emerald-900/20 data-[state=active]:shadow-sm rounded-xl transition-all duration-200 hover:bg-gray-100 dark:hover:bg-white/10 dark:text-white/60"
               >
                 <Key className="h-4 w-4" />
                 <span className="hidden sm:inline font-medium">Tüm Şifreler</span>
@@ -542,7 +542,7 @@ export default function BankaciSifrelerimPage() {
               </TabsTrigger>
               <TabsTrigger
                 value="internetBankaciligi"
-                className="flex items-center gap-2 py-3 px-4 data-[state=active]:text-emerald-600 dark:data-[state=active]:text-emerald-400 data-[state=active]:bg-emerald-100 dark:data-[state=active]:bg-emerald-900/20 rounded-xl transition-all duration-200 hover:bg-gray-100 dark:hover:bg-white/10"
+                className="flex items-center gap-2 py-3 px-4 data-[state=active]:text-emerald-600 dark:data-[state=active]:text-emerald-400 data-[state=active]:bg-white dark:data-[state=active]:bg-emerald-900/20 data-[state=active]:shadow-sm rounded-xl transition-all duration-200 hover:bg-gray-100 dark:hover:bg-white/10 dark:text-white/60"
               >
                 <Globe className="h-4 w-4" />
                 <span className="hidden sm:inline font-medium">İnternet</span>
@@ -550,7 +550,7 @@ export default function BankaciSifrelerimPage() {
               </TabsTrigger>
               <TabsTrigger
                 value="mobilBankaciligi"
-                className="flex items-center gap-2 py-3 px-4 data-[state=active]:text-emerald-600 dark:data-[state=active]:text-emerald-400 data-[state=active]:bg-emerald-100 dark:data-[state=active]:bg-emerald-900/20 rounded-xl transition-all duration-200 hover:bg-gray-100 dark:hover:bg-white/10"
+                className="flex items-center gap-2 py-3 px-4 data-[state=active]:text-emerald-600 dark:data-[state=active]:text-emerald-400 data-[state=active]:bg-white dark:data-[state=active]:bg-emerald-900/20 data-[state=active]:shadow-sm rounded-xl transition-all duration-200 hover:bg-gray-100 dark:hover:bg-white/10 dark:text-white/60"
               >
                 <Smartphone className="h-4 w-4" />
                 <span className="hidden sm:inline font-medium">Mobil</span>
@@ -558,7 +558,7 @@ export default function BankaciSifrelerimPage() {
               </TabsTrigger>
               <TabsTrigger
                 value="telefonBankaciligi"
-                className="flex items-center gap-2 py-3 px-4 data-[state=active]:text-emerald-600 dark:data-[state=active]:text-emerald-400 data-[state=active]:bg-emerald-100 dark:data-[state=active]:bg-emerald-900/20 rounded-xl transition-all duration-200 hover:bg-gray-100 dark:hover:bg-white/10"
+                className="flex items-center gap-2 py-3 px-4 data-[state=active]:text-emerald-600 dark:data-[state=active]:text-emerald-400 data-[state=active]:bg-white dark:data-[state=active]:bg-emerald-900/20 data-[state=active]:shadow-sm rounded-xl transition-all duration-200 hover:bg-gray-100 dark:hover:bg-white/10 dark:text-white/60"
               >
                 <Phone className="h-4 w-4" />
                 <span className="hidden sm:inline font-medium">Telefon</span>
@@ -566,7 +566,7 @@ export default function BankaciSifrelerimPage() {
               </TabsTrigger>
               <TabsTrigger
                 value="diger"
-                className="flex items-center gap-2 py-3 px-4 data-[state=active]:text-emerald-600 dark:data-[state=active]:text-emerald-400 data-[state=active]:bg-emerald-100 dark:data-[state=active]:bg-emerald-900/20 rounded-xl transition-all duration-200 hover:bg-gray-100 dark:hover:bg-white/10"
+                className="flex items-center gap-2 py-3 px-4 data-[state=active]:text-emerald-600 dark:data-[state=active]:text-emerald-400 data-[state=active]:bg-white dark:data-[state=active]:bg-emerald-900/20 data-[state=active]:shadow-sm rounded-xl transition-all duration-200 hover:bg-gray-100 dark:hover:bg-white/10 dark:text-white/60"
               >
                 <Settings className="h-4 w-4" />
                 <span className="hidden sm:inline font-medium">Diğer</span>
