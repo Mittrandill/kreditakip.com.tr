@@ -753,46 +753,46 @@ export default function AyarlarPage() {
       {/* Modern Tabs */}
       <div className="bg-white dark:bg-black/20 rounded-2xl shadow-sm border border-gray-100 dark:border-white/10 overflow-hidden">
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <div className="border-b border-gray-100 dark:border-white/10 bg-gray-50/50 dark:bg-black/10/50">
+          <div className="border-b border-gray-100 dark:border-white/10 bg-gray-50/50 dark:bg-emerald-900/10">
             <TabsList className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 bg-transparent h-auto p-2 gap-2">
               <TabsTrigger
                 value="profile"
-                className="flex items-center gap-2 py-3 px-4 data-[state=active]:text-emerald-600 dark:data-[state=active]:text-emerald-400 rounded-xl transition-all duration-200 hover:bg-gray-100 dark:hover:bg-white/10"
+                className="flex items-center gap-2 py-3 px-4 data-[state=active]:text-emerald-600 dark:data-[state=active]:text-emerald-400 data-[state=active]:bg-emerald-100 dark:data-[state=active]:bg-emerald-900/20 rounded-xl transition-all duration-200 hover:bg-gray-100 dark:hover:bg-white/10"
               >
                 <User className="h-4 w-4" />
                 <span className="font-medium">Profil</span>
               </TabsTrigger>
               <TabsTrigger
                 value="subscription"
-                className="flex items-center gap-2 py-3 px-4 data-[state=active]:text-emerald-600 dark:data-[state=active]:text-emerald-400 rounded-xl transition-all duration-200 hover:bg-gray-100 dark:hover:bg-white/10"
+                className="flex items-center gap-2 py-3 px-4 data-[state=active]:text-emerald-600 dark:data-[state=active]:text-emerald-400 data-[state=active]:bg-emerald-100 dark:data-[state=active]:bg-emerald-900/20 rounded-xl transition-all duration-200 hover:bg-gray-100 dark:hover:bg-white/10"
               >
                 <Crown className="h-4 w-4" />
                 <span className="font-medium">Abonelik</span>
               </TabsTrigger>
               <TabsTrigger
                 value="invoices"
-                className="flex items-center gap-2 py-3 px-4 data-[state=active]:text-emerald-600 dark:data-[state=active]:text-emerald-400 rounded-xl transition-all duration-200 hover:bg-gray-100 dark:hover:bg-white/10"
+                className="flex items-center gap-2 py-3 px-4 data-[state=active]:text-emerald-600 dark:data-[state=active]:text-emerald-400 data-[state=active]:bg-emerald-100 dark:data-[state=active]:bg-emerald-900/20 rounded-xl transition-all duration-200 hover:bg-gray-100 dark:hover:bg-white/10"
               >
                 <FileText className="h-4 w-4" />
                 <span className="font-medium">Faturalar</span>
               </TabsTrigger>
               <TabsTrigger
                 value="financial"
-                className="flex items-center gap-2 py-3 px-4 data-[state=active]:text-emerald-600 dark:data-[state=active]:text-emerald-400 rounded-xl transition-all duration-200 hover:bg-gray-100 dark:hover:bg-white/10"
+                className="flex items-center gap-2 py-3 px-4 data-[state=active]:text-emerald-600 dark:data-[state=active]:text-emerald-400 data-[state=active]:bg-emerald-100 dark:data-[state=active]:bg-emerald-900/20 rounded-xl transition-all duration-200 hover:bg-gray-100 dark:hover:bg-white/10"
               >
                 <DollarSign className="h-4 w-4" />
                 <span className="font-medium">Finansal</span>
               </TabsTrigger>
               <TabsTrigger
                 value="security"
-                className="flex items-center gap-2 py-3 px-4 data-[state=active]:text-emerald-600 dark:data-[state=active]:text-emerald-400 rounded-xl transition-all duration-200 hover:bg-gray-100 dark:hover:bg-white/10"
+                className="flex items-center gap-2 py-3 px-4 data-[state=active]:text-emerald-600 dark:data-[state=active]:text-emerald-400 data-[state=active]:bg-emerald-100 dark:data-[state=active]:bg-emerald-900/20 rounded-xl transition-all duration-200 hover:bg-gray-100 dark:hover:bg-white/10"
               >
                 <Shield className="h-4 w-4" />
                 <span className="font-medium">Güvenlik</span>
               </TabsTrigger>
               <TabsTrigger
                 value="preferences"
-                className="flex items-center gap-2 py-3 px-4 data-[state=active]:text-emerald-600 dark:data-[state=active]:text-emerald-400 rounded-xl transition-all duration-200 hover:bg-gray-100 dark:hover:bg-white/10"
+                className="flex items-center gap-2 py-3 px-4 data-[state=active]:text-emerald-600 dark:data-[state=active]:text-emerald-400 data-[state=active]:bg-emerald-100 dark:data-[state=active]:bg-emerald-900/20 rounded-xl transition-all duration-200 hover:bg-gray-100 dark:hover:bg-white/10"
               >
                 <Settings className="h-4 w-4" />
                 <span className="font-medium">Tercihler</span>
@@ -1103,7 +1103,7 @@ export default function AyarlarPage() {
                     </CardDescription>
                   </CardHeader>
                   <CardContent>
-                    <div className="flex items-center justify-between p-4 border rounded-lg dark:border-white/10 dark:bg-black/10/50">
+                    <div className="flex items-center justify-between p-4 border rounded-lg dark:border-white/10 dark:bg-black/10">
                       <div>
                         <p className="font-medium dark:text-white mb-1">Fatura Geçmişi</p>
                         <p className="text-sm text-gray-500 dark:text-white/60">
@@ -1647,7 +1647,7 @@ export default function AyarlarPage() {
                         {sessions.map((session) => (
                           <div
                             key={session.id}
-                            className="flex items-center justify-between p-4 border rounded-lg dark:border-white/10 dark:bg-black/10/50"
+                            className="flex items-center justify-between p-4 border rounded-lg dark:border-white/10 dark:bg-black/10"
                           >
                             <div className="flex items-center gap-3">
                               <Monitor className="h-5 w-5 text-gray-400 dark:text-white/60" />
@@ -1765,7 +1765,7 @@ export default function AyarlarPage() {
                     </CardDescription>
                   </CardHeader>
                   <CardContent className="space-y-4">
-                    <div className="flex items-center justify-between p-4 border rounded-lg dark:border-white/10 dark:bg-black/10/50">
+                    <div className="flex items-center justify-between p-4 border rounded-lg dark:border-white/10 dark:bg-black/10">
                       <div>
                         <p className="font-medium dark:text-white">Gelişmiş Bildirim Ayarları</p>
                         <p className="text-sm text-gray-500 dark:text-white/60">
@@ -1792,7 +1792,7 @@ export default function AyarlarPage() {
                     </CardDescription>
                   </CardHeader>
                   <CardContent className="space-y-4">
-                    <div className="flex items-center justify-between p-4 border rounded-lg dark:border-white/10 dark:bg-black/10/50">
+                    <div className="flex items-center justify-between p-4 border rounded-lg dark:border-white/10 dark:bg-black/10">
                       <div className="flex-1">
                         <p className="font-medium dark:text-white flex items-center gap-2">
                           <Download className="h-5 w-5 text-emerald-600 dark:text-emerald-400" />

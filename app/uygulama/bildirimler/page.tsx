@@ -356,7 +356,7 @@ export default function BildirimlerPage() {
       {/* Modern Table */}
       <div className="bg-white dark:bg-black/20 rounded-2xl shadow-sm border border-gray-100 dark:border-white/10 overflow-hidden">
         {/* Table Header */}
-        <div className="border-b border-gray-100 dark:border-white/10 bg-gray-50/50 dark:bg-black/10/50 p-6">
+        <div className="border-b border-gray-100 dark:border-white/10 bg-gray-50/50 dark:bg-emerald-900/10 p-6">
           <div className="flex items-center justify-between flex-wrap gap-4">
             <CardTitle className="text-xl font-bold text-gray-800 dark:text-white">Bildirim Listesi</CardTitle>
 
@@ -449,7 +449,7 @@ export default function BildirimlerPage() {
                         <TableRow
                           key={notification.id}
                           className={`transition-colors duration-150 ease-in-out border-b dark:border-white/10 ${
-                            index % 2 === 0 ? "bg-white dark:bg-black/20" : "bg-gray-50/50 dark:bg-black/10/50"
+                            index % 2 === 0 ? "bg-white dark:bg-black/20" : "bg-gray-50/50 dark:bg-black/10"
                           } ${!notification.is_read ? "bg-blue-50/30 dark:bg-blue-900/20" : ""}`}
                         >
                           <TableCell>
