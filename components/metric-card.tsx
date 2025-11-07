@@ -12,35 +12,39 @@ interface MetricCardProps {
 }
 
 const colorVariants = {
-  blue: "bg-gradient-to-br from-blue-600 to-blue-700 dark:from-blue-500 dark:to-blue-600",
-  green: "bg-gradient-to-br from-green-600 to-green-700 dark:from-green-500 dark:to-green-600",
-  orange: "bg-gradient-to-br from-orange-600 to-orange-700 dark:from-orange-500 dark:to-orange-600",
-  purple: "bg-gradient-to-br from-purple-600 to-purple-700 dark:from-purple-500 dark:to-purple-600",
-  teal: "bg-gradient-to-br from-teal-600 to-teal-700 dark:from-teal-500 dark:to-teal-600",
-  red: "bg-gradient-to-br from-red-600 to-red-700 dark:from-red-500 dark:to-red-600",
-  emerald: "bg-gradient-to-br from-emerald-600 to-emerald-700 dark:from-emerald-500 dark:to-emerald-600",
+  blue: "bg-gradient-to-br from-blue-600 to-blue-700 dark:from-slate-700 dark:via-gray-800 dark:to-zinc-900",
+  green: "bg-gradient-to-br from-green-600 to-green-700 dark:from-slate-700 dark:via-gray-800 dark:to-zinc-900",
+  orange: "bg-gradient-to-br from-orange-600 to-orange-700 dark:from-slate-700 dark:via-gray-800 dark:to-zinc-900",
+  purple: "bg-gradient-to-br from-purple-600 to-purple-700 dark:from-slate-700 dark:via-gray-800 dark:to-zinc-900",
+  teal: "bg-gradient-to-br from-teal-600 to-teal-700 dark:from-slate-700 dark:via-gray-800 dark:to-zinc-900",
+  red: "bg-gradient-to-br from-red-600 to-red-700 dark:from-slate-700 dark:via-gray-800 dark:to-zinc-900",
+  emerald: "bg-gradient-to-br from-emerald-600 to-emerald-700 dark:from-emerald-900/30 dark:via-emerald-950 dark:to-zinc-950",
 }
 
 export function MetricCard({ title, value, subtitle, color, icon, change, changeType }: MetricCardProps) {
   return (
     <Card
-      className={`${colorVariants[color]} text-white shadow-lg hover:shadow-xl dark:shadow-2xl transition-all duration-300 hover:scale-105 rounded-xl animate-fade-in-up border-0`}
+      className={`${colorVariants[color]} text-white shadow-lg hover:shadow-xl dark:shadow-2xl dark:shadow-slate-900/20 transition-all duration-300 hover:scale-105 rounded-xl animate-fade-in-up border-0 relative overflow-hidden`}
     >
-      <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-        <CardTitle className="text-sm font-medium text-white/90">{title}</CardTitle>
-        <div className="bg-white/20 dark:bg-white/30 p-2 rounded-lg backdrop-blur-sm">
+      {/* Background effects - only visible in dark mode */}
+      <div className="absolute top-0 right-0 w-32 h-32 bg-white/5 dark:bg-white/5 rounded-full -translate-y-16 translate-x-16 pointer-events-none"></div>
+      <div className="absolute bottom-0 left-0 w-24 h-24 bg-white/5 dark:bg-white/5 rounded-full translate-y-12 -translate-x-12 pointer-events-none"></div>
+
+      <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 relative z-10">
+        <CardTitle className="text-sm font-medium text-white/90 dark:text-white drop-shadow-sm">{title}</CardTitle>
+        <div className="bg-white/20 dark:bg-white/10 p-2 rounded-lg backdrop-blur-sm">
           <div className="h-5 w-5 text-white [&>svg]:h-5 [&>svg]:w-5">{icon}</div>
         </div>
       </CardHeader>
-      <CardContent>
-        <div className="text-2xl md:text-3xl font-bold mb-1 text-white">{value}</div>
-        <div className="flex items-center text-xs text-white/80">
+      <CardContent className="relative z-10">
+        <div className="text-2xl md:text-3xl font-bold mb-1 text-white drop-shadow-md">{value}</div>
+        <div className="flex items-center text-xs text-white/80 dark:text-slate-200 drop-shadow-sm">
           {change && (
             <span
               className={`mr-2 flex items-center gap-1 px-2 py-1 rounded-full ${
                 changeType === "positive"
-                  ? "bg-white/20 dark:bg-white/30 text-white"
-                  : "bg-red-500/20 dark:bg-red-400/30 text-red-100 dark:text-red-200"
+                  ? "bg-white/20 dark:bg-white/10 text-white backdrop-blur-sm"
+                  : "bg-red-500/20 dark:bg-red-400/20 text-red-100 dark:text-red-200 backdrop-blur-sm"
               }`}
             >
               {change}
