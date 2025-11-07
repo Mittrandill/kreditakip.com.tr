@@ -442,7 +442,7 @@ export default function BankaciSifrelerimPage() {
     return (
       <div className="flex flex-col gap-4 md:gap-6 items-center justify-center min-h-[calc(100vh-150px)]">
         <Loader2 className="h-12 w-12 animate-spin text-emerald-600" />
-        <p className="text-lg text-gray-600 dark:text-gray-300">Veriler yükleniyor...</p>
+        <p className="text-lg text-gray-600 dark:text-white/70">Veriler yükleniyor...</p>
       </div>
     )
   }
@@ -528,13 +528,13 @@ export default function BankaciSifrelerimPage() {
       </div>
 
       {/* Modern Tabs */}
-      <div className="bg-white dark:bg-gray-900 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-800 overflow-hidden">
+      <div className="bg-white dark:bg-black/20 rounded-2xl shadow-sm border border-gray-100 dark:border-white/10 overflow-hidden">
         <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full">
-          <div className="border-b border-gray-100 dark:border-gray-800 bg-gray-50/50 dark:bg-gray-800/50">
+          <div className="border-b border-gray-100 dark:border-white/10 bg-gray-50/50 dark:bg-black/10/50">
             <TabsList className="grid grid-cols-5 bg-transparent h-auto p-2 gap-2">
               <TabsTrigger
                 value="tumSifreler"
-                className="flex items-center gap-2 py-3 px-4 data-[state=active]:text-emerald-600 dark:data-[state=active]:text-emerald-400 rounded-xl transition-all duration-200 hover:bg-gray-100 dark:hover:bg-gray-700"
+                className="flex items-center gap-2 py-3 px-4 data-[state=active]:text-emerald-600 dark:data-[state=active]:text-emerald-400 rounded-xl transition-all duration-200 hover:bg-gray-100 dark:hover:bg-white/10"
               >
                 <Key className="h-4 w-4" />
                 <span className="hidden sm:inline font-medium">Tüm Şifreler</span>
@@ -542,7 +542,7 @@ export default function BankaciSifrelerimPage() {
               </TabsTrigger>
               <TabsTrigger
                 value="internetBankaciligi"
-                className="flex items-center gap-2 py-3 px-4 data-[state=active]:text-emerald-600 dark:data-[state=active]:text-emerald-400 rounded-xl transition-all duration-200 hover:bg-gray-100 dark:hover:bg-gray-700"
+                className="flex items-center gap-2 py-3 px-4 data-[state=active]:text-emerald-600 dark:data-[state=active]:text-emerald-400 rounded-xl transition-all duration-200 hover:bg-gray-100 dark:hover:bg-white/10"
               >
                 <Globe className="h-4 w-4" />
                 <span className="hidden sm:inline font-medium">İnternet</span>
@@ -550,7 +550,7 @@ export default function BankaciSifrelerimPage() {
               </TabsTrigger>
               <TabsTrigger
                 value="mobilBankaciligi"
-                className="flex items-center gap-2 py-3 px-4 data-[state=active]:text-emerald-600 dark:data-[state=active]:text-emerald-400 rounded-xl transition-all duration-200 hover:bg-gray-100 dark:hover:bg-gray-700"
+                className="flex items-center gap-2 py-3 px-4 data-[state=active]:text-emerald-600 dark:data-[state=active]:text-emerald-400 rounded-xl transition-all duration-200 hover:bg-gray-100 dark:hover:bg-white/10"
               >
                 <Smartphone className="h-4 w-4" />
                 <span className="hidden sm:inline font-medium">Mobil</span>
@@ -558,7 +558,7 @@ export default function BankaciSifrelerimPage() {
               </TabsTrigger>
               <TabsTrigger
                 value="telefonBankaciligi"
-                className="flex items-center gap-2 py-3 px-4 data-[state=active]:text-emerald-600 dark:data-[state=active]:text-emerald-400 rounded-xl transition-all duration-200 hover:bg-gray-100 dark:hover:bg-gray-700"
+                className="flex items-center gap-2 py-3 px-4 data-[state=active]:text-emerald-600 dark:data-[state=active]:text-emerald-400 rounded-xl transition-all duration-200 hover:bg-gray-100 dark:hover:bg-white/10"
               >
                 <Phone className="h-4 w-4" />
                 <span className="hidden sm:inline font-medium">Telefon</span>
@@ -566,7 +566,7 @@ export default function BankaciSifrelerimPage() {
               </TabsTrigger>
               <TabsTrigger
                 value="diger"
-                className="flex items-center gap-2 py-3 px-4 data-[state=active]:text-emerald-600 dark:data-[state=active]:text-emerald-400 rounded-xl transition-all duration-200 hover:bg-gray-100 dark:hover:bg-gray-700"
+                className="flex items-center gap-2 py-3 px-4 data-[state=active]:text-emerald-600 dark:data-[state=active]:text-emerald-400 rounded-xl transition-all duration-200 hover:bg-gray-100 dark:hover:bg-white/10"
               >
                 <Settings className="h-4 w-4" />
                 <span className="hidden sm:inline font-medium">Diğer</span>
@@ -576,7 +576,7 @@ export default function BankaciSifrelerimPage() {
           </div>
 
           {/* Search, Sort and View Toggle */}
-          <div className="p-4 border-b border-gray-100 dark:border-gray-800 bg-white dark:bg-gray-900">
+          <div className="p-4 border-b border-gray-100 dark:border-white/10 bg-white dark:bg-black/20">
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
               <div className="flex gap-2">
                 <div className="relative">
@@ -596,16 +596,16 @@ export default function BankaciSifrelerimPage() {
                       {sortOrder === "asc" ? "Artan" : "Azalan"})
                     </Button>
                   </DropdownMenuTrigger>
-                  <DropdownMenuContent align="start" className="dark:bg-gray-800 dark:border-gray-700">
+                  <DropdownMenuContent align="start" className="dark:bg-black/10 dark:border-white/10">
                     <DropdownMenuItem
                       onClick={() => handleSort("sonKullanim")}
-                      className="dark:text-white dark:hover:bg-gray-700"
+                      className="dark:text-white dark:hover:bg-white/10"
                     >
                       Son Kullanıma Göre
                     </DropdownMenuItem>
                     <DropdownMenuItem
                       onClick={() => handleSort("bankaAdi")}
-                      className="dark:text-white dark:hover:bg-gray-700"
+                      className="dark:text-white dark:hover:bg-white/10"
                     >
                       Banka Adına Göre
                     </DropdownMenuItem>
@@ -639,9 +639,9 @@ export default function BankaciSifrelerimPage() {
           <div className="p-6">
             {currentItems.length === 0 && !loadingData && (
               <div className="text-center py-10">
-                <Lock className="mx-auto h-12 w-12 text-gray-400 dark:text-gray-500" />
+                <Lock className="mx-auto h-12 w-12 text-gray-400 dark:text-white/60" />
                 <h3 className="mt-2 text-sm font-medium text-gray-900 dark:text-white">Şifre Bulunamadı</h3>
-                <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
+                <p className="mt-1 text-sm text-gray-500 dark:text-white/60">
                   {activeTab === "tumSifreler" ? "Hiç şifre eklenmemiş." : "Bu filtreye uygun şifre bulunamadı."}
                 </p>
                 <div className="mt-6">
@@ -666,7 +666,7 @@ export default function BankaciSifrelerimPage() {
                     return (
                       <Card
                         key={credential.id}
-                        className="shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 rounded-xl border-gray-200 dark:border-gray-700 overflow-hidden"
+                        className="shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 rounded-xl border-gray-200 dark:border-white/10 overflow-hidden"
                       >
                         <CardHeader className="pb-3 bg-gradient-to-r from-gray-50 to-gray-100 dark:from-gray-800 dark:to-gray-700">
                           <div className="flex items-center justify-between">
@@ -700,14 +700,14 @@ export default function BankaciSifrelerimPage() {
                         <CardContent className="space-y-5 pt-4">
                           <div className="grid grid-cols-1 gap-4">
                             <div>
-                              <p className="text-sm text-gray-500 dark:text-gray-400">Şifre Adı</p>
+                              <p className="text-sm text-gray-500 dark:text-white/60">Şifre Adı</p>
                               <p className="text-lg font-semibold text-gray-900 dark:text-white">
                                 {credential.credential_name}
                               </p>
                             </div>
                             {credential.username && (
                               <div>
-                                <p className="text-sm text-gray-500 dark:text-gray-400">Kullanıcı Adı</p>
+                                <p className="text-sm text-gray-500 dark:text-white/60">Kullanıcı Adı</p>
                                 <p className="text-lg font-semibold text-gray-900 dark:text-white">
                                   {credential.username}
                                 </p>
@@ -716,7 +716,7 @@ export default function BankaciSifrelerimPage() {
                           </div>
 
                           <div className="flex items-center gap-2">
-                            <span className="text-sm text-gray-500 dark:text-gray-400">Şifre:</span>
+                            <span className="text-sm text-gray-500 dark:text-white/60">Şifre:</span>
                             <PasswordDisplay
                               credential={credential}
                               isVisible={isPasswordVisible}
@@ -728,7 +728,7 @@ export default function BankaciSifrelerimPage() {
 
                           <div className="grid grid-cols-2 gap-4 text-sm">
                             <div>
-                              <p className="text-gray-500 dark:text-gray-400">Eklendi</p>
+                              <p className="text-gray-500 dark:text-white/60">Eklendi</p>
                               <p className="font-medium text-gray-900 dark:text-white">
                                 {formatDistanceToNow(new Date(credential.created_at), {
                                   addSuffix: true,
@@ -737,7 +737,7 @@ export default function BankaciSifrelerimPage() {
                               </p>
                             </div>
                             <div>
-                              <p className="text-gray-500 dark:text-gray-400">Son Kullanım</p>
+                              <p className="text-gray-500 dark:text-white/60">Son Kullanım</p>
                               <p className="font-medium text-gray-900 dark:text-white">
                                 {credential.last_used_date
                                   ? formatDistanceToNow(new Date(credential.last_used_date), {
@@ -802,9 +802,9 @@ export default function BankaciSifrelerimPage() {
                 <div className="overflow-x-auto">
                   <Table>
                     <TableHeader>
-                      <TableRow className="bg-white dark:bg-gray-900">
+                      <TableRow className="bg-white dark:bg-black/20">
                         <TableHead
-                          className="font-semibold text-gray-700 dark:text-gray-300 cursor-pointer hover:text-emerald-600 dark:hover:text-emerald-400"
+                          className="font-semibold text-gray-700 dark:text-white/70 cursor-pointer hover:text-emerald-600 dark:hover:text-emerald-400"
                           onClick={() => handleSort("bankaAdi")}
                         >
                           <div className="flex items-center gap-1">
@@ -813,7 +813,7 @@ export default function BankaciSifrelerimPage() {
                           </div>
                         </TableHead>
                         <TableHead
-                          className="font-semibold text-gray-700 dark:text-gray-300 cursor-pointer hover:text-emerald-600 dark:hover:text-emerald-400"
+                          className="font-semibold text-gray-700 dark:text-white/70 cursor-pointer hover:text-emerald-600 dark:hover:text-emerald-400"
                           onClick={() => handleSort("tur")}
                         >
                           <div className="flex items-center gap-1">
@@ -822,7 +822,7 @@ export default function BankaciSifrelerimPage() {
                           </div>
                         </TableHead>
                         <TableHead
-                          className="font-semibold text-gray-700 dark:text-gray-300 cursor-pointer hover:text-emerald-600 dark:hover:text-emerald-400"
+                          className="font-semibold text-gray-700 dark:text-white/70 cursor-pointer hover:text-emerald-600 dark:hover:text-emerald-400"
                           onClick={() => handleSort("sifreAdi")}
                         >
                           <div className="flex items-center gap-1">
@@ -831,7 +831,7 @@ export default function BankaciSifrelerimPage() {
                           </div>
                         </TableHead>
                         <TableHead
-                          className="font-semibold text-gray-700 dark:text-gray-300 cursor-pointer hover:text-emerald-600 dark:hover:text-emerald-400"
+                          className="font-semibold text-gray-700 dark:text-white/70 cursor-pointer hover:text-emerald-600 dark:hover:text-emerald-400"
                           onClick={() => handleSort("kullaniciAdi")}
                         >
                           <div className="flex items-center gap-1">
@@ -839,9 +839,9 @@ export default function BankaciSifrelerimPage() {
                             <ArrowUpDown className="h-3 w-3" />
                           </div>
                         </TableHead>
-                        <TableHead className="font-semibold text-gray-700 dark:text-gray-300">Şifre</TableHead>
+                        <TableHead className="font-semibold text-gray-700 dark:text-white/70">Şifre</TableHead>
                         <TableHead
-                          className="font-semibold text-gray-700 dark:text-gray-300 cursor-pointer hover:text-emerald-600 dark:hover:text-emerald-400"
+                          className="font-semibold text-gray-700 dark:text-white/70 cursor-pointer hover:text-emerald-600 dark:hover:text-emerald-400"
                           onClick={() => handleSort("sonKullanim")}
                         >
                           <div className="flex items-center gap-1">
@@ -849,8 +849,8 @@ export default function BankaciSifrelerimPage() {
                             <ArrowUpDown className="h-3 w-3" />
                           </div>
                         </TableHead>
-                        <TableHead className="font-semibold text-gray-700 dark:text-gray-300">Durum</TableHead>
-                        <TableHead className="w-[50px] text-right font-semibold text-gray-700 dark:text-gray-300">
+                        <TableHead className="font-semibold text-gray-700 dark:text-white/70">Durum</TableHead>
+                        <TableHead className="w-[50px] text-right font-semibold text-gray-700 dark:text-white/70">
                           İşlemler
                         </TableHead>
                       </TableRow>
@@ -863,8 +863,8 @@ export default function BankaciSifrelerimPage() {
                         return (
                           <TableRow
                             key={credential.id}
-                            className={`hover:bg-emerald-50 dark:hover:bg-gray-800 transition-colors duration-150 ease-in-out ${
-                              index % 2 === 0 ? "bg-white dark:bg-gray-900" : "bg-gray-50/50 dark:bg-gray-800/50"
+                            className={`hover:bg-emerald-50 dark:hover:bg-white/10 transition-colors duration-150 ease-in-out ${
+                              index % 2 === 0 ? "bg-white dark:bg-black/20" : "bg-gray-50/50 dark:bg-black/10/50"
                             }`}
                           >
                             <TableCell>
@@ -873,7 +873,7 @@ export default function BankaciSifrelerimPage() {
                                   bankName={credential.bank_name || "Bilinmeyen Banka"}
                                   logoUrl={credential.bank_logo_url ?? undefined}
                                   size="md"
-                                  className="ring-1 ring-emerald-200 dark:ring-emerald-700 bg-white dark:bg-gray-800"
+                                  className="ring-1 ring-emerald-200 dark:ring-emerald-700 bg-white dark:bg-black/10"
                                 />
                                 <div>
                                   <span className="font-medium text-gray-900 dark:text-white block">
@@ -882,7 +882,7 @@ export default function BankaciSifrelerimPage() {
                                 </div>
                               </div>
                             </TableCell>
-                            <TableCell className="text-gray-600 dark:text-gray-300">
+                            <TableCell className="text-gray-600 dark:text-white/70">
                               <div className="flex items-center gap-2">
                                 <TypeIcon className="h-4 w-4" />
                                 {credentialTypeLabels[credential.credential_type]}
@@ -891,7 +891,7 @@ export default function BankaciSifrelerimPage() {
                             <TableCell className="font-semibold text-gray-900 dark:text-white">
                               {credential.credential_name}
                             </TableCell>
-                            <TableCell className="text-gray-600 dark:text-gray-300">
+                            <TableCell className="text-gray-600 dark:text-white/70">
                               {credential.username || "-"}
                             </TableCell>
                             <TableCell>
@@ -903,7 +903,7 @@ export default function BankaciSifrelerimPage() {
                                 isCopied={copiedPasswords.has(credential.id)}
                               />
                             </TableCell>
-                            <TableCell className="text-gray-600 dark:text-gray-300">
+                            <TableCell className="text-gray-600 dark:text-white/70">
                               {credential.last_used_date
                                 ? formatDistanceToNow(new Date(credential.last_used_date), {
                                     addSuffix: true,
@@ -1000,19 +1000,19 @@ export default function BankaciSifrelerimPage() {
 
       {/* Update Password Dialog */}
       <AlertDialog open={showUpdatePasswordDialog} onOpenChange={setShowUpdatePasswordDialog}>
-        <AlertDialogContent className="dark:bg-gray-800 dark:border-gray-700">
+        <AlertDialogContent className="dark:bg-black/10 dark:border-white/10">
           <AlertDialogHeader>
             <AlertDialogTitle className="flex items-center gap-2 dark:text-white">
               <Key className="h-5 w-5 text-emerald-600 dark:text-emerald-400" />
               Şifre Güncelle
             </AlertDialogTitle>
-            <AlertDialogDescription className="dark:text-gray-400">
+            <AlertDialogDescription className="dark:text-white/60">
               {credentialToUpdate && (
                 <div className="mb-4">
                   <p className="font-medium text-gray-900 dark:text-white">
                     {credentialToUpdate.bank_name} - {credentialToUpdate.credential_name}
                   </p>
-                  <p className="text-sm text-gray-600 dark:text-gray-400">
+                  <p className="text-sm text-gray-600 dark:text-white/60">
                     Kullanıcı: {credentialToUpdate.username || "N/A"}
                   </p>
                 </div>
@@ -1021,13 +1021,13 @@ export default function BankaciSifrelerimPage() {
             </AlertDialogDescription>
           </AlertDialogHeader>
           <div className="py-4">
-            <label className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 block">Yeni Şifre</label>
+            <label className="text-sm font-medium text-gray-700 dark:text-white/70 mb-2 block">Yeni Şifre</label>
             <Input
               type="password"
               placeholder="Yeni şifrenizi girin..."
               value={newPassword}
               onChange={(e) => setNewPassword(e.target.value)}
-              className="dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+              className="dark:bg-gray-700 dark:border-white/10 dark:text-white"
               disabled={isUpdatingPassword}
             />
           </div>
@@ -1039,7 +1039,7 @@ export default function BankaciSifrelerimPage() {
                 setNewPassword("")
               }}
               disabled={isUpdatingPassword}
-              className="dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600"
+              className="dark:bg-gray-700 dark:text-white dark:hover:bg-gray-600"
             >
               İptal
             </AlertDialogCancel>
@@ -1117,7 +1117,7 @@ function PasswordDisplay({
 
   return (
     <div className="flex items-center gap-2">
-      <code className="bg-gray-100 dark:bg-gray-800 px-2 py-1 rounded text-sm font-mono max-w-[120px] truncate text-gray-900 dark:text-gray-100">
+      <code className="bg-gray-100 dark:bg-black/10 px-2 py-1 rounded text-sm font-mono max-w-[120px] truncate text-gray-900 dark:text-gray-100">
         {displayPassword()}
       </code>
       <div className="flex gap-1">

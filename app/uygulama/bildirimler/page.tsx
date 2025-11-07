@@ -274,10 +274,10 @@ export default function BildirimlerPage() {
   if (loading) {
     return (
       <div className="space-y-6 animate-pulse">
-        <div className="h-32 bg-gray-200 dark:bg-gray-800 rounded-2xl"></div>
+        <div className="h-32 bg-gray-200 dark:bg-black/10 rounded-2xl"></div>
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
           {[...Array(4)].map((_, i) => (
-            <div key={i} className="h-32 bg-gray-200 dark:bg-gray-800 rounded-xl"></div>
+            <div key={i} className="h-32 bg-gray-200 dark:bg-black/10 rounded-xl"></div>
           ))}
         </div>
       </div>
@@ -354,9 +354,9 @@ export default function BildirimlerPage() {
       </div>
 
       {/* Modern Table */}
-      <div className="bg-white dark:bg-gray-900 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-800 overflow-hidden">
+      <div className="bg-white dark:bg-black/20 rounded-2xl shadow-sm border border-gray-100 dark:border-white/10 overflow-hidden">
         {/* Table Header */}
-        <div className="border-b border-gray-100 dark:border-gray-800 bg-gray-50/50 dark:bg-gray-800/50 p-6">
+        <div className="border-b border-gray-100 dark:border-white/10 bg-gray-50/50 dark:bg-black/10/50 p-6">
           <div className="flex items-center justify-between flex-wrap gap-4">
             <CardTitle className="text-xl font-bold text-gray-800 dark:text-white">Bildirim Listesi</CardTitle>
 
@@ -364,7 +364,7 @@ export default function BildirimlerPage() {
               <Button
                 variant="outline"
                 onClick={() => loadNotifications(true)}
-                className="gap-2 bg-transparent dark:bg-transparent dark:border-gray-700 dark:text-gray-300 dark:hover:bg-gray-800"
+                className="gap-2 bg-transparent dark:bg-transparent dark:border-white/10 dark:text-white/70 dark:hover:bg-white/10"
               >
                 <RefreshCw className="h-4 w-4" />
                 Yenile
@@ -382,12 +382,12 @@ export default function BildirimlerPage() {
           {/* Search and Filters */}
           <div className="flex items-center gap-4 flex-wrap mt-4">
             <div className="relative flex-1 min-w-64">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 dark:text-gray-500 h-4 w-4 pointer-events-none" />
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 dark:text-white/60 h-4 w-4 pointer-events-none" />
               <Input
                 placeholder="Bildirim ara..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-10 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 dark:text-white focus-visible:border-emerald-500 focus-visible:shadow-[0_0_0_0.5px_rgb(16,185,129)] transition-all duration-200"
+                className="pl-10 bg-white dark:bg-black/10 border border-gray-200 dark:border-white/10 dark:text-white focus-visible:border-emerald-500 focus-visible:shadow-[0_0_0_0.5px_rgb(16,185,129)] transition-all duration-200"
                 autoComplete="off"
                 spellCheck="false"
               />
@@ -408,15 +408,15 @@ export default function BildirimlerPage() {
         <div className="p-6">
           {paginatedNotifications.length === 0 ? (
             <div className="text-center py-10">
-              <div className="w-24 h-24 bg-gray-100 dark:bg-gray-800 rounded-full flex items-center justify-center mx-auto mb-4">
-                <Bell className="h-12 w-12 text-gray-400 dark:text-gray-500" />
+              <div className="w-24 h-24 bg-gray-100 dark:bg-black/10 rounded-full flex items-center justify-center mx-auto mb-4">
+                <Bell className="h-12 w-12 text-gray-400 dark:text-white/60" />
               </div>
-              <h3 className="text-xl font-semibold text-gray-700 dark:text-gray-200 mb-2">
+              <h3 className="text-xl font-semibold text-gray-700 dark:text-white mb-2">
                 {searchTerm || showUnreadOnly
                   ? "Filtre kriterlerine uygun bildirim bulunamadı"
                   : "Henüz bildiriminiz yok"}
               </h3>
-              <p className="text-gray-500 dark:text-gray-400 mb-6">
+              <p className="text-gray-500 dark:text-white/60 mb-6">
                 {searchTerm || showUnreadOnly
                   ? "Farklı filtreler deneyebilir veya arama teriminizi değiştirebilirsiniz."
                   : "Yeni bildirimler otomatik olarak oluşturulacak ve burada görünecek."}
@@ -427,13 +427,13 @@ export default function BildirimlerPage() {
               <div className="overflow-x-auto">
                 <Table>
                   <TableHeader>
-                    <TableRow className="bg-white dark:bg-gray-900 border-b dark:border-gray-800">
-                      <TableHead className="font-semibold text-gray-700 dark:text-gray-300">Tip</TableHead>
-                      <TableHead className="font-semibold text-gray-700 dark:text-gray-300">Başlık</TableHead>
-                      <TableHead className="font-semibold text-gray-700 dark:text-gray-300">Mesaj</TableHead>
-                      <TableHead className="font-semibold text-gray-700 dark:text-gray-300">Zaman</TableHead>
-                      <TableHead className="font-semibold text-gray-700 dark:text-gray-300">Durum</TableHead>
-                      <TableHead className="w-[50px] text-right font-semibold text-gray-700 dark:text-gray-300">
+                    <TableRow className="bg-white dark:bg-black/20 border-b dark:border-white/10">
+                      <TableHead className="font-semibold text-gray-700 dark:text-white/70">Tip</TableHead>
+                      <TableHead className="font-semibold text-gray-700 dark:text-white/70">Başlık</TableHead>
+                      <TableHead className="font-semibold text-gray-700 dark:text-white/70">Mesaj</TableHead>
+                      <TableHead className="font-semibold text-gray-700 dark:text-white/70">Zaman</TableHead>
+                      <TableHead className="font-semibold text-gray-700 dark:text-white/70">Durum</TableHead>
+                      <TableHead className="w-[50px] text-right font-semibold text-gray-700 dark:text-white/70">
                         İşlemler
                       </TableHead>
                     </TableRow>
@@ -448,8 +448,8 @@ export default function BildirimlerPage() {
                       return (
                         <TableRow
                           key={notification.id}
-                          className={`transition-colors duration-150 ease-in-out border-b dark:border-gray-800 ${
-                            index % 2 === 0 ? "bg-white dark:bg-gray-900" : "bg-gray-50/50 dark:bg-gray-800/50"
+                          className={`transition-colors duration-150 ease-in-out border-b dark:border-white/10 ${
+                            index % 2 === 0 ? "bg-white dark:bg-black/20" : "bg-gray-50/50 dark:bg-black/10/50"
                           } ${!notification.is_read ? "bg-blue-50/30 dark:bg-blue-900/20" : ""}`}
                         >
                           <TableCell>
@@ -467,13 +467,13 @@ export default function BildirimlerPage() {
                             </div>
                           </TableCell>
 
-                          <TableCell className="text-gray-600 dark:text-gray-300 max-w-64">
+                          <TableCell className="text-gray-600 dark:text-white/70 max-w-64">
                             <div className="truncate" title={notification.message}>
                               {notification.message}
                             </div>
                           </TableCell>
 
-                          <TableCell className="text-gray-500 dark:text-gray-400">
+                          <TableCell className="text-gray-500 dark:text-white/60">
                             <div className="flex items-center gap-1">
                               <Clock className="h-3 w-3" />
                               <span className="text-sm">
@@ -491,7 +491,7 @@ export default function BildirimlerPage() {
                                 <div className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse"></div>
                               )}
                               <Badge
-                                className={`${!notification.is_read ? "bg-emerald-500 text-white" : "bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300"} text-xs px-2 py-1`}
+                                className={`${!notification.is_read ? "bg-emerald-500 text-white" : "bg-gray-100 dark:bg-black/10 text-gray-600 dark:text-white/70"} text-xs px-2 py-1`}
                               >
                                 {notification.is_read ? "Okundu" : "Yeni"}
                               </Badge>
@@ -510,11 +510,11 @@ export default function BildirimlerPage() {
                                   <span className="sr-only">Actions</span>
                                 </Button>
                               </DropdownMenuTrigger>
-                              <DropdownMenuContent align="end" className="dark:bg-gray-800 dark:border-gray-700">
+                              <DropdownMenuContent align="end" className="dark:bg-black/10 dark:border-white/10">
                                 {!notification.is_read && (
                                   <DropdownMenuItem
                                     onClick={() => handleMarkAsRead(notification.id)}
-                                    className="dark:text-gray-200 dark:hover:bg-gray-700"
+                                    className="dark:text-white dark:hover:bg-white/10"
                                   >
                                     <Check className="mr-2 h-4 w-4" />
                                     Okundu İşaretle
@@ -522,13 +522,13 @@ export default function BildirimlerPage() {
                                 )}
                                 <DropdownMenuItem
                                   onClick={() => handleViewNotification(notification)}
-                                  className="dark:text-gray-200 dark:hover:bg-gray-700"
+                                  className="dark:text-white dark:hover:bg-white/10"
                                 >
                                   <Eye className="mr-2 h-4 w-4" />
                                   Detayları Gör
                                 </DropdownMenuItem>
                                 <DropdownMenuItem
-                                  className="text-red-600 dark:text-red-400 dark:hover:bg-gray-700"
+                                  className="text-red-600 dark:text-red-400 dark:hover:bg-white/10"
                                   onClick={() => handleDelete(notification.id)}
                                 >
                                   <Trash2 className="mr-2 h-4 w-4" />
@@ -563,7 +563,7 @@ export default function BildirimlerPage() {
       </div>
 
       {/* Auto-refresh info */}
-      <Card className="border-0 shadow-lg bg-gradient-to-r from-emerald-50 to-blue-50 dark:from-emerald-900/20 dark:to-blue-900/20 dark:border dark:border-gray-800">
+      <Card className="border-0 shadow-lg bg-gradient-to-r from-emerald-50 to-blue-50 dark:from-emerald-900/20 dark:to-blue-900/20 dark:border dark:border-white/10">
         <CardContent className="p-6">
           <div className="flex items-center gap-3">
             <div className="p-2 bg-emerald-100 dark:bg-emerald-900/30 rounded-lg">
@@ -571,7 +571,7 @@ export default function BildirimlerPage() {
             </div>
             <div>
               <h3 className="font-semibold text-gray-800 dark:text-white mb-1">Otomatik Bildirimler</h3>
-              <p className="text-sm text-gray-600 dark:text-gray-300">
+              <p className="text-sm text-gray-600 dark:text-white/70">
                 Yaklaşan ödemeleriniz için otomatik olarak bildirimler oluşturulur ve header'da görüntülenir.
               </p>
             </div>

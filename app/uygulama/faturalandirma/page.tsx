@@ -160,14 +160,14 @@ export default function FaturalandirmaPage() {
               </div>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="p-4 border rounded-lg">
-                  <p className="text-sm text-gray-500 dark:text-gray-400 mb-1">Ödeme Yöntemi</p>
+                  <p className="text-sm text-gray-500 dark:text-white/60 mb-1">Ödeme Yöntemi</p>
                   <div className="flex items-center gap-2">
                     <CreditCard className="h-4 w-4" />
                     <p className="font-medium">Kredi Kartı</p>
                   </div>
                 </div>
                 <div className="p-4 border rounded-lg">
-                  <p className="text-sm text-gray-500 dark:text-gray-400 mb-1">Bitiş Tarihi</p>
+                  <p className="text-sm text-gray-500 dark:text-white/60 mb-1">Bitiş Tarihi</p>
                   <div className="flex items-center gap-2">
                     <Calendar className="h-4 w-4" />
                     <p className="font-medium">

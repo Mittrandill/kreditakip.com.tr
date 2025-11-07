@@ -203,7 +203,7 @@ export default function PaymentPage() {
       <div className="flex items-center justify-center min-h-[400px]">
         <div className="text-center space-y-4">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-emerald-600 mx-auto"></div>
-          <p className="text-gray-600 dark:text-gray-400">Yükleniyor...</p>
+          <p className="text-gray-600 dark:text-white/60">Yükleniyor...</p>
         </div>
       </div>
     )
@@ -320,7 +320,7 @@ export default function PaymentPage() {
                       disabled={isProcessing}
                       maxLength={11}
                     />
-                    <p className="text-xs text-gray-500 dark:text-gray-400">
+                    <p className="text-xs text-gray-500 dark:text-white/60">
                       Başında 0 ile birlikte 11 hane
                     </p>
                   </div>
@@ -337,7 +337,7 @@ export default function PaymentPage() {
                       required
                       disabled={isProcessing}
                     />
-                    <p className="text-xs text-gray-500 dark:text-gray-400">
+                    <p className="text-xs text-gray-500 dark:text-white/60">
                       Ödeme sağlayıcısı tarafından zorunludur
                     </p>
                   </div>
@@ -415,7 +415,7 @@ export default function PaymentPage() {
                       onChange={handleBillingChange}
                       disabled={isProcessing}
                     />
-                    <p className="text-xs text-gray-500 dark:text-gray-400">
+                    <p className="text-xs text-gray-500 dark:text-white/60">
                       Kurumsal fatura için gereklidir
                     </p>
                   </div>
@@ -431,7 +431,7 @@ export default function PaymentPage() {
                       maxLength={10}
                       disabled={isProcessing}
                     />
-                    <p className="text-xs text-gray-500 dark:text-gray-400">
+                    <p className="text-xs text-gray-500 dark:text-white/60">
                       Kurumsal fatura için gereklidir
                     </p>
                   </div>
@@ -449,11 +449,11 @@ export default function PaymentPage() {
               <CardContent className="space-y-4">
                 <div className="space-y-3">
                   <div className="flex justify-between text-sm">
-                    <span className="text-gray-600 dark:text-gray-400">{selectedPlan.name}:</span>
+                    <span className="text-gray-600 dark:text-white/60">{selectedPlan.name}:</span>
                     <span className="font-medium">{selectedPlan.price}₺</span>
                   </div>
                   <div className="flex justify-between text-sm">
-                    <span className="text-gray-600 dark:text-gray-400">Periyot:</span>
+                    <span className="text-gray-600 dark:text-white/60">Periyot:</span>
                     <span className="font-medium">{selectedPlan.periodLabel}</span>
                   </div>
                   {selectedPlan.originalPrice && (
