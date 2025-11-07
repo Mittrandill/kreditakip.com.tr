@@ -259,33 +259,33 @@ export default function PDFOdemePlaniPage() {
         </div>
       </Card>
 
-      <Card className="shadow-lg border-gray-200 rounded-2xl overflow-hidden">
-        <CardHeader className="bg-gradient-to-r from-gray-50 to-purple-50 border-b">
-          <CardTitle className="flex items-center gap-2">
-            <FileText className="h-5 w-5 text-purple-600" />
+      <Card className="shadow-lg border-gray-200 dark:border-gray-700 rounded-2xl overflow-hidden dark:bg-gray-900">
+        <CardHeader className="bg-gradient-to-r from-gray-50 to-purple-50 dark:from-gray-800 dark:to-purple-900/30 border-b dark:border-gray-700">
+          <CardTitle className="flex items-center gap-2 dark:text-white">
+            <FileText className="h-5 w-5 text-purple-600 dark:text-purple-400" />
             PDF Dosyası Yükle
           </CardTitle>
-          <CardDescription>Bankanızdan aldığınız ödeme planı PDF'ini yükleyin</CardDescription>
+          <CardDescription className="dark:text-gray-400">Bankanızdan aldığınız ödeme planı PDF'ini yükleyin</CardDescription>
         </CardHeader>
         <CardContent className="p-8">
           <div
             {...getRootProps()}
             className={`border-2 border-dashed rounded-2xl p-12 text-center cursor-pointer transition-all duration-200 ${
               isDragActive
-                ? "border-purple-500 bg-purple-50"
+                ? "border-purple-500 bg-purple-50 dark:bg-purple-900/20 dark:border-purple-400"
                 : file
-                  ? "border-green-500 bg-green-50"
-                  : "border-gray-300 hover:border-purple-400 hover:bg-purple-50/50"
+                  ? "border-green-500 bg-green-50 dark:bg-green-900/20 dark:border-green-400"
+                  : "border-gray-300 dark:border-gray-600 hover:border-purple-400 dark:hover:border-purple-500 hover:bg-purple-50/50 dark:hover:bg-purple-900/20"
             }`}
           >
             <input {...getInputProps()} />
             <div className="flex flex-col items-center gap-6">
               {file ? (
                 <>
-                  <CheckCircle className="h-16 w-16 text-green-500" />
+                  <CheckCircle className="h-16 w-16 text-green-500 dark:text-green-400" />
                   <div>
-                    <p className="text-xl font-medium text-green-700 mb-2">{file.name}</p>
-                    <p className="text-sm text-green-600">
+                    <p className="text-xl font-medium text-green-700 dark:text-green-400 mb-2">{file.name}</p>
+                    <p className="text-sm text-green-600 dark:text-green-500">
                       {(file.size / 1024 / 1024).toFixed(2)} MB
                       {file.size > 5 * 1024 * 1024 && " - Büyük dosya, yavaş olabilir"}
                     </p>
@@ -293,12 +293,12 @@ export default function PDFOdemePlaniPage() {
                 </>
               ) : (
                 <>
-                  <Upload className="h-16 w-16 text-gray-400" />
+                  <Upload className="h-16 w-16 text-gray-400 dark:text-gray-500" />
                   <div>
-                    <p className="text-xl font-medium text-gray-700 mb-2">
+                    <p className="text-xl font-medium text-gray-700 dark:text-gray-300 mb-2">
                       {isDragActive ? "Dosyayı buraya bırakın" : "PDF dosyasını sürükleyin veya seçin"}
                     </p>
-                    <p className="text-sm text-gray-500">Maksimum 10MB - Küçük dosyalar daha hızlı</p>
+                    <p className="text-sm text-gray-500 dark:text-gray-400">Maksimum 10MB - Küçük dosyalar daha hızlı</p>
                   </div>
                 </>
               )}
@@ -315,11 +315,11 @@ export default function PDFOdemePlaniPage() {
           {isAnalyzing && (
             <div className="space-y-4 mt-6">
               <div className="flex items-center gap-2">
-                <Loader2 className="mr-2 h-5 w-5 animate-spin text-purple-600" />
-                <span className="text-sm font-medium">PDF hızlı analiz ediliyor...</span>
+                <Loader2 className="mr-2 h-5 w-5 animate-spin text-purple-600 dark:text-purple-400" />
+                <span className="text-sm font-medium dark:text-gray-300">PDF hızlı analiz ediliyor...</span>
               </div>
               <Progress value={progress} className="h-3" />
-              <p className="text-xs text-gray-500">Optimize edilmiş AI ile 3-5 saniyede tamamlanacak</p>
+              <p className="text-xs text-gray-500 dark:text-gray-400">Optimize edilmiş AI ile 3-5 saniyede tamamlanacak</p>
             </div>
           )}
 
@@ -376,7 +376,7 @@ export default function PDFOdemePlaniPage() {
             transition={{ duration: 0.6, delay: 0.5 + index * 0.1 }}
             whileHover={{ y: -5 }}
           >
-            <Card className="text-center p-6 border-0 shadow-lg hover:shadow-xl transition-all duration-300 rounded-2xl">
+            <Card className="text-center p-6 border-0 shadow-lg hover:shadow-xl transition-all duration-300 rounded-2xl dark:bg-gray-900 dark:border-gray-800">
               <motion.div
                 className={`w-14 h-14 bg-gradient-to-br ${feature.color} rounded-2xl flex items-center justify-center mx-auto mb-4`}
                 whileHover={{ scale: 1.1, rotate: 5 }}
@@ -384,8 +384,8 @@ export default function PDFOdemePlaniPage() {
               >
                 <feature.icon className="h-7 w-7 text-white" />
               </motion.div>
-              <h3 className="font-bold text-lg mb-2 text-gray-900">{feature.title}</h3>
-              <p className="text-gray-600">{feature.description}</p>
+              <h3 className="font-bold text-lg mb-2 text-gray-900 dark:text-white">{feature.title}</h3>
+              <p className="text-gray-600 dark:text-gray-400">{feature.description}</p>
             </Card>
           </motion.div>
         ))}

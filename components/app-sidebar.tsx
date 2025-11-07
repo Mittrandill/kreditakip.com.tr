@@ -286,27 +286,39 @@ export default function AppSidebar() {
               <Link
                 href={item.href}
                 className={`
-                  relative flex items-center rounded-xl transition-all duration-300
+                  relative flex items-center rounded-xl transition-all duration-300 group/link
                   ${isCollapsed ? "justify-center h-10 w-10" : "gap-3 px-4 h-10"}
                   ${isActive
-                    ? "bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400"
+                    ? "bg-gradient-to-r from-emerald-500 to-teal-600 text-white shadow-lg shadow-emerald-500/30"
                     : "text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800/50 hover:text-gray-900 dark:hover:text-gray-200"
                   }
                 `}
               >
-                <div className="relative">
-                  <Icon className="h-5 w-5 flex-shrink-0" />
+                <div className={`relative flex items-center justify-center transition-all duration-300 ${
+                  isActive ? "scale-110" : "group-hover/link:scale-105"
+                }`}>
+                  {isActive && (
+                    <div className="absolute inset-0 bg-white/20 rounded-lg blur-md"></div>
+                  )}
+                  <Icon className={`relative h-5 w-5 flex-shrink-0 transition-all duration-300 ${
+                    isActive ? "text-white" : "text-gray-600 dark:text-gray-400 group-hover/link:text-emerald-600 dark:group-hover/link:text-emerald-400"
+                  }`} />
                   {item.label === "Bildirimler" && unreadCount > 0 && (
-                    <div className="absolute -top-1 -right-1 min-w-[18px] h-[18px] px-1 bg-red-500 rounded-full border-2 border-white dark:border-gray-900 flex items-center justify-center">
+                    <div className="absolute -top-1 -right-1 min-w-[18px] h-[18px] px-1 bg-red-500 rounded-full border-2 border-white dark:border-gray-900 flex items-center justify-center z-10">
                       <span className="text-[10px] font-bold text-white leading-none">{unreadCount > 9 ? "9+" : unreadCount}</span>
                     </div>
                   )}
                 </div>
                 <span className={`text-sm font-medium transition-all duration-300 ${
                   isCollapsed ? "opacity-0 w-0 overflow-hidden absolute" : "opacity-100"
-                }`}>
+                } ${isActive ? "text-white" : ""}`}>
                   {item.label}
                 </span>
+
+                {/* Hover glow effect */}
+                {!isActive && (
+                  <div className="absolute inset-0 rounded-xl opacity-0 group-hover/link:opacity-100 transition-opacity duration-300 bg-gradient-to-r from-emerald-600 to-teal-700 blur-xl -z-10"></div>
+                )}
               </Link>
 
               {isCollapsed && (
@@ -331,21 +343,26 @@ export default function AppSidebar() {
           <button
             onClick={toggleSidebar}
             className={`
-              relative flex items-center rounded-xl transition-all duration-300
+              relative flex items-center rounded-xl transition-all duration-300 group/link
               ${isCollapsed ? "justify-center h-10 w-10" : "gap-3 px-4 h-10"}
               text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800/50 hover:text-gray-900 dark:hover:text-gray-200
             `}
           >
-            {isCollapsed ? (
-              <PanelLeftOpen className="h-5 w-5 flex-shrink-0" />
-            ) : (
-              <>
-                <PanelLeftClose className="h-5 w-5 flex-shrink-0" />
-                <span className="text-sm font-medium transition-all duration-300">
-                  Menüyü Daralt
-                </span>
-              </>
+            <div className="relative flex items-center justify-center transition-all duration-300 group-hover/link:scale-105">
+              {isCollapsed ? (
+                <PanelLeftOpen className="h-5 w-5 flex-shrink-0 text-gray-600 dark:text-gray-400 group-hover/link:text-emerald-600 dark:group-hover/link:text-emerald-400 transition-all duration-300" />
+              ) : (
+                <PanelLeftClose className="h-5 w-5 flex-shrink-0 text-gray-600 dark:text-gray-400 group-hover/link:text-emerald-600 dark:group-hover/link:text-emerald-400 transition-all duration-300" />
+              )}
+            </div>
+            {!isCollapsed && (
+              <span className="text-sm font-medium transition-all duration-300">
+                Menüyü Daralt
+              </span>
             )}
+
+            {/* Hover glow effect */}
+            <div className="absolute inset-0 rounded-xl opacity-0 group-hover/link:opacity-100 transition-opacity duration-300 bg-gradient-to-r from-emerald-600 to-teal-700 blur-xl -z-10"></div>
           </button>
 
           {isCollapsed && (
@@ -446,7 +463,10 @@ export default function AppSidebar() {
                   Premium'a Geç
                 </DropdownMenuItem>
               )}
-              <DropdownMenuItem className="text-gray-700 dark:text-gray-300 hover:bg-emerald-50 dark:hover:bg-emerald-950/30 focus:bg-emerald-50 dark:focus:bg-emerald-950/30 cursor-pointer">
+              <DropdownMenuItem
+                onClick={() => window.open("https://www.kreditakip.com.tr/sss", "_blank")}
+                className="text-gray-700 dark:text-gray-300 hover:bg-emerald-50 dark:hover:bg-emerald-950/30 focus:bg-emerald-50 dark:focus:bg-emerald-950/30 cursor-pointer"
+              >
                 <HelpCircle className="mr-3 h-4 w-4" />
                 Yardım & Destek
               </DropdownMenuItem>
