@@ -830,56 +830,44 @@ export default function Header({ pageTitle }: HeaderProps) {
           </Button>
 
           {notificationOpen && (
-            <div className="absolute right-0 top-full mt-3 w-80 bg-white dark:bg-black/20 dark:backdrop-blur-xl rounded-2xl shadow-2xl border border-gray-100 dark:border-white/10 z-50 overflow-hidden backdrop-blur-sm">
+            <div className="absolute right-0 top-full mt-3 w-96 bg-white dark:bg-gray-900 rounded-xl shadow-2xl border border-gray-200 dark:border-gray-700 z-50 overflow-hidden">
               {/* Header */}
-              <div className="bg-gradient-to-r from-emerald-600 to-blue-600 dark:from-emerald-500 dark:to-blue-500 p-4 text-white">
+              <div className="px-4 py-3 border-b border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-3">
-                    <div className="p-2 bg-white/20 rounded-xl backdrop-blur-sm">
-                      <Bell className="h-5 w-5" />
+                    <div className="p-2 bg-gradient-to-br from-emerald-500 to-emerald-600 dark:from-emerald-600 dark:to-emerald-700 rounded-lg">
+                      <Bell className="h-4 w-4 text-white" />
                     </div>
                     <div>
-                      <h3 className="font-bold text-lg">Bildirimler</h3>
-                      <p className="text-white/80 text-sm">
-                        {unreadCount > 0 ? `${unreadCount} okunmamış` : "Hepsi okundu"}
+                      <h3 className="font-semibold text-sm text-gray-900 dark:text-white">Bildirimler</h3>
+                      <p className="text-xs text-gray-500 dark:text-gray-400">
+                        {unreadCount > 0 ? `${unreadCount} okunmamış bildirim` : "Hepsi okundu"}
                       </p>
                     </div>
                   </div>
-                  <div className="flex items-center gap-2">
-                    <Link href="/uygulama/bildirimler" onClick={() => setNotificationOpen(false)}>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        className="text-white hover:bg-white/20 rounded-xl gap-2 transition-all duration-200"
-                      >
-                        Tümü
-                        <ArrowRight className="h-4 w-4" />
-                      </Button>
-                    </Link>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      className="text-white hover:bg-white/20 rounded-xl h-8 w-8"
-                      onClick={toggleNotifications}
-                    >
-                      <X className="h-4 w-4" />
-                    </Button>
-                  </div>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="h-8 w-8 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800"
+                    onClick={toggleNotifications}
+                  >
+                    <X className="h-4 w-4" />
+                  </Button>
                 </div>
               </div>
 
               {/* Notifications List */}
-              <div className="max-h-80 overflow-y-auto bg-white dark:bg-black/20">
+              <div className="max-h-96 overflow-y-auto bg-white dark:bg-gray-900">
                 {notifications.length === 0 ? (
-                  <div className="p-6 text-center">
-                    <div className="w-12 h-12 bg-gray-100 dark:bg-black/10 rounded-full flex items-center justify-center mx-auto mb-3">
-                      <Bell className="h-6 w-6 text-gray-400 dark:text-white/60" />
+                  <div className="p-8 text-center">
+                    <div className="w-16 h-16 bg-gray-100 dark:bg-gray-800 rounded-full flex items-center justify-center mx-auto mb-3">
+                      <Bell className="h-8 w-8 text-gray-400 dark:text-gray-500" />
                     </div>
-                    <h4 className="font-medium text-gray-700 dark:text-white/70 mb-1">Henüz bildirim yok</h4>
-                    <p className="text-xs text-gray-500 dark:text-white/60">Yeni bildirimler burada görünecek</p>
+                    <h4 className="font-medium text-gray-900 dark:text-white mb-1">Henüz bildirim yok</h4>
+                    <p className="text-sm text-gray-500 dark:text-gray-400">Yeni bildirimler burada görünecek</p>
                   </div>
                 ) : (
-                  <div className="p-2 space-y-1">
+                  <div className="divide-y divide-gray-100 dark:divide-gray-800">
                     {notifications.map((notification) => {
                       const config = typeConfig[notification.type as keyof typeof typeConfig] || typeConfig.info
                       const Icon = config.icon
@@ -888,56 +876,54 @@ export default function Header({ pageTitle }: HeaderProps) {
                         <div
                           key={notification.id}
                           className={`
-                            relative p-3 rounded-lg cursor-pointer transition-all duration-200 group
+                            p-4 cursor-pointer transition-all duration-200
                             ${
                               notification.is_read
-                                ? "bg-gray-50 dark:bg-black/10 hover:bg-gray-100 dark:hover:bg-emerald-900/20"
-                                : "bg-blue-50 dark:bg-blue-900/20 hover:bg-blue-100 dark:hover:bg-blue-900/30 border border-blue-200 dark:border-blue-800"
+                                ? "bg-white dark:bg-gray-900 hover:bg-gray-50 dark:hover:bg-gray-800"
+                                : "bg-emerald-50 dark:bg-emerald-950 hover:bg-emerald-100 dark:hover:bg-emerald-900"
                             }
                           `}
                           onClick={() => handleHeaderNotificationClick(notification)}
                         >
                           <div className="flex items-start gap-3">
                             <div
-                              className={`p-1.5 rounded-lg bg-white dark:bg-black/10 shadow-sm ${config.color} flex-shrink-0`}
+                              className={`p-2 rounded-lg ${config.color} flex-shrink-0 bg-white dark:bg-gray-800 shadow-sm`}
                             >
-                              <Icon className="h-3 w-3" />
+                              <Icon className="h-4 w-4" />
                             </div>
 
                             <div className="flex-1 min-w-0">
                               <div className="flex items-start justify-between gap-2 mb-1">
                                 <h4
-                                  className={`font-medium text-sm leading-tight ${
+                                  className={`font-semibold text-sm ${
                                     notification.is_read
-                                      ? "text-gray-600 dark:text-white/60"
+                                      ? "text-gray-700 dark:text-gray-300"
                                       : "text-gray-900 dark:text-white"
                                   }`}
                                 >
                                   {notification.title}
                                 </h4>
                                 {!notification.is_read && (
-                                  <div className="w-2 h-2 rounded-full bg-blue-500 flex-shrink-0 mt-1" />
+                                  <div className="w-2 h-2 rounded-full bg-emerald-500 flex-shrink-0 mt-1.5" />
                                 )}
                               </div>
 
                               <p
-                                className={`text-xs leading-relaxed mb-2 line-clamp-2 ${
+                                className={`text-sm mb-2 line-clamp-2 ${
                                   notification.is_read
-                                    ? "text-gray-500 dark:text-white/60"
-                                    : "text-gray-700 dark:text-white/70"
+                                    ? "text-gray-600 dark:text-gray-400"
+                                    : "text-gray-700 dark:text-gray-300"
                                 }`}
                               >
                                 {notification.message}
                               </p>
 
-                              <div className="flex justify-end">
-                                <span className="text-xs text-gray-400 dark:text-white/60">
-                                  {formatDistanceToNow(new Date(notification.created_at), {
-                                    addSuffix: true,
-                                    locale: tr,
-                                  })}
-                                </span>
-                              </div>
+                              <span className="text-xs text-gray-500 dark:text-gray-500">
+                                {formatDistanceToNow(new Date(notification.created_at), {
+                                  addSuffix: true,
+                                  locale: tr,
+                                })}
+                              </span>
                             </div>
                           </div>
                         </div>
@@ -949,11 +935,11 @@ export default function Header({ pageTitle }: HeaderProps) {
 
               {/* Footer */}
               {notifications.length > 0 && (
-                <div className="p-3 bg-gray-50 dark:bg-emerald-900/20 border-t border-gray-200 dark:border-white/10">
+                <div className="px-4 py-3 bg-gray-50 dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700">
                   <Link href="/uygulama/bildirimler" onClick={() => setNotificationOpen(false)}>
-                    <Button className="w-full bg-gradient-to-r from-emerald-600 to-blue-600 dark:from-emerald-500 dark:to-blue-500 hover:from-emerald-700 hover:to-blue-700 dark:hover:from-emerald-600 dark:hover:to-blue-600 text-white rounded-lg gap-2 transition-all duration-300 text-sm py-2">
+                    <Button className="w-full bg-gradient-to-r from-emerald-500 to-emerald-600 dark:from-emerald-600 dark:to-emerald-700 hover:from-emerald-600 hover:to-emerald-700 dark:hover:from-emerald-700 dark:hover:to-emerald-800 text-white text-sm">
                       Tüm Bildirimleri Görüntüle
-                      <ArrowRight className="h-4 w-4" />
+                      <ArrowRight className="h-4 w-4 ml-2" />
                     </Button>
                   </Link>
                 </div>

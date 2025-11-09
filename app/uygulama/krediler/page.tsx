@@ -369,30 +369,32 @@ export default function KredilerPage() {
         <MetricCard
           title="Aktif Kredi"
           value={formatNumber(totalActiveCredits)}
-          subtitle="adet"
+          subtitle="Devam eden kredi sayınız"
           color="blue"
           icon={<CreditCard />}
+          badge={`${totalActiveCredits} aktif`}
         />
         <MetricCard
           title="Toplam Borç"
           value={formatCurrency(totalRemainingDebt)}
-          subtitle="Kalan ana para"
+          subtitle="Tüm kredilerdeki kalan ana para toplamı"
           color="emerald"
           icon={<DollarSign />}
         />
         <MetricCard
           title="Toplam Sonraki Ödeme"
           value={formatCurrency(totalNextPayments)}
-          subtitle="Yaklaşan ödemeler"
+          subtitle="Gelecek dönemdeki toplam ödeme tutarı"
           color="purple"
           icon={<Calendar />}
         />
         <MetricCard
           title="Gecikmiş Kredi"
           value={formatNumber(overdueCreditsCount)}
-          subtitle="adet"
+          subtitle="Ödemesi gecikmiş kredi sayısı"
           color="orange"
           icon={<AlertTriangle />}
+          badge={overdueCreditsCount > 0 ? "Dikkat!" : "Temiz"}
         />
       </div>
 

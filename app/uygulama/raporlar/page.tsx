@@ -586,28 +586,29 @@ export default function RaporlarPage() {
         <MetricCard
           title="Toplam Kredi"
           value={summaryMetrics.totalCredits.toString()}
-          subtitle={`${summaryMetrics.activeCredits} aktif kredi`}
+          subtitle="Sistemdeki toplam kredi sayınız"
           color="blue"
           icon={<CreditCard className="h-5 w-5" />}
+          badge={`${summaryMetrics.activeCredits} aktif`}
         />
         <MetricCard
           title="Toplam Borç"
           value={formatCurrency(summaryMetrics.totalDebt)}
-          subtitle="Kalan borç tutarı"
+          subtitle="Tüm kredilerdeki kalan toplam borç"
           color="purple"
           icon={<DollarSign className="h-5 w-5" />}
         />
         <MetricCard
           title="Ödeme Performansı"
           value={formatPercent(summaryMetrics.paymentPerformance / 100)}
-          subtitle="Ödeme başarı oranı"
+          subtitle="Zamanında yapılan ödeme başarı oranı"
           color="emerald"
           icon={<Target className="h-5 w-5" />}
         />
         <MetricCard
           title="Yaklaşan Ödemeler"
           value={summaryMetrics.upcomingPayments.toString()}
-          subtitle="7 gün içinde"
+          subtitle="Önümüzdeki 7 gün içinde yapılacak ödeme"
           color="orange"
           icon={<Clock className="h-5 w-5" />}
         />

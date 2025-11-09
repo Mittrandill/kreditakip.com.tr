@@ -306,32 +306,31 @@ export default function BildirimlerPage() {
         <MetricCard
           title="Toplam Bildirim"
           value={stats.total || 0}
-          subtitle="Tüm bildirimler"
+          subtitle="Sistem genelindeki tüm bildirimleriniz"
           color="blue"
           icon={<Bell />}
         />
         <MetricCard
           title="Başarılı"
           value={stats.success || 0}
-          subtitle="Tamamlanan işlemler"
+          subtitle="Başarıyla tamamlanan işlem bildirimleri"
           color="emerald"
           icon={<CheckCircle />}
         />
         <MetricCard
           title="Uyarılar"
           value={stats.warnings || 0}
-          subtitle="Önemli hatırlatmalar"
+          subtitle="Dikkat gerektiren önemli bildirimler"
           color="purple"
           icon={<AlertTriangle />}
         />
         <MetricCard
           title="Okunmamış"
           value={stats.unread || 0}
-          subtitle="Yeni bildirimler"
+          subtitle="Henüz görüntülenmemiş yeni bildirimler"
           color="orange"
           icon={<BellRing />}
-          change={stats.unread > 0 ? `${stats.unread} yeni` : "Hepsi okundu"}
-          changeType={stats.unread > 0 ? "negative" : "positive"}
+          badge={stats.unread > 0 ? `${stats.unread} yeni` : "Hepsi okundu"}
         />
       </div>
 
