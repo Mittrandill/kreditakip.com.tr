@@ -369,15 +369,15 @@ export default function PDFReportModal({ userData, trigger }: PDFReportModalProp
         )}
       </DialogTrigger>
 
-      <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto bg-white">
-        <DialogHeader className="pb-6 border-b border-gray-100">
-          <DialogTitle className="flex items-center gap-4 text-2xl font-semibold text-gray-900">
-            <div className="p-3 bg-emerald-100 rounded-xl">
-              <FileText className="h-6 w-6 text-emerald-600" />
+      <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto bg-white dark:bg-gray-900">
+        <DialogHeader className="pb-6 border-b border-gray-100 dark:border-gray-800">
+          <DialogTitle className="flex items-center gap-4 text-2xl font-semibold text-gray-900 dark:text-white">
+            <div className="p-3 bg-emerald-100 dark:bg-emerald-900/30 rounded-xl">
+              <FileText className="h-6 w-6 text-emerald-600 dark:text-emerald-400" />
             </div>
             <div>
               <div>PDF Rapor Olustur</div>
-              <div className="text-sm font-normal text-gray-500 mt-1">
+              <div className="text-sm font-normal text-gray-500 dark:text-gray-400 mt-1">
                 Kredi portfoyunuz icin detayli rapor hazirlayın - Adim {currentStep}/4
               </div>
             </div>
@@ -418,14 +418,14 @@ export default function PDFReportModal({ userData, trigger }: PDFReportModalProp
                 <div className="w-8 h-8 bg-emerald-600 text-white rounded-full flex items-center justify-center text-sm font-semibold">
                   1
                 </div>
-                <h3 className="text-lg font-semibold text-gray-900">Temel Ayarlar</h3>
+                <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Temel Ayarlar</h3>
               </div>
 
-              <Card className="border border-gray-200 shadow-sm">
+              <Card className="border border-gray-200 dark:border-gray-700 shadow-sm dark:bg-gray-800">
                 <CardContent className="p-6 space-y-6">
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div className="space-y-2">
-                      <Label htmlFor="reportTitle" className="text-sm font-medium text-gray-700">
+                      <Label htmlFor="reportTitle" className="text-sm font-medium text-gray-700 dark:text-gray-300">
                         Rapor Basligi
                       </Label>
                       <Input
@@ -433,14 +433,14 @@ export default function PDFReportModal({ userData, trigger }: PDFReportModalProp
                         value={reportTitle}
                         onChange={(e) => setReportTitle(e.target.value)}
                         placeholder="Rapor basligini girin"
-                        className="h-11 border-gray-300 focus:border-emerald-500 focus:ring-emerald-500"
+                        className="h-11 border-gray-300 dark:border-gray-600 focus:border-emerald-500 focus:ring-emerald-500 dark:bg-gray-700 dark:text-white"
                       />
                     </div>
 
                     <div className="space-y-2">
-                      <Label className="text-sm font-medium text-gray-700">Rapor Donemi</Label>
+                      <Label className="text-sm font-medium text-gray-700 dark:text-gray-300">Rapor Donemi</Label>
                       <Select value={reportPeriod} onValueChange={handlePeriodChange}>
-                        <SelectTrigger className="h-11 border-gray-300 focus:border-emerald-500">
+                        <SelectTrigger className="h-11 border-gray-300 dark:border-gray-600 focus:border-emerald-500 dark:bg-gray-700 dark:text-white">
                           <SelectValue />
                         </SelectTrigger>
                         <SelectContent>
@@ -455,23 +455,23 @@ export default function PDFReportModal({ userData, trigger }: PDFReportModalProp
                   </div>
 
                   {reportPeriod === "custom" && (
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-4 border-t border-gray-100">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-4 border-t border-gray-100 dark:border-gray-700">
                       <div className="space-y-2">
-                        <Label className="text-sm font-medium text-gray-700">Baslangic Tarihi</Label>
+                        <Label className="text-sm font-medium text-gray-700 dark:text-gray-300">Baslangic Tarihi</Label>
                         <Popover>
                           <PopoverTrigger asChild>
                             <Button
                               variant="outline"
                               className={cn(
-                                "w-full justify-start text-left font-normal h-11 border-gray-300",
-                                !dateFrom && "text-gray-500",
+                                "w-full justify-start text-left font-normal h-11 border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white",
+                                !dateFrom && "text-gray-500 dark:text-gray-400",
                               )}
                             >
                               <CalendarIcon className="mr-2 h-4 w-4" />
                               {dateFrom ? format(dateFrom, "dd/MM/yyyy", { locale: tr }) : "Tarih secin"}
                             </Button>
                           </PopoverTrigger>
-                          <PopoverContent className="w-auto p-0" align="start">
+                          <PopoverContent className="w-auto p-0 dark:bg-gray-800 dark:border-gray-700" align="start">
                             <Calendar
                               mode="single"
                               selected={dateFrom}
@@ -483,21 +483,21 @@ export default function PDFReportModal({ userData, trigger }: PDFReportModalProp
                         </Popover>
                       </div>
                       <div className="space-y-2">
-                        <Label className="text-sm font-medium text-gray-700">Bitis Tarihi</Label>
+                        <Label className="text-sm font-medium text-gray-700 dark:text-gray-300">Bitis Tarihi</Label>
                         <Popover>
                           <PopoverTrigger asChild>
                             <Button
                               variant="outline"
                               className={cn(
-                                "w-full justify-start text-left font-normal h-11 border-gray-300",
-                                !dateTo && "text-gray-500",
+                                "w-full justify-start text-left font-normal h-11 border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white",
+                                !dateTo && "text-gray-500 dark:text-gray-400",
                               )}
                             >
                               <CalendarIcon className="mr-2 h-4 w-4" />
                               {dateTo ? format(dateTo, "dd/MM/yyyy", { locale: tr }) : "Tarih secin"}
                             </Button>
                           </PopoverTrigger>
-                          <PopoverContent className="w-auto p-0" align="start">
+                          <PopoverContent className="w-auto p-0 dark:bg-gray-800 dark:border-gray-700" align="start">
                             <Calendar mode="single" selected={dateTo} onSelect={setDateTo as any} initialFocus locale={tr} />
                           </PopoverContent>
                         </Popover>
@@ -515,14 +515,14 @@ export default function PDFReportModal({ userData, trigger }: PDFReportModalProp
                 <div className="w-8 h-8 bg-emerald-600 text-white rounded-full flex items-center justify-center text-sm font-semibold">
                   2
                 </div>
-                <h3 className="text-lg font-semibold text-gray-900">Kredi Secimi</h3>
+                <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Kredi Secimi</h3>
               </div>
 
-              <Card className="border border-gray-200 shadow-sm">
+              <Card className="border border-gray-200 dark:border-gray-700 shadow-sm dark:bg-gray-800">
                 <CardContent className="p-6">
                   <div className="space-y-6">
                     <div className="flex items-center justify-between">
-                      <Label className="text-sm font-medium text-gray-700">Rapora Dahil Edilecek Krediler</Label>
+                      <Label className="text-sm font-medium text-gray-700 dark:text-gray-300">Rapora Dahil Edilecek Krediler</Label>
                       <Button
                         variant="outline"
                         size="sm"
@@ -533,7 +533,7 @@ export default function PDFReportModal({ userData, trigger }: PDFReportModalProp
                             setSelectedCredits(creditsArray.map((c) => c.id))
                           }
                         }}
-                        className="h-9 px-3 text-sm border-gray-300 hover:bg-gray-50"
+                        className="h-9 px-3 text-sm border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700 dark:bg-gray-700 dark:text-white"
                       >
                         {selectedCredits.length === creditsArray.length ? "Hicbirini Secme" : "Tumunu Sec"}
                       </Button>
@@ -543,13 +543,13 @@ export default function PDFReportModal({ userData, trigger }: PDFReportModalProp
                       {creditsArray.map((credit) => (
                         <div
                           key={credit.id}
-                          className="flex items-center space-x-4 p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors"
+                          className="flex items-center space-x-4 p-4 bg-gray-50 dark:bg-gray-700 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors"
                         >
                           <Checkbox
                             id={credit.id}
                             checked={selectedCredits.includes(credit.id)}
                             onCheckedChange={(checked) => handleCreditToggle(credit.id, checked as boolean)}
-                            className="border-gray-400"
+                            className="border-gray-400 dark:border-gray-500"
                           />
                           <div className="flex items-center gap-3 flex-1">
                             <BankLogo
@@ -558,11 +558,11 @@ export default function PDFReportModal({ userData, trigger }: PDFReportModalProp
                               size="sm"
                             />
                             <div className="flex-1">
-                              <Label htmlFor={credit.id} className="cursor-pointer font-medium text-sm text-gray-900">
+                              <Label htmlFor={credit.id} className="cursor-pointer font-medium text-sm text-gray-900 dark:text-white">
                                 {credit.bankName || credit.banks?.name || "Bilinmeyen Banka"} -{" "}
                                 {credit.creditType || credit.credit_types?.name || "Diger"}
                               </Label>
-                              <p className="text-xs text-gray-500 mt-1">
+                              <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
                                 Kalan Borc: ₺
                                 {(credit.remainingDebt || credit.remaining_debt || 0).toLocaleString("tr-TR")} | Aylik:
                                 ₺{(credit.monthlyPayment || credit.monthly_payment || 0).toLocaleString("tr-TR")}
@@ -572,8 +572,8 @@ export default function PDFReportModal({ userData, trigger }: PDFReportModalProp
                         </div>
                       ))}
                       {creditsArray.length === 0 && (
-                        <div className="text-center py-12 text-gray-500">
-                          <CreditCard className="h-12 w-12 mx-auto mb-4 text-gray-300" />
+                        <div className="text-center py-12 text-gray-500 dark:text-gray-400">
+                          <CreditCard className="h-12 w-12 mx-auto mb-4 text-gray-300 dark:text-gray-600" />
                           <p>Henuz kredi kaydi bulunmuyor.</p>
                         </div>
                       )}
@@ -590,28 +590,28 @@ export default function PDFReportModal({ userData, trigger }: PDFReportModalProp
                 <div className="w-8 h-8 bg-emerald-600 text-white rounded-full flex items-center justify-center text-sm font-semibold">
                   3
                 </div>
-                <h3 className="text-lg font-semibold text-gray-900">Icerik Secimi</h3>
+                <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Icerik Secimi</h3>
               </div>
 
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                 {/* Report Sections */}
-                <Card className="border border-gray-200 shadow-sm">
+                <Card className="border border-gray-200 dark:border-gray-700 shadow-sm dark:bg-gray-800">
                   <CardHeader className="pb-4">
-                    <CardTitle className="flex items-center gap-2 text-base">
-                      <Settings className="h-5 w-5 text-gray-600" />
+                    <CardTitle className="flex items-center gap-2 text-base dark:text-white">
+                      <Settings className="h-5 w-5 text-gray-600 dark:text-gray-400" />
                       Rapor Bolumleri
                     </CardTitle>
                   </CardHeader>
                   <CardContent className="space-y-3">
                     {Object.entries(includeSections).map(([key, value]) => (
-                      <div key={key} className="flex items-center space-x-3 p-3 bg-gray-50 rounded-lg">
+                      <div key={key} className="flex items-center space-x-3 p-3 bg-gray-50 dark:bg-gray-700 rounded-lg">
                         <Checkbox
                           id={key}
                           checked={value}
                           onCheckedChange={(checked) => handleSectionToggle(key, checked as boolean)}
-                          className="border-gray-400"
+                          className="border-gray-400 dark:border-gray-500"
                         />
-                        <Label htmlFor={key} className="cursor-pointer text-sm font-medium text-gray-900 flex-1">
+                        <Label htmlFor={key} className="cursor-pointer text-sm font-medium text-gray-900 dark:text-white flex-1">
                           {key === "summary" && "Genel Ozet"}
                           {key === "creditDetails" && "Kredi Detaylari"}
                           {key === "paymentSchedule" && "Odeme Plani"}
@@ -624,31 +624,31 @@ export default function PDFReportModal({ userData, trigger }: PDFReportModalProp
                 </Card>
 
                 {/* Chart Options */}
-                <Card className="border border-gray-200 shadow-sm">
+                <Card className="border border-gray-200 dark:border-gray-700 shadow-sm dark:bg-gray-800">
                   <CardHeader className="pb-4">
-                    <CardTitle className="flex items-center gap-2 text-base">
-                      <BarChart3 className="h-5 w-5 text-gray-600" />
+                    <CardTitle className="flex items-center gap-2 text-base dark:text-white">
+                      <BarChart3 className="h-5 w-5 text-gray-600 dark:text-gray-400" />
                       Grafik Secimi
                     </CardTitle>
                   </CardHeader>
                   <CardContent className="space-y-3">
                     {Object.entries(chartOptions).map(([key, value]) => (
-                      <div key={key} className="flex items-start space-x-3 p-3 bg-gray-50 rounded-lg">
+                      <div key={key} className="flex items-start space-x-3 p-3 bg-gray-50 dark:bg-gray-700 rounded-lg">
                         <Checkbox
                           id={key}
                           checked={value}
                           onCheckedChange={(checked) => handleChartToggle(key, checked as boolean)}
-                          className="mt-0.5 border-gray-400"
+                          className="mt-0.5 border-gray-400 dark:border-gray-500"
                         />
                         <div className="flex-1">
-                          <Label htmlFor={key} className="cursor-pointer font-medium text-sm text-gray-900 block mb-1">
+                          <Label htmlFor={key} className="cursor-pointer font-medium text-sm text-gray-900 dark:text-white block mb-1">
                             {key === "paymentTrend" && "Odeme Trendi"}
                             {key === "debtDistribution" && "Borc Dagilimi"}
                             {key === "bankComparison" && "Banka Karsilastirmasi"}
                             {key === "interestComparison" && "Faiz oranlari ve maliyet analizi"}
                             {key === "paymentProgress" && "Odeme Ilerleme durumu takibi"}
                           </Label>
-                          <p className="text-xs text-gray-500">
+                          <p className="text-xs text-gray-500 dark:text-gray-400">
                             {key === "paymentTrend" && "Aylik odeme miktarlarinin trend analizi"}
                             {key === "debtDistribution" && "Bankalara gore borc dagilim grafigi"}
                             {key === "bankComparison" && "Bankalar arasi detayli karsilastirma"}
@@ -670,10 +670,10 @@ export default function PDFReportModal({ userData, trigger }: PDFReportModalProp
                 <div className="w-8 h-8 bg-emerald-600 text-white rounded-full flex items-center justify-center text-sm font-semibold">
                   4
                 </div>
-                <h3 className="text-lg font-semibold text-gray-900">Ozet ve Olustur</h3>
+                <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Ozet ve Olustur</h3>
               </div>
 
-              <Card className="border-0 shadow-xl bg-gradient-to-br from-white to-gray-50">
+              <Card className="border-0 shadow-xl bg-gradient-to-br from-white to-gray-50 dark:from-gray-800 dark:to-gray-900">
                 <CardContent className="p-8">
                   <div className="space-y-8">
                     <div className="grid grid-cols-3 gap-6">
@@ -748,12 +748,12 @@ export default function PDFReportModal({ userData, trigger }: PDFReportModalProp
           )}
         </div>
 
-        <div className="flex justify-between items-center pt-6 border-t border-gray-100">
+        <div className="flex justify-between items-center pt-6 border-t border-gray-100 dark:border-gray-800">
           <Button
             variant="outline"
             onClick={prevStep}
             disabled={currentStep === 1}
-            className="flex items-center gap-2 border-gray-300 hover:bg-gray-50 bg-transparent"
+            className="flex items-center gap-2 border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700 bg-transparent dark:bg-gray-800 dark:text-white"
           >
             <ChevronLeft className="h-4 w-4" />
             Geri
@@ -764,7 +764,7 @@ export default function PDFReportModal({ userData, trigger }: PDFReportModalProp
               <Button
                 onClick={nextStep}
                 disabled={!canProceedToNextStep()}
-                className="flex items-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white"
+                className="flex items-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white dark:bg-emerald-600 dark:hover:bg-emerald-700"
               >
                 Devam
                 <ChevronRight className="h-4 w-4" />
@@ -773,7 +773,7 @@ export default function PDFReportModal({ userData, trigger }: PDFReportModalProp
               <Button
                 variant="outline"
                 onClick={() => setIsOpen(false)}
-                className="flex items-center gap-2 border-gray-300 hover:bg-gray-50"
+                className="flex items-center gap-2 border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700 dark:bg-gray-800 dark:text-white"
               >
                 <X className="h-4 w-4" />
                 Kapat
