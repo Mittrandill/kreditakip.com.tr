@@ -13,7 +13,9 @@
       "Bash(nul)",
       "Bash(npm run build:*)",
       "Bash(git pull:*)",
-      "Bash(npm run dev:*)"
+      "Bash(npm run dev:*)",
+      "Bash(dir \"C:\\Users\\akint\\Desktop\\PDF raporları\")",
+      "Bash(pnpm run dev)"
     ],
     "deny": [],
     "ask": []
