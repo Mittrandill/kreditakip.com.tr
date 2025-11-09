@@ -38,6 +38,9 @@ export interface Database {
           id: string
           name: string
           logo_url: string | null
+          contact_phone: string | null
+          contact_email: string | null
+          website: string | null
           category: string
           is_active: boolean
           created_at: string
@@ -47,6 +50,9 @@ export interface Database {
           id?: string
           name: string
           logo_url?: string | null
+          contact_phone?: string | null
+          contact_email?: string | null
+          website?: string | null
           category: string
           is_active?: boolean
           created_at?: string
@@ -56,6 +62,9 @@ export interface Database {
           id?: string
           name?: string
           logo_url?: string | null
+          contact_phone?: string | null
+          contact_email?: string | null
+          website?: string | null
           category?: string
           is_active?: boolean
           updated_at?: string

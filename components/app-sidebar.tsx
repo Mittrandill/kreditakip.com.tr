@@ -191,7 +191,7 @@ export default function AppSidebar() {
             {/* Brand Name */}
             <div className={`transition-all duration-300 ${isCollapsed ? "opacity-0 w-0 overflow-hidden" : "opacity-100"}`}>
               <div className="flex items-center gap-2">
-                <span className="text-lg font-bold text-gray-900 dark:text-white tracking-tight">Kredi Takip</span>
+                <span className="text-lg tracking-tight text-[#0c241f] dark:text-white" style={{ fontFamily: "'Work Sans', sans-serif", fontWeight: 700 }}>Kredi Takip</span>
                 {isPremium && (
                   <Crown className="h-4 w-4 text-amber-500 flex-shrink-0" />
                 )}

@@ -65,11 +65,7 @@ export default async function BlogPage() {
                 <Button
                   key={index}
                   variant="outline"
-                  className={`${
-                    index === 0
-                      ? "bg-gradient-to-r from-emerald-500 to-teal-500 text-white border-transparent"
-                      : "bg-black/20 border-white/10 text-white/80 hover:bg-white/10"
-                  }`}
+                  className="bg-transparent border-white/20 text-white hover:bg-white/10 hover:border-transparent hover:text-white dark:bg-transparent dark:border-white/20 dark:text-white dark:hover:bg-white/10 dark:hover:border-transparent dark:hover:text-white"  
                 >
                   {category}
                 </Button>

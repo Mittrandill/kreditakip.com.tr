@@ -4,22 +4,26 @@ import {
   Scan,
   TrendingUp,
   Shield,
-  Users,
-  AreaChart,
+  Calendar,
+  BarChart3,
+  Bell,
+  Key,
+  CreditCard,
+  LineChart,
+  FileText,
   Zap,
-  Database,
-  Smartphone,
-  Globe,
+  Lock,
+  RefreshCw,
   CheckCircle,
   ArrowRight,
-  BarChart3,
+  Sparkles,
+  ShieldCheck,
+  AlertTriangle,
+  Target,
+  Wallet,
   PieChart,
-  Calendar,
-  Bell,
-  Lock,
-  Wifi,
-  Cloud,
-  RefreshCw,
+  Database,
+  Globe,
 } from "lucide-react"
 import Header from "@/components/layout/header"
 import Footer from "@/components/footer"
@@ -42,22 +46,22 @@ export default function FeaturesPage() {
           <div className="container mx-auto text-center">
             <div className="inline-flex items-center gap-2 bg-black/20 border border-white/10 rounded-full px-6 py-3 backdrop-blur-xl mb-8">
               <div className="w-2 h-2 bg-emerald-400 rounded-full animate-pulse" />
-              <span className="text-white/80 text-sm font-medium">Gelişmiş Özellikler</span>
+              <span className="text-white/80 text-sm font-medium">Tüm Özellikler</span>
             </div>
-            <h1 className="text-5xl md:text-6xl font-bold mb-6 leading-tight">
-              <span className="text-emerald-400">Güçlü Özellikler</span> ile
+            <h1 className="text-5xl md:text-7xl font-bold mb-6 leading-tight">
+              <span className="text-emerald-400">Güçlü Araçlar</span> ile
               <br />
-              Kredi Yönetiminizi Dönüştürün
+              Finansal Kontrolü Elinize Alın
             </h1>
             <p className="text-xl text-white/70 max-w-4xl mx-auto mb-8 leading-relaxed">
-              KrediTakip'in sunduğu gelişmiş özellikler ile finansal verilerinizi analiz edin, akıllı planlar oluşturun
-              ve kredi yönetiminizde tam kontrol sağlayın.
+              KrediTakip'in sunduğu gelişmiş özellikler ile kredilerinizi yönetin,
+              akıllı planlar oluşturun ve finansal hedeflerinize ulaşın.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <Link href="/giris">
                 <Button
                   size="lg"
-                  className="bg-gradient-to-r from-emerald-500 to-teal-500 text-white font-bold px-8 py-6 text-base hover:from-emerald-600 hover:to-teal-600"
+                  className="bg-gradient-to-r from-emerald-500 to-teal-500 text-white font-bold px-8 py-6 text-base hover:from-emerald-600 hover:to-teal-600 shadow-lg shadow-emerald-500/25"
                 >
                   Ücretsiz Deneyin
                   <ArrowRight className="ml-2 w-5 h-5" />
@@ -74,57 +78,6 @@ export default function FeaturesPage() {
           </div>
         </section>
 
-        {/* Hero Visual Section */}
-        <section className="py-16 px-4 md:px-8 lg:px-16">
-          <div className="container mx-auto">
-            <div className="relative bg-gradient-to-br from-emerald-500/10 to-teal-500/10 rounded-3xl p-8 border border-white/10 backdrop-blur-xl overflow-hidden">
-              <div className="absolute top-4 right-4 w-32 h-32 bg-emerald-500/20 rounded-full blur-2xl" />
-              <div className="absolute bottom-4 left-4 w-24 h-24 bg-teal-500/20 rounded-full blur-2xl" />
-              <div className="relative z-10 grid md:grid-cols-3 gap-8 items-center">
-                <div className="space-y-4">
-                  <div className="bg-black/20 rounded-2xl p-6 border border-white/10">
-                    <Image
-                      src="/ocr-scanning-interface.png"
-                      alt="OCR Teknolojisi"
-                      width={300}
-                      height={200}
-                      className="w-full h-32 object-cover rounded-lg mb-4"
-                    />
-                    <h3 className="text-lg font-semibold text-white mb-2">OCR Teknolojisi</h3>
-                    <p className="text-white/60 text-sm">Belgeleri anında dijital veriye dönüştürün</p>
-                  </div>
-                </div>
-                <div className="space-y-4">
-                  <div className="bg-black/20 rounded-2xl p-6 border border-white/10">
-                    <Image
-                      src="/financial-analytics-dashboard.png"
-                      alt="Analitik Dashboard"
-                      width={300}
-                      height={200}
-                      className="w-full h-32 object-cover rounded-lg mb-4"
-                    />
-                    <h3 className="text-lg font-semibold text-white mb-2">Gelişmiş Analitik</h3>
-                    <p className="text-white/60 text-sm">Detaylı finansal raporlar ve analizler</p>
-                  </div>
-                </div>
-                <div className="space-y-4">
-                  <div className="bg-black/20 rounded-2xl p-6 border border-white/10">
-                    <Image
-                      src="/mobile-banking-security-shield.png"
-                      alt="Güvenlik"
-                      width={300}
-                      height={200}
-                      className="w-full h-32 object-cover rounded-lg mb-4"
-                    />
-                    <h3 className="text-lg font-semibold text-white mb-2">Bankacılık Güvenliği</h3>
-                    <p className="text-white/60 text-sm">256-bit SSL şifreleme ile maksimum güvenlik</p>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </section>
-
         {/* Core Features Grid */}
         <section className="py-20 px-4 md:px-8 lg:px-16 relative overflow-hidden">
           <div className="absolute inset-0">
@@ -135,7 +88,7 @@ export default function FeaturesPage() {
           <div className="container mx-auto relative z-10">
             <div className="text-center mb-16">
               <h2 className="text-4xl md:text-5xl font-bold mb-6">
-                Temel <span className="text-emerald-400">Özellikler</span>
+                Ana <span className="text-emerald-400">Özellikler</span>
               </h2>
               <p className="text-xl text-white/70 max-w-3xl mx-auto">
                 Her özellik, finansal yönetiminizi kolaylaştırmak ve optimize etmek için tasarlandı
@@ -144,578 +97,543 @@ export default function FeaturesPage() {
 
             <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8 mb-20">
               {/* OCR Technology */}
-              <Card className="bg-black/20 border-white/10 backdrop-blur-xl hover:border-emerald-500/30 transition-all duration-500 group overflow-hidden">
-                <CardContent className="p-8">
-                  <div className="relative mb-6">
-                    <Image
-                      src="/ocr-ai-scanning.png"
-                      alt="OCR Teknolojisi"
-                      width={280}
-                      height={150}
-                      className="w-full h-32 object-cover rounded-xl"
-                    />
-                    <div className="absolute top-4 left-4 w-12 h-12 bg-gradient-to-br from-emerald-500/80 to-emerald-500/60 rounded-xl flex items-center justify-center backdrop-blur-sm">
-                      <Scan className="w-6 h-6 text-white" />
+              <div className="relative group">
+                <div className="absolute inset-0 bg-gradient-to-r from-emerald-500/20 to-transparent rounded-3xl blur-xl group-hover:blur-2xl transition-all duration-500" />
+                <Card className="relative bg-black/20 border-white/10 backdrop-blur-xl hover:border-emerald-500/30 transition-all duration-500 group-hover:transform group-hover:scale-105 overflow-hidden">
+                  <CardContent className="p-8">
+                    <div className="relative mb-6">
+                      <div className="w-20 h-20 bg-gradient-to-br from-emerald-500/30 to-emerald-500/10 rounded-2xl flex items-center justify-center mx-auto backdrop-blur-sm border border-emerald-500/20">
+                        <Scan className="w-10 h-10 text-emerald-400" />
+                      </div>
+                      <div className="absolute -top-2 -right-2 w-6 h-6 bg-emerald-500/80 rounded-full flex items-center justify-center">
+                        <div className="w-2 h-2 bg-white rounded-full animate-pulse" />
+                      </div>
                     </div>
-                  </div>
-                  <h3 className="text-xl font-bold text-white mb-4">Gelişmiş OCR Teknolojisi</h3>
-                  <p className="text-white/70 mb-6 leading-relaxed">
-                    %99.8 doğruluk oranıyla PDF, JPG ve PNG formatındaki kredi dökümlerinizi saniyeler içinde dijital
-                    veriye dönüştürün.
-                  </p>
-                  <div className="space-y-2">
-                    <div className="flex items-center gap-2 text-sm text-white/60">
-                      <CheckCircle className="w-4 h-4 text-emerald-400" />
-                      <span>Çoklu format desteği</span>
+                    <h3 className="text-2xl font-bold text-white mb-4 text-center">Gelişmiş OCR Teknolojisi</h3>
+                    <p className="text-white/70 text-center leading-relaxed mb-6">
+                      %99.8 doğruluk oranıyla PDF, JPG ve PNG formatındaki kredi ekstrelerinizi saniyeler içinde dijital veriye dönüştürün.
+                    </p>
+                    <div className="flex justify-center gap-6 pt-4 border-t border-white/10">
+                      <div className="text-center">
+                        <div className="text-2xl font-bold text-emerald-400">99.8%</div>
+                        <div className="text-xs text-white/60">Doğruluk</div>
+                      </div>
+                      <div className="text-center">
+                        <div className="text-2xl font-bold text-emerald-400">{"<3s"}</div>
+                        <div className="text-xs text-white/60">İşlem</div>
+                      </div>
                     </div>
-                    <div className="flex items-center gap-2 text-sm text-white/60">
-                      <CheckCircle className="w-4 h-4 text-emerald-400" />
-                      <span>AI destekli analiz</span>
-                    </div>
-                    <div className="flex items-center gap-2 text-sm text-white/60">
-                      <CheckCircle className="w-4 h-4 text-emerald-400" />
-                      <span>3 saniyeden kısa işlem</span>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
+                  </CardContent>
+                </Card>
+              </div>
 
               {/* Smart Payment Plans */}
-              <Card className="bg-black/20 border-white/10 backdrop-blur-xl hover:border-teal-500/30 transition-all duration-500 group overflow-hidden">
-                <CardContent className="p-8">
-                  <div className="relative mb-6">
-                    <Image
-                      src="/ai-payment-calculator.png"
-                      alt="Akıllı Ödeme Planları"
-                      width={280}
-                      height={150}
-                      className="w-full h-32 object-cover rounded-xl"
-                    />
-                    <div className="absolute top-4 left-4 w-12 h-12 bg-gradient-to-br from-teal-500/80 to-teal-500/60 rounded-xl flex items-center justify-center backdrop-blur-sm">
-                      <TrendingUp className="w-6 h-6 text-white" />
+              <div className="relative group">
+                <div className="absolute inset-0 bg-gradient-to-r from-teal-500/20 to-transparent rounded-3xl blur-xl group-hover:blur-2xl transition-all duration-500" />
+                <Card className="relative bg-black/20 border-white/10 backdrop-blur-xl hover:border-teal-500/30 transition-all duration-500 group-hover:transform group-hover:scale-105 overflow-hidden">
+                  <CardContent className="p-8">
+                    <div className="relative mb-6">
+                      <div className="w-20 h-20 bg-gradient-to-br from-teal-500/30 to-teal-500/10 rounded-2xl flex items-center justify-center mx-auto backdrop-blur-sm border border-teal-500/20">
+                        <Calendar className="w-10 h-10 text-teal-400" />
+                      </div>
+                      <div className="absolute -top-2 -right-2 w-6 h-6 bg-teal-500/80 rounded-full flex items-center justify-center">
+                        <div className="w-2 h-2 bg-white rounded-full animate-pulse" />
+                      </div>
                     </div>
-                  </div>
-                  <h3 className="text-xl font-bold text-white mb-4">Akıllı Ödeme Planları</h3>
-                  <p className="text-white/70 mb-6 leading-relaxed">
-                    Yapay zeka destekli algoritma ile kişiselleştirilmiş ödeme planları oluşturun ve borcunuzu optimize
-                    edin.
-                  </p>
-                  <div className="space-y-2">
-                    <div className="flex items-center gap-2 text-sm text-white/60">
-                      <CheckCircle className="w-4 h-4 text-teal-400" />
-                      <span>Kişiselleştirilmiş planlar</span>
+                    <h3 className="text-2xl font-bold text-white mb-4 text-center">Akıllı Ödeme Planları</h3>
+                    <p className="text-white/70 text-center leading-relaxed mb-6">
+                      Yapay zeka destekli algoritma ile kişiselleştirilmiş ödeme planları oluşturun ve borcunuzu optimize edin.
+                    </p>
+                    <div className="flex justify-center gap-6 pt-4 border-t border-white/10">
+                      <div className="text-center">
+                        <div className="text-2xl font-bold text-teal-400">AI</div>
+                        <div className="text-xs text-white/60">Destekli</div>
+                      </div>
+                      <div className="text-center">
+                        <div className="text-2xl font-bold text-teal-400">24/7</div>
+                        <div className="text-xs text-white/60">Aktif</div>
+                      </div>
                     </div>
-                    <div className="flex items-center gap-2 text-sm text-white/60">
-                      <CheckCircle className="w-4 h-4 text-teal-400" />
-                      <span>Faiz optimizasyonu</span>
-                    </div>
-                    <div className="flex items-center gap-2 text-sm text-white/60">
-                      <CheckCircle className="w-4 h-4 text-teal-400" />
-                      <span>Otomatik güncellemeler</span>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-
-              {/* Advanced Analytics */}
-              <Card className="bg-black/20 border-white/10 backdrop-blur-xl hover:border-emerald-500/30 transition-all duration-500 group overflow-hidden">
-                <CardContent className="p-8">
-                  <div className="relative mb-6">
-                    <Image
-                      src="/financial-dashboard-colorful.png"
-                      alt="Gelişmiş Analitik"
-                      width={280}
-                      height={150}
-                      className="w-full h-32 object-cover rounded-xl"
-                    />
-                    <div className="absolute top-4 left-4 w-12 h-12 bg-gradient-to-br from-emerald-500/80 to-emerald-500/60 rounded-xl flex items-center justify-center backdrop-blur-sm">
-                      <AreaChart className="w-6 h-6 text-white" />
-                    </div>
-                  </div>
-                  <h3 className="text-xl font-bold text-white mb-4">Gelişmiş Analitik</h3>
-                  <p className="text-white/70 mb-6 leading-relaxed">
-                    Harcama kategorileri, trend analizi ve finansal öngörüler ile detaylı raporlar alın.
-                  </p>
-                  <div className="space-y-2">
-                    <div className="flex items-center gap-2 text-sm text-white/60">
-                      <CheckCircle className="w-4 h-4 text-emerald-400" />
-                      <span>Interaktif grafikler</span>
-                    </div>
-                    <div className="flex items-center gap-2 text-sm text-white/60">
-                      <CheckCircle className="w-4 h-4 text-emerald-400" />
-                      <span>Kategori analizi</span>
-                    </div>
-                    <div className="flex items-center gap-2 text-sm text-white/60">
-                      <CheckCircle className="w-4 h-4 text-emerald-400" />
-                      <span>Trend tahminleri</span>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-
-              {/* Security */}
-              <Card className="bg-black/20 border-white/10 backdrop-blur-xl hover:border-teal-500/30 transition-all duration-500 group overflow-hidden">
-                <CardContent className="p-8">
-                  <div className="relative mb-6">
-                    <Image
-                      src="/cybersecurity-shield-banking.png"
-                      alt="Bankacılık Seviyesi Güvenlik"
-                      width={280}
-                      height={150}
-                      className="w-full h-32 object-cover rounded-xl"
-                    />
-                    <div className="absolute top-4 left-4 w-12 h-12 bg-gradient-to-br from-teal-500/80 to-teal-500/60 rounded-xl flex items-center justify-center backdrop-blur-sm">
-                      <Shield className="w-6 h-6 text-white" />
-                    </div>
-                  </div>
-                  <h3 className="text-xl font-bold text-white mb-4">Bankacılık Seviyesi Güvenlik</h3>
-                  <p className="text-white/70 mb-6 leading-relaxed">
-                    256-bit SSL şifreleme ve ISO 27001 sertifikası ile verileriniz maksimum güvenlik altında.
-                  </p>
-                  <div className="space-y-2">
-                    <div className="flex items-center gap-2 text-sm text-white/60">
-                      <CheckCircle className="w-4 h-4 text-teal-400" />
-                      <span>256-bit SSL şifreleme</span>
-                    </div>
-                    <div className="flex items-center gap-2 text-sm text-white/60">
-                      <CheckCircle className="w-4 h-4 text-teal-400" />
-                      <span>ISO 27001 sertifikalı</span>
-                    </div>
-                    <div className="flex items-center gap-2 text-sm text-white/60">
-                      <CheckCircle className="w-4 h-4 text-teal-400" />
-                      <span>KVKK uyumlu</span>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-
-              {/* Multi-Bank Support */}
-              <Card className="bg-black/20 border-white/10 backdrop-blur-xl hover:border-emerald-500/30 transition-all duration-500 group overflow-hidden">
-                <CardContent className="p-8">
-                  <div className="relative mb-6">
-                    <Image
-                      src="/multi-bank-support.jpg"
-                      alt="Çoklu Banka Desteği"
-                      width={280}
-                      height={150}
-                      className="w-full h-32 object-cover rounded-xl"
-                    />
-                    <div className="absolute top-4 left-4 w-12 h-12 bg-gradient-to-br from-emerald-500/80 to-emerald-500/60 rounded-xl flex items-center justify-center backdrop-blur-sm">
-                      <Users className="w-6 h-6 text-white" />
-                    </div>
-                  </div>
-                  <h3 className="text-xl font-bold text-white mb-4">Çoklu Banka Desteği</h3>
-                  <p className="text-white/70 mb-6 leading-relaxed">
-                    Türkiye'deki 25+ bankanın kredi dökümlerini destekleyen geniş uyumluluk.
-                  </p>
-                  <div className="space-y-2">
-                    <div className="flex items-center gap-2 text-sm text-white/60">
-                      <CheckCircle className="w-4 h-4 text-emerald-400" />
-                      <span>25+ banka desteği</span>
-                    </div>
-                    <div className="flex items-center gap-2 text-sm text-white/60">
-                      <CheckCircle className="w-4 h-4 text-emerald-400" />
-                      <span>Otomatik format tanıma</span>
-                    </div>
-                    <div className="flex items-center gap-2 text-sm text-white/60">
-                      <CheckCircle className="w-4 h-4 text-emerald-400" />
-                      <span>Sürekli güncellenen liste</span>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-
-              {/* Real-time Processing */}
-              <Card className="bg-black/20 border-white/10 backdrop-blur-xl hover:border-teal-500/30 transition-all duration-500 group overflow-hidden">
-                <CardContent className="p-8">
-                  <div className="relative mb-6">
-                    <Image
-                      src="/real-time-cloud-speed.png"
-                      alt="Gerçek Zamanlı İşlem"
-                      width={280}
-                      height={150}
-                      className="w-full h-32 object-cover rounded-xl"
-                    />
-                    <div className="absolute top-4 left-4 w-12 h-12 bg-gradient-to-br from-teal-500/80 to-teal-500/60 rounded-xl flex items-center justify-center backdrop-blur-sm">
-                      <Zap className="w-6 h-6 text-white" />
-                    </div>
-                  </div>
-                  <h3 className="text-xl font-bold text-white mb-4">Gerçek Zamanlı İşlem</h3>
-                  <p className="text-white/70 mb-6 leading-relaxed">
-                    Bulut tabanlı altyapı ile anında işlem ve sınırsız kapasite.
-                  </p>
-                  <div className="space-y-2">
-                    <div className="flex items-center gap-2 text-sm text-white/60">
-                      <CheckCircle className="w-4 h-4 text-teal-400" />
-                      <span>{"<3 saniye işlem süresi"}</span>
-                    </div>
-                    <div className="flex items-center gap-2 text-sm text-white/60">
-                      <CheckCircle className="w-4 h-4 text-teal-400" />
-                      <span>Sınırsız kapasite</span>
-                    </div>
-                    <div className="flex items-center gap-2 text-sm text-white/60">
-                      <CheckCircle className="w-4 h-4 text-teal-400" />
-                      <span>99.9% uptime garantisi</span>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            </div>
-          </div>
-        </section>
-
-        {/* Advanced Features Section */}
-        <section className="py-20 px-4 md:px-8 lg:px-16 relative overflow-hidden">
-          <div className="absolute inset-0">
-            <div className="absolute top-1/4 right-1/4 w-96 h-96 bg-teal-500/10 rounded-full blur-3xl" />
-            <div className="absolute bottom-1/4 left-1/4 w-80 h-80 bg-emerald-500/10 rounded-full blur-3xl" />
-          </div>
-
-          <div className="container mx-auto relative z-10">
-            <div className="text-center mb-16">
-              <h2 className="text-4xl md:text-5xl font-bold mb-6">
-                Gelişmiş <span className="text-teal-400">Özellikler</span>
-              </h2>
-              <p className="text-xl text-white/70 max-w-3xl mx-auto">
-                Profesyonel kullanıcılar için tasarlanmış ileri düzey araçlar
-              </p>
-            </div>
-
-            <div className="grid lg:grid-cols-2 gap-16 items-center mb-20">
-              {/* Feature 1 */}
-              <div>
-                <div className="bg-black/20 border border-white/10 rounded-3xl p-8 backdrop-blur-xl">
-                  <div className="flex items-center gap-4 mb-6">
-                    <div className="w-12 h-12 bg-gradient-to-br from-emerald-500/30 to-emerald-500/10 rounded-xl flex items-center justify-center">
-                      <BarChart3 className="w-6 h-6 text-emerald-400" />
-                    </div>
-                    <h3 className="text-2xl font-bold text-white">Detaylı Raporlama</h3>
-                  </div>
-                  <p className="text-white/70 mb-6 leading-relaxed">
-                    Kapsamlı finansal raporlar ile harcama alışkanlıklarınızı analiz edin. PDF ve Excel formatında dışa
-                    aktarım yapın.
-                  </p>
-                  <div className="grid grid-cols-2 gap-4">
-                    <div className="bg-white/5 rounded-lg p-4">
-                      <PieChart className="w-8 h-8 text-emerald-400 mb-2" />
-                      <p className="text-sm text-white/80 font-medium">Kategori Dağılımı</p>
-                    </div>
-                    <div className="bg-white/5 rounded-lg p-4">
-                      <Calendar className="w-8 h-8 text-teal-400 mb-2" />
-                      <p className="text-sm text-white/80 font-medium">Aylık Trendler</p>
-                    </div>
-                  </div>
-                </div>
+                  </CardContent>
+                </Card>
               </div>
-              <div className="bg-gradient-to-br from-emerald-500/10 to-teal-500/10 rounded-3xl p-8 border border-white/10 backdrop-blur-xl">
-                <Image
-                  src="/financial-dashboard.png"
-                  alt="Detaylı Raporlama"
-                  width={400}
-                  height={300}
-                  className="w-full h-64 object-cover rounded-2xl"
-                />
-              </div>
-            </div>
 
-            <div className="grid lg:grid-cols-2 gap-16 items-center mb-20">
-              {/* Feature 2 */}
-              <div className="bg-gradient-to-br from-teal-500/10 to-emerald-500/10 rounded-3xl p-8 border border-white/10 backdrop-blur-xl order-2 lg:order-1">
-                <Image
-                  src="/smart-notification-system.png"
-                  alt="Akıllı Bildirimler"
-                  width={400}
-                  height={300}
-                  className="w-full h-64 object-cover rounded-2xl"
-                />
+              {/* Risk Analysis */}
+              <div className="relative group">
+                <div className="absolute inset-0 bg-gradient-to-r from-emerald-500/20 to-transparent rounded-3xl blur-xl group-hover:blur-2xl transition-all duration-500" />
+                <Card className="relative bg-black/20 border-white/10 backdrop-blur-xl hover:border-emerald-500/30 transition-all duration-500 group-hover:transform group-hover:scale-105 overflow-hidden">
+                  <CardContent className="p-8">
+                    <div className="relative mb-6">
+                      <div className="w-20 h-20 bg-gradient-to-br from-emerald-500/30 to-emerald-500/10 rounded-2xl flex items-center justify-center mx-auto backdrop-blur-sm border border-emerald-500/20">
+                        <ShieldCheck className="w-10 h-10 text-emerald-400" />
+                      </div>
+                      <div className="absolute -top-2 -right-2 w-6 h-6 bg-emerald-500/80 rounded-full flex items-center justify-center">
+                        <div className="w-2 h-2 bg-white rounded-full animate-pulse" />
+                      </div>
+                    </div>
+                    <h3 className="text-2xl font-bold text-white mb-4 text-center">Risk Analizi</h3>
+                    <p className="text-white/70 text-center leading-relaxed mb-6">
+                      Finansal durumunuzu detaylı analiz edin. Borç/gelir oranı, nakit akışı ve risk skorunuzu görün.
+                    </p>
+                    <div className="flex justify-center gap-6 pt-4 border-t border-white/10">
+                      <div className="text-center">
+                        <div className="text-2xl font-bold text-emerald-400">DTI</div>
+                        <div className="text-xs text-white/60">Analiz</div>
+                      </div>
+                      <div className="text-center">
+                        <div className="text-2xl font-bold text-emerald-400">Pro</div>
+                        <div className="text-xs text-white/60">Öneriler</div>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
               </div>
-              <div className="order-1 lg:order-2">
-                <div className="bg-black/20 border border-white/10 rounded-3xl p-8 backdrop-blur-xl">
-                  <div className="flex items-center gap-4 mb-6">
-                    <div className="w-12 h-12 bg-gradient-to-br from-teal-500/30 to-teal-500/10 rounded-xl flex items-center justify-center">
-                      <Bell className="w-6 h-6 text-teal-400" />
-                    </div>
-                    <h3 className="text-2xl font-bold text-white">Akıllı Bildirimler</h3>
-                  </div>
-                  <p className="text-white/70 mb-6 leading-relaxed">
-                    Ödeme tarihleri, limit aşımları ve önemli finansal değişiklikler için otomatik bildirimler alın.
-                  </p>
-                  <div className="space-y-3">
-                    <div className="flex items-center gap-3 text-sm text-white/60">
-                      <CheckCircle className="w-4 h-4 text-teal-400" />
-                      <span>Ödeme hatırlatıcıları</span>
-                    </div>
-                    <div className="flex items-center gap-3 text-sm text-white/60">
-                      <CheckCircle className="w-4 h-4 text-teal-400" />
-                      <span>Limit aşım uyarıları</span>
-                    </div>
-                    <div className="flex items-center gap-3 text-sm text-white/60">
-                      <CheckCircle className="w-4 h-4 text-teal-400" />
-                      <span>Faiz oranı değişiklikleri</span>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
 
-            <div className="grid lg:grid-cols-2 gap-16 items-center">
-              {/* Feature 3 */}
-              <div>
-                <div className="bg-black/20 border border-white/10 rounded-3xl p-8 backdrop-blur-xl">
-                  <div className="flex items-center gap-4 mb-6">
-                    <div className="w-12 h-12 bg-gradient-to-br from-emerald-500/30 to-emerald-500/10 rounded-xl flex items-center justify-center">
-                      <Smartphone className="w-6 h-6 text-emerald-400" />
+              {/* Refinancing Analysis */}
+              <div className="relative group">
+                <div className="absolute inset-0 bg-gradient-to-r from-teal-500/20 to-transparent rounded-3xl blur-xl group-hover:blur-2xl transition-all duration-500" />
+                <Card className="relative bg-black/20 border-white/10 backdrop-blur-xl hover:border-teal-500/30 transition-all duration-500 group-hover:transform group-hover:scale-105 overflow-hidden">
+                  <CardContent className="p-8">
+                    <div className="relative mb-6">
+                      <div className="w-20 h-20 bg-gradient-to-br from-teal-500/30 to-teal-500/10 rounded-2xl flex items-center justify-center mx-auto backdrop-blur-sm border border-teal-500/20">
+                        <TrendingUp className="w-10 h-10 text-teal-400" />
+                      </div>
+                      <div className="absolute -top-2 -right-2 w-6 h-6 bg-teal-500/80 rounded-full flex items-center justify-center">
+                        <div className="w-2 h-2 bg-white rounded-full animate-pulse" />
+                      </div>
                     </div>
-                    <h3 className="text-2xl font-bold text-white">Mobil Uyumluluk</h3>
-                  </div>
-                  <p className="text-white/70 mb-6 leading-relaxed">
-                    Responsive tasarım ile tüm cihazlarda mükemmel deneyim. PWA desteği ile mobil uygulama hissi.
-                  </p>
-                  <div className="grid grid-cols-3 gap-4">
-                    <div className="bg-white/5 rounded-lg p-3 text-center">
-                      <Smartphone className="w-6 h-6 text-emerald-400 mx-auto mb-2" />
-                      <p className="text-xs text-white/80">Mobil</p>
+                    <h3 className="text-2xl font-bold text-white mb-4 text-center">Refinansman Analizi</h3>
+                    <p className="text-white/70 text-center leading-relaxed mb-6">
+                      Kredilerinizi yeniden yapılandırma fırsatlarını keşfedin. Potansiyel tasarrufları hesaplayın.
+                    </p>
+                    <div className="flex justify-center gap-6 pt-4 border-t border-white/10">
+                      <div className="text-center">
+                        <div className="text-2xl font-bold text-teal-400">₺</div>
+                        <div className="text-xs text-white/60">Tasarruf</div>
+                      </div>
+                      <div className="text-center">
+                        <div className="text-2xl font-bold text-teal-400">%</div>
+                        <div className="text-xs text-white/60">Fırsat</div>
+                      </div>
                     </div>
-                    <div className="bg-white/5 rounded-lg p-3 text-center">
-                      <Database className="w-6 h-6 text-teal-400 mx-auto mb-2" />
-                      <p className="text-xs text-white/80">Tablet</p>
-                    </div>
-                    <div className="bg-white/5 rounded-lg p-3 text-center">
-                      <Globe className="w-6 h-6 text-emerald-400 mx-auto mb-2" />
-                      <p className="text-xs text-white/80">Desktop</p>
-                    </div>
-                  </div>
-                </div>
+                  </CardContent>
+                </Card>
               </div>
-              <div className="bg-gradient-to-br from-emerald-500/10 to-teal-500/10 rounded-3xl p-8 border border-white/10 backdrop-blur-xl">
-                <Image
-                  src="/responsive-mobile-design.jpg"
-                  alt="Mobil Uyumluluk"
-                  width={400}
-                  height={300}
-                  className="w-full h-64 object-cover rounded-2xl"
-                />
+
+              {/* Password Management */}
+              <div className="relative group">
+                <div className="absolute inset-0 bg-gradient-to-r from-emerald-500/20 to-transparent rounded-3xl blur-xl group-hover:blur-2xl transition-all duration-500" />
+                <Card className="relative bg-black/20 border-white/10 backdrop-blur-xl hover:border-emerald-500/30 transition-all duration-500 group-hover:transform group-hover:scale-105 overflow-hidden">
+                  <CardContent className="p-8">
+                    <div className="relative mb-6">
+                      <div className="w-20 h-20 bg-gradient-to-br from-emerald-500/30 to-emerald-500/10 rounded-2xl flex items-center justify-center mx-auto backdrop-blur-sm border border-emerald-500/20">
+                        <Key className="w-10 h-10 text-emerald-400" />
+                      </div>
+                      <div className="absolute -top-2 -right-2 w-6 h-6 bg-emerald-500/80 rounded-full flex items-center justify-center">
+                        <div className="w-2 h-2 bg-white rounded-full animate-pulse" />
+                      </div>
+                    </div>
+                    <h3 className="text-2xl font-bold text-white mb-4 text-center">Güvenli Şifre Yönetimi</h3>
+                    <p className="text-white/70 text-center leading-relaxed mb-6">
+                      Banka şifrelerinizi güvenli şekilde saklayın. 256-bit şifreleme ile maksimum koruma.
+                    </p>
+                    <div className="flex justify-center gap-6 pt-4 border-t border-white/10">
+                      <div className="text-center">
+                        <div className="text-2xl font-bold text-emerald-400">256</div>
+                        <div className="text-xs text-white/60">Bit AES</div>
+                      </div>
+                      <div className="text-center">
+                        <div className="text-2xl font-bold text-emerald-400">∞</div>
+                        <div className="text-xs text-white/60">Güvenli</div>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              </div>
+
+              {/* Detailed Reports */}
+              <div className="relative group">
+                <div className="absolute inset-0 bg-gradient-to-r from-teal-500/20 to-transparent rounded-3xl blur-xl group-hover:blur-2xl transition-all duration-500" />
+                <Card className="relative bg-black/20 border-white/10 backdrop-blur-xl hover:border-teal-500/30 transition-all duration-500 group-hover:transform group-hover:scale-105 overflow-hidden">
+                  <CardContent className="p-8">
+                    <div className="relative mb-6">
+                      <div className="w-20 h-20 bg-gradient-to-br from-teal-500/30 to-teal-500/10 rounded-2xl flex items-center justify-center mx-auto backdrop-blur-sm border border-teal-500/20">
+                        <BarChart3 className="w-10 h-10 text-teal-400" />
+                      </div>
+                      <div className="absolute -top-2 -right-2 w-6 h-6 bg-teal-500/80 rounded-full flex items-center justify-center">
+                        <div className="w-2 h-2 bg-white rounded-full animate-pulse" />
+                      </div>
+                    </div>
+                    <h3 className="text-2xl font-bold text-white mb-4 text-center">Detaylı Raporlar</h3>
+                    <p className="text-white/70 text-center leading-relaxed mb-6">
+                      Finansal durumunuzu görselleştirin. İnteraktif grafikler ve detaylı analizler.
+                    </p>
+                    <div className="flex justify-center gap-6 pt-4 border-t border-white/10">
+                      <div className="text-center">
+                        <div className="text-2xl font-bold text-teal-400">PDF</div>
+                        <div className="text-xs text-white/60">Export</div>
+                      </div>
+                      <div className="text-center">
+                        <div className="text-2xl font-bold text-teal-400">XLS</div>
+                        <div className="text-xs text-white/60">Export</div>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
               </div>
             </div>
           </div>
         </section>
 
-        {/* Technology Showcase */}
+        {/* Feature Showcase with Visuals */}
+        <section className="py-20 px-4 md:px-8 lg:px-16">
+          <div className="container mx-auto">
+            {/* Credit Management */}
+            <div className="mb-32">
+              <div className="grid lg:grid-cols-2 gap-16 items-center">
+                <div className="relative">
+                  <div className="inline-flex items-center gap-2 bg-black/20 border border-white/10 rounded-full px-6 py-3 backdrop-blur-xl mb-6">
+                    <Wallet className="w-4 h-4 text-emerald-400" />
+                    <span className="text-white/80 text-sm font-medium">Kredi Yönetimi</span>
+                  </div>
+                  <h2 className="text-4xl md:text-5xl font-bold mb-6 leading-tight">
+                    Tüm Kredilerinizi <span className="text-emerald-400">Tek Yerden</span> Yönetin
+                  </h2>
+                  <p className="text-lg text-white/70 mb-8 leading-relaxed">
+                    Birden fazla bankada kredileriniz mi var? Hepsini tek bir platformda toplayın.
+                    Her kredinin durumunu, kalan borcunu ve ödeme planını anlık görün.
+                  </p>
+                  <div className="space-y-4">
+                    <div className="flex items-start gap-4">
+                      <div className="w-10 h-10 rounded-lg bg-emerald-500/20 flex items-center justify-center flex-shrink-0 border border-emerald-500/30">
+                        <CheckCircle className="w-5 h-5 text-emerald-400" />
+                      </div>
+                      <div>
+                        <h4 className="font-semibold text-white mb-1">Çoklu Kredi Takibi</h4>
+                        <p className="text-white/60">Sınırsız sayıda kredi ekleyin ve yönetin</p>
+                      </div>
+                    </div>
+                    <div className="flex items-start gap-4">
+                      <div className="w-10 h-10 rounded-lg bg-emerald-500/20 flex items-center justify-center flex-shrink-0 border border-emerald-500/30">
+                        <CheckCircle className="w-5 h-5 text-emerald-400" />
+                      </div>
+                      <div>
+                        <h4 className="font-semibold text-white mb-1">Otomatik Güncelleme</h4>
+                        <p className="text-white/60">Ödeme yaptıkça bakiyeler otomatik güncellenir</p>
+                      </div>
+                    </div>
+                    <div className="flex items-start gap-4">
+                      <div className="w-10 h-10 rounded-lg bg-emerald-500/20 flex items-center justify-center flex-shrink-0 border border-emerald-500/30">
+                        <CheckCircle className="w-5 h-5 text-emerald-400" />
+                      </div>
+                      <div>
+                        <h4 className="font-semibold text-white mb-1">Gecikme Uyarıları</h4>
+                        <p className="text-white/60">Ödeme tarihi yaklaşan krediler için bildirim alın</p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <div className="relative">
+                  <div className="absolute -inset-4 bg-gradient-to-r from-emerald-500/20 to-teal-500/20 rounded-3xl blur-2xl" />
+                  <div className="relative bg-black/20 rounded-2xl border border-white/10 backdrop-blur-xl p-8 shadow-2xl">
+                    <div className="flex items-center justify-between mb-6">
+                      <div className="flex items-center gap-3">
+                        <CreditCard className="w-8 h-8 text-emerald-400" />
+                        <h3 className="text-xl font-bold">Kredilerim</h3>
+                      </div>
+                      <div className="px-3 py-1 bg-emerald-500/20 border border-emerald-500/30 rounded-full text-sm text-emerald-400">
+                        3 Aktif
+                      </div>
+                    </div>
+                    <div className="space-y-4">
+                      <div className="bg-gradient-to-r from-emerald-500/10 to-teal-500/10 rounded-lg p-4 border border-emerald-500/20">
+                        <div className="flex items-center justify-between mb-2">
+                          <span className="text-sm font-medium">Konut Kredisi</span>
+                          <span className="text-xs text-emerald-400">%45 ödendi</span>
+                        </div>
+                        <div className="text-2xl font-bold mb-2">₺450,000</div>
+                        <div className="w-full bg-black/40 rounded-full h-2">
+                          <div className="bg-gradient-to-r from-emerald-500 to-teal-500 h-2 rounded-full" style={{ width: "45%" }} />
+                        </div>
+                      </div>
+                      <div className="bg-black/10 rounded-lg p-4 border border-white/10">
+                        <div className="flex items-center justify-between mb-2">
+                          <span className="text-sm font-medium">Taşıt Kredisi</span>
+                          <span className="text-xs text-teal-400">%70 ödendi</span>
+                        </div>
+                        <div className="text-2xl font-bold mb-2">₺85,000</div>
+                        <div className="w-full bg-black/40 rounded-full h-2">
+                          <div className="bg-gradient-to-r from-teal-500 to-emerald-500 h-2 rounded-full" style={{ width: "70%" }} />
+                        </div>
+                      </div>
+                      <div className="bg-black/10 rounded-lg p-4 border border-white/10">
+                        <div className="flex items-center justify-between mb-2">
+                          <span className="text-sm font-medium">İhtiyaç Kredisi</span>
+                          <span className="text-xs text-emerald-400">%25 ödendi</span>
+                        </div>
+                        <div className="text-2xl font-bold mb-2">₺25,000</div>
+                        <div className="w-full bg-black/40 rounded-full h-2">
+                          <div className="bg-gradient-to-r from-emerald-500 to-teal-500 h-2 rounded-full" style={{ width: "25%" }} />
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Smart Notifications */}
+            <div className="mb-32">
+              <div className="grid lg:grid-cols-2 gap-16 items-center">
+                <div className="order-2 lg:order-1 relative">
+                  <div className="absolute -inset-4 bg-gradient-to-r from-teal-500/20 to-emerald-500/20 rounded-3xl blur-2xl" />
+                  <div className="relative bg-black/20 rounded-2xl border border-white/10 backdrop-blur-xl p-8 shadow-2xl">
+                    <div className="flex items-center gap-3 mb-6">
+                      <Bell className="w-8 h-8 text-teal-400" />
+                      <h3 className="text-xl font-bold">Bildirimler</h3>
+                    </div>
+                    <div className="space-y-4">
+                      <div className="flex items-start gap-4 p-4 bg-teal-500/10 rounded-lg border border-teal-500/20">
+                        <div className="w-10 h-10 rounded-lg bg-teal-500/20 flex items-center justify-center flex-shrink-0 border border-teal-500/30">
+                          <Calendar className="w-5 h-5 text-teal-400" />
+                        </div>
+                        <div className="flex-1">
+                          <p className="font-medium mb-1">Ödeme Yaklaşıyor</p>
+                          <p className="text-sm text-white/60">Konut kredisi ödemesi 3 gün sonra</p>
+                          <p className="text-xs text-white/40 mt-1">2 saat önce</p>
+                        </div>
+                      </div>
+                      <div className="flex items-start gap-4 p-4 bg-black/10 rounded-lg border border-white/10">
+                        <div className="w-10 h-10 rounded-lg bg-emerald-500/20 flex items-center justify-center flex-shrink-0 border border-emerald-500/30">
+                          <CheckCircle className="w-5 h-5 text-emerald-400" />
+                        </div>
+                        <div className="flex-1">
+                          <p className="font-medium mb-1">Ödeme Alındı</p>
+                          <p className="text-sm text-white/60">Taşıt kredisi ödemesi başarılı</p>
+                          <p className="text-xs text-white/40 mt-1">1 gün önce</p>
+                        </div>
+                      </div>
+                      <div className="flex items-start gap-4 p-4 bg-black/10 rounded-lg border border-white/10">
+                        <div className="w-10 h-10 rounded-lg bg-amber-500/20 flex items-center justify-center flex-shrink-0 border border-amber-500/30">
+                          <AlertTriangle className="w-5 h-5 text-amber-400" />
+                        </div>
+                        <div className="flex-1">
+                          <p className="font-medium mb-1">Faiz Oranı Değişti</p>
+                          <p className="text-sm text-white/60">İhtiyaç kredisi faiz oranı güncellendi</p>
+                          <p className="text-xs text-white/40 mt-1">3 gün önce</p>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <div className="order-1 lg:order-2 relative">
+                  <div className="inline-flex items-center gap-2 bg-black/20 border border-white/10 rounded-full px-6 py-3 backdrop-blur-xl mb-6">
+                    <Bell className="w-4 h-4 text-teal-400" />
+                    <span className="text-white/80 text-sm font-medium">Akıllı Bildirimler</span>
+                  </div>
+                  <h2 className="text-4xl md:text-5xl font-bold mb-6 leading-tight">
+                    Hiçbir Ödemeyi <span className="text-teal-400">Kaçırmayın</span>
+                  </h2>
+                  <p className="text-lg text-white/70 mb-8 leading-relaxed">
+                    Ödeme tarihleri, faiz oranı değişiklikleri ve önemli güncellemeler için
+                    anında bildirim alın. Finansal kontrolünüzü elinizde tutun.
+                  </p>
+                  <div className="space-y-4">
+                    <div className="flex items-start gap-4">
+                      <div className="w-10 h-10 rounded-lg bg-teal-500/20 flex items-center justify-center flex-shrink-0 border border-teal-500/30">
+                        <CheckCircle className="w-5 h-5 text-teal-400" />
+                      </div>
+                      <div>
+                        <h4 className="font-semibold text-white mb-1">Özelleştirilebilir Bildirimler</h4>
+                        <p className="text-white/60">İstediğiniz zaman ve yöntemle bildirim alın</p>
+                      </div>
+                    </div>
+                    <div className="flex items-start gap-4">
+                      <div className="w-10 h-10 rounded-lg bg-teal-500/20 flex items-center justify-center flex-shrink-0 border border-teal-500/30">
+                        <CheckCircle className="w-5 h-5 text-teal-400" />
+                      </div>
+                      <div>
+                        <h4 className="font-semibold text-white mb-1">Akıllı Hatırlatıcılar</h4>
+                        <p className="text-white/60">1, 3 veya 7 gün önceden hatırlatma seçenekleri</p>
+                      </div>
+                    </div>
+                    <div className="flex items-start gap-4">
+                      <div className="w-10 h-10 rounded-lg bg-teal-500/20 flex items-center justify-center flex-shrink-0 border border-teal-500/30">
+                        <CheckCircle className="w-5 h-5 text-teal-400" />
+                      </div>
+                      <div>
+                        <h4 className="font-semibold text-white mb-1">E-posta & Uygulama Bildirimleri</h4>
+                        <p className="text-white/60">Hem e-posta hem de uygulama içi bildirimler</p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Analytics & Reports */}
+            <div>
+              <div className="grid lg:grid-cols-2 gap-16 items-center">
+                <div className="relative">
+                  <div className="inline-flex items-center gap-2 bg-black/20 border border-white/10 rounded-full px-6 py-3 backdrop-blur-xl mb-6">
+                    <LineChart className="w-4 h-4 text-emerald-400" />
+                    <span className="text-white/80 text-sm font-medium">Analiz & Raporlar</span>
+                  </div>
+                  <h2 className="text-4xl md:text-5xl font-bold mb-6 leading-tight">
+                    Finansal Durumunuzu <span className="text-emerald-400">Görselleştirin</span>
+                  </h2>
+                  <p className="text-lg text-white/70 mb-8 leading-relaxed">
+                    Detaylı grafikler ve raporlar ile harcamalarınızı analiz edin.
+                    Gelecek planlaması yapın ve tasarruf edin.
+                  </p>
+                  <div className="space-y-4">
+                    <div className="flex items-start gap-4">
+                      <div className="w-10 h-10 rounded-lg bg-emerald-500/20 flex items-center justify-center flex-shrink-0 border border-emerald-500/30">
+                        <PieChart className="w-5 h-5 text-emerald-400" />
+                      </div>
+                      <div>
+                        <h4 className="font-semibold text-white mb-1">İnteraktif Grafikler</h4>
+                        <p className="text-white/60">Pasta, çubuk ve çizgi grafiklerle görselleştirme</p>
+                      </div>
+                    </div>
+                    <div className="flex items-start gap-4">
+                      <div className="w-10 h-10 rounded-lg bg-emerald-500/20 flex items-center justify-center flex-shrink-0 border border-emerald-500/30">
+                        <FileText className="w-5 h-5 text-emerald-400" />
+                      </div>
+                      <div>
+                        <h4 className="font-semibold text-white mb-1">PDF & Excel Export</h4>
+                        <p className="text-white/60">Raporlarınızı istediğiniz formatta dışa aktarın</p>
+                      </div>
+                    </div>
+                    <div className="flex items-start gap-4">
+                      <div className="w-10 h-10 rounded-lg bg-emerald-500/20 flex items-center justify-center flex-shrink-0 border border-emerald-500/30">
+                        <Target className="w-5 h-5 text-emerald-400" />
+                      </div>
+                      <div>
+                        <h4 className="font-semibold text-white mb-1">Hedef Takibi</h4>
+                        <p className="text-white/60">Finansal hedeflerinize ulaşma sürecinizi izleyin</p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <div className="relative">
+                  <div className="absolute -inset-4 bg-gradient-to-r from-emerald-500/20 to-teal-500/20 rounded-3xl blur-2xl" />
+                  <div className="relative bg-black/20 rounded-2xl border border-white/10 backdrop-blur-xl p-8 shadow-2xl">
+                    <div className="flex items-center justify-between mb-6">
+                      <h3 className="text-xl font-bold">Aylık Özet</h3>
+                      <div className="px-3 py-1 bg-emerald-500/20 border border-emerald-500/30 rounded-full text-sm text-emerald-400">
+                        Aralık 2025
+                      </div>
+                    </div>
+                    <div className="grid grid-cols-2 gap-4 mb-6">
+                      <div className="bg-gradient-to-br from-emerald-500/10 to-teal-500/10 rounded-lg p-4 border border-emerald-500/20">
+                        <p className="text-sm text-white/60 mb-1">Toplam Borç</p>
+                        <p className="text-2xl font-bold">₺560K</p>
+                      </div>
+                      <div className="bg-black/10 rounded-lg p-4 border border-white/10">
+                        <p className="text-sm text-white/60 mb-1">Bu Ay Ödeme</p>
+                        <p className="text-2xl font-bold">₺18.5K</p>
+                      </div>
+                    </div>
+                    <div className="space-y-3">
+                      <div>
+                        <div className="flex items-center justify-between text-sm mb-2">
+                          <span className="text-white/60">Konut</span>
+                          <span className="font-medium">₺12,000</span>
+                        </div>
+                        <div className="w-full bg-black/40 rounded-full h-2">
+                          <div className="bg-gradient-to-r from-emerald-500 to-teal-500 h-2 rounded-full" style={{ width: "65%" }} />
+                        </div>
+                      </div>
+                      <div>
+                        <div className="flex items-center justify-between text-sm mb-2">
+                          <span className="text-white/60">Taşıt</span>
+                          <span className="font-medium">₺5,000</span>
+                        </div>
+                        <div className="w-full bg-black/40 rounded-full h-2">
+                          <div className="bg-gradient-to-r from-teal-500 to-emerald-500 h-2 rounded-full" style={{ width: "27%" }} />
+                        </div>
+                      </div>
+                      <div>
+                        <div className="flex items-center justify-between text-sm mb-2">
+                          <span className="text-white/60">İhtiyaç</span>
+                          <span className="font-medium">₺1,500</span>
+                        </div>
+                        <div className="w-full bg-black/40 rounded-full h-2">
+                          <div className="bg-gradient-to-r from-emerald-500 to-teal-500 h-2 rounded-full" style={{ width: "8%" }} />
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* Security & Performance */}
         <section className="py-20 px-4 md:px-8 lg:px-16">
           <div className="container mx-auto">
             <div className="text-center mb-16">
               <h2 className="text-4xl md:text-5xl font-bold mb-6">
-                Teknoloji <span className="text-emerald-400">Vitrini</span>
+                Güvenlik & <span className="text-emerald-400">Performans</span>
               </h2>
-              <p className="text-xl text-white/70 max-w-3xl mx-auto">En son teknolojiler ile güçlendirilmiş platform</p>
-            </div>
-
-            <div className="grid md:grid-cols-2 gap-8 mb-16">
-              <div className="bg-black/20 border border-white/10 rounded-3xl p-8 backdrop-blur-xl">
-                <Image
-                  src="/ai-machine-learning-tech.jpg"
-                  alt="AI Teknolojisi"
-                  width={400}
-                  height={250}
-                  className="w-full h-48 object-cover rounded-2xl mb-6"
-                />
-                <h3 className="text-2xl font-bold text-white mb-4">Yapay Zeka Destekli</h3>
-                <p className="text-white/70 leading-relaxed">
-                  Machine Learning algoritmaları ile sürekli öğrenen ve gelişen sistem. Verilerinizi analiz ederek size
-                  özel öneriler sunar.
-                </p>
-              </div>
-              <div className="bg-black/20 border border-white/10 rounded-3xl p-8 backdrop-blur-xl">
-                <Image
-                  src="/aws-cloud-infrastructure.jpg"
-                  alt="Bulut Teknolojisi"
-                  width={400}
-                  height={250}
-                  className="w-full h-48 object-cover rounded-2xl mb-6"
-                />
-                <h3 className="text-2xl font-bold text-white mb-4">Bulut Tabanlı Altyapı</h3>
-                <p className="text-white/70 leading-relaxed">
-                  AWS tabanlı ölçeklenebilir mimari ile yüksek performans ve güvenilirlik. Verileriniz her zaman güvende
-                  ve erişilebilir.
-                </p>
-              </div>
-            </div>
-          </div>
-        </section>
-
-        {/* Technical Specifications */}
-        <section className="py-20 px-4 md:px-8 lg:px-16">
-          <div className="container mx-auto">
-            <div className="text-center mb-16">
-              <h2 className="text-4xl md:text-5xl font-bold mb-6">
-                Teknik <span className="text-emerald-400">Özellikler</span>
-              </h2>
-              <p className="text-xl text-white/70 max-w-3xl mx-auto">
-                Güçlü altyapı ve modern teknolojiler ile desteklenen platform
+              <p className="text-xl text-white/70 max-w-2xl mx-auto">
+                Verileriniz bankacılık seviyesi güvenlik ile korunur
               </p>
             </div>
 
-            <div className="bg-black/20 border border-white/10 rounded-3xl p-8 md:p-12 backdrop-blur-xl">
-              <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
-                <div className="text-center">
-                  <div className="w-16 h-16 bg-gradient-to-br from-emerald-500/30 to-emerald-500/10 rounded-2xl flex items-center justify-center mx-auto mb-4">
-                    <Cloud className="w-8 h-8 text-emerald-400" />
-                  </div>
-                  <h3 className="text-lg font-bold text-white mb-2">Bulut Altyapı</h3>
-                  <p className="text-white/60 text-sm">AWS tabanlı ölçeklenebilir mimari</p>
-                </div>
-                <div className="text-center">
-                  <div className="w-16 h-16 bg-gradient-to-br from-teal-500/30 to-teal-500/10 rounded-2xl flex items-center justify-center mx-auto mb-4">
-                    <Lock className="w-8 h-8 text-teal-400" />
-                  </div>
-                  <h3 className="text-lg font-bold text-white mb-2">Güvenlik</h3>
-                  <p className="text-white/60 text-sm">End-to-end şifreleme</p>
-                </div>
-                <div className="text-center">
-                  <div className="w-16 h-16 bg-gradient-to-br from-emerald-500/30 to-emerald-500/10 rounded-2xl flex items-center justify-center mx-auto mb-4">
-                    <Wifi className="w-8 h-8 text-emerald-400" />
-                  </div>
-                  <h3 className="text-lg font-bold text-white mb-2">API Entegrasyonu</h3>
-                  <p className="text-white/60 text-sm">RESTful API desteği</p>
-                </div>
-                <div className="text-center">
-                  <div className="w-16 h-16 bg-gradient-to-br from-teal-500/30 to-teal-500/10 rounded-2xl flex items-center justify-center mx-auto mb-4">
-                    <RefreshCw className="w-8 h-8 text-teal-400" />
-                  </div>
-                  <h3 className="text-lg font-bold text-white mb-2">Otomatik Yedekleme</h3>
-                  <p className="text-white/60 text-sm">Günlük otomatik yedekleme</p>
-                </div>
+            <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
+              <div className="relative group">
+                <div className="absolute inset-0 bg-gradient-to-r from-emerald-500/20 to-transparent rounded-3xl blur-xl group-hover:blur-2xl transition-all duration-500" />
+                <Card className="relative bg-black/20 border-white/10 backdrop-blur-xl hover:border-emerald-500/30 transition-all duration-500 text-center">
+                  <CardContent className="p-8">
+                    <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-emerald-500/30 to-emerald-500/10 flex items-center justify-center mx-auto mb-4 border border-emerald-500/20">
+                      <Shield className="w-8 h-8 text-emerald-400" />
+                    </div>
+                    <h3 className="text-lg text-white font-bold mb-2">256-bit SSL</h3>
+                    <p className="text-white/60 text-sm">Bankacılık seviyesi şifreleme</p>
+                  </CardContent>
+                </Card>
               </div>
 
-              <div className="mt-12 grid md:grid-cols-3 gap-8">
-                <div className="bg-white/5 rounded-2xl p-6">
-                  <h4 className="text-white font-semibold mb-4">Performans</h4>
-                  <div className="space-y-3">
-                    <div className="flex justify-between">
-                      <span className="text-white/70 text-sm">İşlem Süresi</span>
-                      <span className="text-emerald-400 text-sm font-medium">{"<3s"}</span>
+              <div className="relative group">
+                <div className="absolute inset-0 bg-gradient-to-r from-teal-500/20 to-transparent rounded-3xl blur-xl group-hover:blur-2xl transition-all duration-500" />
+                <Card className="relative bg-black/20 border-white/10 backdrop-blur-xl hover:border-teal-500/30 transition-all duration-500 text-center">
+                  <CardContent className="p-8">
+                    <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-teal-500/30 to-teal-500/10 flex items-center justify-center mx-auto mb-4 border border-teal-500/20">
+                      <Zap className="w-8 h-8 text-teal-400" />
                     </div>
-                    <div className="flex justify-between">
-                      <span className="text-white/70 text-sm">Uptime</span>
-                      <span className="text-emerald-400 text-sm font-medium">99.9%</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-white/70 text-sm">Doğruluk Oranı</span>
-                      <span className="text-emerald-400 text-sm font-medium">99.8%</span>
-                    </div>
-                  </div>
-                </div>
-                <div className="bg-white/5 rounded-2xl p-6">
-                  <h4 className="text-white font-semibold mb-4">Kapasite</h4>
-                  <div className="space-y-3">
-                    <div className="flex justify-between">
-                      <span className="text-white/70 text-sm">Dosya Boyutu</span>
-                      <span className="text-teal-400 text-sm font-medium">10MB</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-white/70 text-sm">Aylık İşlem</span>
-                      <span className="text-teal-400 text-sm font-medium">Sınırsız</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-white/70 text-sm">Depolama</span>
-                      <span className="text-teal-400 text-sm font-medium">1GB</span>
-                    </div>
-                  </div>
-                </div>
-                <div className="bg-white/5 rounded-2xl p-6">
-                  <h4 className="text-white font-semibold mb-4">Uyumluluk</h4>
-                  <div className="space-y-3">
-                    <div className="flex justify-between">
-                      <span className="text-white/70 text-sm">Desteklenen Bankalar</span>
-                      <span className="text-emerald-400 text-sm font-medium">25+</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-white/70 text-sm">Dosya Formatları</span>
-                      <span className="text-emerald-400 text-sm font-medium">PDF, JPG, PNG</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-white/70 text-sm">Dil Desteği</span>
-                      <span className="text-emerald-400 text-sm font-medium">TR, EN</span>
-                    </div>
-                  </div>
-                </div>
+                    <h3 className="text-lg text-white font-bold mb-2">{"<3s İşlem"}</h3>
+                    <p className="text-white/60 text-sm">Yıldırım hızında işlem süresi</p>
+                  </CardContent>
+                </Card>
               </div>
-            </div>
-          </div>
-        </section>
 
-        {/* Comparison Table */}
-        <section className="py-20 px-4 md:px-8 lg:px-16">
-          <div className="container mx-auto">
-            <div className="text-center mb-16">
-              <h2 className="text-4xl md:text-5xl font-bold mb-6">
-                Plan <span className="text-teal-400">Karşılaştırması</span>
-              </h2>
-              <p className="text-xl text-white/70 max-w-3xl mx-auto">
-                İhtiyacınıza en uygun planı seçin ve tüm özelliklerden yararlanın
-              </p>
-            </div>
+              <div className="relative group">
+                <div className="absolute inset-0 bg-gradient-to-r from-emerald-500/20 to-transparent rounded-3xl blur-xl group-hover:blur-2xl transition-all duration-500" />
+                <Card className="relative bg-black/20 border-white/10 backdrop-blur-xl hover:border-emerald-500/30 transition-all duration-500 text-center">
+                  <CardContent className="p-8">
+                    <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-emerald-500/30 to-emerald-500/10 flex items-center justify-center mx-auto mb-4 border border-emerald-500/20">
+                      <RefreshCw className="w-8 h-8 text-emerald-400" />
+                    </div>
+                    <h3 className="text-lg text-white font-bold mb-2">99.9% Uptime</h3>
+                    <p className="text-white/60 text-sm">Her zaman erişilebilir</p>
+                  </CardContent>
+                </Card>
+              </div>
 
-            <div className="bg-black/20 border border-white/10 rounded-3xl backdrop-blur-xl overflow-hidden">
-              <div className="overflow-x-auto">
-                <table className="w-full">
-                  <thead>
-                    <tr className="border-b border-white/10">
-                      <th className="text-left p-6 text-white font-semibold">Özellikler</th>
-                      <th className="text-center p-6 text-white font-semibold">Ücretsiz</th>
-                      <th className="text-center p-6 text-white font-semibold">Pro</th>
-                      <th className="text-center p-6 text-white font-semibold">Enterprise</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    <tr className="border-b border-white/5">
-                      <td className="p-6 text-white/80">OCR İşlem Sayısı</td>
-                      <td className="p-6 text-center text-white/60">5/ay</td>
-                      <td className="p-6 text-center text-emerald-400">100/ay</td>
-                      <td className="p-6 text-center text-teal-400">Sınırsız</td>
-                    </tr>
-                    <tr className="border-b border-white/5">
-                      <td className="p-6 text-white/80">Akıllı Ödeme Planları</td>
-                      <td className="p-6 text-center">
-                        <CheckCircle className="w-5 h-5 text-emerald-400 mx-auto" />
-                      </td>
-                      <td className="p-6 text-center">
-                        <CheckCircle className="w-5 h-5 text-emerald-400 mx-auto" />
-                      </td>
-                      <td className="p-6 text-center">
-                        <CheckCircle className="w-5 h-5 text-emerald-400 mx-auto" />
-                      </td>
-                    </tr>
-                    <tr className="border-b border-white/5">
-                      <td className="p-6 text-white/80">Gelişmiş Analitik</td>
-                      <td className="p-6 text-center text-white/40">-</td>
-                      <td className="p-6 text-center">
-                        <CheckCircle className="w-5 h-5 text-emerald-400 mx-auto" />
-                      </td>
-                      <td className="p-6 text-center">
-                        <CheckCircle className="w-5 h-5 text-emerald-400 mx-auto" />
-                      </td>
-                    </tr>
-                    <tr className="border-b border-white/5">
-                      <td className="p-6 text-white/80">API Erişimi</td>
-                      <td className="p-6 text-center text-white/40">-</td>
-                      <td className="p-6 text-center text-white/40">-</td>
-                      <td className="p-6 text-center">
-                        <CheckCircle className="w-5 h-5 text-emerald-400 mx-auto" />
-                      </td>
-                    </tr>
-                    <tr>
-                      <td className="p-6 text-white/80">Öncelikli Destek</td>
-                      <td className="p-6 text-center text-white/40">-</td>
-                      <td className="p-6 text-center">
-                        <CheckCircle className="w-5 h-5 text-emerald-400 mx-auto" />
-                      </td>
-                      <td className="p-6 text-center">
-                        <CheckCircle className="w-5 h-5 text-emerald-400 mx-auto" />
-                      </td>
-                    </tr>
-                  </tbody>
-                </table>
+              <div className="relative group">
+                <div className="absolute inset-0 bg-gradient-to-r from-teal-500/20 to-transparent rounded-3xl blur-xl group-hover:blur-2xl transition-all duration-500" />
+                <Card className="relative bg-black/20 border-white/10 backdrop-blur-xl hover:border-teal-500/30 transition-all duration-500 text-center">
+                  <CardContent className="p-8">
+                    <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-teal-500/30 to-teal-500/10 flex items-center justify-center mx-auto mb-4 border border-teal-500/20">
+                      <Lock className="w-8 h-8 text-teal-400" />
+                    </div>
+                    <h3 className="text-lg text-white font-bold mb-2">KVKK Uyumlu</h3>
+                    <p className="text-white/60 text-sm">Veri güvenliği garantisi</p>
+                  </CardContent>
+                </Card>
               </div>
             </div>
           </div>
@@ -724,7 +642,7 @@ export default function FeaturesPage() {
         {/* CTA Section */}
         <section className="py-20 px-4 md:px-8 lg:px-16">
           <div className="container mx-auto">
-            <div className="relative bg-black/20 border border-white/10 rounded-3xl p-12 md:p-16 text-center backdrop-blur-xl overflow-hidden">
+            <div className="relative bg-gradient-to-br from-emerald-500/20 to-teal-500/20 rounded-3xl p-12 md:p-16 text-center backdrop-blur-xl border border-white/10 overflow-hidden">
               <div className="absolute -top-10 -left-10 w-40 h-40 bg-emerald-500/20 rounded-full blur-2xl" />
               <div className="absolute -bottom-10 -right-10 w-40 h-40 bg-teal-500/20 rounded-full blur-2xl" />
               <div className="relative z-10">
@@ -738,7 +656,7 @@ export default function FeaturesPage() {
                   <Link href="/giris">
                     <Button
                       size="lg"
-                      className="bg-gradient-to-r from-emerald-500 to-teal-500 text-white font-bold px-8 py-6 text-lg hover:from-emerald-600 hover:to-teal-600"
+                      className="bg-gradient-to-r from-emerald-500 to-teal-500 text-white font-bold px-8 py-6 text-lg hover:from-emerald-600 hover:to-teal-600 shadow-lg shadow-emerald-500/25"
                     >
                       Ücretsiz Başla
                       <ArrowRight className="ml-2 w-5 h-5" />
@@ -751,6 +669,23 @@ export default function FeaturesPage() {
                   >
                     Demo Talep Et
                   </Button>
+                </div>
+
+                <div className="mt-12 flex items-center justify-center gap-8 text-white/80">
+                  <div className="text-center">
+                    <div className="text-3xl font-bold mb-1 text-emerald-400">25+</div>
+                    <div className="text-sm">Desteklenen Banka</div>
+                  </div>
+                  <div className="w-px h-12 bg-white/20" />
+                  <div className="text-center">
+                    <div className="text-3xl font-bold mb-1 text-emerald-400">99.8%</div>
+                    <div className="text-sm">Doğruluk Oranı</div>
+                  </div>
+                  <div className="w-px h-12 bg-white/20" />
+                  <div className="text-center">
+                    <div className="text-3xl font-bold mb-1 text-emerald-400">{"<3s"}</div>
+                    <div className="text-sm">İşlem Süresi</div>
+                  </div>
                 </div>
               </div>
             </div>

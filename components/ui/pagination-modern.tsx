@@ -60,9 +60,9 @@ export function PaginationModern({
   }
 
   return (
-    <div className="flex items-center justify-between mt-6">
+    <div className="flex items-center justify-between mt-6 mb-4 relative z-20">
       {/* Bilgi Metni */}
-      <div className="text-sm text-gray-500">
+      <div className="text-sm text-gray-500 dark:text-white/60">
         {startIdx}-{endIdx} arası, toplam {totalItems} {itemName}
       </div>
 
@@ -77,8 +77,8 @@ export function PaginationModern({
                 disabled={currentPage === 1}
                 className={`flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-lg transition-all duration-200 ${
                   currentPage === 1
-                    ? "text-gray-400 cursor-not-allowed opacity-50"
-                    : "text-gray-700 hover:text-white hover:bg-gradient-to-r hover:from-emerald-600 hover:to-teal-700 hover:shadow-lg transform hover:scale-105"
+                    ? "text-gray-400 dark:text-gray-600 cursor-not-allowed opacity-50"
+                    : "text-gray-700 dark:text-white/70 hover:text-white hover:bg-gradient-to-r hover:from-emerald-600 hover:to-teal-700 hover:shadow-lg transform hover:scale-105"
                 }`}
               >
                 <ChevronLeft className="h-4 w-4" />
@@ -95,7 +95,7 @@ export function PaginationModern({
                   className={`cursor-pointer ${
                     page === currentPage
                       ? "bg-gradient-to-r from-emerald-600 to-teal-700 text-white hover:from-emerald-700 hover:to-teal-800"
-                      : "hover:bg-emerald-100 hover:text-emerald-700"
+                      : "hover:bg-emerald-100 hover:text-emerald-700 dark:hover:bg-emerald-900/20 dark:text-white/70"
                   }`}
                 >
                   {page}
@@ -103,11 +103,22 @@ export function PaginationModern({
               </PaginationItem>
             ))}
 
-            {/* … ellipsis */}
+            {/* … ellipsis ve son sayfa */}
             {totalPages > 5 && currentPage < totalPages - 2 && (
-              <PaginationItem>
-                <PaginationEllipsis />
-              </PaginationItem>
+              <>
+                <PaginationItem>
+                  <PaginationEllipsis />
+                </PaginationItem>
+                <PaginationItem>
+                  <PaginationLink
+                    isActive={false}
+                    onClick={() => gotoPage(totalPages)}
+                    className="cursor-pointer hover:bg-emerald-100 hover:text-emerald-700 dark:hover:bg-emerald-900/20 dark:text-white/70"
+                  >
+                    {totalPages}
+                  </PaginationLink>
+                </PaginationItem>
+              </>
             )}
 
             {/* Sonraki */}
@@ -117,8 +128,8 @@ export function PaginationModern({
                 disabled={currentPage === totalPages}
                 className={`flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-lg transition-all duration-200 ${
                   currentPage === totalPages
-                    ? "text-gray-400 cursor-not-allowed opacity-50"
-                    : "text-gray-700 hover:text-white hover:bg-gradient-to-r hover:from-emerald-600 hover:to-teal-700 hover:shadow-lg transform hover:scale-105"
+                    ? "text-gray-400 dark:text-gray-600 cursor-not-allowed opacity-50"
+                    : "text-gray-700 dark:text-white/70 hover:text-white hover:bg-gradient-to-r hover:from-emerald-600 hover:to-teal-700 hover:shadow-lg transform hover:scale-105"
                 }`}
               >
                 Sonraki

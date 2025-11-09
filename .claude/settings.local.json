@@ -11,7 +11,9 @@
       "Bash(npm run lint:*)",
       "Bash(tree:*)",
       "Bash(nul)",
-      "Bash(npm run build:*)"
+      "Bash(npm run build:*)",
+      "Bash(git pull:*)",
+      "Bash(npm run dev:*)"
     ],
     "deny": [],
     "ask": []

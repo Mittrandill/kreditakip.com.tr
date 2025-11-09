@@ -72,7 +72,7 @@ const ReferenceLine = dynamic(() => import("recharts").then((mod) => ({ default:
 const COLORS = ["#10B981", "#3B82F6", "#F59E0B", "#EF4444", "#8B5CF6", "#06B6D4", "#F97316", "#84CC16"]
 
 interface PopulatedCredit extends Credit {
-  banks: Pick<Bank, "id" | "name" | "logo_url"> | null
+  banks: Pick<Bank, "id" | "name" | "logo_url" | "contact_phone" | "contact_email" | "website"> | null
   credit_types: Pick<CreditType, "id" | "name"> | null
 }
 

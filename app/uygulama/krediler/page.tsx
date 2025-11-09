@@ -56,7 +56,7 @@ import {
 } from "@/components/ui/alert-dialog"
 
 interface PopulatedCredit extends Credit {
-  banks: Pick<Bank, "id" | "name" | "logo_url"> | null
+  banks: Pick<Bank, "id" | "name" | "logo_url" | "contact_phone" | "contact_email" | "website"> | null
   credit_types: Pick<CreditType, "id" | "name"> | null
   nextPaymentAmount?: number // En yakın ödenmemiş taksitin tutarı
 }

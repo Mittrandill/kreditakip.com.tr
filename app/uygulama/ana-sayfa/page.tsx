@@ -31,7 +31,7 @@ import { AdBanner } from "@/components/ad-banner"
 
 // Kredi verisi için genişletilmiş tip (ilişkili tablolarla)
 interface PopulatedCredit extends Credit {
-  banks: Pick<Bank, "id" | "name" | "logo_url"> | null
+  banks: Pick<Bank, "id" | "name" | "logo_url" | "contact_phone" | "contact_email" | "website"> | null
   credit_types: Pick<CreditType, "id" | "name"> | null
 }
 

@@ -46,7 +46,7 @@ import { CreditTypeSelector } from "@/components/credit-type-selector"
 import { CalendarModal } from "@/components/calendar-modal"
 
 interface PopulatedCredit extends Credit {
-  banks: Pick<Bank, "id" | "name" | "logo_url"> | null
+  banks: Pick<Bank, "id" | "name" | "logo_url" | "contact_phone" | "contact_email" | "website"> | null
   credit_types: Pick<CreditType, "id" | "name" | "description"> | null
 }
 
