@@ -418,8 +418,8 @@ export default function FeaturesPage() {
                           <AlertTriangle className="w-5 h-5 text-amber-400" />
                         </div>
                         <div className="flex-1">
-                          <p className="font-medium mb-1">Faiz Oranı Değişti</p>
-                          <p className="text-sm text-white/60">İhtiyaç kredisi faiz oranı güncellendi</p>
+                          <p className="font-medium mb-1">Geciken Ödeme</p>
+                          <p className="text-sm text-white/60">Türkiye İş Bankası Kredinizin 4. Takisiti Gecikti!</p>
                           <p className="text-xs text-white/40 mt-1">3 gün önce</p>
                         </div>
                       </div>

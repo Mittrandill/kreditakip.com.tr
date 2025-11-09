@@ -356,60 +356,445 @@ export default function KrediDetayPage() {
     setHesaplaModalOpen(true)
   }
 
+  // Helper function to load image as base64 using fetch
+  const loadImageAsBase64 = async (url: string): Promise<string> => {
+    try {
+      const response = await fetch(url)
+      if (!response.ok) throw new Error("Failed to load image")
+      const blob = await response.blob()
+      return new Promise((resolve, reject) => {
+        const reader = new FileReader()
+        reader.onloadend = () => resolve(reader.result as string)
+        reader.onerror = reject
+        reader.readAsDataURL(blob)
+      })
+    } catch (error) {
+      throw new Error(`Failed to load image: ${url}`)
+    }
+  }
+
+  // Helper function to get bank logo path from bank name
+  const getBankLogoPath = (bankName: string | undefined): string => {
+    if (!bankName) return ""
+
+    const slug = bankName
+      .toLowerCase()
+      .replace(/ğ/g, "g")
+      .replace(/ü/g, "u")
+      .replace(/ş/g, "s")
+      .replace(/ı/g, "i")
+      .replace(/ö/g, "o")
+      .replace(/ç/g, "c")
+      .replace(/\s+/g, "-")
+      .replace(/[^a-z0-9-]/g, "")
+
+    return `/bank-icons/${slug}.png`
+  }
+
+  // Helper to add gradient background
+  const addGradientRect = (
+    doc: any,
+    x: number,
+    y: number,
+    width: number,
+    height: number,
+    startColor: [number, number, number],
+    _endColor: [number, number, number]
+  ) => {
+    doc.setFillColor(...startColor)
+    doc.rect(x, y, width, height, "F")
+  }
+
   const handleHesaplamaPDFIndir = async () => {
+    if (!hesaplamaResult) return
+
+    try {
+      const { generateEarlyPaymentPDF } = await import("@/lib/utils/early-payment-pdf")
+
+      await generateEarlyPaymentPDF({
+        hesaplamaForm,
+        hesaplamaResult,
+        dynamicStats,
+        krediDetay,
+        user,
+      })
+
+      toast({
+        title: "Rapor Hazir",
+        description: "Hesaplama raporu basariyla indirildi.",
+      })
+    } catch (error) {
+      toast({
+        title: "Hata",
+        description: "Rapor olusturulurken bir sorun olustu.",
+        variant: "destructive",
+      })
+    }
+  }
+
+  const OLD_handleHesaplamaPDFIndir_REMOVE_THIS = async () => {
     if (!hesaplamaResult) return
 
     try {
       const { jsPDF } = await import("jspdf")
       const doc = new jsPDF()
 
-      // Logo ve header
-      doc.setFontSize(24)
-      doc.setTextColor(20, 184, 166) // Teal color
-      doc.text("KrediTakip", 20, 30)
+      // Turkish character conversion - WILL BE REMOVED
+      const safeText = (text: string | number | null | undefined): string => {
+        if (text === null || text === undefined) return ""
+        return String(text)
+          .replace(/ğ/g, "g")
+          .replace(/Ğ/g, "G")
+          .replace(/ü/g, "u")
+          .replace(/Ü/g, "U")
+          .replace(/ş/g, "s")
+          .replace(/Ş/g, "S")
+          .replace(/ı/g, "i")
+          .replace(/İ/g, "I")
+          .replace(/ö/g, "o")
+          .replace(/Ö/g, "O")
+          .replace(/ç/g, "c")
+          .replace(/Ç/g, "C")
+      }
 
-      doc.setFontSize(18)
-      doc.setTextColor(0, 0, 0)
-      doc.text("Erken Odeme Hesaplama Raporu", 20, 50)
+      const formatMoney = (amount: number): string => {
+        const formatted = new Intl.NumberFormat("tr-TR", {
+          minimumFractionDigits: 0,
+          maximumFractionDigits: 0,
+        }).format(amount)
+        return safeText(formatted + " TL")
+      }
 
-      // Mevcut kredi bilgileri
-      doc.setFontSize(14)
-      doc.text("Mevcut Kredi Bilgileri:", 20, 80)
+      const formatDate = (date: Date): string => {
+        return safeText(date.toLocaleDateString("tr-TR"))
+      }
+
+      // Load logos
+      let whiteLogo: string | null = null
+      let bankLogo: string | null = null
+
+      try {
+        whiteLogo = await loadImageAsBase64("/logo-white.png")
+      } catch (error) {
+        console.log("White logo could not be loaded")
+      }
+
+      try {
+        const bankLogoPath = getBankLogoPath(krediDetay?.banks?.name)
+        if (bankLogoPath) {
+          bankLogo = await loadImageAsBase64(bankLogoPath)
+        }
+      } catch (error) {
+        console.log("Bank logo could not be loaded")
+      }
+
+      const COLORS = {
+        primary: [16, 185, 129] as [number, number, number],
+        secondary: [20, 184, 166] as [number, number, number],
+        accent: [13, 148, 136] as [number, number, number],
+        success: [34, 197, 94] as [number, number, number],
+        warning: [251, 146, 60] as [number, number, number],
+        danger: [239, 68, 68] as [number, number, number],
+        dark: [30, 41, 59] as [number, number, number],
+        gray: [100, 116, 139] as [number, number, number],
+        lightGray: [241, 245, 249] as [number, number, number],
+        white: [255, 255, 255] as [number, number, number],
+      }
+
+      const pageWidth = doc.internal.pageSize.getWidth()
+      const pageHeight = doc.internal.pageSize.getHeight()
+      const margin = 15
+
+      // ============ COVER PAGE ============
+      addGradientRect(doc, 0, 0, pageWidth, pageHeight, COLORS.primary, COLORS.accent)
+
+      // Decorative circles
+      doc.setFillColor(255, 255, 255)
+      doc.setGState(doc.GState({ opacity: 0.03 }))
+      doc.circle(pageWidth * 0.85, pageHeight * 0.15, 60, "F")
+      doc.circle(pageWidth * 0.15, pageHeight * 0.85, 50, "F")
+      doc.circle(pageWidth * 0.25, pageHeight * 0.4, 35, "F")
+      doc.circle(pageWidth * 0.75, pageHeight * 0.6, 40, "F")
+      doc.setGState(doc.GState({ opacity: 1 }))
+
+      // Logo section - UPDATED FOR PROFESSIONAL LOOK
+      const logoY = pageHeight * 0.28
+      const logoWidth = 60
+      const logoHeight = 60
+
+      if (whiteLogo) {
+        try {
+          // Add logo image centered
+          doc.addImage(
+            whiteLogo,
+            "PNG",
+            pageWidth / 2 - logoWidth / 2,
+            logoY - logoHeight / 2,
+            logoWidth,
+            logoHeight
+          )
+        } catch (error) {
+          console.log("Could not add white logo to cover")
+          // Fallback: Show brand text
+          doc.setTextColor(...COLORS.white)
+          doc.setFontSize(24)
+          doc.setFont("helvetica", "bold")
+          doc.text("Kredi Takip", pageWidth / 2, logoY + 5, { align: "center" })
+        }
+      } else {
+        // Fallback: Show brand text
+        doc.setTextColor(...COLORS.white)
+        doc.setFontSize(24)
+        doc.setFont("helvetica", "bold")
+        doc.text("Kredi Takip", pageWidth / 2, logoY + 5, { align: "center" })
+      }
+
+      // Main title
+      const titleY = pageHeight * 0.48
+      doc.setTextColor(...COLORS.white)
+      doc.setFontSize(36)
+      doc.setFont("helvetica", "bold")
+      doc.text(safeText("ERKEN ODEME"), pageWidth / 2, titleY, { align: "center" })
+      doc.setFontSize(36)
+      doc.text(safeText("HESAPLAMA"), pageWidth / 2, titleY + 42, { align: "center" })
+
+      // Separator line
+      doc.setDrawColor(...COLORS.white)
+      doc.setLineWidth(0.5)
+      doc.setGState(doc.GState({ opacity: 0.5 }))
+      const lineWidth = 80
+      doc.line(pageWidth / 2 - lineWidth / 2, titleY + 54, pageWidth / 2 + lineWidth / 2, titleY + 54)
+      doc.setGState(doc.GState({ opacity: 1 }))
+
+      // Subtitle
+      doc.setFontSize(13)
+      doc.setFont("helvetica", "normal")
+      doc.setGState(doc.GState({ opacity: 0.9 }))
+      doc.text(safeText("Detayli Tasarruf Analizi"), pageWidth / 2, titleY + 66, { align: "center" })
+      doc.setGState(doc.GState({ opacity: 1 }))
+
+      // Info card
+      const coverCardY = pageHeight * 0.68
+      const coverCardWidth = 140
+      const coverCardHeight = 60
+
+      // Card shadow
+      doc.setFillColor(0, 0, 0)
+      doc.setGState(doc.GState({ opacity: 0.15 }))
+      doc.roundedRect(pageWidth / 2 - coverCardWidth / 2 + 2, coverCardY + 2, coverCardWidth, coverCardHeight, 8, 8, "F")
+
+      // Card background
+      doc.setGState(doc.GState({ opacity: 0.15 }))
+      doc.setFillColor(255, 255, 255)
+      doc.roundedRect(pageWidth / 2 - coverCardWidth / 2, coverCardY, coverCardWidth, coverCardHeight, 8, 8, "F")
+      doc.setGState(doc.GState({ opacity: 1 }))
+
+      // Card border
+      doc.setDrawColor(255, 255, 255)
+      doc.setLineWidth(0.3)
+      doc.setGState(doc.GState({ opacity: 0.4 }))
+      doc.roundedRect(pageWidth / 2 - coverCardWidth / 2, coverCardY, coverCardWidth, coverCardHeight, 8, 8, "D")
+      doc.setGState(doc.GState({ opacity: 1 }))
+
+      // User info in card - UPDATED TO MATCH GENERAL REPORTS
+      if (user?.email || user?.user_metadata?.full_name) {
+        doc.setTextColor(...COLORS.white)
+        doc.setFontSize(11)
+        doc.setFont("helvetica", "bold")
+        doc.text(
+          safeText(user?.user_metadata?.full_name || user?.email || "Kullanici"),
+          pageWidth / 2,
+          coverCardY + 22,
+          { align: "center" }
+        )
+
+        // Divider
+        doc.setDrawColor(...COLORS.white)
+        doc.setGState(doc.GState({ opacity: 0.3 }))
+        doc.line(pageWidth / 2 - 30, coverCardY + 30, pageWidth / 2 + 30, coverCardY + 30)
+        doc.setGState(doc.GState({ opacity: 1 }))
+      }
+
+      // Report date
+      doc.setFontSize(9)
+      doc.setFont("helvetica", "normal")
+      doc.setGState(doc.GState({ opacity: 0.85 }))
+      doc.text(safeText("RAPOR TARiHi"), pageWidth / 2, coverCardY + 40, { align: "center" })
+      doc.setGState(doc.GState({ opacity: 1 }))
+
+      doc.setFontSize(10)
+      doc.setFont("helvetica", "bold")
+      doc.text(formatDate(new Date()), pageWidth / 2, coverCardY + 50, { align: "center" })
+
+      // ============ NEW PAGE - CONTENT ============
+      doc.addPage()
+      let yPos = 0
+
+      // Header gradient
+      addGradientRect(doc, 0, 0, pageWidth, 50, COLORS.primary, COLORS.accent)
+
+      // Bank logo in header (if available)
+      if (bankLogo) {
+        try {
+          doc.addImage(bankLogo, "PNG", pageWidth - margin - 30, 10, 30, 30)
+        } catch (error) {
+          console.log("Could not add bank logo to header")
+        }
+      }
+
+      doc.setTextColor(...COLORS.white)
+      doc.setFontSize(20)
+      doc.setFont("helvetica", "bold")
+      doc.text("ERKEN ODEME HESAPLAMA", margin, 28)
+
       doc.setFontSize(11)
-      doc.text(`Kredi Kodu: ${krediDetay?.credit_code}`, 20, 95)
-      doc.text(`Banka: ${krediDetay?.banks?.name}`, 20, 105)
-      doc.text(`Mevcut Kalan Borc: ${formatCurrency(dynamicStats.remainingDebt).replace("₺", "TL")}`, 20, 115)
-      doc.text(`Mevcut Aylik Odeme: ${formatCurrency(krediDetay?.monthly_payment || 0).replace("₺", "TL")}`, 20, 125)
+      doc.setFont("helvetica", "normal")
+      doc.text("Tasarruf Analiz Raporu", margin, 40)
 
-      // Hesaplama sonuçları
-      doc.setFontSize(14)
-      doc.text("Hesaplama Sonuclari:", 20, 150)
-      doc.setFontSize(11)
-      doc.text(
-        `Erken Odeme Tutari: ${formatCurrency(Number.parseFloat(hesaplamaForm.erkenOdemeTutari)).replace("₺", "TL")}`,
-        20,
-        165,
-      )
-      doc.text(`Yeni Kalan Borc: ${formatCurrency(hesaplamaResult.yeniKalanBorc).replace("₺", "TL")}`, 20, 175)
-      doc.text(`Faiz Tasarrufu: ${formatCurrency(hesaplamaResult.faizTasarrufu).replace("₺", "TL")}`, 20, 185)
-      doc.text(`Yeni Aylik Odeme: ${formatCurrency(hesaplamaResult.yeniAylikOdeme).replace("₺", "TL")}`, 20, 195)
+      // Date - right aligned
+      doc.setFontSize(9)
+      doc.text(formatDate(new Date()), pageWidth - margin - 70, 20)
 
-      // Footer
-      doc.setFontSize(8)
-      doc.setTextColor(128, 128, 128)
-      doc.text("Bu rapor KrediTakip uygulamasi tarafindan olusturulmustur.", 20, 280)
-      doc.text(`Rapor Tarihi: ${new Date().toLocaleDateString("tr-TR")}`, 20, 290)
+      yPos = 65
+
+      // ============ METRIC CARDS ============
+      const cardWidth = (pageWidth - 2 * margin - 30) / 4
+      const cardHeight = 28
+      const spacing = 10
+
+      const metrics = [
+        { title: "Erken Odeme", value: formatMoney(Number.parseFloat(hesaplamaForm.erkenOdemeTutari)), color: COLORS.primary },
+        { title: "Tasarruf", value: formatMoney(hesaplamaResult.toplamTasarruf), color: COLORS.success },
+        { title: "Yeni Borc", value: formatMoney(hesaplamaResult.yeniKalanBorc), color: COLORS.warning },
+        { title: "Faiz Tasarrufu", value: formatMoney(hesaplamaResult.faizTasarrufu), color: COLORS.danger },
+      ]
+
+      metrics.forEach((metric, index) => {
+        const x = margin + index * (cardWidth + spacing)
+
+        // Card background
+        doc.setFillColor(...COLORS.white)
+        doc.setDrawColor(200, 200, 200)
+        doc.setLineWidth(0.5)
+        doc.rect(x, yPos, cardWidth, cardHeight, "FD")
+
+        // Top colored bar
+        doc.setFillColor(...metric.color)
+        doc.rect(x, yPos, cardWidth, 2, "F")
+
+        // Title
+        doc.setFontSize(7)
+        doc.setFont("helvetica", "normal")
+        doc.setTextColor(...COLORS.gray)
+        doc.text(safeText(metric.title).toUpperCase(), x + 3, yPos + 9)
+
+        // Value
+        doc.setFontSize(10)
+        doc.setFont("helvetica", "bold")
+        doc.setTextColor(...COLORS.dark)
+        doc.text(safeText(metric.value), x + 3, yPos + 18)
+      })
+
+      yPos += cardHeight + 10
+
+      // ============ COMPARISON SECTION ============
+      doc.setFillColor(...COLORS.lightGray)
+      doc.roundedRect(margin, yPos, pageWidth - 2 * margin, 18, 2, 2, "F")
+      doc.setFillColor(...COLORS.secondary)
+      doc.rect(margin, yPos, 4, 18, "F")
+      doc.setTextColor(...COLORS.dark)
+      doc.setFontSize(10)
+      doc.setFont("helvetica", "bold")
+      doc.text(safeText("DURUM KARSILASTIRMASI"), margin + 8, yPos + 11)
+
+      yPos += 22
+
+      // Modern comparison table
+      const totalWidth = pageWidth - 2 * margin
+      const rowHeight = 14
+      const headerHeight = 18
+
+      // Header
+      doc.setFillColor(...COLORS.secondary)
+      doc.rect(margin, yPos, totalWidth, headerHeight, "F")
+
+      doc.setTextColor(...COLORS.white)
+      doc.setFontSize(7)
+      doc.setFont("helvetica", "bold")
+
+      doc.text(safeText("DURUM"), margin + 5, yPos + 12)
+      doc.text(safeText("ANA PARA"), margin + 60, yPos + 12)
+      doc.text(safeText("TOPLAM FAiZ"), margin + 115, yPos + 12)
+      doc.text(safeText("TOPLAM ODEME"), margin + 165, yPos + 12)
+
+      yPos += headerHeight
+
+      // Row 1 - Mevcut
+      doc.setFillColor(248, 248, 248)
+      doc.rect(margin, yPos, totalWidth, rowHeight, "F")
+
+      doc.setDrawColor(220, 220, 220)
+      doc.setLineWidth(0.2)
+      doc.line(margin, yPos + rowHeight, pageWidth - margin, yPos + rowHeight)
+
+      doc.setTextColor(...COLORS.dark)
+      doc.setFont("helvetica", "normal")
+      doc.setFontSize(7)
+
+      doc.text(safeText("Mevcut"), margin + 5, yPos + 10)
+      doc.setTextColor(...COLORS.danger)
+      doc.setFont("helvetica", "bold")
+      doc.text(formatMoney(dynamicStats.remainingDebt), margin + 60, yPos + 10)
+      doc.setTextColor(...COLORS.warning)
+      doc.text(formatMoney(hesaplamaResult.eskiToplamFaiz), margin + 115, yPos + 10)
+      doc.setTextColor(...COLORS.dark)
+      doc.text(formatMoney(hesaplamaResult.eskiToplamOdeme), margin + 165, yPos + 10)
+
+      yPos += rowHeight
+
+      // Row 2 - Yeni
+      doc.setTextColor(...COLORS.dark)
+      doc.setFont("helvetica", "normal")
+      doc.text(safeText("Yeni"), margin + 5, yPos + 10)
+      doc.setTextColor(...COLORS.success)
+      doc.setFont("helvetica", "bold")
+      doc.text(formatMoney(hesaplamaResult.kalanAnaPara), margin + 60, yPos + 10)
+      doc.setTextColor(...COLORS.success)
+      doc.text(formatMoney(hesaplamaResult.yeniToplamFaiz), margin + 115, yPos + 10)
+      doc.setTextColor(...COLORS.dark)
+      doc.text(formatMoney(hesaplamaResult.yeniToplamOdeme), margin + 165, yPos + 10)
+
+      doc.setDrawColor(220, 220, 220)
+      doc.line(margin, yPos + rowHeight, pageWidth - margin, yPos + rowHeight)
+
+      // ============ MODERN FOOTER ============
+      addGradientRect(doc, 0, pageHeight - 20, pageWidth, 20, COLORS.primary, COLORS.accent)
+
+      doc.setTextColor(...COLORS.white)
+      doc.setFontSize(7)
+
+      // Left - Website
+      doc.setFont("helvetica", "bold")
+      doc.text("kreditakip.com.tr", margin, pageHeight - 8)
+
+      // Center - Tagline
+      doc.setFont("helvetica", "normal")
+      doc.text("Finansal ozgurluge giden yol", pageWidth / 2, pageHeight - 8, { align: "center" })
+
+      // Right - Page number
+      doc.setFont("helvetica", "bold")
+      doc.text("1 / 1", pageWidth - margin, pageHeight - 8, { align: "right" })
 
       doc.save(`erken-odeme-hesaplama-${krediDetay?.credit_code}.pdf`)
 
       toast({
-        title: "Rapor Hazır",
-        description: "Hesaplama raporu başarıyla indirildi.",
+        title: "Rapor Hazir",
+        description: "Hesaplama raporu basariyla indirildi.",
       })
     } catch (error) {
       toast({
         title: "Hata",
-        description: "Rapor oluşturulurken bir sorun oluştu.",
+        description: "Rapor olusturulurken bir sorun olustu.",
         variant: "destructive",
       })
     }
@@ -452,9 +837,33 @@ export default function KrediDetayPage() {
 
   const handleDownloadPaymentPlan = async () => {
     try {
+      const { generatePaymentPlanPDF } = await import("@/lib/utils/payment-plan-pdf")
+
+      await generatePaymentPlanPDF({
+        odemePlani,
+        krediDetay,
+        user,
+      })
+
+      toast({
+        title: "Basarili",
+        description: "Odeme plani basariyla indirildi.",
+      })
+    } catch (error) {
+      toast({
+        title: "Hata",
+        description: "Odeme plani indirilirken bir sorun olustu.",
+        variant: "destructive",
+      })
+    }
+  }
+
+  const OLD_handleDownloadPaymentPlan_REMOVE_THIS = async () => {
+    try {
       const { jsPDF } = await import("jspdf")
       const doc = new jsPDF()
 
+      // WILL BE REMOVED
       const safeText = (text: string | number | null | undefined): string => {
         if (text === null || text === undefined) return ""
         return String(text)
@@ -473,15 +882,43 @@ export default function KrediDetayPage() {
       }
 
       const formatMoney = (amount: number): string => {
-        return new Intl.NumberFormat("tr-TR", {
+        const formatted = new Intl.NumberFormat("tr-TR", {
           minimumFractionDigits: 0,
           maximumFractionDigits: 0,
-        }).format(amount) + " TL"
+        }).format(amount)
+        return safeText(formatted + " TL")
+      }
+
+      const formatDate = (date: Date): string => {
+        return safeText(date.toLocaleDateString("tr-TR"))
+      }
+
+      // Load logos
+      let whiteLogo: string | null = null
+      let bankLogo: string | null = null
+
+      try {
+        whiteLogo = await loadImageAsBase64("/logo-white.png")
+      } catch (error) {
+        console.log("White logo could not be loaded")
+      }
+
+      try {
+        const bankLogoPath = getBankLogoPath(krediDetay?.banks?.name)
+        if (bankLogoPath) {
+          bankLogo = await loadImageAsBase64(bankLogoPath)
+        }
+      } catch (error) {
+        console.log("Bank logo could not be loaded")
       }
 
       const COLORS = {
         primary: [16, 185, 129] as [number, number, number],
         secondary: [20, 184, 166] as [number, number, number],
+        accent: [13, 148, 136] as [number, number, number],
+        success: [34, 197, 94] as [number, number, number],
+        warning: [251, 146, 60] as [number, number, number],
+        danger: [239, 68, 68] as [number, number, number],
         dark: [30, 41, 59] as [number, number, number],
         gray: [100, 116, 139] as [number, number, number],
         lightGray: [241, 245, 249] as [number, number, number],
@@ -489,65 +926,225 @@ export default function KrediDetayPage() {
       }
 
       const pageWidth = doc.internal.pageSize.getWidth()
+      const pageHeight = doc.internal.pageSize.getHeight()
       const margin = 15
 
-      // Modern Header with gradient effect
-      doc.setFillColor(...COLORS.primary)
-      doc.rect(0, 0, pageWidth, 45, "F")
+      // ============ COVER PAGE ============
+      addGradientRect(doc, 0, 0, pageWidth, pageHeight, COLORS.primary, COLORS.accent)
 
-      // Logo/Brand
+      // Decorative circles
+      doc.setFillColor(255, 255, 255)
+      doc.setGState(doc.GState({ opacity: 0.03 }))
+      doc.circle(pageWidth * 0.85, pageHeight * 0.15, 60, "F")
+      doc.circle(pageWidth * 0.15, pageHeight * 0.85, 50, "F")
+      doc.circle(pageWidth * 0.25, pageHeight * 0.4, 35, "F")
+      doc.circle(pageWidth * 0.75, pageHeight * 0.6, 40, "F")
+      doc.setGState(doc.GState({ opacity: 1 }))
+
+      // Logo section - UPDATED FOR PROFESSIONAL LOOK
+      const logoY = pageHeight * 0.28
+      const logoWidth = 60
+      const logoHeight = 60
+
+      if (whiteLogo) {
+        try {
+          // Add logo image centered
+          doc.addImage(
+            whiteLogo,
+            "PNG",
+            pageWidth / 2 - logoWidth / 2,
+            logoY - logoHeight / 2,
+            logoWidth,
+            logoHeight
+          )
+        } catch (error) {
+          console.log("Could not add white logo to cover")
+          // Fallback: Show brand text
+          doc.setTextColor(...COLORS.white)
+          doc.setFontSize(24)
+          doc.setFont("helvetica", "bold")
+          doc.text("Kredi Takip", pageWidth / 2, logoY + 5, { align: "center" })
+        }
+      } else {
+        // Fallback: Show brand text
+        doc.setTextColor(...COLORS.white)
+        doc.setFontSize(24)
+        doc.setFont("helvetica", "bold")
+        doc.text("Kredi Takip", pageWidth / 2, logoY + 5, { align: "center" })
+      }
+
+      // Main title
+      const titleY = pageHeight * 0.48
       doc.setTextColor(...COLORS.white)
-      doc.setFontSize(24)
+      doc.setFontSize(36)
       doc.setFont("helvetica", "bold")
-      doc.text("KrediTakip", margin, 20)
+      doc.text(safeText("ODEME PLANI"), pageWidth / 2, titleY, { align: "center" })
+      doc.setFontSize(36)
+      doc.text(safeText("RAPORU"), pageWidth / 2, titleY + 42, { align: "center" })
 
-      // Document Title
-      doc.setFontSize(14)
+      // Separator line
+      doc.setDrawColor(...COLORS.white)
+      doc.setLineWidth(0.5)
+      doc.setGState(doc.GState({ opacity: 0.5 }))
+      const lineWidth = 80
+      doc.line(pageWidth / 2 - lineWidth / 2, titleY + 54, pageWidth / 2 + lineWidth / 2, titleY + 54)
+      doc.setGState(doc.GState({ opacity: 1 }))
+
+      // Subtitle
+      doc.setFontSize(13)
       doc.setFont("helvetica", "normal")
-      doc.text(safeText("Odeme Plani Raporu"), margin, 32)
+      doc.setGState(doc.GState({ opacity: 0.9 }))
+      doc.text(safeText("Taksit ve Odeme Takip Detaylari"), pageWidth / 2, titleY + 66, { align: "center" })
+      doc.setGState(doc.GState({ opacity: 1 }))
 
-      // Credit Info Box
-      let yPos = 55
-      doc.setFillColor(...COLORS.lightGray)
-      doc.roundedRect(margin, yPos, pageWidth - 2 * margin, 35, 3, 3, "F")
+      // Info card
+      const coverCardY = pageHeight * 0.68
+      const coverCardWidth = 140
+      const coverCardHeight = 60
 
-      doc.setTextColor(...COLORS.dark)
+      // Card shadow
+      doc.setFillColor(0, 0, 0)
+      doc.setGState(doc.GState({ opacity: 0.15 }))
+      doc.roundedRect(pageWidth / 2 - coverCardWidth / 2 + 2, coverCardY + 2, coverCardWidth, coverCardHeight, 8, 8, "F")
+
+      // Card background
+      doc.setGState(doc.GState({ opacity: 0.15 }))
+      doc.setFillColor(255, 255, 255)
+      doc.roundedRect(pageWidth / 2 - coverCardWidth / 2, coverCardY, coverCardWidth, coverCardHeight, 8, 8, "F")
+      doc.setGState(doc.GState({ opacity: 1 }))
+
+      // Card border
+      doc.setDrawColor(255, 255, 255)
+      doc.setLineWidth(0.3)
+      doc.setGState(doc.GState({ opacity: 0.4 }))
+      doc.roundedRect(pageWidth / 2 - coverCardWidth / 2, coverCardY, coverCardWidth, coverCardHeight, 8, 8, "D")
+      doc.setGState(doc.GState({ opacity: 1 }))
+
+      // User info in card - UPDATED TO MATCH GENERAL REPORTS
+      if (user?.email || user?.user_metadata?.full_name) {
+        doc.setTextColor(...COLORS.white)
+        doc.setFontSize(11)
+        doc.setFont("helvetica", "bold")
+        doc.text(
+          safeText(user?.user_metadata?.full_name || user?.email || "Kullanici"),
+          pageWidth / 2,
+          coverCardY + 22,
+          { align: "center" }
+        )
+
+        // Divider
+        doc.setDrawColor(...COLORS.white)
+        doc.setGState(doc.GState({ opacity: 0.3 }))
+        doc.line(pageWidth / 2 - 30, coverCardY + 30, pageWidth / 2 + 30, coverCardY + 30)
+        doc.setGState(doc.GState({ opacity: 1 }))
+      }
+
+      // Report date
+      doc.setFontSize(9)
+      doc.setFont("helvetica", "normal")
+      doc.setGState(doc.GState({ opacity: 0.85 }))
+      doc.text(safeText("RAPOR TARiHi"), pageWidth / 2, coverCardY + 40, { align: "center" })
+      doc.setGState(doc.GState({ opacity: 1 }))
+
       doc.setFontSize(10)
       doc.setFont("helvetica", "bold")
-      doc.text(safeText("Kredi Bilgileri"), margin + 5, yPos + 8)
+      doc.text(formatDate(new Date()), pageWidth / 2, coverCardY + 50, { align: "center" })
 
-      doc.setFont("helvetica", "normal")
-      doc.setFontSize(9)
-      doc.setTextColor(...COLORS.gray)
+      // ============ NEW PAGE - CONTENT ============
+      doc.addPage()
+      let yPos = 0
 
-      const creditInfo = [
-        { label: "Kredi Kodu:", value: krediDetay?.credit_code },
-        { label: "Banka:", value: krediDetay?.banks?.name },
-        { label: "Kredi Turu:", value: krediDetay?.credit_types?.name },
-        { label: "Toplam Taksit:", value: odemePlani.length },
-      ]
+      // Header gradient
+      addGradientRect(doc, 0, 0, pageWidth, 50, COLORS.primary, COLORS.accent)
 
-      let infoY = yPos + 18
-      creditInfo.forEach((info, idx) => {
-        const xPos = idx < 2 ? margin + 5 : pageWidth / 2 + 5
-        const currentY = idx % 2 === 0 ? infoY : infoY
-        if (idx === 2) infoY += 10
-
-        doc.setFont("helvetica", "bold")
-        doc.text(safeText(info.label), xPos, currentY)
-        doc.setFont("helvetica", "normal")
-        doc.text(safeText(info.value), xPos + 30, currentY)
-      })
-
-      // Payment Plan Table
-      yPos = 100
-
-      // Table Header
-      doc.setFillColor(...COLORS.secondary)
-      doc.rect(margin, yPos, pageWidth - 2 * margin, 10, "F")
+      // Bank logo in header (if available)
+      if (bankLogo) {
+        try {
+          doc.addImage(bankLogo, "PNG", pageWidth - margin - 30, 10, 30, 30)
+        } catch (error) {
+          console.log("Could not add bank logo to header")
+        }
+      }
 
       doc.setTextColor(...COLORS.white)
+      doc.setFontSize(20)
+      doc.setFont("helvetica", "bold")
+      doc.text("ODEME PLANI", margin, 28)
+
+      doc.setFontSize(11)
+      doc.setFont("helvetica", "normal")
+      doc.text("Taksit Detaylari", margin, 40)
+
+      // Date - right aligned
       doc.setFontSize(9)
+      doc.text(formatDate(new Date()), pageWidth - margin - 70, 20)
+
+      yPos = 65
+
+      // ============ METRIC CARDS ============
+      const totalPrincipal = odemePlani.reduce((sum, p) => sum + p.principal_amount, 0)
+      const totalInterest = odemePlani.reduce((sum, p) => sum + p.interest_amount, 0)
+      const totalPayment = odemePlani.reduce((sum, p) => sum + p.total_payment, 0)
+      const paidCount = odemePlani.filter(p => p.status === "paid").length
+
+      const cardWidth = (pageWidth - 2 * margin - 30) / 4
+      const cardHeight = 28
+      const spacing = 10
+
+      const metrics = [
+        { title: "Toplam Taksit", value: `${odemePlani.length} Adet`, color: COLORS.primary },
+        { title: "Odenen", value: `${paidCount} Adet`, color: COLORS.success },
+        { title: "Toplam Ana Para", value: formatMoney(totalPrincipal), color: COLORS.warning },
+        { title: "Toplam Faiz", value: formatMoney(totalInterest), color: COLORS.danger },
+      ]
+
+      metrics.forEach((metric, index) => {
+        const x = margin + index * (cardWidth + spacing)
+
+        // Card background
+        doc.setFillColor(...COLORS.white)
+        doc.setDrawColor(200, 200, 200)
+        doc.setLineWidth(0.5)
+        doc.rect(x, yPos, cardWidth, cardHeight, "FD")
+
+        // Top colored bar
+        doc.setFillColor(...metric.color)
+        doc.rect(x, yPos, cardWidth, 2, "F")
+
+        // Title
+        doc.setFontSize(7)
+        doc.setFont("helvetica", "normal")
+        doc.setTextColor(...COLORS.gray)
+        doc.text(safeText(metric.title).toUpperCase(), x + 3, yPos + 9)
+
+        // Value
+        doc.setFontSize(10)
+        doc.setFont("helvetica", "bold")
+        doc.setTextColor(...COLORS.dark)
+        doc.text(safeText(metric.value), x + 3, yPos + 18)
+      })
+
+      yPos += cardHeight + 12
+
+      // ============ PAYMENT PLAN TABLE ============
+      doc.setFillColor(...COLORS.lightGray)
+      doc.roundedRect(margin, yPos, pageWidth - 2 * margin, 22, 2, 2, "F")
+      doc.setFillColor(...COLORS.secondary)
+      doc.rect(margin, yPos, 4, 22, "F")
+      doc.setTextColor(...COLORS.dark)
+      doc.setFontSize(12)
+      doc.setFont("helvetica", "bold")
+      doc.text(safeText("TAKSIT DETAYLARI"), margin + 10, yPos + 14)
+
+      yPos += 27
+
+      // Table Header
+      const headerHeight = 16
+      doc.setFillColor(...COLORS.secondary)
+      doc.rect(margin, yPos, pageWidth - 2 * margin, headerHeight, "F")
+
+      doc.setTextColor(...COLORS.white)
+      doc.setFontSize(7)
       doc.setFont("helvetica", "bold")
 
       const headers = [
@@ -561,37 +1158,45 @@ export default function KrediDetayPage() {
       ]
 
       headers.forEach((header) => {
-        doc.text(safeText(header.text), header.x, yPos + 7)
+        doc.text(safeText(header.text), header.x, yPos + 11)
       })
 
-      yPos += 12
+      yPos += headerHeight
 
       // Table Rows
+      const rowHeight = 13
       doc.setFont("helvetica", "normal")
-      doc.setFontSize(8)
+      doc.setFontSize(7)
 
       odemePlani.forEach((plan, index) => {
-        if (yPos > 270) {
+        // Check page break
+        if (index > 0 && index % 10 === 0 && yPos + rowHeight > pageHeight - 35) {
           doc.addPage()
           yPos = 20
 
           // Repeat header on new page
           doc.setFillColor(...COLORS.secondary)
-          doc.rect(margin, yPos, pageWidth - 2 * margin, 10, "F")
+          doc.rect(margin, yPos, pageWidth - 2 * margin, headerHeight, "F")
           doc.setTextColor(...COLORS.white)
           doc.setFont("helvetica", "bold")
+          doc.setFontSize(7)
           headers.forEach((header) => {
-            doc.text(safeText(header.text), header.x, yPos + 7)
+            doc.text(safeText(header.text), header.x, yPos + 11)
           })
-          yPos += 12
+          yPos += headerHeight
           doc.setFont("helvetica", "normal")
         }
 
         // Alternating row colors
         if (index % 2 === 0) {
-          doc.setFillColor(250, 250, 250)
-          doc.rect(margin, yPos - 4, pageWidth - 2 * margin, 8, "F")
+          doc.setFillColor(248, 248, 248)
+          doc.rect(margin, yPos, pageWidth - 2 * margin, rowHeight, "F")
         }
+
+        // Bottom border
+        doc.setDrawColor(220, 220, 220)
+        doc.setLineWidth(0.2)
+        doc.line(margin, yPos + rowHeight, pageWidth - margin, yPos + rowHeight)
 
         // Status color
         const statusColor =
@@ -599,88 +1204,46 @@ export default function KrediDetayPage() {
           plan.status === "overdue" ? [239, 68, 68] as [number, number, number] :
           COLORS.gray
 
+        // Row content
         doc.setTextColor(...COLORS.dark)
-        doc.text(`${plan.installment_number}`, margin + 3, yPos)
-        doc.text(new Date(plan.due_date).toLocaleDateString("tr-TR"), margin + 20, yPos)
-        doc.text(formatMoney(plan.principal_amount), margin + 60, yPos)
-        doc.text(formatMoney(plan.interest_amount), margin + 90, yPos)
-        doc.text(formatMoney(plan.total_payment), margin + 115, yPos)
-        doc.text(formatMoney(plan.remaining_debt), margin + 150, yPos)
+        doc.setFont("helvetica", "normal")
+        doc.setFontSize(7)
+        doc.text(safeText(plan.installment_number), margin + 3, yPos + 9)
+        doc.text(safeText(new Date(plan.due_date).toLocaleDateString("tr-TR")), margin + 20, yPos + 9)
+        doc.text(formatMoney(plan.principal_amount), margin + 60, yPos + 9)
+        doc.text(formatMoney(plan.interest_amount), margin + 90, yPos + 9)
+        doc.text(formatMoney(plan.total_payment), margin + 115, yPos + 9)
+        doc.text(formatMoney(plan.remaining_debt), margin + 150, yPos + 9)
 
         doc.setTextColor(...statusColor)
         doc.setFont("helvetica", "bold")
-        doc.text(safeText(getStatusBadgeText(plan.status)), margin + 175, yPos)
-        doc.setFont("helvetica", "normal")
+        doc.text(safeText(getStatusBadgeText(plan.status)), margin + 175, yPos + 9)
 
-        yPos += 8
+        yPos += rowHeight
       })
 
-      // Summary Box
-      yPos += 10
-      if (yPos > 250) {
-        doc.addPage()
-        yPos = 20
-      }
-
-      const totalPrincipal = odemePlani.reduce((sum, p) => sum + p.principal_amount, 0)
-      const totalInterest = odemePlani.reduce((sum, p) => sum + p.interest_amount, 0)
-      const totalPayment = odemePlani.reduce((sum, p) => sum + p.total_payment, 0)
-      const paidCount = odemePlani.filter(p => p.status === "paid").length
-
-      doc.setFillColor(...COLORS.lightGray)
-      doc.roundedRect(margin, yPos, pageWidth - 2 * margin, 30, 3, 3, "F")
-
-      doc.setTextColor(...COLORS.dark)
-      doc.setFontSize(10)
-      doc.setFont("helvetica", "bold")
-      doc.text(safeText("Ozet Bilgiler"), margin + 5, yPos + 8)
-
-      doc.setFontSize(9)
-      doc.setFont("helvetica", "normal")
-      doc.setTextColor(...COLORS.gray)
-
-      const summaryItems = [
-        { label: "Toplam Ana Para:", value: formatMoney(totalPrincipal) },
-        { label: "Toplam Faiz:", value: formatMoney(totalInterest) },
-        { label: "Genel Toplam:", value: formatMoney(totalPayment) },
-        { label: "Odenen Taksit:", value: `${paidCount} / ${odemePlani.length}` },
-      ]
-
-      let summaryY = yPos + 18
-      summaryItems.forEach((item, idx) => {
-        const xPos = idx < 2 ? margin + 5 : pageWidth / 2 + 5
-        const currentY = idx % 2 === 0 ? summaryY : summaryY
-        if (idx === 2) summaryY += 10
-
-        doc.setFont("helvetica", "bold")
-        doc.text(safeText(item.label), xPos, currentY)
-        doc.setFont("helvetica", "normal")
-        doc.text(safeText(item.value), xPos + 45, currentY)
-      })
-
-      // Footer on all pages
-      doc.setFontSize(8)
-      doc.setTextColor(...COLORS.gray)
+      // ============ MODERN FOOTER ON ALL PAGES ============
       const pageCount = doc.getNumberOfPages()
+
       for (let i = 1; i <= pageCount; i++) {
         doc.setPage(i)
-        doc.setDrawColor(...COLORS.lightGray)
-        doc.setLineWidth(0.5)
-        doc.line(margin, 285, pageWidth - margin, 285)
 
-        doc.text(safeText(`Sayfa ${i} / ${pageCount}`), margin, 290)
-        doc.text(
-          safeText(`Olusturulma Tarihi: ${new Date().toLocaleDateString("tr-TR")}`),
-          pageWidth - margin,
-          290,
-          { align: "right" }
-        )
-        doc.text(
-          safeText("Bu belge KrediTakip tarafindan otomatik olusturulmustur."),
-          pageWidth / 2,
-          290,
-          { align: "center" }
-        )
+        addGradientRect(doc, 0, pageHeight - 20, pageWidth, 20, COLORS.primary, COLORS.accent)
+
+        doc.setTextColor(...COLORS.white)
+        doc.setFontSize(7)
+
+        // Left - Website
+        doc.setFont("helvetica", "bold")
+        doc.text("kreditakip.com.tr", margin, pageHeight - 8)
+
+        // Center - Tagline
+        doc.setFont("helvetica", "normal")
+        doc.text("Finansal ozgurluge giden yol", pageWidth / 2, pageHeight - 8, { align: "center" })
+
+        // Right - Page number
+        doc.setFont("helvetica", "bold")
+        doc.text(`${i} / ${pageCount}`, pageWidth - margin, pageHeight - 8, { align: "right" })
       }
 
       doc.save(`odeme-plani-${krediDetay?.credit_code}.pdf`)
@@ -2176,56 +2739,58 @@ export default function KrediDetayPage() {
           }
         }}
       >
-        <DialogContent className="sm:max-w-3xl max-h-[90vh] dark:bg-gray-900 dark:border-white/10">
-          <DialogHeader className="sticky top-0 bg-white dark:bg-gray-900 z-10 pb-4 border-b dark:border-white/10">
-            <DialogTitle className="flex items-center gap-2 dark:text-white">
-              <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center">
-                <Calculator className="h-5 w-5 text-white" />
+        <DialogContent className="sm:max-w-4xl max-h-[92vh] dark:bg-black/95 dark:border-white/10 border-gray-200">
+          <DialogHeader className="sticky top-0 bg-white dark:bg-black/95 z-10 pb-4 border-b border-gray-100 dark:border-white/10">
+            <DialogTitle className="flex items-center gap-3 dark:text-white text-gray-900 text-xl">
+              <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center shadow-lg">
+                <Calculator className="h-6 w-6 text-white" />
               </div>
-              {hesaplamaStep === 1 ? "Kredi Hesaplama Araci" : "Hesaplama Sonuclari"}
+              <div>
+                <div className="font-bold">{hesaplamaStep === 1 ? "Erken Ödeme Hesaplama" : "Hesaplama Sonuçları"}</div>
+                <div className="text-sm font-normal text-gray-500 dark:text-white/60">
+                  {hesaplamaStep === 1
+                    ? "Faiz tasarrufu ve yeni ödeme planı hesaplama"
+                    : "Detaylı analiz ve tasarruf raporu"}
+                </div>
+              </div>
             </DialogTitle>
-            <DialogDescription className="dark:text-white/60">
-              {hesaplamaStep === 1
-                ? "Erken odeme ve faiz hesaplamasi yapabilirsiniz."
-                : "Hesaplama sonuclarinizi inceleyebilir ve PDF olarak indirebilirsiniz."}
-            </DialogDescription>
           </DialogHeader>
 
-          <div className="overflow-y-auto max-h-[calc(90vh-180px)] px-1">
+          <div className="overflow-y-auto max-h-[calc(92vh-140px)] px-1">
             {hesaplamaStep === 1 ? (
-              <div className="space-y-6 py-4">
+              <div className="space-y-5 py-4">
               {/* Current Credit Info Card */}
-              <div className="bg-gradient-to-br from-emerald-50 to-teal-50 dark:from-emerald-950/20 dark:to-teal-950/20 p-6 rounded-xl border border-emerald-200 dark:border-emerald-800">
-                <h4 className="font-semibold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
+              <div className="bg-white dark:bg-black/20 p-5 rounded-xl border border-gray-200 dark:border-white/10 shadow-sm">
+                <h4 className="font-semibold text-gray-900 dark:text-white mb-4 flex items-center gap-2 text-sm">
                   <CreditCard className="h-4 w-4 text-emerald-600 dark:text-emerald-400" />
-                  Mevcut Kredi Bilgileri
+                  Mevcut Kredi Durumu
                 </h4>
-                <div className="grid grid-cols-3 gap-4">
-                  <div>
-                    <p className="text-xs text-gray-600 dark:text-white/60 mb-1">Kalan Borc</p>
-                    <p className="text-lg font-bold text-gray-900 dark:text-white">{formatCurrency(dynamicStats.remainingDebt)}</p>
+                <div className="grid grid-cols-3 gap-3">
+                  <div className="bg-gray-50 dark:bg-white/5 p-3 rounded-lg">
+                    <p className="text-xs text-gray-500 dark:text-white/50 mb-1">Kalan Borç</p>
+                    <p className="text-base font-bold text-gray-900 dark:text-white">{formatCurrency(dynamicStats.remainingDebt)}</p>
                   </div>
-                  <div>
-                    <p className="text-xs text-gray-600 dark:text-white/60 mb-1">Aylik Odeme</p>
-                    <p className="text-lg font-bold text-gray-900 dark:text-white">{formatCurrency(krediDetay?.monthly_payment || 0)}</p>
+                  <div className="bg-gray-50 dark:bg-white/5 p-3 rounded-lg">
+                    <p className="text-xs text-gray-500 dark:text-white/50 mb-1">Aylık Ödeme</p>
+                    <p className="text-base font-bold text-gray-900 dark:text-white">{formatCurrency(krediDetay?.monthly_payment || 0)}</p>
                   </div>
-                  <div>
-                    <p className="text-xs text-gray-600 dark:text-white/60 mb-1">Kalan Taksit</p>
-                    <p className="text-lg font-bold text-gray-900 dark:text-white">{dynamicStats.remainingInstallments}</p>
+                  <div className="bg-gray-50 dark:bg-white/5 p-3 rounded-lg">
+                    <p className="text-xs text-gray-500 dark:text-white/50 mb-1">Kalan Taksit</p>
+                    <p className="text-base font-bold text-gray-900 dark:text-white">{dynamicStats.remainingInstallments} Ay</p>
                   </div>
                 </div>
               </div>
 
               {/* Calculation Type */}
               <div className="space-y-2">
-                <Label htmlFor="hesaplama-turu" className="dark:text-white">Hesaplama Turu</Label>
+                <Label htmlFor="hesaplama-turu" className="dark:text-white text-sm font-medium text-gray-700">Hesaplama Türü</Label>
                 <select
                   id="hesaplama-turu"
-                  className="w-full p-3 border border-gray-300 dark:border-white/10 rounded-lg bg-white dark:bg-gray-800 dark:text-white focus:ring-2 focus:ring-emerald-500 outline-none"
+                  className="w-full p-3 border border-gray-200 dark:border-white/10 rounded-lg bg-white dark:bg-black/20 dark:text-white focus:ring-2 focus:ring-emerald-500 dark:focus:ring-emerald-400 outline-none transition-all text-sm"
                   value={hesaplamaForm.hesaplamaTuru}
                   onChange={(e) => setHesaplamaForm((prev) => ({ ...prev, hesaplamaTuru: e.target.value }))}
                 >
-                  <option value="erken-odeme">Erken Odeme Hesaplama</option>
+                  <option value="erken-odeme">Erken Ödeme Hesaplama</option>
                   <option value="faiz-hesaplama">Faiz Hesaplama</option>
                   <option value="vade-uzatma">Vade Uzatma</option>
                 </select>
@@ -2233,124 +2798,132 @@ export default function KrediDetayPage() {
 
               {/* Payment Amount */}
               <div className="space-y-2">
-                <Label htmlFor="erken-odeme-tutari" className="dark:text-white">Odeme Tutari (TL)</Label>
+                <Label htmlFor="erken-odeme-tutari" className="dark:text-white text-sm font-medium text-gray-700">Ödeme Tutarı</Label>
                 <Input
                   id="erken-odeme-tutari"
                   type="number"
-                  placeholder="Odeme tutarini giriniz"
-                  className="dark:bg-gray-800 dark:border-white/10 dark:text-white h-12"
+                  placeholder="Ödeme tutarını giriniz"
+                  className="dark:bg-black/20 dark:border-white/10 dark:text-white border-gray-200 h-11 text-sm focus:ring-2 focus:ring-emerald-500 dark:focus:ring-emerald-400"
                   value={hesaplamaForm.erkenOdemeTutari}
                   onChange={(e) => setHesaplamaForm((prev) => ({ ...prev, erkenOdemeTutari: e.target.value }))}
                 />
-                <div className="flex gap-2 mt-2">
+                <div className="flex gap-2">
                   <Button
                     type="button"
                     variant="outline"
                     size="sm"
-                    className="text-xs dark:bg-gray-800 dark:border-white/10 dark:text-white"
+                    className="text-xs dark:bg-black/20 dark:border-white/10 dark:text-white hover:bg-emerald-50 dark:hover:bg-emerald-900/20 border-gray-200"
                     onClick={() => setHesaplamaForm((prev) => ({ ...prev, erkenOdemeTutari: String(krediDetay?.monthly_payment || 0) }))}
                   >
-                    Aylik Odeme
+                    Aylık Ödeme
                   </Button>
                   <Button
                     type="button"
                     variant="outline"
                     size="sm"
-                    className="text-xs dark:bg-gray-800 dark:border-white/10 dark:text-white"
+                    className="text-xs dark:bg-black/20 dark:border-white/10 dark:text-white hover:bg-emerald-50 dark:hover:bg-emerald-900/20 border-gray-200"
                     onClick={() => {
                       const pendingInstallments = odemePlani.filter(p => p.status === "pending")
                       const kalanAnaPara = pendingInstallments.reduce((sum, p) => sum + p.principal_amount, 0)
                       setHesaplamaForm((prev) => ({ ...prev, erkenOdemeTutari: String(kalanAnaPara) }))
                     }}
                   >
-                    Tum Borc
+                    Tüm Borç
                   </Button>
                 </div>
               </div>
 
               {/* Action Buttons */}
-              <div className="flex gap-3 pt-4">
-                <Button onClick={handleHesaplamaYap} className="flex-1 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 h-12">
+              <div className="flex gap-3 pt-3">
+                <Button onClick={handleHesaplamaYap} className="flex-1 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 h-11 shadow-lg shadow-emerald-500/25">
                   <Calculator className="mr-2 h-4 w-4" />
                   Hesapla
                 </Button>
-                <Button variant="outline" onClick={() => setHesaplaModalOpen(false)} className="dark:bg-gray-800 dark:border-white/10 dark:text-white h-12">
-                  Iptal
+                <Button variant="outline" onClick={() => setHesaplaModalOpen(false)} className="dark:bg-black/20 dark:border-white/10 dark:text-white border-gray-200 h-11 px-6">
+                  İptal
                 </Button>
               </div>
               </div>
             ) : (
-              <div className="space-y-6 py-4">
+              <div className="space-y-4 py-4">
               {hesaplamaResult && (
                 <>
                   {/* Summary Card */}
-                  <div className="bg-gradient-to-br from-emerald-500 to-teal-600 p-6 rounded-xl text-white">
-                    <div className="flex items-center gap-3 mb-4">
-                      <div className="w-12 h-12 rounded-lg bg-white/20 flex items-center justify-center backdrop-blur-sm">
-                        <TrendingUp className="h-6 w-6" />
-                      </div>
-                      <div>
-                        <h3 className="text-2xl font-bold">Toplam Tasarruf</h3>
-                        <p className="text-white/80 text-sm">Erken odeme ile kazanciniz</p>
+                  <div className="bg-gradient-to-br from-emerald-500 to-teal-600 p-6 rounded-xl text-white shadow-xl">
+                    <div className="flex items-center justify-between mb-4">
+                      <div className="flex items-center gap-3">
+                        <div className="w-12 h-12 rounded-xl bg-white/20 flex items-center justify-center backdrop-blur-sm">
+                          <TrendingUp className="h-6 w-6" />
+                        </div>
+                        <div>
+                          <h3 className="text-xl font-bold">Toplam Tasarruf</h3>
+                          <p className="text-white/80 text-xs">Erken ödeme ile kazancınız</p>
+                        </div>
                       </div>
                     </div>
-                    <div className="text-4xl font-bold">{formatCurrency(hesaplamaResult.toplamTasarruf)}</div>
+                    <div className="text-3xl font-bold mb-1">{formatCurrency(hesaplamaResult.toplamTasarruf)}</div>
+                    <p className="text-white/70 text-sm">Faiz yükünden kurtulma oranı: %{((hesaplamaResult.faizTasarrufu / hesaplamaResult.eskiToplamFaiz) * 100).toFixed(1)}</p>
                   </div>
 
-                  {/* Ana Para Breakdown */}
-                  <div className="bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-blue-950/20 dark:to-indigo-950/20 p-6 rounded-xl border border-blue-200 dark:border-blue-800">
-                    <h4 className="font-semibold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
-                      <Wallet className="h-5 w-5 text-blue-600 dark:text-blue-400" />
-                      Ana Para Dagilimi
-                    </h4>
-                    <div className="space-y-4">
-                      <div>
-                        <div className="flex justify-between text-sm mb-2">
-                          <span className="text-gray-600 dark:text-white/60">Odenen Ana Para</span>
-                          <span className="font-bold text-gray-900 dark:text-white">{formatCurrency(hesaplamaResult.odenenAnaPara)}</span>
-                        </div>
-                        <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
-                          <div
-                            className="bg-gradient-to-r from-blue-500 to-indigo-500 h-2 rounded-full transition-all duration-500"
-                            style={{ width: `${(hesaplamaResult.odenenAnaPara / dynamicStats.remainingDebt) * 100}%` }}
-                          />
-                        </div>
-                      </div>
-                      <div>
-                        <div className="flex justify-between text-sm mb-2">
-                          <span className="text-gray-600 dark:text-white/60">Kalan Ana Para</span>
-                          <span className="font-bold text-gray-900 dark:text-white">{formatCurrency(hesaplamaResult.kalanAnaPara)}</span>
-                        </div>
-                        <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
-                          <div
-                            className="bg-gradient-to-r from-gray-400 to-gray-500 h-2 rounded-full transition-all duration-500"
-                            style={{ width: `${(hesaplamaResult.kalanAnaPara / dynamicStats.remainingDebt) * 100}%` }}
-                          />
-                        </div>
-                      </div>
+                  {/* Ana Para Breakdown - Grid */}
+                  <div className="grid md:grid-cols-2 gap-3">
+                  {/* Ana Para Info */}
+                  <div className="bg-white dark:bg-black/20 p-4 rounded-xl border border-gray-200 dark:border-white/10">
+                    <div className="flex items-center gap-2 mb-3">
+                      <Wallet className="h-4 w-4 text-blue-600 dark:text-blue-400" />
+                      <h4 className="font-semibold text-gray-900 dark:text-white text-sm">Ödenen Ana Para</h4>
                     </div>
+                    <p className="text-2xl font-bold text-blue-600 dark:text-blue-400 mb-2">{formatCurrency(hesaplamaResult.odenenAnaPara)}</p>
+                    <div className="w-full bg-gray-200 dark:bg-white/10 rounded-full h-2">
+                      <div
+                        className="bg-gradient-to-r from-blue-500 to-blue-600 h-2 rounded-full transition-all duration-500"
+                        style={{ width: `${(hesaplamaResult.odenenAnaPara / dynamicStats.remainingDebt) * 100}%` }}
+                      />
+                    </div>
+                    <p className="text-xs text-gray-500 dark:text-white/50 mt-2">
+                      %{((hesaplamaResult.odenenAnaPara / dynamicStats.remainingDebt) * 100).toFixed(1)} ödendi
+                    </p>
+                  </div>
+
+                  {/* Kalan Ana Para Info */}
+                  <div className="bg-white dark:bg-black/20 p-4 rounded-xl border border-gray-200 dark:border-white/10">
+                    <div className="flex items-center gap-2 mb-3">
+                      <CreditCard className="h-4 w-4 text-gray-600 dark:text-gray-400" />
+                      <h4 className="font-semibold text-gray-900 dark:text-white text-sm">Kalan Ana Para</h4>
+                    </div>
+                    <p className="text-2xl font-bold text-gray-600 dark:text-gray-400 mb-2">{formatCurrency(hesaplamaResult.kalanAnaPara)}</p>
+                    <div className="w-full bg-gray-200 dark:bg-white/10 rounded-full h-2">
+                      <div
+                        className="bg-gradient-to-r from-gray-400 to-gray-500 h-2 rounded-full transition-all duration-500"
+                        style={{ width: `${(hesaplamaResult.kalanAnaPara / dynamicStats.remainingDebt) * 100}%` }}
+                      />
+                    </div>
+                    <p className="text-xs text-gray-500 dark:text-white/50 mt-2">
+                      {hesaplamaResult.kalanAnaPara === 0 ? 'Kredi kapandı!' : `%${((hesaplamaResult.kalanAnaPara / dynamicStats.remainingDebt) * 100).toFixed(1)} kaldı`}
+                    </p>
+                  </div>
                   </div>
 
                   {/* Before vs After Comparison */}
-                  <div className="grid md:grid-cols-2 gap-4">
+                  <div className="grid md:grid-cols-2 gap-3">
                     {/* Before */}
-                    <div className="bg-gradient-to-br from-orange-50 to-red-50 dark:from-orange-950/20 dark:to-red-950/20 p-5 rounded-xl border border-orange-200 dark:border-orange-800">
-                      <h4 className="font-semibold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
+                    <div className="bg-white dark:bg-black/20 p-4 rounded-xl border border-gray-200 dark:border-white/10">
+                      <div className="flex items-center gap-2 mb-3">
                         <AlertCircle className="h-4 w-4 text-orange-600 dark:text-orange-400" />
-                        Mevcut Durum
-                      </h4>
-                      <div className="space-y-3">
+                        <h4 className="font-semibold text-gray-900 dark:text-white text-sm">Mevcut Durum</h4>
+                      </div>
+                      <div className="space-y-2">
                         <div>
-                          <p className="text-xs text-gray-600 dark:text-white/60 mb-1">Toplam Odeme</p>
-                          <p className="text-xl font-bold text-gray-900 dark:text-white">{formatCurrency(hesaplamaResult.eskiToplamOdeme)}</p>
+                          <p className="text-xs text-gray-500 dark:text-white/50 mb-1">Toplam Ödeme</p>
+                          <p className="text-lg font-bold text-gray-900 dark:text-white">{formatCurrency(hesaplamaResult.eskiToplamOdeme)}</p>
                         </div>
-                        <div className="pt-2 border-t border-orange-200 dark:border-orange-800">
-                          <div className="flex justify-between text-sm mb-1">
-                            <span className="text-gray-600 dark:text-white/60">Ana Para</span>
+                        <div className="pt-2 border-t border-gray-100 dark:border-white/5 space-y-1">
+                          <div className="flex justify-between text-xs">
+                            <span className="text-gray-500 dark:text-white/50">Ana Para</span>
                             <span className="font-medium text-gray-900 dark:text-white">{formatCurrency(dynamicStats.remainingDebt)}</span>
                           </div>
-                          <div className="flex justify-between text-sm">
-                            <span className="text-gray-600 dark:text-white/60">Toplam Faiz</span>
+                          <div className="flex justify-between text-xs">
+                            <span className="text-gray-500 dark:text-white/50">Toplam Faiz</span>
                             <span className="font-medium text-orange-600 dark:text-orange-400">{formatCurrency(hesaplamaResult.eskiToplamFaiz)}</span>
                           </div>
                         </div>
@@ -2358,23 +2931,23 @@ export default function KrediDetayPage() {
                     </div>
 
                     {/* After */}
-                    <div className="bg-gradient-to-br from-emerald-50 to-teal-50 dark:from-emerald-950/20 dark:to-teal-950/20 p-5 rounded-xl border border-emerald-200 dark:border-emerald-800">
-                      <h4 className="font-semibold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
+                    <div className="bg-white dark:bg-black/20 p-4 rounded-xl border border-emerald-200 dark:border-emerald-800/30">
+                      <div className="flex items-center gap-2 mb-3">
                         <CheckCircle className="h-4 w-4 text-emerald-600 dark:text-emerald-400" />
-                        Yeni Durum
-                      </h4>
-                      <div className="space-y-3">
+                        <h4 className="font-semibold text-gray-900 dark:text-white text-sm">Yeni Durum</h4>
+                      </div>
+                      <div className="space-y-2">
                         <div>
-                          <p className="text-xs text-gray-600 dark:text-white/60 mb-1">Toplam Odeme</p>
-                          <p className="text-xl font-bold text-gray-900 dark:text-white">{formatCurrency(hesaplamaResult.yeniToplamOdeme)}</p>
+                          <p className="text-xs text-gray-500 dark:text-white/50 mb-1">Toplam Ödeme</p>
+                          <p className="text-lg font-bold text-emerald-600 dark:text-emerald-400">{formatCurrency(hesaplamaResult.yeniToplamOdeme)}</p>
                         </div>
-                        <div className="pt-2 border-t border-emerald-200 dark:border-emerald-800">
-                          <div className="flex justify-between text-sm mb-1">
-                            <span className="text-gray-600 dark:text-white/60">Ana Para</span>
+                        <div className="pt-2 border-t border-gray-100 dark:border-white/5 space-y-1">
+                          <div className="flex justify-between text-xs">
+                            <span className="text-gray-500 dark:text-white/50">Ana Para</span>
                             <span className="font-medium text-gray-900 dark:text-white">{formatCurrency(hesaplamaResult.kalanAnaPara)}</span>
                           </div>
-                          <div className="flex justify-between text-sm">
-                            <span className="text-gray-600 dark:text-white/60">Toplam Faiz</span>
+                          <div className="flex justify-between text-xs">
+                            <span className="text-gray-500 dark:text-white/50">Toplam Faiz</span>
                             <span className="font-medium text-emerald-600 dark:text-emerald-400">{formatCurrency(hesaplamaResult.yeniToplamFaiz)}</span>
                           </div>
                         </div>
@@ -2383,37 +2956,39 @@ export default function KrediDetayPage() {
                   </div>
 
                   {/* Savings Breakdown */}
-                  <div className="bg-gradient-to-br from-purple-50 to-pink-50 dark:from-purple-950/20 dark:to-pink-950/20 p-6 rounded-xl border border-purple-200 dark:border-purple-800">
-                    <h4 className="font-semibold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
-                      <Target className="h-5 w-5 text-purple-600 dark:text-purple-400" />
-                      Tasarruf Detayi
-                    </h4>
-                    <div className="grid grid-cols-2 gap-4">
-                      <div className="bg-white/50 dark:bg-black/20 p-4 rounded-lg">
-                        <p className="text-xs text-gray-600 dark:text-white/60 mb-1">Faiz Tasarrufu</p>
-                        <p className="text-2xl font-bold text-purple-600 dark:text-purple-400">{formatCurrency(hesaplamaResult.faizTasarrufu)}</p>
-                        <p className="text-xs text-gray-500 dark:text-white/50 mt-1">Faiz yukunden kurtulma</p>
+                  <div className="grid md:grid-cols-2 gap-3">
+                    <div className="bg-white dark:bg-black/20 p-4 rounded-xl border border-gray-200 dark:border-white/10">
+                      <div className="flex items-center gap-2 mb-3">
+                        <Target className="h-4 w-4 text-purple-600 dark:text-purple-400" />
+                        <h4 className="font-semibold text-gray-900 dark:text-white text-sm">Faiz Tasarrufu</h4>
                       </div>
-                      <div className="bg-white/50 dark:bg-black/20 p-4 rounded-lg">
-                        <p className="text-xs text-gray-600 dark:text-white/60 mb-1">Yeni Aylik Odeme</p>
-                        <p className="text-2xl font-bold text-gray-900 dark:text-white">{formatCurrency(hesaplamaResult.yeniAylikOdeme)}</p>
-                        <p className="text-xs text-gray-500 dark:text-white/50 mt-1">
-                          {hesaplamaResult.yeniAylikOdeme > 0 ? `${formatCurrency((krediDetay?.monthly_payment || 0) - hesaplamaResult.yeniAylikOdeme)} daha az` : 'Borc kapandi'}
-                        </p>
+                      <p className="text-2xl font-bold text-purple-600 dark:text-purple-400 mb-1">{formatCurrency(hesaplamaResult.faizTasarrufu)}</p>
+                      <p className="text-xs text-gray-500 dark:text-white/50">Faiz yükünden kurtulma</p>
+                    </div>
+                    <div className="bg-white dark:bg-black/20 p-4 rounded-xl border border-gray-200 dark:border-white/10">
+                      <div className="flex items-center gap-2 mb-3">
+                        <Banknote className="h-4 w-4 text-emerald-600 dark:text-emerald-400" />
+                        <h4 className="font-semibold text-gray-900 dark:text-white text-sm">Yeni Aylık Ödeme</h4>
                       </div>
+                      <p className="text-2xl font-bold text-gray-900 dark:text-white mb-1">{formatCurrency(hesaplamaResult.yeniAylikOdeme)}</p>
+                      <p className="text-xs text-gray-500 dark:text-white/50">
+                        {hesaplamaResult.yeniAylikOdeme > 0 ? `${formatCurrency((krediDetay?.monthly_payment || 0) - hesaplamaResult.yeniAylikOdeme)} daha az` : 'Borç kapandı'}
+                      </p>
                     </div>
                   </div>
 
                   {/* Info Note */}
                   {hesaplamaResult.yeniKalanBorc === 0 && (
-                    <div className="bg-gradient-to-r from-green-50 to-emerald-50 dark:from-green-950/20 dark:to-emerald-950/20 p-4 rounded-lg border-l-4 border-green-500">
+                    <div className="bg-white dark:bg-black/20 p-4 rounded-xl border-l-4 border-emerald-500">
                       <div className="flex items-start gap-3">
-                        <CheckCircle className="h-5 w-5 text-green-600 dark:text-green-400 mt-0.5" />
+                        <div className="w-10 h-10 rounded-full bg-emerald-100 dark:bg-emerald-900/30 flex items-center justify-center flex-shrink-0">
+                          <CheckCircle className="h-5 w-5 text-emerald-600 dark:text-emerald-400" />
+                        </div>
                         <div>
-                          <h5 className="font-semibold text-green-900 dark:text-green-100 mb-1">Tebrikler!</h5>
-                          <p className="text-sm text-green-700 dark:text-green-300">
-                            Bu odeme ile kredinizi tamamen kapatmis olacaksiniz.
-                            Toplam <strong>{formatCurrency(hesaplamaResult.eskiToplamFaiz)}</strong> faiz yukunden kurtuluyorsunuz!
+                          <h5 className="font-semibold text-gray-900 dark:text-white mb-1 text-sm">Tebrikler! 🎉</h5>
+                          <p className="text-xs text-gray-600 dark:text-white/70">
+                            Bu ödeme ile kredinizi tamamen kapatmış olacaksınız.
+                            Toplam <strong className="text-emerald-600 dark:text-emerald-400">{formatCurrency(hesaplamaResult.eskiToplamFaiz)}</strong> faiz yükünden kurtuluyorsunuz!
                           </p>
                         </div>
                       </div>
@@ -2421,15 +2996,15 @@ export default function KrediDetayPage() {
                   )}
 
                   {/* Action Buttons */}
-                  <div className="flex gap-3 pt-4">
-                    <Button onClick={handleHesaplamaPDFIndir} className="flex-1 h-12 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700">
+                  <div className="flex gap-2 pt-3">
+                    <Button onClick={handleHesaplamaPDFIndir} className="flex-1 h-11 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 shadow-lg shadow-emerald-500/25">
                       <Download className="mr-2 h-4 w-4" />
-                      PDF Indir
+                      PDF İndir
                     </Button>
-                    <Button onClick={() => setHesaplamaStep(1)} variant="outline" className="dark:bg-gray-800 dark:border-white/10 dark:text-white h-12">
+                    <Button onClick={() => setHesaplamaStep(1)} variant="outline" className="dark:bg-black/20 dark:border-white/10 dark:text-white border-gray-200 h-11 px-5">
                       Geri
                     </Button>
-                    <Button onClick={() => setHesaplaModalOpen(false)} variant="outline" className="dark:bg-gray-800 dark:border-white/10 dark:text-white h-12">
+                    <Button onClick={() => setHesaplaModalOpen(false)} variant="outline" className="dark:bg-black/20 dark:border-white/10 dark:text-white border-gray-200 h-11 px-5">
                       Kapat
                     </Button>
                   </div>

@@ -592,8 +592,11 @@ export default function BankaciSifrelerimPage() {
                 </div>
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
-                    <Button className="flex items-center gap-2">
-                      <ArrowUpDown className="h-4 w-4" />
+                    <Button 
+                          variant="outline"
+                          className="flex items-center gap-2 bg-transparent dark:bg-black/10 dark:border-white/10 dark:text-white"
+                        >
+                          <ArrowUpDown className="h-4 w-4" />
                       Sırala: {sortBy === "sonKullanim" ? "Son Kullanım" : "Banka Adı"} (
                       {sortOrder === "asc" ? "Artan" : "Azalan"})
                     </Button>

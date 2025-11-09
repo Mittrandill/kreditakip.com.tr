@@ -588,7 +588,7 @@ export default function RiskAnaliziPage() {
                       <DropdownMenuTrigger asChild>
                         <Button
                           variant="outline"
-                          className="flex items-center gap-2 bg-transparent dark:text-white/70 dark:border-white/10"
+                          className="flex items-center gap-2 bg-transparent dark:bg-black/10 dark:border-white/10 dark:text-white"
                         >
                           <ArrowUpDown className="h-4 w-4" />
                           Sırala: {sortBy === "created_at" ? "Tarih" : "Risk Skoru"} (
