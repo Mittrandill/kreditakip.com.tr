@@ -1066,7 +1066,6 @@ function PaymentAnalysis({ payments, credits }: { payments: PaymentWithCredit[];
         <Card className="dark:bg-black/20 dark:border-white/10">
           <CardHeader>
             <CardTitle className="flex items-center gap-2 dark:text-white">
-              <CreditCard className="h-5 w-5" />
               Banka Bazında Dağılım
             </CardTitle>
           </CardHeader>
@@ -1110,7 +1109,6 @@ function PaymentAnalysis({ payments, credits }: { payments: PaymentWithCredit[];
         <Card className="dark:bg-black/20 dark:border-white/10">
           <CardHeader>
             <CardTitle className="flex items-center gap-2 dark:text-white">
-              <TrendingUp className="h-5 w-5" />
               Aylık Ödeme Trendi
             </CardTitle>
           </CardHeader>
@@ -1160,7 +1158,6 @@ function PaymentAnalysis({ payments, credits }: { payments: PaymentWithCredit[];
       <Card className="dark:bg-black/20 dark:border-white/10">
         <CardHeader>
           <CardTitle className="flex items-center gap-2 dark:text-white">
-            <CheckCircle className="h-5 w-5" />
             {currentYear} Yılı Özeti
           </CardTitle>
         </CardHeader>
