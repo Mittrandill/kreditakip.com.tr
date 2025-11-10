@@ -69,25 +69,17 @@ const AreaChart = dynamic(() => import("recharts").then((mod) => ({ default: mod
 const ComposedChart = dynamic(() => import("recharts").then((mod) => ({ default: mod.ComposedChart })), { ssr: false })
 const ReferenceLine = dynamic(() => import("recharts").then((mod) => ({ default: mod.ReferenceLine as any })), { ssr: false })
 
+// Professional emerald-teal gradient color palette
 const COLORS = [
   "#10B981", // emerald-500
   "#14B8A6", // teal-500
   "#06B6D4", // cyan-500
-  "#3B82F6", // blue-500
-  "#8B5CF6", // purple-500
-  "#EC4899", // pink-500
-  "#F59E0B", // amber-500
-  "#EF4444", // red-500
+  "#059669", // emerald-600
+  "#0D9488", // teal-600
+  "#0891B2", // cyan-600
+  "#34D399", // emerald-400
+  "#2DD4BF", // teal-400
 ]
-
-const GRADIENT_COLORS = {
-  emerald: { from: "#10B981", to: "#14B8A6" },
-  teal: { from: "#14B8A6", to: "#06B6D4" },
-  blue: { from: "#3B82F6", to: "#6366F1" },
-  purple: { from: "#8B5CF6", to: "#A855F7" },
-  pink: { from: "#EC4899", to: "#F472B6" },
-  orange: { from: "#F59E0B", to: "#FB923C" },
-}
 
 interface PopulatedCredit extends Credit {
   banks: Pick<Bank, "id" | "name" | "logo_url" | "contact_phone" | "contact_email" | "website"> | null
@@ -628,9 +620,9 @@ export default function RaporlarPage() {
         </CardContent>
       </Card>
 
-      {/* Enhanced Stats Cards */}
+      {/* Enhanced Stats Cards - Emerald-Teal Theme */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        <Card className="relative overflow-hidden bg-gradient-to-br from-blue-500 to-indigo-600 dark:from-blue-600 dark:to-indigo-700 border-0 shadow-xl hover:shadow-2xl transition-all duration-300 hover:scale-[1.02]">
+        <Card className="relative overflow-hidden bg-gradient-to-br from-emerald-500 to-emerald-600 dark:from-emerald-600 dark:to-emerald-700 border-0 shadow-xl hover:shadow-2xl transition-all duration-300 hover:scale-[1.02]">
           <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full -translate-y-8 translate-x-8 blur-2xl" />
           <CardContent className="relative p-6">
             <div className="flex items-start justify-between mb-4">
@@ -649,7 +641,7 @@ export default function RaporlarPage() {
           </CardContent>
         </Card>
 
-        <Card className="relative overflow-hidden bg-gradient-to-br from-purple-500 to-pink-600 dark:from-purple-600 dark:to-pink-700 border-0 shadow-xl hover:shadow-2xl transition-all duration-300 hover:scale-[1.02]">
+        <Card className="relative overflow-hidden bg-gradient-to-br from-teal-500 to-teal-600 dark:from-teal-600 dark:to-teal-700 border-0 shadow-xl hover:shadow-2xl transition-all duration-300 hover:scale-[1.02]">
           <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full -translate-y-8 translate-x-8 blur-2xl" />
           <CardContent className="relative p-6">
             <div className="flex items-start justify-between mb-4">
@@ -668,7 +660,7 @@ export default function RaporlarPage() {
           </CardContent>
         </Card>
 
-        <Card className="relative overflow-hidden bg-gradient-to-br from-emerald-500 to-teal-600 dark:from-emerald-600 dark:to-teal-700 border-0 shadow-xl hover:shadow-2xl transition-all duration-300 hover:scale-[1.02]">
+        <Card className="relative overflow-hidden bg-gradient-to-br from-cyan-500 to-cyan-600 dark:from-cyan-600 dark:to-cyan-700 border-0 shadow-xl hover:shadow-2xl transition-all duration-300 hover:scale-[1.02]">
           <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full -translate-y-8 translate-x-8 blur-2xl" />
           <CardContent className="relative p-6">
             <div className="flex items-start justify-between mb-4">
@@ -693,7 +685,7 @@ export default function RaporlarPage() {
           </CardContent>
         </Card>
 
-        <Card className="relative overflow-hidden bg-gradient-to-br from-orange-500 to-red-600 dark:from-orange-600 dark:to-red-700 border-0 shadow-xl hover:shadow-2xl transition-all duration-300 hover:scale-[1.02]">
+        <Card className="relative overflow-hidden bg-gradient-to-br from-emerald-600 to-teal-600 dark:from-emerald-700 dark:to-teal-700 border-0 shadow-xl hover:shadow-2xl transition-all duration-300 hover:scale-[1.02]">
           <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full -translate-y-8 translate-x-8 blur-2xl" />
           <CardContent className="relative p-6">
             <div className="flex items-start justify-between mb-4">
@@ -1000,11 +992,10 @@ export default function RaporlarPage() {
           <div className="p-6">
             <TabsContent value="overview" className="space-y-6 mt-0">
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                <Card className="relative overflow-hidden shadow-2xl border-0 bg-gradient-to-br from-white to-blue-50 dark:from-black/20 dark:to-blue-950/30 backdrop-blur-sm dark:border dark:border-white/10">
-                  <div className="absolute top-0 right-0 w-48 h-48 bg-blue-500/10 rounded-full -translate-y-16 translate-x-16 blur-3xl" />
-                  <CardHeader className="relative pb-4">
+                <Card className="relative overflow-hidden shadow-xl border border-gray-200 dark:border-white/10 bg-white dark:bg-black/40 backdrop-blur-sm">
+                  <CardHeader className="pb-4">
                     <CardTitle className="flex items-center gap-3 text-xl dark:text-white">
-                      <div className="p-3 bg-gradient-to-r from-blue-500 to-indigo-600 rounded-xl shadow-lg">
+                      <div className="p-3 bg-gradient-to-r from-emerald-500 to-teal-600 rounded-xl shadow-lg">
                         <TrendingUp className="h-6 w-6 text-white" />
                       </div>
                       <div>
@@ -1075,11 +1066,10 @@ export default function RaporlarPage() {
                   </CardContent>
                 </Card>
 
-                <Card className="relative overflow-hidden shadow-2xl border-0 bg-gradient-to-br from-white to-emerald-50 dark:from-black/20 dark:to-emerald-950/30 backdrop-blur-sm dark:border dark:border-white/10">
-                  <div className="absolute top-0 right-0 w-48 h-48 bg-emerald-500/10 rounded-full -translate-y-16 translate-x-16 blur-3xl" />
-                  <CardHeader className="relative pb-4">
+                <Card className="shadow-xl border border-gray-200 dark:border-white/10 bg-white dark:bg-black/40 backdrop-blur-sm">
+                  <CardHeader className="pb-4">
                     <CardTitle className="flex items-center gap-3 text-xl dark:text-white">
-                      <div className="p-3 bg-gradient-to-r from-emerald-500 to-teal-600 rounded-xl shadow-lg">
+                      <div className="p-3 bg-gradient-to-r from-teal-500 to-cyan-600 rounded-xl shadow-lg">
                         <PieChart className="h-6 w-6 text-white" />
                       </div>
                       <div>
@@ -1179,7 +1169,7 @@ export default function RaporlarPage() {
                   </CardContent>
                 </Card>
 
-                <Card className="relative overflow-hidden border-0 bg-gradient-to-br from-blue-500 via-indigo-600 to-purple-700 text-white shadow-2xl">
+                <Card className="relative overflow-hidden border-0 bg-gradient-to-br from-emerald-500 via-teal-600 to-cyan-700 text-white shadow-2xl">
                   <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full -translate-y-16 translate-x-16"></div>
                   <CardContent className="relative p-8">
                     <div className="flex items-center justify-between mb-6">
@@ -1192,10 +1182,10 @@ export default function RaporlarPage() {
                     </div>
                     <h3 className="font-bold text-2xl mb-3">Ortalama Faiz</h3>
                     <p className="text-4xl font-black mb-4">%{summaryMetrics.averageInterest.toFixed(1)}</p>
-                    <p className="text-sm text-blue-100 leading-relaxed">
+                    <p className="text-sm text-white/80 leading-relaxed">
                       Piyasa ortalamasının{" "}
                       <span
-                        className={`font-semibold ${summaryMetrics.averageInterest > 15 ? "text-red-200" : "text-green-200"}`}
+                        className={`font-semibold ${summaryMetrics.averageInterest > 15 ? "text-white" : "text-white"}`}
                       >
                         {summaryMetrics.averageInterest > 15 ? "üzerinde" : "altında"}
                       </span>
@@ -1207,12 +1197,12 @@ export default function RaporlarPage() {
                           style={{ width: `${Math.min((summaryMetrics.averageInterest / 30) * 100, 100)}%` }}
                         ></div>
                       </div>
-                      <span className="text-xs text-blue-200">30%</span>
+                      <span className="text-xs text-white/70">30%</span>
                     </div>
                   </CardContent>
                 </Card>
 
-                <Card className="relative overflow-hidden border-0 bg-gradient-to-br from-purple-500 via-pink-600 to-rose-700 text-white shadow-2xl">
+                <Card className="relative overflow-hidden border-0 bg-gradient-to-br from-teal-500 via-cyan-600 to-emerald-700 text-white shadow-2xl">
                   <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full -translate-y-16 translate-x-16"></div>
                   <CardContent className="relative p-8">
                     <div className="flex items-center justify-between mb-6">
@@ -1247,11 +1237,10 @@ export default function RaporlarPage() {
             </TabsContent>
 
             <TabsContent value="trends" className="space-y-6 mt-0">
-              <Card className="relative overflow-hidden shadow-2xl border-0 bg-gradient-to-br from-white to-purple-50 dark:from-black/20 dark:to-purple-950/30 backdrop-blur-sm dark:border dark:border-white/10">
-                <div className="absolute top-0 right-0 w-64 h-64 bg-purple-500/10 rounded-full -translate-y-16 translate-x-16 blur-3xl" />
-                <CardHeader className="relative">
+              <Card className="shadow-xl border border-gray-200 dark:border-white/10 bg-white dark:bg-black/40 backdrop-blur-sm">
+                <CardHeader>
                   <CardTitle className="flex items-center gap-3 text-2xl dark:text-white">
-                    <div className="p-3 bg-gradient-to-r from-purple-500 to-pink-600 rounded-xl shadow-lg">
+                    <div className="p-3 bg-gradient-to-r from-emerald-500 to-teal-600 rounded-xl shadow-lg">
                       <TrendingUp className="h-7 w-7 text-white" />
                     </div>
                     <div>
@@ -1331,9 +1320,9 @@ export default function RaporlarPage() {
                         {formatCurrency(chartData.monthlyTrend.reduce((sum, m) => sum + m.bekleyen, 0))}
                       </div>
                     </div>
-                    <div className="p-4 bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-950/30 dark:to-indigo-950/30 rounded-xl border border-blue-100 dark:border-white/10">
+                    <div className="p-4 bg-gradient-to-r from-cyan-50 to-teal-50 dark:from-cyan-950/30 dark:to-teal-950/30 rounded-xl border border-cyan-100 dark:border-white/10">
                       <div className="text-sm text-gray-600 dark:text-white/70 mb-1">Ortalama Aylık</div>
-                      <div className="text-2xl font-bold text-blue-600 dark:text-blue-400">
+                      <div className="text-2xl font-bold text-cyan-600 dark:text-cyan-400">
                         {formatCurrency(chartData.monthlyTrend.reduce((sum, m) => sum + m.toplam, 0) / 12)}
                       </div>
                     </div>
@@ -1344,11 +1333,10 @@ export default function RaporlarPage() {
 
             <TabsContent value="distribution" className="space-y-6 mt-0">
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                <Card className="relative overflow-hidden shadow-2xl border-0 bg-gradient-to-br from-white to-blue-50 dark:from-black/20 dark:to-blue-950/30 backdrop-blur-sm dark:border dark:border-white/10">
-                  <div className="absolute top-0 right-0 w-48 h-48 bg-blue-500/10 rounded-full -translate-y-16 translate-x-16 blur-3xl" />
-                  <CardHeader className="relative">
+                <Card className="shadow-xl border border-gray-200 dark:border-white/10 bg-white dark:bg-black/40 backdrop-blur-sm">
+                  <CardHeader>
                     <CardTitle className="flex items-center gap-3 text-xl dark:text-white">
-                      <div className="p-3 bg-gradient-to-r from-blue-500 to-indigo-600 rounded-xl shadow-lg">
+                      <div className="p-3 bg-gradient-to-r from-emerald-500 to-teal-600 rounded-xl shadow-lg">
                         <Building2 className="h-6 w-6 text-white" />
                       </div>
                       <div>
@@ -1364,8 +1352,8 @@ export default function RaporlarPage() {
                       <BarChart data={chartData.bankDistribution.slice(0, 8)}>
                         <defs>
                           <linearGradient id="bankGradient" x1="0" y1="0" x2="0" y2="1">
-                            <stop offset="5%" stopColor="#3B82F6" stopOpacity={0.9} />
-                            <stop offset="95%" stopColor="#6366F1" stopOpacity={0.7} />
+                            <stop offset="5%" stopColor="#10B981" stopOpacity={0.9} />
+                            <stop offset="95%" stopColor="#059669" stopOpacity={0.7} />
                           </linearGradient>
                         </defs>
                         <CartesianGrid strokeDasharray="3 3" stroke="#E5E7EB" strokeOpacity={0.5} />
@@ -1392,12 +1380,12 @@ export default function RaporlarPage() {
                     {/* Top Banks Stats */}
                     <div className="mt-4 grid grid-cols-2 gap-3">
                       {chartData.bankDistribution.slice(0, 2).map((bank, idx) => (
-                        <div key={idx} className="p-3 bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-950/30 dark:to-indigo-950/30 rounded-xl border border-blue-100 dark:border-white/10">
+                        <div key={idx} className="p-3 bg-gradient-to-r from-emerald-50 to-teal-50 dark:from-emerald-950/30 dark:to-teal-950/30 rounded-xl border border-emerald-100 dark:border-white/10">
                           <div className="flex items-center gap-2 mb-2">
                             <BankLogo bankName={bank.fullName || bank.name} logoUrl={bank.logoUrl ?? undefined} size="sm" />
                             <div className="text-xs font-semibold text-gray-700 dark:text-white truncate">{bank.name}</div>
                           </div>
-                          <div className="text-lg font-bold text-blue-600 dark:text-blue-400">{formatCurrency(bank.value)}</div>
+                          <div className="text-lg font-bold text-emerald-600 dark:text-emerald-400">{formatCurrency(bank.value)}</div>
                           <div className="text-xs text-gray-500 dark:text-white/60">{bank.count} kredi</div>
                         </div>
                       ))}
@@ -1405,11 +1393,10 @@ export default function RaporlarPage() {
                   </CardContent>
                 </Card>
 
-                <Card className="relative overflow-hidden shadow-2xl border-0 bg-gradient-to-br from-white to-emerald-50 dark:from-black/20 dark:to-emerald-950/30 backdrop-blur-sm dark:border dark:border-white/10">
-                  <div className="absolute top-0 right-0 w-48 h-48 bg-emerald-500/10 rounded-full -translate-y-16 translate-x-16 blur-3xl" />
-                  <CardHeader className="relative">
+                <Card className="shadow-xl border border-gray-200 dark:border-white/10 bg-white dark:bg-black/40 backdrop-blur-sm">
+                  <CardHeader>
                     <CardTitle className="flex items-center gap-3 text-xl dark:text-white">
-                      <div className="p-3 bg-gradient-to-r from-emerald-500 to-teal-600 rounded-xl shadow-lg">
+                      <div className="p-3 bg-gradient-to-r from-teal-500 to-cyan-600 rounded-xl shadow-lg">
                         <CreditCard className="h-6 w-6 text-white" />
                       </div>
                       <div>
@@ -1514,7 +1501,7 @@ export default function RaporlarPage() {
                         )}
                       </div>
                     </div>
-                    <div className="text-center p-6 bg-gradient-to-br from-blue-500 to-indigo-600 text-white rounded-xl shadow-lg">
+                    <div className="text-center p-6 bg-gradient-to-br from-cyan-500 to-teal-600 text-white rounded-xl shadow-lg">
                       <div className="text-4xl font-bold mb-2">{summaryMetrics.upcomingPayments}</div>
                       <div className="text-sm font-medium">Yaklaşan Ödemeler</div>
                       <div className="text-xs mt-2 opacity-90">Sonraki 7 gün</div>
@@ -1551,11 +1538,10 @@ export default function RaporlarPage() {
             </TabsContent>
 
             <TabsContent value="analysis" className="space-y-6 mt-0">
-              <Card className="relative overflow-hidden shadow-2xl border-0 bg-gradient-to-br from-white to-purple-50 dark:from-black/20 dark:to-purple-950/30 backdrop-blur-sm dark:border dark:border-white/10">
-                <div className="absolute top-0 right-0 w-64 h-64 bg-purple-500/10 rounded-full -translate-y-16 translate-x-16 blur-3xl" />
-                <CardHeader className="relative">
+              <Card className="shadow-xl border border-gray-200 dark:border-white/10 bg-white dark:bg-black/40 backdrop-blur-sm">
+                <CardHeader>
                   <CardTitle className="flex items-center gap-3 text-2xl dark:text-white">
-                    <div className="p-3 bg-gradient-to-r from-purple-500 to-pink-600 rounded-xl shadow-lg">
+                    <div className="p-3 bg-gradient-to-r from-cyan-500 to-teal-600 rounded-xl shadow-lg">
                       <Target className="h-7 w-7 text-white" />
                     </div>
                     <div>
@@ -1571,8 +1557,8 @@ export default function RaporlarPage() {
                     <BarChart data={chartData.interestAnalysis.slice(0, 10)}>
                       <defs>
                         <linearGradient id="interestGradient" x1="0" y1="0" x2="0" y2="1">
-                          <stop offset="5%" stopColor="#8B5CF6" stopOpacity={0.9} />
-                          <stop offset="95%" stopColor="#A855F7" stopOpacity={0.7} />
+                          <stop offset="5%" stopColor="#06B6D4" stopOpacity={0.9} />
+                          <stop offset="95%" stopColor="#0891B2" stopOpacity={0.7} />
                         </linearGradient>
                       </defs>
                       <CartesianGrid strokeDasharray="3 3" stroke="#E5E7EB" strokeOpacity={0.5} />
@@ -1601,27 +1587,27 @@ export default function RaporlarPage() {
 
                   {/* Interest Analysis Stats */}
                   <div className="mt-6 grid grid-cols-1 md:grid-cols-3 gap-4">
-                    <div className="p-4 bg-gradient-to-r from-purple-50 to-pink-50 dark:from-purple-950/30 dark:to-pink-950/30 rounded-xl border border-purple-100 dark:border-white/10">
+                    <div className="p-4 bg-gradient-to-r from-emerald-50 to-teal-50 dark:from-emerald-950/30 dark:to-teal-950/30 rounded-xl border border-emerald-100 dark:border-white/10">
                       <div className="text-sm text-gray-600 dark:text-white/70 mb-1">En Düşük Faiz</div>
-                      <div className="text-2xl font-bold text-purple-600 dark:text-purple-400">
+                      <div className="text-2xl font-bold text-emerald-600 dark:text-emerald-400">
                         %{Math.min(...chartData.interestAnalysis.map(i => i.rate)).toFixed(1)}
                       </div>
                       <div className="text-xs text-gray-500 dark:text-white/60 mt-1">
                         {chartData.interestAnalysis.find(i => i.rate === Math.min(...chartData.interestAnalysis.map(x => x.rate)))?.bank || '-'}
                       </div>
                     </div>
-                    <div className="p-4 bg-gradient-to-r from-red-50 to-rose-50 dark:from-red-950/30 dark:to-rose-950/30 rounded-xl border border-red-100 dark:border-white/10">
+                    <div className="p-4 bg-gradient-to-r from-teal-50 to-cyan-50 dark:from-teal-950/30 dark:to-cyan-950/30 rounded-xl border border-teal-100 dark:border-white/10">
                       <div className="text-sm text-gray-600 dark:text-white/70 mb-1">En Yüksek Faiz</div>
-                      <div className="text-2xl font-bold text-red-600 dark:text-red-400">
+                      <div className="text-2xl font-bold text-teal-600 dark:text-teal-400">
                         %{Math.max(...chartData.interestAnalysis.map(i => i.rate)).toFixed(1)}
                       </div>
                       <div className="text-xs text-gray-500 dark:text-white/60 mt-1">
                         {chartData.interestAnalysis.find(i => i.rate === Math.max(...chartData.interestAnalysis.map(x => x.rate)))?.bank || '-'}
                       </div>
                     </div>
-                    <div className="p-4 bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-950/30 dark:to-indigo-950/30 rounded-xl border border-blue-100 dark:border-white/10">
+                    <div className="p-4 bg-gradient-to-r from-cyan-50 to-emerald-50 dark:from-cyan-950/30 dark:to-emerald-950/30 rounded-xl border border-cyan-100 dark:border-white/10">
                       <div className="text-sm text-gray-600 dark:text-white/70 mb-1">Toplam Aylık Faiz</div>
-                      <div className="text-2xl font-bold text-blue-600 dark:text-blue-400">
+                      <div className="text-2xl font-bold text-cyan-600 dark:text-cyan-400">
                         {formatCurrency(chartData.interestAnalysis.reduce((sum, i) => sum + i.monthlyInterest, 0))}
                       </div>
                       <div className="text-xs text-gray-500 dark:text-white/60 mt-1">Tüm krediler</div>
@@ -1635,7 +1621,7 @@ export default function RaporlarPage() {
                       {chartData.interestAnalysis.slice(0, 5).map((item, idx) => (
                         <div key={idx} className="flex items-center justify-between p-4 bg-gradient-to-r from-gray-50 to-slate-50 dark:from-white/5 dark:to-white/5 rounded-xl border border-gray-100 dark:border-white/10 hover:shadow-md transition-shadow">
                           <div className="flex items-center gap-3 flex-1">
-                            <div className="w-8 h-8 rounded-full bg-gradient-to-br from-purple-500 to-pink-600 flex items-center justify-center text-white font-bold text-sm">
+                            <div className="w-8 h-8 rounded-full bg-gradient-to-br from-cyan-500 to-teal-600 flex items-center justify-center text-white font-bold text-sm">
                               {idx + 1}
                             </div>
                             <BankLogo bankName={item.fullBankName || item.bank} logoUrl={item.logoUrl ?? undefined} size="sm" />
@@ -1645,7 +1631,7 @@ export default function RaporlarPage() {
                             </div>
                           </div>
                           <div className="text-right">
-                            <div className="text-xl font-bold text-purple-600 dark:text-purple-400">%{item.rate.toFixed(1)}</div>
+                            <div className="text-xl font-bold text-cyan-600 dark:text-cyan-400">%{item.rate.toFixed(1)}</div>
                             <div className="text-xs text-gray-500 dark:text-white/60">{formatCurrency(item.amount)}</div>
                           </div>
                         </div>
@@ -1658,11 +1644,10 @@ export default function RaporlarPage() {
 
             <TabsContent value="comparison" className="space-y-6 mt-0">
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                <Card className="relative overflow-hidden shadow-2xl border-0 bg-gradient-to-br from-white to-indigo-50 dark:from-black/20 dark:to-indigo-950/30 backdrop-blur-sm dark:border dark:border-white/10">
-                  <div className="absolute top-0 right-0 w-48 h-48 bg-indigo-500/10 rounded-full -translate-y-16 translate-x-16 blur-3xl" />
-                  <CardHeader className="relative">
+                <Card className="shadow-xl border border-gray-200 dark:border-white/10 bg-white dark:bg-black/40 backdrop-blur-sm">
+                  <CardHeader>
                     <CardTitle className="flex items-center gap-3 text-xl dark:text-white">
-                      <div className="p-3 bg-gradient-to-r from-indigo-500 to-purple-600 rounded-xl shadow-lg">
+                      <div className="p-3 bg-gradient-to-r from-emerald-500 to-teal-600 rounded-xl shadow-lg">
                         <Building2 className="h-6 w-6 text-white" />
                       </div>
                       <div>
@@ -1680,10 +1665,10 @@ export default function RaporlarPage() {
                           key={bank.name}
                           className="group relative overflow-hidden p-5 bg-gradient-to-r from-gray-50 via-slate-50 to-gray-50 dark:from-white/5 dark:via-white/10 dark:to-white/5 rounded-2xl border border-gray-200 dark:border-white/10 shadow-sm hover:shadow-lg transition-all duration-300 hover:scale-[1.02]"
                         >
-                          <div className="absolute inset-0 bg-gradient-to-r from-indigo-500/5 to-purple-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                          <div className="absolute inset-0 bg-gradient-to-r from-emerald-500/5 to-teal-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
                           <div className="relative flex items-center justify-between">
                             <div className="flex items-center gap-4">
-                              <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center font-bold text-white shadow-lg">
+                              <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center font-bold text-white shadow-lg">
                                 {index + 1}
                               </div>
                               <div className="flex items-center gap-3">
@@ -1692,7 +1677,7 @@ export default function RaporlarPage() {
                                   <div className="font-bold text-gray-900 dark:text-white text-lg">{bank.name}</div>
                                   <div className="flex items-center gap-3 mt-1">
                                     <span className="text-sm text-gray-500 dark:text-white/60">{bank.count} kredi</span>
-                                    <span className="text-xs px-2 py-1 bg-indigo-100 dark:bg-indigo-900/30 text-indigo-700 dark:text-indigo-300 rounded-full font-medium">
+                                    <span className="text-xs px-2 py-1 bg-teal-100 dark:bg-teal-900/30 text-teal-700 dark:text-teal-300 rounded-full font-medium">
                                       Ort. %{bank.averageInterest.toFixed(1)}
                                     </span>
                                   </div>
@@ -1710,7 +1695,7 @@ export default function RaporlarPage() {
                           {/* Progress Bar */}
                           <div className="mt-4 w-full h-2 bg-gray-200 dark:bg-white/10 rounded-full overflow-hidden">
                             <div
-                              className="h-full bg-gradient-to-r from-indigo-500 to-purple-600 rounded-full transition-all duration-1000"
+                              className="h-full bg-gradient-to-r from-emerald-500 to-teal-600 rounded-full transition-all duration-1000"
                               style={{ width: `${(bank.value / chartData.bankDistribution[0].value) * 100}%` }}
                             />
                           </div>
@@ -1720,11 +1705,10 @@ export default function RaporlarPage() {
                   </CardContent>
                 </Card>
 
-                <Card className="relative overflow-hidden shadow-2xl border-0 bg-gradient-to-br from-white to-emerald-50 dark:from-black/20 dark:to-emerald-950/30 backdrop-blur-sm dark:border dark:border-white/10">
-                  <div className="absolute top-0 right-0 w-48 h-48 bg-emerald-500/10 rounded-full -translate-y-16 translate-x-16 blur-3xl" />
-                  <CardHeader className="relative">
+                <Card className="shadow-xl border border-gray-200 dark:border-white/10 bg-white dark:bg-black/40 backdrop-blur-sm">
+                  <CardHeader>
                     <CardTitle className="flex items-center gap-3 text-xl dark:text-white">
-                      <div className="p-3 bg-gradient-to-r from-emerald-500 to-teal-600 rounded-xl shadow-lg">
+                      <div className="p-3 bg-gradient-to-r from-teal-500 to-cyan-600 rounded-xl shadow-lg">
                         <Wallet className="h-6 w-6 text-white" />
                       </div>
                       <div>
@@ -1740,8 +1724,8 @@ export default function RaporlarPage() {
                       <BarChart data={chartData.bankDistribution.slice(0, 6)}>
                         <defs>
                           <linearGradient id="monthlyPaymentGradient" x1="0" y1="0" x2="0" y2="1">
-                            <stop offset="5%" stopColor="#10B981" stopOpacity={0.9} />
-                            <stop offset="95%" stopColor="#14B8A6" stopOpacity={0.7} />
+                            <stop offset="5%" stopColor="#14B8A6" stopOpacity={0.9} />
+                            <stop offset="95%" stopColor="#0D9488" stopOpacity={0.7} />
                           </linearGradient>
                         </defs>
                         <CartesianGrid strokeDasharray="3 3" stroke="#E5E7EB" strokeOpacity={0.5} />
@@ -1789,11 +1773,11 @@ export default function RaporlarPage() {
 
       {/* Premium Action Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        <Card className="shadow-xl border-0 bg-gradient-to-br from-blue-500 to-indigo-600 text-white">
+        <Card className="shadow-xl border-0 bg-gradient-to-br from-emerald-500 to-teal-600 text-white">
           <CardContent className="p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-blue-100 text-sm font-medium">Yaklaşan Ödemeler</p>
+                <p className="text-white/80 text-sm font-medium">Yaklaşan Ödemeler</p>
                 <p className="text-2xl font-bold mt-1">
                   {formatCurrency(
                     filteredPayments
@@ -1806,7 +1790,7 @@ export default function RaporlarPage() {
                       .reduce((sum, p) => sum + (p.total_payment || 0), 0),
                   )}
                 </p>
-                <p className="text-blue-200 text-xs mt-1">
+                <p className="text-white/70 text-xs mt-1">
                   {
                     filteredPayments.filter((p) => {
                       const dueDate = new Date(p.due_date)
@@ -1818,8 +1802,8 @@ export default function RaporlarPage() {
                   taksit
                 </p>
               </div>
-              <div className="bg-blue-500/30 p-3 rounded-full">
-                <Clock className="h-6 w-6 text-blue-100" />
+              <div className="bg-white/20 p-3 rounded-full">
+                <Clock className="h-6 w-6 text-white/80" />
               </div>
             </div>
           </CardContent>
