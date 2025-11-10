@@ -21,6 +21,7 @@ interface EarlyPaymentData {
     credit_code?: string
     banks?: {
       name?: string
+      logo_url?: string | null
     } | null
   } | null
   user: {
