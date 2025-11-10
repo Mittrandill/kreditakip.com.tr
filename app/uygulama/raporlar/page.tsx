@@ -1394,7 +1394,7 @@ export default function RaporlarPage() {
                       {chartData.bankDistribution.slice(0, 2).map((bank, idx) => (
                         <div key={idx} className="p-3 bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-950/30 dark:to-indigo-950/30 rounded-xl border border-blue-100 dark:border-white/10">
                           <div className="flex items-center gap-2 mb-2">
-                            <BankLogo bankName={bank.fullName || bank.name} logoUrl={bank.logoUrl} size="sm" />
+                            <BankLogo bankName={bank.fullName || bank.name} logoUrl={bank.logoUrl ?? undefined} size="sm" />
                             <div className="text-xs font-semibold text-gray-700 dark:text-white truncate">{bank.name}</div>
                           </div>
                           <div className="text-lg font-bold text-blue-600 dark:text-blue-400">{formatCurrency(bank.value)}</div>
@@ -1638,7 +1638,7 @@ export default function RaporlarPage() {
                             <div className="w-8 h-8 rounded-full bg-gradient-to-br from-purple-500 to-pink-600 flex items-center justify-center text-white font-bold text-sm">
                               {idx + 1}
                             </div>
-                            <BankLogo bankName={item.fullBankName || item.bank} logoUrl={item.logoUrl} size="sm" />
+                            <BankLogo bankName={item.fullBankName || item.bank} logoUrl={item.logoUrl ?? undefined} size="sm" />
                             <div className="flex-1">
                               <div className="font-semibold text-gray-900 dark:text-white">{item.bank}</div>
                               <div className="text-sm text-gray-500 dark:text-white/60">{item.creditType}</div>
@@ -1687,7 +1687,7 @@ export default function RaporlarPage() {
                                 {index + 1}
                               </div>
                               <div className="flex items-center gap-3">
-                                <BankLogo bankName={bank.fullName || bank.name} logoUrl={bank.logoUrl} size="md" />
+                                <BankLogo bankName={bank.fullName || bank.name} logoUrl={bank.logoUrl ?? undefined} size="md" />
                                 <div>
                                   <div className="font-bold text-gray-900 dark:text-white text-lg">{bank.name}</div>
                                   <div className="flex items-center gap-3 mt-1">
