@@ -452,60 +452,68 @@ export default function RaporlarPage() {
   }
 
   return (
-    <div className="flex flex-col gap-6">
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-        <div>
-          <h1 className="text-3xl font-bold text-gray-900 dark:text-white flex items-center gap-3">
-            <BarChart3 className="h-8 w-8 text-emerald-600" />
-            Raporlar ve Analiz
-          </h1>
-          <p className="text-gray-600 dark:text-gray-400 mt-1">
-            Kredilerinizin detaylı analizi ve performans raporları
-          </p>
-        </div>
-        <PDFReportModal
-          userData={{
-            credits: filteredCredits.map((credit) => ({
-              id: credit.id,
-              bankName: credit.banks?.name,
-              creditType: credit.credit_types?.name,
-              remainingDebt: credit.remaining_debt,
-              monthlyPayment: credit.monthly_payment,
-              interestRate: credit.interest_rate,
-              status: credit.status,
-              amount: credit.initial_amount,
-              payment_progress: credit.payment_progress,
-              total_installments: credit.total_installments,
-              remaining_installments: credit.remaining_installments,
-              banks: credit.banks,
-              credit_types: credit.credit_types,
-              remaining_debt: credit.remaining_debt,
-              monthly_payment: credit.monthly_payment,
-              interest_rate: credit.interest_rate,
-              initial_amount: credit.initial_amount,
-            })),
-            payments: filteredPayments.map((payment) => ({
-              id: payment.id,
-              date: payment.payment_date || payment.due_date,
-              bankName: payment.credits?.banks?.name,
-              amount: payment.total_payment,
-              status: payment.status,
-            })),
-            creditCards: [],
-            summary: {
-              name: (user as any)?.full_name || "Kullanıcı",
-              email: user?.email || "email@example.com",
-            },
-          }}
-          trigger={
-            <Button className="bg-emerald-600 hover:bg-emerald-700">
-              <Download className="h-4 w-4 mr-2" />
-              PDF İndir
-            </Button>
-          }
-        />
-      </div>
+    <div className="flex flex-col gap-4 md:gap-6">
+      {/* Hero Section */}
+      <Card className="bg-gradient-to-r from-emerald-600 to-teal-700 dark:from-emerald-700 dark:to-teal-800 text-white border-transparent shadow-xl rounded-xl">
+        <CardContent className="p-8">
+          <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+            <div>
+              <h2 className="text-3xl font-bold mb-2 flex items-center gap-3">
+                <BarChart3 className="h-8 w-8" />
+                Finansal Raporlar ve Analiz
+              </h2>
+              <p className="text-white-100 text-lg">
+                Detaylı kredi analizi, grafikler ve akıllı öngörülerle finansal durumunuzu takip edin
+              </p>
+            </div>
+            <PDFReportModal
+              userData={{
+                credits: filteredCredits.map((credit) => ({
+                  id: credit.id,
+                  bankName: credit.banks?.name,
+                  creditType: credit.credit_types?.name,
+                  remainingDebt: credit.remaining_debt,
+                  monthlyPayment: credit.monthly_payment,
+                  interestRate: credit.interest_rate,
+                  status: credit.status,
+                  amount: credit.initial_amount,
+                  payment_progress: credit.payment_progress,
+                  total_installments: credit.total_installments,
+                  remaining_installments: credit.remaining_installments,
+                  banks: credit.banks,
+                  credit_types: credit.credit_types,
+                  remaining_debt: credit.remaining_debt,
+                  monthly_payment: credit.monthly_payment,
+                  interest_rate: credit.interest_rate,
+                  initial_amount: credit.initial_amount,
+                })),
+                payments: filteredPayments.map((payment) => ({
+                  id: payment.id,
+                  date: payment.payment_date || payment.due_date,
+                  bankName: payment.credits?.banks?.name,
+                  amount: payment.total_payment,
+                  status: payment.status,
+                })),
+                creditCards: [],
+                summary: {
+                  name: (user as any)?.full_name || "Kullanıcı",
+                  email: user?.email || "email@example.com",
+                },
+              }}
+              trigger={
+                <Button
+                  variant="outline-white"
+                  size="lg"
+                  className="bg-transparent border-white/20 text-white hover:bg-white/10 hover:border-transparent hover:text-white dark:bg-transparent dark:border-white/20 dark:text-white dark:hover:bg-white/10 dark:hover:border-transparent dark:hover:text-white"
+                >
+                  <Download className="h-5 w-5 mr-2" />
+                  PDF Rapor İndir
+                </Button>
+              }
+            />
+          </div>
+        </CardContent>
+      </Card>
 
       {/* Key Metrics */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
@@ -676,10 +684,12 @@ export default function RaporlarPage() {
 
         <TabsContent value="overview" className="space-y-6 mt-6">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            <Card>
+            <Card className="shadow-xl border-0 bg-gradient-to-br from-white to-emerald-50 dark:from-emerald-950 dark:to-emerald-900/30">
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
-                  <TrendingUp className="h-5 w-5 text-emerald-600" />
+                  <div className="p-2 bg-gradient-to-r from-emerald-500 to-teal-600 rounded-lg">
+                    <TrendingUp className="h-5 w-5 text-white" />
+                  </div>
                   Ödeme Trendi
                 </CardTitle>
                 <CardDescription>Son 12 ayın ödeme analizi</CardDescription>
@@ -687,6 +697,16 @@ export default function RaporlarPage() {
               <CardContent>
                 <ResponsiveContainer width="100%" height={300}>
                   <ComposedChart data={chartData.monthlyTrend}>
+                    <defs>
+                      <linearGradient id="colorOdenen" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="5%" stopColor="#10B981" stopOpacity={0.8} />
+                        <stop offset="95%" stopColor="#14B8A6" stopOpacity={0.8} />
+                      </linearGradient>
+                      <linearGradient id="colorBekleyen" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="5%" stopColor="#F59E0B" stopOpacity={0.8} />
+                        <stop offset="95%" stopColor="#EF4444" stopOpacity={0.8} />
+                      </linearGradient>
+                    </defs>
                     <CartesianGrid strokeDasharray="3 3" className="stroke-gray-200 dark:stroke-gray-700" />
                     <XAxis
                       dataKey="month"
@@ -710,18 +730,20 @@ export default function RaporlarPage() {
                       }}
                     />
                     <Legend />
-                    <Bar dataKey="odenen" fill="#10B981" name="Ödenen" radius={[4, 4, 0, 0]} />
-                    <Bar dataKey="bekleyen" fill="#F59E0B" name="Bekleyen" radius={[4, 4, 0, 0]} />
-                    <Line type="monotone" dataKey="toplam" stroke="#3B82F6" strokeWidth={2} name="Toplam" />
+                    <Bar dataKey="odenen" fill="url(#colorOdenen)" name="Ödenen" radius={[4, 4, 0, 0]} />
+                    <Bar dataKey="bekleyen" fill="url(#colorBekleyen)" name="Bekleyen" radius={[4, 4, 0, 0]} />
+                    <Line type="monotone" dataKey="toplam" stroke="#3B82F6" strokeWidth={3} name="Toplam" dot={{ fill: "#3B82F6", r: 4 }} />
                   </ComposedChart>
                 </ResponsiveContainer>
               </CardContent>
             </Card>
 
-            <Card>
+            <Card className="shadow-xl border-0 bg-gradient-to-br from-white to-blue-50 dark:from-blue-950 dark:to-indigo-950">
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
-                  <PieChart className="h-5 w-5 text-emerald-600" />
+                  <div className="p-2 bg-gradient-to-r from-blue-500 to-indigo-600 rounded-lg">
+                    <PieChart className="h-5 w-5 text-white" />
+                  </div>
                   Ödeme Durumu
                 </CardTitle>
                 <CardDescription>Ödemelerin duruma göre dağılımı</CardDescription>
@@ -729,6 +751,20 @@ export default function RaporlarPage() {
               <CardContent>
                 <ResponsiveContainer width="100%" height={300}>
                   <RechartsPieChart>
+                    <defs>
+                      <linearGradient id="pieGreen" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="5%" stopColor="#10B981" stopOpacity={1} />
+                        <stop offset="95%" stopColor="#14B8A6" stopOpacity={1} />
+                      </linearGradient>
+                      <linearGradient id="pieOrange" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="5%" stopColor="#F59E0B" stopOpacity={1} />
+                        <stop offset="95%" stopColor="#F97316" stopOpacity={1} />
+                      </linearGradient>
+                      <linearGradient id="pieRed" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="5%" stopColor="#EF4444" stopOpacity={1} />
+                        <stop offset="95%" stopColor="#DC2626" stopOpacity={1} />
+                      </linearGradient>
+                    </defs>
                     <Pie
                       data={chartData.paymentStatusDistribution}
                       cx="50%"
@@ -739,9 +775,9 @@ export default function RaporlarPage() {
                       dataKey="value"
                       label={(({ name, percent }: { name: string; percent: number }) => `${name} ${(percent * 100).toFixed(0)}%`) as any}
                     >
-                      {chartData.paymentStatusDistribution.map((entry, index) => (
-                        <Cell key={`cell-${index}`} fill={entry.color} />
-                      ))}
+                      <Cell fill="url(#pieGreen)" />
+                      <Cell fill="url(#pieOrange)" />
+                      <Cell fill="url(#pieRed)" />
                     </Pie>
                     <Tooltip formatter={((value: number) => [value, "Ödeme Sayısı"]) as any} />
                   </RechartsPieChart>
@@ -800,10 +836,12 @@ export default function RaporlarPage() {
         </TabsContent>
 
         <TabsContent value="trends" className="space-y-6 mt-6">
-          <Card>
+          <Card className="shadow-xl border-0 bg-gradient-to-br from-white to-purple-50 dark:from-purple-950 dark:to-indigo-950">
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
-                <TrendingUp className="h-5 w-5 text-emerald-600" />
+                <div className="p-2 bg-gradient-to-r from-purple-500 to-pink-600 rounded-lg">
+                  <TrendingUp className="h-6 w-6 text-white" />
+                </div>
                 Ödeme Trendi Detayı
               </CardTitle>
               <CardDescription>12 aylık ödeme performansı</CardDescription>
@@ -812,13 +850,13 @@ export default function RaporlarPage() {
               <ResponsiveContainer width="100%" height={400}>
                 <AreaChart data={chartData.monthlyTrend}>
                   <defs>
-                    <linearGradient id="colorOdenen" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="5%" stopColor="#10B981" stopOpacity={0.3} />
-                      <stop offset="95%" stopColor="#10B981" stopOpacity={0} />
+                    <linearGradient id="areaOdenen" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="5%" stopColor="#10B981" stopOpacity={0.5} />
+                      <stop offset="95%" stopColor="#14B8A6" stopOpacity={0.1} />
                     </linearGradient>
-                    <linearGradient id="colorBekleyen" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="5%" stopColor="#F59E0B" stopOpacity={0.3} />
-                      <stop offset="95%" stopColor="#F59E0B" stopOpacity={0} />
+                    <linearGradient id="areaBekleyen" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="5%" stopColor="#F59E0B" stopOpacity={0.5} />
+                      <stop offset="95%" stopColor="#F97316" stopOpacity={0.1} />
                     </linearGradient>
                   </defs>
                   <CartesianGrid strokeDasharray="3 3" className="stroke-gray-200 dark:stroke-gray-700" />
@@ -841,8 +879,8 @@ export default function RaporlarPage() {
                     dataKey="odenen"
                     stroke="#10B981"
                     fillOpacity={1}
-                    fill="url(#colorOdenen)"
-                    strokeWidth={2}
+                    fill="url(#areaOdenen)"
+                    strokeWidth={3}
                     name="Ödenen"
                   />
                   <Area
@@ -850,8 +888,8 @@ export default function RaporlarPage() {
                     dataKey="bekleyen"
                     stroke="#F59E0B"
                     fillOpacity={1}
-                    fill="url(#colorBekleyen)"
-                    strokeWidth={2}
+                    fill="url(#areaBekleyen)"
+                    strokeWidth={3}
                     name="Bekleyen"
                   />
                 </AreaChart>
@@ -862,10 +900,12 @@ export default function RaporlarPage() {
 
         <TabsContent value="distribution" className="space-y-6 mt-6">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            <Card>
+            <Card className="shadow-xl border-0 bg-gradient-to-br from-white to-blue-50 dark:from-blue-950 dark:to-indigo-950">
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
-                  <Building2 className="h-5 w-5 text-emerald-600" />
+                  <div className="p-2 bg-gradient-to-r from-blue-500 to-indigo-600 rounded-lg">
+                    <Building2 className="h-5 w-5 text-white" />
+                  </div>
                   Banka Dağılımı
                 </CardTitle>
                 <CardDescription>Bankalara göre borç dağılımı</CardDescription>
@@ -873,6 +913,12 @@ export default function RaporlarPage() {
               <CardContent>
                 <ResponsiveContainer width="100%" height={350}>
                   <BarChart data={chartData.bankDistribution.slice(0, 8)}>
+                    <defs>
+                      <linearGradient id="barGradient" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="5%" stopColor="#3B82F6" stopOpacity={0.9} />
+                        <stop offset="95%" stopColor="#6366F1" stopOpacity={0.9} />
+                      </linearGradient>
+                    </defs>
                     <CartesianGrid strokeDasharray="3 3" className="stroke-gray-200 dark:stroke-gray-700" />
                     <XAxis dataKey="name" className="text-gray-600 dark:text-gray-400" fontSize={12} />
                     <YAxis className="text-gray-600 dark:text-gray-400" fontSize={12} tickFormatter={(value) => formatCurrency(value)} />
@@ -884,16 +930,18 @@ export default function RaporlarPage() {
                         borderRadius: "8px",
                       }}
                     />
-                    <Bar dataKey="value" fill="#10B981" radius={[4, 4, 0, 0]} />
+                    <Bar dataKey="value" fill="url(#barGradient)" radius={[8, 8, 0, 0]} />
                   </BarChart>
                 </ResponsiveContainer>
               </CardContent>
             </Card>
 
-            <Card>
+            <Card className="shadow-xl border-0 bg-gradient-to-br from-white to-emerald-50 dark:from-emerald-950 dark:to-teal-950">
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
-                  <CreditCard className="h-5 w-5 text-emerald-600" />
+                  <div className="p-2 bg-gradient-to-r from-emerald-500 to-teal-600 rounded-lg">
+                    <CreditCard className="h-5 w-5 text-white" />
+                  </div>
                   Kredi Türü Dağılımı
                 </CardTitle>
                 <CardDescription>Kredi türlerine göre dağılım</CardDescription>
@@ -901,6 +949,32 @@ export default function RaporlarPage() {
               <CardContent>
                 <ResponsiveContainer width="100%" height={350}>
                   <RechartsPieChart>
+                    <defs>
+                      <linearGradient id="pie1" x1="0" y1="0" x2="1" y2="1">
+                        <stop offset="0%" stopColor="#10B981" />
+                        <stop offset="100%" stopColor="#14B8A6" />
+                      </linearGradient>
+                      <linearGradient id="pie2" x1="0" y1="0" x2="1" y2="1">
+                        <stop offset="0%" stopColor="#3B82F6" />
+                        <stop offset="100%" stopColor="#6366F1" />
+                      </linearGradient>
+                      <linearGradient id="pie3" x1="0" y1="0" x2="1" y2="1">
+                        <stop offset="0%" stopColor="#F59E0B" />
+                        <stop offset="100%" stopColor="#F97316" />
+                      </linearGradient>
+                      <linearGradient id="pie4" x1="0" y1="0" x2="1" y2="1">
+                        <stop offset="0%" stopColor="#EF4444" />
+                        <stop offset="100%" stopColor="#DC2626" />
+                      </linearGradient>
+                      <linearGradient id="pie5" x1="0" y1="0" x2="1" y2="1">
+                        <stop offset="0%" stopColor="#8B5CF6" />
+                        <stop offset="100%" stopColor="#A78BFA" />
+                      </linearGradient>
+                      <linearGradient id="pie6" x1="0" y1="0" x2="1" y2="1">
+                        <stop offset="0%" stopColor="#06B6D4" />
+                        <stop offset="100%" stopColor="#22D3EE" />
+                      </linearGradient>
+                    </defs>
                     <Pie
                       data={chartData.creditTypeDistribution as any}
                       cx="50%"
@@ -912,7 +986,7 @@ export default function RaporlarPage() {
                       label={(({ name, percent }: { name: string; percent: number }) => `${name} ${(percent * 100).toFixed(0)}%`) as any}
                     >
                       {chartData.creditTypeDistribution.map((entry, index) => (
-                        <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                        <Cell key={`cell-${index}`} fill={`url(#pie${(index % 6) + 1})`} />
                       ))}
                     </Pie>
                     <Tooltip formatter={((value: number) => [formatCurrency(value), "Borç Tutarı"]) as any} />
@@ -962,25 +1036,25 @@ export default function RaporlarPage() {
 
         <TabsContent value="performance" className="space-y-6 mt-6">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <Card>
+            <Card className="shadow-xl border-0 bg-gradient-to-br from-emerald-500 to-teal-600 text-white">
               <CardContent className="p-6 text-center">
                 <div className="mb-2">
-                  <div className="text-4xl font-bold text-emerald-600">{formatPercent(summaryMetrics.paymentPerformance / 100)}</div>
-                  <div className="text-sm text-gray-600 dark:text-gray-400 mt-1">Genel Performans</div>
+                  <div className="text-4xl font-bold">{formatPercent(summaryMetrics.paymentPerformance / 100)}</div>
+                  <div className="text-sm text-emerald-100 mt-1">Genel Performans</div>
                 </div>
-                <div className="text-xs text-gray-500 dark:text-gray-500">
+                <div className="text-xs text-emerald-200">
                   {filteredPayments.filter((p) => p.status === "paid").length} / {filteredPayments.length} ödeme
                 </div>
               </CardContent>
             </Card>
 
-            <Card>
+            <Card className="shadow-xl border-0 bg-gradient-to-br from-red-500 to-rose-600 text-white">
               <CardContent className="p-6 text-center">
                 <div className="mb-2">
-                  <div className="text-4xl font-bold text-red-600">{summaryMetrics.overduePayments}</div>
-                  <div className="text-sm text-gray-600 dark:text-gray-400 mt-1">Geciken Ödemeler</div>
+                  <div className="text-4xl font-bold">{summaryMetrics.overduePayments}</div>
+                  <div className="text-sm text-red-100 mt-1">Geciken Ödemeler</div>
                 </div>
-                <div className="text-xs text-gray-500 dark:text-gray-500">
+                <div className="text-xs text-red-200">
                   {formatCurrency(
                     filteredPayments
                       .filter((p) => p.status === "overdue")
@@ -990,21 +1064,23 @@ export default function RaporlarPage() {
               </CardContent>
             </Card>
 
-            <Card>
+            <Card className="shadow-xl border-0 bg-gradient-to-br from-blue-500 to-indigo-600 text-white">
               <CardContent className="p-6 text-center">
                 <div className="mb-2">
-                  <div className="text-4xl font-bold text-blue-600">{summaryMetrics.upcomingPayments}</div>
-                  <div className="text-sm text-gray-600 dark:text-gray-400 mt-1">Yaklaşan Ödemeler</div>
+                  <div className="text-4xl font-bold">{summaryMetrics.upcomingPayments}</div>
+                  <div className="text-sm text-blue-100 mt-1">Yaklaşan Ödemeler</div>
                 </div>
-                <div className="text-xs text-gray-500 dark:text-gray-500">Sonraki 7 gün</div>
+                <div className="text-xs text-blue-200">Sonraki 7 gün</div>
               </CardContent>
             </Card>
           </div>
 
-          <Card>
+          <Card className="shadow-xl border-0 bg-gradient-to-br from-white to-orange-50 dark:from-orange-950 dark:to-red-950">
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
-                <Activity className="h-5 w-5 text-emerald-600" />
+                <div className="p-2 bg-gradient-to-r from-orange-500 to-red-600 rounded-lg">
+                  <Activity className="h-6 w-6 text-white" />
+                </div>
                 Ödeme Başarı Oranı
               </CardTitle>
               <CardDescription>Aylık ödeme başarı yüzdesi</CardDescription>
@@ -1012,6 +1088,13 @@ export default function RaporlarPage() {
             <CardContent>
               <ResponsiveContainer width="100%" height={300}>
                 <LineChart data={chartData.monthlyTrend}>
+                  <defs>
+                    <linearGradient id="lineGradient" x1="0" y1="0" x2="1" y2="0">
+                      <stop offset="0%" stopColor="#10B981" />
+                      <stop offset="50%" stopColor="#14B8A6" />
+                      <stop offset="100%" stopColor="#06B6D4" />
+                    </linearGradient>
+                  </defs>
                   <CartesianGrid strokeDasharray="3 3" className="stroke-gray-200 dark:stroke-gray-700" />
                   <XAxis dataKey="month" className="text-gray-600 dark:text-gray-400" />
                   <YAxis className="text-gray-600 dark:text-gray-400" tickFormatter={(value) => `${value}%`} />
@@ -1026,8 +1109,8 @@ export default function RaporlarPage() {
                   <Line
                     type="monotone"
                     dataKey={(data: { toplam: number; odenen: number }) => (data.toplam > 0 ? (data.odenen / data.toplam) * 100 : 0)}
-                    stroke="#10B981"
-                    strokeWidth={3}
+                    stroke="url(#lineGradient)"
+                    strokeWidth={4}
                     dot={{ fill: "#10B981", strokeWidth: 2, r: 6 }}
                     name="Başarı Oranı"
                   />
