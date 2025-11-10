@@ -1056,8 +1056,7 @@ export default function RaporlarPage() {
                           }}
                         />
                         <Legend
-                          wrapperStyle={{ paddingTop: "20px" }}
-                          iconType="circle"
+                          {...({ wrapperStyle: { paddingTop: "20px" }, iconType: "circle" } as any)}
                         />
                         <Bar dataKey="odenen" fill="url(#colorOdenen)" name="Ödenen" radius={[8, 8, 0, 0]} />
                         <Bar dataKey="bekleyen" fill="url(#colorBekleyen)" name="Bekleyen" radius={[8, 8, 0, 0]} />
@@ -1293,7 +1292,7 @@ export default function RaporlarPage() {
                           padding: "12px",
                         }}
                       />
-                      <Legend wrapperStyle={{ paddingTop: "20px" }} iconType="circle" />
+                      <Legend {...({ wrapperStyle: { paddingTop: "20px" }, iconType: "circle" } as any)} />
                       <Area
                         type="monotone"
                         dataKey="odenen"
