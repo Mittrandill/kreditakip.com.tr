@@ -11,6 +11,7 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { Checkbox } from "@/components/ui/checkbox"
 import { Label } from "@/components/ui/label"
 import { Badge } from "@/components/ui/badge"
+import { Progress } from "@/components/ui/progress"
 import {
   BarChart3,
   PieChart,
@@ -529,49 +530,21 @@ export default function RaporlarPage() {
 
   return (
     <div className="flex flex-col gap-4 md:gap-6">
-      {/* Hero Section */}
-      <Card className="relative overflow-hidden bg-gradient-to-r from-emerald-600 to-teal-700 dark:from-emerald-600 dark:to-teal-700 text-white border-0 shadow-2xl rounded-3xl">
-        {/* Background Decorations */}
-        <div className="absolute inset-0 overflow-hidden">
-          <div className="absolute top-0 right-0 w-96 h-96 bg-white/10 rounded-full -translate-y-1/2 translate-x-1/2 blur-3xl" />
-          <div className="absolute bottom-0 left-0 w-64 h-64 bg-emerald-400/20 rounded-full translate-y-1/2 -translate-x-1/2 blur-2xl" />
-          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] border border-white/5 rounded-full" />
-        </div>
-
-        <CardContent className="relative z-10 p-8 md:p-12">
-          <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-6">
-            <div className="flex-1">
-              <div className="inline-flex items-center gap-2 bg-white/10 backdrop-blur-xl border border-white/20 rounded-full px-4 py-2 mb-4">
-                <div className="w-2 h-2 bg-emerald-300 rounded-full animate-pulse" />
-                <span className="text-white/90 text-xs font-medium">Premium Finansal Raporlama</span>
-              </div>
-              <h2 className="text-4xl md:text-5xl font-bold mb-4 flex items-center gap-4 tracking-tight">
-                <div className="p-3 bg-white/10 backdrop-blur-xl rounded-2xl">
-                  <BarChart3 className="h-10 w-10" />
-                </div>
-                Finansal Analiz Merkezi
+      {/* Hero Section - Kredilerim sayfası stili */}
+      <Card className="bg-gradient-to-r from-emerald-600 to-teal-700 dark:from-emerald-700 dark:to-teal-800 text-white border-transparent shadow-xl rounded-xl">
+        <CardContent className="p-8">
+          <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+            <div>
+              <h2 className="text-3xl font-bold mb-2 flex items-center gap-3">
+                <BarChart3 className="h-8 w-8" />
+                Finansal Raporlar
               </h2>
-              <p className="text-white/90 text-lg leading-relaxed max-w-2xl">
-                Yapay zeka destekli detaylı kredi analizi, gelişmiş grafikler ve akıllı öngörülerle finansal durumunuzu 360° takip edin
+              <p className="text-white-100 text-lg">
+                Kredi portföyünüzü detaylı analiz edin, performans metriklerini takip edin
               </p>
-
-              {/* Quick Stats */}
-              <div className="grid grid-cols-3 gap-4 mt-6">
-                <div className="bg-white/10 backdrop-blur-xl rounded-xl p-4 border border-white/20">
-                  <div className="text-3xl font-bold mb-1">{summaryMetrics.totalCredits}</div>
-                  <div className="text-white/80 text-xs">Toplam Kredi</div>
-                </div>
-                <div className="bg-white/10 backdrop-blur-xl rounded-xl p-4 border border-white/20">
-                  <div className="text-3xl font-bold mb-1">{formatPercent(summaryMetrics.paymentPerformance / 100)}</div>
-                  <div className="text-white/80 text-xs">Başarı Oranı</div>
-                </div>
-                <div className="bg-white/10 backdrop-blur-xl rounded-xl p-4 border border-white/20">
-                  <div className="text-3xl font-bold mb-1">{summaryMetrics.activeCredits}</div>
-                  <div className="text-white/80 text-xs">Aktif Kredi</div>
-                </div>
-              </div>
             </div>
-            <PDFReportModal
+            <div className="flex flex-col sm:flex-row gap-3">
+              <PDFReportModal
                 userData={{
                   credits: filteredCredits.map((credit) => ({
                     id: credit.id,
@@ -609,100 +582,190 @@ export default function RaporlarPage() {
                   <Button
                     variant="outline"
                     size="lg"
-                    className="bg-white/10 backdrop-blur-xl border-white/20 text-white hover:bg-white/20 hover:border-white/30 transition-all duration-300 px-8 py-6 text-base font-semibold shadow-lg hover:shadow-xl"
+                    className="bg-transparent border-white/20 text-white hover:bg-white/10 hover:border-transparent hover:text-white dark:bg-transparent dark:border-white/20 dark:text-white dark:hover:bg-white/10 dark:hover:border-transparent dark:hover:text-white"
                   >
                     <Download className="h-5 w-5 mr-2" />
                     PDF Rapor İndir
                   </Button>
                 }
               />
+            </div>
           </div>
         </CardContent>
       </Card>
 
-      {/* Enhanced Stats Cards - Emerald-Teal Theme */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        <Card className="relative overflow-hidden bg-gradient-to-br from-emerald-500 to-emerald-600 dark:from-emerald-600 dark:to-emerald-700 border-0 shadow-xl hover:shadow-2xl transition-all duration-300 hover:scale-[1.02]">
-          <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full -translate-y-8 translate-x-8 blur-2xl" />
-          <CardContent className="relative p-6">
-            <div className="flex items-start justify-between mb-4">
-              <div className="p-3 bg-white/20 backdrop-blur-xl rounded-xl">
-                <CreditCard className="h-6 w-6 text-white" />
-              </div>
-              <Badge className="bg-white/20 text-white border-0 backdrop-blur-sm">
-                {summaryMetrics.activeCredits} aktif
-              </Badge>
-            </div>
-            <div className="text-white">
-              <div className="text-4xl font-black mb-2">{summaryMetrics.totalCredits}</div>
-              <div className="text-white/90 font-medium mb-1">Toplam Kredi</div>
-              <div className="text-white/70 text-xs">Sistemdeki toplam kredi sayınız</div>
-            </div>
-          </CardContent>
-        </Card>
+      {/* Metric Cards - Alt alta dizilmiş, beyaz arka plan */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <MetricCard
+          title="Ödeme Performansı"
+          value={formatPercent(summaryMetrics.paymentPerformance / 100)}
+          subtitle="Zamanında ödeme başarı oranınız"
+          color="emerald"
+          icon={<Target />}
+          badge={summaryMetrics.paymentPerformance >= 80 ? "Mükemmel" : summaryMetrics.paymentPerformance >= 60 ? "İyi" : "Geliştirilmeli"}
+        />
+        <MetricCard
+          title="Ortalama Faiz Oranı"
+          value={formatPercent(summaryMetrics.averageInterest / 100)}
+          subtitle="Tüm kredilerin ortalama faiz oranı"
+          color="orange"
+          icon={<TrendingUp />}
+        />
+        <MetricCard
+          title="Aylık Ödeme Yükü"
+          value={formatCurrency(summaryMetrics.monthlyPayment)}
+          subtitle="Aylık toplam ödeme tutarınız"
+          color="purple"
+          icon={<Calendar />}
+        />
+        <MetricCard
+          title="Toplam Borç"
+          value={formatCurrency(summaryMetrics.totalDebt)}
+          subtitle="Kalan toplam borç tutarınız"
+          color="teal"
+          icon={<DollarSign />}
+        />
+        <MetricCard
+          title="Aktif Kredi Sayısı"
+          value={summaryMetrics.activeCredits.toString()}
+          subtitle="Devam eden kredi hesaplarınız"
+          color="blue"
+          icon={<CreditCard />}
+          badge={`${summaryMetrics.activeCredits} aktif`}
+        />
+        <MetricCard
+          title="Yaklaşan Ödemeler"
+          value={summaryMetrics.upcomingPayments.toString()}
+          subtitle="Sonraki 7 gün içindeki ödemeler"
+          color="red"
+          icon={<Clock />}
+          badge={summaryMetrics.upcomingPayments > 0 ? "Dikkat!" : "Temiz"}
+        />
+        <MetricCard
+          title="Gecikmiş Ödemeler"
+          value={summaryMetrics.overduePayments.toString()}
+          subtitle="Ödemesi gecikmiş taksit sayısı"
+          color="orange"
+          icon={<AlertTriangle />}
+          badge={summaryMetrics.overduePayments > 0 ? "Acil!" : "Yok"}
+        />
+        <MetricCard
+          title="Toplam Ödenen Tutar"
+          value={formatCurrency(summaryMetrics.totalPaidAmount)}
+          subtitle="Şimdiye kadar ödediğiniz toplam tutar"
+          color="emerald"
+          icon={<Wallet />}
+        />
+      </div>
 
-        <Card className="relative overflow-hidden bg-gradient-to-br from-teal-500 to-teal-600 dark:from-teal-600 dark:to-teal-700 border-0 shadow-xl hover:shadow-2xl transition-all duration-300 hover:scale-[1.02]">
-          <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full -translate-y-8 translate-x-8 blur-2xl" />
-          <CardContent className="relative p-6">
-            <div className="flex items-start justify-between mb-4">
-              <div className="p-3 bg-white/20 backdrop-blur-xl rounded-xl">
-                <DollarSign className="h-6 w-6 text-white" />
-              </div>
-              <div className="flex items-center gap-1 text-white/90">
-                <TrendingUp className="h-4 w-4" />
+      {/* Ödeme İlerlemesi Özet Kartı */}
+      <Card className="shadow-xl border border-gray-200 dark:border-white/10 bg-white dark:bg-black/20">
+        <CardHeader>
+          <CardTitle className="flex items-center gap-3 text-xl dark:text-white">
+            <div className="p-3 bg-gradient-to-r from-emerald-500 to-teal-600 rounded-xl shadow-lg">
+              <TrendingUp className="h-6 w-6 text-white" />
+            </div>
+            <div>
+              <div className="font-bold">Genel Ödeme İlerlemesi</div>
+              <div className="text-xs text-gray-500 dark:text-white/60 font-normal mt-1">
+                Tüm kredilerin ödeme başarı oranı
               </div>
             </div>
-            <div className="text-white">
-              <div className="text-3xl font-black mb-2">{formatCurrency(summaryMetrics.totalDebt)}</div>
-              <div className="text-white/90 font-medium mb-1">Toplam Borç</div>
-              <div className="text-white/70 text-xs">Kalan toplam borç tutarı</div>
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="flex flex-col md:flex-row items-center justify-between gap-6">
+            {/* Circular Progress */}
+            <div className="flex items-center justify-center">
+              <div className="relative w-40 h-40">
+                <svg className="w-full h-full transform -rotate-90" viewBox="0 0 100 100">
+                  <circle
+                    cx="50"
+                    cy="50"
+                    r="40"
+                    fill="none"
+                    stroke="#E5E7EB"
+                    strokeWidth="8"
+                    className="dark:stroke-white/10"
+                  />
+                  <circle
+                    cx="50"
+                    cy="50"
+                    r="40"
+                    fill="none"
+                    stroke="url(#gradient-progress)"
+                    strokeWidth="8"
+                    strokeLinecap="round"
+                    strokeDasharray={`${(summaryMetrics.paymentPerformance * 251.2) / 100} 251.2`}
+                    className="transition-all duration-1000 ease-out"
+                  />
+                  <defs>
+                    <linearGradient id="gradient-progress" x1="0%" y1="0%" x2="100%" y2="100%">
+                      <stop offset="0%" stopColor="#10B981" />
+                      <stop offset="100%" stopColor="#14B8A6" />
+                    </linearGradient>
+                  </defs>
+                </svg>
+                <div className="absolute inset-0 flex flex-col items-center justify-center">
+                  <span className="text-3xl font-bold text-gray-900 dark:text-white">
+                    {Math.round(summaryMetrics.paymentPerformance)}%
+                  </span>
+                  <span className="text-xs text-gray-500 dark:text-white/60">Başarı Oranı</span>
+                </div>
+              </div>
             </div>
-          </CardContent>
-        </Card>
 
-        <Card className="relative overflow-hidden bg-gradient-to-br from-cyan-500 to-cyan-600 dark:from-cyan-600 dark:to-cyan-700 border-0 shadow-xl hover:shadow-2xl transition-all duration-300 hover:scale-[1.02]">
-          <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full -translate-y-8 translate-x-8 blur-2xl" />
-          <CardContent className="relative p-6">
-            <div className="flex items-start justify-between mb-4">
-              <div className="p-3 bg-white/20 backdrop-blur-xl rounded-xl">
-                <Target className="h-6 w-6 text-white" />
+            {/* Stats Grid */}
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 flex-1">
+              <div className="text-center p-4 bg-gray-50 dark:bg-emerald-900/10 rounded-xl">
+                <p className="text-2xl font-bold text-emerald-600 dark:text-emerald-400">
+                  {summaryMetrics.totalCredits}
+                </p>
+                <p className="text-xs text-gray-600 dark:text-white/60 mt-1">Toplam Kredi</p>
               </div>
-              <Badge className="bg-white/20 text-white border-0 backdrop-blur-sm">
-                {summaryMetrics.paymentPerformance >= 80 ? "Mükemmel" : summaryMetrics.paymentPerformance >= 60 ? "İyi" : "Geliştirilmeli"}
-              </Badge>
+              <div className="text-center p-4 bg-gray-50 dark:bg-emerald-900/10 rounded-xl">
+                <p className="text-2xl font-bold text-teal-600 dark:text-teal-400">
+                  {summaryMetrics.activeCredits}
+                </p>
+                <p className="text-xs text-gray-600 dark:text-white/60 mt-1">Aktif</p>
+              </div>
+              <div className="text-center p-4 bg-gray-50 dark:bg-emerald-900/10 rounded-xl">
+                <p className="text-2xl font-bold text-orange-600 dark:text-orange-400">
+                  {summaryMetrics.overduePayments}
+                </p>
+                <p className="text-xs text-gray-600 dark:text-white/60 mt-1">Gecikmiş</p>
+              </div>
+              <div className="text-center p-4 bg-gray-50 dark:bg-emerald-900/10 rounded-xl">
+                <p className="text-2xl font-bold text-blue-600 dark:text-blue-400">
+                  {summaryMetrics.upcomingPayments}
+                </p>
+                <p className="text-xs text-gray-600 dark:text-white/60 mt-1">Yaklaşan</p>
+              </div>
             </div>
-            <div className="text-white">
-              <div className="text-4xl font-black mb-2">{formatPercent(summaryMetrics.paymentPerformance / 100)}</div>
-              <div className="text-white/90 font-medium mb-1">Ödeme Performansı</div>
-              <div className="text-white/70 text-xs">Zamanında ödeme başarı oranı</div>
-            </div>
-            <div className="mt-4 w-full h-2 bg-white/20 rounded-full overflow-hidden">
-              <div
-                className="h-full bg-white rounded-full transition-all duration-1000"
-                style={{ width: `${summaryMetrics.paymentPerformance}%` }}
-              />
-            </div>
-          </CardContent>
-        </Card>
+          </div>
 
-        <Card className="relative overflow-hidden bg-gradient-to-br from-emerald-600 to-teal-600 dark:from-emerald-700 dark:to-teal-700 border-0 shadow-xl hover:shadow-2xl transition-all duration-300 hover:scale-[1.02]">
-          <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full -translate-y-8 translate-x-8 blur-2xl" />
-          <CardContent className="relative p-6">
-            <div className="flex items-start justify-between mb-4">
-              <div className="p-3 bg-white/20 backdrop-blur-xl rounded-xl">
-                <Clock className="h-6 w-6 text-white" />
-              </div>
-              <div className="flex items-center gap-1 text-white/90">
-                {summaryMetrics.upcomingPayments > 0 && <AlertTriangle className="h-4 w-4" />}
-              </div>
+          {/* Progress Bar */}
+          <div className="mt-6">
+            <div className="flex justify-between items-center mb-2">
+              <span className="text-sm font-medium text-gray-700 dark:text-white/70">Toplam İlerleme</span>
+              <span className="text-sm font-bold text-gray-900 dark:text-white">
+                {formatPercent(summaryMetrics.paymentPerformance / 100)}
+              </span>
             </div>
-            <div className="text-white">
-              <div className="text-4xl font-black mb-2">{summaryMetrics.upcomingPayments}</div>
-              <div className="text-white/90 font-medium mb-1">Yaklaşan Ödemeler</div>
-              <div className="text-white/70 text-xs">Sonraki 7 gün içinde</div>
-            </div>
-          </CardContent>
-        </Card>
+            <Progress value={summaryMetrics.paymentPerformance} className="h-3" />
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Section Başlığı */}
+      <div className="flex items-center gap-3 mt-2">
+        <div className="p-2 bg-gradient-to-r from-emerald-500 to-teal-600 rounded-lg">
+          <BarChart3 className="h-5 w-5 text-white" />
+        </div>
+        <div>
+          <h3 className="text-2xl font-bold text-gray-900 dark:text-white">Detaylı Finansal Grafikler</h3>
+          <p className="text-sm text-gray-600 dark:text-white/60">Kredi portföyünüzün görsel analizi</p>
+        </div>
       </div>
 
       {/* Premium Filters */}
