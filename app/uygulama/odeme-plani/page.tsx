@@ -5,7 +5,6 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { MetricCard } from "@/components/metric-card"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 import {
   Calendar,
@@ -991,37 +990,6 @@ function PaymentAnalysis({ payments, credits }: { payments: PaymentWithCredit[];
         </div>
       </div>
 
-      {/* Ana Metrikler */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        <MetricCard
-          title="Bu Ay Ödenecek"
-          value={formatCurrency(totalMonthlyPayment)}
-          subtitle={`${thisMonthPayments.length} taksit`}
-          color="blue"
-          icon={<Calendar />}
-        />
-        <MetricCard
-          title="Ortalama Taksit"
-          value={formatCurrency(averagePayment)}
-          subtitle="Tüm krediler ortalaması"
-          color="emerald"
-          icon={<TrendingUp />}
-        />
-        <MetricCard
-          title="Aktif Kredi"
-          value={credits.length}
-          subtitle="Toplam kredi sayısı"
-          color="purple"
-          icon={<CreditCard />}
-        />
-        <MetricCard
-          title="Gecikmiş Ödeme"
-          value={formatCurrency(totalOverdueAmount)}
-          subtitle={`${overduePayments.length} gecikmiş taksit`}
-          color="orange"
-          icon={<AlertTriangle />}
-        />
-      </div>
 
       {/* Yaklaşan Ödemeler */}
       {upcomingPayments.length > 0 && (
@@ -1630,78 +1598,75 @@ export default function OdemePlaniPage() {
   return (
     <div className="flex flex-col gap-4 md:gap-6">
       {/* Hero Section */}
-      <Card className="bg-gradient-to-r from-emerald-600 to-teal-700 dark:from-emerald-700 dark:to-teal-800 text-white border-transparent shadow-xl rounded-xl">
-        <CardContent className="p-8">
-          <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-            <div>
-              <h2 className="text-3xl font-bold mb-2 flex items-center gap-3">
+      <Card className="bg-gradient-to-br from-emerald-600 via-teal-600 to-emerald-700 dark:from-emerald-700 dark:via-teal-700 dark:to-emerald-800 text-white border-0 shadow-2xl">
+        <CardContent className="p-6 md:p-8">
+          <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4">
+            <div className="flex-1">
+              <h1 className="text-3xl md:text-4xl font-bold mb-2 flex items-center gap-3">
                 <Calendar className="h-8 w-8" />
-                Ödeme Planı Yönetimi
-              </h2>
-              <p className="text-white-100 text-lg">
+                Ödeme Planı
+              </h1>
+              <p className="text-white/80 text-base md:text-lg mb-4">
                 Tüm kredilerinizin ödeme planlarını görüntüleyin, takip edin ve hatırlatıcılar oluşturun
               </p>
+              <div className="grid grid-cols-3 gap-4">
+                <div>
+                  <p className="text-white/70 text-sm mb-1">Bu Ay</p>
+                  <p className="text-2xl font-bold">{formatCurrency(thisMonthTotal)}</p>
+                </div>
+                <div>
+                  <p className="text-white/70 text-sm mb-1">Yaklaşan (7 Gün)</p>
+                  <p className="text-2xl font-bold">{next7DaysPayments.length}</p>
+                </div>
+                <div>
+                  <p className="text-white/70 text-sm mb-1">Gecikmiş</p>
+                  <p className="text-2xl font-bold">{overduePayments.length}</p>
+                </div>
+              </div>
             </div>
-            <div className="flex flex-col sm:flex-row gap-3">
-              <Button
-                variant="outline"
-                size="lg"
-                className="bg-transparent border-white/20 text-white hover:bg-white/10 hover:border-transparent hover:text-white dark:bg-transparent dark:border-white/20 dark:text-white dark:hover:bg-white/10 dark:hover:border-transparent dark:hover:text-white"
-                onClick={() => {
-                  // PDF export functionality
-                  const data = allPayments.map((payment) => ({
-                    Banka: payment.credits.banks.name,
-                    "Taksit No": payment.installment_number,
-                    "Vade Tarihi": formatDate(payment.due_date),
-                    "Ana Para": formatCurrency(payment.principal_amount),
-                    Faiz: formatCurrency(payment.interest_amount),
-                    Toplam: formatCurrency(payment.total_payment),
-                    Durum: payment.status === "paid" ? "Ödendi" : "Bekliyor",
-                  }))
+            <Button
+              onClick={() => {
+                // PDF export functionality
+                const data = allPayments.map((payment) => ({
+                  Banka: payment.credits.banks.name,
+                  "Taksit No": payment.installment_number,
+                  "Vade Tarihi": formatDate(payment.due_date),
+                  "Ana Para": formatCurrency(payment.principal_amount),
+                  Faiz: formatCurrency(payment.interest_amount),
+                  Toplam: formatCurrency(payment.total_payment),
+                  Durum: payment.status === "paid" ? "Ödendi" : "Bekliyor",
+                }))
 
-                  const ws = XLSX.utils.json_to_sheet(data)
-                  const wb = XLSX.utils.book_new()
-                  XLSX.utils.book_append_sheet(wb, ws, "Ödeme Planı")
-                  const excelBuffer = XLSX.write(wb, { bookType: "xlsx", type: "array" })
+                const ws = XLSX.utils.json_to_sheet(data)
+                const wb = XLSX.utils.book_new()
+                XLSX.utils.book_append_sheet(wb, ws, "Ödeme Planı")
+                const excelBuffer = XLSX.write(wb, { bookType: "xlsx", type: "array" })
 
-                  const blob = new Blob([excelBuffer], {
-                    type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet;charset=UTF-8",
-                  })
+                const blob = new Blob([excelBuffer], {
+                  type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet;charset=UTF-8",
+                })
 
-                  const url = URL.createObjectURL(blob)
-                  const link = document.createElement("a")
-                  link.href = url
-                  link.download = "odeme-plani.xlsx"
-                  document.body.appendChild(link)
-                  link.click()
-                  document.body.removeChild(link)
-                  URL.revokeObjectURL(url)
+                const url = URL.createObjectURL(blob)
+                const link = document.createElement("a")
+                link.href = url
+                link.download = "odeme-plani.xlsx"
+                document.body.appendChild(link)
+                link.click()
+                document.body.removeChild(link)
+                URL.revokeObjectURL(url)
 
-                  toast({
-                    title: "PDF dosyası indirildi!",
-                    description: "Ödeme planınız başarıyla indirildi.",
-                  })
-                }}
-              >
-                <Download className="h-5 w-5" />
-                PDF İndir
-              </Button>
-              <Button
-                variant="outline"
-                size="lg"
-                className="bg-transparent border-white/20 text-white hover:bg-white/10 hover:border-transparent hover:text-white dark:bg-transparent dark:border-white/20 dark:text-white dark:hover:bg-white/10 dark:hover:border-transparent dark:hover:text-white"
-                onClick={() => {
-                  setSelectedTab("hatirlatici")
-                  toast({
-                    title: "Hatırlatıcı sayfasına yönlendirildiniz",
-                    description: "Hatırlatıcı ayarlarınızı buradan yapabilirsiniz.",
-                  })
-                }}
-              >
-                <Bell className="h-5 w-5" />
-                Hatırlatıcı Ekle
-              </Button>
-            </div>
+                toast({
+                  title: "PDF dosyası indirildi!",
+                  description: "Ödeme planınız başarıyla indirildi.",
+                })
+              }}
+              className="bg-transparent border-white/20 text-white hover:bg-white/10 hover:border-transparent hover:text-white dark:bg-transparent dark:border-white/20 dark:text-white dark:hover:bg-white/10 dark:hover:border-transparent dark:hover:text-white"
+              size="lg"
+              variant="outline"
+            >
+              <Download className="h-5 w-5 mr-2" />
+              PDF İndir
+            </Button>
           </div>
         </CardContent>
       </Card>

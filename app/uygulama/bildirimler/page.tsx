@@ -7,7 +7,6 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Badge } from "@/components/ui/badge"
-import { MetricCard } from "@/components/metric-card"
 import { PaginationModern } from "@/components/ui/pagination-modern"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 import { NotificationSheet } from "@/components/notification-sheet"
@@ -287,52 +286,46 @@ export default function BildirimlerPage() {
   return (
     <div className="flex flex-col gap-4 md:gap-6">
       {/* Hero Section */}
-      <Card className="bg-gradient-to-r from-emerald-600 to-teal-700 text-white border-transparent shadow-xl rounded-xl">
-        <CardContent className="p-8">
-          <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-            <div>
-              <h2 className="text-3xl font-bold mb-2 flex items-center gap-3">
+      <Card className="bg-gradient-to-br from-emerald-600 via-teal-600 to-emerald-700 dark:from-emerald-700 dark:via-teal-700 dark:to-emerald-800 text-white border-0 shadow-2xl">
+        <CardContent className="p-6 md:p-8">
+          <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4">
+            <div className="flex-1">
+              <h1 className="text-3xl md:text-4xl font-bold mb-2 flex items-center gap-3">
                 <BellRing className="h-8 w-8" />
                 Bildirimler
-              </h2>
-              <p className="text-emerald-100 text-lg">Ödemeler, hatırlatmalar ve önemli güncellemeler</p>
+              </h1>
+              <p className="text-white/80 text-base md:text-lg mb-4">
+                Ödemeler, hatırlatmalar ve önemli güncellemeler
+              </p>
+              <div className="grid grid-cols-3 gap-4">
+                <div>
+                  <p className="text-white/70 text-sm mb-1">Toplam</p>
+                  <p className="text-2xl font-bold">{stats.total || 0}</p>
+                </div>
+                <div>
+                  <p className="text-white/70 text-sm mb-1">Okunmamış</p>
+                  <p className="text-2xl font-bold">{stats.unread || 0}</p>
+                </div>
+                <div>
+                  <p className="text-white/70 text-sm mb-1">Uyarılar</p>
+                  <p className="text-2xl font-bold">{stats.warnings || 0}</p>
+                </div>
+              </div>
             </div>
+            {stats.unread > 0 && (
+              <Button
+                onClick={handleMarkAllAsRead}
+                className="bg-transparent border-white/20 text-white hover:bg-white/10 hover:border-transparent hover:text-white dark:bg-transparent dark:border-white/20 dark:text-white dark:hover:bg-white/10 dark:hover:border-transparent dark:hover:text-white"
+                size="lg"
+                variant="outline"
+              >
+                <CheckCircle className="h-5 w-5 mr-2" />
+                Tümünü Okundu İşaretle
+              </Button>
+            )}
           </div>
         </CardContent>
       </Card>
-
-      {/* Stats Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
-        <MetricCard
-          title="Toplam Bildirim"
-          value={stats.total || 0}
-          subtitle="Sistem genelindeki tüm bildirimleriniz"
-          color="blue"
-          icon={<Bell />}
-        />
-        <MetricCard
-          title="Başarılı"
-          value={stats.success || 0}
-          subtitle="Başarıyla tamamlanan işlem bildirimleri"
-          color="emerald"
-          icon={<CheckCircle />}
-        />
-        <MetricCard
-          title="Uyarılar"
-          value={stats.warnings || 0}
-          subtitle="Dikkat gerektiren önemli bildirimler"
-          color="purple"
-          icon={<AlertTriangle />}
-        />
-        <MetricCard
-          title="Okunmamış"
-          value={stats.unread || 0}
-          subtitle="Henüz görüntülenmemiş yeni bildirimler"
-          color="orange"
-          icon={<BellRing />}
-          badge={stats.unread > 0 ? `${stats.unread} yeni` : "Hepsi okundu"}
-        />
-      </div>
 
       {/* Modern Table */}
       <div className="bg-white dark:bg-black/20 rounded-2xl shadow-sm border border-gray-100 dark:border-white/10 overflow-hidden">
@@ -341,16 +334,6 @@ export default function BildirimlerPage() {
           <div className="flex items-center justify-between flex-wrap gap-4">
             <CardTitle className="text-xl font-bold text-gray-800 dark:text-white">Bildirim Listesi</CardTitle>
 
-            <div className="flex items-center gap-2 flex-wrap">
-         
-
-              {stats.unread > 0 && (
-                <Button variant="default" onClick={handleMarkAllAsRead} className="gap-2">
-                  <CheckCircle className="h-4 w-4" />
-                  Tümünü Okundu İşaretle
-                </Button>
-              )}
-            </div>
           </div>
 
           {/* Search and Filters */}

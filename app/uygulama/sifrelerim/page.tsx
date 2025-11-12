@@ -8,7 +8,6 @@ import { Badge } from "@/components/ui/badge"
 import { Input } from "@/components/ui/input"
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
-import { MetricCard } from "@/components/metric-card"
 import BankLogo from "@/components/bank-logo"
 import { PaginationModern } from "@/components/ui/pagination-modern"
 import {
@@ -468,64 +467,44 @@ export default function BankaciSifrelerimPage() {
   return (
     <div className="flex flex-col gap-4 md:gap-6">
       {/* Hero Section */}
-      <Card className="bg-gradient-to-r from-emerald-600 to-teal-700 text-white border-transparent shadow-xl rounded-xl">
-        <CardContent className="p-8">
-          <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-            <div>
-              <h2 className="text-3xl font-bold mb-2 flex items-center gap-3">
+      <Card className="bg-gradient-to-br from-emerald-600 via-teal-600 to-emerald-700 dark:from-emerald-700 dark:via-teal-700 dark:to-emerald-800 text-white border-0 shadow-2xl">
+        <CardContent className="p-6 md:p-8">
+          <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4">
+            <div className="flex-1">
+              <h1 className="text-3xl md:text-4xl font-bold mb-2 flex items-center gap-3">
                 <Lock className="h-8 w-8" />
-                Bankacılık Şifre Yönetimi
-              </h2>
-              <p className="text-white-100 text-lg">
+                Şifrelerim
+              </h1>
+              <p className="text-white/80 text-base md:text-lg mb-4">
                 Tüm bankacılık şifrelerinizi güvenli bir şekilde saklayın ve yönetin
               </p>
+              <div className="grid grid-cols-3 gap-4">
+                <div>
+                  <p className="text-white/70 text-sm mb-1">Toplam Şifre</p>
+                  <p className="text-2xl font-bold">{totalCredentials}</p>
+                </div>
+                <div>
+                  <p className="text-white/70 text-sm mb-1">İnternet</p>
+                  <p className="text-2xl font-bold">{internetBankingCount}</p>
+                </div>
+                <div>
+                  <p className="text-white/70 text-sm mb-1">Mobil</p>
+                  <p className="text-2xl font-bold">{mobileBankingCount}</p>
+                </div>
+              </div>
             </div>
-            <div className="flex flex-col sm:flex-row gap-3">
-              <Button
-                variant="outline"
-                size="lg"
-                className="bg-transparent border-white/20 text-white hover:bg-white/10 hover:border-transparent hover:text-white dark:bg-transparent dark:border-white/20 dark:text-white dark:hover:bg-white/10 dark:hover:border-transparent dark:hover:text-white"
-                onClick={() => router.push("/uygulama/sifrelerim/ekle")}
-              >
-                <Plus className="h-5 w-5 mr-2" />
-                Yeni Şifre Ekle
-              </Button>
-            </div>
+            <Button
+              onClick={() => router.push("/uygulama/sifrelerim/ekle")}
+              className="bg-transparent border-white/20 text-white hover:bg-white/10 hover:border-transparent hover:text-white dark:bg-transparent dark:border-white/20 dark:text-white dark:hover:bg-white/10 dark:hover:border-transparent dark:hover:text-white"
+              size="lg"
+              variant="outline"
+            >
+              <Plus className="h-5 w-5 mr-2" />
+              Yeni Şifre Ekle
+            </Button>
           </div>
         </CardContent>
       </Card>
-
-      {/* Stats Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        <MetricCard
-          title="Toplam Şifre"
-          value={totalCredentials.toString()}
-          subtitle="Kayıtlı"
-          color="blue"
-          icon={<Key />}
-        />
-        <MetricCard
-          title="İnternet Bankacılığı"
-          value={internetBankingCount.toString()}
-          subtitle="Adet"
-          color="emerald"
-          icon={<Globe />}
-        />
-        <MetricCard
-          title="Mobil Bankacılık"
-          value={mobileBankingCount.toString()}
-          subtitle="Adet"
-          color="purple"
-          icon={<Smartphone />}
-        />
-        <MetricCard
-          title="Son Kullanılan"
-          value={recentlyUsedCount.toString()}
-          subtitle="Bu hafta"
-          color="orange"
-          icon={<Eye />}
-        />
-      </div>
 
       {/* Modern Tabs */}
       <div className="bg-white dark:bg-black/20 rounded-2xl shadow-sm border border-gray-100 dark:border-white/10 overflow-hidden">

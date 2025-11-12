@@ -9,7 +9,6 @@ import { Badge } from "@/components/ui/badge"
 import { Input } from "@/components/ui/input"
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
-import { MetricCard } from "@/components/metric-card"
 import { PaginationModern } from "@/components/ui/pagination-modern"
 import {
   AlertDialog,
@@ -403,49 +402,46 @@ export default function RiskAnaliziPage() {
     <div className="flex flex-col gap-4 md:gap-6">
       <AdBanner position="top" className="mb-4" />
 
-      <Card className="bg-gradient-to-r from-emerald-600 to-teal-700 dark:from-emerald-700 dark:to-teal-800 text-white border-transparent shadow-xl rounded-xl">
+      <Card className="bg-gradient-to-br from-emerald-600 via-teal-600 to-emerald-700 dark:from-emerald-700 dark:via-teal-700 dark:to-emerald-800 text-white border-0 shadow-2xl">
         <CardContent className="p-6 md:p-8">
-          <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-            <div>
-              <h2 className="text-3xl font-bold mb-2 flex items-center gap-3">
+          <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4">
+            <div className="flex-1">
+              <h1 className="text-3xl md:text-4xl font-bold mb-2 flex items-center gap-3">
                 <ShieldCheck className="h-8 w-8" />
-                Kapsamlı Finansal Risk Değerlendirmesi
-              </h2>
-              <p className="opacity-90 text-lg">
-                Krediler, kredi kartları ve hesaplarınızı dahil ederek tam finansal sağlık analizi.
+                Risk Analizi
+              </h1>
+              <p className="text-white/80 text-base md:text-lg mb-4">
+                Krediler ve hesaplarınızı dahil ederek tam finansal sağlık analizi
               </p>
-              <div className="mt-3 flex flex-wrap gap-4 text-sm opacity-80">
-                <span className="flex items-center gap-1">
-                  <History className="h-4 w-4" />
-                  {credits.length} Kredi
-                </span>
+              <div className="grid grid-cols-3 gap-4">
+                <div>
+                  <p className="text-white/70 text-sm mb-1">Toplam Analiz</p>
+                  <p className="text-2xl font-bold">{totalAnalysesCount}</p>
+                </div>
+                <div>
+                  <p className="text-white/70 text-sm mb-1">Kredi Sayısı</p>
+                  <p className="text-2xl font-bold">{credits.length}</p>
+                </div>
+                <div>
+                  <p className="text-white/70 text-sm mb-1">Düşük Risk</p>
+                  <p className="text-2xl font-bold">{riskDistribution.low}</p>
+                </div>
               </div>
             </div>
-            <div className="flex flex-col sm:flex-row gap-3">
-              <Button
-                variant="outline"
-                size="lg"
-                className="bg-transparent border-white/20 text-white hover:bg-white/10 hover:border-transparent hover:text-white dark:bg-transparent dark:border-white/20 dark:text-white dark:hover:bg-white/10 dark:hover:border-transparent dark:hover:text-white"
-                onClick={() => router.push("/uygulama/ayarlar?tab=financial")}
-              >
-                <Settings className="h-5 w-5 mr-2" />
-                Finansal Bilgiler
-              </Button>
-              <Button
-                variant="outline"
-                size="lg"
-                className="bg-transparent border-white/20 text-white hover:bg-white/10 hover:border-transparent hover:text-white dark:bg-transparent dark:border-white/20 dark:text-white dark:hover:bg-white/10 dark:hover:border-transparent dark:hover:text-white"
-                onClick={handleAnalyze}
-                disabled={isAnalyzing || initialDataLoading || !canAnalyze}
-              >
-                {isAnalyzing ? (
-                  <RefreshCw className="h-5 w-5 mr-2 animate-spin" />
-                ) : (
-                  <PlayCircle className="h-5 w-5 mr-2" />
-                )}
-                {isAnalyzing ? "Analiz Ediliyor..." : heroButtonText}
-              </Button>
-            </div>
+            <Button
+              onClick={handleAnalyze}
+              disabled={isAnalyzing || initialDataLoading || !canAnalyze}
+              className="bg-transparent border-white/20 text-white hover:bg-white/10 hover:border-transparent hover:text-white dark:bg-transparent dark:border-white/20 dark:text-white dark:hover:bg-white/10 dark:hover:border-transparent dark:hover:text-white"
+              size="lg"
+              variant="outline"
+            >
+              {isAnalyzing ? (
+                <RefreshCw className="h-5 w-5 mr-2 animate-spin" />
+              ) : (
+                <PlayCircle className="h-5 w-5 mr-2" />
+              )}
+              {isAnalyzing ? "Analiz Ediliyor..." : heroButtonText}
+            </Button>
           </div>
         </CardContent>
       </Card>
@@ -501,42 +497,7 @@ export default function RiskAnaliziPage() {
 
       {!isAnalyzing && canAnalyze && !initialDataLoading && (
         <>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mt-6">
-            <MetricCard
-              title="Toplam Analiz"
-              value={formatNumber(totalAnalysesCount)}
-              subtitle="adet"
-              color="blue"
-              icon={<History />}
-            />
-            <MetricCard
-              title="Son Analiz"
-              value={
-                lastAnalysisDate
-                  ? formatDistanceToNow(new Date(lastAnalysisDate), { addSuffix: true, locale: tr })
-                  : "Henüz yok"
-              }
-              subtitle={lastAnalysisDate ? "tarihinde" : ""}
-              color="emerald"
-              icon={<Calendar />}
-            />
-            <MetricCard
-              title="Düşük Risk"
-              value={formatNumber(riskDistribution.low)}
-              subtitle="analiz"
-              color="purple"
-              icon={<CheckCircle />}
-            />
-            <MetricCard
-              title="Yüksek Risk"
-              value={formatNumber(riskDistribution.high)}
-              subtitle="analiz"
-              color="orange"
-              icon={<AlertTriangle />}
-            />
-          </div>
-
-          <div className="bg-white dark:bg-black/20 rounded-2xl shadow-sm border border-gray-100 dark:border-white/10 overflow-hidden mt-6">
+          <div className="bg-white dark:bg-black/20 rounded-2xl shadow-sm border border-gray-100 dark:border-white/10 overflow-hidden">
             <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full">
               <div className="border-b border-gray-100 dark:border-white/10 bg-gray-50/50 dark:bg-emerald-900/10">
                 <TabsList className="grid grid-cols-2 sm:grid-cols-4 bg-transparent h-auto p-2 gap-2">

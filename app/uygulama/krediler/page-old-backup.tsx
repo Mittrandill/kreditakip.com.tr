@@ -10,6 +10,7 @@ import { Input } from "@/components/ui/input"
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 import { Progress } from "@/components/ui/progress"
+import { MetricCard } from "@/components/metric-card"
 import BankLogo from "@/components/bank-logo"
 import { PaginationModern } from "@/components/ui/pagination-modern"
 import {
@@ -20,11 +21,16 @@ import {
   Eye,
   Edit,
   Trash2,
+  Calendar,
+  DollarSign,
+  AlertTriangle,
   CheckCircle,
+  Clock,
   ArrowUpDown,
   List,
   Archive,
   AlertCircle,
+  Wallet,
   Loader2,
 } from "lucide-react"
 
@@ -52,20 +58,20 @@ import {
 interface PopulatedCredit extends Credit {
   banks: Pick<Bank, "id" | "name" | "logo_url" | "contact_phone" | "contact_email" | "website"> | null
   credit_types: Pick<CreditType, "id" | "name"> | null
-  nextPaymentAmount?: number
+  nextPaymentAmount?: number // En yakın ödenmemiş taksitin tutarı
 }
 
 const getStatusIcon = (durum: string, gecikmeGunu: number) => {
-  if (gecikmeGunu > 0) return <AlertCircle className="h-4 w-4 text-white" />
+  if (gecikmeGunu > 0) return <AlertTriangle className="h-4 w-4 text-white" />
   switch (durum) {
     case "active":
       return <CheckCircle className="h-4 w-4 text-white" />
     case "closed":
       return <Archive className="h-4 w-4 text-white" />
     case "overdue":
-      return <AlertCircle className="h-4 w-4 text-white" />
+      return <AlertTriangle className="h-4 w-4 text-white" />
     default:
-      return <CheckCircle className="h-4 w-4 text-white" />
+      return <Clock className="h-4 w-4 text-white" />
   }
 }
 
@@ -108,7 +114,7 @@ export default function KredilerPage() {
   const [error, setError] = useState<string | null>(null)
 
   const [activeTab, setActiveTab] = useState("tumKrediler")
-  const [viewMode, setViewMode] = useState("table")
+  const [viewMode, setViewMode] = useState("table") // Changed from "cards" to "table"
   const [searchTerm, setSearchTerm] = useState("")
   const [sortBy, setSortBy] = useState("sonOdemeTarihi")
   const [sortOrder, setSortOrder] = useState<"asc" | "desc">("asc")
@@ -131,11 +137,17 @@ export default function KredilerPage() {
           const creditsData = (await getCredits(user.id)) as PopulatedCredit[]
 
           if (isMounted && creditsData) {
+            // Her kredi için ödeme planlarını çek ve dinamik hesaplama yap
             const updatedCredits = await Promise.all(
               creditsData.map(async (credit) => {
                 try {
+                  // Kredi durumunu güncelle
                   await updateCreditStatus(credit.id)
+
+                  // Güncellenmiş kredi bilgilerini çek
                   const updatedCredit = await getCreditById(credit.id, user.id)
+
+                  // Ödeme planını çek ve en yakın ödenmemiş taksitin tutarını hesapla
                   const paymentPlans = (await getPaymentPlans(credit.id)) as PaymentPlan[]
                   let nextPaymentAmount = updatedCredit.monthly_payment
 
@@ -158,7 +170,7 @@ export default function KredilerPage() {
                   return {
                     ...credit,
                     nextPaymentAmount: credit.monthly_payment,
-                  } as PopulatedCredit
+                  } as PopulatedCredit // Hata durumunda orijinal krediyi döndür
                 }
               }),
             )
@@ -292,18 +304,18 @@ export default function KredilerPage() {
     }
   }
 
-  // Calculate totals for hero section
-  const totalDebt = allCredits.reduce((sum, c) => sum + (c.remaining_debt || 0), 0)
-  const activeCount = allCredits.filter((c) => c.status === "active").length
-  const monthlyPayment = allCredits
-    .filter((c) => c.status === "active")
-    .reduce((sum, c) => sum + (c.monthly_payment || 0), 0)
+  // Metric calculations - nextPaymentAmount kullanarak toplam sonraki ödeme hesapla
+  const activeCreditsList = allCredits.filter((c) => c.status === "active")
+  const totalActiveCredits = activeCreditsList.length
+  const totalRemainingDebt = activeCreditsList.reduce((sum, c) => sum + c.remaining_debt, 0)
+  const totalNextPayments = activeCreditsList.reduce((sum, c) => sum + (c.nextPaymentAmount || c.monthly_payment), 0)
+  const overdueCreditsCount = allCredits.filter((c) => c.status === "overdue" || (c.overdue_days || 0) > 0).length
 
   if (authLoading || loadingData) {
     return (
       <div className="flex flex-col gap-4 md:gap-6 items-center justify-center min-h-[calc(100vh-150px)]">
         <Loader2 className="h-12 w-12 animate-spin text-emerald-600" />
-        <p className="text-lg text-gray-600 dark:text-white/70">Veriler yükleniyor...</p>
+        <p className="text-lg text-gray-600">Veriler yükleniyor...</p>
       </div>
     )
   }
@@ -312,7 +324,7 @@ export default function KredilerPage() {
     return (
       <div className="flex flex-col items-center justify-center min-h-[calc(100vh-150px)]">
         <AlertCircle className="h-12 w-12 text-red-500 mb-4" />
-        <p className="text-lg text-red-600 dark:text-red-400">{error}</p>
+        <p className="text-lg text-red-600">{error}</p>
         {!user && (
           <Button onClick={() => router.push("/giris")} className="mt-4">
             Giriş Yap
@@ -324,45 +336,67 @@ export default function KredilerPage() {
 
   return (
     <div className="flex flex-col gap-4 md:gap-6">
-      {/* Hero Section - Keep Current */}
-      <Card className="bg-gradient-to-br from-emerald-600 via-teal-600 to-emerald-700 dark:from-emerald-700 dark:via-teal-700 dark:to-emerald-800 text-white border-0 shadow-2xl">
-        <CardContent className="p-6 md:p-8">
-          <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4">
-            <div className="flex-1">
-              <h1 className="text-3xl md:text-4xl font-bold mb-2 flex items-center gap-3">
-                <CreditCard className="h-8 w-8" />
-                Kredilerim
-              </h1>
-              <p className="text-white/80 text-base md:text-lg mb-4">
-                Tüm kredilerinizi buradan yönetebilir, detaylarını görüntüleyebilir ve düzenleyebilirsiniz
+      {/* Hero Section */}
+      <Card className="bg-gradient-to-r from-emerald-600 to-teal-700 dark:from-emerald-700 dark:to-teal-800 text-white border-transparent shadow-xl rounded-xl">
+        <CardContent className="p-8">
+          <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+            <div>
+              <h2 className="text-3xl font-bold mb-2 flex items-center gap-3">
+                <Wallet className="h-8 w-8" />
+                Kredi Portföy Yönetimi
+              </h2>
+              <p className="text-white-100 text-lg">
+                Tüm kredi hesaplarınızı tek yerden yönetin, takip edin ve optimize edin
               </p>
-              <div className="grid grid-cols-3 gap-4">
-                <div>
-                  <p className="text-white/70 text-sm mb-1">Toplam Borç</p>
-                  <p className="text-2xl font-bold">{formatCurrency(totalDebt)}</p>
-                </div>
-                <div>
-                  <p className="text-white/70 text-sm mb-1">Aktif Kredi</p>
-                  <p className="text-2xl font-bold">{activeCount}</p>
-                </div>
-                <div>
-                  <p className="text-white/70 text-sm mb-1">Aylık Ödeme</p>
-                  <p className="text-2xl font-bold">{formatCurrency(monthlyPayment)}</p>
-                </div>
-              </div>
             </div>
-            <Button
-              onClick={() => router.push("/uygulama/krediler/kredi-ekle")}
-              className="bg-transparent border-white/20 text-white hover:bg-white/10 hover:border-transparent hover:text-white dark:bg-transparent dark:border-white/20 dark:text-white dark:hover:bg-white/10 dark:hover:border-transparent dark:hover:text-white"
-              size="lg"
-              variant="outline"
-            >
-              <Plus className="h-5 w-5 mr-2" />
-              Yeni Kredi Ekle
-            </Button>
+            <div className="flex flex-col sm:flex-row gap-3">
+              <Button
+                variant="outline"
+                size="lg"
+                className="bg-transparent border-white/20 text-white hover:bg-white/10 hover:border-transparent hover:text-white dark:bg-transparent dark:border-white/20 dark:text-white dark:hover:bg-white/10 dark:hover:border-transparent dark:hover:text-white"
+                onClick={() => router.push("/uygulama/krediler/pdf-odeme-plani")}
+              >
+                <Plus className="h-5 w-5 mr-2" />
+                PDF Ödeme Planı Ekle
+              </Button>
+            </div>
           </div>
         </CardContent>
       </Card>
+
+      {/* Stats Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        <MetricCard
+          title="Aktif Kredi"
+          value={formatNumber(totalActiveCredits)}
+          subtitle="Devam eden kredi sayınız"
+          color="blue"
+          icon={<CreditCard />}
+          badge={`${totalActiveCredits} aktif`}
+        />
+        <MetricCard
+          title="Toplam Borç"
+          value={formatCurrency(totalRemainingDebt)}
+          subtitle="Tüm kredilerdeki kalan ana para toplamı"
+          color="emerald"
+          icon={<DollarSign />}
+        />
+        <MetricCard
+          title="Toplam Sonraki Ödeme"
+          value={formatCurrency(totalNextPayments)}
+          subtitle="Gelecek dönemdeki toplam ödeme tutarı"
+          color="purple"
+          icon={<Calendar />}
+        />
+        <MetricCard
+          title="Gecikmiş Kredi"
+          value={formatNumber(overdueCreditsCount)}
+          subtitle="Ödemesi gecikmiş kredi sayısı"
+          color="orange"
+          icon={<AlertTriangle />}
+          badge={overdueCreditsCount > 0 ? "Dikkat!" : "Temiz"}
+        />
+      </div>
 
       {/* Modern Tabs */}
       <div className="bg-white dark:bg-black/20 rounded-2xl shadow-sm border border-gray-100 dark:border-white/10 overflow-hidden">
@@ -490,6 +524,7 @@ export default function KredilerPage() {
               </div>
             )}
             {viewMode === "cards" && currentItems.length > 0 ? (
+              /* Cards View */
               <div className="space-y-6">
                 <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
                   {currentItems.map((kredi) => (
@@ -631,6 +666,7 @@ export default function KredilerPage() {
                 )}
               </div>
             ) : viewMode === "table" && currentItems.length > 0 ? (
+              /* Table View */
               <div className="space-y-6">
                 <div className="overflow-x-auto">
                   <Table>
