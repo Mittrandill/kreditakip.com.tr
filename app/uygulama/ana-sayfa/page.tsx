@@ -32,6 +32,7 @@ import {
   Wallet,
   Plus,
   ArrowRight,
+  PieChart,
 } from "lucide-react"
 import { AdBanner } from "@/components/ad-banner"
 import { DonutChart, LineChart } from "@/components/charts"
