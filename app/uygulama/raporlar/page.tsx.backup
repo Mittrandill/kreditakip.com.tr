@@ -51,7 +51,6 @@ import PDFReportModal from "@/components/pdf-report-modal"
 import { MetricCard } from "@/components/metric-card"
 import BankLogo from "@/components/bank-logo"
 
-import { DonutChart, AreaChart as ApexAreaChart, BarChart as ApexBarChart, LineChart as ApexLineChart, RadialBarChart } from "@/components/charts"
 // Dynamic import for Recharts components to reduce initial bundle size
 const BarChart = dynamic(() => import("recharts").then((mod) => ({ default: mod.BarChart })), { ssr: false })
 const Bar = dynamic(() => import("recharts").then((mod) => ({ default: mod.Bar })), { ssr: false })
