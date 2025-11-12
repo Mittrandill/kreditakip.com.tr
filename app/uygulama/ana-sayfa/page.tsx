@@ -34,6 +34,7 @@ import {
   ArrowRight,
 } from "lucide-react"
 import { AdBanner } from "@/components/ad-banner"
+import { DonutChart, LineChart } from "@/components/charts"
 
 // Kredi verisi için genişletilmiş tip (ilişkili tablolarla)
 interface PopulatedCredit extends Credit {
@@ -566,7 +567,64 @@ export default function DashboardPage() {
         </CardContent>
       </Card>
 
-      
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <Card className="border-gray-200 dark:border-gray-800">
+          <CardHeader>
+            <CardTitle className="text-xl">Banka Bazlı Borç Dağılımı</CardTitle>
+            <CardDescription>Kredilerinizin banka bazında dağılımı</CardDescription>
+          </CardHeader>
+          <CardContent>
+            {credits.length > 0 ? (
+              <DonutChart
+                data={{
+                  labels: Array.from(new Set(credits.map((c) => c.banks?.name || "Bilinmeyen"))),
+                  series: Array.from(new Set(credits.map((c) => c.banks?.name || "Bilinmeyen"))).map((bankName) =>
+                    credits
+                      .filter((c) => (c.banks?.name || "Bilinmeyen") === bankName)
+                      .reduce((sum, c) => sum + c.remaining_debt, 0)
+                  ),
+                }}
+                title="Toplam Borç"
+                height={320}
+              />
+            ) : (
+              <div className="flex flex-col items-center justify-center h-[320px] text-gray-400">
+                <PieChart className="h-16 w-16 mb-3 text-gray-300" />
+                <p>Henüz kredi bulunmamaktadır</p>
+              </div>
+            )}
+          </CardContent>
+        </Card>
+
+        <Card className="border-gray-200 dark:border-gray-800">
+          <CardHeader>
+            <CardTitle className="text-xl">Aylık Ödeme Trendi</CardTitle>
+            <CardDescription>Son 6 ayın ödeme akışı</CardDescription>
+          </CardHeader>
+          <CardContent>
+            {credits.length > 0 ? (
+              <LineChart
+                data={{
+                  categories: ["Oca", "Şub", "Mar", "Nis", "May", "Haz"],
+                  series: [
+                    {
+                      name: "Aylık Ödeme",
+                      data: Array(6).fill(monthlyPayment),
+                    },
+                  ],
+                }}
+                height={320}
+                showMarkers={true}
+              />
+            ) : (
+              <div className="flex flex-col items-center justify-center h-[320px] text-gray-400">
+                <TrendingUp className="h-16 w-16 mb-3 text-gray-300" />
+                <p>Henüz ödeme verisi bulunmamaktadır</p>
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      </div>
     </div>
   )
 }
