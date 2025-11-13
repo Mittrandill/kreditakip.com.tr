@@ -165,7 +165,7 @@ export default function RaporlarPage() {
                   monthlyPayment: c.monthly_payment || 0,
                   interestRate: c.interest_rate || 0,
                   status: c.status || "unknown",
-                  amount: c.amount || 0,
+                  amount: c.credit_amount || 0,
                 })),
                 payments: [],
                 creditCards: [],
