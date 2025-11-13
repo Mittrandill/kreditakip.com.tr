@@ -334,7 +334,7 @@ export default function RaporlarPage() {
       {/* Widget Cards Row - Meaningful Metrics */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         {/* Widget 1: Banka Dağılımı - Bar Chart */}
-        <Card className="bg-white dark:bg-[#2F3349] border border-gray-200 dark:border-0 overflow-hidden">
+        <Card className="bg-white dark:bg-black/20 border border-gray-200 dark:border-0 overflow-hidden">
           <CardContent className="p-6">
             <div className="flex items-start justify-between mb-4">
               <div>
@@ -362,7 +362,7 @@ export default function RaporlarPage() {
         </Card>
 
         {/* Widget 2: Toplam Borç - Area Trend */}
-        <Card className="bg-white dark:bg-[#2F3349] border border-gray-200 dark:border-0 overflow-hidden">
+        <Card className="bg-white dark:bg-black/20 border border-gray-200 dark:border-0 overflow-hidden">
           <CardContent className="p-6">
             <div className="flex items-start justify-between mb-4">
               <div>
@@ -389,7 +389,7 @@ export default function RaporlarPage() {
         </Card>
 
         {/* Widget 3: Ortalama Faiz - Percentage Donut */}
-        <Card className="bg-white dark:bg-[#2F3349] border border-gray-200 dark:border-0 overflow-hidden">
+        <Card className="bg-white dark:bg-black/20 border border-gray-200 dark:border-0 overflow-hidden">
           <CardContent className="p-6">
             <div className="flex items-start justify-between mb-4">
               <div>
@@ -430,7 +430,7 @@ export default function RaporlarPage() {
       {/* Charts Row - Karciz Style with Donut Charts */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {/* Banka Bazında Borç Dağılımı - Donut Chart */}
-        <Card className="bg-white dark:bg-[#2F3349] border border-gray-200 dark:border-0 overflow-hidden">
+        <Card className="bg-white dark:bg-black/20 border border-gray-200 dark:border-0 overflow-hidden">
           <CardHeader className="border-b border-gray-100 dark:border-white/5 pb-4">
             <div className="flex items-center justify-between">
               <div>
@@ -500,7 +500,7 @@ export default function RaporlarPage() {
         </Card>
 
         {/* Kredi Türü Dağılımı - Donut Chart */}
-        <Card className="bg-white dark:bg-[#2F3349] border border-gray-200 dark:border-0 overflow-hidden">
+        <Card className="bg-white dark:bg-black/20 border border-gray-200 dark:border-0 overflow-hidden">
           <CardHeader className="border-b border-gray-100 dark:border-white/5 pb-4">
             <div className="flex items-center justify-between">
               <div>
@@ -571,7 +571,7 @@ export default function RaporlarPage() {
       {/* Additional Charts Row - Karciz Style */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Banka Bazında Ortalama Faiz - Bar Chart */}
-        <Card className="bg-white dark:bg-[#2F3349] border border-gray-200 dark:border-0 overflow-hidden">
+        <Card className="bg-white dark:bg-black/20 border border-gray-200 dark:border-0 overflow-hidden">
           <CardHeader className="border-b border-gray-100 dark:border-white/5 pb-4">
             <div className="flex items-center justify-between">
               <div>
@@ -602,7 +602,7 @@ export default function RaporlarPage() {
         </Card>
 
         {/* Ödeme İlerlemesi - Area Chart */}
-        <Card className="bg-white dark:bg-[#2F3349] border border-gray-200 dark:border-0 overflow-hidden">
+        <Card className="bg-white dark:bg-black/20 border border-gray-200 dark:border-0 overflow-hidden">
           <CardHeader className="border-b border-gray-100 dark:border-white/5 pb-4">
             <div className="flex items-center justify-between">
               <div>
@@ -650,7 +650,7 @@ export default function RaporlarPage() {
 
       {/* Detailed Analysis Cards */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <Card className="bg-white dark:bg-[#2F3349] border border-gray-200 dark:border-0">
+        <Card className="bg-white dark:bg-black/20 border border-gray-200 dark:border-0">
           <CardHeader className="pb-3">
             <div className="flex items-center justify-between">
               <CardTitle className="text-sm font-medium text-gray-600 dark:text-gray-400">En Yüksek Faiz</CardTitle>
@@ -667,7 +667,7 @@ export default function RaporlarPage() {
           </CardContent>
         </Card>
 
-        <Card className="bg-white dark:bg-[#2F3349] border border-gray-200 dark:border-0">
+        <Card className="bg-white dark:bg-black/20 border border-gray-200 dark:border-0">
           <CardHeader className="pb-3">
             <div className="flex items-center justify-between">
               <CardTitle className="text-sm font-medium text-gray-600 dark:text-gray-400">En Düşük Faiz</CardTitle>
@@ -684,7 +684,7 @@ export default function RaporlarPage() {
           </CardContent>
         </Card>
 
-        <Card className="bg-white dark:bg-[#2F3349] border border-gray-200 dark:border-0">
+        <Card className="bg-white dark:bg-black/20 border border-gray-200 dark:border-0">
           <CardHeader className="pb-3">
             <div className="flex items-center justify-between">
               <CardTitle className="text-sm font-medium text-gray-600 dark:text-gray-400">Tahmini Bitiş</CardTitle>
@@ -708,7 +708,7 @@ export default function RaporlarPage() {
       {activeTab === "banks" && (
         <div className="grid grid-cols-1 gap-6">
           {/* Banka Bazında Toplam Borç Tablosu */}
-          <Card className="bg-white dark:bg-[#2F3349] border border-gray-200 dark:border-0">
+          <Card className="bg-white dark:bg-black/20 border border-gray-200 dark:border-0">
             <CardHeader className="border-b border-gray-100 dark:border-white/5 pb-4">
               <CardTitle className="text-xl text-gray-900 dark:text-white">Banka Bazında Detaylı Analiz</CardTitle>
               <CardDescription className="text-sm mt-1 text-gray-600 dark:text-gray-400">
@@ -760,7 +760,7 @@ export default function RaporlarPage() {
           </Card>
 
           {/* Banka Bazında Ortalama Faiz - Bar Chart */}
-          <Card className="bg-white dark:bg-[#2F3349] border border-gray-200 dark:border-0 overflow-hidden">
+          <Card className="bg-white dark:bg-black/20 border border-gray-200 dark:border-0 overflow-hidden">
             <CardHeader className="border-b border-gray-100 dark:border-white/5 pb-4">
               <div className="flex items-center justify-between">
                 <div>
@@ -798,7 +798,7 @@ export default function RaporlarPage() {
           {/* Widget Comparison Cards */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {/* Widget: En Yüksek Faiz - Area Chart */}
-            <Card className="bg-white dark:bg-[#2F3349] border border-gray-200 dark:border-0 overflow-hidden">
+            <Card className="bg-white dark:bg-black/20 border border-gray-200 dark:border-0 overflow-hidden">
               <CardContent className="p-6">
                 <div className="flex items-start justify-between mb-4">
                   <div>
@@ -829,7 +829,7 @@ export default function RaporlarPage() {
             </Card>
 
             {/* Widget: En Düşük Faiz - Bar Chart */}
-            <Card className="bg-white dark:bg-[#2F3349] border border-gray-200 dark:border-0 overflow-hidden">
+            <Card className="bg-white dark:bg-black/20 border border-gray-200 dark:border-0 overflow-hidden">
               <CardContent className="p-6">
                 <div className="flex items-start justify-between mb-4">
                   <div>
@@ -856,7 +856,7 @@ export default function RaporlarPage() {
             </Card>
 
             {/* Widget: Ortalama Faiz - Line Chart */}
-            <Card className="bg-white dark:bg-[#2F3349] border border-gray-200 dark:border-0 overflow-hidden">
+            <Card className="bg-white dark:bg-black/20 border border-gray-200 dark:border-0 overflow-hidden">
               <CardContent className="p-6">
                 <div className="flex items-start justify-between mb-4">
                   <div>
@@ -883,7 +883,7 @@ export default function RaporlarPage() {
           </div>
 
           {/* Kredi Türü Dağılımı - Donut Chart */}
-          <Card className="bg-white dark:bg-[#2F3349] border border-gray-200 dark:border-0 overflow-hidden">
+          <Card className="bg-white dark:bg-black/20 border border-gray-200 dark:border-0 overflow-hidden">
             <CardHeader className="border-b border-gray-100 dark:border-white/5 pb-4">
               <div className="flex items-center justify-between">
                 <div>
@@ -951,7 +951,7 @@ export default function RaporlarPage() {
           </Card>
 
           {/* Ödeme İlerlemesi - Area Chart */}
-          <Card className="bg-white dark:bg-[#2F3349] border border-gray-200 dark:border-0 overflow-hidden">
+          <Card className="bg-white dark:bg-black/20 border border-gray-200 dark:border-0 overflow-hidden">
             <CardHeader className="border-b border-gray-100 dark:border-white/5 pb-4">
               <div className="flex items-center justify-between">
                 <div>
@@ -1004,7 +1004,7 @@ export default function RaporlarPage() {
           {/* Widget Summary Cards */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
             {/* Widget 1: Toplam Kredi - Area Chart */}
-            <Card className="bg-white dark:bg-[#2F3349] border border-gray-200 dark:border-0 overflow-hidden">
+            <Card className="bg-white dark:bg-black/20 border border-gray-200 dark:border-0 overflow-hidden">
               <CardContent className="p-6">
                 <div className="flex items-start justify-between mb-4">
                   <div>
@@ -1039,7 +1039,7 @@ export default function RaporlarPage() {
             </Card>
 
             {/* Widget 2: Toplam Borç - Bar Chart */}
-            <Card className="bg-white dark:bg-[#2F3349] border border-gray-200 dark:border-0 overflow-hidden">
+            <Card className="bg-white dark:bg-black/20 border border-gray-200 dark:border-0 overflow-hidden">
               <CardContent className="p-6">
                 <div className="flex items-start justify-between mb-4">
                   <div>
@@ -1062,7 +1062,7 @@ export default function RaporlarPage() {
             </Card>
 
             {/* Widget 3: Aylık Ödeme - Line Chart */}
-            <Card className="bg-white dark:bg-[#2F3349] border border-gray-200 dark:border-0 overflow-hidden">
+            <Card className="bg-white dark:bg-black/20 border border-gray-200 dark:border-0 overflow-hidden">
               <CardContent className="p-6">
                 <div className="flex items-start justify-between mb-4">
                   <div>
@@ -1089,7 +1089,7 @@ export default function RaporlarPage() {
             </Card>
 
             {/* Widget 4: Ort. İlerleme - Progress Donut */}
-            <Card className="bg-white dark:bg-[#2F3349] border border-gray-200 dark:border-0 overflow-hidden">
+            <Card className="bg-white dark:bg-black/20 border border-gray-200 dark:border-0 overflow-hidden">
               <CardContent className="p-6">
                 <div className="flex items-start justify-between mb-4">
                   <div>
@@ -1124,7 +1124,7 @@ export default function RaporlarPage() {
           </div>
 
           {/* Banka Özeti Tablosu */}
-          <Card className="bg-white dark:bg-[#2F3349] border border-gray-200 dark:border-0">
+          <Card className="bg-white dark:bg-black/20 border border-gray-200 dark:border-0">
             <CardHeader className="border-b border-gray-100 dark:border-white/5 pb-4">
               <CardTitle className="text-xl text-gray-900 dark:text-white">Banka Bazında Özet</CardTitle>
             </CardHeader>
@@ -1168,7 +1168,7 @@ export default function RaporlarPage() {
           </Card>
 
           {/* Tahmini Bitiş */}
-          <Card className="bg-white dark:bg-[#2F3349] border border-gray-200 dark:border-0">
+          <Card className="bg-white dark:bg-black/20 border border-gray-200 dark:border-0">
             <CardHeader className="pb-3">
               <div className="flex items-center justify-between">
                 <CardTitle className="text-sm font-medium text-gray-600 dark:text-gray-400">Tahmini Bitiş</CardTitle>

@@ -283,7 +283,7 @@ export default function DashboardPage() {
         {/* 4 Metric Cards - Karciz Style (Exact Match) */}
         <div className="grid grid-cols-2 gap-4">
           {/* Card 1: Aktif Kredi - Line Chart */}
-          <Card className="bg-white dark:bg-[#2F3349] border border-gray-200 dark:border-0 overflow-hidden">
+          <Card className="bg-white dark:bg-black/20 border border-gray-200 dark:border-0 overflow-hidden">
             <CardContent className="p-6">
               <div className="flex items-start justify-between mb-4">
                 <div>
@@ -315,7 +315,7 @@ export default function DashboardPage() {
           </Card>
 
           {/* Card 2: Bu Ayki Ödeme - Bar Chart */}
-          <Card className="bg-white dark:bg-[#2F3349] border border-gray-200 dark:border-0 overflow-hidden">
+          <Card className="bg-white dark:bg-black/20 border border-gray-200 dark:border-0 overflow-hidden">
             <CardContent className="p-6">
               <div className="flex items-start justify-between mb-4">
                 <div>
@@ -341,7 +341,7 @@ export default function DashboardPage() {
           </Card>
 
           {/* Card 3: Kalan Ödemeler - Donut Chart */}
-          <Card className="bg-white dark:bg-[#2F3349] border border-gray-200 dark:border-0 overflow-hidden">
+          <Card className="bg-white dark:bg-black/20 border border-gray-200 dark:border-0 overflow-hidden">
             <CardContent className="p-6">
               <div className="flex items-start justify-between mb-4">
                 <div>
@@ -468,7 +468,7 @@ export default function DashboardPage() {
           </Card>
 
           {/* Card 4: Toplam Ödenen - Multi Line Chart */}
-          <Card className="bg-white dark:bg-[#2F3349] border border-gray-200 dark:border-0 overflow-hidden">
+          <Card className="bg-white dark:bg-black/20 border border-gray-200 dark:border-0 overflow-hidden">
             <CardContent className="p-6">
               <div className="flex items-start justify-between mb-4">
                 <div>
@@ -502,7 +502,7 @@ export default function DashboardPage() {
       </div>
 
       {/* Monthly Payment Trend Chart - Karciz Style */}
-      <Card className="bg-white dark:bg-[#2F3349] border border-gray-200 dark:border-0 overflow-hidden">
+      <Card className="bg-white dark:bg-black/20 border border-gray-200 dark:border-0 overflow-hidden">
         <CardHeader className="border-b border-gray-100 dark:border-white/5 pb-4">
           <div className="flex items-center justify-between">
             <div>
@@ -554,7 +554,7 @@ export default function DashboardPage() {
 
       {/* Latest Payments & Quick Stats - Karciz Style */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <Card className="bg-white dark:bg-[#2F3349] border border-gray-200 dark:border-0 overflow-hidden lg:col-span-2">
+        <Card className="bg-white dark:bg-black/20 border border-gray-200 dark:border-0 overflow-hidden lg:col-span-2">
           <CardHeader className="border-b border-gray-100 dark:border-white/5 pb-4">
             <div className="flex items-center justify-between">
               <CardTitle className="text-xl text-gray-900 dark:text-white">Yaklaşan Ödemeler</CardTitle>
@@ -602,7 +602,7 @@ export default function DashboardPage() {
           </CardContent>
         </Card>
 
-        <Card className="bg-white dark:bg-[#2F3349] border border-gray-200 dark:border-0 overflow-hidden">
+        <Card className="bg-white dark:bg-black/20 border border-gray-200 dark:border-0 overflow-hidden">
           <CardHeader className="border-b border-gray-100 dark:border-white/5 pb-4">
             <div className="flex items-center justify-between">
               <CardTitle className="text-xl text-gray-900 dark:text-white">Kredi Türü Dağılımı</CardTitle>
