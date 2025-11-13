@@ -35,7 +35,7 @@ interface PopulatedCredit extends Credit {
 
 const COLORS = {
   active: "#10B981", // emerald-500
-  paid_off: "#6B7280", // gray-500
+  closed: "#6B7280", // gray-500
   inactive: "#EF4444", // red-500
   overdue: "#F59E0B", // orange-500
 }
@@ -73,7 +73,7 @@ export default function RaporlarPage() {
 
   // Calculate statistics
   const activeCredits = credits.filter((c) => c.status === "active")
-  const paidCredits = credits.filter((c) => c.status === "paid_off")
+  const paidCredits = credits.filter((c) => c.status === "closed")
 
   // Bank distribution
   const bankStats = credits.reduce((acc, credit) => {
@@ -101,7 +101,7 @@ export default function RaporlarPage() {
   // Status distribution for pie chart
   const statusData = [
     { name: "Aktif", value: credits.filter((c) => c.status === "active").length, color: COLORS.active },
-    { name: "Tamamlanan", value: credits.filter((c) => c.status === "paid_off").length, color: COLORS.paid_off },
+    { name: "Tamamlanan", value: credits.filter((c) => c.status === "closed").length, color: COLORS.closed },
     { name: "Gecikmiş", value: credits.filter((c) => c.status === "overdue").length, color: COLORS.overdue },
   ].filter((item) => item.value > 0)
 
@@ -332,14 +332,14 @@ export default function RaporlarPage() {
                         className={`${
                           credit.status === "active"
                             ? "bg-gradient-to-r from-emerald-500 to-teal-600"
-                            : credit.status === "paid_off"
+                            : credit.status === "closed"
                             ? "bg-gray-500"
                             : "bg-orange-500"
                         } text-white border-0`}
                       >
                         {credit.status === "active"
                           ? "Aktif"
-                          : credit.status === "paid_off"
+                          : credit.status === "closed"
                           ? "Tamamlandı"
                           : "Gecikmiş"}
                       </Badge>

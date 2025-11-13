@@ -692,7 +692,7 @@ export default function DashboardPage() {
                     ></div>
                     <span className="text-sm text-gray-600 dark:text-gray-400">{type}</span>
                   </div>
-                  <span className="text-sm font-semibold text-gray-900 dark:text-white">{count}</span>
+                  <span className="text-sm font-semibold text-gray-900 dark:text-white">{count as number}</span>
                 </div>
               ))}
             </div>

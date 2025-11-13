@@ -51,7 +51,7 @@ const getStatusBadge = (status: string) => {
           Aktif
         </Badge>
       )
-    case "paid_off":
+    case "closed":
       return (
         <Badge className="bg-gray-500 text-white border-0">
           Kapalı
