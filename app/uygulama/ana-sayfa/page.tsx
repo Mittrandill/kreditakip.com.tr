@@ -457,7 +457,7 @@ export default function DashboardPage() {
                           <span className="text-xs text-gray-600 dark:text-gray-400 truncate">{bank}</span>
                         </div>
                         <span className="text-xs font-semibold text-gray-900 dark:text-white">
-                          {formatCurrency(amount)}
+                          {formatCurrency(amount as number)}
                         </span>
                       </div>
                     ))
