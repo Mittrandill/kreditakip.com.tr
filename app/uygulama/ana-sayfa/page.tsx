@@ -639,7 +639,7 @@ export default function DashboardPage() {
                           className="text-gray-200 dark:text-gray-800"
                         />
                         {types.map(([type, count], index) => {
-                          const percentage = count / total
+                          const percentage = (count as number) / total
                           const dashLength = percentage * 251.2
                           const color = ["text-emerald-500", "text-teal-500", "text-cyan-500", "text-blue-500"][index % 4]
                           const segment = (
