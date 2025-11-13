@@ -41,8 +41,8 @@ import { DonutChart, LineChart } from "@/components/charts"
 // Dynamic imports for charts
 const BarChart = dynamic(() => import("recharts").then((mod) => ({ default: mod.BarChart })), { ssr: false })
 const Bar = dynamic(() => import("recharts").then((mod) => ({ default: mod.Bar })), { ssr: false })
-const LineChart = dynamic(() => import("recharts").then((mod) => ({ default: mod.LineChart })), { ssr: false })
-const Line = dynamic(() => import("recharts").then((mod) => ({ default: mod.Line })), { ssr: false })
+const RechartsLineChart = dynamic(() => import("recharts").then((mod) => ({ default: mod.LineChart })), { ssr: false })
+const RechartsLine = dynamic(() => import("recharts").then((mod) => ({ default: mod.Line })), { ssr: false })
 const XAxis = dynamic(() => import("recharts").then((mod) => ({ default: mod.XAxis })), { ssr: false })
 const YAxis = dynamic(() => import("recharts").then((mod) => ({ default: mod.YAxis })), { ssr: false })
 const CartesianGrid = dynamic(() => import("recharts").then((mod) => ({ default: mod.CartesianGrid })), { ssr: false })
@@ -396,7 +396,7 @@ export default function DashboardPage() {
                       }, {} as Record<string, number>)
 
                       const entries = Object.entries(bankPayments).slice(0, 4)
-                      const total = entries.reduce((sum, [, amount]) => sum + amount, 0) || 1
+                      const total = entries.reduce((sum, [, amount]) => sum + (amount as number), 0) || 1
                       const colors = ['#10B981', '#14B8A6', '#06B6D4', '#3B82F6']
                       let currentOffset = 0
 
@@ -404,7 +404,7 @@ export default function DashboardPage() {
                         <>
                           <circle cx="50" cy="50" r="40" fill="none" stroke="currentColor" strokeWidth="12" className="text-gray-200 dark:text-gray-800" />
                           {entries.map(([bank, amount], index) => {
-                            const percentage = amount / total
+                            const percentage = (amount as number) / total
                             const dashLength = percentage * 251
                             const circle = (
                               <circle
@@ -482,7 +482,7 @@ export default function DashboardPage() {
               </div>
               <div className="h-24">
                 <ResponsiveContainer width="100%" height="100%">
-                  <LineChart data={[
+                  <RechartsLineChart data={[
                     { a: 20, b: 35, c: 25 },
                     { a: 30, b: 25, c: 35 },
                     { a: 25, b: 40, c: 30 },
@@ -490,10 +490,10 @@ export default function DashboardPage() {
                     { a: 35, b: 45, c: 40 },
                     { a: 50, b: 35, c: 50 }
                   ]}>
-                    <Line type="monotone" dataKey="a" stroke="#14B8A6" strokeWidth={2} dot={false} />
-                    <Line type="monotone" dataKey="b" stroke="#F59E0B" strokeWidth={2} dot={false} />
-                    <Line type="monotone" dataKey="c" stroke="#3B82F6" strokeWidth={2} dot={false} />
-                  </LineChart>
+                    <RechartsLine type="monotone" dataKey="a" stroke="#14B8A6" strokeWidth={2} dot={false} />
+                    <RechartsLine type="monotone" dataKey="b" stroke="#F59E0B" strokeWidth={2} dot={false} />
+                    <RechartsLine type="monotone" dataKey="c" stroke="#3B82F6" strokeWidth={2} dot={false} />
+                  </RechartsLineChart>
                 </ResponsiveContainer>
               </div>
             </CardContent>
@@ -546,7 +546,7 @@ export default function DashboardPage() {
                 formatter={(value: any) => formatCurrency(value)}
               />
               <Area type="monotone" dataKey="odeme" stroke="#14B8A6" strokeWidth={2} fillOpacity={1} fill="url(#colorOdeme)" />
-              <Line type="monotone" dataKey="hedef" stroke="#F59E0B" strokeWidth={2} strokeDasharray="5 5" dot={false} />
+              <RechartsLine type="monotone" dataKey="hedef" stroke="#F59E0B" strokeWidth={2} strokeDasharray="5 5" dot={false} />
             </AreaChart>
           </ResponsiveContainer>
         </CardContent>
@@ -827,64 +827,8 @@ export default function DashboardPage() {
         </CardContent>
       </Card>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <Card className="border-gray-200 dark:border-gray-800">
-          <CardHeader>
-            <CardTitle className="text-xl">Banka Bazlı Borç Dağılımı</CardTitle>
-            <CardDescription>Kredilerinizin banka bazında dağılımı</CardDescription>
-          </CardHeader>
-          <CardContent>
-            {credits.length > 0 ? (
-              <DonutChart
-                data={{
-                  labels: Array.from(new Set(credits.map((c) => c.banks?.name || "Bilinmeyen"))),
-                  series: Array.from(new Set(credits.map((c) => c.banks?.name || "Bilinmeyen"))).map((bankName) =>
-                    credits
-                      .filter((c) => (c.banks?.name || "Bilinmeyen") === bankName)
-                      .reduce((sum, c) => sum + c.remaining_debt, 0)
-                  ),
-                }}
-                title="Toplam Borç"
-                height={320}
-              />
-            ) : (
-              <div className="flex flex-col items-center justify-center h-[320px] text-gray-400">
-                <PieChart className="h-16 w-16 mb-3 text-gray-300" />
-                <p>Henüz kredi bulunmamaktadır</p>
-              </div>
-            )}
-          </CardContent>
-        </Card>
 
-        <Card className="border-gray-200 dark:border-gray-800">
-          <CardHeader>
-            <CardTitle className="text-xl">Aylık Ödeme Trendi</CardTitle>
-            <CardDescription>Son 6 ayın ödeme akışı</CardDescription>
-          </CardHeader>
-          <CardContent>
-            {credits.length > 0 ? (
-              <LineChart
-                data={{
-                  categories: ["Oca", "Şub", "Mar", "Nis", "May", "Haz"],
-                  series: [
-                    {
-                      name: "Aylık Ödeme",
-                      data: Array(6).fill(monthlyPayment),
-                    },
-                  ],
-                }}
-                height={320}
-                showMarkers={true}
-              />
-            ) : (
-              <div className="flex flex-col items-center justify-center h-[320px] text-gray-400">
-                <TrendingUp className="h-16 w-16 mb-3 text-gray-300" />
-                <p>Henüz ödeme verisi bulunmamaktadır</p>
-              </div>
-            )}
-          </CardContent>
-        </Card>
-      </div>
+  
     </div>
   )
 }
