@@ -13,8 +13,9 @@ import { useAuth } from "@/hooks/use-auth"
 import { useSubscription } from "@/hooks/use-subscription"
 import { useRouter } from "next/navigation"
 import { getCredits } from "@/lib/api/credits"
-import type { Credit, Bank, CreditType } from "@/lib/types"
-import { formatCurrency, formatPercent } from "@/lib/format"
+import { getAllPayments } from "@/lib/api/payments"
+import type { Credit, Bank, CreditType, PaymentPlan } from "@/lib/types"
+import { formatCurrency, formatPercent, formatDate } from "@/lib/format"
 import dynamic from "next/dynamic"
 import PDFReportModal from "@/components/pdf-report-modal"
 
@@ -37,6 +38,12 @@ interface PopulatedCredit extends Credit {
   credit_types: Pick<CreditType, "id" | "name"> | null
 }
 
+interface PaymentWithCredit extends PaymentPlan {
+  credits: Credit & {
+    banks: { name: string; logo_url: string | null }
+  }
+}
+
 const CHART_COLORS = ["#10B981", "#14B8A6", "#06B6D4", "#3B82F6", "#8B5CF6", "#EC4899", "#F59E0B", "#EF4444"]
 
 export default function RaporlarPage() {
@@ -44,6 +51,7 @@ export default function RaporlarPage() {
   const { isPremium, loading: subscriptionLoading } = useSubscription()
   const router = useRouter()
   const [credits, setCredits] = useState<PopulatedCredit[]>([])
+  const [payments, setPayments] = useState<PaymentWithCredit[]>([])
   const [loading, setLoading] = useState(true)
   const [selectedPeriod, setSelectedPeriod] = useState("6months")
   const [selectedBank, setSelectedBank] = useState<string>("all")
@@ -61,8 +69,12 @@ export default function RaporlarPage() {
 
       try {
         setLoading(true)
-        const creditsData = await getCredits(user.id)
+        const [creditsData, paymentsData] = await Promise.all([
+          getCredits(user.id),
+          getAllPayments(user.id, 12, 12),
+        ])
         setCredits((creditsData as PopulatedCredit[]) || [])
+        setPayments((paymentsData as PaymentWithCredit[]) || [])
       } catch (error) {
         console.error("Error fetching data:", error)
       } finally {
@@ -192,7 +204,7 @@ export default function RaporlarPage() {
       {/* Tabs - Settings Style */}
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
         <div className="border-b border-gray-100 dark:border-white/10 bg-gray-50/50 dark:bg-emerald-900/10">
-          <TabsList className="grid grid-cols-4 bg-transparent h-auto p-2 gap-2">
+          <TabsList className="grid grid-cols-5 bg-transparent h-auto p-2 gap-2">
             <TabsTrigger
               value="overview"
               className="flex items-center gap-2 py-3 px-4 data-[state=active]:text-emerald-600 dark:data-[state=active]:text-emerald-400 data-[state=active]:bg-white dark:data-[state=active]:bg-emerald-900/20 data-[state=active]:shadow-sm rounded-xl transition-all duration-200 hover:bg-gray-100 dark:hover:bg-white/10 dark:text-white/60"
@@ -206,6 +218,13 @@ export default function RaporlarPage() {
             >
               <Building2 className="h-4 w-4" />
               <span className="font-medium">Banka</span>
+            </TabsTrigger>
+            <TabsTrigger
+              value="payments"
+              className="flex items-center gap-2 py-3 px-4 data-[state=active]:text-emerald-600 dark:data-[state=active]:text-emerald-400 data-[state=active]:bg-white dark:data-[state=active]:bg-emerald-900/20 data-[state=active]:shadow-sm rounded-xl transition-all duration-200 hover:bg-gray-100 dark:hover:bg-white/10 dark:text-white/60"
+            >
+              <Calendar className="h-4 w-4" />
+              <span className="font-medium">Ödeme Analizi</span>
             </TabsTrigger>
             <TabsTrigger
               value="comparison"
@@ -787,6 +806,242 @@ export default function RaporlarPage() {
                   <Bar dataKey="faiz" fill="#14B8A6" radius={[8, 8, 0, 0]} />
                 </BarChart>
               </ResponsiveContainer>
+            </CardContent>
+          </Card>
+        </div>
+      )}
+
+      {/* Tab Content - Ödeme Analizi */}
+      {activeTab === "payments" && (
+        <div className="space-y-6">
+          <div className="flex items-center justify-between">
+            <h3 className="text-xl font-semibold dark:text-white">Ödeme Analizi</h3>
+            <div className="text-sm text-gray-500 dark:text-white/60">
+              Son güncelleme: {new Date().toLocaleDateString("tr-TR")}
+            </div>
+          </div>
+
+          {/* Yaklaşan Ödemeler */}
+          {(() => {
+            const currentDate = new Date()
+            const upcomingPayments = payments.filter((p) => {
+              const paymentDate = new Date(p.due_date)
+              const daysDiff = Math.ceil((paymentDate.getTime() - currentDate.getTime()) / (1000 * 60 * 60 * 24))
+              return daysDiff >= 0 && daysDiff <= 7 && p.status === "pending"
+            })
+            const totalUpcomingAmount = upcomingPayments.reduce((sum, p) => sum + p.total_payment, 0)
+
+            return upcomingPayments.length > 0 ? (
+              <Card className="bg-gradient-to-br from-purple-600 to-purple-700 text-white border-transparent shadow-lg">
+                <CardHeader>
+                  <CardTitle className="text-white flex items-center gap-2">
+                    <Calendar className="h-5 w-5" />
+                    Yaklaşan Ödemeler (7 Gün İçinde)
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="flex items-center justify-between mb-4">
+                    <div className="text-2xl font-bold text-white">{formatCurrency(totalUpcomingAmount)}</div>
+                    <div className="text-sm text-purple-200">{upcomingPayments.length} taksit</div>
+                  </div>
+                  <div className="space-y-2 max-h-32 overflow-y-auto">
+                    {upcomingPayments.slice(0, 5).map((payment) => (
+                      <div
+                        key={payment.id}
+                        className="flex items-center justify-between text-sm bg-purple-500/20 p-2 rounded-lg"
+                      >
+                        <div className="flex items-center gap-2">
+                          <BankLogo
+                            bankName={payment.credits.banks.name}
+                            logoUrl={payment.credits.banks.logo_url ?? undefined}
+                            size="sm"
+                          />
+                          <span className="font-medium text-white">{payment.credits.banks.name}</span>
+                        </div>
+                        <div className="text-right">
+                          <div className="font-semibold text-white">{formatCurrency(payment.total_payment)}</div>
+                          <div className="text-xs text-purple-200">{formatDate(payment.due_date)}</div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
+            ) : null
+          })()}
+
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            {/* Banka Bazında Dağılım */}
+            <Card className="dark:bg-black/20 dark:border-white/10">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2 dark:text-white">
+                  Banka Bazında Ödeme Dağılımı
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  {(() => {
+                    const bankDistribution = payments.reduce(
+                      (acc, payment) => {
+                        const bankName = payment.credits.banks.name
+                        if (!acc[bankName]) {
+                          acc[bankName] = { total: 0, count: 0, pending: 0, paid: 0 }
+                        }
+                        acc[bankName].total += payment.total_payment
+                        acc[bankName].count += 1
+                        if (payment.status === "pending") {
+                          acc[bankName].pending += payment.total_payment
+                        } else if (payment.status === "paid") {
+                          acc[bankName].paid += payment.total_payment
+                        }
+                        return acc
+                      },
+                      {} as Record<string, { total: number; count: number; pending: number; paid: number }>,
+                    )
+
+                    return Object.entries(bankDistribution)
+                      .sort(([, a], [, b]) => b.total - a.total)
+                      .slice(0, 5)
+                      .map(([bankName, data]) => {
+                        const bankPayments = payments.filter((payment) => payment.credits.banks.name === bankName)
+
+                        return (
+                          <div key={bankName} className="space-y-2">
+                            <div className="flex items-center justify-between">
+                              <div className="flex items-center gap-2">
+                                <BankLogo bankName={bankName} logoUrl={bankPayments[0]?.credits.banks.logo_url ?? undefined} size="sm" />
+                                <span className="font-medium text-sm dark:text-white">{bankName}</span>
+                              </div>
+                              <span className="text-sm font-semibold dark:text-white">{formatCurrency(data.total)}</span>
+                            </div>
+                            <div className="w-full bg-gray-200 dark:bg-emerald-900/20 rounded-full h-2">
+                              <div
+                                className="bg-gradient-to-r from-blue-500 to-blue-600 h-2 rounded-full transition-all duration-300"
+                                style={{
+                                  width: `${Math.max(5, (data.total / Math.max(...Object.values(bankDistribution).map((d) => d.total))) * 100)}%`,
+                                }}
+                              ></div>
+                            </div>
+                            <div className="flex justify-between text-xs text-gray-600 dark:text-white/60">
+                              <span>{data.count} taksit</span>
+                              <span>Bekleyen: {formatCurrency(data.pending)}</span>
+                            </div>
+                          </div>
+                        )
+                      })
+                  })()}
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Aylık Ödeme Trendi */}
+            <Card className="dark:bg-black/20 dark:border-white/10">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2 dark:text-white">
+                  Aylık Ödeme Trendi
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  {(() => {
+                    const currentMonth = new Date().getMonth()
+                    const currentYear = new Date().getFullYear()
+                    const monthlyTrend = []
+                    for (let i = 5; i >= 0; i--) {
+                      const targetDate = new Date(currentYear, currentMonth - i, 1)
+                      const monthPayments = payments.filter((p) => {
+                        const paymentDate = new Date(p.due_date)
+                        return paymentDate.getMonth() === targetDate.getMonth() && paymentDate.getFullYear() === targetDate.getFullYear()
+                      })
+
+                      const monthNames = ["Oca", "Şub", "Mar", "Nis", "May", "Haz", "Tem", "Ağu", "Eyl", "Eki", "Kas", "Ara"]
+                      monthlyTrend.push({
+                        month: monthNames[targetDate.getMonth()],
+                        total: monthPayments.reduce((sum, p) => sum + p.total_payment, 0),
+                        paid: monthPayments.filter((p) => p.status === "paid").reduce((sum, p) => sum + p.total_payment, 0),
+                        pending: monthPayments.filter((p) => p.status === "pending").reduce((sum, p) => sum + p.total_payment, 0),
+                      })
+                    }
+
+                    return monthlyTrend.map((month, index) => (
+                      <div key={index} className="space-y-2">
+                        <div className="flex items-center justify-between">
+                          <span className="font-medium text-sm dark:text-white">
+                            {month.month} {currentYear}
+                          </span>
+                          <span className="text-sm font-semibold dark:text-white">{formatCurrency(month.total)}</span>
+                        </div>
+                        <div className="w-full bg-gray-200 dark:bg-emerald-900/20 rounded-full h-2">
+                          <div className="flex h-2 rounded-full overflow-hidden">
+                            <div
+                              className="bg-emerald-500 transition-all duration-300"
+                              style={{
+                                width: `${month.total > 0 ? Math.max(5, (month.paid / month.total) * 100) : 0}%`,
+                              }}
+                            ></div>
+                            <div
+                              className="bg-orange-400 transition-all duration-300"
+                              style={{
+                                width: `${month.total > 0 ? Math.max(5, (month.pending / month.total) * 100) : 0}%`,
+                              }}
+                            ></div>
+                          </div>
+                        </div>
+                        <div className="flex justify-between text-xs text-gray-600 dark:text-white/60">
+                          <span className="flex items-center gap-1">
+                            <div className="w-2 h-2 bg-emerald-500 rounded-full"></div>
+                            Ödenen: {formatCurrency(month.paid)}
+                          </span>
+                          <span className="flex items-center gap-1">
+                            <div className="w-2 h-2 bg-orange-400 rounded-full"></div>
+                            Bekleyen: {formatCurrency(month.pending)}
+                          </span>
+                        </div>
+                      </div>
+                    ))
+                  })()}
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+
+          {/* Yıl Özeti */}
+          <Card className="dark:bg-black/20 dark:border-white/10">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2 dark:text-white">
+                {new Date().getFullYear()} Yılı Özeti
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              {(() => {
+                const currentYear = new Date().getFullYear()
+                const paidThisYear = payments.filter((p) => {
+                  const paymentDate = new Date(p.due_date)
+                  return paymentDate.getFullYear() === currentYear && p.status === "paid"
+                })
+                const totalPaidThisYear = paidThisYear.reduce((sum, p) => sum + p.total_payment, 0)
+
+                return (
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <div className="text-center">
+                      <div className="text-2xl font-bold text-emerald-600 dark:text-emerald-400">{paidThisYear.length}</div>
+                      <p className="text-sm text-gray-600 dark:text-white/60">Ödenen Taksit</p>
+                    </div>
+                    <div className="text-center">
+                      <div className="text-2xl font-bold text-emerald-600 dark:text-emerald-400">
+                        {formatCurrency(totalPaidThisYear)}
+                      </div>
+                      <p className="text-sm text-gray-600 dark:text-white/60">Toplam Ödenen</p>
+                    </div>
+                    <div className="text-center">
+                      <div className="text-2xl font-bold text-blue-600 dark:text-blue-400">
+                        {payments.filter((p) => p.status === "pending").length}
+                      </div>
+                      <p className="text-sm text-gray-600 dark:text-white/60">Kalan Taksit</p>
+                    </div>
+                  </div>
+                )
+              })()}
             </CardContent>
           </Card>
         </div>
