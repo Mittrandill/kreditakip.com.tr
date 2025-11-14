@@ -430,16 +430,16 @@ export default function KredilerPage() {
                       {sortOrder === "asc" ? "Artan" : "Azalan"})
                     </Button>
                   </DropdownMenuTrigger>
-                  <DropdownMenuContent align="start" className="dark:bg-black/10 dark:border-white/10">
+                  <DropdownMenuContent align="start" className="bg-white dark:bg-gradient-to-br dark:from-emerald-900 dark:to-teal-900 border-gray-200 dark:border-emerald-700 backdrop-blur-sm">
                     <DropdownMenuItem
                       onClick={() => handleSort("kalanBorc")}
-                      className="dark:text-white dark:hover:bg-white/10"
+                      className="text-gray-900 dark:text-white dark:hover:bg-emerald-800/50 cursor-pointer"
                     >
                       Kalan Borca Göre
                     </DropdownMenuItem>
                     <DropdownMenuItem
                       onClick={() => handleSort("sonOdemeTarihi")}
-                      className="dark:text-white dark:hover:bg-white/10"
+                      className="text-gray-900 dark:text-white dark:hover:bg-emerald-800/50 cursor-pointer"
                     >
                       Son Ödeme Tarihine Göre
                     </DropdownMenuItem>
@@ -595,18 +595,18 @@ export default function KredilerPage() {
                                 <MoreHorizontal className="h-4 w-4" />
                               </Button>
                             </DropdownMenuTrigger>
-                            <DropdownMenuContent align="end" className="dark:bg-black/10 dark:border-white/10">
+                            <DropdownMenuContent align="end" className="bg-white dark:bg-gradient-to-br dark:from-emerald-900 dark:to-teal-900 border-gray-200 dark:border-emerald-700 backdrop-blur-sm">
                               <DropdownMenuItem
                                 onClick={() => router.push(`/uygulama/kredi-detay/${kredi.id}/odeme-plani`)}
-                                className="dark:text-white dark:hover:bg-white/10"
+                                className="text-gray-900 dark:text-white dark:hover:bg-emerald-800/50 cursor-pointer"
                               >
                                 Ödeme Planı
                               </DropdownMenuItem>
-                              <DropdownMenuItem className="dark:text-white dark:hover:bg-white/10">
+                              <DropdownMenuItem className="text-gray-900 dark:text-white dark:hover:bg-emerald-800/50 cursor-pointer">
                                 Rapor Al
                               </DropdownMenuItem>
                               <DropdownMenuItem
-                                className="text-red-600 dark:text-red-400"
+                                className="text-red-600 dark:text-red-400 dark:hover:bg-emerald-800/50 cursor-pointer"
                                 onClick={() => handleDeleteCredit(kredi.id)}
                               >
                                 <Trash2 className="mr-2 h-4 w-4" />
@@ -755,23 +755,23 @@ export default function KredilerPage() {
                                   <span className="sr-only">Actions</span>
                                 </Button>
                               </DropdownMenuTrigger>
-                              <DropdownMenuContent align="end" className="dark:bg-black/10 dark:border-white/10">
+                              <DropdownMenuContent align="end" className="bg-white dark:bg-gradient-to-br dark:from-emerald-900 dark:to-teal-900 border-gray-200 dark:border-emerald-700 backdrop-blur-sm">
                                 <DropdownMenuItem
                                   onClick={() => router.push(`/uygulama/kredi-detay/${kredi.id}`)}
-                                  className="dark:text-white dark:hover:bg-white/10"
+                                  className="text-gray-900 dark:text-white dark:hover:bg-emerald-800/50 cursor-pointer"
                                 >
                                   <Eye className="mr-2 h-4 w-4" />
                                   Detayları Gör
                                 </DropdownMenuItem>
                                 <DropdownMenuItem
                                   onClick={() => router.push(`/uygulama/kredi-duzenle/${kredi.id}`)}
-                                  className="dark:text-white dark:hover:bg-white/10"
+                                  className="text-gray-900 dark:text-white dark:hover:bg-emerald-800/50 cursor-pointer"
                                 >
                                   <Edit className="mr-2 h-4 w-4" />
                                   Düzenle
                                 </DropdownMenuItem>
                                 <DropdownMenuItem
-                                  className="text-red-600 dark:text-red-400 dark:hover:bg-white/10"
+                                  className="text-red-600 dark:text-red-400 dark:hover:bg-emerald-800/50 cursor-pointer"
                                   onClick={() => handleDeleteCredit(kredi.id)}
                                 >
                                   <Trash2 className="mr-2 h-4 w-4" />

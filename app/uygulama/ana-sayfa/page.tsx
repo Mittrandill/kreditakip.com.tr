@@ -367,7 +367,7 @@ export default function DashboardPage() {
                   <p className="text-sm text-emerald-600 dark:text-emerald-400">Kalan Ödeme</p>
                 </div>
                 <select
-                  className="text-xs bg-transparent text-gray-600 dark:text-gray-400 border-0 cursor-pointer focus:outline-none"
+                  className="text-xs bg-gray-50 dark:bg-gray-800 text-gray-700 dark:text-gray-300 border border-gray-200 dark:border-gray-700 rounded px-2 py-1 cursor-pointer focus:outline-none focus:ring-2 focus:ring-emerald-500"
                   value={paymentFilter}
                   onChange={(e) => setPaymentFilter(e.target.value as 'week' | 'month')}
                 >
@@ -483,7 +483,7 @@ export default function DashboardPage() {
                   </p>
                 </div>
                 <select
-                  className="text-xs bg-transparent text-gray-600 dark:text-gray-400 border-0 cursor-pointer focus:outline-none"
+                  className="text-xs bg-gray-50 dark:bg-gray-800 text-gray-700 dark:text-gray-300 border border-gray-200 dark:border-gray-700 rounded px-2 py-1 cursor-pointer focus:outline-none focus:ring-2 focus:ring-emerald-500"
                   value={monthlyPaymentPeriod}
                   onChange={(e) => setMonthlyPaymentPeriod(e.target.value as 'monthly' | 'yearly')}
                 >
@@ -534,7 +534,7 @@ export default function DashboardPage() {
               </CardDescription>
             </div>
             <select
-              className="text-sm bg-gray-100 dark:bg-white/5 border-0 text-gray-700 dark:text-gray-300 px-3 py-1.5 rounded cursor-pointer focus:outline-none"
+              className="text-sm bg-gray-50 dark:bg-gray-800 text-gray-700 dark:text-gray-300 border border-gray-200 dark:border-gray-700 px-3 py-1.5 rounded cursor-pointer focus:outline-none focus:ring-2 focus:ring-emerald-500"
               value={trendPeriod}
               onChange={(e) => setTrendPeriod(e.target.value as '6months' | '12months')}
             >
@@ -604,7 +604,7 @@ export default function DashboardPage() {
             <div className="flex items-center justify-between">
               <CardTitle className="text-xl text-gray-900 dark:text-white">Yaklaşan Ödemeler</CardTitle>
               <select
-                className="text-sm bg-gray-100 dark:bg-white/5 border-0 text-gray-700 dark:text-gray-300 px-3 py-1.5 rounded cursor-pointer focus:outline-none"
+                className="text-sm bg-gray-50 dark:bg-gray-800 text-gray-700 dark:text-gray-300 border border-gray-200 dark:border-gray-700 px-3 py-1.5 rounded cursor-pointer focus:outline-none focus:ring-2 focus:ring-emerald-500"
                 value={upcomingPaymentsFilter}
                 onChange={(e) => setUpcomingPaymentsFilter(e.target.value as 'week' | 'month' | 'all')}
               >
@@ -671,7 +671,7 @@ export default function DashboardPage() {
           <CardHeader className="border-b border-gray-100 dark:border-white/5 pb-4">
             <div className="flex items-center justify-between">
               <CardTitle className="text-xl text-gray-900 dark:text-white">Kredi Türü Dağılımı</CardTitle>
-              <select className="text-sm bg-gray-100 dark:bg-white/5 border-0 text-gray-700 dark:text-gray-300 px-3 py-1.5 rounded cursor-pointer focus:outline-none">
+              <select className="text-sm bg-gray-50 dark:bg-gray-800 text-gray-700 dark:text-gray-300 border border-gray-200 dark:border-gray-700 px-3 py-1.5 rounded cursor-pointer focus:outline-none focus:ring-2 focus:ring-emerald-500">
                 <option>Tümü</option>
               </select>
             </div>
