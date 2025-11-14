@@ -68,78 +68,87 @@ export async function sendNewSubscriptionNotification(data: SubscriptionEmailDat
 }
 
 function generateSubscriptionEmailHTML(data: SubscriptionEmailData): string {
+  const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://kreditakip.com.tr"
   return `
 <!DOCTYPE html>
 <html lang="tr">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Yeni Abonelik</title>
+    <title>Yeni Premium Abonelik</title>
     <style>
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
         }
+
         body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
             line-height: 1.6;
             color: #ffffff;
-            background: linear-gradient(135deg, #151515 0%, #1a1a1a 100%);
-            min-height: 100vh;
-            padding: 20px;
+            background-color: #0f172a;
+            margin: 0;
+            padding: 0;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
         }
-        .email-container {
+
+        .wrapper {
+            width: 100%;
+            table-layout: fixed;
+            background-color: #0f172a;
+            padding: 60px 0;
+        }
+
+        .main {
+            width: 100%;
             max-width: 600px;
             margin: 0 auto;
-            background: linear-gradient(135deg, #1a1a1a 0%, #151515 100%);
-            border-radius: 20px;
+            background-color: #1e293b;
+            border-radius: 16px;
             overflow: hidden;
-            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
-            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+            border: 1px solid #334155;
         }
 
         .header {
-            background: linear-gradient(135deg, #059669 0%, #10b981 100%);
-            padding: 40px 30px;
+            background: linear-gradient(135deg, #10b981 0%, #14b8a6 50%, #0d9488 100%);
+            padding: 48px 40px;
             text-align: center;
             position: relative;
             overflow: hidden;
         }
+
         .header::before {
             content: '';
             position: absolute;
             top: -50%;
-            left: -50%;
+            right: -50%;
             width: 200%;
             height: 200%;
             background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%);
             animation: shimmer 3s ease-in-out infinite;
         }
+
         @keyframes shimmer {
-            0%, 100% { transform: rotate(0deg); }
-            50% { transform: rotate(180deg); }
+            0%, 100% { transform: translateX(-50%) translateY(-50%); }
+            50% { transform: translateX(-30%) translateY(-30%); }
         }
-        .logo-container {
+
+        .logo-wrapper {
             position: relative;
-            z-index: 2;
-            margin-bottom: 10px;
+            z-index: 1;
+            margin-bottom: 20px;
         }
+
         .logo {
-            width: 250px;
+            max-width: 150px;
             height: auto;
-            display: block;
-            margin: 0 auto;
+            filter: brightness(0) invert(1);
         }
-        .brand-tagline {
-            font-size: 14px;
-            color: rgba(255, 255, 255, 0.9);
-            font-weight: 500;
-            margin-top: 10px;
-            position: relative;
-            z-index: 2;
-        }
-        .welcome-badge {
+
+        .header-badge {
             display: inline-block;
             background: rgba(255, 255, 255, 0.2);
             padding: 8px 20px;
@@ -150,171 +159,223 @@ function generateSubscriptionEmailHTML(data: SubscriptionEmailData): string {
             backdrop-filter: blur(10px);
             border: 1px solid rgba(255, 255, 255, 0.3);
             position: relative;
-            z-index: 2;
+            z-index: 1;
+        }
+
+        .header-title {
+            font-size: 28px;
+            font-weight: 700;
+            color: #ffffff;
+            letter-spacing: -0.5px;
+            margin: 20px 0 0 0;
+            position: relative;
+            z-index: 1;
+        }
+
+        .header-subtitle {
+            font-size: 16px;
+            color: rgba(255, 255, 255, 0.9);
+            margin-top: 8px;
+            font-weight: 400;
+            position: relative;
+            z-index: 1;
         }
 
         .content {
-            padding: 50px 40px;
-            background: #151515;
-            position: relative;
+            padding: 48px 40px;
+            background-color: #1e293b;
         }
-        .content::before {
+
+        .message {
+            font-size: 16px;
+            color: #e2e8f0;
+            margin-bottom: 32px;
+            line-height: 1.7;
+            text-align: center;
+        }
+
+        .details-card {
+            background: linear-gradient(145deg, #334155 0%, #475569 100%);
+            border: 1px solid #475569;
+            border-radius: 12px;
+            padding: 32px;
+            margin-bottom: 32px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .details-card::before {
             content: '';
             position: absolute;
             top: 0;
             left: 0;
             right: 0;
-            height: 1px;
-            background: linear-gradient(90deg, transparent 0%, #10b981 50%, transparent 100%);
+            height: 4px;
+            background: linear-gradient(90deg, #10b981 0%, #14b8a6 50%, #0d9488 100%);
         }
 
-        .title {
-            font-size: 28px;
-            font-weight: 700;
-            color: #ffffff;
-            margin-bottom: 25px;
-            text-align: center;
-            line-height: 1.3;
-        }
-        .title .highlight {
-            color: #10b981;
-            background: linear-gradient(135deg, #059669, #10b981);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-        }
-
-        .message {
-            font-size: 16px;
-            color: rgba(255, 255, 255, 0.85);
-            margin-bottom: 35px;
-            line-height: 1.7;
-            text-align: center;
-        }
-
-        .subscription-details {
-            background: linear-gradient(135deg, rgba(16, 185, 129, 0.1) 0%, rgba(5, 150, 105, 0.05) 100%);
-            border: 1px solid rgba(16, 185, 129, 0.2);
-            border-radius: 15px;
-            padding: 30px;
-            margin: 35px 0;
-        }
         .detail-row {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            padding: 15px 0;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 16px 0;
+            border-bottom: 1px solid #475569;
         }
+
         .detail-row:last-child {
             border-bottom: none;
         }
+
         .detail-label {
             font-size: 14px;
-            color: rgba(255, 255, 255, 0.7);
+            color: #94a3b8;
+            font-weight: 500;
         }
+
         .detail-value {
             font-size: 16px;
             font-weight: 600;
-            color: #10b981;
+            color: #ffffff;
+            text-align: right;
         }
+
         .amount-highlight {
             font-size: 24px;
             font-weight: 700;
+            color: #10b981;
         }
 
         .footer {
-            background: #0a0a0a;
-            padding: 40px 30px;
+            padding: 40px;
+            background: #0f172a;
+            border-top: 1px solid #334155;
             text-align: center;
-            border-top: 1px solid rgba(255, 255, 255, 0.1);
-        }
-        .footer-brand {
-            font-size: 18px;
-            font-weight: 700;
-            color: #10b981;
-            margin-bottom: 10px;
-        }
-        .footer-note {
-            font-size: 12px;
-            color: rgba(255, 255, 255, 0.5);
-            line-height: 1.5;
         }
 
-        @media (max-width: 600px) {
-            .email-container {
-                margin: 10px;
-                border-radius: 15px;
+        .footer-logo {
+            width: 80px;
+            height: auto;
+            margin: 0 auto 20px;
+            opacity: 0.8;
+        }
+
+        .footer-text {
+            font-size: 12px;
+            color: #64748b;
+            line-height: 1.6;
+            margin-bottom: 16px;
+        }
+
+        .copyright {
+            font-size: 11px;
+            color: #475569;
+            margin-top: 20px;
+            padding-top: 20px;
+            border-top: 1px solid #334155;
+        }
+
+        @media screen and (max-width: 600px) {
+            .wrapper {
+                padding: 20px 0;
             }
+
+            .main {
+                border-radius: 0;
+            }
+
             .header {
-                padding: 30px 20px;
+                padding: 32px 24px;
             }
-            .content {
-                padding: 30px 25px;
-            }
-            .logo {
-                width: 200px;
-            }
-            .title {
+
+            .header-title {
                 font-size: 24px;
+            }
+
+            .content {
+                padding: 32px 24px;
+            }
+
+            .details-card {
+                padding: 24px;
+            }
+
+            .footer {
+                padding: 32px 24px;
+            }
+
+            .detail-row {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 8px;
+            }
+
+            .detail-value {
+                text-align: left;
             }
         }
     </style>
 </head>
 <body>
-    <div class="email-container">
-        <div class="header">
-            <div class="logo-container">
-                <img src="https://oymjjceuiotxfbpwsdym.supabase.co/storage/v1/object/public/Logo/logo-white.png" alt="Kredi Takip Logo" class="logo" />
-                <div class="brand-tagline">Kredi Yönetiminin Geleceği</div>
-                <div class="welcome-badge">🎉 Yeni Abonelik!</div>
-            </div>
-        </div>
+    <div class="wrapper">
+        <table class="main" cellpadding="0" cellspacing="0" role="presentation">
+            <tr>
+                <td>
+                    <div class="header">
+                        <div class="logo-wrapper">
+                            <img src="${baseUrl}/images/logo-white.png" alt="Kredi Takip" class="logo">
+                        </div>
+                        <div class="header-badge">🎉 Yeni Abonelik!</div>
+                        <h1 class="header-title">Premium Abonelik Başlatıldı</h1>
+                        <p class="header-subtitle">Yeni bir kullanıcı premium üyelik satın aldı</p>
+                    </div>
 
-        <div class="content">
-            <h1 class="title">
-                Yeni <span class="highlight">Premium Abonelik</span> Başlatıldı
-            </h1>
+                    <div class="content">
+                        <p class="message">
+                            Harika haber! Platform'a yeni bir premium üye katıldı.
+                        </p>
 
-            <div class="message">
-                Harika haber! Yeni bir kullanıcı premium üyelik satın aldı.
-            </div>
+                        <div class="details-card">
+                            <div class="detail-row">
+                                <div class="detail-label">👤 Kullanıcı Adı</div>
+                                <div class="detail-value">${data.userName}</div>
+                            </div>
+                            <div class="detail-row">
+                                <div class="detail-label">📧 E-posta</div>
+                                <div class="detail-value">${data.userEmail}</div>
+                            </div>
+                            <div class="detail-row">
+                                <div class="detail-label">💎 Plan</div>
+                                <div class="detail-value">${data.planName}</div>
+                            </div>
+                            <div class="detail-row">
+                                <div class="detail-label">💰 Tutar</div>
+                                <div class="detail-value amount-highlight">${data.amount.toFixed(2)} ${data.currency}</div>
+                            </div>
+                            <div class="detail-row">
+                                <div class="detail-label">📅 Başlangıç</div>
+                                <div class="detail-value">${new Date(data.startDate).toLocaleDateString('tr-TR')}</div>
+                            </div>
+                            <div class="detail-row">
+                                <div class="detail-label">⏰ Bitiş</div>
+                                <div class="detail-value">${new Date(data.expiresAt).toLocaleDateString('tr-TR')}</div>
+                            </div>
+                        </div>
+                    </div>
 
-            <div class="subscription-details">
-                <div class="detail-row">
-                    <div class="detail-label">👤 Kullanıcı Adı</div>
-                    <div class="detail-value">${data.userName}</div>
-                </div>
-                <div class="detail-row">
-                    <div class="detail-label">📧 E-posta</div>
-                    <div class="detail-value">${data.userEmail}</div>
-                </div>
-                <div class="detail-row">
-                    <div class="detail-label">💎 Plan</div>
-                    <div class="detail-value">${data.planName}</div>
-                </div>
-                <div class="detail-row">
-                    <div class="detail-label">💰 Tutar</div>
-                    <div class="detail-value amount-highlight">${data.amount.toFixed(2)} ${data.currency}</div>
-                </div>
-                <div class="detail-row">
-                    <div class="detail-label">📅 Başlangıç</div>
-                    <div class="detail-value">${new Date(data.startDate).toLocaleDateString('tr-TR')}</div>
-                </div>
-                <div class="detail-row">
-                    <div class="detail-label">⏰ Bitiş</div>
-                    <div class="detail-value">${new Date(data.expiresAt).toLocaleDateString('tr-TR')}</div>
-                </div>
-            </div>
-        </div>
+                    <div class="footer">
+                        <img src="${baseUrl}/images/logo-white.png" alt="Kredi Takip" class="footer-logo">
 
-        <div class="footer">
-            <div class="footer-brand">Kredi Takip</div>
-            <div class="footer-note">
-                Bu e-posta otomatik olarak gönderilmiştir.<br>
-                © ${new Date().getFullYear()} Kredi Takip - Tüm hakları saklıdır.
-            </div>
-        </div>
+                        <p class="footer-text">
+                            Bu e-posta otomatik olarak gönderilmiştir.
+                        </p>
+
+                        <div class="copyright">
+                            © ${new Date().getFullYear()} kreditakip.com.tr • Tüm hakları saklıdır
+                        </div>
+                    </div>
+                </td>
+            </tr>
+        </table>
     </div>
 </body>
 </html>

@@ -114,49 +114,319 @@ export async function POST(request: NextRequest) {
             <html lang="tr">
             <head>
               <meta charset="UTF-8">
+              <meta name="viewport" content="width=device-width, initial-scale=1.0">
+              <title>Kredi Takip Bültenine Hoş Geldiniz!</title>
               <style>
-                body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; margin: 0; padding: 0; }
-                .container { max-width: 600px; margin: 0 auto; }
-                .header { background: linear-gradient(135deg, #10b981 0%, #14b8a6 100%); color: white; padding: 40px 20px; text-align: center; }
-                .content { background: #ffffff; padding: 40px 20px; }
-                .button { display: inline-block; padding: 15px 30px; background: linear-gradient(135deg, #10b981 0%, #14b8a6 100%); color: white; text-decoration: none; border-radius: 8px; font-weight: bold; margin: 20px 0; }
-                .features { background: #f8fafc; padding: 20px; border-radius: 8px; margin: 20px 0; }
-                .feature-item { margin: 15px 0; padding-left: 30px; position: relative; }
-                .feature-item:before { content: "✓"; position: absolute; left: 0; color: #10b981; font-weight: bold; font-size: 20px; }
-                .footer { background: #1e293b; color: #94a3b8; padding: 30px 20px; text-align: center; font-size: 12px; }
+                * {
+                  margin: 0;
+                  padding: 0;
+                  box-sizing: border-box;
+                }
+
+                body {
+                  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+                  line-height: 1.6;
+                  color: #ffffff;
+                  background-color: #0f172a;
+                  margin: 0;
+                  padding: 0;
+                  -webkit-font-smoothing: antialiased;
+                  -moz-osx-font-smoothing: grayscale;
+                }
+
+                .wrapper {
+                  width: 100%;
+                  table-layout: fixed;
+                  background-color: #0f172a;
+                  padding: 60px 0;
+                }
+
+                .main {
+                  width: 100%;
+                  max-width: 600px;
+                  margin: 0 auto;
+                  background-color: #1e293b;
+                  border-radius: 16px;
+                  overflow: hidden;
+                  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+                  border: 1px solid #334155;
+                }
+
+                .header {
+                  background: linear-gradient(135deg, #10b981 0%, #14b8a6 50%, #0d9488 100%);
+                  padding: 48px 40px;
+                  text-align: center;
+                  position: relative;
+                  overflow: hidden;
+                }
+
+                .header::before {
+                  content: '';
+                  position: absolute;
+                  top: -50%;
+                  right: -50%;
+                  width: 200%;
+                  height: 200%;
+                  background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%);
+                  animation: shimmer 3s ease-in-out infinite;
+                }
+
+                @keyframes shimmer {
+                  0%, 100% { transform: translateX(-50%) translateY(-50%); }
+                  50% { transform: translateX(-30%) translateY(-30%); }
+                }
+
+                .logo-wrapper {
+                  position: relative;
+                  z-index: 1;
+                  margin-bottom: 20px;
+                }
+
+                .logo {
+                  max-width: 150px;
+                  height: auto;
+                  filter: brightness(0) invert(1);
+                }
+
+                .header-title {
+                  font-size: 28px;
+                  font-weight: 700;
+                  color: #ffffff;
+                  letter-spacing: -0.5px;
+                  margin: 0;
+                  position: relative;
+                  z-index: 1;
+                }
+
+                .header-subtitle {
+                  font-size: 16px;
+                  color: rgba(255, 255, 255, 0.9);
+                  margin-top: 8px;
+                  font-weight: 400;
+                  position: relative;
+                  z-index: 1;
+                }
+
+                .content {
+                  padding: 48px 40px;
+                  background-color: #1e293b;
+                }
+
+                .greeting {
+                  font-size: 18px;
+                  color: #ffffff;
+                  margin-bottom: 32px;
+                  font-weight: 400;
+                }
+
+                .message {
+                  font-size: 16px;
+                  color: #e2e8f0;
+                  margin-bottom: 32px;
+                  line-height: 1.7;
+                }
+
+                .features-card {
+                  background: linear-gradient(145deg, #334155 0%, #475569 100%);
+                  border: 1px solid #475569;
+                  border-radius: 12px;
+                  padding: 32px;
+                  margin-bottom: 32px;
+                  position: relative;
+                  overflow: hidden;
+                }
+
+                .features-card::before {
+                  content: '';
+                  position: absolute;
+                  top: 0;
+                  left: 0;
+                  right: 0;
+                  height: 4px;
+                  background: linear-gradient(90deg, #10b981 0%, #14b8a6 50%, #0d9488 100%);
+                }
+
+                .features-title {
+                  font-size: 20px;
+                  font-weight: 600;
+                  color: #ffffff;
+                  margin-bottom: 24px;
+                }
+
+                .feature-item {
+                  margin: 16px 0;
+                  padding-left: 32px;
+                  position: relative;
+                  color: #e2e8f0;
+                  font-size: 15px;
+                }
+
+                .feature-item:before {
+                  content: "✓";
+                  position: absolute;
+                  left: 0;
+                  color: #10b981;
+                  font-weight: bold;
+                  font-size: 18px;
+                  width: 24px;
+                  height: 24px;
+                  background: rgba(16, 185, 129, 0.2);
+                  border-radius: 50%;
+                  display: flex;
+                  align-items: center;
+                  justify-content: center;
+                }
+
+                .cta-wrapper {
+                  text-align: center;
+                  margin: 40px 0 32px;
+                }
+
+                .cta-button {
+                  display: inline-block;
+                  padding: 16px 40px;
+                  background: linear-gradient(135deg, #10b981 0%, #0d9488 100%);
+                  color: #ffffff !important;
+                  text-decoration: none;
+                  border-radius: 12px;
+                  font-weight: 600;
+                  font-size: 15px;
+                  letter-spacing: 0.3px;
+                  box-shadow: 0 4px 14px 0 rgba(16, 185, 129, 0.25);
+                  transition: all 0.3s ease;
+                }
+
+                .cta-button:hover {
+                  transform: translateY(-2px);
+                  box-shadow: 0 6px 20px 0 rgba(16, 185, 129, 0.35);
+                }
+
+                .note {
+                  font-size: 13px;
+                  color: #94a3b8;
+                  text-align: center;
+                  margin-top: 32px;
+                  padding-top: 32px;
+                  border-top: 1px solid #334155;
+                }
+
+                .footer {
+                  padding: 40px;
+                  background: #0f172a;
+                  border-top: 1px solid #334155;
+                  text-align: center;
+                }
+
+                .footer-logo {
+                  width: 80px;
+                  height: auto;
+                  margin: 0 auto 20px;
+                  opacity: 0.8;
+                }
+
+                .footer-text {
+                  font-size: 12px;
+                  color: #64748b;
+                  line-height: 1.6;
+                  margin-bottom: 16px;
+                }
+
+                .copyright {
+                  font-size: 11px;
+                  color: #475569;
+                  margin-top: 20px;
+                  padding-top: 20px;
+                  border-top: 1px solid #334155;
+                }
+
+                @media screen and (max-width: 600px) {
+                  .wrapper {
+                    padding: 20px 0;
+                  }
+
+                  .main {
+                    border-radius: 0;
+                  }
+
+                  .header {
+                    padding: 32px 24px;
+                  }
+
+                  .header-title {
+                    font-size: 24px;
+                  }
+
+                  .content {
+                    padding: 32px 24px;
+                  }
+
+                  .features-card {
+                    padding: 24px;
+                  }
+
+                  .footer {
+                    padding: 32px 24px;
+                  }
+                }
               </style>
             </head>
             <body>
-              <div class="container">
-                <div class="header">
-                  <h1>🎉 Hoş Geldiniz!</h1>
-                  <p>Kredi Takip bültenine abone olduğunuz için teşekkür ederiz</p>
-                </div>
-                <div class="content">
-                  <h2>Merhaba,</h2>
-                  <p>Kredi Takip ailesine katıldığınız için çok mutluyuz! Bundan sonra size özel içerikler, finans ipuçları ve platform güncellemeleri hakkında bilgi alacaksınız.</p>
-                  
-                  <div class="features">
-                    <h3>Bültenimizde neler var?</h3>
-                    <div class="feature-item">Haftalık kredi analizi raporları</div>
-                    <div class="feature-item">Tasarruf ipuçları ve öneriler</div>
-                    <div class="feature-item">Yeni özellik duyuruları</div>
-                    <div class="feature-item">Finans dünyasından haberler</div>
-                    <div class="feature-item">Özel kampanya ve fırsatlar</div>
-                  </div>
+              <div class="wrapper">
+                <table class="main" cellpadding="0" cellspacing="0" role="presentation">
+                  <tr>
+                    <td>
+                      <div class="header">
+                        <div class="logo-wrapper">
+                          <img src="${process.env.NEXT_PUBLIC_SITE_URL || "https://kreditakip.com.tr"}/images/logo-white.png" alt="Kredi Takip" class="logo">
+                        </div>
+                        <h1 class="header-title">🎉 Hoş Geldiniz!</h1>
+                        <p class="header-subtitle">Kredi Takip bültenine abone olduğunuz için teşekkür ederiz</p>
+                      </div>
 
-                  <p style="text-align: center;">
-                    <a href="https://kreditakip.com.tr/uygulama" class="button">Hemen Başlayın</a>
-                  </p>
+                      <div class="content">
+                        <p class="greeting">
+                          Merhaba,
+                        </p>
 
-                  <p style="color: #64748b; font-size: 14px; margin-top: 30px;">
-                    Artık bülten almak istemiyorsanız, e-postalarımızın altındaki bağlantıdan aboneliğinizi iptal edebilirsiniz.
-                  </p>
-                </div>
-                <div class="footer">
-                  <p>© ${new Date().getFullYear()} kreditakip.com.tr • Tüm hakları saklıdır</p>
-                  <p>Bu e-posta ${email} adresine gönderilmiştir</p>
-                </div>
+                        <p class="message">
+                          Kredi Takip ailesine katıldığınız için çok mutluyuz! Bundan sonra size özel içerikler, finans ipuçları ve platform güncellemeleri hakkında bilgi alacaksınız.
+                        </p>
+
+                        <div class="features-card">
+                          <h3 class="features-title">Bültenimizde neler var?</h3>
+                          <div class="feature-item">Haftalık kredi analizi raporları</div>
+                          <div class="feature-item">Tasarruf ipuçları ve öneriler</div>
+                          <div class="feature-item">Yeni özellik duyuruları</div>
+                          <div class="feature-item">Finans dünyasından haberler</div>
+                          <div class="feature-item">Özel kampanya ve fırsatlar</div>
+                        </div>
+
+                        <div class="cta-wrapper">
+                          <a href="https://kreditakip.com.tr/uygulama" class="cta-button">
+                            Hemen Başlayın
+                          </a>
+                        </div>
+
+                        <p class="note">
+                          Artık bülten almak istemiyorsanız, e-postalarımızın altındaki bağlantıdan aboneliğinizi iptal edebilirsiniz.
+                        </p>
+                      </div>
+
+                      <div class="footer">
+                        <img src="${process.env.NEXT_PUBLIC_SITE_URL || "https://kreditakip.com.tr"}/images/logo-white.png" alt="Kredi Takip" class="footer-logo">
+
+                        <p class="footer-text">
+                          Bu e-posta ${email} adresine gönderilmiştir.<br>
+                          Bu e-posta otomatik olarak gönderilmiştir.
+                        </p>
+
+                        <div class="copyright">
+                          © ${new Date().getFullYear()} kreditakip.com.tr • Tüm hakları saklıdır
+                        </div>
+                      </div>
+                    </td>
+                  </tr>
+                </table>
               </div>
             </body>
             </html>
