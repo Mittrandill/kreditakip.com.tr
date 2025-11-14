@@ -991,40 +991,78 @@ function PaymentAnalysis({ payments, credits }: { payments: PaymentWithCredit[];
       </div>
 
 
-      {/* Yaklaşan Ödemeler */}
+      {/* Yaklaşan Ödemeler - Dashboard Aktif Krediler Stili */}
       {upcomingPayments.length > 0 && (
-        <Card className="bg-gradient-to-br from-purple-600 to-purple-700 text-white border-transparent shadow-lg">
-          <CardHeader>
-            <CardTitle className="text-white flex items-center gap-2">
-              <Clock className="h-5 w-5" />
-              Yaklaşan Ödemeler (7 Gün İçinde)
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="flex items-center justify-between mb-4">
-              <div className="text-2xl font-bold text-white">{formatCurrency(totalUpcomingAmount)}</div>
-              <div className="text-sm text-purple-200">{upcomingPayments.length} taksit</div>
-            </div>
-            <div className="space-y-2 max-h-32 overflow-y-auto">
-              {upcomingPayments.slice(0, 5).map((payment) => (
-                <div
-                  key={payment.id}
-                  className="flex items-center justify-between text-sm bg-purple-500/20 p-2 rounded-lg"
-                >
-                  <div className="flex items-center gap-2">
-                    <BankLogo
-                      bankName={payment.credits.banks.name}
-                      logoUrl={payment.credits.banks.logo_url ?? undefined}
-                      size="sm"
-                    />
-                    <span className="font-medium text-white">{payment.credits.banks.name}</span>
-                  </div>
-                  <div className="text-right">
-                    <div className="font-semibold text-white">{formatCurrency(payment.total_payment)}</div>
-                    <div className="text-xs text-purple-200">{formatDate(payment.due_date)}</div>
-                  </div>
+        <Card className="bg-white dark:bg-black/20 border border-gray-200 dark:border-white/10 shadow-sm">
+          <CardHeader className="border-b border-gray-100 dark:border-white/5 pb-4">
+            <div className="flex items-center justify-between">
+              <CardTitle className="flex items-center gap-2 text-xl text-gray-900 dark:text-white">
+                <Clock className="h-5 w-5 text-emerald-600 dark:text-emerald-400" />
+                Yaklaşan Ödemeler
+              </CardTitle>
+              <div className="flex items-center gap-2">
+                <div className="px-3 py-1 bg-orange-100 dark:bg-orange-900/30 text-orange-800 dark:text-orange-300 text-sm font-medium rounded-full">
+                  7 Gün İçinde
                 </div>
-              ))}
+                <div className="px-3 py-1 bg-emerald-100 dark:bg-emerald-900/30 text-emerald-800 dark:text-emerald-300 text-sm font-medium rounded-full">
+                  {upcomingPayments.length} Taksit
+                </div>
+              </div>
+            </div>
+            <div className="mt-3 p-4 bg-gradient-to-r from-emerald-50 to-teal-50 dark:from-emerald-900/20 dark:to-teal-900/20 rounded-lg border border-emerald-200 dark:border-emerald-800">
+              <div className="flex items-center justify-between">
+                <span className="text-sm text-gray-600 dark:text-gray-300">Toplam Ödeme</span>
+                <span className="text-2xl font-bold text-emerald-600 dark:text-emerald-400">{formatCurrency(totalUpcomingAmount)}</span>
+              </div>
+            </div>
+          </CardHeader>
+          <CardContent className="pt-6">
+            <div className="space-y-3">
+              {upcomingPayments.slice(0, 5).map((payment) => {
+                const daysLeft = Math.ceil((new Date(payment.due_date).getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24))
+                const isUrgent = daysLeft <= 3
+
+                return (
+                  <div
+                    key={payment.id}
+                    className={`flex items-center justify-between p-4 rounded-xl border transition-all duration-200 hover:shadow-md ${
+                      isUrgent
+                        ? "bg-red-50 dark:bg-red-900/10 border-red-200 dark:border-red-800"
+                        : "bg-gray-50 dark:bg-black/10 border-gray-200 dark:border-white/10"
+                    }`}
+                  >
+                    <div className="flex items-center gap-3 flex-1">
+                      <div className="relative">
+                        <BankLogo
+                          bankName={payment.credits.banks.name}
+                          logoUrl={payment.credits.banks.logo_url ?? undefined}
+                          size="md"
+                        />
+                        {isUrgent && (
+                          <div className="absolute -top-1 -right-1 w-3 h-3 bg-red-500 rounded-full border-2 border-white dark:border-gray-900"></div>
+                        )}
+                      </div>
+                      <div className="flex-1">
+                        <div className="flex items-center gap-2">
+                          <span className="font-semibold text-gray-900 dark:text-white">{payment.credits.banks.name}</span>
+                          {isUrgent && (
+                            <span className="px-2 py-0.5 bg-red-500 text-white text-xs font-medium rounded-full">
+                              ACİL
+                            </span>
+                          )}
+                        </div>
+                        <p className="text-sm text-gray-600 dark:text-gray-400 mt-0.5">
+                          {daysLeft === 0 ? "Bugün" : daysLeft === 1 ? "Yarın" : `${daysLeft} gün kaldı`}
+                        </p>
+                      </div>
+                    </div>
+                    <div className="text-right">
+                      <div className="text-lg font-bold text-gray-900 dark:text-white">{formatCurrency(payment.total_payment)}</div>
+                      <div className="text-sm text-gray-500 dark:text-gray-400">{formatDate(payment.due_date)}</div>
+                    </div>
+                  </div>
+                )
+              })}
             </div>
           </CardContent>
         </Card>
@@ -1674,7 +1712,7 @@ export default function OdemePlaniPage() {
       <div className="bg-white dark:bg-black/20 rounded-2xl shadow-sm border border-gray-100 dark:border-white/10 overflow-hidden">
         <Tabs value={selectedTab} onValueChange={setSelectedTab} className="w-full">
           <div className="border-b border-gray-100 dark:border-white/10 bg-gray-50/50 dark:bg-emerald-900/10">
-            <TabsList className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 bg-transparent h-auto p-2 gap-2">
+            <TabsList className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 bg-transparent h-auto p-2 gap-2">
               <TabsTrigger
                 value="takvim"
                 className="flex items-center gap-2 py-3 px-4 data-[state=active]:text-emerald-600 dark:data-[state=active]:text-emerald-400 data-[state=active]:bg-white dark:data-[state=active]:bg-emerald-900/20 data-[state=active]:shadow-sm rounded-xl transition-all duration-200 hover:bg-gray-100 dark:hover:bg-white/10 dark:text-white/60"
@@ -1688,13 +1726,6 @@ export default function OdemePlaniPage() {
               >
                 <CreditCard className="h-4 w-4" />
                 <span className="hidden sm:inline font-medium">Liste</span>
-              </TabsTrigger>
-              <TabsTrigger
-                value="analiz"
-                className="flex items-center gap-2 py-3 px-4 data-[state=active]:text-emerald-600 dark:data-[state=active]:text-emerald-400 data-[state=active]:bg-white dark:data-[state=active]:bg-emerald-900/20 data-[state=active]:shadow-sm rounded-xl transition-all duration-200 hover:bg-gray-100 dark:hover:bg-white/10 dark:text-white/60"
-              >
-                <TrendingUp className="h-4 w-4" />
-                <span className="hidden sm:inline font-medium">Analiz</span>
               </TabsTrigger>
               <TabsTrigger
                 value="hatirlatici"
@@ -1712,9 +1743,6 @@ export default function OdemePlaniPage() {
             </TabsContent>
             <TabsContent value="liste">
               <PaymentsList payments={allPayments} setAllPayments={setAllPayments} />
-            </TabsContent>
-            <TabsContent value="analiz">
-              <PaymentAnalysis payments={allPayments} credits={credits} />
             </TabsContent>
             <TabsContent value="hatirlatici">
               <ReminderSettings payments={allPayments} />
