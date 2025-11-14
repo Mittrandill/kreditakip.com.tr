@@ -75,7 +75,7 @@ export default function Footer() {
           {/* Company Info */}
           <div className="lg:col-span-1 space-y-6">
             <Link href="/" className="flex items-center">
-              <Image src="/logo-white.svg" alt="KrediTakip" width={180} height={40} className="h-8 w-auto" />
+              <Image src="/logo-white.svg" alt="Kredi Takip" width={180} height={40} className="h-8 w-auto" />
             </Link>
             <p className="text-white/70 leading-relaxed">
               OCR teknolojisi ile kredi yönetiminin geleceğini bugün yaşayın. Finansal özgürlüğünüze giden yolda

@@ -377,7 +377,7 @@ export async function POST(request: NextRequest) {
                     <td>
                       <div class="header">
                         <div class="logo-wrapper">
-                          <img src="${process.env.NEXT_PUBLIC_SITE_URL || "https://kreditakip.com.tr"}/images/logo-white.png" alt="Kredi Takip" class="logo">
+                          <img src="https://oymjjceuiotxfbpwsdym.supabase.co/storage/v1/object/public/Logo/logo-white.png" alt="Kredi Takip" class="logo">
                         </div>
                         <h1 class="header-title">🎉 Hoş Geldiniz!</h1>
                         <p class="header-subtitle">Kredi Takip bültenine abone olduğunuz için teşekkür ederiz</p>
@@ -413,7 +413,7 @@ export async function POST(request: NextRequest) {
                       </div>
 
                       <div class="footer">
-                        <img src="${process.env.NEXT_PUBLIC_SITE_URL || "https://kreditakip.com.tr"}/images/logo-white.png" alt="Kredi Takip" class="footer-logo">
+                        <img src="https://oymjjceuiotxfbpwsdym.supabase.co/storage/v1/object/public/Logo/logo-white.png" alt="Kredi Takip" class="footer-logo">
 
                         <p class="footer-text">
                           Bu e-posta ${email} adresine gönderilmiştir.<br>

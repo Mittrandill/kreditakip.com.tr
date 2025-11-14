@@ -346,7 +346,7 @@ async function createEmailTemplate(firstName, bankName, installmentNumber, amoun
       <div class="wrapper">
         <div class="main">
           <div class="header">
-            <img src="${process.env.NEXT_PUBLIC_SITE_URL || "https://kreditakip.com.tr"}/images/logo-white.png" alt="Kredi Takip" class="logo">
+            <img src="https://oymjjceuiotxfbpwsdym.supabase.co/storage/v1/object/public/Logo/logo-white.png" alt="Kredi Takip" class="logo">
             <h1 class="header-title">${isReminder ? "Ödeme Hatırlatması" : "Gecikmiş Ödeme"}</h1>
             <p class="header-subtitle">Finansal takibiniz bizimle güvende</p>
           </div>
@@ -390,7 +390,7 @@ async function createEmailTemplate(firstName, bankName, installmentNumber, amoun
           </div>
           
           <div class="footer">
-            <img src="${process.env.NEXT_PUBLIC_SITE_URL || "https://kreditakip.com.tr"}/images/logo-white.png" alt="Kredi Takip" class="footer-logo">
+            <img src="https://oymjjceuiotxfbpwsdym.supabase.co/storage/v1/object/public/Logo/logo-white.png" alt="Kredi Takip" class="footer-logo">
             
             <p class="footer-text">
               Bu e-posta otomatik olarak gönderilmiştir.<br>

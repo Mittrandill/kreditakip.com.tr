@@ -54,7 +54,7 @@ export default function FeaturesPage() {
               Finansal Kontrolü Elinize Alın
             </h1>
             <p className="text-xl text-white/70 max-w-4xl mx-auto mb-8 leading-relaxed">
-              KrediTakip'in sunduğu gelişmiş özellikler ile kredilerinizi yönetin,
+              Kredi Takip'in sunduğu gelişmiş özellikler ile kredilerinizi yönetin,
               akıllı planlar oluşturun ve finansal hedeflerinize ulaşın.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
@@ -650,7 +650,7 @@ export default function FeaturesPage() {
                   Tüm Özellikleri <span className="text-emerald-400">Keşfedin</span>
                 </h2>
                 <p className="text-xl text-white/80 mb-8 max-w-2xl mx-auto">
-                  KrediTakip'in güçlü özelliklerini deneyimleyin ve finansal yönetiminizi bir üst seviyeye taşıyın
+                  Kredi Takip'in güçlü özelliklerini deneyimleyin ve finansal yönetiminizi bir üst seviyeye taşıyın
                 </p>
                 <div className="flex flex-col sm:flex-row gap-4 justify-center">
                   <Link href="/giris">

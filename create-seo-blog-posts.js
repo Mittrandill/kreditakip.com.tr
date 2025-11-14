@@ -37,7 +37,7 @@ Düzenli ödeme alışkanlığı, kredi notunuzu olumlu etkiler. İyi bir kredi 
 
 ### 1. Dijital Kredi Takip Uygulamaları
 
-Modern teknoloji sayesinde, tüm kredilerinizi tek bir platformdan yönetebilirsiniz. **KrediTakip.com.tr** gibi özel geliştirilmiş uygulamalar:
+Modern teknoloji sayesinde, tüm kredilerinizi tek bir platformdan yönetebilirsiniz. **kreditakip.com.tr** gibi özel geliştirilmiş uygulamalar:
 
 - Tüm kredilerinizi tek platformda toplama
 - Otomatik ödeme hatırlatmaları
@@ -117,7 +117,7 @@ Değişken faizli kredilerde, faiz oranı değişikliklerini takip edin ve büt�
 
 ## Dijital Çözümün Avantajları
 
-KrediTakip.com.tr gibi özel platformlar kullanmanın faydaları:
+kreditakip.com.tr gibi özel platformlar kullanmanın faydaları:
 
 ### Zaman Tasarrufu
 - Tek tıkla tüm kredilerinizi görüntüleyin
@@ -150,7 +150,7 @@ Kredi taksit takibi, finansal sağlığınız için kritik öneme sahiptir. Mode
 3. Düzenli olarak finansal durumunuzu gözden geçirin
 4. Erken ödeme fırsatlarını değerlendirin
 
-[KrediTakip.com.tr](https://kreditakip.com.tr)'yi **ücretsiz** deneyerek, kredi yönetimini kolaylaştırın ve finansal hedeflerinize daha hızlı ulaşın.`,
+[kreditakip.com.tr](https://kreditakip.com.tr)'yi **ücretsiz** deneyerek, kredi yönetimini kolaylaştırın ve finansal hedeflerinize daha hızlı ulaşın.`,
     status: "published",
     category_id: null, // Will be set based on existing categories
   },
@@ -318,9 +318,9 @@ Her bankanın farklı uygulaması olabilir:
 ❌ Başka yüksek faizli borçlar var (önce onlar)
 ❌ Likiditeye ihtiyacınız olabilir
 
-## KrediTakip ile Erken Ödeme Simülasyonu
+## kreditakip ile Erken Ödeme Simülasyonu
 
-[KrediTakip.com.tr](https://kreditakip.com.tr) platformunda:
+[kreditakip.com.tr](https://kreditakip.com.tr) platformunda:
 
 ### Erken Ödeme Hesaplayıcı
 - Farklı senaryoları karşılaştırın
@@ -346,7 +346,7 @@ Erken kredi kapatma, doğru koşullarda **çok mantıklı** bir finansal karard�
 **Altın kural:**
 > "Acil durum fonunuz varsa ve kredi faizi yüksekse, erken ödeme neredeyse her zaman mantıklıdır."
 
-KrediTakip.com.tr'nin **ücretsiz erken ödeme hesaplayıcısını** kullanarak, kendi durumunuz için en optimal stratejiyi belirleyin.`,
+kreditakip.com.tr'nin **ücretsiz erken ödeme hesaplayıcısını** kullanarak, kendi durumunuz için en optimal stratejiyi belirleyin.`,
     status: "published",
     category_id: null,
   },
@@ -562,7 +562,7 @@ Ek gelir kaynakları:
 
 ### Dijital Takip Platformları
 
-**KrediTakip.com.tr gibi platformların avantajları:**
+**kreditakip.com.tr gibi platformların avantajları:**
 
 **Tek Panel Yönetimi:**
 - Tüm krediler bir arada
@@ -624,7 +624,7 @@ Bir krediyi kapatıp hemen yeni kredi almak, ilerlemeyi sıfırlar.
 
 **Hafta 1-2:**
 - [ ] Tüm kredileri listeleyin
-- [ ] KrediTakip hesabı açın
+- [ ] Kredi Takip hesabı açın
 - [ ] Aylık bütçe oluşturun
 
 **Hafta 3-4:**
@@ -664,7 +664,7 @@ Birden fazla kredi yönetimi, **disiplin ve strateji** gerektirir. Ana prensiple
 
 **✓ Yeni borç almayın:** Borçsuz yaşamı hedefleyin
 
-[KrediTakip.com.tr](https://kreditakip.com.tr) ile kredi yönetiminizi profesyonelleştirin. **Ücretsiz hesap** açarak, kişiselleştirilmiş öneriler alın ve borçsuz geleceğe daha hızlı ulaşın.`,
+[Kredi Takip.com.tr](https://kreditakip.com.tr) ile kredi yönetiminizi profesyonelleştirin. **Ücretsiz hesap** açarak, kişiselleştirilmiş öneriler alın ve borçsuz geleceğe daha hızlı ulaşın.`,
     status: "published",
     category_id: null,
   },

@@ -65,6 +65,7 @@ import { useToast } from "@/hooks/use-toast"
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 import { supabase } from "@/lib/supabase"
 import { useUserTheme } from "@/components/user-theme-provider"
+import { UserInvoices } from "@/components/user-invoices"
 
 export default function AyarlarPage() {
   const { user, profile: initialProfile, loading: authLoading } = useAuth()
@@ -657,23 +658,25 @@ export default function AyarlarPage() {
               </p>
             </div>
             <div className="flex flex-col sm:flex-row gap-3">
-              <Button
-                variant="outline"
-                size="lg"
-                className="bg-transparent border-white/20 text-white hover:bg-white/10 hover:border-transparent hover:text-white dark:bg-transparent dark:border-white/20 dark:text-white dark:hover:bg-white/10 dark:hover:border-transparent dark:hover:text-white"
-                onClick={() => {
-                  if (activeTab === "profile") handleSaveProfile()
-                  if (activeTab === "financial") handleSaveFinancialProfile()
-                }}
-                disabled={isSaving || isSavingFinancial}
-              >
-                {isSaving || isSavingFinancial ? (
-                  <Loader2 className="mr-2 h-5 w-5 animate-spin" />
-                ) : (
-                  <Save className="h-5 w-5 mr-2" />
-                )}
-                {isSaving || isSavingFinancial ? "Kaydediliyor..." : "Değişiklikleri Kaydet"}
-              </Button>
+              {(activeTab === "profile" || activeTab === "financial") && (
+                <Button
+                  variant="outline"
+                  size="lg"
+                  className="bg-transparent border-white/20 text-white hover:bg-white/10 hover:border-transparent hover:text-white dark:bg-transparent dark:border-white/20 dark:text-white dark:hover:bg-white/10 dark:hover:border-transparent dark:hover:text-white"
+                  onClick={() => {
+                    if (activeTab === "profile") handleSaveProfile()
+                    if (activeTab === "financial") handleSaveFinancialProfile()
+                  }}
+                  disabled={isSaving || isSavingFinancial}
+                >
+                  {isSaving || isSavingFinancial ? (
+                    <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+                  ) : (
+                    <Save className="h-5 w-5 mr-2" />
+                  )}
+                  {isSaving || isSavingFinancial ? "Kaydediliyor..." : "Değişiklikleri Kaydet"}
+                </Button>
+              )}
             </div>
           </div>
         </CardContent>
@@ -683,13 +686,20 @@ export default function AyarlarPage() {
       <div className="bg-white dark:bg-black/20 rounded-2xl shadow-sm border border-gray-100 dark:border-white/10 overflow-hidden">
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
           <div className="border-b border-gray-100 dark:border-white/10 bg-gray-50/50 dark:bg-emerald-900/10">
-            <TabsList className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-4 bg-transparent h-auto p-2 gap-2">
+            <TabsList className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 bg-transparent h-auto p-2 gap-2">
               <TabsTrigger
                 value="profile"
                 className="flex items-center gap-2 py-3 px-4 data-[state=active]:text-emerald-600 dark:data-[state=active]:text-emerald-400 data-[state=active]:bg-white dark:data-[state=active]:bg-emerald-900/20 data-[state=active]:shadow-sm rounded-xl transition-all duration-200 hover:bg-gray-100 dark:hover:bg-white/10 dark:text-white/60"
               >
                 <User className="h-4 w-4" />
                 <span className="font-medium">Profil</span>
+              </TabsTrigger>
+              <TabsTrigger
+                value="billing"
+                className="flex items-center gap-2 py-3 px-4 data-[state=active]:text-emerald-600 dark:data-[state=active]:text-emerald-400 data-[state=active]:bg-white dark:data-[state=active]:bg-emerald-900/20 data-[state=active]:shadow-sm rounded-xl transition-all duration-200 hover:bg-gray-100 dark:hover:bg-white/10 dark:text-white/60"
+              >
+                <FileText className="h-4 w-4" />
+                <span className="font-medium">Fatura</span>
               </TabsTrigger>
               <TabsTrigger
                 value="financial"
@@ -839,6 +849,10 @@ export default function AyarlarPage() {
                   </CardContent>
                 </Card>
               </div>
+            </TabsContent>
+
+            <TabsContent value="billing">
+              <UserInvoices />
             </TabsContent>
 
             <TabsContent value="financial">

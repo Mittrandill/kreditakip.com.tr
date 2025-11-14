@@ -98,11 +98,19 @@ const navItems: NavItem[] = [
 ]
 
 const settingsItems = [
+   {
+    href: "/uygulama/premium",
+    label: "Premium",
+    icon: Crown,
+    isPremium: true,
+  },
+  
   {
     href: "/uygulama/bildirimler",
     label: "Bildirimler",
     icon: Bell,
   },
+ 
   {
     href: "/uygulama/ayarlar",
     label: "Ayarlar",
@@ -181,7 +189,7 @@ export default function AppSidebar() {
             <div className="relative flex-shrink-0">
               <Image
                 src="/images/favicon.svg"
-                alt="KrediTakip"
+                alt="Kredi Takip"
                 width={isCollapsed ? 32 : 36}
                 height={isCollapsed ? 32 : 36}
                 className={`${isCollapsed ? "h-8 w-8" : "h-9 w-9"} group-hover:scale-110 transition-transform duration-300`}
@@ -280,6 +288,7 @@ export default function AppSidebar() {
         {settingsItems.map((item) => {
           const isActive = pathname === item.href
           const Icon = item.icon
+          const isPremiumItem = item.isPremium
 
           return (
             <div key={item.href} className="relative group">
@@ -287,9 +296,11 @@ export default function AppSidebar() {
                 href={item.href}
                 className={`
                   relative flex items-center rounded-xl transition-all duration-300 group/link
-                  ${isCollapsed ? "justify-center h-10 w-10" : "gap-3 px-4 h-10"}
+                  ${isCollapsed ? "justify-center h-10 w-10" : "gap-3 px-4 h-10 w-full"}
                   ${isActive
-                    ? "bg-gradient-to-r from-emerald-500 to-teal-600 text-white shadow-lg shadow-emerald-500/30"
+                    ? isPremiumItem
+                      ? "bg-gradient-to-r from-amber-500 to-orange-600 text-white shadow-lg shadow-amber-500/30"
+                      : "bg-gradient-to-r from-emerald-500 to-teal-600 text-white shadow-lg shadow-emerald-500/30"
                     : "text-gray-600 dark:text-white/60 hover:bg-gray-100 dark:hover:bg-emerald-900/20 hover:text-gray-900 dark:hover:text-gray-200"
                   }
                 `}
@@ -301,7 +312,7 @@ export default function AppSidebar() {
                     <div className="absolute inset-0 bg-white/20 rounded-lg blur-md"></div>
                   )}
                   <Icon className={`relative h-5 w-5 flex-shrink-0 transition-all duration-300 ${
-                    isActive ? "text-white" : "text-gray-600 dark:text-white/40 group-hover/link:text-emerald-600 dark:group-hover/link:text-emerald-400"
+                    isActive ? "text-white" : isPremiumItem ? "text-amber-500 dark:text-amber-400" : "text-gray-600 dark:text-white/40 group-hover/link:text-emerald-600 dark:group-hover/link:text-emerald-400"
                   }`} />
                   {item.label === "Bildirimler" && unreadCount > 0 && (
                     <div className="absolute -top-1 -right-1 min-w-[18px] h-[18px] px-1 bg-red-500 rounded-full border-2 border-white dark:border-gray-900 flex items-center justify-center z-10">
@@ -344,7 +355,7 @@ export default function AppSidebar() {
             onClick={toggleSidebar}
             className={`
               relative flex items-center rounded-xl transition-all duration-300 group/link
-              ${isCollapsed ? "justify-center h-10 w-10" : "gap-3 px-4 h-10"}
+              ${isCollapsed ? "justify-center h-10 w-10" : "gap-3 px-4 h-10 w-full"}
               text-gray-600 dark:text-white/60 hover:bg-gray-100 dark:hover:bg-emerald-900/20 hover:text-gray-900 dark:hover:text-gray-200
             `}
           >
@@ -447,22 +458,6 @@ export default function AppSidebar() {
                 <UserIcon className="mr-3 h-4 w-4" />
                 Profil Ayarları
               </DropdownMenuItem>
-              <DropdownMenuItem
-                onClick={() => router.push("/uygulama/faturalandirma")}
-                className="text-gray-700 dark:text-white/70 hover:bg-emerald-50 dark:hover:bg-emerald-950/30 focus:bg-emerald-50 dark:focus:bg-emerald-950/30 cursor-pointer"
-              >
-                <Briefcase className="mr-3 h-4 w-4" />
-                Faturalandırma
-              </DropdownMenuItem>
-              {!isPremium && (
-                <DropdownMenuItem
-                  onClick={() => router.push("/uygulama/premium")}
-                  className="text-amber-600 dark:text-amber-500 hover:bg-amber-50 dark:hover:bg-amber-950/30 focus:bg-amber-50 dark:focus:bg-amber-950/30 font-medium cursor-pointer"
-                >
-                  <Crown className="mr-3 h-4 w-4" />
-                  Premium'a Geç
-                </DropdownMenuItem>
-              )}
               <DropdownMenuItem
                 onClick={() => window.open("https://www.kreditakip.com.tr/sss", "_blank")}
                 className="text-gray-700 dark:text-white/70 hover:bg-emerald-50 dark:hover:bg-emerald-950/30 focus:bg-emerald-50 dark:focus:bg-emerald-950/30 cursor-pointer"

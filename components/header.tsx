@@ -577,7 +577,7 @@ export default function Header({ pageTitle }: HeaderProps) {
                 href="/uygulama/ana-sayfa"
                 className="flex items-center gap-2 text-lg font-semibold text-gray-900 dark:text-white"
               >
-                <Image src="/images/favicon.svg" alt="KrediTakip Logo" width={32} height={32} className="h-8 w-8" />
+                <Image src="/images/favicon.svg" alt="Kredi Takip Logo" width={32} height={32} className="h-8 w-8" />
                 <span>Kredi Takip</span>
               </Link>
             </div>

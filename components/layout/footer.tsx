@@ -74,7 +74,7 @@ export default function Footer() {
             <div>
               <div className="flex items-center gap-2 mb-4">
                 <Sparkles className="h-5 w-5 text-emerald-400" />
-                <span className="text-emerald-400 font-semibold">KrediTakip Bülteni</span>
+                <span className="text-emerald-400 font-semibold">Kredi Takip Bülteni</span>
               </div>
               <h3 className="text-2xl font-bold text-white mb-2">Finans dünyasındaki son gelişmeleri kaçırmayın</h3>
               <p className="text-gray-400">
@@ -132,7 +132,7 @@ export default function Footer() {
           {/* Company Info */}
           <div className="lg:col-span-2">
             <Link href="/" className="flex items-center mb-6">
-              <Image src="/images/logo-white.svg" alt="KrediTakip" width={200} height={45} className="h-10 w-auto" />
+              <Image src="/images/logo-white.svg" alt="Kredi Takip" width={200} height={45} className="h-10 w-auto" />
             </Link>
             <p className="text-gray-400 mb-6 max-w-md leading-relaxed">
               OCR teknolojisi ve yapay zeka ile kredilerinizi profesyonel seviyede yönetin. Türkiye'nin en güvenilir
@@ -313,7 +313,7 @@ export default function Footer() {
 
         {/* Bottom Footer */}
         <div className="flex flex-col md:flex-row justify-between items-center pt-8 border-t border-gray-800">
-          <div className="text-sm text-gray-400 mb-4 md:mb-0">© {currentYear} KrediTakip. Tüm hakları saklıdır.</div>
+          <div className="text-sm text-gray-400 mb-4 md:mb-0">© {currentYear} Kredi Takip. Tüm hakları saklıdır.</div>
           <div className="flex flex-wrap gap-6 text-sm">
             {["Gizlilik Politikası", "Kullanım Şartları", "KVKK Politikası", "Çerez Politikası"].map((item, index) => (
               <Link

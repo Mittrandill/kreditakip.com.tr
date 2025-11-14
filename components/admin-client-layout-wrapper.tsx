@@ -36,7 +36,7 @@ export function AdminClientLayoutWrapper({ children }: AdminClientLayoutWrapperP
         <aside className="w-64 min-h-screen bg-black/20 border-r border-white/10 p-6 flex flex-col">
           <div className="mb-8">
             <h1 className="text-2xl font-bold text-emerald-400">Admin Panel</h1>
-            <p className="text-sm text-white/60 mt-1">KrediTakip Yönetimi</p>
+            <p className="text-sm text-white/60 mt-1">Kredi Takip Yönetimi</p>
             {userEmail && <p className="text-xs text-white/40 mt-2">{userEmail}</p>}
           </div>
 

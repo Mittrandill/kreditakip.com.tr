@@ -108,7 +108,7 @@ export default async function BlogPostPage({ params }: PageProps) {
                 <span className="text-white">
                   {post.author?.first_name && post.author?.last_name
                     ? `${post.author.first_name} ${post.author.last_name}`
-                    : "KrediTakip"}
+                    : "Kredi Takip"}
                 </span>
               </div>
               <span>•</span>

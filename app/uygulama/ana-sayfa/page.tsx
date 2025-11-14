@@ -577,7 +577,7 @@ export default function DashboardPage() {
                     <BankLogo
                       bankName={payment.credits?.banks?.name || "Banka"}
                       logoUrl={payment.credits?.banks?.logo_url || undefined}
-                      size="md"
+                      size="sm"
                       className="ring-2 ring-emerald-500/30"
                     />
                     <div className="flex-1 min-w-0">
@@ -747,7 +747,7 @@ export default function DashboardPage() {
                             <BankLogo
                               bankName={kredi.banks?.name || "Bilinmeyen Banka"}
                               logoUrl={kredi.banks?.logo_url || undefined}
-                              size="md"
+                              size="sm"
                               className="ring-1 ring-emerald-200 dark:ring-emerald-900/30 bg-white dark:bg-black/10"
                             />
                             <div className="flex flex-col">

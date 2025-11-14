@@ -6,9 +6,11 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Input } from "@/components/ui/input"
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { PaginationModern } from "@/components/ui/pagination-modern"
-import { CreditCard, Download, CheckCircle2, XCircle, Clock, Receipt, Wallet, DollarSign, ArrowUpDown, Search } from "lucide-react"
+import { CreditCard, Download, CheckCircle2, XCircle, Clock, Receipt, Wallet, DollarSign, ArrowUpDown, Search, FileText, TrendingUp } from "lucide-react"
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 import { useAuth } from "@/hooks/use-auth"
 import { useSubscription } from "@/hooks/use-subscription"
 import { createBrowserClient } from "@supabase/ssr"
@@ -45,6 +47,9 @@ export default function FaturalandirmaPage() {
   const [transactions, setTransactions] = useState<PaymentTransaction[]>([])
   const [invoices, setInvoices] = useState<Invoice[]>([])
   const [loading, setLoading] = useState(true)
+
+  // Tab state
+  const [activeTab, setActiveTab] = useState("faturalar")
 
   // Search and sorting states
   const [searchTerm, setSearchTerm] = useState("")
@@ -221,267 +226,390 @@ export default function FaturalandirmaPage() {
     }
   }
 
+  // Calculate stats for hero section
+  const totalPaid = transactions
+    .filter((t) => t.status === "completed")
+    .reduce((sum, t) => sum + Number.parseFloat(t.amount), 0)
+  const pendingInvoicesCount = invoices.filter((i) => i.status === "pending").length
+  const lastInvoiceDate =
+    invoices.length > 0
+      ? new Date(invoices[0].invoice_date).toLocaleDateString("tr-TR", { day: "numeric", month: "short" })
+      : "-"
+
   return (
     <div className="flex flex-col gap-4 md:gap-6">
       {/* Hero Section */}
-      <Card className="bg-gradient-to-r from-emerald-600 to-teal-700 dark:from-emerald-700 dark:to-teal-800 text-white border-transparent shadow-xl rounded-xl">
-        <CardContent className="p-8">
-          <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-            <div>
-              <h2 className="text-3xl font-bold mb-2 flex items-center gap-3">
+      <Card className="bg-gradient-to-br from-emerald-600 via-teal-600 to-emerald-700 dark:from-emerald-700 dark:via-teal-700 dark:to-emerald-800 text-white border-0 shadow-2xl">
+        <CardContent className="p-6 md:p-8">
+          <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4">
+            <div className="flex-1">
+              <h1 className="text-3xl md:text-4xl font-bold mb-2 flex items-center gap-3">
                 <Wallet className="h-8 w-8" />
                 Faturalandırma
-              </h2>
-              <p className="text-emerald-100 text-lg">Ödeme geçmişinizi ve faturalarınızı görüntüleyin ve yönetin</p>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Search Bar */}
-      <Card className="shadow-lg">
-        <CardContent className="p-4">
-          <div className="relative">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400 dark:text-white/60" />
-            <Input
-              placeholder="Ödeme veya fatura ara..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="pl-10 bg-white dark:bg-black/10 border border-gray-200 dark:border-white/10 focus-visible:border-emerald-500 dark:focus-visible:border-emerald-400 focus-visible:shadow-[0_0_0_0.5px_rgb(16,185,129)] dark:focus-visible:shadow-[0_0_0_0.5px_rgb(52,211,153)] transition-all duration-200 text-gray-900 dark:text-white placeholder:text-gray-500 dark:placeholder:text-white/50"
-              autoComplete="off"
-              spellCheck="false"
-            />
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Payment History */}
-      <Card className="shadow-lg hover:shadow-xl transition-shadow duration-300">
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            Ödeme Geçmişi
-          </CardTitle>
-          <CardDescription>Geçmiş ödemelerinizi görüntüleyin</CardDescription>
-        </CardHeader>
-        <CardContent>
-          {loading ? (
-            <p className="text-gray-500 dark:text-white/60 text-center py-8">Yükleniyor...</p>
-          ) : filteredAndSortedTransactions.length === 0 ? (
-            <div className="text-center py-12">
-              <DollarSign className="mx-auto h-12 w-12 text-gray-400 dark:text-white/40 mb-4" />
-              <p className="text-gray-500 dark:text-white/60">
-                {searchTerm ? "Arama kriterlerine uygun ödeme bulunamadı" : "Henüz ödeme kaydı bulunmuyor"}
+              </h1>
+              <p className="text-white/80 text-base md:text-lg mb-4">
+                Ödeme geçmişinizi ve faturalarınızı görüntüleyin ve yönetin
               </p>
-            </div>
-          ) : (
-            <div className="space-y-4">
-              <div className="overflow-x-auto">
-                <Table>
-                  <TableHeader>
-                    <TableRow className="bg-white dark:bg-black/20">
-                      <TableHead
-                        className="font-semibold text-gray-700 dark:text-white/70 cursor-pointer hover:text-emerald-600 dark:hover:text-emerald-400"
-                        onClick={() => handleTransactionsSort("tarih")}
-                      >
-                        <div className="flex items-center gap-1">
-                          Tarih
-                          <ArrowUpDown className="h-3 w-3" />
-                        </div>
-                      </TableHead>
-                      <TableHead
-                        className="font-semibold text-gray-700 dark:text-white/70 cursor-pointer hover:text-emerald-600 dark:hover:text-emerald-400"
-                        onClick={() => handleTransactionsSort("tutar")}
-                      >
-                        <div className="flex items-center gap-1">
-                          Tutar
-                          <ArrowUpDown className="h-3 w-3" />
-                        </div>
-                      </TableHead>
-                      <TableHead className="font-semibold text-gray-700 dark:text-white/70">Ödeme Yöntemi</TableHead>
-                      <TableHead
-                        className="font-semibold text-gray-700 dark:text-white/70 cursor-pointer hover:text-emerald-600 dark:hover:text-emerald-400"
-                        onClick={() => handleTransactionsSort("durum")}
-                      >
-                        <div className="flex items-center gap-1">
-                          Durum
-                          <ArrowUpDown className="h-3 w-3" />
-                        </div>
-                      </TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {currentTransactions.map((transaction, index) => (
-                      <TableRow
-                        key={transaction.id}
-                        className={`hover:bg-emerald-50 dark:hover:bg-white/10 transition-colors duration-150 ease-in-out ${
-                          index % 2 === 0 ? "bg-white dark:bg-black/20" : "bg-gray-50/50 dark:bg-black/10"
-                        }`}
-                      >
-                        <TableCell className="text-gray-900 dark:text-white">
-                          <div className="flex items-center gap-2">
-                            <DollarSign className="h-4 w-4 text-emerald-600 dark:text-emerald-400" />
-                            {new Date(transaction.created_at).toLocaleDateString("tr-TR", {
-                              year: "numeric",
-                              month: "long",
-                              day: "numeric",
-                            })}
-                          </div>
-                        </TableCell>
-                        <TableCell className="font-semibold text-gray-900 dark:text-white">
-                          {Number.parseFloat(transaction.amount).toFixed(2)} {transaction.currency}
-                        </TableCell>
-                        <TableCell className="text-gray-600 dark:text-white/70">
-                          <div className="flex items-center gap-2">
-                            <CreditCard className="h-4 w-4" />
-                            {transaction.payment_method === "credit_card" ? "Kredi Kartı" : transaction.payment_method}
-                          </div>
-                        </TableCell>
-                        <TableCell>{getStatusBadge(transaction.status)}</TableCell>
-                      </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
+              <div className="grid grid-cols-3 gap-4">
+                <div>
+                  <p className="text-white/70 text-sm mb-1">Toplam Ödenen</p>
+                  <p className="text-2xl font-bold">{totalPaid.toFixed(2)} ₺</p>
+                </div>
+                <div>
+                  <p className="text-white/70 text-sm mb-1">Bekleyen Fatura</p>
+                  <p className="text-2xl font-bold">{pendingInvoicesCount}</p>
+                </div>
+                <div>
+                  <p className="text-white/70 text-sm mb-1">Son Fatura</p>
+                  <p className="text-2xl font-bold">{lastInvoiceDate}</p>
+                </div>
               </div>
-              {filteredAndSortedTransactions.length > itemsPerPage && (
-                <PaginationModern
-                  currentPage={transactionsPage}
-                  totalPages={totalTransactionsPages}
-                  totalItems={filteredAndSortedTransactions.length}
-                  itemsPerPage={itemsPerPage}
-                  onPageChange={setTransactionsPage}
-                  itemName="ödeme"
-                />
-              )}
             </div>
-          )}
+          </div>
         </CardContent>
       </Card>
 
-      {/* Invoices */}
-      <Card className="shadow-lg hover:shadow-xl transition-shadow duration-300">
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            Faturalarım
-          </CardTitle>
-          <CardDescription>Faturalarınızı görüntüleyin ve indirin</CardDescription>
-        </CardHeader>
-        <CardContent>
-          {loading ? (
-            <p className="text-gray-500 dark:text-white/60 text-center py-8">Yükleniyor...</p>
-          ) : filteredAndSortedInvoices.length === 0 ? (
-            <div className="text-center py-12">
-              <Receipt className="mx-auto h-12 w-12 text-gray-400 dark:text-white/40 mb-4" />
-              <p className="text-gray-500 dark:text-white/60">
-                {searchTerm ? "Arama kriterlerine uygun fatura bulunamadı" : "Henüz fatura bulunmuyor"}
-              </p>
-            </div>
-          ) : (
-            <div className="space-y-4">
-              <div className="overflow-x-auto">
-                <Table>
-                  <TableHeader>
-                    <TableRow className="bg-white dark:bg-black/20">
-                      <TableHead
-                        className="font-semibold text-gray-700 dark:text-white/70 cursor-pointer hover:text-emerald-600 dark:hover:text-emerald-400"
-                        onClick={() => handleInvoicesSort("faturaNo")}
+      {/* Tabs */}
+      <div className="bg-white dark:bg-black/20 rounded-2xl shadow-sm border border-gray-100 dark:border-white/10 overflow-hidden">
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+          <div className="border-b border-gray-100 dark:border-white/10 bg-gray-50/50 dark:bg-emerald-900/10">
+            <TabsList className="grid grid-cols-2 bg-transparent h-auto p-2 gap-2">
+              <TabsTrigger
+                value="faturalar"
+                className="flex items-center gap-2 py-3 px-4 data-[state=active]:text-emerald-600 dark:data-[state=active]:text-emerald-400 data-[state=active]:bg-white dark:data-[state=active]:bg-emerald-900/20 data-[state=active]:shadow-sm rounded-xl transition-all duration-200 hover:bg-gray-100 dark:hover:bg-white/10 dark:text-white/60"
+              >
+                <FileText className="h-4 w-4" />
+                <span className="font-medium">Faturalarım</span>
+              </TabsTrigger>
+              <TabsTrigger
+                value="odemeler"
+                className="flex items-center gap-2 py-3 px-4 data-[state=active]:text-emerald-600 dark:data-[state=active]:text-emerald-400 data-[state=active]:bg-white dark:data-[state=active]:bg-emerald-900/20 data-[state=active]:shadow-sm rounded-xl transition-all duration-200 hover:bg-gray-100 dark:hover:bg-white/10 dark:text-white/60"
+              >
+                <DollarSign className="h-4 w-4" />
+                <span className="font-medium">Ödeme Geçmişi</span>
+              </TabsTrigger>
+            </TabsList>
+          </div>
+
+          {/* Search and Sort */}
+          <div className="p-4 border-b border-gray-100 dark:border-white/10 bg-white dark:bg-black/20">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+              <div className="flex gap-2">
+                <div className="relative">
+                  <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-gray-400 dark:text-white/60" />
+                  <Input
+                    placeholder={activeTab === "faturalar" ? "Fatura ara..." : "Ödeme ara..."}
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    className="pl-8 w-[250px] bg-white dark:bg-black/10 border border-gray-200 dark:border-white/10 focus-visible:border-emerald-500 dark:focus-visible:border-emerald-400 focus-visible:shadow-[0_0_0_0.5px_rgb(16,185,129)] dark:focus-visible:shadow-[0_0_0_0.5px_rgb(52,211,153)] transition-all duration-200 text-gray-900 dark:text-white placeholder:text-gray-500 dark:placeholder:text-white/50"
+                    autoComplete="off"
+                    spellCheck="false"
+                  />
+                </div>
+                {activeTab === "faturalar" ? (
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button
+                        variant="outline"
+                        className="flex items-center gap-2 bg-transparent dark:bg-black/10 dark:border-white/10 dark:text-white"
                       >
-                        <div className="flex items-center gap-1">
-                          Fatura No
-                          <ArrowUpDown className="h-3 w-3" />
-                        </div>
-                      </TableHead>
-                      <TableHead
-                        className="font-semibold text-gray-700 dark:text-white/70 cursor-pointer hover:text-emerald-600 dark:hover:text-emerald-400"
+                        <ArrowUpDown className="h-4 w-4" />
+                        Sırala:{" "}
+                        {invoicesSortBy === "tarih"
+                          ? "Tarih"
+                          : invoicesSortBy === "tutar"
+                            ? "Tutar"
+                            : invoicesSortBy === "faturaNo"
+                              ? "Fatura No"
+                              : "Durum"}{" "}
+                        ({invoicesSortOrder === "asc" ? "Artan" : "Azalan"})
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="start" className="dark:bg-black/90 dark:border-white/10">
+                      <DropdownMenuItem
                         onClick={() => handleInvoicesSort("tarih")}
+                        className="dark:text-white dark:hover:bg-white/10"
                       >
-                        <div className="flex items-center gap-1">
-                          Tarih
-                          <ArrowUpDown className="h-3 w-3" />
-                        </div>
-                      </TableHead>
-                      <TableHead
-                        className="font-semibold text-gray-700 dark:text-white/70 cursor-pointer hover:text-emerald-600 dark:hover:text-emerald-400"
+                        Tarihe Göre
+                      </DropdownMenuItem>
+                      <DropdownMenuItem
                         onClick={() => handleInvoicesSort("tutar")}
+                        className="dark:text-white dark:hover:bg-white/10"
                       >
-                        <div className="flex items-center gap-1">
-                          Tutar
-                          <ArrowUpDown className="h-3 w-3" />
-                        </div>
-                      </TableHead>
-                      <TableHead
-                        className="font-semibold text-gray-700 dark:text-white/70 cursor-pointer hover:text-emerald-600 dark:hover:text-emerald-400"
+                        Tutara Göre
+                      </DropdownMenuItem>
+                      <DropdownMenuItem
+                        onClick={() => handleInvoicesSort("faturaNo")}
+                        className="dark:text-white dark:hover:bg-white/10"
+                      >
+                        Fatura No'ya Göre
+                      </DropdownMenuItem>
+                      <DropdownMenuItem
                         onClick={() => handleInvoicesSort("durum")}
+                        className="dark:text-white dark:hover:bg-white/10"
                       >
-                        <div className="flex items-center gap-1">
-                          Durum
-                          <ArrowUpDown className="h-3 w-3" />
-                        </div>
-                      </TableHead>
-                      <TableHead className="text-right font-semibold text-gray-700 dark:text-white/70">İşlemler</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {currentInvoices.map((invoice, index) => (
-                      <TableRow
-                        key={invoice.id}
-                        className={`hover:bg-emerald-50 dark:hover:bg-white/10 transition-colors duration-150 ease-in-out ${
-                          index % 2 === 0 ? "bg-white dark:bg-black/20" : "bg-gray-50/50 dark:bg-black/10"
-                        }`}
+                        Duruma Göre
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                ) : (
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button
+                        variant="outline"
+                        className="flex items-center gap-2 bg-transparent dark:bg-black/10 dark:border-white/10 dark:text-white"
                       >
-                        <TableCell className="font-mono font-semibold text-gray-900 dark:text-white">
-                          <div className="flex items-center gap-2">
-                            <Receipt className="h-4 w-4 text-blue-600 dark:text-blue-400" />
-                            {invoice.invoice_number}
-                          </div>
-                        </TableCell>
-                        <TableCell className="text-gray-900 dark:text-white">
-                          {new Date(invoice.invoice_date).toLocaleDateString("tr-TR", {
-                            year: "numeric",
-                            month: "long",
-                            day: "numeric",
-                          })}
-                        </TableCell>
-                        <TableCell className="font-semibold text-gray-900 dark:text-white">
-                          {Number(invoice.amount).toFixed(2)} {invoice.currency}
-                        </TableCell>
-                        <TableCell>{getStatusBadge(invoice.status)}</TableCell>
-                        <TableCell className="text-right">
-                          {invoice.file_url ? (
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              onClick={() => window.open(invoice.file_url!, "_blank")}
-                              className="dark:bg-black/20 dark:text-white dark:border-white/10 dark:hover:bg-white/10"
-                            >
-                              <Download className="h-4 w-4 mr-2" />
-                              PDF İndir
-                            </Button>
-                          ) : (
-                            <Button variant="ghost" size="sm" disabled className="dark:text-white/60">
-                              <Clock className="h-4 w-4 mr-2" />
-                              Hazırlanıyor
-                            </Button>
-                          )}
-                        </TableCell>
-                      </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
+                        <ArrowUpDown className="h-4 w-4" />
+                        Sırala:{" "}
+                        {transactionsSortBy === "tarih"
+                          ? "Tarih"
+                          : transactionsSortBy === "tutar"
+                            ? "Tutar"
+                            : "Durum"}{" "}
+                        ({transactionsSortOrder === "asc" ? "Artan" : "Azalan"})
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="start" className="dark:bg-black/90 dark:border-white/10">
+                      <DropdownMenuItem
+                        onClick={() => handleTransactionsSort("tarih")}
+                        className="dark:text-white dark:hover:bg-white/10"
+                      >
+                        Tarihe Göre
+                      </DropdownMenuItem>
+                      <DropdownMenuItem
+                        onClick={() => handleTransactionsSort("tutar")}
+                        className="dark:text-white dark:hover:bg-white/10"
+                      >
+                        Tutara Göre
+                      </DropdownMenuItem>
+                      <DropdownMenuItem
+                        onClick={() => handleTransactionsSort("durum")}
+                        className="dark:text-white dark:hover:bg-white/10"
+                      >
+                        Duruma Göre
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                )}
               </div>
-              {filteredAndSortedInvoices.length > itemsPerPage && (
-                <PaginationModern
-                  currentPage={invoicesPage}
-                  totalPages={totalInvoicesPages}
-                  totalItems={filteredAndSortedInvoices.length}
-                  itemsPerPage={itemsPerPage}
-                  onPageChange={setInvoicesPage}
-                  itemName="fatura"
-                />
-              )}
             </div>
-          )}
-        </CardContent>
-      </Card>
+          </div>
+
+          <div className="p-6 dark:bg-black/20">
+            {/* Faturalarım Tab */}
+            <TabsContent value="faturalar" className="mt-0">
+              {loading ? (
+                <p className="text-gray-500 dark:text-white/60 text-center py-8">Yükleniyor...</p>
+              ) : filteredAndSortedInvoices.length === 0 ? (
+                <div className="text-center py-12">
+                  <Receipt className="mx-auto h-12 w-12 text-gray-400 dark:text-white/40 mb-4" />
+                  <p className="text-gray-500 dark:text-white/60">
+                    {searchTerm ? "Arama kriterlerine uygun fatura bulunamadı" : "Henüz fatura bulunmuyor"}
+                  </p>
+                </div>
+              ) : (
+                <div className="space-y-4">
+                  <div className="overflow-x-auto">
+                    <Table>
+                      <TableHeader>
+                        <TableRow className="bg-white dark:bg-black/20">
+                          <TableHead
+                            className="font-semibold text-gray-700 dark:text-white/70 cursor-pointer hover:text-emerald-600 dark:hover:text-emerald-400"
+                            onClick={() => handleInvoicesSort("faturaNo")}
+                          >
+                            <div className="flex items-center gap-1">
+                              Fatura No
+                              <ArrowUpDown className="h-3 w-3" />
+                            </div>
+                          </TableHead>
+                          <TableHead
+                            className="font-semibold text-gray-700 dark:text-white/70 cursor-pointer hover:text-emerald-600 dark:hover:text-emerald-400"
+                            onClick={() => handleInvoicesSort("tarih")}
+                          >
+                            <div className="flex items-center gap-1">
+                              Tarih
+                              <ArrowUpDown className="h-3 w-3" />
+                            </div>
+                          </TableHead>
+                          <TableHead
+                            className="font-semibold text-gray-700 dark:text-white/70 cursor-pointer hover:text-emerald-600 dark:hover:text-emerald-400"
+                            onClick={() => handleInvoicesSort("tutar")}
+                          >
+                            <div className="flex items-center gap-1">
+                              Tutar
+                              <ArrowUpDown className="h-3 w-3" />
+                            </div>
+                          </TableHead>
+                          <TableHead
+                            className="font-semibold text-gray-700 dark:text-white/70 cursor-pointer hover:text-emerald-600 dark:hover:text-emerald-400"
+                            onClick={() => handleInvoicesSort("durum")}
+                          >
+                            <div className="flex items-center gap-1">
+                              Durum
+                              <ArrowUpDown className="h-3 w-3" />
+                            </div>
+                          </TableHead>
+                          <TableHead className="text-right font-semibold text-gray-700 dark:text-white/70">İşlemler</TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {currentInvoices.map((invoice, index) => (
+                          <TableRow
+                            key={invoice.id}
+                            className={`hover:bg-emerald-50 dark:hover:bg-white/10 transition-colors duration-150 ease-in-out ${
+                              index % 2 === 0 ? "bg-white dark:bg-black/20" : "bg-gray-50/50 dark:bg-black/10"
+                            }`}
+                          >
+                            <TableCell className="font-mono font-semibold text-gray-900 dark:text-white">
+                              <div className="flex items-center gap-2">
+                                <Receipt className="h-4 w-4 text-blue-600 dark:text-blue-400" />
+                                {invoice.invoice_number}
+                              </div>
+                            </TableCell>
+                            <TableCell className="text-gray-900 dark:text-white">
+                              {new Date(invoice.invoice_date).toLocaleDateString("tr-TR", {
+                                year: "numeric",
+                                month: "long",
+                                day: "numeric",
+                              })}
+                            </TableCell>
+                            <TableCell className="font-semibold text-gray-900 dark:text-white">
+                              {Number(invoice.amount).toFixed(2)} {invoice.currency}
+                            </TableCell>
+                            <TableCell>{getStatusBadge(invoice.status)}</TableCell>
+                            <TableCell className="text-right">
+                              {invoice.file_url ? (
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  onClick={() => window.open(invoice.file_url!, "_blank")}
+                                  className="dark:bg-black/20 dark:text-white dark:border-white/10 dark:hover:bg-white/10"
+                                >
+                                  <Download className="h-4 w-4 mr-2" />
+                                  PDF İndir
+                                </Button>
+                              ) : (
+                                <Button variant="ghost" size="sm" disabled className="dark:text-white/60">
+                                  <Clock className="h-4 w-4 mr-2" />
+                                  Hazırlanıyor
+                                </Button>
+                              )}
+                            </TableCell>
+                          </TableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
+                  </div>
+                  {filteredAndSortedInvoices.length > itemsPerPage && (
+                    <PaginationModern
+                      currentPage={invoicesPage}
+                      totalPages={totalInvoicesPages}
+                      totalItems={filteredAndSortedInvoices.length}
+                      itemsPerPage={itemsPerPage}
+                      onPageChange={setInvoicesPage}
+                      itemName="fatura"
+                    />
+                  )}
+                </div>
+              )}
+            </TabsContent>
+
+            {/* Ödeme Geçmişi Tab */}
+            <TabsContent value="odemeler" className="mt-0">
+              {loading ? (
+                <p className="text-gray-500 dark:text-white/60 text-center py-8">Yükleniyor...</p>
+              ) : filteredAndSortedTransactions.length === 0 ? (
+                <div className="text-center py-12">
+                  <DollarSign className="mx-auto h-12 w-12 text-gray-400 dark:text-white/40 mb-4" />
+                  <p className="text-gray-500 dark:text-white/60">
+                    {searchTerm ? "Arama kriterlerine uygun ödeme bulunamadı" : "Henüz ödeme kaydı bulunmuyor"}
+                  </p>
+                </div>
+              ) : (
+                <div className="space-y-4">
+                  <div className="overflow-x-auto">
+                    <Table>
+                      <TableHeader>
+                        <TableRow className="bg-white dark:bg-black/20">
+                          <TableHead
+                            className="font-semibold text-gray-700 dark:text-white/70 cursor-pointer hover:text-emerald-600 dark:hover:text-emerald-400"
+                            onClick={() => handleTransactionsSort("tarih")}
+                          >
+                            <div className="flex items-center gap-1">
+                              Tarih
+                              <ArrowUpDown className="h-3 w-3" />
+                            </div>
+                          </TableHead>
+                          <TableHead
+                            className="font-semibold text-gray-700 dark:text-white/70 cursor-pointer hover:text-emerald-600 dark:hover:text-emerald-400"
+                            onClick={() => handleTransactionsSort("tutar")}
+                          >
+                            <div className="flex items-center gap-1">
+                              Tutar
+                              <ArrowUpDown className="h-3 w-3" />
+                            </div>
+                          </TableHead>
+                          <TableHead className="font-semibold text-gray-700 dark:text-white/70">Ödeme Yöntemi</TableHead>
+                          <TableHead
+                            className="font-semibold text-gray-700 dark:text-white/70 cursor-pointer hover:text-emerald-600 dark:hover:text-emerald-400"
+                            onClick={() => handleTransactionsSort("durum")}
+                          >
+                            <div className="flex items-center gap-1">
+                              Durum
+                              <ArrowUpDown className="h-3 w-3" />
+                            </div>
+                          </TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {currentTransactions.map((transaction, index) => (
+                          <TableRow
+                            key={transaction.id}
+                            className={`hover:bg-emerald-50 dark:hover:bg-white/10 transition-colors duration-150 ease-in-out ${
+                              index % 2 === 0 ? "bg-white dark:bg-black/20" : "bg-gray-50/50 dark:bg-black/10"
+                            }`}
+                          >
+                            <TableCell className="text-gray-900 dark:text-white">
+                              <div className="flex items-center gap-2">
+                                <DollarSign className="h-4 w-4 text-emerald-600 dark:text-emerald-400" />
+                                {new Date(transaction.created_at).toLocaleDateString("tr-TR", {
+                                  year: "numeric",
+                                  month: "long",
+                                  day: "numeric",
+                                })}
+                              </div>
+                            </TableCell>
+                            <TableCell className="font-semibold text-gray-900 dark:text-white">
+                              {Number.parseFloat(transaction.amount).toFixed(2)} {transaction.currency}
+                            </TableCell>
+                            <TableCell className="text-gray-600 dark:text-white/70">
+                              <div className="flex items-center gap-2">
+                                <CreditCard className="h-4 w-4" />
+                                {transaction.payment_method === "credit_card" ? "Kredi Kartı" : transaction.payment_method}
+                              </div>
+                            </TableCell>
+                            <TableCell>{getStatusBadge(transaction.status)}</TableCell>
+                          </TableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
+                  </div>
+                  {filteredAndSortedTransactions.length > itemsPerPage && (
+                    <PaginationModern
+                      currentPage={transactionsPage}
+                      totalPages={totalTransactionsPages}
+                      totalItems={filteredAndSortedTransactions.length}
+                      itemsPerPage={itemsPerPage}
+                      onPageChange={setTransactionsPage}
+                      itemName="ödeme"
+                    />
+                  )}
+                </div>
+              )}
+            </TabsContent>
+          </div>
+        </Tabs>
+      </div>
     </div>
   )
 }

@@ -145,7 +145,7 @@ export default function CareerPage() {
           <div className="container mx-auto">
             <div className="text-center mb-16">
               <h2 className="text-4xl md:text-5xl font-bold mb-6">
-                Neden <span className="text-emerald-400">KrediTakip</span>?
+                Neden <span className="text-emerald-400">Kredi Takip</span>?
               </h2>
               <p className="text-xl text-white/70 max-w-3xl mx-auto">
                 Yenilikçi bir ekiple çalışın ve finansal teknoloji alanında fark yaratın

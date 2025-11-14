@@ -21,7 +21,8 @@
       "Bash(dir:*)",
       "Bash(pnpm add:*)",
       "Bash(timeout:*)",
-      "Bash(powershell -Command \"(Get-Content ''app\\uygulama\\krediler\\page.tsx'' -Tail 30)\")"
+      "Bash(powershell -Command \"(Get-Content ''app\\uygulama\\krediler\\page.tsx'' -Tail 30)\")",
+      "Bash(findstr:*)"
     ],
     "deny": [],
     "ask": []

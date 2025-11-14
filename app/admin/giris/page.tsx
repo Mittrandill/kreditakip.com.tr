@@ -73,7 +73,7 @@ export default function AdminLoginPage() {
             <Shield className="h-8 w-8 text-white" />
           </div>
           <h1 className="text-3xl font-bold text-white mb-2">Admin Panel</h1>
-          <p className="text-white/60">KrediTakip Yönetim Girişi</p>
+          <p className="text-white/60">Kredi Takip Yönetim Girişi</p>
         </div>
 
         {/* Login Form */}

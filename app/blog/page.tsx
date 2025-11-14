@@ -46,7 +46,7 @@ export default async function BlogPage() {
           <div className="container mx-auto text-center">
             <div className="inline-flex items-center gap-2 bg-black/20 border border-white/10 rounded-full px-6 py-3 backdrop-blur-xl mb-8">
               <div className="w-2 h-2 bg-emerald-400 rounded-full animate-pulse" />
-              <span className="text-white/80 text-sm font-medium">KrediTakip Blog</span>
+              <span className="text-white/80 text-sm font-medium">Kredi Takip Blog</span>
             </div>
             <h1 className="text-5xl md:text-6xl font-bold mb-6 leading-tight">
               Finansal <span className="text-emerald-400">Bilgi</span> Merkezi
@@ -120,7 +120,7 @@ export default async function BlogPage() {
                               <User className="w-5 h-5 text-emerald-400" />
                             </div>
                             <div>
-                              <p className="text-white text-sm font-medium">KrediTakip</p>
+                              <p className="text-white text-sm font-medium">Kredi Takip</p>
                               <p className="text-white/60 text-xs">
                                 {new Date(posts[0].published_at || posts[0].created_at).toLocaleDateString("tr-TR")}
                               </p>
@@ -180,7 +180,7 @@ export default async function BlogPage() {
                                 <div className="w-8 h-8 bg-gradient-to-br from-teal-500/30 to-teal-500/10 rounded-full flex items-center justify-center">
                                   <User className="w-4 h-4 text-teal-400" />
                                 </div>
-                                <span className="text-white/80 text-sm">KrediTakip</span>
+                                <span className="text-white/80 text-sm">Kredi Takip</span>
                               </div>
                               <Button
                                 variant="ghost"

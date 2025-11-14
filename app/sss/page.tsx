@@ -18,12 +18,12 @@ export default function FAQPage() {
       category: "Genel Sorular",
       questions: [
         {
-          q: "KrediTakip nedir ve nasıl çalışır?",
-          a: "KrediTakip, kredi kartı ve banka dökümlerinizi OCR teknolojisi ile dijitalleştiren, analiz eden ve akıllı ödeme planları oluşturan bir finansal yönetim platformudur. Dökümlerinizi yükleyin, sistem otomatik olarak analiz etsin ve size özel öneriler alsın.",
+          q: "Kredi Takip nedir ve nasıl çalışır?",
+          a: "Kredi Takip, kredi kartı ve banka dökümlerinizi OCR teknolojisi ile dijitalleştiren, analiz eden ve akıllı ödeme planları oluşturan bir finansal yönetim platformudur. Dökümlerinizi yükleyin, sistem otomatik olarak analiz etsin ve size özel öneriler alsın.",
         },
         {
           q: "Ücretsiz plan ile neler yapabilirim?",
-          a: "Ücretsiz plan ile ayda 5 döküm analizi yapabilir, temel ödeme planları oluşturabilir ve kredi takibi yapabilirsiniz. Premium özelliklere erişim için Pro veya Enterprise planlarımızı inceleyebilirsiniz.",
+          a: "Ücretsiz plan 1 döküm analizi yapabilir, temel ödeme planları oluşturabilir ve kredi takibi yapabilirsiniz. Premium özelliklere erişim için Pro planımızı inceleyebilirsiniz.",
         },
         {
           q: "Hangi bankaları destekliyorsunuz?",

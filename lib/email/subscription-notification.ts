@@ -322,7 +322,7 @@ function generateSubscriptionEmailHTML(data: SubscriptionEmailData): string {
                 <td>
                     <div class="header">
                         <div class="logo-wrapper">
-                            <img src="${baseUrl}/images/logo-white.png" alt="Kredi Takip" class="logo">
+                            <img src="https://oymjjceuiotxfbpwsdym.supabase.co/storage/v1/object/public/Logo/logo-white.png" alt="Kredi Takip" class="logo">
                         </div>
                         <div class="header-badge">🎉 Yeni Abonelik!</div>
                         <h1 class="header-title">Premium Abonelik Başlatıldı</h1>
@@ -363,7 +363,7 @@ function generateSubscriptionEmailHTML(data: SubscriptionEmailData): string {
                     </div>
 
                     <div class="footer">
-                        <img src="${baseUrl}/images/logo-white.png" alt="Kredi Takip" class="footer-logo">
+                        <img src="https://oymjjceuiotxfbpwsdym.supabase.co/storage/v1/object/public/Logo/logo-white.png" alt="Kredi Takip" class="footer-logo">
 
                         <p class="footer-text">
                             Bu e-posta otomatik olarak gönderilmiştir.
