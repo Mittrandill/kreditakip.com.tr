@@ -105,8 +105,11 @@ export default function DashboardPage() {
   const [upcomingPaymentCount, setUpcomingPaymentCount] = useState(0)
   const [thisMonthPayment, setThisMonthPayment] = useState(0)
 
-  // Donut chart filter state
+  // Filter states
   const [paymentFilter, setPaymentFilter] = useState<'week' | 'month'>('week')
+  const [monthlyPaymentPeriod, setMonthlyPaymentPeriod] = useState<'monthly' | 'yearly'>('monthly')
+  const [trendPeriod, setTrendPeriod] = useState<'6months' | '12months'>('6months')
+  const [upcomingPaymentsFilter, setUpcomingPaymentsFilter] = useState<'week' | 'month' | 'all'>('week')
 
   // Grafik state'leri
 
@@ -472,24 +475,43 @@ export default function DashboardPage() {
             <CardContent className="p-6">
               <div className="flex items-start justify-between mb-4">
                 <div>
-                  <h3 className="text-3xl font-bold text-gray-900 dark:text-white mb-1">{formatCurrency(monthlyPayment)}</h3>
-                  <p className="text-sm text-emerald-600 dark:text-emerald-400">Aylık Ödeme</p>
+                  <h3 className="text-3xl font-bold text-gray-900 dark:text-white mb-1">
+                    {formatCurrency(monthlyPaymentPeriod === 'monthly' ? monthlyPayment : monthlyPayment * 12)}
+                  </h3>
+                  <p className="text-sm text-emerald-600 dark:text-emerald-400">
+                    {monthlyPaymentPeriod === 'monthly' ? 'Aylık Ödeme' : 'Yıllık Ödeme'}
+                  </p>
                 </div>
-                <select className="text-xs bg-transparent text-gray-600 dark:text-gray-400 border-0 cursor-pointer focus:outline-none">
-                  <option>Aylık ▼</option>
-                  <option>Yıllık</option>
+                <select
+                  className="text-xs bg-transparent text-gray-600 dark:text-gray-400 border-0 cursor-pointer focus:outline-none"
+                  value={monthlyPaymentPeriod}
+                  onChange={(e) => setMonthlyPaymentPeriod(e.target.value as 'monthly' | 'yearly')}
+                >
+                  <option value="monthly">Aylık ▼</option>
+                  <option value="yearly">Yıllık</option>
                 </select>
               </div>
               <div className="h-24">
                 <ResponsiveContainer width="100%" height="100%">
-                  <RechartsLineChart data={[
-                    { a: 20, b: 35, c: 25 },
-                    { a: 30, b: 25, c: 35 },
-                    { a: 25, b: 40, c: 30 },
-                    { a: 40, b: 30, c: 45 },
-                    { a: 35, b: 45, c: 40 },
-                    { a: 50, b: 35, c: 50 }
-                  ]}>
+                  <RechartsLineChart data={
+                    monthlyPaymentPeriod === 'monthly'
+                      ? [
+                          { a: monthlyPayment * 0.95, b: monthlyPayment * 0.85, c: monthlyPayment * 0.90 },
+                          { a: monthlyPayment * 0.98, b: monthlyPayment * 0.88, c: monthlyPayment * 0.93 },
+                          { a: monthlyPayment * 0.92, b: monthlyPayment * 0.95, c: monthlyPayment * 0.88 },
+                          { a: monthlyPayment, b: monthlyPayment * 0.90, c: monthlyPayment * 0.97 },
+                          { a: monthlyPayment * 0.97, b: monthlyPayment * 0.93, c: monthlyPayment * 0.95 },
+                          { a: monthlyPayment * 1.02, b: monthlyPayment * 0.96, c: monthlyPayment }
+                        ]
+                      : [
+                          { a: monthlyPayment * 12 * 0.95, b: monthlyPayment * 12 * 0.85, c: monthlyPayment * 12 * 0.90 },
+                          { a: monthlyPayment * 12 * 0.98, b: monthlyPayment * 12 * 0.88, c: monthlyPayment * 12 * 0.93 },
+                          { a: monthlyPayment * 12 * 0.92, b: monthlyPayment * 12 * 0.95, c: monthlyPayment * 12 * 0.88 },
+                          { a: monthlyPayment * 12, b: monthlyPayment * 12 * 0.90, c: monthlyPayment * 12 * 0.97 },
+                          { a: monthlyPayment * 12 * 0.97, b: monthlyPayment * 12 * 0.93, c: monthlyPayment * 12 * 0.95 },
+                          { a: monthlyPayment * 12 * 1.02, b: monthlyPayment * 12 * 0.96, c: monthlyPayment * 12 }
+                        ]
+                  }>
                     <RechartsLine type="monotone" dataKey="a" stroke="#14B8A6" strokeWidth={2} dot={false} />
                     <RechartsLine type="monotone" dataKey="b" stroke="#F59E0B" strokeWidth={2} dot={false} />
                     <RechartsLine type="monotone" dataKey="c" stroke="#3B82F6" strokeWidth={2} dot={false} />
@@ -507,25 +529,48 @@ export default function DashboardPage() {
           <div className="flex items-center justify-between">
             <div>
               <CardTitle className="text-xl text-gray-900 dark:text-white">Aylık Ödeme Trendi</CardTitle>
-              <CardDescription className="text-sm mt-1 text-gray-600 dark:text-gray-400">Son 6 ayın ödeme durumu</CardDescription>
+              <CardDescription className="text-sm mt-1 text-gray-600 dark:text-gray-400">
+                Son {trendPeriod === '6months' ? '6' : '12'} ayın ödeme durumu
+              </CardDescription>
             </div>
-            <select className="text-sm bg-gray-100 dark:bg-white/5 border-0 text-gray-700 dark:text-gray-300 px-3 py-1.5 rounded cursor-pointer focus:outline-none">
-              <option>6 Ay</option>
-              <option>12 Ay</option>
+            <select
+              className="text-sm bg-gray-100 dark:bg-white/5 border-0 text-gray-700 dark:text-gray-300 px-3 py-1.5 rounded cursor-pointer focus:outline-none"
+              value={trendPeriod}
+              onChange={(e) => setTrendPeriod(e.target.value as '6months' | '12months')}
+            >
+              <option value="6months">6 Ay</option>
+              <option value="12months">12 Ay</option>
             </select>
           </div>
         </CardHeader>
         <CardContent className="pt-6">
           <ResponsiveContainer width="100%" height={300}>
             <AreaChart
-              data={[
-                { month: "Haz", odeme: monthlyPayment * 0.85, hedef: monthlyPayment },
-                { month: "Tem", odeme: monthlyPayment * 0.92, hedef: monthlyPayment },
-                { month: "Ağu", odeme: monthlyPayment * 0.88, hedef: monthlyPayment },
-                { month: "Eyl", odeme: monthlyPayment * 0.95, hedef: monthlyPayment },
-                { month: "Eki", odeme: monthlyPayment * 1.02, hedef: monthlyPayment },
-                { month: "Kas", odeme: monthlyPayment, hedef: monthlyPayment },
-              ]}
+              data={
+                trendPeriod === '6months'
+                  ? [
+                      { month: "Haz", odeme: monthlyPayment * 0.85, hedef: monthlyPayment },
+                      { month: "Tem", odeme: monthlyPayment * 0.92, hedef: monthlyPayment },
+                      { month: "Ağu", odeme: monthlyPayment * 0.88, hedef: monthlyPayment },
+                      { month: "Eyl", odeme: monthlyPayment * 0.95, hedef: monthlyPayment },
+                      { month: "Eki", odeme: monthlyPayment * 1.02, hedef: monthlyPayment },
+                      { month: "Kas", odeme: monthlyPayment, hedef: monthlyPayment },
+                    ]
+                  : [
+                      { month: "Oca", odeme: monthlyPayment * 0.80, hedef: monthlyPayment },
+                      { month: "Şub", odeme: monthlyPayment * 0.83, hedef: monthlyPayment },
+                      { month: "Mar", odeme: monthlyPayment * 0.86, hedef: monthlyPayment },
+                      { month: "Nis", odeme: monthlyPayment * 0.82, hedef: monthlyPayment },
+                      { month: "May", odeme: monthlyPayment * 0.89, hedef: monthlyPayment },
+                      { month: "Haz", odeme: monthlyPayment * 0.85, hedef: monthlyPayment },
+                      { month: "Tem", odeme: monthlyPayment * 0.92, hedef: monthlyPayment },
+                      { month: "Ağu", odeme: monthlyPayment * 0.88, hedef: monthlyPayment },
+                      { month: "Eyl", odeme: monthlyPayment * 0.95, hedef: monthlyPayment },
+                      { month: "Eki", odeme: monthlyPayment * 1.02, hedef: monthlyPayment },
+                      { month: "Kas", odeme: monthlyPayment, hedef: monthlyPayment },
+                      { month: "Ara", odeme: monthlyPayment * 0.97, hedef: monthlyPayment },
+                    ]
+              }
             >
               <defs>
                 <linearGradient id="colorOdeme" x1="0" y1="0" x2="0" y2="1">
@@ -558,16 +603,35 @@ export default function DashboardPage() {
           <CardHeader className="border-b border-gray-100 dark:border-white/5 pb-4">
             <div className="flex items-center justify-between">
               <CardTitle className="text-xl text-gray-900 dark:text-white">Yaklaşan Ödemeler</CardTitle>
-              <select className="text-sm bg-gray-100 dark:bg-white/5 border-0 text-gray-700 dark:text-gray-300 px-3 py-1.5 rounded cursor-pointer focus:outline-none">
-                <option>Bu Hafta</option>
-                <option>Bu Ay</option>
-                <option>Tümü</option>
+              <select
+                className="text-sm bg-gray-100 dark:bg-white/5 border-0 text-gray-700 dark:text-gray-300 px-3 py-1.5 rounded cursor-pointer focus:outline-none"
+                value={upcomingPaymentsFilter}
+                onChange={(e) => setUpcomingPaymentsFilter(e.target.value as 'week' | 'month' | 'all')}
+              >
+                <option value="week">Bu Hafta</option>
+                <option value="month">Bu Ay</option>
+                <option value="all">Tümü</option>
               </select>
             </div>
           </CardHeader>
           <CardContent className="p-0">
             <div className="divide-y divide-gray-100 dark:divide-white/5">
-              {upcomingPayments.slice(0, 5).map((payment, index) => {
+              {(() => {
+                const now = new Date()
+                const filtered = upcomingPayments.filter(payment => {
+                  const paymentDate = new Date(payment.due_date)
+
+                  if (upcomingPaymentsFilter === 'week') {
+                    const weekLater = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000)
+                    return paymentDate >= now && paymentDate <= weekLater
+                  } else if (upcomingPaymentsFilter === 'month') {
+                    const monthLater = new Date(now.getFullYear(), now.getMonth() + 1, now.getDate())
+                    return paymentDate >= now && paymentDate <= monthLater
+                  }
+                  return true // 'all'
+                })
+
+                return filtered.slice(0, 5).map((payment, index) => {
                 const paymentDate = new Date(payment.due_date)
                 const today = new Date()
                 const daysUntil = Math.ceil((paymentDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24))
@@ -597,7 +661,8 @@ export default function DashboardPage() {
                     </div>
                   </div>
                 )
-              })}
+              })
+            })()}
             </div>
           </CardContent>
         </Card>
