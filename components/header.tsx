@@ -39,6 +39,7 @@ import {
   X,
   Moon,
   Sun,
+  KeyRound,
 } from "lucide-react"
 import { useIsMobile } from "@/hooks/use-mobile"
 import { useAuth } from "@/hooks/use-auth"
