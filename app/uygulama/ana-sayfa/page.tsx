@@ -293,7 +293,7 @@ export default function DashboardPage() {
                   <h3 className="text-3xl font-bold text-gray-900 dark:text-white mb-1">{totalCredits}</h3>
                   <p className="text-sm text-emerald-600 dark:text-emerald-400">Aktif Kredi</p>
                 </div>
-                <select className="text-xs bg-transparent text-gray-600 dark:text-gray-400 border-0 cursor-pointer focus:outline-none">
+                <select className="text-xs bg-gray-50 dark:bg-gray-800 text-gray-700 dark:text-gray-300 border border-gray-200 dark:border-gray-700 rounded px-2 py-1 cursor-pointer focus:outline-none focus:ring-2 focus:ring-emerald-500">
                   <option>Bu Hafta ▼</option>
                   <option>Bu Ay</option>
                   <option>Bu Yıl</option>
@@ -325,7 +325,7 @@ export default function DashboardPage() {
                   <h3 className="text-3xl font-bold text-gray-900 dark:text-white mb-1">+{Math.round((totalPaidDebt / totalAmount) * 100) || 0}%</h3>
                   <p className="text-sm text-emerald-600 dark:text-emerald-400">İlerleme</p>
                 </div>
-                <select className="text-xs bg-transparent text-gray-600 dark:text-gray-400 border-0 cursor-pointer focus:outline-none">
+                <select className="text-xs bg-gray-50 dark:bg-gray-800 text-gray-700 dark:text-gray-300 border border-gray-200 dark:border-gray-700 rounded px-2 py-1 cursor-pointer focus:outline-none focus:ring-2 focus:ring-emerald-500">
                   <option>Günlük ▼</option>
                   <option>Haftalık</option>
                   <option>Aylık</option>

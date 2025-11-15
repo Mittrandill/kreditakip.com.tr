@@ -467,11 +467,11 @@ export default function BildirimlerPage() {
                                   <span className="sr-only">Actions</span>
                                 </Button>
                               </DropdownMenuTrigger>
-                              <DropdownMenuContent align="end" className="dark:bg-black/10 dark:border-white/10">
+                              <DropdownMenuContent align="end" className="bg-white dark:bg-gradient-to-br dark:from-slate-950 dark:to-gray-900 border-gray-200 dark:border-slate-800 backdrop-blur-sm">
                                 {!notification.is_read && (
                                   <DropdownMenuItem
                                     onClick={() => handleMarkAsRead(notification.id)}
-                                    className="dark:text-white dark:hover:bg-white/10"
+                                    className="text-gray-900 dark:text-white dark:hover:bg-slate-800/50 cursor-pointer"
                                   >
                                     <Check className="mr-2 h-4 w-4" />
                                     Okundu İşaretle
@@ -479,13 +479,13 @@ export default function BildirimlerPage() {
                                 )}
                                 <DropdownMenuItem
                                   onClick={() => handleViewNotification(notification)}
-                                  className="dark:text-white dark:hover:bg-white/10"
+                                  className="text-gray-900 dark:text-white dark:hover:bg-slate-800/50 cursor-pointer"
                                 >
                                   <Eye className="mr-2 h-4 w-4" />
                                   Detayları Gör
                                 </DropdownMenuItem>
                                 <DropdownMenuItem
-                                  className="text-red-600 dark:text-red-400 dark:hover:bg-white/10"
+                                  className="text-red-600 dark:text-red-400 dark:hover:bg-slate-800/50 cursor-pointer"
                                   onClick={() => handleDelete(notification.id)}
                                 >
                                   <Trash2 className="mr-2 h-4 w-4" />

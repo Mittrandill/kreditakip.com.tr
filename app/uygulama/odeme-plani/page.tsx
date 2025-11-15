@@ -243,28 +243,28 @@ function CalendarView({ payments }: { payments: PaymentWithCredit[] }) {
                 Filtrele: {filterStatus === "all" ? "Tümü" : filterStatus === "paid" ? "Ödendi" : filterStatus === "pending" ? "Bekliyor" : "Gecikmiş"}
               </Button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="dark:bg-black/10 dark:border-white/10">
+            <DropdownMenuContent align="end" className="bg-white dark:bg-gradient-to-br dark:from-slate-950 dark:to-gray-900 border-gray-200 dark:border-slate-800 backdrop-blur-sm">
               <DropdownMenuItem
                 onClick={() => setFilterStatus("all")}
-                className="dark:text-white dark:hover:bg-white/10"
+                className="text-gray-900 dark:text-white dark:hover:bg-slate-800/50 cursor-pointer"
               >
                 Tümü
               </DropdownMenuItem>
               <DropdownMenuItem
                 onClick={() => setFilterStatus("paid")}
-                className="dark:text-white dark:hover:bg-white/10"
+                className="text-gray-900 dark:text-white dark:hover:bg-slate-800/50 cursor-pointer"
               >
                 Ödendi
               </DropdownMenuItem>
               <DropdownMenuItem
                 onClick={() => setFilterStatus("pending")}
-                className="dark:text-white dark:hover:bg-white/10"
+                className="text-gray-900 dark:text-white dark:hover:bg-slate-800/50 cursor-pointer"
               >
                 Bekliyor
               </DropdownMenuItem>
               <DropdownMenuItem
                 onClick={() => setFilterStatus("overdue")}
-                className="dark:text-white dark:hover:bg-white/10"
+                className="text-gray-900 dark:text-white dark:hover:bg-slate-800/50 cursor-pointer"
               >
                 Gecikmiş
               </DropdownMenuItem>
