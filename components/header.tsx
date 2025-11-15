@@ -63,6 +63,7 @@ interface HeaderProps {
 const navItems = [
   { href: "/uygulama/ana-sayfa", label: "Ana Sayfa", icon: Home },
   { href: "/uygulama/krediler", label: "Kredilerim", icon: CreditCard },
+  { href: "/uygulama/sifrelerim", label: "Şifrelerim", icon: KeyRound },
   { href: "/uygulama/odeme-plani", label: "Ödeme Planı", icon: Calendar },
   { href: "/uygulama/raporlar", label: "Raporlar", icon: BarChart3 },
   { href: "/uygulama/risk-analizi", label: "Risk Analizi", icon: ShieldCheck },

@@ -413,18 +413,18 @@ export default function RiskAnaliziPage() {
               <p className="text-white/80 text-base md:text-lg mb-4">
                 Krediler ve hesaplarınızı dahil ederek tam finansal sağlık analizi
               </p>
-              <div className="grid grid-cols-3 gap-4">
+              <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 sm:gap-4">
                 <div>
-                  <p className="text-white/70 text-sm mb-1">Toplam Analiz</p>
-                  <p className="text-2xl font-bold">{totalAnalysesCount}</p>
+                  <p className="text-white/70 text-xs sm:text-sm mb-1">Toplam Analiz</p>
+                  <p className="text-xl sm:text-2xl font-bold">{totalAnalysesCount}</p>
                 </div>
                 <div>
-                  <p className="text-white/70 text-sm mb-1">Kredi Sayısı</p>
-                  <p className="text-2xl font-bold">{credits.length}</p>
+                  <p className="text-white/70 text-xs sm:text-sm mb-1">Kredi Sayısı</p>
+                  <p className="text-xl sm:text-2xl font-bold">{credits.length}</p>
                 </div>
-                <div>
-                  <p className="text-white/70 text-sm mb-1">Düşük Risk</p>
-                  <p className="text-2xl font-bold">{riskDistribution.low}</p>
+                <div className="col-span-2 sm:col-span-1">
+                  <p className="text-white/70 text-xs sm:text-sm mb-1">Düşük Risk</p>
+                  <p className="text-xl sm:text-2xl font-bold">{riskDistribution.low}</p>
                 </div>
               </div>
             </div>
@@ -500,47 +500,47 @@ export default function RiskAnaliziPage() {
           <div className="bg-white dark:bg-black/20 rounded-2xl shadow-sm border border-gray-100 dark:border-white/10 overflow-hidden">
             <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full">
               <div className="border-b border-gray-100 dark:border-white/10 bg-gray-50/50 dark:bg-emerald-900/10">
-                <TabsList className="grid grid-cols-2 sm:grid-cols-4 bg-transparent h-auto p-2 gap-2">
+                <TabsList className="grid grid-cols-2 sm:grid-cols-4 bg-transparent h-auto p-1.5 sm:p-2 gap-1.5 sm:gap-2">
                   <TabsTrigger
                     value="tumAnalizler"
-                    className="flex items-center gap-2 py-3 px-4 data-[state=active]:text-emerald-600 dark:data-[state=active]:text-emerald-400 data-[state=active]:bg-white dark:data-[state=active]:bg-emerald-900/20 data-[state=active]:shadow-sm rounded-xl transition-all duration-200 hover:bg-gray-100 dark:hover:bg-white/10 dark:text-white/60"
+                    className="flex items-center gap-1 sm:gap-2 py-2 sm:py-3 px-2 sm:px-4 text-xs sm:text-sm data-[state=active]:text-emerald-600 dark:data-[state=active]:text-emerald-400 data-[state=active]:bg-white dark:data-[state=active]:bg-emerald-900/20 data-[state=active]:shadow-sm rounded-xl transition-all duration-200 hover:bg-gray-100 dark:hover:bg-white/10 dark:text-white/60"
                   >
-                    <ListChecks className="h-4 w-4" />
-                    Tümü ({totalAnalysesCount})
+                    <ListChecks className="h-3 w-3 sm:h-4 sm:w-4 flex-shrink-0" />
+                    <span className="truncate">Tümü ({totalAnalysesCount})</span>
                   </TabsTrigger>
                   <TabsTrigger
                     value="dusukRisk"
-                    className="flex items-center gap-2 py-3 px-4 data-[state=active]:text-emerald-600 dark:data-[state=active]:text-emerald-400 data-[state=active]:bg-white dark:data-[state=active]:bg-emerald-900/20 data-[state=active]:shadow-sm rounded-xl transition-all duration-200 hover:bg-gray-100 dark:hover:bg-white/10 dark:text-white/60"
+                    className="flex items-center gap-1 sm:gap-2 py-2 sm:py-3 px-2 sm:px-4 text-xs sm:text-sm data-[state=active]:text-emerald-600 dark:data-[state=active]:text-emerald-400 data-[state=active]:bg-white dark:data-[state=active]:bg-emerald-900/20 data-[state=active]:shadow-sm rounded-xl transition-all duration-200 hover:bg-gray-100 dark:hover:bg-white/10 dark:text-white/60"
                   >
-                    <CheckCircle className="h-4 w-4" />
-                    Düşük ({riskDistribution.low})
+                    <CheckCircle className="h-3 w-3 sm:h-4 sm:w-4 flex-shrink-0" />
+                    <span className="truncate">Düşük ({riskDistribution.low})</span>
                   </TabsTrigger>
                   <TabsTrigger
                     value="ortaRisk"
-                    className="flex items-center gap-2 py-3 px-4 data-[state=active]:text-emerald-600 dark:data-[state=active]:text-emerald-400 data-[state=active]:bg-white dark:data-[state=active]:bg-emerald-900/20 data-[state=active]:shadow-sm rounded-xl transition-all duration-200 hover:bg-gray-100 dark:hover:bg-white/10 dark:text-white/60"
+                    className="flex items-center gap-1 sm:gap-2 py-2 sm:py-3 px-2 sm:px-4 text-xs sm:text-sm data-[state=active]:text-emerald-600 dark:data-[state=active]:text-emerald-400 data-[state=active]:bg-white dark:data-[state=active]:bg-emerald-900/20 data-[state=active]:shadow-sm rounded-xl transition-all duration-200 hover:bg-gray-100 dark:hover:bg-white/10 dark:text-white/60"
                   >
-                    <Clock className="h-4 w-4" />
-                    Orta ({riskDistribution.medium})
+                    <Clock className="h-3 w-3 sm:h-4 sm:w-4 flex-shrink-0" />
+                    <span className="truncate">Orta ({riskDistribution.medium})</span>
                   </TabsTrigger>
                   <TabsTrigger
                     value="yuksekRisk"
-                    className="flex items-center gap-2 py-3 px-4 data-[state=active]:text-emerald-600 dark:data-[state=active]:text-emerald-400 data-[state=active]:bg-white dark:data-[state=active]:bg-emerald-900/20 data-[state=active]:shadow-sm rounded-xl transition-all duration-200 hover:bg-gray-100 dark:hover:bg-white/10 dark:text-white/60"
+                    className="flex items-center gap-1 sm:gap-2 py-2 sm:py-3 px-2 sm:px-4 text-xs sm:text-sm data-[state=active]:text-emerald-600 dark:data-[state=active]:text-emerald-400 data-[state=active]:bg-white dark:data-[state=active]:bg-emerald-900/20 data-[state=active]:shadow-sm rounded-xl transition-all duration-200 hover:bg-gray-100 dark:hover:bg-white/10 dark:text-white/60"
                   >
-                    <AlertTriangle className="h-4 w-4" />
-                    Yüksek ({riskDistribution.high})
+                    <AlertTriangle className="h-3 w-3 sm:h-4 sm:w-4 flex-shrink-0" />
+                    <span className="truncate">Yüksek ({riskDistribution.high})</span>
                   </TabsTrigger>
                 </TabsList>
               </div>
               <div className="p-4 border-b border-gray-100 dark:border-white/10 bg-white dark:bg-black/20">
                 <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                   <div className="flex gap-2">
-                    <div className="relative">
+                    <div className="relative flex-1 sm:flex-initial">
                       <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-gray-400 dark:text-white/60" />
                       <Input
                         placeholder="Analiz ara..."
                         value={searchTerm}
                         onChange={(e) => handleSearchChange(e.target.value)}
-                        className="pl-8 w-[250px] bg-white dark:bg-black/10 border border-gray-200 dark:border-white/10 focus-visible:border-emerald-500 dark:focus-visible:border-emerald-400 focus-visible:shadow-[0_0_0_0.5px_rgb(16,185,129)] dark:focus-visible:shadow-[0_0_0_0.5px_rgb(52,211,153)] transition-all duration-200 text-gray-900 dark:text-white placeholder:text-gray-500 dark:placeholder:text-white/50"
+                        className="pl-8 w-full sm:w-[250px] bg-white dark:bg-black/10 border border-gray-200 dark:border-white/10 focus-visible:border-emerald-500 dark:focus-visible:border-emerald-400 focus-visible:shadow-[0_0_0_0.5px_rgb(16,185,129)] dark:focus-visible:shadow-[0_0_0_0.5px_rgb(52,211,153)] transition-all duration-200 text-gray-900 dark:text-white placeholder:text-gray-500 dark:placeholder:text-white/50 text-sm"
                         autoComplete="off"
                         spellCheck="false"
                       />
@@ -549,11 +549,14 @@ export default function RiskAnaliziPage() {
                       <DropdownMenuTrigger asChild>
                         <Button
                           variant="outline"
-                          className="flex items-center gap-2 bg-transparent dark:bg-black/10 dark:border-white/10 dark:text-white"
+                          className="flex items-center gap-1 sm:gap-2 bg-transparent dark:bg-black/10 dark:border-white/10 dark:text-white text-xs sm:text-sm px-2 sm:px-4"
                         >
-                          <ArrowUpDown className="h-4 w-4" />
-                          Sırala: {sortBy === "created_at" ? "Tarih" : "Risk Skoru"} (
-                          {sortOrder === "asc" ? "Artan" : "Azalan"})
+                          <ArrowUpDown className="h-3 w-3 sm:h-4 sm:w-4 flex-shrink-0" />
+                          <span className="hidden sm:inline">
+                            Sırala: {sortBy === "created_at" ? "Tarih" : "Risk Skoru"} (
+                            {sortOrder === "asc" ? "Artan" : "Azalan"})
+                          </span>
+                          <span className="sm:hidden">Sırala</span>
                         </Button>
                       </DropdownMenuTrigger>
                       <DropdownMenuContent align="start">
@@ -564,22 +567,22 @@ export default function RiskAnaliziPage() {
                       </DropdownMenuContent>
                     </DropdownMenu>
                   </div>
-                  <div className="flex border rounded-lg dark:border-white/10">
+                  <div className="flex border rounded-lg dark:border-white/10 self-end sm:self-auto">
                     <Button
                       variant={viewMode === "cards" ? "default" : "ghost"}
                       size="sm"
                       onClick={() => handleViewModeChange("cards")}
-                      className={`rounded-r-none ${viewMode === "cards" ? "bg-gradient-to-r from-emerald-600 to-teal-700 hover:from-emerald-700 hover:to-teal-800 text-white" : "dark:text-white/70"}`}
+                      className={`rounded-r-none h-9 w-9 sm:h-10 sm:w-10 p-0 ${viewMode === "cards" ? "bg-gradient-to-r from-emerald-600 to-teal-700 hover:from-emerald-700 hover:to-teal-800 text-white" : "dark:text-white/70"}`}
                     >
-                      <BsFillGrid3X3GapFill className="h-4 w-4" />
+                      <BsFillGrid3X3GapFill className="h-3 w-3 sm:h-4 sm:w-4" />
                     </Button>
                     <Button
                       variant={viewMode === "table" ? "default" : "ghost"}
                       size="sm"
                       onClick={() => handleViewModeChange("table")}
-                      className={`rounded-l-none ${viewMode === "table" ? "bg-gradient-to-r from-emerald-600 to-teal-700 hover:from-emerald-700 hover:to-teal-800 text-white" : "dark:text-white/70"}`}
+                      className={`rounded-l-none h-9 w-9 sm:h-10 sm:w-10 p-0 ${viewMode === "table" ? "bg-gradient-to-r from-emerald-600 to-teal-700 hover:from-emerald-700 hover:to-teal-800 text-white" : "dark:text-white/70"}`}
                     >
-                      <List className="h-4 w-4" />
+                      <List className="h-3 w-3 sm:h-4 sm:w-4" />
                     </Button>
                   </div>
                 </div>

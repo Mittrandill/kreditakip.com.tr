@@ -33,10 +33,10 @@ export default function LandingPage() {
         <Header />
 
         {/* Hero Section */}
-        <section className="mt-10 pb-16 px-4 md:px-8 lg:px-16">
-          <div className="container mx-auto relative bg-black/20 border border-white/10 rounded-3xl p-8 md:p-12 backdrop-blur-xl shadow-2xl shadow-emerald-500/5">
-            {/* Floating Visuals */}
-            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-[80%] w-full h-full flex justify-center items-center z-0 pointer-events-none">
+        <section className="mt-6 sm:mt-10 pb-12 sm:pb-16 px-4 md:px-8 lg:px-16">
+          <div className="container mx-auto relative bg-black/20 border border-white/10 rounded-2xl sm:rounded-3xl p-6 sm:p-8 md:p-12 backdrop-blur-xl shadow-2xl shadow-emerald-500/5">
+            {/* Floating Visuals - Hidden on mobile */}
+            <div className="hidden md:flex absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-[80%] w-full h-full justify-center items-center z-0 pointer-events-none">
               <div className="w-64 h-80 bg-white/5 border border-white/10 rounded-2xl -rotate-12 transform transition-transform duration-500 hover:scale-105 shadow-lg p-4 flex flex-col">
                 <FileText className="w-8 h-8 text-white/30 mb-4" />
                 <div className="space-y-2">
@@ -63,34 +63,34 @@ export default function LandingPage() {
             </div>
 
             <div className="relative z-10">
-              <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8 text-center md:text-left">
-                <div className="space-y-2">
-                  <p className="text-4xl font-bold text-white">1.2M+</p>
-                  <p className="text-white/60">Analiz Edilen Döküm</p>
+              <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-8 text-center md:text-left">
+                <div className="space-y-1 sm:space-y-2">
+                  <p className="text-2xl sm:text-3xl md:text-4xl font-bold text-white">1.2M+</p>
+                  <p className="text-xs sm:text-sm md:text-base text-white/60">Analiz Edilen Döküm</p>
                 </div>
                 <div className="hidden lg:block" />
-                <div className="space-y-2 md:text-right">
-                  <p className="text-4xl font-bold text-white">99.8%</p>
-                  <p className="text-white/60">OCR Doğruluk Oranı</p>
+                <div className="space-y-1 sm:space-y-2 text-right md:text-right lg:text-right">
+                  <p className="text-2xl sm:text-3xl md:text-4xl font-bold text-white">99.8%</p>
+                  <p className="text-xs sm:text-sm md:text-base text-white/60">OCR Doğruluk Oranı</p>
                 </div>
               </div>
 
-              <div className="mt-64" />
+              <div className="mt-16 md:mt-40 lg:mt-64" />
 
-              <div className="grid md:grid-cols-2 gap-12 items-end">
-                <div className="space-y-6">
-                  <h1 className="text-5xl md:text-6xl font-bold tracking-tight leading-tight">
+              <div className="grid md:grid-cols-2 gap-8 sm:gap-12 items-end">
+                <div className="space-y-4 sm:space-y-6">
+                  <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold tracking-tight leading-tight">
                     Kredi Yönetiminin <span className="text-emerald-400">Geleceği</span>
                   </h1>
-                  <p className="text-lg text-white/70 max-w-md">
+                  <p className="text-base sm:text-lg text-white/70 max-w-md">
                     OCR teknolojisi ile kredi dökümlerinizi saniyeler içinde akıllı dijital ödeme planlarına dönüştürün
                     ve finansal durumunuzu kontrol altına alın.
                   </p>
-                  <div className="flex flex-col sm:flex-row gap-4">
-                    <Link href="/giris">
+                  <div className="flex flex-col sm:flex-row gap-3 sm:gap-4">
+                    <Link href="/giris" className="w-full sm:w-auto">
                       <Button
                         size="lg"
-                        className="bg-gradient-to-r from-emerald-500 to-teal-500 text-white font-bold px-8 py-6 text-base hover:from-emerald-600 hover:to-teal-600"
+                        className="w-full sm:w-auto bg-gradient-to-r from-emerald-500 to-teal-500 text-white font-bold px-6 sm:px-8 py-5 sm:py-6 text-sm sm:text-base hover:from-emerald-600 hover:to-teal-600"
                       >
                         Hemen Başla
                       </Button>
@@ -98,13 +98,13 @@ export default function LandingPage() {
                     <Button
                       variant="outline"
                       size="lg"
-                      className="bg-transparent border-white/20 text-white hover:bg-white/10 hover:border-transparent hover:text-white dark:bg-transparent dark:border-white/20 dark:text-white dark:hover:bg-white/10 dark:hover:border-transparent dark:hover:text-white"
+                      className="w-full sm:w-auto bg-transparent border-white/20 text-white hover:bg-white/10 hover:border-transparent hover:text-white dark:bg-transparent dark:border-white/20 dark:text-white dark:hover:bg-white/10 dark:hover:border-transparent dark:hover:text-white px-6 sm:px-8 py-5 sm:py-6 text-sm sm:text-base"
                     >
                       Demo İzle
                     </Button>
                   </div>
                 </div>
-                <div>
+                <div className="mt-8 md:mt-0">
                   <UserGrowthChart />
                 </div>
               </div>
@@ -113,9 +113,9 @@ export default function LandingPage() {
         </section>
 
         {/* Features Section */}
-        <section className="py-20 px-4 md:px-8 lg:px-16 relative overflow-hidden">
-          {/* Background Elements */}
-          <div className="absolute inset-0">
+        <section className="py-12 sm:py-16 md:py-20 px-4 md:px-8 lg:px-16 relative overflow-hidden">
+          {/* Background Elements - Hidden on mobile */}
+          <div className="absolute inset-0 hidden md:block">
             <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-emerald-500/10 rounded-full blur-3xl" />
             <div className="absolute bottom-1/4 right-1/4 w-80 h-80 bg-teal-500/10 rounded-full blur-3xl" />
             <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[120px] h-[120px] border border-white/5 rounded-full" />
@@ -124,15 +124,15 @@ export default function LandingPage() {
           </div>
 
           <div className="container mx-auto relative z-10">
-            <div className="text-center mb-16">
-              <div className="inline-flex items-center gap-2 bg-black/20 border border-white/10 rounded-full px-6 py-3 backdrop-blur-xl mb-8">
+            <div className="text-center mb-12 sm:mb-16">
+              <div className="inline-flex items-center gap-2 bg-black/20 border border-white/10 rounded-full px-4 sm:px-6 py-2 sm:py-3 backdrop-blur-xl mb-6 sm:mb-8">
                 <div className="w-2 h-2 bg-emerald-400 rounded-full animate-pulse" />
-                <span className="text-white/80 text-sm font-medium">Neden Bizi Seçmelisiniz?</span>
+                <span className="text-white/80 text-xs sm:text-sm font-medium">Neden Bizi Seçmelisiniz?</span>
               </div>
-              <h2 className="text-5xl md:text-6xl font-bold mb-8 leading-tight">
+              <h2 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold mb-6 sm:mb-8 leading-tight px-4">
                 Neden <span className="text-emerald-400">Kredi Takip</span>?
               </h2>
-              <p className="text-xl text-white/70 max-w-4xl mx-auto leading-relaxed">
+              <p className="text-base sm:text-lg md:text-xl text-white/70 max-w-4xl mx-auto leading-relaxed px-4">
                 Yapay zeka destekli gelişmiş teknoloji ve kullanıcı dostu arayüzle kredi yönetiminizi bir üst seviyeye
                 taşıyın
               </p>
@@ -140,45 +140,45 @@ export default function LandingPage() {
 
             {/* Main Feature Grid */}
             <div className="relative">
-              {/* Central Hub */}
-              <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-32 h-32 bg-gradient-to-br from-emerald-500/30 to-teal-500/30 rounded-full backdrop-blur-xl border border-white/20 flex items-center justify-center z-20">
+              {/* Central Hub - Hidden on mobile */}
+              <div className="hidden lg:flex absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-32 h-32 bg-gradient-to-br from-emerald-500/30 to-teal-500/30 rounded-full backdrop-blur-xl border border-white/20 items-center justify-center z-20">
                 <div className="w-16 h-16 bg-black/40 rounded-full flex items-center justify-center">
                   <Scan className="w-8 h-8 text-emerald-400" />
                 </div>
               </div>
 
               {/* Feature Cards arranged in a circle */}
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 max-w-7xl mx-auto">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8 max-w-7xl mx-auto">
                 {/* OCR Technology */}
                 <div className="relative group">
-                  <div className="absolute inset-0 bg-gradient-to-r from-emerald-500/20 to-transparent rounded-3xl blur-xl group-hover:blur-2xl transition-all duration-500" />
+                  <div className="absolute inset-0 bg-gradient-to-r from-emerald-500/20 to-transparent rounded-2xl sm:rounded-3xl blur-xl group-hover:blur-2xl transition-all duration-500" />
                   <Card className="relative bg-black/20 border-white/10 backdrop-blur-xl hover:border-emerald-500/30 transition-all duration-500 group-hover:transform group-hover:scale-105 overflow-hidden">
-                    <CardContent className="p-10">
+                    <CardContent className="p-6 sm:p-8 md:p-10">
                       {/* Floating Icon */}
-                      <div className="relative mb-8">
-                        <div className="w-20 h-20 bg-gradient-to-br from-emerald-500/30 to-emerald-500/10 rounded-2xl flex items-center justify-center mx-auto backdrop-blur-sm border border-emerald-500/20">
-                          <Scan className="w-10 h-10 text-emerald-400" />
+                      <div className="relative mb-6 sm:mb-8">
+                        <div className="w-16 h-16 sm:w-20 sm:h-20 bg-gradient-to-br from-emerald-500/30 to-emerald-500/10 rounded-xl sm:rounded-2xl flex items-center justify-center mx-auto backdrop-blur-sm border border-emerald-500/20">
+                          <Scan className="w-8 h-8 sm:w-10 sm:h-10 text-emerald-400" />
                         </div>
-                        <div className="absolute -top-2 -right-2 w-6 h-6 bg-emerald-500/80 rounded-full flex items-center justify-center">
-                          <div className="w-2 h-2 bg-white rounded-full animate-pulse" />
+                        <div className="absolute -top-2 -right-2 w-5 h-5 sm:w-6 sm:h-6 bg-emerald-500/80 rounded-full flex items-center justify-center">
+                          <div className="w-1.5 h-1.5 sm:w-2 sm:h-2 bg-white rounded-full animate-pulse" />
                         </div>
                       </div>
 
-                      <h3 className="text-2xl font-bold text-white mb-4 text-center">Gelişmiş OCR Teknolojisi</h3>
-                      <p className="text-white/70 text-center leading-relaxed mb-6">
+                      <h3 className="text-xl sm:text-2xl font-bold text-white mb-3 sm:mb-4 text-center">Gelişmiş OCR Teknolojisi</h3>
+                      <p className="text-sm sm:text-base text-white/70 text-center leading-relaxed mb-4 sm:mb-6">
                         Yapay zeka destekli %99.8 doğruluk oranıyla kredi dökümlerinizi saniyeler içinde dijital formata
                         dönüştürün
                       </p>
 
                       {/* Stats */}
-                      <div className="flex justify-center gap-6 pt-4 border-t border-white/10">
+                      <div className="flex justify-center gap-4 sm:gap-6 pt-3 sm:pt-4 border-t border-white/10">
                         <div className="text-center">
-                          <div className="text-2xl font-bold text-emerald-400">99.8%</div>
-                          <div className="text-xs text-white/60">Doğruluk</div>
+                          <div className="text-xl sm:text-2xl font-bold text-emerald-400">99.8%</div>
+                          <div className="text-[10px] sm:text-xs text-white/60">Doğruluk</div>
                         </div>
                         <div className="text-center">
-                          <div className="text-2xl font-bold text-emerald-400">{"<3s"}</div>
-                          <div className="text-xs text-white/60">İşlem</div>
+                          <div className="text-xl sm:text-2xl font-bold text-emerald-400">{"<3s"}</div>
+                          <div className="text-[10px] sm:text-xs text-white/60">İşlem</div>
                         </div>
                       </div>
                     </CardContent>
@@ -819,17 +819,17 @@ export default function LandingPage() {
         </section>
 
         {/* Testimonials Section */}
-        <section className="py-16 px-4 md:px-8 lg:px-16">
+        <section className="py-12 sm:py-16 px-4 md:px-8 lg:px-16">
           <div className="container mx-auto">
-            <div className="text-center mb-12">
-              <h2 className="text-4xl md:text-5xl font-bold mb-6">
+            <div className="text-center mb-8 sm:mb-12">
+              <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold mb-4 sm:mb-6">
                 Kullanıcılarımız <span className="text-emerald-400">Ne Diyor</span>?
               </h2>
             </div>
 
-            <div className="grid md:grid-cols-3 gap-8">
+            <div className="grid md:grid-cols-3 gap-6 sm:gap-8">
               <Card className="bg-black/20 border-white/10 backdrop-blur-xl hover:border-white/20 transition-all duration-300">
-                <CardContent className="p-8">
+                <CardContent className="p-6 sm:p-8">
                   <div className="flex items-center mb-4">
                     {[...Array(5)].map((_, i) => (
                       <Star key={i} className="w-5 h-5 text-emerald-400 fill-current" />
@@ -914,32 +914,32 @@ export default function LandingPage() {
         </section>
 
         {/* CTA Section */}
-        <section className="py-16 px-4 md:px-8 lg:px-16">
+        <section className="py-12 sm:py-16 px-4 md:px-8 lg:px-16">
           <div className="container mx-auto">
-            <div className="relative bg-black/20 border border-white/10 rounded-3xl p-12 md:p-16 text-center backdrop-blur-xl overflow-hidden">
-              <div className="absolute -top-10 -left-10 w-40 h-40 bg-emerald-500/20 rounded-full blur-2xl" />
-              <div className="absolute -bottom-10 -right-10 w-40 h-40 bg-teal-500/20 rounded-full blur-2xl" />
+            <div className="relative bg-black/20 border border-white/10 rounded-2xl sm:rounded-3xl p-8 sm:p-12 md:p-16 text-center backdrop-blur-xl overflow-hidden">
+              <div className="absolute -top-10 -left-10 w-32 h-32 sm:w-40 sm:h-40 bg-emerald-500/20 rounded-full blur-2xl" />
+              <div className="absolute -bottom-10 -right-10 w-32 h-32 sm:w-40 sm:h-40 bg-teal-500/20 rounded-full blur-2xl" />
               <div className="relative z-10">
-                <h2 className="text-4xl md:text-5xl font-bold mb-6">
+                <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold mb-4 sm:mb-6">
                   Finansal Özgürlüğünüze <span className="text-emerald-400">Başlayın</span>
                 </h2>
-                <p className="text-xl text-white/80 mb-8 max-w-2xl mx-auto">
+                <p className="text-base sm:text-lg md:text-xl text-white/80 mb-6 sm:mb-8 max-w-2xl mx-auto px-4">
                   Yapay zeka destekli kredi yönetimi ile finansal özgürlüğünüze ulaşmak için bugün Kredi Takip'e katılın
                 </p>
-                <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                  <Link href="/giris">
+                <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center">
+                  <Link href="/giris" className="w-full sm:w-auto">
                     <Button
                       size="lg"
-                      className="bg-gradient-to-r from-emerald-500 to-teal-500 text-white font-bold px-8 py-6 text-lg hover:from-emerald-600 hover:to-teal-600"
+                      className="w-full sm:w-auto bg-gradient-to-r from-emerald-500 to-teal-500 text-white font-bold px-6 sm:px-8 py-5 sm:py-6 text-base sm:text-lg hover:from-emerald-600 hover:to-teal-600"
                     >
                       Ücretsiz Başla
-                      <ArrowRight className="ml-2 w-5 h-5" />
+                      <ArrowRight className="ml-2 w-4 h-4 sm:w-5 sm:h-5" />
                     </Button>
                   </Link>
                   <Button
                     variant="outline"
                     size="lg"
-                    className="bg-transparent border-white/20 text-white hover:bg-white/10 hover:border-transparent hover:text-white dark:bg-transparent dark:border-white/20 dark:text-white dark:hover:bg-white/10 dark:hover:border-transparent dark:hover:text-white"
+                    className="w-full sm:w-auto bg-transparent border-white/20 text-white hover:bg-white/10 hover:border-transparent hover:text-white dark:bg-transparent dark:border-white/20 dark:text-white dark:hover:bg-white/10 dark:hover:border-transparent dark:hover:text-white px-6 sm:px-8 py-5 sm:py-6 text-base sm:text-lg"
                   >
                     Daha Fazla Bilgi
                   </Button>

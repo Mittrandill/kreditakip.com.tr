@@ -338,9 +338,9 @@ export default function RiskAnalysisDetailPage() {
               >
                 <ArrowLeft className="h-5 w-5" />
               </Button>
-              <div>
-                <h1 className="text-2xl md:text-3xl font-bold">Risk Analizi Detayı</h1>
-                <p className="text-white/80 text-sm md:text-base">
+              <div className="min-w-0">
+                <h1 className="text-xl sm:text-2xl md:text-3xl font-bold">Risk Analizi Detayı</h1>
+                <p className="text-white/80 text-xs sm:text-sm md:text-base">
                   {new Date(analysis.created_at).toLocaleDateString("tr-TR", {
                     day: "numeric",
                     month: "long",
@@ -353,31 +353,32 @@ export default function RiskAnalysisDetailPage() {
             <Button
               variant="destructive"
               onClick={() => setDeleteDialogOpen(true)}
-              className="bg-red-500/80 hover:bg-red-600/90 border-red-400/50 text-white shrink-0"
+              className="bg-red-500/80 hover:bg-red-600/90 border-red-400/50 text-white shrink-0 w-full sm:w-auto text-sm"
             >
-              <Trash2 className="mr-2 h-4 w-4" />
-              Analizi Sil
+              <Trash2 className="mr-2 h-3 w-3 sm:h-4 sm:w-4" />
+              <span className="hidden sm:inline">Analizi Sil</span>
+              <span className="sm:hidden">Sil</span>
             </Button>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-center mb-6">
-            <div className="flex items-center gap-4">
-              <div className={`p-3 rounded-xl bg-white/25`}>
-                {analysisData.overallRiskScore?.color === "emerald" && <ShieldCheck className="h-8 w-8 text-white" />}
-                {analysisData.overallRiskScore?.color === "yellow" && <ShieldAlert className="h-8 w-8 text-white" />}
-                {analysisData.overallRiskScore?.color === "red" && <ShieldAlert className="h-8 w-8 text-white" />}
-                {!analysisData.overallRiskScore?.color && <ShieldQuestion className="h-8 w-8 text-white" />}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6 items-center mb-6">
+            <div className="flex items-center gap-3 sm:gap-4">
+              <div className={`p-2 sm:p-3 rounded-xl bg-white/25`}>
+                {analysisData.overallRiskScore?.color === "emerald" && <ShieldCheck className="h-6 w-6 sm:h-8 sm:w-8 text-white" />}
+                {analysisData.overallRiskScore?.color === "yellow" && <ShieldAlert className="h-6 w-6 sm:h-8 sm:w-8 text-white" />}
+                {analysisData.overallRiskScore?.color === "red" && <ShieldAlert className="h-6 w-6 sm:h-8 sm:w-8 text-white" />}
+                {!analysisData.overallRiskScore?.color && <ShieldQuestion className="h-6 w-6 sm:h-8 sm:w-8 text-white" />}
               </div>
-              <div>
-                <h3 className="text-xl sm:text-2xl font-bold text-white">
+              <div className="min-w-0">
+                <h3 className="text-lg sm:text-xl md:text-2xl font-bold text-white truncate">
                   {analysisData.overallRiskScore?.value || "Bilinmiyor"}
                 </h3>
-                <p className="text-white/80 text-sm sm:text-base">Genel Risk Skoru</p>
+                <p className="text-white/80 text-xs sm:text-sm md:text-base">Genel Risk Skoru</p>
               </div>
             </div>
             <Badge
               variant="secondary"
-              className={`px-4 py-2 text-sm font-medium bg-white/20 text-white border-white/30 justify-self-start md:justify-self-end`}
+              className={`px-3 sm:px-4 py-1.5 sm:py-2 text-xs sm:text-sm font-medium bg-white/20 text-white border-white/30 justify-self-start md:justify-self-end`}
             >
               {riskProgressData.label}
             </Badge>
@@ -451,31 +452,37 @@ export default function RiskAnalysisDetailPage() {
                 <TabsTrigger
                   key={tab}
                   value={tab}
-                  className="flex items-center justify-center gap-2 py-2.5 px-3 data-[state=active]:bg-white dark:data-[state=active]:bg-emerald-900/20 data-[state=active]:text-emerald-600 dark:data-[state=active]:text-emerald-400 data-[state=active]:shadow-sm rounded-lg transition-all duration-200 hover:bg-gray-100 dark:hover:bg-white/10 text-xs sm:text-sm"
+                  className="flex items-center justify-center gap-1 sm:gap-2 py-2 sm:py-2.5 px-2 sm:px-3 data-[state=active]:bg-white dark:data-[state=active]:bg-emerald-900/20 data-[state=active]:text-emerald-600 dark:data-[state=active]:text-emerald-400 data-[state=active]:shadow-sm rounded-lg transition-all duration-200 hover:bg-gray-100 dark:hover:bg-white/10 text-xs sm:text-sm"
                 >
                   {tab === "summary" && (
                     <>
-                      <Info className="h-4 w-4" /> Genel Bakış
+                      <Info className="h-3 w-3 sm:h-4 sm:w-4 flex-shrink-0" />
+                      <span className="hidden sm:inline">Genel Bakış</span>
+                      <span className="sm:hidden">Genel</span>
                     </>
                   )}
                   {tab === "factors" && (
                     <>
-                      <Activity className="h-4 w-4" /> Faktörler
+                      <Activity className="h-3 w-3 sm:h-4 sm:w-4 flex-shrink-0" />
+                      <span className="truncate">Faktörler</span>
                     </>
                   )}
                   {tab === "recommendations" && (
                     <>
-                      <Lightbulb className="h-4 w-4" /> Öneriler
+                      <Lightbulb className="h-3 w-3 sm:h-4 sm:w-4 flex-shrink-0" />
+                      <span className="truncate">Öneriler</span>
                     </>
                   )}
                   {tab === "details" && (
                     <>
-                      <ClipboardList className="h-4 w-4" /> Detaylar
+                      <ClipboardList className="h-3 w-3 sm:h-4 sm:w-4 flex-shrink-0" />
+                      <span className="truncate">Detaylar</span>
                     </>
                   )}
                   {tab === "outlook" && (
                     <>
-                      <TrendingUp className="h-4 w-4" /> Gelecek
+                      <TrendingUp className="h-3 w-3 sm:h-4 sm:w-4 flex-shrink-0" />
+                      <span className="truncate">Gelecek</span>
                     </>
                   )}
                 </TabsTrigger>

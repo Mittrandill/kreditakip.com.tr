@@ -407,14 +407,14 @@ export default function KredilerPage() {
           {/* Search, Sort and View Toggle */}
           <div className="p-4 border-b border-gray-100 dark:border-white/10 bg-white dark:bg-black/20">
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-              <div className="flex gap-2">
-                <div className="relative">
+              <div className="flex gap-2 flex-1">
+                <div className="relative flex-1 sm:flex-initial">
                   <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-gray-400 dark:text-white/60" />
                   <Input
                     placeholder="Kredi ara..."
                     value={searchTerm}
                     onChange={(e) => handleSearchChange(e.target.value)}
-                    className="pl-8 w-[250px] bg-white dark:bg-black/10 border border-gray-200 dark:border-white/10 focus-visible:border-emerald-500 dark:focus-visible:border-emerald-400 focus-visible:shadow-[0_0_0_0.5px_rgb(16,185,129)] dark:focus-visible:shadow-[0_0_0_0.5px_rgb(52,211,153)] transition-all duration-200 text-gray-900 dark:text-white placeholder:text-gray-500 dark:placeholder:text-white/50"
+                    className="pl-8 w-full sm:w-[250px] bg-white dark:bg-black/10 border border-gray-200 dark:border-white/10 focus-visible:border-emerald-500 dark:focus-visible:border-emerald-400 focus-visible:shadow-[0_0_0_0.5px_rgb(16,185,129)] dark:focus-visible:shadow-[0_0_0_0.5px_rgb(52,211,153)] transition-all duration-200 text-gray-900 dark:text-white placeholder:text-gray-500 dark:placeholder:text-white/50 text-sm"
                     autoComplete="off"
                     spellCheck="false"
                   />
@@ -423,11 +423,14 @@ export default function KredilerPage() {
                   <DropdownMenuTrigger asChild>
                     <Button
                       variant="outline"
-                      className="flex items-center gap-2 bg-transparent dark:bg-black/10 dark:border-white/10 dark:text-white"
+                      className="flex items-center gap-1 sm:gap-2 bg-transparent dark:bg-black/10 dark:border-white/10 dark:text-white text-xs sm:text-sm px-2 sm:px-4"
                     >
-                      <ArrowUpDown className="h-4 w-4" />
-                      Sırala: {sortBy === "kalanBorc" ? "Kalan Borç" : "Son Ödeme Tarihi"} (
-                      {sortOrder === "asc" ? "Artan" : "Azalan"})
+                      <ArrowUpDown className="h-3 w-3 sm:h-4 sm:w-4 flex-shrink-0" />
+                      <span className="hidden sm:inline">
+                        Sırala: {sortBy === "kalanBorc" ? "Kalan Borç" : "Son Ödeme Tarihi"} (
+                        {sortOrder === "asc" ? "Artan" : "Azalan"})
+                      </span>
+                      <span className="sm:hidden">Sırala</span>
                     </Button>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="start" className="bg-white dark:bg-gradient-to-br dark:from-slate-950 dark:to-gray-900 border-gray-200 dark:border-slate-800 backdrop-blur-sm">
@@ -448,22 +451,22 @@ export default function KredilerPage() {
               </div>
 
               {/* View Mode Toggle */}
-              <div className="flex border rounded-lg dark:border-white/10">
+              <div className="flex border rounded-lg dark:border-white/10 self-end sm:self-auto">
                 <Button
                   variant={viewMode === "cards" ? "default" : "ghost"}
                   size="sm"
                   onClick={() => handleViewModeChange("cards")}
-                  className={`rounded-r-none ${viewMode === "cards" ? "bg-gradient-to-r from-emerald-600 to-teal-700 hover:from-emerald-700 hover:to-teal-800" : "dark:text-white dark:hover:bg-white/10"}`}
+                  className={`rounded-r-none h-9 w-9 sm:h-10 sm:w-10 p-0 ${viewMode === "cards" ? "bg-gradient-to-r from-emerald-600 to-teal-700 hover:from-emerald-700 hover:to-teal-800" : "dark:text-white dark:hover:bg-white/10"}`}
                 >
-                  <BsFillGrid3X3GapFill className="h-4 w-4" />
+                  <BsFillGrid3X3GapFill className="h-3 w-3 sm:h-4 sm:w-4" />
                 </Button>
                 <Button
                   variant={viewMode === "table" ? "default" : "ghost"}
                   size="sm"
                   onClick={() => handleViewModeChange("table")}
-                  className={`rounded-l-none ${viewMode === "table" ? "bg-gradient-to-r from-emerald-600 to-teal-700 hover:from-emerald-700 hover:to-teal-800" : "dark:text-white dark:hover:bg-white/10"}`}
+                  className={`rounded-l-none h-9 w-9 sm:h-10 sm:w-10 p-0 ${viewMode === "table" ? "bg-gradient-to-r from-emerald-600 to-teal-700 hover:from-emerald-700 hover:to-teal-800" : "dark:text-white dark:hover:bg-white/10"}`}
                 >
-                  <List className="h-4 w-4" />
+                  <List className="h-3 w-3 sm:h-4 sm:w-4" />
                 </Button>
               </div>
             </div>

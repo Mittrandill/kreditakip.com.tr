@@ -238,8 +238,8 @@ export default function DashboardPage() {
           <CardContent className="p-6 md:p-8">
             <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4 mb-6">
               <div className="flex-1">
-                <p className="text-white/80 text-base mb-2">Bugünkü Toplam Borç</p>
-                <h2 className="text-4xl md:text-5xl font-bold mb-1">
+                <p className="text-white/80 text-sm sm:text-base mb-2">Bugünkü Toplam Borç</p>
+                <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold mb-1 truncate">
                   {formatCurrency(totalDebt)}
                 </h2>
               </div>
@@ -289,11 +289,11 @@ export default function DashboardPage() {
           <Card className="bg-white dark:bg-black/20 border border-gray-200 dark:border-0 overflow-hidden">
             <CardContent className="p-6">
               <div className="flex items-start justify-between mb-4">
-                <div>
-                  <h3 className="text-3xl font-bold text-gray-900 dark:text-white mb-1">{totalCredits}</h3>
-                  <p className="text-sm text-emerald-600 dark:text-emerald-400">Aktif Kredi</p>
+                <div className="min-w-0 flex-1">
+                  <h3 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white mb-1 truncate">{totalCredits}</h3>
+                  <p className="text-xs sm:text-sm text-emerald-600 dark:text-emerald-400">Aktif Kredi</p>
                 </div>
-                <select className="text-xs bg-gray-50 dark:bg-gray-800 text-gray-700 dark:text-gray-300 border border-gray-200 dark:border-gray-700 rounded px-2 py-1 cursor-pointer focus:outline-none focus:ring-2 focus:ring-emerald-500">
+                <select className="text-[10px] sm:text-xs bg-gray-50 dark:bg-gray-800 text-gray-700 dark:text-gray-300 border border-gray-200 dark:border-gray-700 rounded px-1.5 sm:px-2 py-1 cursor-pointer focus:outline-none focus:ring-2 focus:ring-emerald-500 flex-shrink-0">
                   <option>Bu Hafta ▼</option>
                   <option>Bu Ay</option>
                   <option>Bu Yıl</option>
@@ -321,11 +321,11 @@ export default function DashboardPage() {
           <Card className="bg-white dark:bg-black/20 border border-gray-200 dark:border-0 overflow-hidden">
             <CardContent className="p-6">
               <div className="flex items-start justify-between mb-4">
-                <div>
-                  <h3 className="text-3xl font-bold text-gray-900 dark:text-white mb-1">+{Math.round((totalPaidDebt / totalAmount) * 100) || 0}%</h3>
-                  <p className="text-sm text-emerald-600 dark:text-emerald-400">İlerleme</p>
+                <div className="min-w-0 flex-1">
+                  <h3 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white mb-1 truncate">+{Math.round((totalPaidDebt / totalAmount) * 100) || 0}%</h3>
+                  <p className="text-xs sm:text-sm text-emerald-600 dark:text-emerald-400">İlerleme</p>
                 </div>
-                <select className="text-xs bg-gray-50 dark:bg-gray-800 text-gray-700 dark:text-gray-300 border border-gray-200 dark:border-gray-700 rounded px-2 py-1 cursor-pointer focus:outline-none focus:ring-2 focus:ring-emerald-500">
+                <select className="text-[10px] sm:text-xs bg-gray-50 dark:bg-gray-800 text-gray-700 dark:text-gray-300 border border-gray-200 dark:border-gray-700 rounded px-1.5 sm:px-2 py-1 cursor-pointer focus:outline-none focus:ring-2 focus:ring-emerald-500 flex-shrink-0">
                   <option>Günlük ▼</option>
                   <option>Haftalık</option>
                   <option>Aylık</option>
@@ -347,8 +347,8 @@ export default function DashboardPage() {
           <Card className="bg-white dark:bg-black/20 border border-gray-200 dark:border-0 overflow-hidden">
             <CardContent className="p-6">
               <div className="flex items-start justify-between mb-4">
-                <div>
-                  <h3 className="text-3xl font-bold text-gray-900 dark:text-white mb-1">
+                <div className="min-w-0 flex-1">
+                  <h3 className="text-xl sm:text-2xl md:text-3xl font-bold text-gray-900 dark:text-white mb-1 truncate">
                     {formatCurrency((() => {
                       const now = new Date()
                       const filtered = upcomingPayments.filter(p => {
@@ -364,10 +364,10 @@ export default function DashboardPage() {
                       return filtered.reduce((sum, p) => sum + p.total_payment, 0)
                     })())}
                   </h3>
-                  <p className="text-sm text-emerald-600 dark:text-emerald-400">Kalan Ödeme</p>
+                  <p className="text-xs sm:text-sm text-emerald-600 dark:text-emerald-400">Kalan Ödeme</p>
                 </div>
                 <select
-                  className="text-xs bg-gray-50 dark:bg-gray-800 text-gray-700 dark:text-gray-300 border border-gray-200 dark:border-gray-700 rounded px-2 py-1 cursor-pointer focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                  className="text-[10px] sm:text-xs bg-gray-50 dark:bg-gray-800 text-gray-700 dark:text-gray-300 border border-gray-200 dark:border-gray-700 rounded px-1.5 sm:px-2 py-1 cursor-pointer focus:outline-none focus:ring-2 focus:ring-emerald-500 flex-shrink-0"
                   value={paymentFilter}
                   onChange={(e) => setPaymentFilter(e.target.value as 'week' | 'month')}
                 >
@@ -474,16 +474,16 @@ export default function DashboardPage() {
           <Card className="bg-white dark:bg-black/20 border border-gray-200 dark:border-0 overflow-hidden">
             <CardContent className="p-6">
               <div className="flex items-start justify-between mb-4">
-                <div>
-                  <h3 className="text-3xl font-bold text-gray-900 dark:text-white mb-1">
+                <div className="min-w-0 flex-1">
+                  <h3 className="text-xl sm:text-2xl md:text-3xl font-bold text-gray-900 dark:text-white mb-1 truncate">
                     {formatCurrency(monthlyPaymentPeriod === 'monthly' ? monthlyPayment : monthlyPayment * 12)}
                   </h3>
-                  <p className="text-sm text-emerald-600 dark:text-emerald-400">
+                  <p className="text-xs sm:text-sm text-emerald-600 dark:text-emerald-400">
                     {monthlyPaymentPeriod === 'monthly' ? 'Aylık Ödeme' : 'Yıllık Ödeme'}
                   </p>
                 </div>
                 <select
-                  className="text-xs bg-gray-50 dark:bg-gray-800 text-gray-700 dark:text-gray-300 border border-gray-200 dark:border-gray-700 rounded px-2 py-1 cursor-pointer focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                  className="text-[10px] sm:text-xs bg-gray-50 dark:bg-gray-800 text-gray-700 dark:text-gray-300 border border-gray-200 dark:border-gray-700 rounded px-1.5 sm:px-2 py-1 cursor-pointer focus:outline-none focus:ring-2 focus:ring-emerald-500 flex-shrink-0"
                   value={monthlyPaymentPeriod}
                   onChange={(e) => setMonthlyPaymentPeriod(e.target.value as 'monthly' | 'yearly')}
                 >
@@ -526,15 +526,15 @@ export default function DashboardPage() {
       {/* Monthly Payment Trend Chart - Karciz Style */}
       <Card className="bg-white dark:bg-black/20 border border-gray-200 dark:border-0 overflow-hidden">
         <CardHeader className="border-b border-gray-100 dark:border-white/5 pb-4">
-          <div className="flex items-center justify-between">
-            <div>
-              <CardTitle className="text-xl text-gray-900 dark:text-white">Aylık Ödeme Trendi</CardTitle>
-              <CardDescription className="text-sm mt-1 text-gray-600 dark:text-gray-400">
+          <div className="flex items-center justify-between gap-3">
+            <div className="min-w-0 flex-1">
+              <CardTitle className="text-lg sm:text-xl text-gray-900 dark:text-white truncate">Aylık Ödeme Trendi</CardTitle>
+              <CardDescription className="text-xs sm:text-sm mt-1 text-gray-600 dark:text-gray-400 truncate">
                 Son {trendPeriod === '6months' ? '6' : '12'} ayın ödeme durumu
               </CardDescription>
             </div>
             <select
-              className="text-sm bg-gray-50 dark:bg-gray-800 text-gray-700 dark:text-gray-300 border border-gray-200 dark:border-gray-700 px-3 py-1.5 rounded cursor-pointer focus:outline-none focus:ring-2 focus:ring-emerald-500"
+              className="text-xs sm:text-sm bg-gray-50 dark:bg-gray-800 text-gray-700 dark:text-gray-300 border border-gray-200 dark:border-gray-700 px-2 sm:px-3 py-1.5 rounded cursor-pointer focus:outline-none focus:ring-2 focus:ring-emerald-500 flex-shrink-0"
               value={trendPeriod}
               onChange={(e) => setTrendPeriod(e.target.value as '6months' | '12months')}
             >
@@ -601,10 +601,10 @@ export default function DashboardPage() {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <Card className="bg-white dark:bg-black/20 border border-gray-200 dark:border-0 overflow-hidden lg:col-span-2">
           <CardHeader className="border-b border-gray-100 dark:border-white/5 pb-4">
-            <div className="flex items-center justify-between">
-              <CardTitle className="text-xl text-gray-900 dark:text-white">Yaklaşan Ödemeler</CardTitle>
+            <div className="flex items-center justify-between gap-3">
+              <CardTitle className="text-lg sm:text-xl text-gray-900 dark:text-white truncate">Yaklaşan Ödemeler</CardTitle>
               <select
-                className="text-sm bg-gray-50 dark:bg-gray-800 text-gray-700 dark:text-gray-300 border border-gray-200 dark:border-gray-700 px-3 py-1.5 rounded cursor-pointer focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                className="text-xs sm:text-sm bg-gray-50 dark:bg-gray-800 text-gray-700 dark:text-gray-300 border border-gray-200 dark:border-gray-700 px-2 sm:px-3 py-1.5 rounded cursor-pointer focus:outline-none focus:ring-2 focus:ring-emerald-500 flex-shrink-0"
                 value={upcomingPaymentsFilter}
                 onChange={(e) => setUpcomingPaymentsFilter(e.target.value as 'week' | 'month' | 'all')}
               >
@@ -637,25 +637,25 @@ export default function DashboardPage() {
                 const daysUntil = Math.ceil((paymentDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24))
 
                 return (
-                  <div key={payment.id} className="flex items-center gap-4 p-4 hover:bg-gray-50 dark:hover:bg-white/5 transition-colors">
+                  <div key={payment.id} className="flex items-center gap-3 sm:gap-4 p-3 sm:p-4 hover:bg-gray-50 dark:hover:bg-white/5 transition-colors">
                     <BankLogo
                       bankName={payment.credits?.banks?.name || "Banka"}
                       logoUrl={payment.credits?.banks?.logo_url || undefined}
                       size="sm"
-                      className="ring-2 ring-emerald-500/30"
+                      className="ring-2 ring-emerald-500/30 flex-shrink-0"
                     />
                     <div className="flex-1 min-w-0">
-                      <h6 className="text-sm font-semibold text-gray-900 dark:text-white truncate">
+                      <h6 className="text-xs sm:text-sm font-semibold text-gray-900 dark:text-white truncate">
                         {payment.credits?.banks?.name || "Banka"}
                       </h6>
-                      <div className="flex items-center gap-2 text-xs text-gray-600 dark:text-gray-400 mt-0.5">
-                        <span>{payment.credits?.credit_code || "N/A"}</span>
+                      <div className="flex items-center gap-1.5 sm:gap-2 text-[10px] sm:text-xs text-gray-600 dark:text-gray-400 mt-0.5">
+                        <span className="truncate">{payment.credits?.credit_code || "N/A"}</span>
                         <span>•</span>
-                        <span>{daysUntil === 0 ? "Bugün" : daysUntil === 1 ? "Yarın" : `${daysUntil} gün`}</span>
+                        <span className="whitespace-nowrap">{daysUntil === 0 ? "Bugün" : daysUntil === 1 ? "Yarın" : `${daysUntil} gün`}</span>
                       </div>
                     </div>
-                    <div className="text-right">
-                      <p className="text-sm font-bold text-gray-900 dark:text-white">
+                    <div className="text-right flex-shrink-0">
+                      <p className="text-xs sm:text-sm font-bold text-gray-900 dark:text-white whitespace-nowrap">
                         {formatCurrency(payment.total_payment)}
                       </p>
                     </div>
@@ -669,9 +669,9 @@ export default function DashboardPage() {
 
         <Card className="bg-white dark:bg-black/20 border border-gray-200 dark:border-0 overflow-hidden">
           <CardHeader className="border-b border-gray-100 dark:border-white/5 pb-4">
-            <div className="flex items-center justify-between">
-              <CardTitle className="text-xl text-gray-900 dark:text-white">Kredi Türü Dağılımı</CardTitle>
-              <select className="text-sm bg-gray-50 dark:bg-gray-800 text-gray-700 dark:text-gray-300 border border-gray-200 dark:border-gray-700 px-3 py-1.5 rounded cursor-pointer focus:outline-none focus:ring-2 focus:ring-emerald-500">
+            <div className="flex items-center justify-between gap-3">
+              <CardTitle className="text-lg sm:text-xl text-gray-900 dark:text-white truncate">Kredi Türü Dağılımı</CardTitle>
+              <select className="text-xs sm:text-sm bg-gray-50 dark:bg-gray-800 text-gray-700 dark:text-gray-300 border border-gray-200 dark:border-gray-700 px-2 sm:px-3 py-1.5 rounded cursor-pointer focus:outline-none focus:ring-2 focus:ring-emerald-500 flex-shrink-0">
                 <option>Tümü</option>
               </select>
             </div>
