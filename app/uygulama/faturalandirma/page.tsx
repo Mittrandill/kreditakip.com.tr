@@ -250,18 +250,18 @@ export default function FaturalandirmaPage() {
               <p className="text-white/80 text-base md:text-lg mb-4">
                 Ödeme geçmişinizi ve faturalarınızı görüntüleyin ve yönetin
               </p>
-              <div className="grid grid-cols-3 gap-4">
+              <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 sm:gap-4">
                 <div>
-                  <p className="text-white/70 text-sm mb-1">Toplam Ödenen</p>
-                  <p className="text-2xl font-bold">{totalPaid.toFixed(2)} ₺</p>
+                  <p className="text-white/70 text-xs sm:text-sm mb-1">Toplam Ödenen</p>
+                  <p className="text-xl sm:text-2xl font-bold truncate">{totalPaid.toFixed(2)} ₺</p>
                 </div>
                 <div>
-                  <p className="text-white/70 text-sm mb-1">Bekleyen Fatura</p>
-                  <p className="text-2xl font-bold">{pendingInvoicesCount}</p>
+                  <p className="text-white/70 text-xs sm:text-sm mb-1">Bekleyen Fatura</p>
+                  <p className="text-xl sm:text-2xl font-bold">{pendingInvoicesCount}</p>
                 </div>
-                <div>
-                  <p className="text-white/70 text-sm mb-1">Son Fatura</p>
-                  <p className="text-2xl font-bold">{lastInvoiceDate}</p>
+                <div className="col-span-2 sm:col-span-1">
+                  <p className="text-white/70 text-xs sm:text-sm mb-1">Son Fatura</p>
+                  <p className="text-xl sm:text-2xl font-bold truncate">{lastInvoiceDate}</p>
                 </div>
               </div>
             </div>
@@ -273,20 +273,20 @@ export default function FaturalandirmaPage() {
       <div className="bg-white dark:bg-black/20 rounded-2xl shadow-sm border border-gray-100 dark:border-white/10 overflow-hidden">
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
           <div className="border-b border-gray-100 dark:border-white/10 bg-gray-50/50 dark:bg-emerald-900/10">
-            <TabsList className="grid grid-cols-2 bg-transparent h-auto p-2 gap-2">
+            <TabsList className="grid grid-cols-2 bg-transparent h-auto p-1.5 sm:p-2 gap-1.5 sm:gap-2">
               <TabsTrigger
                 value="faturalar"
-                className="flex items-center gap-2 py-3 px-4 data-[state=active]:text-emerald-600 dark:data-[state=active]:text-emerald-400 data-[state=active]:bg-white dark:data-[state=active]:bg-emerald-900/20 data-[state=active]:shadow-sm rounded-xl transition-all duration-200 hover:bg-gray-100 dark:hover:bg-white/10 dark:text-white/60"
+                className="flex items-center gap-1 sm:gap-2 py-2 sm:py-3 px-2 sm:px-4 text-xs sm:text-sm data-[state=active]:text-emerald-600 dark:data-[state=active]:text-emerald-400 data-[state=active]:bg-white dark:data-[state=active]:bg-emerald-900/20 data-[state=active]:shadow-sm rounded-xl transition-all duration-200 hover:bg-gray-100 dark:hover:bg-white/10 dark:text-white/60"
               >
-                <FileText className="h-4 w-4" />
-                <span className="font-medium">Faturalarım</span>
+                <FileText className="h-3 w-3 sm:h-4 sm:w-4 flex-shrink-0" />
+                <span className="font-medium truncate">Faturalarım</span>
               </TabsTrigger>
               <TabsTrigger
                 value="odemeler"
-                className="flex items-center gap-2 py-3 px-4 data-[state=active]:text-emerald-600 dark:data-[state=active]:text-emerald-400 data-[state=active]:bg-white dark:data-[state=active]:bg-emerald-900/20 data-[state=active]:shadow-sm rounded-xl transition-all duration-200 hover:bg-gray-100 dark:hover:bg-white/10 dark:text-white/60"
+                className="flex items-center gap-1 sm:gap-2 py-2 sm:py-3 px-2 sm:px-4 text-xs sm:text-sm data-[state=active]:text-emerald-600 dark:data-[state=active]:text-emerald-400 data-[state=active]:bg-white dark:data-[state=active]:bg-emerald-900/20 data-[state=active]:shadow-sm rounded-xl transition-all duration-200 hover:bg-gray-100 dark:hover:bg-white/10 dark:text-white/60"
               >
-                <DollarSign className="h-4 w-4" />
-                <span className="font-medium">Ödeme Geçmişi</span>
+                <DollarSign className="h-3 w-3 sm:h-4 sm:w-4 flex-shrink-0" />
+                <span className="font-medium truncate">Ödeme Geçmişi</span>
               </TabsTrigger>
             </TabsList>
           </div>
@@ -294,14 +294,14 @@ export default function FaturalandirmaPage() {
           {/* Search and Sort */}
           <div className="p-4 border-b border-gray-100 dark:border-white/10 bg-white dark:bg-black/20">
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-              <div className="flex gap-2">
-                <div className="relative">
+              <div className="flex gap-2 flex-1">
+                <div className="relative flex-1 sm:flex-initial">
                   <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-gray-400 dark:text-white/60" />
                   <Input
                     placeholder={activeTab === "faturalar" ? "Fatura ara..." : "Ödeme ara..."}
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
-                    className="pl-8 w-[250px] bg-white dark:bg-black/10 border border-gray-200 dark:border-white/10 focus-visible:border-emerald-500 dark:focus-visible:border-emerald-400 focus-visible:shadow-[0_0_0_0.5px_rgb(16,185,129)] dark:focus-visible:shadow-[0_0_0_0.5px_rgb(52,211,153)] transition-all duration-200 text-gray-900 dark:text-white placeholder:text-gray-500 dark:placeholder:text-white/50"
+                    className="pl-8 w-full sm:w-[250px] bg-white dark:bg-black/10 border border-gray-200 dark:border-white/10 focus-visible:border-emerald-500 dark:focus-visible:border-emerald-400 focus-visible:shadow-[0_0_0_0.5px_rgb(16,185,129)] dark:focus-visible:shadow-[0_0_0_0.5px_rgb(52,211,153)] transition-all duration-200 text-gray-900 dark:text-white placeholder:text-gray-500 dark:placeholder:text-white/50 text-sm"
                     autoComplete="off"
                     spellCheck="false"
                   />
@@ -311,18 +311,21 @@ export default function FaturalandirmaPage() {
                     <DropdownMenuTrigger asChild>
                       <Button
                         variant="outline"
-                        className="flex items-center gap-2 bg-transparent dark:bg-black/10 dark:border-white/10 dark:text-white"
+                        className="flex items-center gap-1 sm:gap-2 bg-transparent dark:bg-black/10 dark:border-white/10 dark:text-white text-xs sm:text-sm px-2 sm:px-4"
                       >
-                        <ArrowUpDown className="h-4 w-4" />
-                        Sırala:{" "}
-                        {invoicesSortBy === "tarih"
-                          ? "Tarih"
-                          : invoicesSortBy === "tutar"
-                            ? "Tutar"
-                            : invoicesSortBy === "faturaNo"
-                              ? "Fatura No"
-                              : "Durum"}{" "}
-                        ({invoicesSortOrder === "asc" ? "Artan" : "Azalan"})
+                        <ArrowUpDown className="h-3 w-3 sm:h-4 sm:w-4 flex-shrink-0" />
+                        <span className="hidden sm:inline">
+                          Sırala:{" "}
+                          {invoicesSortBy === "tarih"
+                            ? "Tarih"
+                            : invoicesSortBy === "tutar"
+                              ? "Tutar"
+                              : invoicesSortBy === "faturaNo"
+                                ? "Fatura No"
+                                : "Durum"}{" "}
+                          ({invoicesSortOrder === "asc" ? "Artan" : "Azalan"})
+                        </span>
+                        <span className="sm:hidden">Sırala</span>
                       </Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="start" className="dark:bg-black/90 dark:border-white/10">
@@ -357,16 +360,19 @@ export default function FaturalandirmaPage() {
                     <DropdownMenuTrigger asChild>
                       <Button
                         variant="outline"
-                        className="flex items-center gap-2 bg-transparent dark:bg-black/10 dark:border-white/10 dark:text-white"
+                        className="flex items-center gap-1 sm:gap-2 bg-transparent dark:bg-black/10 dark:border-white/10 dark:text-white text-xs sm:text-sm px-2 sm:px-4"
                       >
-                        <ArrowUpDown className="h-4 w-4" />
-                        Sırala:{" "}
-                        {transactionsSortBy === "tarih"
-                          ? "Tarih"
-                          : transactionsSortBy === "tutar"
-                            ? "Tutar"
-                            : "Durum"}{" "}
-                        ({transactionsSortOrder === "asc" ? "Artan" : "Azalan"})
+                        <ArrowUpDown className="h-3 w-3 sm:h-4 sm:w-4 flex-shrink-0" />
+                        <span className="hidden sm:inline">
+                          Sırala:{" "}
+                          {transactionsSortBy === "tarih"
+                            ? "Tarih"
+                            : transactionsSortBy === "tutar"
+                              ? "Tutar"
+                              : "Durum"}{" "}
+                          ({transactionsSortOrder === "asc" ? "Artan" : "Azalan"})
+                        </span>
+                        <span className="sm:hidden">Sırala</span>
                       </Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="start" className="dark:bg-black/90 dark:border-white/10">

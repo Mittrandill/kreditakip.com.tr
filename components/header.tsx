@@ -40,6 +40,8 @@ import {
   Moon,
   Sun,
   KeyRound,
+  Crown,
+  Receipt,
 } from "lucide-react"
 import { useIsMobile } from "@/hooks/use-mobile"
 import { useAuth } from "@/hooks/use-auth"
@@ -68,6 +70,8 @@ const navItems = [
   { href: "/uygulama/odeme-plani", label: "Ödeme Planı", icon: Calendar },
   { href: "/uygulama/raporlar", label: "Raporlar", icon: BarChart3 },
   { href: "/uygulama/risk-analizi", label: "Risk Analizi", icon: ShieldCheck },
+  { href: "/uygulama/premium", label: "Premium", icon: Crown },
+  { href: "/uygulama/faturalandirma", label: "Faturalar", icon: Receipt },
 ]
 
 const settingsItems = [
