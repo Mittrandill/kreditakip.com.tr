@@ -20,6 +20,7 @@ import {
   ChevronRight,
   Check,
   Search,
+  X,
 } from "lucide-react"
 import { useAuth } from "@/hooks/use-auth"
 import { useSubscription } from "@/hooks/use-subscription" // Import subscription hook
@@ -629,11 +630,11 @@ function PaymentsList({
         </div>
         <Button
           variant="outline"
-          className="gap-2 min-w-[140px] bg-transparent dark:border-white/10 dark:text-white/70 dark:hover:bg-white/10"
+          className="gap-2 w-full sm:w-auto sm:min-w-[140px] text-sm bg-transparent dark:border-white/10 dark:text-white/70 dark:hover:bg-white/10"
           onClick={exportToExcel}
         >
           <Download className="h-4 w-4" />
-          İndir
+          Excel İndir
         </Button>
       </div>
 
@@ -657,7 +658,7 @@ function PaymentsList({
           <DropdownMenuTrigger asChild>
             <Button
               variant="outline"
-              className="gap-2 min-w-[140px] bg-transparent dark:border-white/10 dark:text-white/70 dark:hover:bg-white/10"
+              className="gap-2 w-full sm:w-auto sm:min-w-[140px] text-sm bg-transparent dark:border-white/10 dark:text-white/70 dark:hover:bg-white/10"
             >
               <Filter className="h-4 w-4" />
               {statusFilter === "all"
@@ -711,10 +712,10 @@ function PaymentsList({
           <DropdownMenuTrigger asChild>
             <Button
               variant="outline"
-              className="gap-2 min-w-[140px] bg-transparent dark:border-white/10 dark:text-white/70 dark:hover:bg-white/10"
+              className="gap-2 w-full sm:w-auto sm:min-w-[140px] text-sm bg-transparent dark:border-white/10 dark:text-white/70 dark:hover:bg-white/10"
             >
               <CreditCard className="h-4 w-4" />
-              {bankFilter === "all" ? "Tüm Bankalar" : bankFilter}
+              <span className="truncate">{bankFilter === "all" ? "Tüm Bankalar" : bankFilter}</span>
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end" className="w-48 dark:bg-black/20 dark:border-white/10">
@@ -740,17 +741,18 @@ function PaymentsList({
         </DropdownMenu>
       </div>
 
-      <div className="overflow-x-auto">
+      {/* Desktop Table View */}
+      <div className="hidden md:block overflow-x-auto">
         <table className="w-full border-collapse">
           <thead>
             <tr className="bg-white dark:bg-black/20 border-b border-gray-200 dark:border-white/10">
-              <th className="font-semibold text-gray-700 dark:text-white/70 p-4 text-left">Banka</th>
-              <th className="font-semibold text-gray-700 dark:text-white/70 p-4 text-left">Taksit No</th>
-              <th className="font-semibold text-gray-700 dark:text-white/70 p-4 text-left">Vade Tarihi</th>
-              <th className="font-semibold text-gray-700 dark:text-white/70 p-4 text-left">Ana Para</th>
-              <th className="font-semibold text-gray-700 dark:text-white/70 p-4 text-left">Faiz</th>
-              <th className="font-semibold text-gray-700 dark:text-white/70 p-4 text-left">Toplam</th>
-              <th className="w-[100px] text-right font-semibold text-gray-700 dark:text-white/70 p-4">İşlemler</th>
+              <th className="font-semibold text-gray-700 dark:text-white/70 p-4 text-left text-sm">Banka</th>
+              <th className="font-semibold text-gray-700 dark:text-white/70 p-4 text-left text-sm">Taksit No</th>
+              <th className="font-semibold text-gray-700 dark:text-white/70 p-4 text-left text-sm">Vade Tarihi</th>
+              <th className="font-semibold text-gray-700 dark:text-white/70 p-4 text-left text-sm">Ana Para</th>
+              <th className="font-semibold text-gray-700 dark:text-white/70 p-4 text-left text-sm">Faiz</th>
+              <th className="font-semibold text-gray-700 dark:text-white/70 p-4 text-left text-sm">Toplam</th>
+              <th className="w-[100px] text-right font-semibold text-gray-700 dark:text-white/70 p-4 text-sm">İşlemler</th>
             </tr>
           </thead>
           <tbody>
@@ -832,6 +834,105 @@ function PaymentsList({
             })}
           </tbody>
         </table>
+      </div>
+
+      {/* Mobile Card View */}
+      <div className="md:hidden space-y-3">
+        {currentPayments.map((payment) => {
+          const statusInfo = getStatusInfo(payment)
+          const StatusIcon = statusInfo.icon
+          const isUpdating = updatingPayments.has(payment.id)
+
+          return (
+            <div
+              key={payment.id}
+              className="bg-white dark:bg-black/20 rounded-xl border border-gray-200 dark:border-white/10 p-4 space-y-3"
+            >
+              {/* Bank Header */}
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <BankLogo
+                    bankName={payment.credits.banks.name}
+                    logoUrl={payment.credits.banks.logo_url ?? undefined}
+                    size="sm"
+                  />
+                  <div>
+                    <div className="font-medium text-sm text-gray-900 dark:text-white">
+                      {payment.credits.banks.name}
+                    </div>
+                    <div className="text-xs text-gray-500 dark:text-white/60">{payment.credits.credit_code}</div>
+                  </div>
+                </div>
+                <div className="text-lg font-bold text-teal-700 dark:text-teal-400">
+                  #{payment.installment_number}
+                </div>
+              </div>
+
+              {/* Payment Details */}
+              <div className="grid grid-cols-2 gap-2 text-sm">
+                <div>
+                  <div className="text-xs text-gray-500 dark:text-white/60">Vade Tarihi</div>
+                  <div className="font-medium text-gray-900 dark:text-white">{formatDate(payment.due_date)}</div>
+                </div>
+                <div>
+                  <div className="text-xs text-gray-500 dark:text-white/60">Toplam</div>
+                  <div className="font-bold text-gray-900 dark:text-white">
+                    {formatCurrency(payment.total_payment)}
+                  </div>
+                </div>
+                <div>
+                  <div className="text-xs text-gray-500 dark:text-white/60">Ana Para</div>
+                  <div className="font-medium text-gray-900 dark:text-white">
+                    {formatCurrency(payment.principal_amount)}
+                  </div>
+                </div>
+                <div>
+                  <div className="text-xs text-gray-500 dark:text-white/60">Faiz</div>
+                  <div className="font-medium text-orange-600 dark:text-orange-400">
+                    {formatCurrency(payment.interest_amount)}
+                  </div>
+                </div>
+              </div>
+
+              {/* Action Button */}
+              <div className="pt-2 border-t border-gray-100 dark:border-white/10">
+                {payment.status === "pending" ? (
+                  <Button
+                    onClick={() => handlePaymentStatusChange(payment.id, "paid")}
+                    disabled={isUpdating}
+                    size="sm"
+                    className="w-full h-9 text-xs bg-emerald-600 hover:bg-emerald-700"
+                  >
+                    {isUpdating ? (
+                      <div className="animate-spin rounded-full h-3 w-3 border border-white border-t-transparent"></div>
+                    ) : (
+                      <>
+                        <Check className="h-3 w-3 mr-1" />
+                        Ödendi Olarak İşaretle
+                      </>
+                    )}
+                  </Button>
+                ) : (
+                  <Button
+                    onClick={() => handlePaymentStatusChange(payment.id, "pending")}
+                    disabled={isUpdating}
+                    size="sm"
+                    className="w-full h-9 text-xs bg-gradient-to-r from-orange-600 to-amber-700 text-white border-transparent hover:from-orange-700 hover:to-amber-800"
+                  >
+                    {isUpdating ? (
+                      <div className="animate-spin rounded-full h-3 w-3 border border-white border-t-transparent"></div>
+                    ) : (
+                      <>
+                        <X className="h-3 w-3 mr-1" />
+                        Ödenmedi Olarak İşaretle
+                      </>
+                    )}
+                  </Button>
+                )}
+              </div>
+            </div>
+          )
+        })}
       </div>
 
       {currentPayments.length === 0 && (
@@ -1712,32 +1813,33 @@ export default function OdemePlaniPage() {
       <div className="bg-white dark:bg-black/20 rounded-2xl shadow-sm border border-gray-100 dark:border-white/10 overflow-hidden">
         <Tabs value={selectedTab} onValueChange={setSelectedTab} className="w-full">
           <div className="border-b border-gray-100 dark:border-white/10 bg-gray-50/50 dark:bg-emerald-900/10">
-            <TabsList className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 bg-transparent h-auto p-2 gap-2">
+            <TabsList className="grid grid-cols-3 bg-transparent h-auto p-1 sm:p-2 gap-1 sm:gap-2">
               <TabsTrigger
                 value="takvim"
-                className="flex items-center gap-2 py-3 px-4 data-[state=active]:text-emerald-600 dark:data-[state=active]:text-emerald-400 data-[state=active]:bg-white dark:data-[state=active]:bg-emerald-900/20 data-[state=active]:shadow-sm rounded-xl transition-all duration-200 hover:bg-gray-100 dark:hover:bg-white/10 dark:text-white/60"
+                className="flex items-center justify-center gap-1 sm:gap-2 py-2 sm:py-3 px-2 sm:px-4 text-xs sm:text-sm data-[state=active]:text-emerald-600 dark:data-[state=active]:text-emerald-400 data-[state=active]:bg-white dark:data-[state=active]:bg-emerald-900/20 data-[state=active]:shadow-sm rounded-xl transition-all duration-200 hover:bg-gray-100 dark:hover:bg-white/10 dark:text-white/60"
               >
-                <Calendar className="h-4 w-4" />
-                <span className="hidden sm:inline font-medium">Takvim</span>
+                <Calendar className="h-3 w-3 sm:h-4 sm:w-4" />
+                <span className="font-medium">Takvim</span>
               </TabsTrigger>
               <TabsTrigger
                 value="liste"
-                className="flex items-center gap-2 py-3 px-4 data-[state=active]:text-emerald-600 dark:data-[state=active]:text-emerald-400 data-[state=active]:bg-white dark:data-[state=active]:bg-emerald-900/20 data-[state=active]:shadow-sm rounded-xl transition-all duration-200 hover:bg-gray-100 dark:hover:bg-white/10 dark:text-white/60"
+                className="flex items-center justify-center gap-1 sm:gap-2 py-2 sm:py-3 px-2 sm:px-4 text-xs sm:text-sm data-[state=active]:text-emerald-600 dark:data-[state=active]:text-emerald-400 data-[state=active]:bg-white dark:data-[state=active]:bg-emerald-900/20 data-[state=active]:shadow-sm rounded-xl transition-all duration-200 hover:bg-gray-100 dark:hover:bg-white/10 dark:text-white/60"
               >
-                <CreditCard className="h-4 w-4" />
-                <span className="hidden sm:inline font-medium">Liste</span>
+                <CreditCard className="h-3 w-3 sm:h-4 sm:w-4" />
+                <span className="font-medium">Liste</span>
               </TabsTrigger>
               <TabsTrigger
                 value="hatirlatici"
-                className="flex items-center gap-2 py-3 px-4 data-[state=active]:text-emerald-600 dark:data-[state=active]:text-emerald-400 data-[state=active]:bg-white dark:data-[state=active]:bg-emerald-900/20 data-[state=active]:shadow-sm rounded-xl transition-all duration-200 hover:bg-gray-100 dark:hover:bg-white/10 dark:text-white/60"
+                className="flex items-center justify-center gap-1 sm:gap-2 py-2 sm:py-3 px-2 sm:px-4 text-xs sm:text-sm data-[state=active]:text-emerald-600 dark:data-[state=active]:text-emerald-400 data-[state=active]:bg-white dark:data-[state=active]:bg-emerald-900/20 data-[state=active]:shadow-sm rounded-xl transition-all duration-200 hover:bg-gray-100 dark:hover:bg-white/10 dark:text-white/60"
               >
-                <Bell className="h-4 w-4" />
-                <span className="hidden sm:inline font-medium">Hatırlatıcı</span>
+                <Bell className="h-3 w-3 sm:h-4 sm:w-4" />
+                <span className="font-medium hidden sm:inline">Hatırlatıcı</span>
+                <span className="font-medium sm:hidden text-[10px]">Hatırla.</span>
               </TabsTrigger>
             </TabsList>
           </div>
 
-          <div className="p-6">
+          <div className="p-3 sm:p-6">
             <TabsContent value="takvim">
               <CalendarView payments={allPayments} />
             </TabsContent>
