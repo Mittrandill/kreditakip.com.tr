@@ -284,7 +284,7 @@ export default function DashboardPage() {
         </Card>
 
         {/* 4 Metric Cards - Karciz Style (Exact Match) */}
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           {/* Card 1: Aktif Kredi - Line Chart */}
           <Card className="bg-white dark:bg-black/20 border border-gray-200 dark:border-0 overflow-hidden">
             <CardContent className="p-6">

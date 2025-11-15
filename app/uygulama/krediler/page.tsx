@@ -336,18 +336,18 @@ export default function KredilerPage() {
               <p className="text-white/80 text-base md:text-lg mb-4">
                 Tüm kredilerinizi buradan yönetebilir, detaylarını görüntüleyebilir ve düzenleyebilirsiniz
               </p>
-              <div className="grid grid-cols-3 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4">
                 <div>
-                  <p className="text-white/70 text-sm mb-1">Toplam Borç</p>
-                  <p className="text-2xl font-bold">{formatCurrency(totalDebt)}</p>
+                  <p className="text-white/70 text-xs sm:text-sm mb-1">Toplam Borç</p>
+                  <p className="text-xl sm:text-2xl font-bold">{formatCurrency(totalDebt)}</p>
                 </div>
                 <div>
-                  <p className="text-white/70 text-sm mb-1">Aktif Kredi</p>
-                  <p className="text-2xl font-bold">{activeCount}</p>
+                  <p className="text-white/70 text-xs sm:text-sm mb-1">Aktif Kredi</p>
+                  <p className="text-xl sm:text-2xl font-bold">{activeCount}</p>
                 </div>
                 <div>
-                  <p className="text-white/70 text-sm mb-1">Aylık Ödeme</p>
-                  <p className="text-2xl font-bold">{formatCurrency(monthlyPayment)}</p>
+                  <p className="text-white/70 text-xs sm:text-sm mb-1">Aylık Ödeme</p>
+                  <p className="text-xl sm:text-2xl font-bold">{formatCurrency(monthlyPayment)}</p>
                 </div>
               </div>
             </div>
@@ -368,36 +368,36 @@ export default function KredilerPage() {
       <div className="bg-white dark:bg-black/20 rounded-2xl shadow-sm border border-gray-100 dark:border-white/10 overflow-hidden">
         <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full">
           <div className="border-b border-gray-100 dark:border-white/10 bg-gray-50/50 dark:bg-emerald-900/10">
-            <TabsList className="grid grid-cols-4 bg-transparent h-auto p-2 gap-2">
+            <TabsList className="grid grid-cols-4 bg-transparent h-auto p-1 sm:p-2 gap-1 sm:gap-2">
               <TabsTrigger
                 value="tumKrediler"
-                className="flex items-center gap-2 py-3 px-4 data-[state=active]:text-emerald-600 dark:data-[state=active]:text-emerald-400 data-[state=active]:bg-white dark:data-[state=active]:bg-emerald-900/20 data-[state=active]:shadow-sm rounded-xl transition-all duration-200 hover:bg-gray-100 dark:hover:bg-white/10 dark:text-white/60"
+                className="flex items-center gap-1 sm:gap-2 py-2 sm:py-3 px-2 sm:px-4 text-xs sm:text-sm data-[state=active]:text-emerald-600 dark:data-[state=active]:text-emerald-400 data-[state=active]:bg-white dark:data-[state=active]:bg-emerald-900/20 data-[state=active]:shadow-sm rounded-xl transition-all duration-200 hover:bg-gray-100 dark:hover:bg-white/10 dark:text-white/60"
               >
-                <CreditCard className="h-4 w-4" />
+                <CreditCard className="h-3 w-3 sm:h-4 sm:w-4" />
                 <span className="hidden sm:inline font-medium">Tüm Krediler</span>
                 <span className="sm:hidden font-medium">Tümü</span>
               </TabsTrigger>
               <TabsTrigger
                 value="aktifKrediler"
-                className="flex items-center gap-2 py-3 px-4 data-[state=active]:text-emerald-600 dark:data-[state=active]:text-emerald-400 data-[state=active]:bg-white dark:data-[state=active]:bg-emerald-900/20 data-[state=active]:shadow-sm rounded-xl transition-all duration-200 hover:bg-gray-100 dark:hover:bg-white/10 dark:text-white/60"
+                className="flex items-center gap-1 sm:gap-2 py-2 sm:py-3 px-2 sm:px-4 text-xs sm:text-sm data-[state=active]:text-emerald-600 dark:data-[state=active]:text-emerald-400 data-[state=active]:bg-white dark:data-[state=active]:bg-emerald-900/20 data-[state=active]:shadow-sm rounded-xl transition-all duration-200 hover:bg-gray-100 dark:hover:bg-white/10 dark:text-white/60"
               >
-                <CheckCircle className="h-4 w-4" />
+                <CheckCircle className="h-3 w-3 sm:h-4 sm:w-4" />
                 <span className="hidden sm:inline font-medium">Aktif</span>
                 <span className="sm:hidden font-medium">Aktif</span>
               </TabsTrigger>
               <TabsTrigger
                 value="gecikmisKrediler"
-                className="flex items-center gap-2 py-3 px-4 data-[state=active]:text-emerald-600 dark:data-[state=active]:text-emerald-400 data-[state=active]:bg-white dark:data-[state=active]:bg-emerald-900/20 data-[state=active]:shadow-sm rounded-xl transition-all duration-200 hover:bg-gray-100 dark:hover:bg-white/10 dark:text-white/60"
+                className="flex items-center gap-1 sm:gap-2 py-2 sm:py-3 px-2 sm:px-4 text-xs sm:text-sm data-[state=active]:text-emerald-600 dark:data-[state=active]:text-emerald-400 data-[state=active]:bg-white dark:data-[state=active]:bg-emerald-900/20 data-[state=active]:shadow-sm rounded-xl transition-all duration-200 hover:bg-gray-100 dark:hover:bg-white/10 dark:text-white/60"
               >
-                <AlertCircle className="h-4 w-4" />
+                <AlertCircle className="h-3 w-3 sm:h-4 sm:w-4" />
                 <span className="hidden sm:inline font-medium">Gecikmiş</span>
-                <span className="sm:hidden font-medium">Gecikmiş</span>
+                <span className="sm:hidden font-medium text-[10px]">Gecikmiş</span>
               </TabsTrigger>
               <TabsTrigger
                 value="kapaliKrediler"
-                className="flex items-center gap-2 py-3 px-4 data-[state=active]:text-emerald-600 dark:data-[state=active]:text-emerald-400 data-[state=active]:bg-white dark:data-[state=active]:bg-emerald-900/20 data-[state=active]:shadow-sm rounded-xl transition-all duration-200 hover:bg-gray-100 dark:hover:bg-white/10 dark:text-white/60"
+                className="flex items-center gap-1 sm:gap-2 py-2 sm:py-3 px-2 sm:px-4 text-xs sm:text-sm data-[state=active]:text-emerald-600 dark:data-[state=active]:text-emerald-400 data-[state=active]:bg-white dark:data-[state=active]:bg-emerald-900/20 data-[state=active]:shadow-sm rounded-xl transition-all duration-200 hover:bg-gray-100 dark:hover:bg-white/10 dark:text-white/60"
               >
-                <Archive className="h-4 w-4" />
+                <Archive className="h-3 w-3 sm:h-4 sm:w-4" />
                 <span className="hidden sm:inline font-medium">Kapalı</span>
                 <span className="sm:hidden font-medium">Kapalı</span>
               </TabsTrigger>

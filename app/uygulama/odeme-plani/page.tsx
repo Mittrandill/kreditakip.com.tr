@@ -273,18 +273,18 @@ function CalendarView({ payments }: { payments: PaymentWithCredit[] }) {
         </div>
       </div>
 
-      <div className="grid grid-cols-7 gap-2">
+      <div className="grid grid-cols-7 gap-1 sm:gap-2">
         {dayNames.map((day) => (
           <div
             key={day}
-            className="p-2 text-center text-sm font-medium text-gray-500 dark:text-white/60 bg-gray-50 dark:bg-black/10 rounded-t-lg"
+            className="p-1 sm:p-2 text-center text-xs sm:text-sm font-medium text-gray-500 dark:text-white/60 bg-gray-50 dark:bg-black/10 rounded-t-lg"
           >
             {day}
           </div>
         ))}
 
         {Array.from({ length: startingDayOfWeek }, (_, i) => (
-          <div key={`empty-${i}`} className="p-2 h-32 bg-gray-50/30 dark:bg-black/10 rounded-lg"></div>
+          <div key={`empty-${i}`} className="p-1 sm:p-2 h-20 sm:h-32 bg-gray-50/30 dark:bg-black/10 rounded-lg"></div>
         ))}
 
         {Array.from({ length: daysInMonth }, (_, i) => {
@@ -296,7 +296,7 @@ function CalendarView({ payments }: { payments: PaymentWithCredit[] }) {
           return (
             <div
               key={day}
-              className={`p-2 h-32 border rounded-lg transition-all hover:shadow-md ${
+              className={`p-1 sm:p-2 h-20 sm:h-32 border rounded-lg transition-all hover:shadow-md ${
                 isToday
                   ? "bg-blue-50 dark:bg-blue-900/30 border-blue-300 dark:border-blue-700 shadow-md ring-2 ring-blue-200 dark:ring-blue-800"
                   : dayPayments.length > 0
@@ -305,7 +305,7 @@ function CalendarView({ payments }: { payments: PaymentWithCredit[] }) {
               }`}
             >
               <div
-                className={`text-sm font-semibold mb-2 ${
+                className={`text-xs sm:text-sm font-semibold mb-1 sm:mb-2 ${
                   isToday
                     ? "text-blue-700 dark:text-blue-400"
                     : dayPayments.length > 0
@@ -315,11 +315,11 @@ function CalendarView({ payments }: { payments: PaymentWithCredit[] }) {
               >
                 {day}
                 {isToday && (
-                  <span className="ml-1 text-xs bg-gray-600 dark:bg-emerald-900/30 text-white px-1 rounded">Bugün</span>
+                  <span className="ml-1 text-[10px] sm:text-xs bg-gray-600 dark:bg-emerald-900/30 text-white px-1 rounded hidden sm:inline">Bugün</span>
                 )}
               </div>
 
-              <div className="space-y-1 overflow-y-auto max-h-20">
+              <div className="space-y-0.5 sm:space-y-1 overflow-y-auto max-h-14 sm:max-h-20">
                 {dayPayments.map((payment, idx) => {
                   const bankColor = getBankColor(payment.credits.banks.name)
                   const isOverdue = new Date(payment.due_date) < new Date() && payment.status === "pending"
@@ -1647,18 +1647,18 @@ export default function OdemePlaniPage() {
               <p className="text-white/80 text-base md:text-lg mb-4">
                 Tüm kredilerinizin ödeme planlarını görüntüleyin, takip edin ve hatırlatıcılar oluşturun
               </p>
-              <div className="grid grid-cols-3 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4">
                 <div>
-                  <p className="text-white/70 text-sm mb-1">Bu Ay</p>
-                  <p className="text-2xl font-bold">{formatCurrency(thisMonthTotal)}</p>
+                  <p className="text-white/70 text-xs sm:text-sm mb-1">Bu Ay</p>
+                  <p className="text-xl sm:text-2xl font-bold">{formatCurrency(thisMonthTotal)}</p>
                 </div>
                 <div>
-                  <p className="text-white/70 text-sm mb-1">Yaklaşan (7 Gün)</p>
-                  <p className="text-2xl font-bold">{next7DaysPayments.length}</p>
+                  <p className="text-white/70 text-xs sm:text-sm mb-1">Yaklaşan (7 Gün)</p>
+                  <p className="text-xl sm:text-2xl font-bold">{next7DaysPayments.length}</p>
                 </div>
                 <div>
-                  <p className="text-white/70 text-sm mb-1">Gecikmiş</p>
-                  <p className="text-2xl font-bold">{overduePayments.length}</p>
+                  <p className="text-white/70 text-xs sm:text-sm mb-1">Gecikmiş</p>
+                  <p className="text-xl sm:text-2xl font-bold">{overduePayments.length}</p>
                 </div>
               </div>
             </div>

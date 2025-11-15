@@ -153,18 +153,18 @@ export default function RaporlarPage() {
               <p className="text-white/80 text-base md:text-lg mb-4">
                 Kredileriniz hakkında detaylı istatistikler ve analizler
               </p>
-              <div className="grid grid-cols-3 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4">
                 <div>
-                  <p className="text-white/70 text-sm mb-1">Toplam Borç</p>
-                  <p className="text-2xl font-bold">{formatCurrency(totalDebt)}</p>
+                  <p className="text-white/70 text-xs sm:text-sm mb-1">Toplam Borç</p>
+                  <p className="text-xl sm:text-2xl font-bold">{formatCurrency(totalDebt)}</p>
                 </div>
                 <div>
-                  <p className="text-white/70 text-sm mb-1">Aylık Ödeme</p>
-                  <p className="text-2xl font-bold">{formatCurrency(totalMonthly)}</p>
+                  <p className="text-white/70 text-xs sm:text-sm mb-1">Aylık Ödeme</p>
+                  <p className="text-xl sm:text-2xl font-bold">{formatCurrency(totalMonthly)}</p>
                 </div>
                 <div>
-                  <p className="text-white/70 text-sm mb-1">Ort. İlerleme</p>
-                  <p className="text-2xl font-bold">{Math.round(avgProgress)}%</p>
+                  <p className="text-white/70 text-xs sm:text-sm mb-1">Ort. İlerleme</p>
+                  <p className="text-xl sm:text-2xl font-bold">{Math.round(avgProgress)}%</p>
                 </div>
               </div>
             </div>
@@ -206,33 +206,35 @@ export default function RaporlarPage() {
       <div className="bg-white dark:bg-black/20 rounded-2xl shadow-sm border border-gray-100 dark:border-white/10 overflow-hidden">
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
           <div className="border-b border-gray-100 dark:border-white/10 bg-gray-50/50 dark:bg-emerald-900/10">
-            <TabsList className="grid grid-cols-4 bg-transparent h-auto p-2 gap-2">
+            <TabsList className="grid grid-cols-4 bg-transparent h-auto p-1 sm:p-2 gap-1 sm:gap-2">
               <TabsTrigger
                 value="overview"
-                className="flex items-center gap-2 py-3 px-4 data-[state=active]:text-emerald-600 dark:data-[state=active]:text-emerald-400 data-[state=active]:bg-white dark:data-[state=active]:bg-emerald-900/20 data-[state=active]:shadow-sm rounded-xl transition-all duration-200 hover:bg-gray-100 dark:hover:bg-white/10 dark:text-white/60"
+                className="flex items-center gap-1 sm:gap-2 py-2 sm:py-3 px-2 sm:px-4 text-xs sm:text-sm data-[state=active]:text-emerald-600 dark:data-[state=active]:text-emerald-400 data-[state=active]:bg-white dark:data-[state=active]:bg-emerald-900/20 data-[state=active]:shadow-sm rounded-xl transition-all duration-200 hover:bg-gray-100 dark:hover:bg-white/10 dark:text-white/60"
               >
-                <BarChart3 className="h-4 w-4" />
-                <span className="font-medium">Genel Bakış</span>
+                <BarChart3 className="h-3 w-3 sm:h-4 sm:w-4" />
+                <span className="font-medium hidden sm:inline">Genel Bakış</span>
+                <span className="font-medium sm:hidden text-[10px]">Genel</span>
               </TabsTrigger>
               <TabsTrigger
                 value="banks"
-                className="flex items-center gap-2 py-3 px-4 data-[state=active]:text-emerald-600 dark:data-[state=active]:text-emerald-400 data-[state=active]:bg-white dark:data-[state=active]:bg-emerald-900/20 data-[state=active]:shadow-sm rounded-xl transition-all duration-200 hover:bg-gray-100 dark:hover:bg-white/10 dark:text-white/60"
+                className="flex items-center gap-1 sm:gap-2 py-2 sm:py-3 px-2 sm:px-4 text-xs sm:text-sm data-[state=active]:text-emerald-600 dark:data-[state=active]:text-emerald-400 data-[state=active]:bg-white dark:data-[state=active]:bg-emerald-900/20 data-[state=active]:shadow-sm rounded-xl transition-all duration-200 hover:bg-gray-100 dark:hover:bg-white/10 dark:text-white/60"
               >
-                <Building2 className="h-4 w-4" />
+                <Building2 className="h-3 w-3 sm:h-4 sm:w-4" />
                 <span className="font-medium">Banka</span>
               </TabsTrigger>
               <TabsTrigger
                 value="comparison"
-                className="flex items-center gap-2 py-3 px-4 data-[state=active]:text-emerald-600 dark:data-[state=active]:text-emerald-400 data-[state=active]:bg-white dark:data-[state=active]:bg-emerald-900/20 data-[state=active]:shadow-sm rounded-xl transition-all duration-200 hover:bg-gray-100 dark:hover:bg-white/10 dark:text-white/60"
+                className="flex items-center gap-1 sm:gap-2 py-2 sm:py-3 px-2 sm:px-4 text-xs sm:text-sm data-[state=active]:text-emerald-600 dark:data-[state=active]:text-emerald-400 data-[state=active]:bg-white dark:data-[state=active]:bg-emerald-900/20 data-[state=active]:shadow-sm rounded-xl transition-all duration-200 hover:bg-gray-100 dark:hover:bg-white/10 dark:text-white/60"
               >
-                <GitCompare className="h-4 w-4" />
-                <span className="font-medium">Karşılaştırma</span>
+                <GitCompare className="h-3 w-3 sm:h-4 sm:w-4" />
+                <span className="font-medium hidden sm:inline">Karşılaştırma</span>
+                <span className="font-medium sm:hidden text-[10px]">Karş.</span>
               </TabsTrigger>
               <TabsTrigger
                 value="summary"
-                className="flex items-center gap-2 py-3 px-4 data-[state=active]:text-emerald-600 dark:data-[state=active]:text-emerald-400 data-[state=active]:bg-white dark:data-[state=active]:bg-emerald-900/20 data-[state=active]:shadow-sm rounded-xl transition-all duration-200 hover:bg-gray-100 dark:hover:bg-white/10 dark:text-white/60"
+                className="flex items-center gap-1 sm:gap-2 py-2 sm:py-3 px-2 sm:px-4 text-xs sm:text-sm data-[state=active]:text-emerald-600 dark:data-[state=active]:text-emerald-400 data-[state=active]:bg-white dark:data-[state=active]:bg-emerald-900/20 data-[state=active]:shadow-sm rounded-xl transition-all duration-200 hover:bg-gray-100 dark:hover:bg-white/10 dark:text-white/60"
               >
-                <FileText className="h-4 w-4" />
+                <FileText className="h-3 w-3 sm:h-4 sm:w-4" />
                 <span className="font-medium">Özet</span>
               </TabsTrigger>
             </TabsList>
