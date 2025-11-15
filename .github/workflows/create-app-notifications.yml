@@ -22,12 +22,14 @@ jobs:
 
     - name: Install dependencies
       run: |
-        npm install @supabase/supabase-js
+        npm install @supabase/supabase-js mailersend
 
     - name: Create App Notifications
       env:
         NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
         SERVICE_ROLE_KEY: ${{ secrets.SERVICE_ROLE_KEY }}
+        MAILERSEND_API_KEY: ${{ secrets.MAILERSEND_API_KEY }}
+        NEXT_PUBLIC_SITE_URL: ${{ secrets.NEXT_PUBLIC_SITE_URL || 'https://kreditakip.com.tr' }}
       run: |
         echo "📂 Current working directory: $(pwd)"
         echo "📋 Listing scripts directory:"
