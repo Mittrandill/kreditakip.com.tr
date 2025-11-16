@@ -625,14 +625,14 @@ export default function LandingPage() {
 
                     <h3 className="text-2xl lg:text-3xl font-bold text-white mb-6 text-center">Döküm Yükle</h3>
                     <p className="text-white/70 text-center leading-relaxed mb-8">
-                      Kredi kartı veya banka dökümünüzü PDF, JPG veya PNG formatında güvenli bir şekilde yükleyin
+                      Kredi planı ödeme dökümünüzü PDF formatında güvenli bir şekilde yükleyin
                     </p>
 
                     {/* Features */}
                     <div className="space-y-3 mb-8">
                       <div className="flex items-center gap-3 text-sm text-white/60">
                         <div className="w-2 h-2 bg-emerald-400 rounded-full" />
-                        <span>PDF, JPG, PNG desteği</span>
+                        <span>PDF döküman desteği</span>
                       </div>
                       <div className="flex items-center gap-3 text-sm text-white/60">
                         <div className="w-2 h-2 bg-emerald-400 rounded-full" />
