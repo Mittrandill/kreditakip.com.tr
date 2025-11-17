@@ -405,7 +405,8 @@ export default function BildirimlerPage() {
                       return (
                         <TableRow
                           key={notification.id}
-                          className={`transition-colors duration-150 ease-in-out border-b dark:border-white/10 ${
+                          onClick={() => handleViewNotification(notification)}
+                          className={`cursor-pointer transition-colors duration-150 ease-in-out border-b dark:border-white/10 hover:bg-emerald-50 dark:hover:bg-emerald-900/10 ${
                             index % 2 === 0 ? "bg-white dark:bg-black/20" : "bg-gray-50/50 dark:bg-black/10"
                           } ${!notification.is_read ? "bg-blue-50/30 dark:bg-blue-900/20" : ""}`}
                         >

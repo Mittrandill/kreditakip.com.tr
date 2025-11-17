@@ -1,6 +1,13 @@
 "use client"
 
-import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription } from "@/components/ui/sheet"
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog"
 import { Separator } from "@/components/ui/separator"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
@@ -60,29 +67,34 @@ export function NotificationSheet({ notification, open, onOpenChange, onDelete }
   const bankInfo = notification.credits?.banks
 
   return (
-    <Sheet open={open} onOpenChange={onOpenChange}>
-      <SheetContent className="w-full sm:max-w-md overflow-y-auto">
-        <SheetHeader className="space-y-3">
-          <div className="flex items-center gap-3">
-            <div className={`p-2 rounded-lg ${config.bgColor}`}>
-              <Icon className={`h-5 w-5 ${config.color}`} />
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="sm:max-w-md">
+        <DialogHeader>
+          <div className="flex items-center gap-3 mb-2">
+            <div className={`p-2.5 rounded-xl ${config.bgColor}`}>
+              <Icon className={`h-6 w-6 ${config.color}`} />
             </div>
-            <SheetTitle className="text-xl">{notification.title}</SheetTitle>
+            <div className="flex-1">
+              <DialogTitle className="text-xl font-bold">{notification.title}</DialogTitle>
+              <DialogDescription className="text-sm mt-1">
+                {format(new Date(notification.created_at), "d MMMM yyyy, HH:mm", { locale: tr })}
+              </DialogDescription>
+            </div>
+            <Badge className={config.badgeClass}>{config.label}</Badge>
           </div>
-          <SheetDescription className="text-sm">
-            {format(new Date(notification.created_at), "d MMMM yyyy, HH:mm", { locale: tr })}
-          </SheetDescription>
-        </SheetHeader>
+        </DialogHeader>
 
-        <div className="mt-6 space-y-4">
+        <div className="space-y-4">
           {/* Mesaj */}
-          <div className="text-gray-700 dark:text-gray-300 leading-relaxed">{notification.message}</div>
+          <div className="text-gray-700 dark:text-gray-300 leading-relaxed bg-gray-50 dark:bg-gray-900/30 p-4 rounded-lg">
+            {notification.message}
+          </div>
 
           {/* Banka Bilgisi - Sadece varsa göster */}
           {bankInfo && (
             <>
               <Separator />
-              <div className="flex items-center gap-3 py-2">
+              <div className="flex items-center gap-3 py-2 bg-gradient-to-r from-emerald-50/50 to-teal-50/50 dark:from-emerald-900/20 dark:to-teal-900/20 px-4 py-3 rounded-lg">
                 <BankLogo bankName={bankInfo.name || "Banka"} logoUrl={bankInfo.logo_url} size="sm" />
                 <div>
                   <p className="font-medium text-gray-900 dark:text-white text-sm">{bankInfo.name}</p>
@@ -96,40 +108,34 @@ export function NotificationSheet({ notification, open, onOpenChange, onDelete }
             </>
           )}
 
-          <Separator />
-
           {/* Alt Bilgiler */}
-          <div className="flex items-center justify-between text-xs text-gray-500 dark:text-gray-400">
+          <div className="flex items-center gap-2 text-xs text-gray-500 dark:text-gray-400 bg-blue-50/50 dark:bg-blue-900/20 px-3 py-2 rounded-lg">
+            <Clock className="h-3.5 w-3.5" />
             <span>
               {formatDistanceToNow(new Date(notification.created_at), {
                 addSuffix: true,
                 locale: tr,
               })}
             </span>
-            <Badge variant="outline" className={config.color}>
-              {config.label}
-            </Badge>
-          </div>
-
-          {/* Aksiyon Butonları */}
-          <div className="flex gap-2 pt-4">
-            {onDelete && (
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => onDelete(notification.id)}
-                className="flex-1 text-red-600 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-950"
-              >
-                <Trash2 className="h-4 w-4 mr-1" />
-                Sil
-              </Button>
-            )}
-            <Button variant="outline" size="sm" onClick={() => onOpenChange(false)} className="flex-1">
-              Kapat
-            </Button>
           </div>
         </div>
-      </SheetContent>
-    </Sheet>
+
+        <DialogFooter className="gap-2 sm:gap-2">
+          {onDelete && (
+            <Button
+              variant="outline"
+              onClick={() => onDelete(notification.id)}
+              className="text-red-600 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-950 border-red-200 dark:border-red-900"
+            >
+              <Trash2 className="h-4 w-4 mr-2" />
+              Sil
+            </Button>
+          )}
+          <Button onClick={() => onOpenChange(false)} className="bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700">
+            Kapat
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
   )
 }
