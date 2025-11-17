@@ -218,8 +218,10 @@ export default function BildirimlerPage() {
           unread: Math.max(0, prev.unread - 1),
           read: prev.read + 1,
         }))
+        // Başarılı olduğunda sessizce işaretle, toast gösterme
       } catch (error) {
         console.error("Error marking notification as read:", error)
+        toast.error("Bildirim okundu olarak işaretlenemedi")
       }
     }
   }
