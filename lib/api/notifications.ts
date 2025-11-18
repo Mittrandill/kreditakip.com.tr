@@ -52,7 +52,7 @@ export async function getNotificationById(userId: string, notificationId: string
 export async function markNotificationAsRead(userId: string, notificationId: string) {
   const { data, error } = await supabase
     .from("notifications")
-    .update({ is_read: true, read_at: new Date().toISOString() })
+    .update({ is_read: true })
     .eq("id", notificationId)
     .eq("user_id", userId)
     .select()
@@ -75,7 +75,7 @@ export async function markNotificationAsRead(userId: string, notificationId: str
 export async function markAllNotificationsAsRead(userId: string) {
   const { data, error } = await supabase
     .from("notifications")
-    .update({ is_read: true, read_at: new Date().toISOString() })
+    .update({ is_read: true })
     .eq("user_id", userId)
     .eq("is_read", false)
     .select()
