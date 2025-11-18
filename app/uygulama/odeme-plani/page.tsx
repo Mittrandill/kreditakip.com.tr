@@ -135,6 +135,7 @@ const getBankColor = (bankName: string | undefined): string => {
 function CalendarView({ payments }: { payments: PaymentWithCredit[] }) {
   const [currentDate, setCurrentDate] = useState(new Date())
   const [filterStatus, setFilterStatus] = useState<string>("all")
+  const [selectedDay, setSelectedDay] = useState<number | null>(new Date().getDate())
   const currentMonth = currentDate.getMonth()
   const currentYear = currentDate.getFullYear()
 
@@ -196,18 +197,22 @@ function CalendarView({ payments }: { payments: PaymentWithCredit[] }) {
 
   const handlePrevMonth = () => {
     setCurrentDate(new Date(currentYear, currentMonth - 1, 1))
+    setSelectedDay(null)
   }
 
   const handleNextMonth = () => {
     setCurrentDate(new Date(currentYear, currentMonth + 1, 1))
+    setSelectedDay(null)
   }
 
   const today = new Date()
+  const selectedDayPayments = selectedDay ? paymentsByDay[selectedDay] || [] : []
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-4">
+      {/* Header with Month Navigation and Filter */}
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <div className="flex items-center gap-3">
           <Button
             variant="outline"
             size="sm"
@@ -215,10 +220,9 @@ function CalendarView({ payments }: { payments: PaymentWithCredit[] }) {
             className="flex items-center gap-2 bg-white dark:bg-black/10 text-gray-900 dark:text-white border-gray-300 dark:border-white/10 hover:bg-gray-50 dark:hover:bg-white/10"
           >
             <ChevronLeft className="h-4 w-4" />
-            Önceki
           </Button>
 
-          <h3 className="text-xl font-semibold text-gray-900 dark:text-white">
+          <h3 className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white min-w-[200px] text-center">
             {monthNames[currentMonth]} {currentYear}
           </h3>
 
@@ -228,167 +232,277 @@ function CalendarView({ payments }: { payments: PaymentWithCredit[] }) {
             onClick={handleNextMonth}
             className="flex items-center gap-2 bg-white dark:bg-black/10 text-gray-900 dark:text-white border-gray-300 dark:border-white/10 hover:bg-gray-50 dark:hover:bg-white/10"
           >
-            Sonraki
             <ChevronRight className="h-4 w-4" />
           </Button>
         </div>
 
-        <div className="flex gap-2">
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button
-                variant="outline"
-                size="sm"
-                className="bg-white dark:bg-black/10 text-gray-900 dark:text-white border-gray-300 dark:border-white/10 hover:bg-gray-50 dark:hover:bg-white/10"
-              >
-                <Filter className="h-4 w-4 mr-2" />
-                Filtrele: {filterStatus === "all" ? "Tümü" : filterStatus === "paid" ? "Ödendi" : filterStatus === "pending" ? "Bekliyor" : "Gecikmiş"}
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="bg-white dark:bg-gradient-to-br dark:from-slate-950 dark:to-gray-900 border-gray-200 dark:border-slate-800 backdrop-blur-sm">
-              <DropdownMenuItem
-                onClick={() => setFilterStatus("all")}
-                className="text-gray-900 dark:text-white dark:hover:bg-slate-800/50 cursor-pointer"
-              >
-                Tümü
-              </DropdownMenuItem>
-              <DropdownMenuItem
-                onClick={() => setFilterStatus("paid")}
-                className="text-gray-900 dark:text-white dark:hover:bg-slate-800/50 cursor-pointer"
-              >
-                Ödendi
-              </DropdownMenuItem>
-              <DropdownMenuItem
-                onClick={() => setFilterStatus("pending")}
-                className="text-gray-900 dark:text-white dark:hover:bg-slate-800/50 cursor-pointer"
-              >
-                Bekliyor
-              </DropdownMenuItem>
-              <DropdownMenuItem
-                onClick={() => setFilterStatus("overdue")}
-                className="text-gray-900 dark:text-white dark:hover:bg-slate-800/50 cursor-pointer"
-              >
-                Gecikmiş
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
-        </div>
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button
+              variant="outline"
+              size="sm"
+              className="bg-white dark:bg-black/10 text-gray-900 dark:text-white border-gray-300 dark:border-white/10 hover:bg-gray-50 dark:hover:bg-white/10"
+            >
+              <Filter className="h-4 w-4 mr-2" />
+              {filterStatus === "all" ? "Tümü" : filterStatus === "paid" ? "Ödendi" : filterStatus === "pending" ? "Bekliyor" : "Gecikmiş"}
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end" className="bg-white dark:bg-gradient-to-br dark:from-slate-950 dark:to-gray-900 border-gray-200 dark:border-slate-800 backdrop-blur-sm">
+            <DropdownMenuItem
+              onClick={() => setFilterStatus("all")}
+              className="text-gray-900 dark:text-white dark:hover:bg-slate-800/50 cursor-pointer"
+            >
+              Tümü
+            </DropdownMenuItem>
+            <DropdownMenuItem
+              onClick={() => setFilterStatus("paid")}
+              className="text-gray-900 dark:text-white dark:hover:bg-slate-800/50 cursor-pointer"
+            >
+              Ödendi
+            </DropdownMenuItem>
+            <DropdownMenuItem
+              onClick={() => setFilterStatus("pending")}
+              className="text-gray-900 dark:text-white dark:hover:bg-slate-800/50 cursor-pointer"
+            >
+              Bekliyor
+            </DropdownMenuItem>
+            <DropdownMenuItem
+              onClick={() => setFilterStatus("overdue")}
+              className="text-gray-900 dark:text-white dark:hover:bg-slate-800/50 cursor-pointer"
+            >
+              Gecikmiş
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
       </div>
 
-      <div className="grid grid-cols-7 gap-1 sm:gap-2">
-        {dayNames.map((day) => (
-          <div
-            key={day}
-            className="p-1 sm:p-2 text-center text-xs sm:text-sm font-medium text-gray-500 dark:text-white/60 bg-gray-50 dark:bg-black/10 rounded-t-lg"
-          >
-            {day}
-          </div>
-        ))}
-
-        {Array.from({ length: startingDayOfWeek }, (_, i) => (
-          <div key={`empty-${i}`} className="p-1 sm:p-2 h-20 sm:h-32 bg-gray-50/30 dark:bg-black/10 rounded-lg"></div>
-        ))}
-
-        {Array.from({ length: daysInMonth }, (_, i) => {
-          const day = i + 1
-          const isToday =
-            day === today.getDate() && currentMonth === today.getMonth() && currentYear === today.getFullYear()
-          const dayPayments = paymentsByDay[day] || []
-
-          return (
-            <div
-              key={day}
-              className={`p-1 sm:p-2 h-20 sm:h-32 border rounded-lg transition-all hover:shadow-md ${
-                isToday
-                  ? "bg-blue-50 dark:bg-blue-900/30 border-blue-300 dark:border-blue-700 shadow-md ring-2 ring-blue-200 dark:ring-blue-800"
-                  : dayPayments.length > 0
-                    ? "bg-white dark:bg-black/20 border-gray-300 dark:border-white/10 hover:border-gray-400 dark:hover:border-white/20"
-                    : "bg-gray-50/50 dark:bg-black/10 border-gray-200 dark:border-white/10"
-              }`}
-            >
+      {/* Split Layout: Calendar on Left, Selected Day Payments on Right */}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+        {/* Calendar Grid - Takes 8 columns on large screens */}
+        <div className="lg:col-span-8 space-y-2">
+          {/* Day Names Header */}
+          <div className="grid grid-cols-7 gap-1 sm:gap-2">
+            {dayNames.map((day) => (
               <div
-                className={`text-xs sm:text-sm font-semibold mb-1 sm:mb-2 ${
-                  isToday
-                    ? "text-blue-700 dark:text-blue-400"
-                    : dayPayments.length > 0
-                      ? "text-gray-900 dark:text-white"
-                      : "text-gray-500 dark:text-white/60"
-                }`}
+                key={day}
+                className="p-2 text-center text-xs sm:text-sm font-medium text-gray-500 dark:text-white/50 bg-gray-100/50 dark:bg-white/[0.02] rounded-lg"
               >
                 {day}
-                {isToday && (
-                  <span className="ml-1 text-[10px] sm:text-xs bg-gray-600 dark:bg-emerald-900/30 text-white px-1 rounded hidden sm:inline">Bugün</span>
-                )}
-              </div>
-
-              <div className="space-y-0.5 sm:space-y-1 overflow-y-auto max-h-14 sm:max-h-20">
-                {dayPayments.map((payment, idx) => {
-                  const bankColor = getBankColor(payment.credits.banks.name)
-                  const isOverdue = new Date(payment.due_date) < new Date() && payment.status === "pending"
-                  const isPaid = payment.status === "paid"
-
-                  return (
-                    <div
-                      key={idx}
-                      className={`text-xs p-1.5 rounded-md text-white shadow-sm border-l-2 relative ${
-                        isPaid ? "bg-emerald-500 border-emerald-600" : isOverdue ? "bg-red-500 border-red-600" : ""
-                      }`}
-                      style={{
-                        backgroundColor: isPaid ? undefined : isOverdue ? undefined : bankColor,
-                        borderLeftColor: isPaid ? undefined : isOverdue ? undefined : darkenColor(bankColor),
-                      }}
-                      title={`${payment.credits.banks.name} - ${formatCurrency(payment.total_payment)} - Taksit ${payment.installment_number}${isPaid ? " (Ödendi)" : ""}`}
-                    >
-                      <div className="flex items-center justify-between">
-                        <div className="flex-1 min-w-0">
-                          <div className="font-medium truncate">{payment.credits.banks.name}</div>
-                          <div className="text-xs opacity-90">{formatCurrency(payment.total_payment)}</div>
-                        </div>
-                        {isPaid && (
-                          <div className="flex-shrink-0 ml-1">
-                            <Check className="h-3 w-3 text-white" />
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                  )
-                })}
-
-                {dayPayments.length > 3 && (
-                  <div className="text-xs text-gray-600 dark:text-white/70 bg-gray-100 dark:bg-black/10 p-1 rounded text-center">
-                    +{dayPayments.length - 3} daha
-                  </div>
-                )}
-              </div>
-            </div>
-          )
-        })}
-      </div>
-
-      {uniqueBanks.length > 0 && (
-        <div className="mt-6">
-          <h4 className="text-sm font-semibold text-gray-700 dark:text-white/70 mb-3 flex items-center gap-2">
-            <div className="w-2 h-2 bg-gray-400 dark:bg-white/40 rounded-full"></div>
-            Banka Renk Kodları
-          </h4>
-          <div className="flex flex-wrap gap-3">
-            {uniqueBanks.map((bank) => (
-              <div
-                key={bank.name}
-                className="flex items-center gap-2 px-3 py-2 rounded-lg border border-gray-200 dark:border-white/10 dark:bg-black/10"
-              >
-                <div className="w-3 h-3 rounded-full shadow-sm" style={{ backgroundColor: bank.color }}></div>
-                <span className="text-sm font-medium text-gray-700 dark:text-white/70">{bank.name}</span>
               </div>
             ))}
-            <div className="flex items-center gap-2 px-3 py-2 rounded-lg border border-gray-200 dark:border-white/10 dark:bg-black/10">
-              <div className="w-3 h-3 rounded-full shadow-sm bg-emerald-500"></div>
-              <span className="text-sm font-medium text-gray-700 dark:text-white/70">Ödenen</span>
-              <Check className="h-3 w-3 text-emerald-600 dark:text-emerald-400" />
-            </div>
+          </div>
+
+          {/* Calendar Days Grid */}
+          <div className="grid grid-cols-7 gap-1 sm:gap-2">
+            {Array.from({ length: startingDayOfWeek }, (_, i) => (
+              <div key={`empty-${i}`} className="p-2 h-24 sm:h-28 bg-transparent rounded-lg"></div>
+            ))}
+
+            {Array.from({ length: daysInMonth }, (_, i) => {
+              const day = i + 1
+              const isToday =
+                day === today.getDate() && currentMonth === today.getMonth() && currentYear === today.getFullYear()
+              const isSelected = day === selectedDay
+              const dayPayments = paymentsByDay[day] || []
+              const hasPayments = dayPayments.length > 0
+
+              return (
+                <button
+                  key={day}
+                  onClick={() => setSelectedDay(day)}
+                  className={`p-2 h-24 sm:h-28 border rounded-lg transition-all duration-150 cursor-pointer relative flex flex-col ${
+                    isSelected
+                      ? "bg-white dark:bg-white/[0.02] border-gray-900 dark:border-white shadow-sm"
+                      : isToday
+                        ? hasPayments
+                          ? "bg-white dark:bg-white/[0.02] border-emerald-500 dark:border-emerald-600 hover:border-emerald-600 dark:hover:border-emerald-500"
+                          : "bg-gray-50/50 dark:bg-transparent border-emerald-500 dark:border-emerald-600 hover:border-emerald-600 dark:hover:border-emerald-500"
+                        : hasPayments
+                          ? "bg-white dark:bg-white/[0.02] border-gray-200 dark:border-white/10 hover:border-gray-400 dark:hover:border-white/20"
+                          : "bg-gray-50/50 dark:bg-transparent border-gray-100 dark:border-white/5 hover:border-gray-200 dark:hover:border-white/10"
+                  }`}
+                >
+                  {/* Day number - always in top left */}
+                  <div className="absolute top-2 left-2">
+                    <span
+                      className={`text-sm font-semibold ${
+                        isSelected
+                          ? "text-gray-900 dark:text-white"
+                          : hasPayments
+                            ? "text-gray-700 dark:text-white/90"
+                            : "text-gray-400 dark:text-white/40"
+                      }`}
+                    >
+                      {day}
+                    </span>
+                  </div>
+
+                  {/* Today indicator - always in top right */}
+                  {isToday && (
+                    <div className="absolute top-2 right-2 w-1.5 h-1.5 bg-emerald-600 dark:bg-emerald-400 rounded-full"></div>
+                  )}
+
+                  {/* Payment Indicators - Show bank logos minimally */}
+                  <div className="mt-7 space-y-1">
+                    {dayPayments.slice(0, 2).map((payment, idx) => {
+                      const isOverdue = new Date(payment.due_date) < new Date() && payment.status === "pending"
+                      const isPaid = payment.status === "paid"
+
+                      return (
+                        <div
+                          key={idx}
+                          className={`flex items-center gap-1 p-1 rounded text-[10px] ${
+                            isPaid
+                              ? "bg-gray-100 dark:bg-white/5 text-gray-600 dark:text-white/70"
+                              : isOverdue
+                                ? "bg-red-50 dark:bg-red-900/20 text-red-700 dark:text-red-400"
+                                : "bg-gray-100 dark:bg-white/5 text-gray-600 dark:text-white/70"
+                          }`}
+                        >
+                          <BankLogo
+                            bankName={payment.credits.banks.name}
+                            logoUrl={payment.credits.banks.logo_url ?? undefined}
+                            size="sm"
+                            className="!h-4 !w-4 flex-shrink-0"
+                          />
+                          <span className="truncate flex-1 font-medium">{formatCurrency(payment.total_payment)}</span>
+                          {isPaid && <Check className="h-3 w-3 flex-shrink-0 text-emerald-600 dark:text-emerald-400" />}
+                        </div>
+                      )
+                    })}
+
+                    {dayPayments.length > 2 && (
+                      <div className="text-[10px] text-gray-400 dark:text-white/40 font-medium pl-1">
+                        +{dayPayments.length - 2} daha
+                      </div>
+                    )}
+                  </div>
+                </button>
+              )
+            })}
           </div>
         </div>
-      )}
+
+        {/* Selected Day Details Panel - Takes 4 columns on large screens */}
+        <div className="lg:col-span-4">
+          <Card className="sticky top-6 bg-white dark:bg-black/20 border border-gray-200 dark:border-white/10">
+            <CardHeader className="border-b border-gray-200 dark:border-white/10 pb-4">
+              <CardTitle className="flex items-center justify-between text-gray-900 dark:text-white">
+                <span className="flex items-center gap-2 text-base font-semibold">
+                  <Calendar className="h-4 w-4 text-gray-500 dark:text-white/50" />
+                  {selectedDay ? `${selectedDay} ${monthNames[currentMonth]}` : "Gün Seçin"}
+                </span>
+                {selectedDayPayments.length > 0 && (
+                  <span className="text-xs bg-gray-900 dark:bg-white/10 text-white dark:text-white/90 px-2.5 py-1 rounded-full font-medium">
+                    {selectedDayPayments.length}
+                  </span>
+                )}
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="p-4 max-h-[600px] overflow-y-auto">
+              {!selectedDay ? (
+                <div className="text-center py-12">
+                  <Calendar className="h-12 w-12 mx-auto mb-3 text-gray-300 dark:text-white/10" />
+                  <p className="text-sm text-gray-500 dark:text-white/50">Takvimden bir gün seçin</p>
+                </div>
+              ) : selectedDayPayments.length === 0 ? (
+                <div className="text-center py-12">
+                  <CheckCircle className="h-12 w-12 mx-auto mb-3 text-gray-300 dark:text-white/10" />
+                  <p className="text-sm font-medium text-gray-900 dark:text-white mb-1">Ödeme yok</p>
+                  <p className="text-xs text-gray-500 dark:text-white/50">
+                    Bu tarihte ödeme bulunmuyor
+                  </p>
+                </div>
+              ) : (
+                <div className="space-y-3">
+                  {selectedDayPayments.map((payment, idx) => {
+                    const isOverdue = new Date(payment.due_date) < new Date() && payment.status === "pending"
+                    const isPaid = payment.status === "paid"
+
+                    return (
+                      <div
+                        key={idx}
+                        className="p-3 rounded-lg border border-gray-200 dark:border-white/10 bg-gray-50/50 dark:bg-white/[0.02] hover:border-gray-300 dark:hover:border-white/20 transition-colors"
+                      >
+                        <div className="flex items-start gap-3 mb-3">
+                          <BankLogo
+                            bankName={payment.credits.banks.name}
+                            logoUrl={payment.credits.banks.logo_url ?? undefined}
+                            size="md"
+                          />
+                          <div className="flex-1 min-w-0">
+                            <h4 className="font-semibold text-sm text-gray-900 dark:text-white truncate">
+                              {payment.credits.banks.name}
+                            </h4>
+                            <p className="text-xs text-gray-500 dark:text-white/50">{payment.credits.credit_code}</p>
+                          </div>
+                          {isPaid ? (
+                            <span className="bg-gradient-to-br from-emerald-500 to-teal-600 dark:from-emerald-600 dark:to-teal-700 text-white text-xs px-2 py-1 rounded-md font-medium flex items-center gap-1 shrink-0 shadow-sm">
+                              <Check className="h-3 w-3" />
+                            </span>
+                          ) : isOverdue ? (
+                            <span className="bg-red-600 dark:bg-red-900/50 text-white text-xs px-2 py-1 rounded-md font-medium flex items-center gap-1 shrink-0">
+                              <AlertTriangle className="h-3 w-3" />
+                            </span>
+                          ) : null}
+                        </div>
+
+                        <div className="grid grid-cols-2 gap-3 mb-3">
+                          <div>
+                            <p className="text-[10px] text-gray-500 dark:text-white/40 mb-0.5">Taksit</p>
+                            <p className="text-sm font-semibold text-gray-900 dark:text-white">
+                              #{payment.installment_number}
+                            </p>
+                          </div>
+                          <div>
+                            <p className="text-[10px] text-gray-500 dark:text-white/40 mb-0.5">Vade</p>
+                            <p className="text-sm font-semibold text-gray-900 dark:text-white">
+                              {formatDate(payment.due_date)}
+                            </p>
+                          </div>
+                          <div>
+                            <p className="text-[10px] text-gray-500 dark:text-white/40 mb-0.5">Ana Para</p>
+                            <p className="text-sm font-semibold text-gray-900 dark:text-white">
+                              {formatCurrency(payment.principal_amount)}
+                            </p>
+                          </div>
+                          <div>
+                            <p className="text-[10px] text-gray-500 dark:text-white/40 mb-0.5">Faiz</p>
+                            <p className="text-sm font-semibold text-gray-900 dark:text-white">
+                              {formatCurrency(payment.interest_amount)}
+                            </p>
+                          </div>
+                        </div>
+
+                        <div className="pt-3 border-t border-gray-200 dark:border-white/10">
+                          <div className="flex items-center justify-between">
+                            <span className="text-xs text-gray-500 dark:text-white/50">Toplam Tutar</span>
+                            <span className="text-lg font-bold text-gray-900 dark:text-white">
+                              {formatCurrency(payment.total_payment)}
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+                    )
+                  })}
+
+                  {/* Total for Selected Day */}
+                  {selectedDayPayments.length > 1 && (
+                    <div className="pt-3 border-t border-gray-200 dark:border-white/10">
+                      <div className="flex items-center justify-between py-2">
+                        <span className="text-sm font-semibold text-gray-900 dark:text-white">Günlük Toplam</span>
+                        <span className="text-lg font-bold text-gray-900 dark:text-white">
+                          {formatCurrency(selectedDayPayments.reduce((sum, p) => sum + p.total_payment, 0))}
+                        </span>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        </div>
+      </div>
     </div>
   )
 }
