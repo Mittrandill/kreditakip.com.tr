@@ -52,40 +52,35 @@ export async function getNotificationById(userId: string, notificationId: string
 export async function markNotificationAsRead(userId: string, notificationId: string) {
   const { data, error } = await supabase
     .from("notifications")
-    .update({ is_read: true, read_at: new Date().toISOString() })
+    .update({ is_read: true })
     .eq("id", notificationId)
     .eq("user_id", userId)
     .select()
 
   if (error) {
-    console.error("Error marking notification as read:", error)
     throw error
   }
 
   // Eğer hiçbir satır güncellenmemişse hata fırlat
   if (!data || data.length === 0) {
-    console.error("No notification found to mark as read:", { notificationId, userId })
     throw new Error("Bildirim bulunamadı veya güncelleme yapılamadı")
   }
 
-  console.log("Notification marked as read successfully:", data[0])
   return true
 }
 
 export async function markAllNotificationsAsRead(userId: string) {
   const { data, error } = await supabase
     .from("notifications")
-    .update({ is_read: true, read_at: new Date().toISOString() })
+    .update({ is_read: true })
     .eq("user_id", userId)
     .eq("is_read", false)
     .select()
 
   if (error) {
-    console.error("Error marking all notifications as read:", error)
     throw error
   }
 
-  console.log(`Marked ${data?.length || 0} notifications as read for user ${userId}`)
   return true
 }
 
