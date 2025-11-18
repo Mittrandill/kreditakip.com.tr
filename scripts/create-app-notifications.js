@@ -136,7 +136,7 @@ async function createEmailTemplate(firstName, bankName, installmentNumber, amoun
         }
 
         .logo {
-          max-width: 150px;
+          max-width: 220px;
           height: auto;
           margin-bottom: 20px;
           filter: brightness(0) invert(1);
@@ -279,7 +279,7 @@ async function createEmailTemplate(firstName, bankName, installmentNumber, amoun
         }
 
         .footer-logo {
-          width: 80px;
+          width: 140px;
           height: auto;
           margin-bottom: 20px;
           opacity: 0.8;
