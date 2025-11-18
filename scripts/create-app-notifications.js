@@ -515,20 +515,15 @@ async function createAppNotifications() {
 
     for (const profile of profiles || []) {
       try {
-        // 1. HATIRLATMA BİLDİRİMLERİ (3 gün içinde vadesi gelenler)
+        // Kullanıcının email tercihlerini al
+        const preferences = await getNotificationPreferences(profile.id)
 
-        // Mevcut app_reminder bildirimlerini kontrol et
-        const { data: existingReminders } = await supabase
-          .from("notifications")
-          .select("payment_plan_id")
-          .eq("user_id", profile.id)
-          .eq("notification_type", "app_reminder")
-          .is("deleted_at", null)
+        // 1. HATIRLATMA BİLDİRİMLERİ - 3 gün önce, 1 gün önce, bugün için ayrı ayrı kontrol
 
-        const existingReminderPlanIds = new Set(existingReminders?.map((n) => n.payment_plan_id) || [])
+        // --- 3 GÜN ÖNCE BİLDİRİMİ ---
+        const threeDaysLater = new Date(today.getTime() + 3 * 24 * 60 * 60 * 1000).toISOString().split("T")[0]
 
-        // 3 gün içinde vadesi gelen ödemeleri getir
-        const { data: upcomingPayments } = await supabase
+        const { data: payments3Days } = await supabase
           .from("payment_plans")
           .select(`
             id,
@@ -544,75 +539,176 @@ async function createAppNotifications() {
           `)
           .eq("credits.user_id", profile.id)
           .eq("status", "pending")
-          .gte("due_date", todayStr)
-          .lte("due_date", threeDaysLater)
+          .eq("due_date", threeDaysLater)
 
-        // Henüz bildirimi olmayan ödemeler için bildirim oluştur
-        const paymentsToNotify = (upcomingPayments || []).filter((payment) => !existingReminderPlanIds.has(payment.id))
+        // 3 gün öncesi bildirimleri kontrol et (bugün oluşturulmuş mu?)
+        const { data: existing3DayNotifs } = await supabase
+          .from("notifications")
+          .select("payment_plan_id")
+          .eq("user_id", profile.id)
+          .eq("notification_type", "app_reminder_3_days")
+          .gte("created_at", todayStr)
+          .is("deleted_at", null)
 
-        const reminderNotifications = paymentsToNotify.map((payment) => {
-            const dueDate = new Date(payment.due_date)
-            const diffTime = dueDate.getTime() - today.getTime()
-            const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24))
+        const existing3DayPlanIds = new Set(existing3DayNotifs?.map((n) => n.payment_plan_id) || [])
+        const paymentsToNotify3Days = (payments3Days || []).filter((payment) => !existing3DayPlanIds.has(payment.id))
 
-            let title = "Kredi Taksit Hatırlatması"
-            let type = "info"
+        for (const payment of paymentsToNotify3Days) {
+          const bankName = payment.credits.banks.name
+          const title = `Kredi Taksit Hatırlatması - ${bankName} - ${payment.installment_number}. taksit ödemesi yaklaşıyor`
+          const message = `${bankName} bankasından ${payment.installment_number}. taksit ödemenizin vadesi 3 gün sonra (${new Date(payment.due_date).toLocaleDateString("tr-TR")}) doluyor. Tutar: ${payment.total_payment.toLocaleString("tr-TR")} ₺`
 
-            if (diffDays <= 0) {
-              title = "Kredi Taksit Hatırlatması - Bugün"
-              type = "error"
-            } else if (diffDays === 1) {
-              title = "Kredi Taksit Hatırlatması - Yarın"
-              type = "warning"
-            } else if (diffDays <= 3) {
-              title = `Kredi Taksit Hatırlatması - ${diffDays} Gün Sonra`
-              type = "warning"
-            }
-
-            return {
+          // Uygulama içi bildirim oluştur
+          const { data: createdNotif, error: notifError } = await supabase
+            .from("notifications")
+            .insert({
               user_id: profile.id,
               credit_id: payment.credit_id,
               payment_plan_id: payment.id,
-              notification_type: "app_reminder",
+              notification_type: "app_reminder_3_days",
               title,
-              message: `${payment.credits.banks.name} bankasından ${payment.installment_number}. taksit ödemenizin vadesi ${dueDate.toLocaleDateString("tr-TR")} tarihinde doluyor. Tutar: ${payment.total_payment.toLocaleString("tr-TR")} ₺`,
-              type,
+              message,
+              type: "warning",
               is_read: false,
-            }
-          })
-
-        if (reminderNotifications.length > 0) {
-          const { data: createdReminders, error: reminderError } = await supabase
-            .from("notifications")
-            .insert(reminderNotifications)
+            })
             .select()
+            .single()
 
-          if (reminderError && reminderError.code !== "23505") {
-            console.error(`❌ Error creating reminders for user ${profile.id}:`, reminderError)
-          } else if (createdReminders) {
-            totalReminders += createdReminders.length
-            console.log(`✅ Created ${createdReminders.length} reminder(s) for ${profile.email}`)
+          if (!notifError && createdNotif) {
+            totalReminders++
+            console.log(`✅ Created 3-day reminder for ${profile.email} - ${bankName}`)
 
-            // Email gönder (her bildirim için)
-            for (let i = 0; i < createdReminders.length; i++) {
-              const notification = createdReminders[i]
-              const payment = paymentsToNotify[i]
-              await sendEmailForNotification(notification.id, profile.id, payment, profile)
+            // Email gönder (eğer email tercihi aktifse)
+            if (preferences?.email_enabled && preferences?.email_3_days_before) {
+              await sendEmailForNotification(createdNotif.id, profile.id, payment, profile)
+            }
+          }
+        }
+
+        // --- 1 GÜN ÖNCE BİLDİRİMİ ---
+        const oneDayLater = new Date(today.getTime() + 1 * 24 * 60 * 60 * 1000).toISOString().split("T")[0]
+
+        const { data: payments1Day } = await supabase
+          .from("payment_plans")
+          .select(`
+            id,
+            credit_id,
+            installment_number,
+            due_date,
+            total_payment,
+            credits!inner (
+              id,
+              user_id,
+              banks (name)
+            )
+          `)
+          .eq("credits.user_id", profile.id)
+          .eq("status", "pending")
+          .eq("due_date", oneDayLater)
+
+        const { data: existing1DayNotifs } = await supabase
+          .from("notifications")
+          .select("payment_plan_id")
+          .eq("user_id", profile.id)
+          .eq("notification_type", "app_reminder_1_day")
+          .gte("created_at", todayStr)
+          .is("deleted_at", null)
+
+        const existing1DayPlanIds = new Set(existing1DayNotifs?.map((n) => n.payment_plan_id) || [])
+        const paymentsToNotify1Day = (payments1Day || []).filter((payment) => !existing1DayPlanIds.has(payment.id))
+
+        for (const payment of paymentsToNotify1Day) {
+          const bankName = payment.credits.banks.name
+          const title = `Kredi Taksit Hatırlatması - ${bankName} - ${payment.installment_number}. taksit ödemesi yaklaşıyor`
+          const message = `${bankName} bankasından ${payment.installment_number}. taksit ödemenizin vadesi yarın (${new Date(payment.due_date).toLocaleDateString("tr-TR")}) doluyor. Tutar: ${payment.total_payment.toLocaleString("tr-TR")} ₺`
+
+          const { data: createdNotif, error: notifError } = await supabase
+            .from("notifications")
+            .insert({
+              user_id: profile.id,
+              credit_id: payment.credit_id,
+              payment_plan_id: payment.id,
+              notification_type: "app_reminder_1_day",
+              title,
+              message,
+              type: "warning",
+              is_read: false,
+            })
+            .select()
+            .single()
+
+          if (!notifError && createdNotif) {
+            totalReminders++
+            console.log(`✅ Created 1-day reminder for ${profile.email} - ${bankName}`)
+
+            if (preferences?.email_enabled && preferences?.email_1_day_before) {
+              await sendEmailForNotification(createdNotif.id, profile.id, payment, profile)
+            }
+          }
+        }
+
+        // --- BUGÜN VADESİ DOLAN ÖDEMELER ---
+        const { data: paymentsToday } = await supabase
+          .from("payment_plans")
+          .select(`
+            id,
+            credit_id,
+            installment_number,
+            due_date,
+            total_payment,
+            credits!inner (
+              id,
+              user_id,
+              banks (name)
+            )
+          `)
+          .eq("credits.user_id", profile.id)
+          .eq("status", "pending")
+          .eq("due_date", todayStr)
+
+        const { data: existingTodayNotifs } = await supabase
+          .from("notifications")
+          .select("payment_plan_id")
+          .eq("user_id", profile.id)
+          .eq("notification_type", "app_reminder_today")
+          .gte("created_at", todayStr)
+          .is("deleted_at", null)
+
+        const existingTodayPlanIds = new Set(existingTodayNotifs?.map((n) => n.payment_plan_id) || [])
+        const paymentsToNotifyToday = (paymentsToday || []).filter((payment) => !existingTodayPlanIds.has(payment.id))
+
+        for (const payment of paymentsToNotifyToday) {
+          const bankName = payment.credits.banks.name
+          const title = `Kredi Taksit Hatırlatması - ${bankName} - ${payment.installment_number}. taksit ödemesi bugün`
+          const message = `${bankName} bankasından ${payment.installment_number}. taksit ödemenizin vadesi bugün (${new Date(payment.due_date).toLocaleDateString("tr-TR")}) doluyor. Tutar: ${payment.total_payment.toLocaleString("tr-TR")} ₺`
+
+          const { data: createdNotif, error: notifError } = await supabase
+            .from("notifications")
+            .insert({
+              user_id: profile.id,
+              credit_id: payment.credit_id,
+              payment_plan_id: payment.id,
+              notification_type: "app_reminder_today",
+              title,
+              message,
+              type: "error",
+              is_read: false,
+            })
+            .select()
+            .single()
+
+          if (!notifError && createdNotif) {
+            totalReminders++
+            console.log(`✅ Created today reminder for ${profile.email} - ${bankName}`)
+
+            if (preferences?.email_enabled && preferences?.email_on_due_date) {
+              await sendEmailForNotification(createdNotif.id, profile.id, payment, profile)
             }
           }
         }
 
         // 2. GECİKMİŞ ÖDEME BİLDİRİMLERİ (vadesi geçmiş olanlar)
-
-        // Mevcut app_overdue bildirimlerini kontrol et
-        const { data: existingOverdue } = await supabase
-          .from("notifications")
-          .select("payment_plan_id")
-          .eq("user_id", profile.id)
-          .eq("notification_type", "app_overdue")
-          .is("deleted_at", null)
-
-        const existingOverduePlanIds = new Set(existingOverdue?.map((n) => n.payment_plan_id) || [])
+        // Her gün için yeni bildirim oluşturulacak (sadece email tercihi aktifse email gönderilecek)
 
         // Vadesi geçmiş ödemeleri getir
         const { data: overduePayments } = await supabase
@@ -633,51 +729,49 @@ async function createAppNotifications() {
           .eq("status", "pending")
           .lt("due_date", todayStr)
 
-        // Henüz bildirimi olmayan gecikmiş ödemeler için bildirim oluştur
-        const overduePaymentsToNotify = (overduePayments || []).filter((payment) => !existingOverduePlanIds.has(payment.id))
+        // Bugün oluşturulmuş overdue bildirimleri kontrol et
+        const { data: existingOverdueToday } = await supabase
+          .from("notifications")
+          .select("payment_plan_id")
+          .eq("user_id", profile.id)
+          .eq("notification_type", "app_overdue")
+          .gte("created_at", todayStr)
+          .is("deleted_at", null)
 
-        const overdueNotifications = overduePaymentsToNotify.map((payment) => {
-            const dueDate = new Date(payment.due_date)
-            const diffTime = today.getTime() - dueDate.getTime()
-            const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24))
+        const existingOverdueTodayPlanIds = new Set(existingOverdueToday?.map((n) => n.payment_plan_id) || [])
+        const overduePaymentsToNotify = (overduePayments || []).filter((payment) => !existingOverdueTodayPlanIds.has(payment.id))
 
-            let title = "⚠️ Geciken Ödeme Bildirimi"
+        for (const payment of overduePaymentsToNotify) {
+          const bankName = payment.credits.banks.name
+          const dueDate = new Date(payment.due_date)
+          const diffTime = today.getTime() - dueDate.getTime()
+          const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24))
 
-            if (diffDays === 1) {
-              title = "⚠️ Geciken Ödeme Bildirimi - 1 Gün"
-            } else if (diffDays > 1) {
-              title = `⚠️ Geciken Ödeme Bildirimi - ${diffDays} Gün`
-            }
+          const title = `Gecikmiş Ödeme - ${bankName} - ${payment.installment_number}. taksit`
+          const message = `${bankName} bankasından ${payment.installment_number}. taksit ödemenizin vadesi ${dueDate.toLocaleDateString("tr-TR")} tarihinde doldu ve ${diffDays} gündür gecikmiş durumda. Tutar: ${payment.total_payment.toLocaleString("tr-TR")} ₺. Lütfen en kısa sürede ödeme yapınız.`
 
-            return {
+          const { data: createdNotif, error: notifError } = await supabase
+            .from("notifications")
+            .insert({
               user_id: profile.id,
               credit_id: payment.credit_id,
               payment_plan_id: payment.id,
               notification_type: "app_overdue",
               title,
-              message: `${payment.credits.banks.name} bankasından ${payment.installment_number}. taksit ödemenizin vadesi ${dueDate.toLocaleDateString("tr-TR")} tarihinde doldu ve ${diffDays} gündür gecikmiş durumda. Tutar: ${payment.total_payment.toLocaleString("tr-TR")} ₺. Lütfen en kısa sürede ödeme yapınız.`,
+              message,
               type: "error",
               is_read: false,
-            }
-          })
-
-        if (overdueNotifications.length > 0) {
-          const { data: createdOverdue, error: overdueError } = await supabase
-            .from("notifications")
-            .insert(overdueNotifications)
+            })
             .select()
+            .single()
 
-          if (overdueError && overdueError.code !== "23505") {
-            console.error(`❌ Error creating overdue notifications for user ${profile.id}:`, overdueError)
-          } else if (createdOverdue) {
-            totalOverdue += createdOverdue.length
-            console.log(`✅ Created ${createdOverdue.length} overdue notification(s) for ${profile.email}`)
+          if (!notifError && createdNotif) {
+            totalOverdue++
+            console.log(`✅ Created overdue notification for ${profile.email} - ${bankName} (${diffDays} days overdue)`)
 
-            // Email gönder (her bildirim için)
-            for (let i = 0; i < createdOverdue.length; i++) {
-              const notification = createdOverdue[i]
-              const payment = overduePaymentsToNotify[i]
-              await sendEmailForNotification(notification.id, profile.id, payment, profile)
+            // Email gönder (eğer email tercihi aktifse)
+            if (preferences?.email_enabled && preferences?.email_overdue) {
+              await sendEmailForNotification(createdNotif.id, profile.id, payment, profile)
             }
           }
         }
