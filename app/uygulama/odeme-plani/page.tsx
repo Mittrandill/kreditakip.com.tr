@@ -33,6 +33,7 @@ import { updatePaymentPlan, createPaymentHistory } from "@/lib/api/payments"
 import BankLogo from "@/components/bank-logo"
 import { useToast } from "@/components/ui/use-toast"
 import * as XLSX from "xlsx"
+import { LoadingSpinner } from "@/components/loading-screen"
 
 interface PaymentWithCredit extends PaymentPlan {
   credits: Credit & {
@@ -1354,7 +1355,7 @@ function ReminderSettings({ payments }: { payments: PaymentWithCredit[] }) {
   if (loading) {
     return (
       <div className="flex items-center justify-center py-8">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-orange-600"></div>
+        <LoadingSpinner size="md" />
       </div>
     )
   }
@@ -1682,10 +1683,7 @@ export default function OdemePlaniPage() {
   if (subscriptionLoading) {
     return (
       <div className="flex items-center justify-center min-h-[400px]">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-orange-600 mx-auto mb-4"></div>
-          <p className="text-gray-600 dark:text-white/60">Yükleniyor...</p>
-        </div>
+        <LoadingSpinner size="lg" />
       </div>
     )
   }
@@ -1726,10 +1724,7 @@ export default function OdemePlaniPage() {
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-[400px]">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-orange-600 mx-auto mb-4"></div>
-          <p className="text-gray-600 dark:text-white/60">Ödeme planları yükleniyor...</p>
-        </div>
+        <LoadingSpinner size="lg" />
       </div>
     )
   }

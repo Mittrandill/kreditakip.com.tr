@@ -48,6 +48,7 @@ import { saveRiskAnalysis, getRiskAnalyses, deleteRiskAnalysis } from "@/lib/api
 import type { Credit, RiskAnalysis as RiskAnalysisType } from "@/lib/types"
 import { formatCurrency, formatNumber } from "@/lib/format"
 import { useToast } from "@/hooks/use-toast"
+import { LoadingSpinner } from "@/components/loading-screen"
 import { formatDistanceToNow, format } from "date-fns"
 import { tr } from "date-fns/locale"
 import {
@@ -374,7 +375,7 @@ export default function RiskAnaliziPage() {
   if (authLoading || (userId && initialDataLoading)) {
     return (
       <div className="flex items-center justify-center min-h-[200px]">
-        <Loader2 className="h-8 w-8 animate-spin text-emerald-600 dark:text-emerald-400" />
+        <LoadingSpinner size="md" />
       </div>
     )
   }

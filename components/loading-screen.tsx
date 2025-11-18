@@ -1,46 +1,108 @@
 "use client"
 
-import { CreditCard } from "lucide-react"
+import { cn } from "@/lib/utils"
 
 interface LoadingScreenProps {
-  title?: string
-  subtitle?: string
   size?: "sm" | "md" | "lg"
+  className?: string
 }
 
-export function LoadingScreen({ title = "Yükleniyor", subtitle, size = "md" }: LoadingScreenProps) {
+export function LoadingScreen({ size = "lg", className }: LoadingScreenProps) {
+  const sizeClasses = {
+    sm: "w-12 h-12",
+    md: "w-16 h-16",
+    lg: "w-20 h-20"
+  }
+
   return (
-    <div className="flex items-center justify-center min-h-[60vh] w-full">
-      <div className="flex flex-col items-center gap-8 p-8">
-        {/* Premium Logo Animation */}
-        <div className="relative">
-          {/* Outer glow ring */}
-          <div className="absolute -inset-4 bg-gradient-to-r from-emerald-500/20 to-teal-500/20 rounded-full blur-xl animate-pulse"></div>
-
-          {/* Rotating ring */}
-          <div className="absolute -inset-2 border-2 border-transparent bg-gradient-to-r from-emerald-500 to-teal-500 rounded-full animate-spin">
-            <div className="absolute inset-0.5 bg-white dark:bg-gray-900 rounded-full"></div>
-          </div>
-
-          {/* Logo container */}
-          <div className="relative w-16 h-16 bg-gradient-to-br from-emerald-500 to-teal-600 rounded-full flex items-center justify-center shadow-2xl">
-            <CreditCard className="w-8 h-8 text-white" />
-          </div>
-        </div>
-
-        {/* Content */}
-        <div className="text-center space-y-3 max-w-sm">
-          <h3 className="text-lg font-medium text-gray-900 dark:text-white">{title}</h3>
-          {subtitle && <p className="text-sm text-gray-500 dark:text-gray-400 leading-relaxed">{subtitle}</p>}
-        </div>
-
-        {/* Minimal progress indicator */}
-        <div className="flex gap-1.5">
-          <div className="w-2 h-2 bg-emerald-500 rounded-full animate-bounce [animation-delay:-0.3s]"></div>
-          <div className="w-2 h-2 bg-emerald-500 rounded-full animate-bounce [animation-delay:-0.15s]"></div>
-          <div className="w-2 h-2 bg-emerald-500 rounded-full animate-bounce"></div>
-        </div>
+    <div className={cn("flex items-center justify-center min-h-[60vh] w-full", className)}>
+      <div className="relative">
+        {/* Outer spinning gradient ring */}
+        <svg className={cn("animate-spin", sizeClasses[size])} viewBox="0 0 50 50">
+          {/* Background circle */}
+          <circle
+            className="opacity-20"
+            cx="25"
+            cy="25"
+            r="20"
+            stroke="currentColor"
+            strokeWidth="4"
+            fill="none"
+            style={{ color: 'rgb(16 185 129)' }}
+          />
+          {/* Animated gradient circle */}
+          <circle
+            className="opacity-100"
+            cx="25"
+            cy="25"
+            r="20"
+            stroke="url(#loading-gradient)"
+            strokeWidth="4"
+            fill="none"
+            strokeLinecap="round"
+            strokeDasharray="100"
+            strokeDashoffset="30"
+          />
+          <defs>
+            <linearGradient id="loading-gradient" x1="0%" y1="0%" x2="100%" y2="100%">
+              <stop offset="0%" stopColor="rgb(16 185 129)" />
+              <stop offset="50%" stopColor="rgb(20 184 166)" />
+              <stop offset="100%" stopColor="rgb(16 185 129)" />
+            </linearGradient>
+          </defs>
+        </svg>
       </div>
+    </div>
+  )
+}
+
+// Inline variant for use within components
+export function LoadingSpinner({
+  size = "md",
+  className
+}: {
+  size?: "sm" | "md" | "lg"
+  className?: string
+}) {
+  const sizeClasses = {
+    sm: "h-8 w-8",
+    md: "h-12 w-12",
+    lg: "h-16 w-16"
+  }
+
+  return (
+    <div className={cn("relative inline-block", sizeClasses[size], className)}>
+      <svg className="animate-spin absolute inset-0" viewBox="0 0 50 50">
+        <circle
+          className="opacity-20"
+          cx="25"
+          cy="25"
+          r="20"
+          stroke="currentColor"
+          strokeWidth="4"
+          fill="none"
+          style={{ color: 'rgb(16 185 129)' }}
+        />
+        <circle
+          className="opacity-100"
+          cx="25"
+          cy="25"
+          r="20"
+          stroke="url(#spinner-gradient)"
+          strokeWidth="4"
+          fill="none"
+          strokeLinecap="round"
+          strokeDasharray="100"
+          strokeDashoffset="30"
+        />
+        <defs>
+          <linearGradient id="spinner-gradient" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" stopColor="rgb(16 185 129)" />
+            <stop offset="50%" stopColor="rgb(20 184 166)" />
+            <stop offset="100%" stopColor="rgb(16 185 129)" />
+          </linearGradient>
+        </defs>
+      </svg>
     </div>
   )
 }

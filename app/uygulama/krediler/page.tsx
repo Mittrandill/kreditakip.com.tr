@@ -25,7 +25,6 @@ import {
   List,
   Archive,
   AlertCircle,
-  Loader2,
 } from "lucide-react"
 
 import { BsFillGrid3X3GapFill } from "react-icons/bs"
@@ -37,6 +36,7 @@ import type { Credit, Bank, CreditType, PaymentPlan } from "@/lib/types"
 import { formatCurrency, formatPercent, formatNumber } from "@/lib/format"
 import { useToast } from "@/hooks/use-toast"
 import { updateCreditStatus } from "@/lib/api/credits"
+import { LoadingSpinner } from "@/components/loading-screen"
 
 import {
   AlertDialog,
@@ -301,9 +301,8 @@ export default function KredilerPage() {
 
   if (authLoading || loadingData) {
     return (
-      <div className="flex flex-col gap-4 md:gap-6 items-center justify-center min-h-[calc(100vh-150px)]">
-        <Loader2 className="h-12 w-12 animate-spin text-emerald-600" />
-        <p className="text-lg text-gray-600 dark:text-white/70">Veriler yükleniyor...</p>
+      <div className="flex items-center justify-center min-h-[calc(100vh-150px)]">
+        <LoadingSpinner size="lg" />
       </div>
     )
   }

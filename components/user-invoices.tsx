@@ -8,6 +8,7 @@ import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { Loader2, User, Mail, Phone, MapPin, Save, Building2, CreditCard } from "lucide-react"
 import { useToast } from "@/hooks/use-toast"
+import { LoadingSpinner } from "@/components/loading-screen"
 
 interface BillingInfo {
   user_id: string
@@ -127,7 +128,7 @@ export function UserInvoices() {
   if (loading) {
     return (
       <div className="flex items-center justify-center py-12">
-        <Loader2 className="h-12 w-12 animate-spin text-emerald-600 dark:text-emerald-400" />
+        <LoadingSpinner size="md" />
       </div>
     )
   }

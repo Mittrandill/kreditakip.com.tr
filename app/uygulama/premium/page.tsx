@@ -18,6 +18,7 @@ import { useSubscription } from "@/hooks/use-subscription"
 import { useRouter, useSearchParams } from "next/navigation"
 import { useToast } from "@/hooks/use-toast"
 import { fetchPlans, FALLBACK_PLANS, calculateSavings, type SubscriptionPlan } from "@/lib/subscription-plans"
+import { LoadingSpinner } from "@/components/loading-screen"
 
 export default function PremiumPage() {
   const { subscription, loading, isPremium } = useSubscription()
@@ -110,10 +111,7 @@ export default function PremiumPage() {
   if (loading || plansLoading) {
     return (
       <div className="flex items-center justify-center min-h-[60vh]">
-        <div className="text-center space-y-4">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-emerald-600 mx-auto"></div>
-          <p className="text-gray-600 dark:text-white/60">Yükleniyor...</p>
-        </div>
+        <LoadingSpinner size="lg" />
       </div>
     )
   }

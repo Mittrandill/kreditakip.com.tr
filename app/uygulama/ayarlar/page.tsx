@@ -66,6 +66,7 @@ import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 import { supabase } from "@/lib/supabase"
 import { useUserTheme } from "@/components/user-theme-provider"
 import { UserInvoices } from "@/components/user-invoices"
+import { LoadingSpinner } from "@/components/loading-screen"
 
 export default function AyarlarPage() {
   const { user, profile: initialProfile, loading: authLoading } = useAuth()
@@ -621,9 +622,8 @@ export default function AyarlarPage() {
 
   if (authLoading || loadingProfile) {
     return (
-      <div className="flex flex-col gap-4 md:gap-6 items-center justify-center min-h-[calc(100vh-150px)]">
-        <Loader2 className="h-12 w-12 animate-spin text-emerald-600" />
-        <p className="text-lg text-gray-600">Ayarlar yükleniyor...</p>
+      <div className="flex items-center justify-center min-h-[calc(100vh-150px)]">
+        <LoadingSpinner size="lg" />
       </div>
     )
   }
@@ -869,8 +869,7 @@ export default function AyarlarPage() {
                 <CardContent className="space-y-6">
                   {loadingFinancialProfile ? (
                     <div className="flex justify-center items-center p-8">
-                      <Loader2 className="h-8 w-8 animate-spin text-emerald-600 dark:text-emerald-400" />
-                      <p className="ml-2 dark:text-white/70">Finansal bilgiler yükleniyor...</p>
+                      <LoadingSpinner size="md" />
                     </div>
                   ) : (
                     <>
@@ -1282,7 +1281,7 @@ export default function AyarlarPage() {
                   <CardContent>
                     {loadingSessions ? (
                       <div className="flex items-center justify-center py-8">
-                        <Loader2 className="h-8 w-8 animate-spin text-emerald-600 dark:text-emerald-400" />
+                        <LoadingSpinner size="md" />
                       </div>
                     ) : sessions.length === 0 ? (
                       <div className="text-center py-8">

@@ -48,6 +48,7 @@ import {
   type BankingCredential,
 } from "@/app/actions/banking-credentials"
 import { maskPassword } from "@/lib/utils/password"
+import { LoadingSpinner } from "@/components/loading-screen"
 import { formatDistanceToNow } from "date-fns"
 import { tr } from "date-fns/locale"
 
@@ -439,9 +440,8 @@ export default function BankaciSifrelerimPage() {
 
   if (authLoading || subscriptionLoading) {
     return (
-      <div className="flex flex-col gap-4 md:gap-6 items-center justify-center min-h-[calc(100vh-150px)]">
-        <Loader2 className="h-12 w-12 animate-spin text-emerald-600" />
-        <p className="text-lg text-gray-600 dark:text-white/70">Veriler yükleniyor...</p>
+      <div className="flex items-center justify-center min-h-[calc(100vh-150px)]">
+        <LoadingSpinner size="lg" />
       </div>
     )
   }

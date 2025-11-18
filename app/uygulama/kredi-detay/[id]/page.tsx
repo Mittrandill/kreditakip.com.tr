@@ -75,6 +75,7 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } f
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
+import { LoadingSpinner } from "@/components/loading-screen"
 import {
   AlertDialog,
   AlertDialogAction,
@@ -1504,9 +1505,8 @@ export default function KrediDetayPage() {
 
   if (authLoading || loadingData) {
     return (
-      <div className="flex flex-col gap-4 md:gap-6 items-center justify-center min-h-[calc(100vh-150px)]">
-        <Loader2 className="h-12 w-12 animate-spin text-emerald-600" />
-        <p className="text-lg text-gray-600 dark:text-white/60">Kredi detayları yükleniyor...</p>
+      <div className="flex items-center justify-center min-h-[calc(100vh-150px)]">
+        <LoadingSpinner size="lg" />
       </div>
     )
   }

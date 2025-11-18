@@ -8,6 +8,7 @@ import { useRouter } from "next/navigation"
 import { useSubscription } from "@/hooks/use-subscription"
 import Link from "next/link"
 import confetti from "canvas-confetti"
+import { LoadingSpinner } from "@/components/loading-screen"
 
 export default function PaymentSuccessPage() {
   const router = useRouter()
@@ -64,10 +65,7 @@ export default function PaymentSuccessPage() {
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-screen bg-gray-50 dark:bg-black/20">
-        <div className="text-center space-y-4">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-emerald-600 mx-auto"></div>
-          <p className="text-gray-600 dark:text-white/60">Yükleniyor...</p>
-        </div>
+        <LoadingSpinner size="lg" />
       </div>
     )
   }
