@@ -279,7 +279,7 @@ function createEmailTemplate(
               }
               
               .logo {
-                  max-width: 150px;
+                  max-width: 220px;
                   height: auto;
                   filter: brightness(0) invert(1);
               }
@@ -590,7 +590,7 @@ function createEmailTemplate(
               }
               
               .footer-logo {
-                  width: 80px;
+                  width: 140px;
                   height: auto;
                   margin: 0 auto 20px;
                   opacity: 0.8;
