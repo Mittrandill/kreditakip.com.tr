@@ -50,30 +50,38 @@ export async function getNotificationById(userId: string, notificationId: string
 }
 
 export async function markNotificationAsRead(userId: string, notificationId: string) {
-  const { error } = await supabase
+  const { data, error } = await supabase
     .from("notifications")
     .update({ is_read: true, read_at: new Date().toISOString() })
     .eq("id", notificationId)
     .eq("user_id", userId)
+    .select()
 
   if (error) {
     throw error
+  }
+
+  // Eğer hiçbir satır güncellenmemişse hata fırlat
+  if (!data || data.length === 0) {
+    throw new Error("Bildirim bulunamadı veya güncelleme yapılamadı")
   }
 
   return true
 }
 
 export async function markAllNotificationsAsRead(userId: string) {
-  const { error } = await supabase
+  const { data, error } = await supabase
     .from("notifications")
     .update({ is_read: true, read_at: new Date().toISOString() })
     .eq("user_id", userId)
     .eq("is_read", false)
+    .select()
 
   if (error) {
     throw error
   }
 
+  // Eğer okunmamış bildirim yoksa sessizce başarılı say
   return true
 }
 
