@@ -170,7 +170,7 @@ async function performComprehensiveRiskAnalysis(
 
 async function analyzeRiskWithGemini(financialProfile: FinancialProfile, credits: any[]): Promise<any> {
   const model = genAI.getGenerativeModel({
-    model: "gemini-1.5-pro",
+    model: "gemini-3-pro-preview-11-2025",
     generationConfig: {
       temperature: 0.3,
       topK: 10,
