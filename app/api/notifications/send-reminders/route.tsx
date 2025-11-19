@@ -171,7 +171,7 @@ function createEmailTemplate(
       "Şekerbank T.A.Ş.": "sekerbank.png",
       Fibabanka: "fibabanka.png",
       "Fibabanka A.Ş.": "fibabanka.png",
-      "Enpara.com": "enpara-bank.png",
+      "Enpara Bank A.Ş.": "enpara-bank.png",
       HSBC: "hsbc-bank.png",
       "HSBC Bank A.Ş.": "hsbc-bank.png",
       Citibank: "citibank.png",

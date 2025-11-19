@@ -211,69 +211,171 @@ export function mapBankName(detectedName: string): string {
   return detectedName
 }
 
+// Normalizasyon fonksiyonu - Türkçe karakterleri ve özel karakterleri temizler
+function normalizeBankName(name: string): string {
+  return name
+    .trim()
+    // ÖNEMLİ: Türkçe karakterleri ÖNCE değiştir (toLowerCase() öncesi!)
+    // Çünkü toLowerCase() Türkçe İ'yi yanlış çeviriyor
+    .replace(/İ/g, "i")
+    .replace(/I/g, "i")
+    .replace(/Ğ/g, "g")
+    .replace(/Ü/g, "u")
+    .replace(/Ş/g, "s")
+    .replace(/Ö/g, "o")
+    .replace(/Ç/g, "c")
+    .toLowerCase()
+    // Küçük Türkçe karakterleri de değiştir
+    .replace(/ı/g, "i")
+    .replace(/ğ/g, "g")
+    .replace(/ü/g, "u")
+    .replace(/ş/g, "s")
+    .replace(/ö/g, "o")
+    .replace(/ç/g, "c")
+    // Özel karakterleri ve noktalama işaretlerini kaldır
+    .replace(/[.,\-_()]/g, " ")
+    .replace(/\s+/g, " ") // Çoklu boşlukları tek boşluğa indir
+    .trim()
+}
+
+// Core kelime çıkarıcı - Bankanın temel adını çıkarır
+function extractBankCore(name: string): string {
+  const normalized = normalizeBankName(name)
+
+  // Yaygın ekleri kaldır
+  const cleanedName = normalized
+    .replace(/\b(bankasi|bankası|bank|banka|as|a s|tao|t a o|a o)\b/g, "")
+    .replace(/\bturkiye\b/g, "")
+    .replace(/\btc\b/g, "")
+    .trim()
+
+  return cleanedName
+}
+
+// Logo path mapping - BankLogo component ile senkronize
+const BANK_LOGO_MAPPINGS: Record<string, string> = {
+  // Bu mappings BankLogo component'indeki ile aynı olmalı
+  // Sadece core banka adları için tutuyoruz
+  "vakif": "vakifbank",
+  "vakifbank": "vakifbank",
+  "vakiflar": "vakifbank",
+  "ziraat": "ziraat-bankasi",
+  "garanti": "turkiye-garanti-bankasi",
+  "akbank": "akbank",
+  "halk": "turkiye-halk-bankasi",
+  "halkbank": "turkiye-halk-bankasi",
+  "is": "turkiye-is-bankasi",
+  "isbank": "turkiye-is-bankasi",
+  "yapi": "yapi-kredi-bankasi",
+  "kredi": "yapi-kredi-bankasi",
+  "deniz": "denizbank",
+  "denizbank": "denizbank",
+  "finansbank": "qnb-finansbank",
+  "qnb": "qnb-finansbank",
+  "ing": "ing-bank",
+  "teb": "turkiye-ekonomi-bankasi",
+  "ekonomi": "turkiye-ekonomi-bankasi",
+  "sekerbank": "sekerbank",
+  "seker": "sekerbank",
+}
+
 // Veritabanındaki bankalarla en iyi eşleşmeyi bul
 export function findBestBankMatch(detectedBankName: string, availableBanks: any[]): any | null {
   if (!detectedBankName || !availableBanks || availableBanks.length === 0) {
     return null
   }
 
-  const normalizedDetected = detectedBankName.toLowerCase().trim()
+  console.log("🔍 Banka eşleştirme - Girdi:", detectedBankName)
+  console.log("📊 Veritabanında", availableBanks.length, "banka var")
 
-  // 1. Önce tam eşleşme ara
-  let match = availableBanks.find((bank) => bank.name.toLowerCase() === normalizedDetected)
+  const normalizedDetected = normalizeBankName(detectedBankName)
+  const coreDetected = extractBankCore(detectedBankName)
+
+  console.log("  → Normalize edilmiş:", normalizedDetected)
+  console.log("  → Core ad:", coreDetected)
+
+  // 1. Tam eşleşme (case-insensitive, normalize edilmiş)
+  let match = availableBanks.find((bank) => normalizeBankName(bank.name) === normalizedDetected)
 
   if (match) {
+    console.log("✅ Tam eşleşme bulundu:", match.name)
     return match
   }
 
-  // 2. Eşlenmiş banka adını kullanarak ara
+  // 2. Core ad ile tam eşleşme
+  match = availableBanks.find((bank) => extractBankCore(bank.name) === coreDetected)
+
+  if (match) {
+    console.log("✅ Core eşleşme bulundu:", match.name)
+    return match
+  }
+
+  // 3. Eşlenmiş banka adını kullanarak ara
   const mappedName = mapBankName(detectedBankName)
+  const normalizedMapped = normalizeBankName(mappedName)
 
-  match = availableBanks.find((bank) => bank.name.toLowerCase() === mappedName.toLowerCase())
+  console.log("  → Mapped ad:", mappedName)
+
+  match = availableBanks.find((bank) => normalizeBankName(bank.name) === normalizedMapped)
 
   if (match) {
+    console.log("✅ Mapped eşleşme bulundu:", match.name)
     return match
   }
 
-  // 3. Kısmi eşleşme ara - daha akıllı
+  // 4. Core kelime eşleşmesi (daha esnek)
+  match = availableBanks.find((bank) => {
+    const bankCore = extractBankCore(bank.name)
+    return bankCore.includes(coreDetected) || coreDetected.includes(bankCore)
+  })
+
+  if (match) {
+    console.log("✅ Core içerme eşleşmesi bulundu:", match.name)
+    return match
+  }
+
+  // 5. Keyword bazlı akıllı eşleşme
   const bankKeywords = [
-    { keywords: ["vakif", "vakıf"], target: "vakıf" },
+    { keywords: ["vakif", "vakıf"], target: "vakif" },
     { keywords: ["ziraat"], target: "ziraat" },
     { keywords: ["garanti"], target: "garanti" },
     { keywords: ["akbank", "ak bank"], target: "akbank" },
     { keywords: ["halk", "halkbank"], target: "halk" },
-    { keywords: ["is bank", "iş bank", "işbank", "isbank"], target: "iş" },
-    { keywords: ["yapi", "yapı", "kredi"], target: "yapı" },
+    { keywords: ["is bank", "iş bank", "işbank", "isbank"], target: "is" },
+    { keywords: ["yapi", "yapı", "kredi"], target: "yapi" },
     { keywords: ["teb", "ekonomi"], target: "ekonomi" },
-    { keywords: ["deniz"], target: "deniz" },
-    { keywords: ["finansbank", "qnb"], target: "finansbank" },
+    { keywords: ["deniz", "denizbank"], target: "deniz" },
+    { keywords: ["finansbank", "qnb"], target: "finans" },
     { keywords: ["ing"], target: "ing" },
     { keywords: ["hsbc"], target: "hsbc" },
-    { keywords: ["sekerbank", "şekerbank", "seker", "şeker"], target: "şeker" },
+    { keywords: ["sekerbank", "şekerbank", "seker", "şeker"], target: "seker" },
   ]
 
   for (const { keywords, target } of bankKeywords) {
-    const hasKeyword = keywords.some((keyword) => normalizedDetected.includes(keyword.toLowerCase()))
+    const hasKeyword = keywords.some((keyword) => normalizedDetected.includes(normalizeBankName(keyword)))
 
     if (hasKeyword) {
-      match = availableBanks.find((bank) => bank.name.toLowerCase().includes(target))
+      match = availableBanks.find((bank) => normalizeBankName(bank.name).includes(target))
 
       if (match) {
+        console.log("✅ Keyword eşleşmesi bulundu:", match.name, "(keyword:", target, ")")
         return match
       }
     }
   }
 
-  // 4. Genel kısmi eşleşme
+  // 6. Genel kısmi eşleşme (en esnek)
   match = availableBanks.find((bank) => {
-    const bankNameLower = bank.name.toLowerCase()
-    return bankNameLower.includes(normalizedDetected) || normalizedDetected.includes(bankNameLower)
+    const bankNorm = normalizeBankName(bank.name)
+    return bankNorm.includes(normalizedDetected) || normalizedDetected.includes(bankNorm)
   })
 
   if (match) {
+    console.log("✅ Genel kısmi eşleşme bulundu:", match.name)
     return match
   }
 
+  console.log("❌ Hiçbir eşleşme bulunamadı")
   return null
 }
 

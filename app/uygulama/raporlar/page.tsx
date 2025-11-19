@@ -662,61 +662,7 @@ export default function RaporlarPage() {
           </CardContent>
         </Card>
       </div>
-
-      {/* Detailed Analysis Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <Card className="bg-white dark:bg-black/20 border border-gray-200 dark:border-0">
-          <CardHeader className="pb-3">
-            <div className="flex items-center justify-between">
-              <CardTitle className="text-sm font-medium text-gray-600 dark:text-gray-400">En Yüksek Faiz</CardTitle>
-              <TrendingUp className="h-4 w-4 text-red-500" />
-            </div>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-gray-900 dark:text-white mb-1">
-              {bankInterestData.length > 0 ? `${bankInterestData[0].faiz}%` : "N/A"}
-            </div>
-            <p className="text-xs text-gray-600 dark:text-gray-400">
-              {bankInterestData.length > 0 ? bankInterestData[0].name : "Veri yok"}
-            </p>
-          </CardContent>
-        </Card>
-
-        <Card className="bg-white dark:bg-black/20 border border-gray-200 dark:border-0">
-          <CardHeader className="pb-3">
-            <div className="flex items-center justify-between">
-              <CardTitle className="text-sm font-medium text-gray-600 dark:text-gray-400">En Düşük Faiz</CardTitle>
-              <TrendingDown className="h-4 w-4 text-emerald-500" />
-            </div>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-gray-900 dark:text-white mb-1">
-              {bankInterestData.length > 0 ? `${bankInterestData[bankInterestData.length - 1].faiz}%` : "N/A"}
-            </div>
-            <p className="text-xs text-gray-600 dark:text-gray-400">
-              {bankInterestData.length > 0 ? bankInterestData[bankInterestData.length - 1].name : "Veri yok"}
-            </p>
-          </CardContent>
-        </Card>
-
-        <Card className="bg-white dark:bg-black/20 border border-gray-200 dark:border-0">
-          <CardHeader className="pb-3">
-            <div className="flex items-center justify-between">
-              <CardTitle className="text-sm font-medium text-gray-600 dark:text-gray-400">Tahmini Bitiş</CardTitle>
-              <Calendar className="h-4 w-4 text-blue-500" />
-            </div>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-gray-900 dark:text-white mb-1">
-              {avgProgress > 0 ? `${Math.ceil((100 - avgProgress) / (avgProgress / 6))} Ay` : "N/A"}
-            </div>
-            <p className="text-xs text-gray-600 dark:text-gray-400">
-              Ortalama ilerlemeye göre
-            </p>
-          </CardContent>
-        </Card>
       </div>
-    </div>
   )}
 
       {/* Tab Content - Banka */}

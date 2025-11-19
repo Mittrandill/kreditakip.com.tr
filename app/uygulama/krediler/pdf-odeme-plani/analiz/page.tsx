@@ -20,16 +20,12 @@ import {
   Building2,
   Loader2,
   Sparkles,
-  TrendingUp,
-  Clock,
-  Target,
-  CreditCard,
   ChevronLeft,
   ChevronRight,
+  CreditCard,
 } from "lucide-react"
 import { useToast } from "@/hooks/use-toast"
 import { formatCurrency } from "@/lib/format"
-import { MetricCard } from "@/components/metric-card"
 import BankLogo from "@/components/bank-logo"
 import BankSelector from "@/components/bank-selector"
 import { CreditTypeSelector } from "@/components/credit-type-selector"
@@ -77,6 +73,8 @@ export default function PDFAnalysisPage() {
   const [banks, setBanks] = useState<any[]>([])
   const [creditTypes, setCreditTypes] = useState<any[]>([])
   const [selectedCreditType, setSelectedCreditType] = useState<any>(null)
+  const [selectedBank, setSelectedBank] = useState<any>(null)
+  const [bankMatchStatus, setBankMatchStatus] = useState<"loading" | "matched" | "unmatched" | "none">("loading")
 
   // Memoize the data param so it's stable between renders
   const dataParam = useMemo(() => searchParams.get("data"), [searchParams.get("data")])
@@ -110,11 +108,7 @@ export default function PDFAnalysisPage() {
     try {
       const parsedData = JSON.parse(decodeURIComponent(dataParam))
 
-      // Banka adını eşleştir
-      if (parsedData.bankName) {
-        parsedData.bankName = mapBankName(parsedData.bankName)
-      }
-
+      // Banka adını sakla (henüz eşleştirme yapma, bankalar yüklendiğinde yapılacak)
       setPaymentPlan(parsedData)
 
       // Kredi türünü eşleştir - PDF'den gelen planName'i kullan
@@ -156,6 +150,40 @@ export default function PDFAnalysisPage() {
       console.error("Data parse error:", err)
     }
   }, [dataParam, creditTypes])
+
+  // Banka eşleştirme - Bankalar yüklendiğinde
+  useEffect(() => {
+    if (paymentPlan && paymentPlan.bankName && banks.length > 0 && !selectedBank) {
+      setBankMatchStatus("loading")
+
+      console.log("🔍 Banka eşleştirme başlıyor...")
+      console.log("PDF'den gelen banka adı:", paymentPlan.bankName)
+
+      // Önce mapping ile standart hale getir
+      const mappedBankName = mapBankName(paymentPlan.bankName)
+      console.log("Eşleştirilen banka adı:", mappedBankName)
+
+      // findBestBankMatch ile veritabanında ara
+      const matchedBank = findBestBankMatch(paymentPlan.bankName, banks)
+
+      if (matchedBank) {
+        console.log("✅ Banka eşleşti:", matchedBank.name, "| Logo:", matchedBank.logo_url ? "Var" : "Yok")
+        setSelectedBank(matchedBank)
+        setBankMatchStatus("matched")
+
+        // PaymentPlan'deki banka adını da veritabanındaki adla güncelle
+        setPaymentPlan(prev => prev ? { ...prev, bankName: matchedBank.name } : null)
+      } else {
+        console.log("⚠️ Banka eşleşmedi, eşleştirilen ad kullanılacak:", mappedBankName)
+        setBankMatchStatus("unmatched")
+
+        // Eşleştirilen adı kullan (logo olmayacak)
+        setPaymentPlan(prev => prev ? { ...prev, bankName: mappedBankName } : null)
+      }
+    } else if (paymentPlan && !paymentPlan.bankName) {
+      setBankMatchStatus("none")
+    }
+  }, [paymentPlan?.bankName, banks, selectedBank])
 
   // Kredi türleri yüklendiğinde eşleştirmeyi tekrar yap
   useEffect(() => {
@@ -223,11 +251,11 @@ export default function PDFAnalysisPage() {
 
   const handleBankSelect = (bank: any) => {
     handleGeneralEdit("bankName", bank.name)
+    setSelectedBank(bank)
+    setBankMatchStatus("matched")
     setShowBankSelector(false)
 
-    // Seçilen bankayı kaydetme işlemi için hazırla
-    if (bank.id) {
-    }
+    console.log("👤 Kullanıcı banka seçti:", bank.name)
   }
 
   const handleCreditTypeSelect = (creditType: any) => {
@@ -269,15 +297,7 @@ export default function PDFAnalysisPage() {
 
     try {
 
-      // 1. Doğru bankayı bul - YENİ AKILLI EŞLEŞTİRME
-      let selectedBank = null
-      if (paymentPlan.bankName) {
-        // Akıllı banka eşleştirme kullan
-        selectedBank = findBestBankMatch(paymentPlan.bankName, banks)
-
-      }
-
-      // Eğer hala banka bulunamazsa kullanıcıya sor
+      // 1. Doğru bankayı bul
       if (!selectedBank) {
         toast({
           title: "Banka Bulunamadı",
@@ -289,6 +309,8 @@ export default function PDFAnalysisPage() {
         clearTimeout(timeoutId)
         return
       }
+
+      console.log("💾 Kaydediliyor - Seçilen banka:", selectedBank.name)
 
 
       if (!selectedCreditType) {
@@ -529,85 +551,69 @@ export default function PDFAnalysisPage() {
             <p className="text-xs text-emerald-100 mt-1">%{progressPercentage.toFixed(1)} tamamlandı</p>
           </div>
 
-          {/* Success Alert */}
-          <Alert className="border-emerald-200 bg-emerald-50/90 backdrop-blur-sm dark:border-emerald-400/30 dark:bg-emerald-900/30">
-            <Sparkles className="h-4 w-4 text-emerald-600 dark:text-emerald-300" />
-            <AlertDescription className="text-emerald-800 dark:text-emerald-100">
-              <strong>Analiz Tamamlandı!</strong> {totalInstallments} taksit tespit edildi.
-              {paymentPlan.interestRate
-                ? ` Faiz oranı: %${paymentPlan.interestRate}`
-                : " Faiz oranı otomatik hesaplandı."}
-              {paymentPlan.isVariableRate && (
-                <span className="ml-2 text-orange-700 font-medium">
-                  (Değişken Faizli: {paymentPlan.variableRateInfo})
-                </span>
-              )}
-            </AlertDescription>
-          </Alert>
-        </div>
-      </div>
 
-      {/* Metric Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        <MetricCard
-          title="Kullanılan Kredi"
-          value={formatCurrency(paymentPlan.loanAmount)}
-          subtitle="Ana kredi tutarı"
-          color="blue"
-          icon={<CreditCard />}
-        />
-        <MetricCard
-          title="Toplam Geri Ödeme"
-          value={formatCurrency(paymentPlan.totalPayback)}
-          subtitle="Faiz dahil toplam"
-          color="green"
-          icon={<Target />}
-        />
-        <MetricCard
-          title="Kalan Borç"
-          value={formatCurrency(remainingAmount)}
-          subtitle={`${paymentPlan.installments.filter((inst) => !inst.isPaid).length} taksit`}
-          color="orange"
-          icon={<Clock />}
-        />
-        <MetricCard
-          title="İlerleme"
-          value={`%${progressPercentage.toFixed(1)}`}
-          subtitle={`${paidInstallments}/${totalInstallments} taksit`}
-          color="emerald"
-          icon={<TrendingUp />}
-        />
+          {/* Metrics - Simple Text Layout */}
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <div>
+              <p className="text-white/70 text-xs sm:text-sm mb-1">Kullanılan Kredi</p>
+              <p className="text-xl sm:text-2xl font-bold">{formatCurrency(paymentPlan.loanAmount)}</p>
+            </div>
+            <div>
+              <p className="text-white/70 text-xs sm:text-sm mb-1">Toplam Geri Ödeme</p>
+              <p className="text-xl sm:text-2xl font-bold">{formatCurrency(paymentPlan.totalPayback)}</p>
+            </div>
+            <div>
+              <p className="text-white/70 text-xs sm:text-sm mb-1">Kalan Borç</p>
+              <p className="text-xl sm:text-2xl font-bold">{formatCurrency(remainingAmount)}</p>
+            </div>
+            <div>
+              <p className="text-white/70 text-xs sm:text-sm mb-1">İlerleme</p>
+              <p className="text-xl sm:text-2xl font-bold">%{progressPercentage.toFixed(1)}</p>
+            </div>
+          </div>
+        </div>
       </div>
 
       {/* General Information */}
       <Card className="shadow-lg border-gray-200 dark:border-white/10 dark:bg-black/20">
         <CardHeader>
           <CardTitle className="flex items-center gap-2 dark:text-white">
-            <Building2 className="h-5 w-5 text-emerald-600 dark:text-emerald-400" />
             Kredi Bilgileri
           </CardTitle>
           <CardDescription className="dark:text-white/60">Kredi ve banka bilgilerini kontrol edin ve düzenleyin</CardDescription>
         </CardHeader>
         <CardContent className="space-y-6">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-            <div className="space-y-2">
-              <Label className="dark:text-white/80">Banka</Label>
+            <div className="space-y-5">
+              <Label className="dark:text-white/80 flex items-center gap-2"> Banka </Label>
               <div className="flex items-center gap-3">
                 {paymentPlan.bankName ? (
                   <>
                     <BankLogo
                       bankName={paymentPlan.bankName}
-                      logoUrl={banks.find((bank) => bank.name === paymentPlan.bankName)?.logo_url}
+                      logoUrl={selectedBank?.logo_url}
                       size="sm"
                     />
-                    <span className="font-medium dark:text-white/90">{paymentPlan.bankName}</span>
+                    <div className="flex flex-col">
+                      <span className="font-medium dark:text-white/90">{selectedBank?.name || paymentPlan.bankName}</span>
+                      {bankMatchStatus === "unmatched" && (
+                        <span className="text-xs text-orange-600 dark:text-orange-400">
+                          Logo bulunamadı - Lütfen doğru bankayı seçin
+                        </span>
+                      )}
+                    </div>
                   </>
                 ) : (
                   <span className="text-gray-500 dark:text-white/60">Banka seçilmedi</span>
                 )}
-                {isEditing && (
-                  <Button variant="outline" size="sm" onClick={() => setShowBankSelector(true)}>
-                    Değiştir
+                {(isEditing || bankMatchStatus === "unmatched") && (
+                  <Button
+                    variant={bankMatchStatus === "unmatched" ? "default" : "outline"}
+                    size="sm"
+                    onClick={() => setShowBankSelector(true)}
+                    className={bankMatchStatus === "unmatched" ? "bg-orange-600 hover:bg-orange-700" : ""}
+                  >
+                    {bankMatchStatus === "unmatched" ? "Banka Seç" : "Değiştir"}
                   </Button>
                 )}
               </div>
@@ -617,14 +623,20 @@ export default function PDFAnalysisPage() {
               <Label className="dark:text-white/80">Kredi Türü</Label>
               <div className="flex items-center gap-3">
                 {selectedCreditType ? (
-                  <div className="flex flex-col">
-                    <span className="font-medium dark:text-white/90">{selectedCreditType.name}</span>
-                    <span className="text-xs text-gray-500 dark:text-white/60">{selectedCreditType.category}</span>
-                  </div>
+                  <>
+
+                    <div className="flex flex-col">
+                      <span className="font-medium dark:text-white/90">{selectedCreditType.name}</span>
+                      <span className="text-xs text-gray-500 dark:text-white/60">{selectedCreditType.category}</span>
+                    </div>
+                  </>
                 ) : (
-                  <div className="flex flex-col">
+                  <>
+                    <div className="h-8 w-8 rounded-lg bg-gray-200 dark:bg-gray-700 flex items-center justify-center">
+                      <CreditCard className="h-4 w-4 text-gray-500 dark:text-gray-400" />
+                    </div>
                     <span className="text-gray-500 dark:text-white/60">Kredi türü yükleniyor...</span>
-                  </div>
+                  </>
                 )}
                 {isEditing && (
                   <Button variant="outline" size="sm" onClick={() => setShowCreditTypeSelector(true)}>
@@ -670,7 +682,6 @@ export default function PDFAnalysisPage() {
       <Card className="shadow-lg border-gray-200 dark:border-white/10 dark:bg-black/20">
         <CardHeader>
           <CardTitle className="flex items-center gap-2 dark:text-white">
-            <Calendar className="h-5 w-5 text-emerald-600 dark:text-emerald-400" />
             Ödeme Planı Detayları
           </CardTitle>
           <CardDescription className="dark:text-white/60">Taksit bilgilerini kontrol edin ve ödeme durumlarını güncelleyin</CardDescription>

@@ -61,8 +61,37 @@ const getIconSize = (size: "sm" | "md" | "lg") => {
   }
 }
 
+// Normalizasyon fonksiyonu - bank-mapper.ts ile aynı
+const normalizeBankName = (name: string): string => {
+  return name
+    .trim()
+    // ÖNEMLİ: Türkçe karakterleri ÖNCE değiştir (toLowerCase() öncesi!)
+    // Çünkü toLowerCase() Türkçe İ'yi yanlış çeviriyor
+    .replace(/İ/g, "i")
+    .replace(/I/g, "i")
+    .replace(/Ğ/g, "g")
+    .replace(/Ü/g, "u")
+    .replace(/Ş/g, "s")
+    .replace(/Ö/g, "o")
+    .replace(/Ç/g, "c")
+    .toLowerCase()
+    // Küçük Türkçe karakterleri de değiştir
+    .replace(/ı/g, "i")
+    .replace(/ğ/g, "g")
+    .replace(/ü/g, "u")
+    .replace(/ş/g, "s")
+    .replace(/ö/g, "o")
+    .replace(/ç/g, "c")
+    .replace(/[.,\-_()]/g, " ")
+    .replace(/\s+/g, " ")
+    .trim()
+}
+
 // SÜPER KAPSAMLI BANKA LOGO EŞLEŞTİRMESİ - FALLBACK İÇİN
 const getBankLogoPath = (bankName: string): string => {
+  // Önce normalizasyonlu eşleştirme dene
+  const normalized = normalizeBankName(bankName)
+
   const bankMappings: Record<string, string> = {
     // Yapı Kredi variations
     "Yapı Kredi": "/bank-icons/yapi-kredi-bankasi.png",
@@ -298,16 +327,41 @@ const getBankLogoPath = (bankName: string): string => {
     "Türk Ticaret": "/bank-icons/turk-ticaret-bankasi.png",
   }
 
-  // Önce tam eşleşme ara
+  // 1. Önce tam eşleşme ara
   if (bankMappings[bankName]) {
     return bankMappings[bankName]
   }
 
-  // Sonra kısmi eşleşme ara (case insensitive)
-  const normalizedBankName = bankName.toLowerCase().trim()
+  // 2. Normalize edilmiş tam eşleşme ara
   for (const [key, value] of Object.entries(bankMappings)) {
-    const normalizedKey = key.toLowerCase().trim()
-    if (normalizedBankName.includes(normalizedKey) || normalizedKey.includes(normalizedBankName)) {
+    if (normalizeBankName(key) === normalized) {
+      return value
+    }
+  }
+
+  // 3. Core kelime eşleşmesi (banka, bankası, a.ş. gibi ekleri kaldır)
+  const coreDetected = normalized
+    .replace(/\b(bankasi|bankası|bank|banka|as|a s|tao|t a o|a o)\b/g, "")
+    .replace(/\bturkiye\b/g, "")
+    .replace(/\btc\b/g, "")
+    .trim()
+
+  for (const [key, value] of Object.entries(bankMappings)) {
+    const coreKey = normalizeBankName(key)
+      .replace(/\b(bankasi|bankası|bank|banka|as|a s|tao|t a o|a o)\b/g, "")
+      .replace(/\bturkiye\b/g, "")
+      .replace(/\btc\b/g, "")
+      .trim()
+
+    if (coreKey === coreDetected || coreDetected.includes(coreKey) || coreKey.includes(coreDetected)) {
+      return value
+    }
+  }
+
+  // 4. Kısmi eşleşme ara (case insensitive) - En son çare
+  for (const [key, value] of Object.entries(bankMappings)) {
+    const normalizedKey = normalizeBankName(key)
+    if (normalized.includes(normalizedKey) || normalizedKey.includes(normalized)) {
       return value
     }
   }
