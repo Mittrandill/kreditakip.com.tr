@@ -12,7 +12,7 @@ const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || "")
 // Gemini Structured Output Schema - JSON parse hatalarını önler
 const riskAnalysisSchema = {
   description: "Kapsamlı Finansal Risk Analizi Raporu",
-  type: SchemaType.OBJECT,
+  type: SchemaType.OBJECT as const,
   properties: {
     overallRiskScore: {
       type: SchemaType.STRING as const,
@@ -41,7 +41,7 @@ const riskAnalysisSchema = {
       type: SchemaType.ARRAY as const,
       description: "Tespit edilen risk faktörleri",
       items: {
-        type: SchemaType.OBJECT,
+        type: SchemaType.OBJECT as const,
         properties: {
           factor: { type: SchemaType.STRING as const },
           impact: { type: SchemaType.STRING as const },
@@ -56,7 +56,7 @@ const riskAnalysisSchema = {
       type: SchemaType.ARRAY as const,
       description: "Tespit edilen olumlu faktörler",
       items: {
-        type: SchemaType.OBJECT,
+        type: SchemaType.OBJECT as const,
         properties: {
           factor: { type: SchemaType.STRING as const },
           benefit: { type: SchemaType.STRING as const },
@@ -69,7 +69,7 @@ const riskAnalysisSchema = {
       type: SchemaType.ARRAY as const,
       description: "Aksiyon önerileri",
       items: {
-        type: SchemaType.OBJECT,
+        type: SchemaType.OBJECT as const,
         properties: {
           recommendation: { type: SchemaType.STRING as const },
           priority: { type: SchemaType.STRING as const, format: "enum" as const, enum: ["Düşük", "Orta", "Yüksek"] as string[] },
@@ -81,7 +81,7 @@ const riskAnalysisSchema = {
       }
     },
     futureOutlook: {
-      type: SchemaType.OBJECT,
+      type: SchemaType.OBJECT as const,
       properties: {
         shortTerm: { type: SchemaType.STRING as const },
         longTerm: { type: SchemaType.STRING as const },
