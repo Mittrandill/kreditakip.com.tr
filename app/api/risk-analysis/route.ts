@@ -310,7 +310,7 @@ function createFallbackAnalysis(financialProfile: FinancialProfile, credits: any
 
 async function analyzeRiskWithGemini(financialProfile: FinancialProfile, credits: any[]): Promise<any> {
   const model = genAI.getGenerativeModel({
-    model: "gemini-3-pro-preview",
+    model: "gemini-2.5-flash",
     generationConfig: {
       temperature: 0.3,
       topK: 10,
