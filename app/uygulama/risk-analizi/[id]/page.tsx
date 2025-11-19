@@ -401,7 +401,7 @@ export default function RiskAnalysisDetailPage() {
 
           {/* Key Metrics in Hero */}
           <div className="mt-6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
-            <div className="bg-white/10 backdrop-blur-sm rounded-xl p-4 border border-white/20">
+            <div className="bg-white/10 backdrop-blur-sm rounded-xl p-4">
               <div className="flex items-center gap-3 mb-2">
                 <div className="p-2 rounded-lg bg-white/20">
                   <Scale className="h-4 w-4 text-white" />
@@ -416,7 +416,7 @@ export default function RiskAnalysisDetailPage() {
               </div>
             </div>
 
-            <div className="bg-white/10 backdrop-blur-sm rounded-xl p-4 border border-white/20">
+            <div className="bg-white/10 backdrop-blur-sm rounded-xl p-4">
               <div className="flex items-center gap-3 mb-2">
                 <div className="p-2 rounded-lg bg-white/20">
                   <Banknote className="h-4 w-4 text-white" />
@@ -429,7 +429,7 @@ export default function RiskAnalysisDetailPage() {
               <div className="text-white/70 text-xs">Beyan edilen gelir</div>
             </div>
 
-            <div className="bg-white/10 backdrop-blur-sm rounded-xl p-4 border border-white/20">
+            <div className="bg-white/10 backdrop-blur-sm rounded-xl p-4">
               <div className="flex items-center gap-3 mb-2">
                 <div className="p-2 rounded-lg bg-white/20">
                   <Landmark className="h-4 w-4 text-white" />
@@ -445,7 +445,7 @@ export default function RiskAnalysisDetailPage() {
               <div className="text-white/70 text-xs">Varlık - Yükümlülük</div>
             </div>
 
-            <div className="bg-white/10 backdrop-blur-sm rounded-xl p-4 border border-white/20">
+            <div className="bg-white/10 backdrop-blur-sm rounded-xl p-4">
               <div className="flex items-center gap-3 mb-2">
                 <div className="p-2 rounded-lg bg-white/20">
                   <Calendar className="h-4 w-4 text-white" />
