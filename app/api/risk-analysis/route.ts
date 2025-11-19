@@ -170,7 +170,7 @@ async function performComprehensiveRiskAnalysis(
 
 async function analyzeRiskWithGemini(financialProfile: FinancialProfile, credits: any[]): Promise<any> {
   const model = genAI.getGenerativeModel({
-    model: "gemini-2.0-flash-exp",
+    model: "gemini-1.5-pro",
     generationConfig: {
       temperature: 0.3,
       topK: 10,
@@ -261,7 +261,33 @@ GÖREV: Aşağıdaki JSON formatında detaylı bir risk analizi oluştur. Her al
 - Gerçekçi ve uygulanabilir öneriler sun
 - Her kullanıcının durumuna özel değerlendirme yap`
 
-  const result = await model.generateContent(prompt)
+  // Retry mechanism for 503 errors
+  let result
+  let retryCount = 0
+  const maxRetries = 3
+
+  while (retryCount < maxRetries) {
+    try {
+      result = await model.generateContent(prompt)
+      break // Success, exit retry loop
+    } catch (error: any) {
+      retryCount++
+      if (error.message?.includes("503") || error.message?.includes("overloaded")) {
+        if (retryCount >= maxRetries) {
+          throw new Error("Gemini servisi şu anda aşırı yüklü. Lütfen birkaç dakika sonra tekrar deneyin.")
+        }
+        // Exponential backoff: wait 2s, 4s, 8s
+        await new Promise(resolve => setTimeout(resolve, Math.pow(2, retryCount) * 1000))
+      } else {
+        throw error // Re-throw non-503 errors immediately
+      }
+    }
+  }
+
+  if (!result) {
+    throw new Error("Risk analizi tamamlanamadı. Lütfen tekrar deneyin.")
+  }
+
   const response = await result.response
   const text = response.text()
 

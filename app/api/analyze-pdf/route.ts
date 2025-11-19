@@ -279,7 +279,7 @@ export async function POST(request: Request) {
 
     const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY)
     const model = genAI.getGenerativeModel({
-      model: "gemini-2.5-flash",
+      model: "gemini-1.5-pro",
       generationConfig: {
         temperature: 0.05,
         topK: 1,
@@ -288,15 +288,40 @@ export async function POST(request: Request) {
       },
     })
 
-    const result = await model.generateContent([
-      ULTRA_ADVANCED_PROMPT,
-      {
-        inlineData: {
-          data: base64Data,
-          mimeType: "application/pdf",
-        },
-      },
-    ])
+    // Retry mechanism for 503 errors
+    let result
+    let retryCount = 0
+    const maxRetries = 3
+
+    while (retryCount < maxRetries) {
+      try {
+        result = await model.generateContent([
+          ULTRA_ADVANCED_PROMPT,
+          {
+            inlineData: {
+              data: base64Data,
+              mimeType: "application/pdf",
+            },
+          },
+        ])
+        break // Success, exit retry loop
+      } catch (error: any) {
+        retryCount++
+        if (error.message?.includes("503") || error.message?.includes("overloaded")) {
+          if (retryCount >= maxRetries) {
+            throw new Error("Gemini servisi şu anda aşırı yüklü. Lütfen birkaç dakika sonra tekrar deneyin.")
+          }
+          // Exponential backoff: wait 2s, 4s, 8s
+          await new Promise(resolve => setTimeout(resolve, Math.pow(2, retryCount) * 1000))
+        } else {
+          throw error // Re-throw non-503 errors immediately
+        }
+      }
+    }
+
+    if (!result) {
+      throw new Error("PDF analizi tamamlanamadı. Lütfen tekrar deneyin.")
+    }
 
     const response = await result.response
     const text = response.text()
