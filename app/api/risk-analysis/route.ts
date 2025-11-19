@@ -12,7 +12,7 @@ const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || "")
 // Gemini Structured Output Schema - JSON parse hatalarını önler
 const riskAnalysisSchema = {
   description: "Kapsamlı Finansal Risk Analizi Raporu",
-  type: SchemaType.OBJECT,
+  type: SchemaType.OBJECT as const,
   properties: {
     overallRiskScore: {
       type: SchemaType.STRING,
