@@ -9,6 +9,70 @@ const CHART_COLORS = ["#10B981", "#3B82F6", "#F59E0B", "#EF4444", "#8B5CF6", "#0
 
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || "")
 
+// Advanced JSON cleaning and repair function (same as PDF analysis)
+function cleanAndParseJSON(text: string) {
+  try {
+    let cleanText = text
+      .replace(/```(?:json)?\s*/g, "")
+      .replace(/```\s*/g, "")
+      .trim()
+    const start = cleanText.indexOf("{")
+    const end = cleanText.lastIndexOf("}") + 1
+    if (start !== -1 && end > start) {
+      cleanText = cleanText.substring(start, end)
+    }
+    cleanText = cleanText.replace(/\/\*[\s\S]*?\*\//g, "").replace(/\/\/.*$/gm, "")
+    cleanText = cleanText.replace(/,(\s*[}\]])/g, "$1").replace(/,(\s*,)/g, ",")
+    cleanText = cleanText.replace(/}\s*{/g, "},{").replace(/]\s*\[/g, "],[")
+    cleanText = cleanText.replace(/[\u0000-\u001F\u007F-\u009F]/g, "").replace(/\n\s*\n/g, "\n")
+    try {
+      return JSON.parse(cleanText)
+    } catch (firstError: any) {
+      cleanText = cleanText
+        .replace(/,\s*}/g, "}")
+        .replace(/,\s*]/g, "]")
+        .replace(/([^,[{])\s*\n\s*([^,\]}])/g, "$1,$2")
+      try {
+        return JSON.parse(cleanText)
+      } catch (secondError: any) {
+        const lines = cleanText.split("\n")
+        const fixedLines = []
+        let inArray = false
+        let inObject = false
+        for (let i = 0; i < lines.length; i++) {
+          let line = lines[i].trim()
+          if (!line) continue
+          if (line.includes("[")) inArray = true
+          if (line.includes("]")) inArray = false
+          if (line.includes("{")) inObject = true
+          if (line.includes("}")) inObject = false
+          if (
+            i < lines.length - 1 &&
+            !line.endsWith(",") &&
+            !line.endsWith("{") &&
+            !line.endsWith("[") &&
+            (inArray || inObject)
+          ) {
+            const nextLine = lines[i + 1]?.trim()
+            if (nextLine && !nextLine.startsWith("}") && !nextLine.startsWith("]") && !line.endsWith(",")) {
+              line += ","
+            }
+          }
+          fixedLines.push(line)
+        }
+        const repairedText = fixedLines.join("\n")
+        try {
+          return JSON.parse(repairedText)
+        } catch (finalError: any) {
+          throw new Error("JSON formatı düzeltilemedi")
+        }
+      }
+    }
+  } catch (error: any) {
+    throw new Error("JSON formatı geçersiz")
+  }
+}
+
 export async function POST(request: NextRequest) {
   try {
     const { userId } = await request.json()
@@ -162,10 +226,86 @@ async function performComprehensiveRiskAnalysis(
   const creditsArray = credits || []
 
   // Use Gemini AI for intelligent risk analysis
-  const geminiAnalysis = await analyzeRiskWithGemini(financialProfile, creditsArray)
+  let geminiAnalysis
+  try {
+    geminiAnalysis = await analyzeRiskWithGemini(financialProfile, creditsArray)
+  } catch (error: any) {
+    console.error("[Risk Analysis] Gemini analysis failed:", error)
+    // Create fallback analysis with basic calculations
+    geminiAnalysis = createFallbackAnalysis(financialProfile, creditsArray)
+  }
 
   // Merge Gemini analysis with calculated data
   return mergeGeminiAnalysisWithData(geminiAnalysis, financialProfile, creditsArray)
+}
+
+// Create fallback analysis when Gemini fails
+function createFallbackAnalysis(financialProfile: FinancialProfile, credits: any[]): any {
+  const monthlyIncome = financialProfile.monthly_income || 0
+  const monthlyExpenses = financialProfile.monthly_expenses || 0
+  const totalMonthlyDebtPayments = credits.reduce((sum, credit) => sum + (credit.monthly_payment || 0), 0)
+
+  const dtiPercentage = monthlyIncome > 0 ? (totalMonthlyDebtPayments / monthlyIncome) * 100 : 0
+  const disposableIncome = monthlyIncome - monthlyExpenses - totalMonthlyDebtPayments
+
+  let dtiAssessment = "İyi"
+  let overallRiskScore = "Düşük Risk"
+  let overallRiskColor = "emerald"
+  let numericScore = 30
+
+  if (dtiPercentage > 40) {
+    dtiAssessment = "Yüksek"
+    overallRiskScore = "Yüksek Risk"
+    overallRiskColor = "red"
+    numericScore = 75
+  } else if (dtiPercentage > 30) {
+    dtiAssessment = "İyileştirilmeli"
+    overallRiskScore = "Orta Risk"
+    overallRiskColor = "yellow"
+    numericScore = 50
+  }
+
+  return {
+    overallRiskScore,
+    overallRiskColor,
+    numericScore,
+    detailedExplanation: `Mevcut finansal durumunuz ${overallRiskScore.toLowerCase()} düzeyinde. Borç/gelir oranınız %${dtiPercentage.toFixed(1)} seviyesinde.`,
+    overallRiskSummary: `${credits.length} adet krediniz bulunuyor. Aylık toplam ${totalMonthlyDebtPayments.toLocaleString("tr-TR")} TL kredi ödemesi yapıyorsunuz.`,
+    dtiPercentage: parseFloat(dtiPercentage.toFixed(1)),
+    dtiAssessment,
+    dtiExplanation: `Borç/gelir oranınız %${dtiPercentage.toFixed(1)} seviyesinde. ${dtiAssessment === "İyi" ? "İdeal seviyedesiniz." : "İyileştirme gerekiyor."}`,
+    disposableIncome,
+    cashFlowAssessment: disposableIncome > 0 ? "Pozitif" : "Negatif",
+    cashFlowExplanation: disposableIncome > 0 ? "Gelirleriniz giderlerinizi karşılıyor." : "Giderleriniz gelirinizden fazla.",
+    cashFlowSuggestions: "Düzenli bütçe takibi yapın ve gereksiz harcamaları azaltın.",
+    creditHealthSummary: `${credits.length} adet aktif krediniz var. Düzenli ödemelerinize devam edin.`,
+    keyRiskFactors: dtiPercentage > 30 ? [{
+      factor: "Yüksek Borç/Gelir Oranı",
+      impact: "Finansal esnekliğinizi kısıtlıyor",
+      severity: dtiPercentage > 40 ? "Yüksek" : "Orta",
+      detailedExplanation: "Borç ödemeleriniz gelirinizin önemli bir kısmını oluşturuyor.",
+      mitigationTips: ["Ek gelir kaynakları araştırın", "Kredileri birleştirmeyi değerlendirin", "Gereksiz harcamaları azaltın"]
+    }] : [],
+    positiveFactors: dtiPercentage < 30 ? [{
+      factor: "Sağlıklı Borç/Gelir Oranı",
+      benefit: "Finansal esnekliğiniz yüksek",
+      detailedExplanation: "Borç yükünüz kontrol altında.",
+      enhancementTips: ["Bu durumu koruyun", "Tasarruf yapın"]
+    }] : [],
+    recommendations: [{
+      recommendation: "Bütçe Planlaması",
+      priority: "Yüksek",
+      details: "Aylık gelir ve giderlerinizi düzenli takip edin.",
+      actionSteps: ["Harcamalarınızı kategorilere ayırın", "Gereksiz abonelikleri iptal edin", "Acil durum fonu oluşturun"],
+      potentialImpact: "Finansal kontrolünüzü artırır"
+    }],
+    futureOutlook: {
+      shortTerm: "Mevcut ödemelerinize devam etmeniz durumunda durumunuz sürdürülebilir",
+      longTerm: "Düzenli tasarruf ile finansal güvenliğinizi artırabilirsiniz",
+      potentialChallenges: dtiPercentage > 30 ? ["Yüksek borç yükü"] : [],
+      opportunities: ["Acil durum fonu oluşturma", "Yatırım fırsatlarını değerlendirme"]
+    }
+  }
 }
 
 async function analyzeRiskWithGemini(financialProfile: FinancialProfile, credits: any[]): Promise<any> {
@@ -291,22 +431,15 @@ GÖREV: Aşağıdaki JSON formatında detaylı bir risk analizi oluştur. Her al
   const response = await result.response
   const text = response.text()
 
-  // Clean and parse JSON
-  let cleanedText = text.trim()
-  if (cleanedText.startsWith("```json")) {
-    cleanedText = cleanedText.replace(/```json\n?/g, "").replace(/```\n?/g, "")
-  } else if (cleanedText.startsWith("```")) {
-    cleanedText = cleanedText.replace(/```\n?/g, "")
-  }
-  cleanedText = cleanedText.trim()
-
+  // Use advanced JSON cleaning and parsing
   try {
-    const analysis = JSON.parse(cleanedText)
+    const analysis = cleanAndParseJSON(text)
     return analysis
-  } catch (error) {
+  } catch (error: any) {
     console.error("[Gemini] JSON parse error:", error)
     console.error("[Gemini] Raw response:", text)
-    throw new Error("Gemini analiz sonucu işlenemedi")
+    console.error("[Gemini] Raw response preview:", text.substring(0, 500))
+    throw new Error(`Gemini analiz sonucu işlenemedi: ${error.message}`)
   }
 }
 
