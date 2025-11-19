@@ -9,7 +9,7 @@ export const maxDuration = 60
 // Gemini Structured Output Schema - PDF Kredi Ödeme Planı
 const paymentPlanSchema = {
   description: "Kredi ödeme planı analiz sonucu",
-  type: SchemaType.OBJECT,
+  type: SchemaType.OBJECT as const,
   properties: {
     bankName: { type: SchemaType.STRING as const, description: "Banka adı", nullable: true },
     planName: { type: SchemaType.STRING as const, description: "Kredi türü (İhtiyaç, Konut, Taşıt, Ticari)", nullable: true },
@@ -26,7 +26,7 @@ const paymentPlanSchema = {
       type: SchemaType.ARRAY as const,
       description: "Taksit listesi",
       items: {
-        type: SchemaType.OBJECT,
+        type: SchemaType.OBJECT as const,
         properties: {
           installmentNumber: { type: SchemaType.NUMBER as const, description: "Taksit numarası" },
           amount: { type: SchemaType.NUMBER as const, description: "Taksit tutarı", nullable: true },
