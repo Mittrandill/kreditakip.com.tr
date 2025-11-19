@@ -17,11 +17,13 @@ const riskAnalysisSchema = {
     overallRiskScore: {
       type: SchemaType.STRING as const,
       description: "Genel risk durumu",
+      format: "enum" as const,
       enum: ["Düşük Risk", "Orta Risk", "Yüksek Risk"] as const,
     },
     overallRiskColor: {
       type: SchemaType.STRING as const,
       description: "Risk rengi",
+      format: "enum" as const,
       enum: ["emerald", "yellow", "red"] as const,
     },
     numericScore: { type: SchemaType.NUMBER as const, description: "0-100 arası risk puanı" },
@@ -43,7 +45,7 @@ const riskAnalysisSchema = {
         properties: {
           factor: { type: SchemaType.STRING as const },
           impact: { type: SchemaType.STRING as const },
-          severity: { type: SchemaType.STRING as const, enum: ["Düşük", "Orta", "Yüksek"] as const },
+          severity: { type: SchemaType.STRING as const, format: "enum" as const, enum: ["Düşük", "Orta", "Yüksek"] as const },
           detailedExplanation: { type: SchemaType.STRING as const },
           mitigationTips: { type: SchemaType.ARRAY as const, items: { type: SchemaType.STRING as const } },
         },
@@ -70,7 +72,7 @@ const riskAnalysisSchema = {
         type: SchemaType.OBJECT as const,
         properties: {
           recommendation: { type: SchemaType.STRING as const },
-          priority: { type: SchemaType.STRING as const, enum: ["Düşük", "Orta", "Yüksek"] as const },
+          priority: { type: SchemaType.STRING as const, format: "enum" as const, enum: ["Düşük", "Orta", "Yüksek"] as const },
           details: { type: SchemaType.STRING as const },
           actionSteps: { type: SchemaType.ARRAY as const, items: { type: SchemaType.STRING as const } },
           potentialImpact: { type: SchemaType.STRING as const },
