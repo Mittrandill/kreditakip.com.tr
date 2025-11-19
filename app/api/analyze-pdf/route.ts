@@ -1,10 +1,45 @@
-import { GoogleGenerativeAI } from "@google/generative-ai"
+import { GoogleGenerativeAI, SchemaType } from "@google/generative-ai"
 
 export const dynamic = "force-dynamic"
 import { mapBankName } from "@/lib/utils/bank-mapper"
 import { createServerClient } from "@/lib/supabase/server"
 
 export const maxDuration = 60
+
+// Gemini Structured Output Schema - PDF Kredi Ödeme Planı
+const paymentPlanSchema = {
+  description: "Kredi ödeme planı analiz sonucu",
+  type: SchemaType.OBJECT,
+  properties: {
+    bankName: { type: SchemaType.STRING, description: "Banka adı", nullable: true },
+    planName: { type: SchemaType.STRING, description: "Kredi türü (İhtiyaç, Konut, Taşıt, Ticari)", nullable: true },
+    loanAmount: { type: SchemaType.NUMBER, description: "Kredi tutarı", nullable: true },
+    totalPayback: { type: SchemaType.NUMBER, description: "Toplam geri ödeme", nullable: true },
+    currency: { type: SchemaType.STRING, description: "Para birimi (TRY, USD, EUR)", nullable: true },
+    interestRate: { type: SchemaType.NUMBER, description: "Aylık faiz oranı (örn: 5.23)", nullable: true },
+    fees: { type: SchemaType.NUMBER, description: "Masraflar", nullable: true },
+    loanTerm: { type: SchemaType.NUMBER, description: "Vade (ay)", nullable: true },
+    monthlyPayment: { type: SchemaType.NUMBER, description: "Aylık taksit tutarı", nullable: true },
+    isVariableRate: { type: SchemaType.BOOLEAN, description: "Değişken faizli mi?", nullable: true },
+    variableRateInfo: { type: SchemaType.STRING, description: "Değişken faiz bilgisi", nullable: true },
+    installments: {
+      type: SchemaType.ARRAY,
+      description: "Taksit listesi",
+      items: {
+        type: SchemaType.OBJECT,
+        properties: {
+          installmentNumber: { type: SchemaType.NUMBER, description: "Taksit numarası" },
+          amount: { type: SchemaType.NUMBER, description: "Taksit tutarı", nullable: true },
+          dueDate: { type: SchemaType.STRING, description: "Vade tarihi (YYYY-MM-DD)", nullable: true },
+          description: { type: SchemaType.STRING, description: "Açıklama", nullable: true },
+          isPaid: { type: SchemaType.BOOLEAN, description: "Ödenmiş mi?", nullable: true },
+        },
+        required: ["installmentNumber"],
+      },
+    },
+  },
+  required: ["bankName", "loanAmount", "installments", "interestRate"],
+}
 
 // Gelişmiş JSON temizleme ve düzeltme fonksiyonu
 function cleanAndParseJSON(text: string) {
@@ -310,9 +345,9 @@ export async function POST(request: Request) {
     const model = genAI.getGenerativeModel({
       model: "gemini-2.5-flash",
       generationConfig: {
-        temperature: 0.05,
-        topK: 1,
-        topP: 0.05,
+        temperature: 0.1,
+        responseMimeType: "application/json",
+        responseSchema: paymentPlanSchema,
         maxOutputTokens: 8192,
       },
     })
@@ -357,10 +392,16 @@ export async function POST(request: Request) {
 
     let paymentPlan: any
     try {
-      paymentPlan = cleanAndParseJSON(text)
+      // With structured output, Gemini returns clean JSON
+      paymentPlan = JSON.parse(text)
 
       if (!paymentPlan || typeof paymentPlan !== "object") {
         throw new Error("Geçersiz veri yapısı: Ana obje yok veya obje değil.")
+      }
+
+      // Validate critical fields
+      if (!paymentPlan.installments || !Array.isArray(paymentPlan.installments)) {
+        throw new Error("Taksit bilgileri bulunamadı")
       }
 
       if (paymentPlan.bankName && typeof paymentPlan.bankName === "string") {
@@ -579,6 +620,9 @@ export async function POST(request: Request) {
         paymentPlan.interestRate = null
       }
     } catch (parseError: any) {
+      console.error("[PDF Analysis] Structured output parse error:", parseError)
+      console.error("[PDF Analysis] Response preview:", text.substring(0, 500))
+
       paymentPlan = {
         bankName: null,
         planName: "İhtiyaç Kredisi",
@@ -595,7 +639,7 @@ export async function POST(request: Request) {
       }
       return Response.json(
         {
-          error: `PDF analizi tamamlanamadı. Veri formatı hatası: ${parseError.message}. Lütfen farklı bir PDF deneyin veya manuel giriş yapın.`,
+          error: `PDF analizi tamamlanamadı. ${parseError.message}. Lütfen farklı bir PDF deneyin veya manuel giriş yapın.`,
           fallbackPlan: paymentPlan,
           debugInfo: {
             parseError: parseError.message,
@@ -620,7 +664,7 @@ export async function POST(request: Request) {
       success: true,
       paymentPlan: paymentPlan,
       processingTime: Date.now() - startTime,
-      analysisVersion: "V0DEV_DIAMOND_ULTRA_PRO_PLUS_VARIABLE_RATE",
+      analysisVersion: "V2_STRUCTURED_OUTPUT_SCHEMA",
     })
   } catch (error: any) {
     if (error instanceof Error) {
