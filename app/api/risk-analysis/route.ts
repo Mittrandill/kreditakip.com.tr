@@ -3,74 +3,92 @@ import { type NextRequest, NextResponse } from "next/server"
 export const dynamic = "force-dynamic"
 import type { FinancialProfile, RiskAnalysisData } from "@/lib/types"
 import { createClient } from "@supabase/supabase-js"
-import { GoogleGenerativeAI } from "@google/generative-ai"
+import { GoogleGenerativeAI, SchemaType } from "@google/generative-ai"
 
 const CHART_COLORS = ["#10B981", "#3B82F6", "#F59E0B", "#EF4444", "#8B5CF6", "#06B6D4", "#F97316", "#84CC16"]
 
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || "")
 
-// Advanced JSON cleaning and repair function (same as PDF analysis)
-function cleanAndParseJSON(text: string) {
-  try {
-    let cleanText = text
-      .replace(/```(?:json)?\s*/g, "")
-      .replace(/```\s*/g, "")
-      .trim()
-    const start = cleanText.indexOf("{")
-    const end = cleanText.lastIndexOf("}") + 1
-    if (start !== -1 && end > start) {
-      cleanText = cleanText.substring(start, end)
-    }
-    cleanText = cleanText.replace(/\/\*[\s\S]*?\*\//g, "").replace(/\/\/.*$/gm, "")
-    cleanText = cleanText.replace(/,(\s*[}\]])/g, "$1").replace(/,(\s*,)/g, ",")
-    cleanText = cleanText.replace(/}\s*{/g, "},{").replace(/]\s*\[/g, "],[")
-    cleanText = cleanText.replace(/[\u0000-\u001F\u007F-\u009F]/g, "").replace(/\n\s*\n/g, "\n")
-    try {
-      return JSON.parse(cleanText)
-    } catch (firstError: any) {
-      cleanText = cleanText
-        .replace(/,\s*}/g, "}")
-        .replace(/,\s*]/g, "]")
-        .replace(/([^,[{])\s*\n\s*([^,\]}])/g, "$1,$2")
-      try {
-        return JSON.parse(cleanText)
-      } catch (secondError: any) {
-        const lines = cleanText.split("\n")
-        const fixedLines = []
-        let inArray = false
-        let inObject = false
-        for (let i = 0; i < lines.length; i++) {
-          let line = lines[i].trim()
-          if (!line) continue
-          if (line.includes("[")) inArray = true
-          if (line.includes("]")) inArray = false
-          if (line.includes("{")) inObject = true
-          if (line.includes("}")) inObject = false
-          if (
-            i < lines.length - 1 &&
-            !line.endsWith(",") &&
-            !line.endsWith("{") &&
-            !line.endsWith("[") &&
-            (inArray || inObject)
-          ) {
-            const nextLine = lines[i + 1]?.trim()
-            if (nextLine && !nextLine.startsWith("}") && !nextLine.startsWith("]") && !line.endsWith(",")) {
-              line += ","
-            }
-          }
-          fixedLines.push(line)
-        }
-        const repairedText = fixedLines.join("\n")
-        try {
-          return JSON.parse(repairedText)
-        } catch (finalError: any) {
-          throw new Error("JSON formatı düzeltilemedi")
-        }
-      }
-    }
-  } catch (error: any) {
-    throw new Error("JSON formatı geçersiz")
-  }
+// Gemini Structured Output Schema - JSON parse hatalarını önler
+const riskAnalysisSchema = {
+  description: "Kapsamlı Finansal Risk Analizi Raporu",
+  type: SchemaType.OBJECT,
+  properties: {
+    overallRiskScore: {
+      type: SchemaType.STRING,
+      description: "Genel risk durumu",
+      enum: ["Düşük Risk", "Orta Risk", "Yüksek Risk"],
+    },
+    overallRiskColor: {
+      type: SchemaType.STRING,
+      description: "Risk rengi",
+      enum: ["emerald", "yellow", "red"],
+    },
+    numericScore: { type: SchemaType.NUMBER, description: "0-100 arası risk puanı" },
+    detailedExplanation: { type: SchemaType.STRING, description: "Risk durumunun detaylı açıklaması" },
+    overallRiskSummary: { type: SchemaType.STRING, description: "Genel özet (2-3 cümle)" },
+    dtiPercentage: { type: SchemaType.NUMBER, description: "Borç/Gelir oranı yüzdesi" },
+    dtiAssessment: { type: SchemaType.STRING, description: "DTI değerlendirmesi" },
+    dtiExplanation: { type: SchemaType.STRING, description: "DTI durumunun açıklaması" },
+    disposableIncome: { type: SchemaType.NUMBER, description: "Harcanabilir gelir tutarı" },
+    cashFlowAssessment: { type: SchemaType.STRING, description: "Nakit akışı durumu (Pozitif/Negatif)" },
+    cashFlowExplanation: { type: SchemaType.STRING },
+    cashFlowSuggestions: { type: SchemaType.STRING, description: "Nakit akışı için ana öneri" },
+    creditHealthSummary: { type: SchemaType.STRING },
+    keyRiskFactors: {
+      type: SchemaType.ARRAY,
+      description: "Tespit edilen risk faktörleri",
+      items: {
+        type: SchemaType.OBJECT,
+        properties: {
+          factor: { type: SchemaType.STRING },
+          impact: { type: SchemaType.STRING },
+          severity: { type: SchemaType.STRING, enum: ["Düşük", "Orta", "Yüksek"] },
+          detailedExplanation: { type: SchemaType.STRING },
+          mitigationTips: { type: SchemaType.ARRAY, items: { type: SchemaType.STRING } },
+        },
+        required: ["factor", "severity", "mitigationTips"],
+      },
+    },
+    positiveFactors: {
+      type: SchemaType.ARRAY,
+      description: "Tespit edilen olumlu faktörler",
+      items: {
+        type: SchemaType.OBJECT,
+        properties: {
+          factor: { type: SchemaType.STRING },
+          benefit: { type: SchemaType.STRING },
+          detailedExplanation: { type: SchemaType.STRING },
+          enhancementTips: { type: SchemaType.ARRAY, items: { type: SchemaType.STRING } },
+        },
+      },
+    },
+    recommendations: {
+      type: SchemaType.ARRAY,
+      description: "Aksiyon önerileri",
+      items: {
+        type: SchemaType.OBJECT,
+        properties: {
+          recommendation: { type: SchemaType.STRING },
+          priority: { type: SchemaType.STRING, enum: ["Düşük", "Orta", "Yüksek"] },
+          details: { type: SchemaType.STRING },
+          actionSteps: { type: SchemaType.ARRAY, items: { type: SchemaType.STRING } },
+          potentialImpact: { type: SchemaType.STRING },
+        },
+        required: ["recommendation", "priority", "actionSteps"],
+      },
+    },
+    futureOutlook: {
+      type: SchemaType.OBJECT,
+      properties: {
+        shortTerm: { type: SchemaType.STRING },
+        longTerm: { type: SchemaType.STRING },
+        potentialChallenges: { type: SchemaType.ARRAY, items: { type: SchemaType.STRING } },
+        opportunities: { type: SchemaType.ARRAY, items: { type: SchemaType.STRING } },
+      },
+    },
+  },
+  required: ["overallRiskScore", "numericScore", "dtiPercentage", "recommendations", "keyRiskFactors"],
 }
 
 export async function POST(request: NextRequest) {
@@ -372,96 +390,39 @@ function createFallbackAnalysis(financialProfile: FinancialProfile, credits: any
 
 async function analyzeRiskWithGemini(financialProfile: FinancialProfile, credits: any[]): Promise<any> {
   const model = genAI.getGenerativeModel({
-    model: "gemini-2.5-flash",
+    model: "gemini-3-pro-preview",
     generationConfig: {
-      temperature: 0.3,
-      topK: 10,
-      topP: 0.8,
-      maxOutputTokens: 8192,
+      temperature: 0.2,
+      responseMimeType: "application/json",
+      responseSchema: riskAnalysisSchema,
     },
   })
 
   const profile = financialProfile as any // Cast to any to access all fields
 
-  const prompt = `Sen bir profesyonel finansal danışmansın. Aşağıdaki finansal profil ve kredi bilgilerini analiz ederek KAPSAMLI bir risk değerlendirmesi yap.
+  const prompt = `Sen uzman bir finansal risk analistisin. Aşağıdaki verileri kullanarak Türk finans sistemi standartlarına göre kapsamlı bir risk değerlendirmesi yap.
 
-FİNANSAL PROFİL:
-- Aylık Gelir: ${profile.monthly_income || 0} TL
-- Aylık Giderler: ${profile.monthly_expenses || 0} TL
-- Toplam Varlıklar: ${profile.total_assets || 0} TL
-- Toplam Yükümlülükler: ${profile.total_liabilities || 0} TL
-- İstihdam Durumu: ${profile.employment_status || "Belirtilmemiş"}
-- İstihdam Süresi: ${profile.employment_duration_months || 0} ay
+📊 FİNANSAL PROFİL:
+• Aylık Gelir: ${profile.monthly_income || 0} TL
+• Aylık Giderler: ${profile.monthly_expenses || 0} TL
+• Varlıklar: ${profile.total_assets || 0} TL
+• Yükümlülükler: ${profile.total_liabilities || 0} TL
+• İstihdam: ${profile.employment_status || "Belirtilmemiş"} (${profile.employment_duration_months || 0} ay)
 
-KREDİLER (${credits.length} adet):
-${credits.map((c, i) => `
-${i + 1}. ${c.banks?.name || "Bilinmeyen Banka"}
-   - Kredi Türü: ${c.credit_types?.name || "Bilinmeyen"}
-   - Kalan Borç: ${c.remaining_debt || 0} TL
-   - Aylık Ödeme: ${c.monthly_payment || 0} TL
-   - Faiz Oranı: %${c.interest_rate || 0}
-   - Durum: ${c.status}
-   - Başlangıç Tutarı: ${c.initial_amount || 0} TL
-`).join('\n')}
+💳 AKTİF KREDİLER (${credits.length} adet):
+${credits
+  .map(
+    (c, i) => `${i + 1}. ${c.banks?.name || "Banka"}: ${c.remaining_debt || 0} TL borç, ${c.monthly_payment || 0} TL/ay, Faiz: %${c.interest_rate || 0}`,
+  )
+  .join("\n")}
 
-GÖREV: Aşağıdaki JSON formatında detaylı bir risk analizi oluştur. Her alanı dikkatlice değerlendir ve Türk finans sistemi standartlarına göre analiz yap.
+🎯 DEĞERLENDİRME KRİTERLERİ:
+• Borç/Gelir Oranı (DTI): %30 altı ideal, %30-40 makul, %40 üstü riskli
+• Nakit Akışı: Gelir - Gider - Borç Ödemeleri
+• Yüksek faizli krediler ve ödeme yükü oranını özellikle değerlendir
+• Kişiye özel, uygulanabilir öneriler sun
 
-\`\`\`json
-{
-  "overallRiskScore": "Düşük Risk" veya "Orta Risk" veya "Yüksek Risk",
-  "overallRiskColor": "emerald" veya "yellow" veya "red",
-  "numericScore": 0-100 arası sayı (0=mükemmel, 100=çok riskli),
-  "detailedExplanation": "3-4 cümle detaylı açıklama",
-  "overallRiskSummary": "Genel durum özeti (2-3 cümle)",
-  "dtiPercentage": Borç/Gelir oranı yüzdesi (sayı),
-  "dtiAssessment": "İyi" veya "Orta" veya "İyileştirilmeli" veya "Yüksek",
-  "dtiExplanation": "DTI oranı hakkında açıklama",
-  "disposableIncome": Harcanabilir gelir tutarı (sayı),
-  "cashFlowAssessment": "Pozitif" veya "Negatif" veya "Dengede",
-  "cashFlowExplanation": "Nakit akışı açıklaması",
-  "cashFlowSuggestions": "Nakit akışı iyileştirme önerileri",
-  "creditHealthSummary": "Kredi sağlığı özeti",
-  "keyRiskFactors": [
-    {
-      "factor": "Risk faktörü adı",
-      "impact": "Etkisi",
-      "severity": "Düşük" veya "Orta" veya "Yüksek",
-      "detailedExplanation": "Detaylı açıklama",
-      "mitigationTips": ["İpucu 1", "İpucu 2", "İpucu 3"]
-    }
-  ],
-  "positiveFactors": [
-    {
-      "factor": "Pozitif faktör adı",
-      "benefit": "Faydası",
-      "detailedExplanation": "Detaylı açıklama",
-      "enhancementTips": ["İpucu 1", "İpucu 2"]
-    }
-  ],
-  "recommendations": [
-    {
-      "recommendation": "Öneri başlığı",
-      "priority": "Düşük" veya "Orta" veya "Yüksek",
-      "details": "Öneri detayları",
-      "actionSteps": ["Adım 1", "Adım 2", "Adım 3"],
-      "potentialImpact": "Potansiyel etki açıklaması"
-    }
-  ],
-  "futureOutlook": {
-    "shortTerm": "Kısa vadeli görünüm",
-    "longTerm": "Uzun vadeli görünüm",
-    "potentialChallenges": ["Zorluk 1", "Zorluk 2"],
-    "opportunities": ["Fırsat 1", "Fırsat 2"]
-  }
-}
-\`\`\`
-
-ÖNEMLİ:
-- Sadece geçerli JSON döndür, başka hiçbir metin ekleme
-- Türk Lirası ve Türkiye finans sistemi standartlarına göre değerlendir
-- Borç/Gelir oranı için %30 altı ideal, %30-40 arası kabul edilebilir, %40 üstü yüksek risk
-- Gerçekçi ve uygulanabilir öneriler sun
-- Her kullanıcının durumuna özel değerlendirme yap`
+Risk skorunu 0-100 arasında belirle (0=mükemmel, 100=çok riskli).`
 
   // Retry mechanism for 503 errors
   let result
@@ -493,30 +454,21 @@ GÖREV: Aşağıdaki JSON formatında detaylı bir risk analizi oluştur. Her al
   const response = await result.response
   const text = response.text()
 
-  // Check if response contains error messages
-  if (text.toLowerCase().includes("an error") ||
-      text.toLowerCase().includes("error occurred") ||
-      text.toLowerCase().includes("cannot") ||
-      text.length < 50) {
-    console.error("[Gemini] Invalid response detected:", text.substring(0, 200))
-    throw new Error("Gemini returned invalid response")
-  }
-
-  // Use advanced JSON cleaning and parsing
+  // With structured output, Gemini returns clean JSON
   try {
-    const analysis = cleanAndParseJSON(text)
+    const analysis = JSON.parse(text)
 
-    // Validate that analysis has required fields
-    if (!analysis.overallRiskScore || !analysis.dtiPercentage) {
-      console.error("[Gemini] Analysis missing required fields")
+    // Validate required fields
+    if (!analysis.overallRiskScore || typeof analysis.dtiPercentage !== "number") {
+      console.error("[Gemini] Analysis missing required fields:", analysis)
       throw new Error("Incomplete analysis data")
     }
 
     return analysis
   } catch (error: any) {
-    console.error("[Gemini] JSON parse error:", error)
-    console.error("[Gemini] Raw response preview:", text.substring(0, 500))
-    throw new Error(`Gemini analiz sonucu işlenemedi: ${error.message}`)
+    console.error("[Gemini] Structured output parse error:", error)
+    console.error("[Gemini] Response:", text.substring(0, 500))
+    throw new Error(`Risk analizi işlenemedi: ${error.message}`)
   }
 }
 
