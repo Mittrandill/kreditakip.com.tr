@@ -15,65 +15,65 @@ const riskAnalysisSchema = {
   type: SchemaType.OBJECT as const,
   properties: {
     overallRiskScore: {
-      type: SchemaType.STRING,
+      type: SchemaType.STRING as const,
       description: "Genel risk durumu (Düşük Risk, Orta Risk, Yüksek Risk)",
       enum: ["Düşük Risk", "Orta Risk", "Yüksek Risk"] as string[]
     },
     overallRiskColor: {
-      type: SchemaType.STRING,
+      type: SchemaType.STRING as const,
       description: "Risk rengi (emerald, yellow, red)",
       enum: ["emerald", "yellow", "red"] as string[]
     },
-    numericScore: { type: SchemaType.NUMBER, description: "0-100 arası risk puanı (0 en iyi, 100 en riskli)" },
-    detailedExplanation: { type: SchemaType.STRING, description: "Risk durumunun detaylı açıklaması" },
-    overallRiskSummary: { type: SchemaType.STRING, description: "Yönetici özeti (2-3 cümle)" },
-    dtiPercentage: { type: SchemaType.NUMBER, description: "Borç/Gelir oranı yüzdesi (Örn: 35.5)" },
-    dtiAssessment: { type: SchemaType.STRING, description: "DTI değerlendirmesi (İyi, Makul, Kritik)" },
-    dtiExplanation: { type: SchemaType.STRING, description: "DTI durumunun açıklaması" },
-    disposableIncome: { type: SchemaType.NUMBER, description: "Harcanabilir gelir tutarı" },
-    cashFlowAssessment: { type: SchemaType.STRING, description: "Nakit akışı durumu (Pozitif/Negatif)" },
-    cashFlowExplanation: { type: SchemaType.STRING },
-    cashFlowSuggestions: { type: SchemaType.STRING, description: "Nakit akışı için ana öneri" },
-    creditHealthSummary: { type: SchemaType.STRING },
+    numericScore: { type: SchemaType.NUMBER as const, description: "0-100 arası risk puanı (0 en iyi, 100 en riskli)" },
+    detailedExplanation: { type: SchemaType.STRING as const, description: "Risk durumunun detaylı açıklaması" },
+    overallRiskSummary: { type: SchemaType.STRING as const, description: "Yönetici özeti (2-3 cümle)" },
+    dtiPercentage: { type: SchemaType.NUMBER as const, description: "Borç/Gelir oranı yüzdesi (Örn: 35.5)" },
+    dtiAssessment: { type: SchemaType.STRING as const, description: "DTI değerlendirmesi (İyi, Makul, Kritik)" },
+    dtiExplanation: { type: SchemaType.STRING as const, description: "DTI durumunun açıklaması" },
+    disposableIncome: { type: SchemaType.NUMBER as const, description: "Harcanabilir gelir tutarı" },
+    cashFlowAssessment: { type: SchemaType.STRING as const, description: "Nakit akışı durumu (Pozitif/Negatif)" },
+    cashFlowExplanation: { type: SchemaType.STRING as const },
+    cashFlowSuggestions: { type: SchemaType.STRING as const, description: "Nakit akışı için ana öneri" },
+    creditHealthSummary: { type: SchemaType.STRING as const },
     keyRiskFactors: {
-      type: SchemaType.ARRAY,
+      type: SchemaType.ARRAY as const,
       description: "Tespit edilen risk faktörleri",
       items: {
         type: SchemaType.OBJECT as const,
         properties: {
-          factor: { type: SchemaType.STRING },
-          impact: { type: SchemaType.STRING },
-          severity: { type: SchemaType.STRING, enum: ["Düşük", "Orta", "Yüksek"] as string[] },
-          detailedExplanation: { type: SchemaType.STRING },
-          mitigationTips: { type: SchemaType.ARRAY, items: { type: SchemaType.STRING } }
+          factor: { type: SchemaType.STRING as const },
+          impact: { type: SchemaType.STRING as const },
+          severity: { type: SchemaType.STRING as const, enum: ["Düşük", "Orta", "Yüksek"] as string[] },
+          detailedExplanation: { type: SchemaType.STRING as const },
+          mitigationTips: { type: SchemaType.ARRAY as const, items: { type: SchemaType.STRING as const } }
         },
         required: ["factor", "severity", "mitigationTips"]
       }
     },
     positiveFactors: {
-      type: SchemaType.ARRAY,
+      type: SchemaType.ARRAY as const,
       description: "Tespit edilen olumlu faktörler",
       items: {
         type: SchemaType.OBJECT as const,
         properties: {
-          factor: { type: SchemaType.STRING },
-          benefit: { type: SchemaType.STRING },
-          detailedExplanation: { type: SchemaType.STRING },
-          enhancementTips: { type: SchemaType.ARRAY, items: { type: SchemaType.STRING } }
+          factor: { type: SchemaType.STRING as const },
+          benefit: { type: SchemaType.STRING as const },
+          detailedExplanation: { type: SchemaType.STRING as const },
+          enhancementTips: { type: SchemaType.ARRAY as const, items: { type: SchemaType.STRING as const } }
         }
       }
     },
     recommendations: {
-      type: SchemaType.ARRAY,
+      type: SchemaType.ARRAY as const,
       description: "Aksiyon önerileri",
       items: {
         type: SchemaType.OBJECT as const,
         properties: {
-          recommendation: { type: SchemaType.STRING },
-          priority: { type: SchemaType.STRING, enum: ["Düşük", "Orta", "Yüksek"] as string[] },
-          details: { type: SchemaType.STRING },
-          actionSteps: { type: SchemaType.ARRAY, items: { type: SchemaType.STRING } },
-          potentialImpact: { type: SchemaType.STRING }
+          recommendation: { type: SchemaType.STRING as const },
+          priority: { type: SchemaType.STRING as const, enum: ["Düşük", "Orta", "Yüksek"] as string[] },
+          details: { type: SchemaType.STRING as const },
+          actionSteps: { type: SchemaType.ARRAY as const, items: { type: SchemaType.STRING as const } },
+          potentialImpact: { type: SchemaType.STRING as const }
         },
         required: ["recommendation", "priority", "actionSteps"]
       }
@@ -81,10 +81,10 @@ const riskAnalysisSchema = {
     futureOutlook: {
       type: SchemaType.OBJECT as const,
       properties: {
-        shortTerm: { type: SchemaType.STRING },
-        longTerm: { type: SchemaType.STRING },
-        potentialChallenges: { type: SchemaType.ARRAY, items: { type: SchemaType.STRING } },
-        opportunities: { type: SchemaType.ARRAY, items: { type: SchemaType.STRING } }
+        shortTerm: { type: SchemaType.STRING as const },
+        longTerm: { type: SchemaType.STRING as const },
+        potentialChallenges: { type: SchemaType.ARRAY as const, items: { type: SchemaType.STRING as const } },
+        opportunities: { type: SchemaType.ARRAY as const, items: { type: SchemaType.STRING as const } }
       }
     }
   },
