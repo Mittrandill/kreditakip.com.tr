@@ -175,7 +175,69 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    const analysisData = await performComprehensiveRiskAnalysis(userId, financialProfile)
+    let analysisData
+    try {
+      analysisData = await performComprehensiveRiskAnalysis(userId, financialProfile)
+    } catch (analysisError: any) {
+      console.error("[v0] Risk analysis failed, using emergency fallback:", analysisError)
+
+      // Emergency fallback: create basic analysis without Gemini
+      const { data: credits } = await supabaseAdmin
+        .from("credits")
+        .select("monthly_payment, remaining_debt")
+        .eq("user_id", userId)
+
+      const creditsArray = credits || []
+      const fallbackAnalysis = createFallbackAnalysis(financialProfile, creditsArray)
+
+      // Convert to full analysis data structure
+      const monthlyIncome = financialProfile.monthly_income || 0
+      const monthlyExpenses = financialProfile.monthly_expenses || 0
+      const totalMonthlyDebtPayments = creditsArray.reduce((sum: number, credit: any) => sum + (credit.monthly_payment || 0), 0)
+
+      analysisData = {
+        overallRiskScore: {
+          value: fallbackAnalysis.overallRiskScore,
+          color: fallbackAnalysis.overallRiskColor,
+          numericScore: fallbackAnalysis.numericScore,
+          scoreMax: 100,
+          detailedExplanation: fallbackAnalysis.detailedExplanation,
+        },
+        overallRiskSummary: fallbackAnalysis.overallRiskSummary,
+        debtToIncomeRatio: {
+          value: `%${fallbackAnalysis.dtiPercentage}`,
+          assessment: fallbackAnalysis.dtiAssessment,
+          explanation: fallbackAnalysis.dtiExplanation,
+          benchmark: {
+            idealRange: "< %30",
+            warningRange: "%30 - %40",
+            criticalRange: "> %40",
+          },
+          incomeForDTI: monthlyIncome,
+          debtPaymentsForDTI: totalMonthlyDebtPayments,
+        },
+        cashFlowAnalysis: {
+          monthlyIncome,
+          monthlyExpenses,
+          disposableIncome: fallbackAnalysis.disposableIncome,
+          assessment: fallbackAnalysis.cashFlowAssessment,
+          explanation: fallbackAnalysis.cashFlowExplanation,
+          suggestions: [fallbackAnalysis.cashFlowSuggestions],
+        },
+        keyRiskFactors: fallbackAnalysis.keyRiskFactors,
+        positiveFactors: fallbackAnalysis.positiveFactors,
+        recommendations: fallbackAnalysis.recommendations,
+        savingsAnalysis: {
+          assessment: "İyileştirilmeli",
+          emergencyFundStatus: "Bilinmiyor",
+          emergencyFundTarget: "6 aylık gider hedeflenmeli",
+          suggestions: "Düzenli tasarruf planı oluşturun",
+        },
+        creditHealthSummary: fallbackAnalysis.creditHealthSummary,
+        futureOutlook: fallbackAnalysis.futureOutlook,
+        chartsData: {},
+      }
+    }
 
     if (!isPremium) {
       const { error: incrementError } = await supabaseAdmin.rpc("increment_usage", {
@@ -190,7 +252,7 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json(analysisData)
   } catch (error) {
-    console.error("[v0] Risk analysis error:", error)
+    console.error("[v0] Risk analysis critical error:", error)
     return NextResponse.json(
       {
         error: "Risk analizi sırasında bir hata oluştu. Lütfen tekrar deneyin.",
@@ -310,7 +372,7 @@ function createFallbackAnalysis(financialProfile: FinancialProfile, credits: any
 
 async function analyzeRiskWithGemini(financialProfile: FinancialProfile, credits: any[]): Promise<any> {
   const model = genAI.getGenerativeModel({
-    model: "gemini-3-pro-preview",
+    model: "gemini-2.5-flash",
     generationConfig: {
       temperature: 0.3,
       topK: 10,
@@ -431,13 +493,28 @@ GÖREV: Aşağıdaki JSON formatında detaylı bir risk analizi oluştur. Her al
   const response = await result.response
   const text = response.text()
 
+  // Check if response contains error messages
+  if (text.toLowerCase().includes("an error") ||
+      text.toLowerCase().includes("error occurred") ||
+      text.toLowerCase().includes("cannot") ||
+      text.length < 50) {
+    console.error("[Gemini] Invalid response detected:", text.substring(0, 200))
+    throw new Error("Gemini returned invalid response")
+  }
+
   // Use advanced JSON cleaning and parsing
   try {
     const analysis = cleanAndParseJSON(text)
+
+    // Validate that analysis has required fields
+    if (!analysis.overallRiskScore || !analysis.dtiPercentage) {
+      console.error("[Gemini] Analysis missing required fields")
+      throw new Error("Incomplete analysis data")
+    }
+
     return analysis
   } catch (error: any) {
     console.error("[Gemini] JSON parse error:", error)
-    console.error("[Gemini] Raw response:", text)
     console.error("[Gemini] Raw response preview:", text.substring(0, 500))
     throw new Error(`Gemini analiz sonucu işlenemedi: ${error.message}`)
   }
