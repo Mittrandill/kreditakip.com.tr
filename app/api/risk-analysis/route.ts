@@ -454,10 +454,18 @@ Risk skorunu 0-100 arasında belirle (0=mükemmel, 100=çok riskli).`
   }
 
   const response = await result.response
-  const text = response.text()
 
-  // With structured output, Gemini returns clean JSON
+  // With structured output, Gemini should return clean JSON directly
   try {
+    // Try to parse the response text as JSON
+    const text = response.text()
+
+    // Check if response contains error message
+    if (text.includes("An error occurred") || text.includes("error") || text.includes("Error")) {
+      console.error("[Gemini] API returned error message:", text.substring(0, 300))
+      throw new Error("Gemini API hata döndü")
+    }
+
     const analysis = JSON.parse(text)
 
     // Validate required fields
@@ -468,8 +476,14 @@ Risk skorunu 0-100 arasında belirle (0=mükemmel, 100=çok riskli).`
 
     return analysis
   } catch (error: any) {
-    console.error("[Gemini] Structured output parse error:", error)
-    console.error("[Gemini] Response:", text.substring(0, 500))
+    console.error("[Gemini] Response processing error:", error)
+    console.error("[Gemini] Raw response (first 500 chars):", response.text().substring(0, 500))
+
+    // Check if it's a JSON parse error
+    if (error.message?.includes("JSON") || error.message?.includes("token")) {
+      throw new Error("Gemini API beklenmeyen format döndü. Lütfen tekrar deneyin.")
+    }
+
     throw new Error(`Risk analizi işlenemedi: ${error.message}`)
   }
 }

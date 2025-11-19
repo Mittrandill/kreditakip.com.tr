@@ -55,7 +55,6 @@ import { formatDistanceToNow } from "date-fns"
 import { tr } from "date-fns/locale"
 import { MetricCard } from "@/components/metric-card"
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible"
-import { DonutChart, BarChart as ApexBarChart } from "@/components/charts"
 
 const CHART_COLORS = ["#10B981", "#3B82F6", "#F59E0B", "#EF4444", "#8B5CF6", "#06B6D4", "#F97316", "#84CC16"]
 
@@ -312,149 +311,110 @@ export default function RiskAnalysisDetailPage() {
   return (
     <div className="flex flex-col gap-8 p-4 md:p-6">
       {/* Hero Section */}
-      <div
-        className={`relative overflow-hidden rounded-2xl bg-gradient-to-br ${getHeroGradient(analysisData.overallRiskScore?.color)} p-6 md:p-8 text-white shadow-2xl`}
-      >
-        <div className="absolute inset-0 bg-black/10 backdrop-blur-sm"></div>
-        <div className="relative z-10">
-          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-6 gap-4">
-            <div className="flex items-center gap-3">
+      <Card className="bg-gradient-to-br from-emerald-600 via-teal-600 to-emerald-700 dark:from-emerald-700 dark:via-teal-700 dark:to-emerald-800 text-white border-0 shadow-2xl">
+        <CardContent className="p-6 md:p-8">
+          <div className="flex-1">
+            <div className="flex items-start justify-between gap-3 mb-2">
+              <div className="flex items-center gap-3">
+                <Button
+                  variant="outline"
+                  size="icon"
+                  onClick={() => router.push("/uygulama/risk-analizi")}
+                  className="bg-transparent border-white/20 text-white hover:bg-white/10 hover:border-transparent hover:text-white dark:bg-transparent dark:border-white/20 dark:text-white dark:hover:bg-white/10 dark:hover:border-transparent dark:hover:text-white backdrop-blur-sm h-10 w-10 shrink-0"
+                >
+                  <ArrowLeft className="h-5 w-5" />
+                </Button>
+                <div className="min-w-0">
+                  <h1 className="text-3xl md:text-4xl font-bold flex items-center gap-3">
+                    {analysisData.overallRiskScore?.color === "emerald" && <ShieldCheck className="h-8 w-8" />}
+                    {analysisData.overallRiskScore?.color === "yellow" && <ShieldAlert className="h-8 w-8" />}
+                    {analysisData.overallRiskScore?.color === "red" && <ShieldAlert className="h-8 w-8" />}
+                    {!analysisData.overallRiskScore?.color && <ShieldQuestion className="h-8 w-8" />}
+                    Risk Analizi Detayı
+                  </h1>
+                </div>
+              </div>
               <Button
                 variant="outline"
-                size="icon"
-                onClick={() => router.push("/uygulama/risk-analizi")}
-                className="bg-transparent border-white/20 text-white hover:bg-white/10 hover:border-transparent hover:text-white dark:bg-transparent dark:border-white/20 dark:text-white dark:hover:bg-white/10 dark:hover:border-transparent dark:hover:text-white backdrop-blur-sm h-10 w-10 shrink-0"
+                onClick={() => setDeleteDialogOpen(true)}
+                className="bg-transparent border-white/20 text-white hover:bg-white/10 hover:border-transparent hover:text-white dark:bg-transparent dark:border-white/20 dark:text-white dark:hover:bg-white/10 dark:hover:border-transparent dark:hover:text-white shrink-0"
+                size="lg"
               >
-                <ArrowLeft className="h-5 w-5" />
+                <Trash2 className="mr-2 h-5 w-5" />
+                Analizi Sil
               </Button>
-              <div className="min-w-0">
-                <h1 className="text-xl sm:text-2xl md:text-3xl font-bold">Risk Analizi Detayı</h1>
-                <p className="text-white/80 text-xs sm:text-sm md:text-base">
-                  {new Date(analysis.created_at).toLocaleDateString("tr-TR", {
-                    day: "numeric",
-                    month: "long",
-                    year: "numeric",
-                  })}{" "}
-                  tarihinde Gemini AI ile oluşturuldu.
-                </p>
-              </div>
             </div>
-            <Button
-              variant="destructive"
-              onClick={() => setDeleteDialogOpen(true)}
-              className="bg-red-500/80 hover:bg-red-600/90 border-red-400/50 text-white shrink-0 w-full sm:w-auto text-sm"
-            >
-              <Trash2 className="mr-2 h-3 w-3 sm:h-4 sm:w-4" />
-              <span className="hidden sm:inline">Analizi Sil</span>
-              <span className="sm:hidden">Sil</span>
-            </Button>
-          </div>
+              <p className="text-white/80 text-base md:text-lg mb-4">
+                {new Date(analysis.created_at).toLocaleDateString("tr-TR", {
+                  day: "numeric",
+                  month: "long",
+                  year: "numeric",
+                })}{" "}
+                tarihinde Gemini AI ile oluşturulmuştur. Genel risk skorunuz: {analysisData.overallRiskScore?.value || "Bilinmiyor"}
+              </p>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6 items-center mb-6">
-            <div className="flex items-center gap-3 sm:gap-4">
-              <div className={`p-2 sm:p-3 rounded-xl bg-white/25`}>
-                {analysisData.overallRiskScore?.color === "emerald" && <ShieldCheck className="h-6 w-6 sm:h-8 sm:w-8 text-white" />}
-                {analysisData.overallRiskScore?.color === "yellow" && <ShieldAlert className="h-6 w-6 sm:h-8 sm:w-8 text-white" />}
-                {analysisData.overallRiskScore?.color === "red" && <ShieldAlert className="h-6 w-6 sm:h-8 sm:w-8 text-white" />}
-                {!analysisData.overallRiskScore?.color && <ShieldQuestion className="h-6 w-6 sm:h-8 sm:w-8 text-white" />}
-              </div>
-              <div className="min-w-0">
-                <h3 className="text-lg sm:text-xl md:text-2xl font-bold text-white truncate">
-                  {analysisData.overallRiskScore?.value || "Bilinmiyor"}
-                </h3>
-                <p className="text-white/80 text-xs sm:text-sm md:text-base">Genel Risk Skoru</p>
-              </div>
-            </div>
-            <Badge
-              variant="secondary"
-              className={`px-3 sm:px-4 py-1.5 sm:py-2 text-xs sm:text-sm font-medium bg-white/20 text-white border-white/30 justify-self-start md:justify-self-end`}
-            >
-              {riskProgressData.label}
-            </Badge>
-          </div>
-
-          <div className="space-y-2">
-            <div className="flex justify-between text-xs sm:text-sm">
-              <span className="text-white/80">
-                Risk Seviyesi ({analysisData.overallRiskScore?.numericScore || 0} /{" "}
-                {analysisData.overallRiskScore?.scoreMax || 100})
-              </span>
-              <span className="font-medium text-white">{animatedProgress.toFixed(0)}%</span>
-            </div>
-            <Progress
-              value={animatedProgress}
-              className={`h-3 bg-white/20 [&>div]:${riskProgressData.className} [&>div]:transition-all [&>div]:duration-1000 [&>div]:ease-out`}
-              aria-label={`Risk Seviyesi: ${animatedProgress.toFixed(0)}%`}
-            />
-          </div>
-
-          {/* Key Metrics in Hero */}
-          <div className="mt-6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
-            <div className="bg-white/10 backdrop-blur-sm rounded-xl p-4 border border-white/20">
-              <div className="flex items-center gap-3 mb-2">
-                <div className="p-2 rounded-lg bg-white/20">
-                  <Scale className="h-4 w-4 text-white" />
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4">
+                <div>
+                  <p className="text-white/70 text-xs sm:text-sm mb-1">Borç/Gelir Oranı</p>
+                  <p className="text-xl sm:text-2xl font-bold">
+                    {analysisData.debtToIncomeRatio?.value || "N/A"}
+                  </p>
+                  <p className="text-white/70 text-xs">
+                    {analysisData.debtToIncomeRatio?.assessment || ""}
+                  </p>
                 </div>
-                <span className="text-white/80 text-xs font-medium">Borç/Gelir Oranı</span>
-              </div>
-              <div className="text-2xl font-bold text-white mb-1">
-                {analysisData.debtToIncomeRatio?.value || "N/A"}
-              </div>
-              <div className="text-white/70 text-xs">
-                {analysisData.debtToIncomeRatio?.assessment || "Değerlendirme yok"}
-              </div>
-            </div>
-
-            <div className="bg-white/10 backdrop-blur-sm rounded-xl p-4 border border-white/20">
-              <div className="flex items-center gap-3 mb-2">
-                <div className="p-2 rounded-lg bg-white/20">
-                  <Banknote className="h-4 w-4 text-white" />
+                <div>
+                  <p className="text-white/70 text-xs sm:text-sm mb-1">Aylık Gelir</p>
+                  <p className="text-xl sm:text-2xl font-bold">
+                    {analysis.monthly_income ? `₺${analysis.monthly_income.toLocaleString("tr-TR")}` : "N/A"}
+                  </p>
                 </div>
-                <span className="text-white/80 text-xs font-medium">Aylık Gelir</span>
-              </div>
-              <div className="text-2xl font-bold text-white mb-1">
-                {analysis.monthly_income ? `₺${analysis.monthly_income.toLocaleString("tr-TR")}` : "N/A"}
-              </div>
-              <div className="text-white/70 text-xs">Beyan edilen gelir</div>
-            </div>
-
-            <div className="bg-white/10 backdrop-blur-sm rounded-xl p-4 border border-white/20">
-              <div className="flex items-center gap-3 mb-2">
-                <div className="p-2 rounded-lg bg-white/20">
-                  <Landmark className="h-4 w-4 text-white" />
+                <div>
+                  <p className="text-white/70 text-xs sm:text-sm mb-1">Risk Seviyesi</p>
+                  <p className="text-xl sm:text-2xl font-bold">
+                    {analysisData.overallRiskScore?.numericScore || 0}/{analysisData.overallRiskScore?.scoreMax || 100}
+                  </p>
+                  <p className="text-white/70 text-xs">{riskProgressData.label}</p>
                 </div>
-                <span className="text-white/80 text-xs font-medium">Net Varlık</span>
-              </div>
-              <div className="text-2xl font-bold text-white mb-1">
-                {analysisData.assetLiabilityAnalysis?.netWorth !== null &&
-                analysisData.assetLiabilityAnalysis?.netWorth !== undefined
-                  ? `₺${analysisData.assetLiabilityAnalysis.netWorth.toLocaleString("tr-TR")}`
-                  : "N/A"}
-              </div>
-              <div className="text-white/70 text-xs">Varlık - Yükümlülük</div>
-            </div>
-
-            <div className="bg-white/10 backdrop-blur-sm rounded-xl p-4 border border-white/20">
-              <div className="flex items-center gap-3 mb-2">
-                <div className="p-2 rounded-lg bg-white/20">
-                  <Calendar className="h-4 w-4 text-white" />
+                <div>
+                  <p className="text-white/70 text-xs sm:text-sm mb-1">Analiz Tarihi</p>
+                  <p className="text-xl sm:text-2xl font-bold">
+                    {formatDistanceToNow(new Date(analysis.created_at), { addSuffix: true, locale: tr })}
+                  </p>
                 </div>
-                <span className="text-white/80 text-xs font-medium">Analiz Tarihi</span>
               </div>
-              <div className="text-2xl font-bold text-white mb-1">
-                {formatDistanceToNow(new Date(analysis.created_at), { addSuffix: true, locale: tr })}
+
+              {/* Progress Bar */}
+              <div className="mt-4 space-y-2">
+                <div className="flex justify-between text-xs sm:text-sm">
+                  <span className="text-white/80">Risk Göstergesi</span>
+                  <span className="font-medium text-white">{animatedProgress.toFixed(0)}%</span>
+                </div>
+                <div className="relative h-3 bg-white/20 rounded-full overflow-hidden">
+                  <div
+                    className={`h-full transition-all duration-1000 ease-out rounded-full ${
+                      analysisData.overallRiskScore?.color === "emerald"
+                        ? "bg-gradient-to-r from-emerald-500 to-green-600"
+                        : analysisData.overallRiskScore?.color === "yellow"
+                          ? "bg-gradient-to-r from-yellow-500 to-orange-600"
+                          : analysisData.overallRiskScore?.color === "red"
+                            ? "bg-gradient-to-r from-red-500 to-rose-600"
+                            : "bg-gray-500"
+                    }`}
+                    style={{ width: `${animatedProgress}%` }}
+                    aria-label={`Risk Seviyesi: ${animatedProgress.toFixed(0)}%`}
+                  />
+                </div>
               </div>
-              <div className="text-white/70 text-xs">Oluşturulma zamanı</div>
-            </div>
+
+            {analysisData.overallRiskScore?.detailedExplanation && (
+              <p className="mt-4 text-sm text-white/90">
+                {analysisData.overallRiskScore.detailedExplanation}
+              </p>
+            )}
           </div>
-
-          {analysisData.overallRiskScore?.detailedExplanation && (
-            <p className="mt-4 text-sm text-white/90 bg-black/10 p-3 rounded-lg">
-              {analysisData.overallRiskScore.detailedExplanation}
-            </p>
-          )}
-        </div>
-      </div>
+        </CardContent>
+      </Card>
 
       {/* Modern Tabs */}
       <div className="bg-white dark:bg-black/20 rounded-2xl shadow-xl border border-gray-200 dark:border-white/10 overflow-hidden">
@@ -735,70 +695,7 @@ export default function RiskAnalysisDetailPage() {
           </TabsContent>
 
           <TabsContent value="details" className="p-4 md:p-6 space-y-6">
-            {analysisData.assetLiabilityAnalysis && (
-              <SectionCard
-                title="Varlık ve Yükümlülük Analizi"
-                icon={<PieChart className="h-5 w-5" />}
-                iconGradient="from-cyan-500 to-blue-600"
-                description="Mali durumunuzun anlık görüntüsü."
-              >
-                <div className="space-y-3">
-                  <p>
-                    <strong>Toplam Varlıklar:</strong> ₺
-                    {analysisData.assetLiabilityAnalysis.totalAssets?.toLocaleString("tr-TR") || "N/A"}
-                  </p>
-                  <p>
-                    <strong>Toplam Yükümlülükler:</strong> ₺
-                    {analysisData.assetLiabilityAnalysis.totalLiabilities?.toLocaleString("tr-TR") || "N/A"}
-                  </p>
-                  <p>
-                    <strong>Net Varlık:</strong> ₺
-                    {analysisData.assetLiabilityAnalysis.netWorth?.toLocaleString("tr-TR") || "N/A"}
-                  </p>
-                  <div className="flex items-center">
-                    <strong className="mr-2">Değerlendirme:</strong>
-                    <Badge
-                      variant={analysisData.assetLiabilityAnalysis.assessment === "Sağlıklı" ? "default" : "outline"}
-                    >
-                      {analysisData.assetLiabilityAnalysis.assessment}
-                    </Badge>
-                  </div>
-                  <p>
-                    <strong className="font-medium">Açıklama:</strong> {analysisData.assetLiabilityAnalysis.explanation}
-                  </p>
-                  {analysisData.assetLiabilityAnalysis.assetBreakdown &&
-                    analysisData.assetLiabilityAnalysis.assetBreakdown.length > 0 && (
-                      <div>
-                        <strong className="font-medium">Varlık Dağılımı:</strong>
-                        <ul className="list-disc list-inside ml-4 text-sm">
-                          {analysisData.assetLiabilityAnalysis.assetBreakdown
-                            .map(
-                              (a) => `${a.category}: ₺${a.value.toLocaleString("tr-TR")} (%${a.percentage || "N/A"})`,
-                            )
-                            .map((s, i) => (
-                              <li key={i}>{s}</li>
-                            ))}
-                        </ul>
-                      </div>
-                    )}
-                  {analysisData.assetLiabilityAnalysis.liabilityBreakdown &&
-                    analysisData.assetLiabilityAnalysis.liabilityBreakdown.length > 0 && (
-                      <div>
-                        <strong className="font-medium">Yükümlülük Dağılımı:</strong>
-                        <ul className="list-disc list-inside ml-4 text-sm">
-                          {analysisData.assetLiabilityAnalysis.liabilityBreakdown
-                            .map(
-                              (l) => `${l.category}: ₺${l.value.toLocaleString("tr-TR")} (%${l.percentage || "N/A"})`,
-                            )
-                            .map((s, i) => (
-                              <li key={i}>{s}</li>
-                            ))}
-                        </ul>
-                      </div>
-                    )}
-                </div>
-              </SectionCard>
-            )}
+            {/* 1. Tasarruf Analizi - En Üstte */}
             {analysisData.savingsAnalysis && (
               <SectionCard
                 title="Tasarruf Analizi"
@@ -827,6 +724,8 @@ export default function RiskAnalysisDetailPage() {
                 </div>
               </SectionCard>
             )}
+
+            {/* 2. Kredi Sağlığı Özeti */}
             {analysisData.creditHealthSummary && (
               <SectionCard
                 title="Kredi Sağlığı Özeti"
@@ -854,79 +753,342 @@ export default function RiskAnalysisDetailPage() {
                 )}
               </SectionCard>
             )}
-            {analysisData.chartsData && (
+
+            {/* 3. Grafik Verileri - TÜM GRAFİKLER */}
+            {(analysisData.chartsData || analysisData.cashFlowAnalysis || (analysisData.keyRiskFactors && analysisData.keyRiskFactors.length > 0)) && (
               <SectionCard
-                title="Grafik Verileri (Önizleme)"
+                title="Grafik Verileri"
                 icon={<BarChart3 className="h-5 w-5" />}
                 iconGradient="from-teal-500 to-cyan-600"
-                description="AI tarafından üretilen grafik verileri."
+                description="Finansal durumunuzun görsel analizi."
               >
                 <div className="space-y-8">
-                  {analysisData.chartsData.debtBreakdown && analysisData.chartsData.debtBreakdown.length > 0 && (
-                    <div>
-                      <h5 className="font-semibold mb-4 text-lg">Borç Dağılımı</h5>
-                      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                        {/* Modern Donut Chart */}
-                        <div className="rounded-xl">
-                          <DonutChart
-                            data={{
-                              labels: analysisData.chartsData.debtBreakdown.map((item) => item.name),
-                              series: analysisData.chartsData.debtBreakdown.map((item) => item.amount),
-                            }}
-                            height={250}
-                          />
-                        </div>
+                  {/* YENİ GRAFİKLER */}
+                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    {/* 1. Nakit Akışı Analizi */}
+                    {analysisData.cashFlowAnalysis && (
+                      <Card className="bg-white dark:bg-black/20 border border-gray-200 dark:border-0 overflow-hidden">
+                        <CardHeader className="border-b border-gray-100 dark:border-white/5 pb-4">
+                          <CardTitle className="text-xl text-gray-900 dark:text-white">Nakit Akışı Analizi</CardTitle>
+                          <CardDescription className="text-sm mt-1 text-gray-600 dark:text-gray-400">
+                            Aylık gelir ve gider dağılımı
+                          </CardDescription>
+                        </CardHeader>
+                        <CardContent className="pt-6">
+                          <div className="space-y-4">
+                            <div>
+                              <div className="flex items-center justify-between mb-2">
+                                <div className="flex items-center gap-2">
+                                  <div className="w-3 h-3 rounded-full bg-emerald-500" />
+                                  <span className="text-sm font-medium text-gray-700 dark:text-gray-300">Aylık Gelir</span>
+                                </div>
+                                <span className="text-sm font-bold text-gray-900 dark:text-white">
+                                  ₺{analysisData.cashFlowAnalysis.monthlyIncome?.toLocaleString("tr-TR") || "0"}
+                                </span>
+                              </div>
+                              <div className="w-full bg-gray-200 dark:bg-gray-800 rounded-full h-3 overflow-hidden">
+                                <div className="bg-gradient-to-r from-emerald-500 to-emerald-600 h-3 rounded-full" style={{ width: "100%" }} />
+                              </div>
+                            </div>
+                            <div>
+                              <div className="flex items-center justify-between mb-2">
+                                <div className="flex items-center gap-2">
+                                  <div className="w-3 h-3 rounded-full bg-red-500" />
+                                  <span className="text-sm font-medium text-gray-700 dark:text-gray-300">Aylık Giderler</span>
+                                </div>
+                                <span className="text-sm font-bold text-gray-900 dark:text-white">
+                                  ₺{analysisData.cashFlowAnalysis.monthlyExpenses?.toLocaleString("tr-TR") || "0"}
+                                </span>
+                              </div>
+                              <div className="w-full bg-gray-200 dark:bg-gray-800 rounded-full h-3 overflow-hidden">
+                                <div
+                                  className="bg-gradient-to-r from-red-500 to-red-600 h-3 rounded-full"
+                                  style={{ width: `${analysisData.cashFlowAnalysis.monthlyIncome ? ((analysisData.cashFlowAnalysis.monthlyExpenses || 0) / analysisData.cashFlowAnalysis.monthlyIncome) * 100 : 0}%` }}
+                                />
+                              </div>
+                            </div>
+                            <div>
+                              <div className="flex items-center justify-between mb-2">
+                                <div className="flex items-center gap-2">
+                                  <div className="w-3 h-3 rounded-full bg-orange-500" />
+                                  <span className="text-sm font-medium text-gray-700 dark:text-gray-300">Borç Ödemeleri</span>
+                                </div>
+                                <span className="text-sm font-bold text-gray-900 dark:text-white">
+                                  ₺{analysisData.debtToIncomeRatio?.debtPaymentsForDTI?.toLocaleString("tr-TR") || "0"}
+                                </span>
+                              </div>
+                              <div className="w-full bg-gray-200 dark:bg-gray-800 rounded-full h-3 overflow-hidden">
+                                <div
+                                  className="bg-gradient-to-r from-orange-500 to-orange-600 h-3 rounded-full"
+                                  style={{ width: `${analysisData.cashFlowAnalysis.monthlyIncome ? ((analysisData.debtToIncomeRatio?.debtPaymentsForDTI || 0) / analysisData.cashFlowAnalysis.monthlyIncome) * 100 : 0}%` }}
+                                />
+                              </div>
+                            </div>
+                            <div>
+                              <div className="flex items-center justify-between mb-2">
+                                <div className="flex items-center gap-2">
+                                  <div className="w-3 h-3 rounded-full bg-blue-500" />
+                                  <span className="text-sm font-medium text-gray-700 dark:text-gray-300">Kullanılabilir Gelir</span>
+                                </div>
+                                <span className="text-sm font-bold text-gray-900 dark:text-white">
+                                  ₺{analysisData.cashFlowAnalysis.disposableIncome?.toLocaleString("tr-TR") || "0"}
+                                </span>
+                              </div>
+                              <div className="w-full bg-gray-200 dark:bg-gray-800 rounded-full h-3 overflow-hidden">
+                                <div
+                                  className="bg-gradient-to-r from-blue-500 to-blue-600 h-3 rounded-full"
+                                  style={{ width: `${analysisData.cashFlowAnalysis.monthlyIncome ? ((analysisData.cashFlowAnalysis.disposableIncome || 0) / analysisData.cashFlowAnalysis.monthlyIncome) * 100 : 0}%` }}
+                                />
+                              </div>
+                            </div>
+                          </div>
+                        </CardContent>
+                      </Card>
+                    )}
 
-                        {/* Modern Bar Chart */}
-                        <div className="rounded-xl">
-                          <ApexBarChart
-                            data={{
-                              categories: analysisData.chartsData.debtBreakdown.map((item) => item.name),
-                              series: [
-                                {
-                                  name: "Borç Miktarı",
-                                  data: analysisData.chartsData.debtBreakdown.map((item) => item.amount),
-                                },
-                              ],
-                            }}
-                            height={250}
-                          />
+                    {/* 2. Risk Faktörleri Dağılımı */}
+                    {analysisData.keyRiskFactors && analysisData.keyRiskFactors.length > 0 && (
+                      <Card className="bg-white dark:bg-black/20 border border-gray-200 dark:border-0 overflow-hidden">
+                        <CardHeader className="border-b border-gray-100 dark:border-white/5 pb-4">
+                          <CardTitle className="text-xl text-gray-900 dark:text-white">Risk Faktörleri Dağılımı</CardTitle>
+                          <CardDescription className="text-sm mt-1 text-gray-600 dark:text-gray-400">
+                            Tespit edilen risk seviyelerine göre
+                          </CardDescription>
+                        </CardHeader>
+                        <CardContent className="pt-6">
+                          <div className="space-y-4">
+                            {analysisData.keyRiskFactors.slice(0, 5).map((risk, index) => (
+                              <div key={index}>
+                                <div className="flex items-center justify-between mb-2">
+                                  <div className="flex items-center gap-2 flex-1 min-w-0">
+                                    <div className={`w-3 h-3 rounded-full ${risk.severity === "Yüksek" ? "bg-red-500" : risk.severity === "Orta" ? "bg-yellow-500" : "bg-emerald-500"}`} />
+                                    <span className="text-sm font-medium text-gray-700 dark:text-gray-300 truncate">{risk.factor}</span>
+                                  </div>
+                                  <Badge variant={risk.severity === "Yüksek" ? "destructive" : risk.severity === "Orta" ? "outline" : "default"} className="ml-2 shrink-0">
+                                    {risk.severity}
+                                  </Badge>
+                                </div>
+                                <div className="w-full bg-gray-200 dark:bg-gray-800 rounded-full h-3 overflow-hidden">
+                                  <div
+                                    className={`h-3 rounded-full ${risk.severity === "Yüksek" ? "bg-gradient-to-r from-red-500 to-red-600" : risk.severity === "Orta" ? "bg-gradient-to-r from-yellow-500 to-yellow-600" : "bg-gradient-to-r from-emerald-500 to-emerald-600"}`}
+                                    style={{ width: `${risk.severity === "Yüksek" ? 90 : risk.severity === "Orta" ? 60 : 30}%` }}
+                                  />
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        </CardContent>
+                      </Card>
+                    )}
+                  </div>
+
+                  {/* 3. Finansal Sağlık Kategorileri - Radial Charts */}
+                  <Card className="bg-white dark:bg-black/20 border border-gray-200 dark:border-0 overflow-hidden">
+                    <CardHeader className="border-b border-gray-100 dark:border-white/5 pb-4">
+                      <CardTitle className="text-xl text-gray-900 dark:text-white">Finansal Sağlık Kategorileri</CardTitle>
+                      <CardDescription className="text-sm mt-1 text-gray-600 dark:text-gray-400">
+                        Farklı kategorilerdeki performansınız
+                      </CardDescription>
+                    </CardHeader>
+                    <CardContent className="pt-6">
+                      <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+                        <div className="flex flex-col items-center">
+                          <div className="relative w-24 h-24 mb-3">
+                            <svg viewBox="0 0 100 100" className="transform -rotate-90">
+                              <circle cx="50" cy="50" r="40" fill="none" stroke="currentColor" strokeWidth="8" className="text-gray-200 dark:text-gray-800" />
+                              <circle cx="50" cy="50" r="40" fill="none" stroke="#10B981" strokeWidth="8" strokeDasharray={`${((100 - (analysisData.overallRiskScore?.numericScore || 50)) / 100) * 251.2} 251.2`} strokeLinecap="round" />
+                            </svg>
+                            <div className="absolute inset-0 flex items-center justify-center">
+                              <span className="text-xl font-bold text-gray-900 dark:text-white">{100 - (analysisData.overallRiskScore?.numericScore || 50)}</span>
+                            </div>
+                          </div>
+                          <p className="text-sm font-medium text-gray-700 dark:text-gray-300 text-center">Borç Yönetimi</p>
+                        </div>
+                        <div className="flex flex-col items-center">
+                          <div className="relative w-24 h-24 mb-3">
+                            <svg viewBox="0 0 100 100" className="transform -rotate-90">
+                              <circle cx="50" cy="50" r="40" fill="none" stroke="currentColor" strokeWidth="8" className="text-gray-200 dark:text-gray-800" />
+                              <circle cx="50" cy="50" r="40" fill="none" stroke="#3B82F6" strokeWidth="8" strokeDasharray={`${analysisData.cashFlowAnalysis?.monthlyIncome ? Math.min(((analysisData.cashFlowAnalysis.disposableIncome || 0) / analysisData.cashFlowAnalysis.monthlyIncome) * 100 * 251.2 / 100, 251.2) : 0} 251.2`} strokeLinecap="round" />
+                            </svg>
+                            <div className="absolute inset-0 flex items-center justify-center">
+                              <span className="text-xl font-bold text-gray-900 dark:text-white">{analysisData.cashFlowAnalysis?.monthlyIncome ? Math.round(((analysisData.cashFlowAnalysis.disposableIncome || 0) / analysisData.cashFlowAnalysis.monthlyIncome) * 100) : 0}</span>
+                            </div>
+                          </div>
+                          <p className="text-sm font-medium text-gray-700 dark:text-gray-300 text-center">Nakit Akışı</p>
+                        </div>
+                        <div className="flex flex-col items-center">
+                          <div className="relative w-24 h-24 mb-3">
+                            <svg viewBox="0 0 100 100" className="transform -rotate-90">
+                              <circle cx="50" cy="50" r="40" fill="none" stroke="currentColor" strokeWidth="8" className="text-gray-200 dark:text-gray-800" />
+                              <circle cx="50" cy="50" r="40" fill="none" stroke={parseFloat(analysisData.debtToIncomeRatio?.value?.replace("%", "") || "0") > 40 ? "#EF4444" : parseFloat(analysisData.debtToIncomeRatio?.value?.replace("%", "") || "0") > 30 ? "#F59E0B" : "#10B981"} strokeWidth="8" strokeDasharray={`${Math.min((parseFloat(analysisData.debtToIncomeRatio?.value?.replace("%", "") || "0") * 251.2) / 100, 251.2)} 251.2`} strokeLinecap="round" />
+                            </svg>
+                            <div className="absolute inset-0 flex items-center justify-center">
+                              <span className="text-xl font-bold text-gray-900 dark:text-white">{analysisData.debtToIncomeRatio?.value || "0"}</span>
+                            </div>
+                          </div>
+                          <p className="text-sm font-medium text-gray-700 dark:text-gray-300 text-center">DTI Oranı</p>
+                        </div>
+                        <div className="flex flex-col items-center">
+                          <div className="relative w-24 h-24 mb-3">
+                            <svg viewBox="0 0 100 100" className="transform -rotate-90">
+                              <circle cx="50" cy="50" r="40" fill="none" stroke="currentColor" strokeWidth="8" className="text-gray-200 dark:text-gray-800" />
+                              <circle cx="50" cy="50" r="40" fill="none" stroke="#8B5CF6" strokeWidth="8" strokeDasharray={`${((100 - (analysisData.overallRiskScore?.numericScore || 0)) / 100) * 251.2} 251.2`} strokeLinecap="round" />
+                            </svg>
+                            <div className="absolute inset-0 flex items-center justify-center">
+                              <span className="text-xl font-bold text-gray-900 dark:text-white">{100 - (analysisData.overallRiskScore?.numericScore || 0)}</span>
+                            </div>
+                          </div>
+                          <p className="text-sm font-medium text-gray-700 dark:text-gray-300 text-center">Genel Skor</p>
                         </div>
                       </div>
+                    </CardContent>
+                  </Card>
+
+                  {/* 4-5. Borç ve Varlık Dağılımı Donut Charts */}
+                  {analysisData.chartsData && (analysisData.chartsData.debtBreakdown || analysisData.chartsData.assetAllocation) && (
+                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                      {/* Borç Dağılımı Donut */}
+                      {analysisData.chartsData.debtBreakdown && analysisData.chartsData.debtBreakdown.length > 0 && (
+                        <div>
+                          <h5 className="font-semibold mb-4 text-lg text-gray-900 dark:text-white">Borç Dağılımı</h5>
+                          <div className="bg-white dark:bg-black/20 border border-gray-200 dark:border-white/10 rounded-xl p-6">
+                            <div className="flex items-center gap-6">
+                              <div className="w-40 h-40 relative flex-shrink-0">
+                                <svg viewBox="0 0 100 100" className="transform -rotate-90">
+                                  <circle cx="50" cy="50" r="40" fill="none" stroke="currentColor" strokeWidth="12" className="text-gray-200 dark:text-gray-800" />
+                                  {(() => {
+                                    let offset = 0
+                                    const total = analysisData.chartsData.debtBreakdown!.reduce((sum, item) => sum + item.amount, 0)
+                                    return analysisData.chartsData.debtBreakdown!.slice(0, 5).map((item, index) => {
+                                      const percentage = (item.amount / total) * 100
+                                      const dashLength = (percentage / 100) * 251.2
+                                      const segment = (
+                                        <circle key={item.name} cx="50" cy="50" r="40" fill="none" stroke={CHART_COLORS[index % CHART_COLORS.length]} strokeWidth="12" strokeDasharray={`${dashLength} 251.2`} strokeDashoffset={-offset} strokeLinecap="round" />
+                                      )
+                                      offset += dashLength
+                                      return segment
+                                    })
+                                  })()}
+                                </svg>
+                                <div className="absolute inset-0 flex items-center justify-center">
+                                  <div className="text-center">
+                                    <p className="text-2xl font-bold text-gray-900 dark:text-white">{analysisData.chartsData.debtBreakdown.length}</p>
+                                    <p className="text-xs text-gray-600 dark:text-gray-400">Kaynak</p>
+                                  </div>
+                                </div>
+                              </div>
+                              <div className="flex-1 space-y-3">
+                                {analysisData.chartsData.debtBreakdown.slice(0, 5).map((item, index) => (
+                                  <div key={item.name} className="flex items-center justify-between">
+                                    <div className="flex items-center gap-2">
+                                      <div className="w-3 h-3 rounded-full" style={{ backgroundColor: CHART_COLORS[index % CHART_COLORS.length] }} />
+                                      <span className="text-sm text-gray-700 dark:text-gray-300">{item.name}</span>
+                                    </div>
+                                    <span className="text-sm font-semibold text-gray-900 dark:text-white">₺{item.amount.toLocaleString("tr-TR")}</span>
+                                  </div>
+                                ))}
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      )}
+
+                      {/* Varlık Dağılımı Donut */}
+                      {analysisData.chartsData.assetAllocation && analysisData.chartsData.assetAllocation.length > 0 && (
+                        <div>
+                          <h5 className="font-semibold mb-4 text-lg text-gray-900 dark:text-white">Varlık Dağılımı</h5>
+                          <div className="bg-white dark:bg-black/20 border border-gray-200 dark:border-white/10 rounded-xl p-6">
+                            <div className="flex items-center gap-6">
+                              <div className="w-40 h-40 relative flex-shrink-0">
+                                <svg viewBox="0 0 100 100" className="transform -rotate-90">
+                                  <circle cx="50" cy="50" r="40" fill="none" stroke="currentColor" strokeWidth="12" className="text-gray-200 dark:text-gray-800" />
+                                  {(() => {
+                                    let offset = 0
+                                    const total = analysisData.chartsData.assetAllocation!.reduce((sum, item) => sum + item.value, 0)
+                                    return analysisData.chartsData.assetAllocation!.slice(0, 5).map((item, index) => {
+                                      const percentage = (item.value / total) * 100
+                                      const dashLength = (percentage / 100) * 251.2
+                                      const segment = (
+                                        <circle key={item.name} cx="50" cy="50" r="40" fill="none" stroke={CHART_COLORS[index % CHART_COLORS.length]} strokeWidth="12" strokeDasharray={`${dashLength} 251.2`} strokeDashoffset={-offset} strokeLinecap="round" />
+                                      )
+                                      offset += dashLength
+                                      return segment
+                                    })
+                                  })()}
+                                </svg>
+                                <div className="absolute inset-0 flex items-center justify-center">
+                                  <div className="text-center">
+                                    <p className="text-2xl font-bold text-gray-900 dark:text-white">{analysisData.chartsData.assetAllocation.length}</p>
+                                    <p className="text-xs text-gray-600 dark:text-gray-400">Varlık</p>
+                                  </div>
+                                </div>
+                              </div>
+                              <div className="flex-1 space-y-3">
+                                {analysisData.chartsData.assetAllocation.slice(0, 5).map((item, index) => (
+                                  <div key={item.name} className="flex items-center justify-between">
+                                    <div className="flex items-center gap-2">
+                                      <div className="w-3 h-3 rounded-full" style={{ backgroundColor: CHART_COLORS[index % CHART_COLORS.length] }} />
+                                      <span className="text-sm text-gray-700 dark:text-gray-300">{item.name}</span>
+                                    </div>
+                                    <span className="text-sm font-semibold text-gray-900 dark:text-white">₺{item.value.toLocaleString("tr-TR")}</span>
+                                  </div>
+                                ))}
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      )}
                     </div>
                   )}
+                </div>
+              </SectionCard>
+            )}
 
-                  {analysisData.chartsData.assetAllocation && analysisData.chartsData.assetAllocation.length > 0 && (
-                    <div className="border-t pt-6">
-                      <h5 className="font-semibold mb-4 text-lg">Varlık Dağılımı</h5>
-                      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                        {/* Asset Donut Chart */}
-                        <div className="bg-gradient-to-br from-emerald-50 to-teal-100 rounded-xl p-4">
-                          <DonutChart
-                            data={{
-                              labels: analysisData.chartsData.assetAllocation.map((item) => item.name),
-                              series: analysisData.chartsData.assetAllocation.map((item) => item.value),
-                            }}
-                            height={250}
-                          />
-                        </div>
-
-                        {/* Asset Bar Chart */}
-                        <div className="bg-gradient-to-br from-emerald-50 to-teal-100 rounded-xl p-4">
-                          <ApexBarChart
-                            data={{
-                              categories: analysisData.chartsData.assetAllocation.map((item) => item.name),
-                              series: [
-                                {
-                                  name: "Varlık Değeri",
-                                  data: analysisData.chartsData.assetAllocation.map((item) => item.value),
-                                },
-                              ],
-                            }}
-                            height={250}
-                          />
-                        </div>
-                      </div>
+            {/* 4. Varlık ve Yükümlülük Analizi - En Sonda */}
+            {analysisData.assetLiabilityAnalysis && (
+              <SectionCard
+                title="Varlık ve Yükümlülük Analizi"
+                icon={<PieChart className="h-5 w-5" />}
+                iconGradient="from-cyan-500 to-blue-600"
+                description="Mali durumunuzun anlık görüntüsü."
+              >
+                <div className="space-y-3">
+                  <p>
+                    <strong>Toplam Varlıklar:</strong> ₺{analysisData.assetLiabilityAnalysis.totalAssets?.toLocaleString("tr-TR") || "N/A"}
+                  </p>
+                  <p>
+                    <strong>Toplam Yükümlülükler:</strong> ₺{analysisData.assetLiabilityAnalysis.totalLiabilities?.toLocaleString("tr-TR") || "N/A"}
+                  </p>
+                  <p>
+                    <strong>Net Varlık:</strong> ₺{analysisData.assetLiabilityAnalysis.netWorth?.toLocaleString("tr-TR") || "N/A"}
+                  </p>
+                  <div className="flex items-center">
+                    <strong className="mr-2">Değerlendirme:</strong>
+                    <Badge variant={analysisData.assetLiabilityAnalysis.assessment === "Sağlıklı" ? "default" : "outline"}>
+                      {analysisData.assetLiabilityAnalysis.assessment}
+                    </Badge>
+                  </div>
+                  <p>
+                    <strong className="font-medium">Açıklama:</strong> {analysisData.assetLiabilityAnalysis.explanation}
+                  </p>
+                  {analysisData.assetLiabilityAnalysis.assetBreakdown && analysisData.assetLiabilityAnalysis.assetBreakdown.length > 0 && (
+                    <div>
+                      <strong className="font-medium">Varlık Dağılımı:</strong>
+                      <ul className="list-disc list-inside ml-4 text-sm">
+                        {analysisData.assetLiabilityAnalysis.assetBreakdown.map((a) => `${a.category}: ₺${a.value.toLocaleString("tr-TR")} (%${a.percentage || "N/A"})`).map((s, i) => (
+                          <li key={i}>{s}</li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
+                  {analysisData.assetLiabilityAnalysis.liabilityBreakdown && analysisData.assetLiabilityAnalysis.liabilityBreakdown.length > 0 && (
+                    <div>
+                      <strong className="font-medium">Yükümlülük Dağılımı:</strong>
+                      <ul className="list-disc list-inside ml-4 text-sm">
+                        {analysisData.assetLiabilityAnalysis.liabilityBreakdown.map((l) => `${l.category}: ₺${l.value.toLocaleString("tr-TR")} (%${l.percentage || "N/A"})`).map((s, i) => (
+                          <li key={i}>{s}</li>
+                        ))}
+                      </ul>
                     </div>
                   )}
                 </div>

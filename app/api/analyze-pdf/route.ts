@@ -7,19 +7,20 @@ import { createServerClient } from "@/lib/supabase/server"
 export const maxDuration = 60
 
 // Gemini Structured Output Schema - PDF Kredi Ödeme Planı
+// ÖNEMLİ: Sayısal alanlar STRING olarak alınıyor (Türkçe virgül/nokta karışıklığı önlemi)
 const paymentPlanSchema = {
   description: "Kredi ödeme planı analiz sonucu",
   type: SchemaType.OBJECT as const,
   properties: {
     bankName: { type: SchemaType.STRING as const, description: "Banka adı", nullable: true },
     planName: { type: SchemaType.STRING as const, description: "Kredi türü (İhtiyaç, Konut, Taşıt, Ticari)", nullable: true },
-    loanAmount: { type: SchemaType.NUMBER as const, description: "Kredi tutarı", nullable: true },
-    totalPayback: { type: SchemaType.NUMBER as const, description: "Toplam geri ödeme", nullable: true },
+    loanAmount: { type: SchemaType.STRING as const, description: "Kredi tutarı (PDF'te göründüğü gibi, örn: '100.000,50' veya '100000.50')", nullable: true },
+    totalPayback: { type: SchemaType.STRING as const, description: "Toplam geri ödeme (PDF'te göründüğü gibi)", nullable: true },
     currency: { type: SchemaType.STRING as const, description: "Para birimi (TRY, USD, EUR)", nullable: true },
-    interestRate: { type: SchemaType.NUMBER as const, description: "Aylık faiz oranı (örn: 5.23)", nullable: true },
-    fees: { type: SchemaType.NUMBER as const, description: "Masraflar", nullable: true },
+    interestRate: { type: SchemaType.STRING as const, description: "Faiz oranı (PDF'te göründüğü gibi, örn: '%5,23' veya '5.23' veya '5,23')", nullable: true },
+    fees: { type: SchemaType.STRING as const, description: "Masraflar (PDF'te göründüğü gibi)", nullable: true },
     loanTerm: { type: SchemaType.NUMBER as const, description: "Vade (ay)", nullable: true },
-    monthlyPayment: { type: SchemaType.NUMBER as const, description: "Aylık taksit tutarı", nullable: true },
+    monthlyPayment: { type: SchemaType.STRING as const, description: "Aylık taksit tutarı (PDF'te göründüğü gibi)", nullable: true },
     isVariableRate: { type: SchemaType.BOOLEAN as const, description: "Değişken faizli mi?", nullable: true },
     variableRateInfo: { type: SchemaType.STRING as const, description: "Değişken faiz bilgisi", nullable: true },
     installments: {
@@ -29,7 +30,7 @@ const paymentPlanSchema = {
         type: SchemaType.OBJECT as const,
         properties: {
           installmentNumber: { type: SchemaType.NUMBER as const, description: "Taksit numarası" },
-          amount: { type: SchemaType.NUMBER as const, description: "Taksit tutarı", nullable: true },
+          amount: { type: SchemaType.STRING as const, description: "Taksit tutarı (PDF'te göründüğü gibi)", nullable: true },
           dueDate: { type: SchemaType.STRING as const, description: "Vade tarihi (YYYY-MM-DD)", nullable: true },
           description: { type: SchemaType.STRING as const, description: "Açıklama", nullable: true },
           isPaid: { type: SchemaType.BOOLEAN as const, description: "Ödenmiş mi?", nullable: true },
@@ -39,6 +40,43 @@ const paymentPlanSchema = {
     },
   },
   required: ["bankName", "loanAmount", "installments", "interestRate"],
+}
+
+// Türkçe sayı formatını parse eden fonksiyon (virgül/nokta karışıklığı çözümü)
+function parseTurkishNumber(value: string | number | null): number | null {
+  if (value === null || value === undefined) return null
+  if (typeof value === "number") return value
+
+  // String temizleme
+  let cleanStr = value.toString().trim()
+
+  // % işaretini ve harfleri temizle (Sadece rakam, nokta, virgül ve eksi kalsın)
+  cleanStr = cleanStr.replace(/[^0-9.,-]/g, "")
+
+  if (!cleanStr) return null
+
+  // Olası formatlar: "1.234,56" (TR) veya "1,234.56" (US) veya "1,23" (TR)
+
+  // Eğer sadece virgül varsa ve nokta yoksa -> Virgülü noktaya çevir (TR ondalık)
+  if (cleanStr.includes(",") && !cleanStr.includes(".")) {
+    cleanStr = cleanStr.replace(",", ".")
+  }
+  // Eğer hem nokta hem virgül varsa
+  else if (cleanStr.includes(",") && cleanStr.includes(".")) {
+    const lastDotIndex = cleanStr.lastIndexOf(".")
+    const lastCommaIndex = cleanStr.lastIndexOf(",")
+
+    // Son karakter virgülse, o ondalıktır (1.234,56)
+    if (lastCommaIndex > lastDotIndex) {
+      cleanStr = cleanStr.replace(/\./g, "").replace(",", ".")
+    } else {
+      // Son karakter noktaysa, o ondalıktır (1,234.56)
+      cleanStr = cleanStr.replace(/,/g, "")
+    }
+  }
+
+  const result = parseFloat(cleanStr)
+  return isNaN(result) ? null : result
 }
 
 // Gelişmiş JSON temizleme ve düzeltme fonksiyonu
@@ -105,153 +143,11 @@ function cleanAndParseJSON(text: string) {
   }
 }
 
-// ULTRA DIAMOND PREMIUM PROMPT - Değişken faizli krediler için özel algoritma
-const ULTRA_ADVANCED_PROMPT = `Sen bir kredi ödeme planı analiz uzmanısın. Bu PDF'yi analiz et ve SADECE geçerli JSON döndür:
+// SADELEŞT İRİLMİŞ PROMPT - Model sadece "göz" görevi yapar, hesaplama yapmaz
+const ULTRA_ADVANCED_PROMPT = `Sen uzman bir kredi analisti ve PDF okuyucususun. PDF'teki verileri OLDUĞU GİBİ çıkar.
 
-{
-"bankName": "Banka adı",
-"planName": "Kredi türü",
-"loanAmount": 100000,
-"totalPayback": 120000,
-"currency": "TRY",
-"installments": [
-  {
-    "installmentNumber": 1,
-    "amount": 5000,
-    "dueDate": "2025-01-15",
-    "isPaid": null
-  }
-],
-"interestRate": 1.29,
-"fees": 0,
-"loanTerm": 24,
-"monthlyPayment": 5000,
-"isVariableRate": false,
-"variableRateInfo": null
-}
-
-🎯 KRİTİK KURALLAR - MUTLAKA UYGULA:
-
-📋 KREDİ TÜRÜ BELİRLEME (planName) - ÇOK ÖNEMLİ!
-1. PDF'teki GERÇEK kredi türünü bul. Şu anahtar kelimeleri ara:
-   - "Konut Kredisi", "Mortgage", "Ev Kredisi" → "Konut Kredisi"
-   - "Taşıt Kredisi", "Araç Kredisi", "Otomobil Kredisi" → "Taşıt Kredisi"
-   - "İhtiyaç Kredisi", "Tüketici Kredisi", "Bireysel Kredi" → "İhtiyaç Kredisi"
-   - "Ticari Kredi", "İşletme Kredisi", "KOBİ Kredisi", "İşletme İhtiyaç Kredisi" → "Ticari Kredi"
-   - "Tarım Kredisi", "Ziraat Kredisi" → "Tarım Kredisi"
-   - "Eğitim Kredisi", "Öğrenim Kredisi" → "Eğitim Kredisi"
-
-2. ⚠️ ASLA "Altyapı Proje Kredisi" YAZMA! Bu çok spesifik bir kredi türüdür.
-3. Eğer kesin belirleyemezsen "İhtiyaç Kredisi" yaz.
-4. PDF'te açıkça yazılan kredi türünü kullan.
-
-💰 FAİZ ORANI BELİRLEME (interestRate) - ULTRA DİKKAT! EN ÖNEMLİ BÖLÜM!
-
-🚨 ÖNCELİK SIRASI (Yukarıdan aşağıya kontrol et):
-
-1️⃣ **"AYLIK AKDİ FAİZ ORANI"** - EN YÜKSEK ÖNCELİK! ⭐⭐⭐
-   - PDF'te "Aylık Akdi Faiz Oranı" yazısını ara
-   - Hemen yanındaki % değerini al (örn: %5.23 → 5.23)
-   - Bu değeri AYNEN kullan, ASLA değiştirme!
-   - Örnek: "Aylık Akdi Faiz Oranı % 5,23" → interestRate: 5.23
-   - Örnek: "Aylık Akdi Faiz Oranı % 3,45" → interestRate: 3.45
-   - NOT: Virgül yerine nokta kullan (5,23 → 5.23)
-
-2️⃣ **"AYLIK FAİZ ORANI"** veya **"AYLIK FAİZ"**
-   - "Aylık Faiz Oranı", "Aylık Faiz", "Monthly Rate" ara
-   - Yanındaki % değerini al
-   - Doğrudan kullan
-
-3️⃣ **"YILLIK FAİZ ORANI"** veya **"YILLIK FAİZ"**
-   - "Yıllık Faiz", "Annual Rate" ara
-   - Bulduğun değeri 12'ye böl
-   - Örnek: %60.00 yıllık → 60 ÷ 12 = 5.0 aylık
-
-4️⃣ **Değişken Faizli Krediler (TLREF/LIBOR)**
-   - "TLREF + X%" veya "Gecelik TLREF + X" formatını ara
-   - X değerini al (örn: "TLREF + 10,00%" → 10.0)
-   - isVariableRate: true yap
-   - variableRateInfo: "TLREF + X%" formatında kaydet
-
-⚠️ YAYGIN HATALAR - BUNLARI YAPMA:
-❌ %5.23'ü %0.4 olarak YAZMA! (En sık yapılan hata)
-❌ Ondalık noktayı kaydırma (5.23 → 0.523 veya 52.3 HATALI!)
-❌ Virgülü nokta yerine kullanma (JSON'da nokta olmalı)
-❌ Yıllık ile aylık karıştırma
-
-✅ DOĞRU ÖRNEKLER:
-✓ "Aylık Akdi Faiz Oranı % 5,23" → interestRate: 5.23
-✓ "Aylık Akdi Faiz Oranı % 3,89" → interestRate: 3.89
-✓ "Aylık Akdi Faiz Oranı % 4,12" → interestRate: 4.12
-✓ "Yıllık Faiz Oranı % 48,00" → 48 ÷ 12 = interestRate: 4.0
-
-🔢 DEĞİŞKEN FAİZLİ KREDİLER - ULTRA AKILLI ALGORİTMA!
-1. PDF'te "değişken faiz", "TLREF", "endeksli faiz" varsa:
-   - isVariableRate: true
-   - variableRateInfo: Faiz formülünü kaydet (örn: "TLREF + 10.00%")
-   - interestRate: Tahmini toplam aylık faiz (TLREF ~%15 + spread)
-
-2. ⭐ DEĞİŞKEN FAİZLİ KREDİLERDE TAKSİT TUTARI HESAPLAMA - YENİ ULTRA ALGORİTMA:
-   a) Önce taksit tutarı BELLİ OLAN taksitleri tespit et
-   b) Bu taksitlerin ortalama tutarını hesapla
-   c) Eğer son taksitlerde sadece "TLREF+X" yazıyorsa:
-      - Önceki taksitlerin ortalamasını al
-      - %5-15 arasında artış uygula (faiz artışı için)
-      - Bu tutarı belirsiz taksitlere ata
-   d) Eğer hiç taksit tutarı yoksa:
-      - Kredi tutarı ÷ vade = temel taksit
-      - Değişken faiz için %20-30 artış ekle
-
-📅 TAKSİT ANALİZİ - DIAMOND LEVEL!
-1. Her taksiti dikkatli incele
-2. Taksit tutarı "0", boş veya sadece "TLREF+X" yazıyorsa:
-   - Önceki taksitlerin pattern'ini analiz et
-   - Son 3-5 taksittin ortalamasını al
-   - Değişken faiz artışı için %5-15 ekle
-3. Ödeme durumu tespiti:
-   - "Tahsil Tarihi" dolu ise → isPaid: true
-   - "Tahsil Referans No" varsa → isPaid: true
-   - Vade tarihi geçmişse ve tahsil bilgisi yoksa → isPaid: false
-
-🏦 BANKA ADI EŞLEŞTIRME:
-- Tam banka adını bul
-- "T.C.", "A.Ş.", "T.A.O." gibi ekleri temizle
-- Yaygın kısaltmaları genişlet
-
-📊 TUTAR HESAPLAMALARI:
-1. Tüm tutarları number olarak kaydet
-2. Para birimi sembollerini temizle
-3. Virgül/nokta formatını düzelt
-4. totalPayback = tüm taksitlerin toplamı
-5. monthlyPayment = ortalama taksit tutarı
-
-⚡ ÖZEL DURUMLAR:
-1. Erken ödeme varsa: isPaid: true
-2. Gecikmiş taksitler: isPaid: false
-3. Belirsiz durumlar: isPaid: null
-4. Vade tarihi formatı: YYYY-MM-DD
-
-🎯 JSON KURALLARI:
-- SADECE JSON döndür, başka hiçbir metin ekleme
-- Virgül hatalarına dikkat et
-- Tüm sayılar number tipinde
-- Tarihler string formatında
-- Boolean değerler true/false
-
-💎 ULTRA GELİŞMİŞ ANALİZ:
-1. PDF'nin her satırını oku
-2. Tablolardaki verileri çıkar
-3. Gizli bilgileri bul
-4. Mantıklı tahminler yap
-5. Eksik verileri akıllı algoritmalarla tamamla
-
-🚀 DEĞİŞKEN FAİZ ÖZEL KURALLARI:
-- Eğer taksit tutarı sadece "TLREF+X" ise, önceki taksitlerin ortalamasını %10 artırarak kullan
-- Tahsil edilmiş taksitlerden pattern çıkar
-- Belirsiz taksitler için makul tahminler yap
-- Faiz artış trendini hesaba kat
-
-Şimdi bu PDF'yi analiz et ve mükemmel JSON çıktısı ver!`
+ÖNEMLİ: SEN SADECE "GÖZ" GÖREV İNDESİN - HESAP YAPMA, DÖNÜŞTÜRME YAPMA!
+🎯 TEMEL KURALLAR:1. FAİZ ORANI (interestRate) - EN ÖNEMLİ!   - PDF'te "Aylık Akdi Faiz Oranı", "Aylık Faiz" veya "Kredi Faiz Oranı" ibarelerini ara   - Faiz oranını PDF'te NASIL görüyorsan TAM OLARAK öyle yaz   - ASLA nokta/virgül değiştirmeye çalışma, ASLA hesaplama yapma   - Örnekler:     * PDF'te "% 5,23" görüyorsan → "5,23" yaz     * PDF'te "5.23%" görüyorsan → "5.23" yaz     * PDF'te "%1,29" görüyorsan → "1,29" yaz   - Yıllık faiz görsen bile STRING olarak çıkar, biz hesaplarız2. TUTARLAR (loanAmount, totalPayback, fees, monthlyPayment, taksit tutarları):   - PDF'te göründüğü gibi yaz (virgül/nokta dahil)   - Örnekler:     * "100.000,50" → "100.000,50"     * "100000.50" → "100000.50"     * "5.432,12" → "5.432,12"3. KREDİ TÜRÜ (planName):   - "Konut Kredisi", "Mortgage", "Ev Kredisi" → "Konut Kredisi"   - "Taşıt Kredisi", "Araç Kredisi" → "Taşıt Kredisi"   - "İhtiyaç Kredisi", "Tüketici Kredisi" → "İhtiyaç Kredisi"   - "Ticari Kredi", "İşletme Kredisi", "KOBİ Kredisi" → "Ticari Kredi"   - Eğer kesin değilsen "İhtiyaç Kredisi" yaz4. TAKSİT LİSTESİ (installments):   - Her taksit satırını oku   - Taksit tutarını olduğu gibi yaz   - Vade tarihi: YYYY-MM-DD formatında   - Ödeme durumu (isPaid):     * "Tahsil Tarihi" dolu ise → true     * "Tahsil Referans No" varsa → true     * Boşsa → null5. DEĞİŞKEN FAİZ:   - "TLREF", "değişken faiz", "endeksli" kelimelerini ara   - Varsa isVariableRate: true   - variableRateInfo'ya formülü yaz (örn: "TLREF + 10,00%")⚡ YASAKLAR:❌ Sayıları dönüştürme❌ Virgül/nokta değiştirme❌ Hesaplama yapma❌ Yuvarlama yapma✅ SADECE GÖRDÜĞÜNÜ YAZ!Şimdi bu PDF'yi analiz et ve JSON çıktısı ver.`
 
 export async function POST(request: Request) {
   const startTime = Date.now()
@@ -343,7 +239,7 @@ export async function POST(request: Request) {
 
     const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY)
     const model = genAI.getGenerativeModel({
-      model: "gemini-2.5-flash",
+      model: "gemini-2.5-pro",
       generationConfig: {
         temperature: 0.1,
         responseMimeType: "application/json",
@@ -399,6 +295,42 @@ export async function POST(request: Request) {
         throw new Error("Geçersiz veri yapısı: Ana obje yok veya obje değil.")
       }
 
+      // ===== AKILLI SAYISAL PARSE İŞLEMLERİ =====
+      // Model STRING döndürdü, şimdi bizim tarafımızda parse ediyoruz
+
+      // 1. FAİZ ORANI - Özel İşlem (Yıllık/Aylık kontrolü)
+      if (paymentPlan.interestRate) {
+        let rawRate = parseTurkishNumber(paymentPlan.interestRate)
+
+        if (rawRate !== null) {
+          // Yıllık faiz kontrolü - 15'ten büyükse muhtemelen yıllık, 12'ye böl
+          if (rawRate > 15) {
+            rawRate = Number((rawRate / 12).toFixed(4))
+          }
+          // 0-1 arası ise (0.0523 gibi), yüzdeye çevir
+          else if (rawRate > 0 && rawRate < 0.15) {
+            rawRate = Number((rawRate * 100).toFixed(4))
+          }
+          paymentPlan.interestRate = rawRate
+        }
+      }
+
+      // 2. Diğer sayısal alanları parse et
+      const numericFields = ["loanAmount", "totalPayback", "fees", "monthlyPayment"]
+      numericFields.forEach((field) => {
+        if (paymentPlan[field]) {
+          paymentPlan[field] = parseTurkishNumber(paymentPlan[field])
+        }
+      })
+
+      // 3. Taksit tutarlarını parse et
+      if (paymentPlan.installments && Array.isArray(paymentPlan.installments)) {
+        paymentPlan.installments = paymentPlan.installments.map((inst: any) => ({
+          ...inst,
+          amount: inst.amount ? parseTurkishNumber(inst.amount) : null,
+        }))
+      }
+
       // Validate critical fields
       if (!paymentPlan.installments || !Array.isArray(paymentPlan.installments)) {
         throw new Error("Taksit bilgileri bulunamadı")
@@ -430,42 +362,7 @@ export async function POST(request: Request) {
         paymentPlan.currency = "TRY"
       }
 
-      const numericFields: (keyof typeof paymentPlan)[] = [
-        "loanAmount",
-        "totalPayback",
-        "interestRate",
-        "fees",
-        "loanTerm",
-        "monthlyPayment",
-      ]
-
-      numericFields.forEach((field) => {
-        if (paymentPlan[field] !== undefined && paymentPlan[field] !== null) {
-          if (typeof paymentPlan[field] === "string") {
-            const numValue = Number.parseFloat(
-              paymentPlan[field]
-                .toString()
-                .replace(/[^\d.,-]/g, "")
-                .replace(",", "."),
-            )
-            paymentPlan[field] = isNaN(numValue) ? null : numValue
-          } else if (typeof paymentPlan[field] !== "number") {
-            paymentPlan[field] = null
-          }
-        } else {
-          paymentPlan[field] = null
-        }
-      })
-
-      if (paymentPlan.interestRate !== null) {
-        if (paymentPlan.interestRate > 5 && paymentPlan.interestRate <= 100) {
-          paymentPlan.interestRate = Number.parseFloat((paymentPlan.interestRate / 12).toFixed(4))
-        } else if (paymentPlan.interestRate > 100) {
-          paymentPlan.interestRate = null
-        } else if (paymentPlan.interestRate > 0 && paymentPlan.interestRate < 0.1) {
-          paymentPlan.interestRate = Number.parseFloat((paymentPlan.interestRate * 100).toFixed(4))
-        }
-      }
+      // Faiz parse işlemi yukarıda yapıldı (301-316 arası)
 
       if (!paymentPlan.hasOwnProperty("isVariableRate")) {
         paymentPlan.isVariableRate = false
