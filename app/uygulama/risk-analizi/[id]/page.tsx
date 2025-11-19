@@ -845,24 +845,27 @@ export default function RiskAnalysisDetailPage() {
                         {/* Modern Donut Chart */}
                         <div className="rounded-xl">
                           <DonutChart
-                            data={analysisData.chartsData.debtBreakdown.map((item) => ({
-                              label: item.name,
-                              value: item.amount,
-                            }))}
-                            valueFormatter={(value) => `₺${Number(value).toLocaleString("tr-TR")}`}
-                            className="h-[250px]"
+                            data={{
+                              labels: analysisData.chartsData.debtBreakdown.map((item) => item.name),
+                              series: analysisData.chartsData.debtBreakdown.map((item) => item.amount),
+                            }}
+                            height={250}
                           />
                         </div>
 
                         {/* Modern Bar Chart */}
                         <div className="rounded-xl">
                           <ApexBarChart
-                            data={analysisData.chartsData.debtBreakdown.map((item) => ({
-                              category: item.name,
-                              value: item.amount,
-                            }))}
-                            valueFormatter={(value) => `₺${Number(value).toLocaleString("tr-TR")}`}
-                            className="h-[250px]"
+                            data={{
+                              categories: analysisData.chartsData.debtBreakdown.map((item) => item.name),
+                              series: [
+                                {
+                                  name: "Borç Miktarı",
+                                  data: analysisData.chartsData.debtBreakdown.map((item) => item.amount),
+                                },
+                              ],
+                            }}
+                            height={250}
                           />
                         </div>
                       </div>
@@ -876,24 +879,27 @@ export default function RiskAnalysisDetailPage() {
                         {/* Asset Donut Chart */}
                         <div className="bg-gradient-to-br from-emerald-50 to-teal-100 rounded-xl p-4">
                           <DonutChart
-                            data={analysisData.chartsData.assetAllocation.map((item) => ({
-                              label: item.name,
-                              value: item.value,
-                            }))}
-                            valueFormatter={(value) => `₺${Number(value).toLocaleString("tr-TR")}`}
-                            className="h-[250px]"
+                            data={{
+                              labels: analysisData.chartsData.assetAllocation.map((item) => item.name),
+                              series: analysisData.chartsData.assetAllocation.map((item) => item.value),
+                            }}
+                            height={250}
                           />
                         </div>
 
                         {/* Asset Bar Chart */}
                         <div className="bg-gradient-to-br from-emerald-50 to-teal-100 rounded-xl p-4">
                           <ApexBarChart
-                            data={analysisData.chartsData.assetAllocation.map((item) => ({
-                              category: item.name,
-                              value: item.value,
-                            }))}
-                            valueFormatter={(value) => `₺${Number(value).toLocaleString("tr-TR")}`}
-                            className="h-[250px]"
+                            data={{
+                              categories: analysisData.chartsData.assetAllocation.map((item) => item.name),
+                              series: [
+                                {
+                                  name: "Varlık Değeri",
+                                  data: analysisData.chartsData.assetAllocation.map((item) => item.value),
+                                },
+                              ],
+                            }}
+                            height={250}
                           />
                         </div>
                       </div>
