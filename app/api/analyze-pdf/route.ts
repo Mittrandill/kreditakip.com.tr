@@ -110,16 +110,45 @@ const ULTRA_ADVANCED_PROMPT = `Sen bir kredi ödeme planı analiz uzmanısın. B
 3. Eğer kesin belirleyemezsen "İhtiyaç Kredisi" yaz.
 4. PDF'te açıkça yazılan kredi türünü kullan.
 
-💰 FAİZ ORANI BELİRLEME (interestRate) - ULTRA DİKKAT!
-1. PDF'te "%" işareti ile yazılan AYLIK faiz oranını bul
-2. Şu ifadeleri ara: "aylık faiz", "monthly rate", "faiz oranı %"
-3. Eğer YILLIK faiz varsa (örn: %18.50), AYLIK'a çevir: 18.50 ÷ 12 = 1.54
-4. Değişken faizli krediler için:
-   - "TLREF + X%" formatını ara
-   - "Gecelik TLREF + 10,00000" → 10.0 olarak kaydet
-   - Mevcut TLREF oranını tahmin et (~%15) ve topla
+💰 FAİZ ORANI BELİRLEME (interestRate) - ULTRA DİKKAT! EN ÖNEMLİ BÖLÜM!
+
+🚨 ÖNCELİK SIRASI (Yukarıdan aşağıya kontrol et):
+
+1️⃣ **"AYLIK AKDİ FAİZ ORANI"** - EN YÜKSEK ÖNCELİK! ⭐⭐⭐
+   - PDF'te "Aylık Akdi Faiz Oranı" yazısını ara
+   - Hemen yanındaki % değerini al (örn: %5.23 → 5.23)
+   - Bu değeri AYNEN kullan, ASLA değiştirme!
+   - Örnek: "Aylık Akdi Faiz Oranı % 5,23" → interestRate: 5.23
+   - Örnek: "Aylık Akdi Faiz Oranı % 3,45" → interestRate: 3.45
+   - NOT: Virgül yerine nokta kullan (5,23 → 5.23)
+
+2️⃣ **"AYLIK FAİZ ORANI"** veya **"AYLIK FAİZ"**
+   - "Aylık Faiz Oranı", "Aylık Faiz", "Monthly Rate" ara
+   - Yanındaki % değerini al
+   - Doğrudan kullan
+
+3️⃣ **"YILLIK FAİZ ORANI"** veya **"YILLIK FAİZ"**
+   - "Yıllık Faiz", "Annual Rate" ara
+   - Bulduğun değeri 12'ye böl
+   - Örnek: %60.00 yıllık → 60 ÷ 12 = 5.0 aylık
+
+4️⃣ **Değişken Faizli Krediler (TLREF/LIBOR)**
+   - "TLREF + X%" veya "Gecelik TLREF + X" formatını ara
+   - X değerini al (örn: "TLREF + 10,00%" → 10.0)
    - isVariableRate: true yap
    - variableRateInfo: "TLREF + X%" formatında kaydet
+
+⚠️ YAYGIN HATALAR - BUNLARI YAPMA:
+❌ %5.23'ü %0.4 olarak YAZMA! (En sık yapılan hata)
+❌ Ondalık noktayı kaydırma (5.23 → 0.523 veya 52.3 HATALI!)
+❌ Virgülü nokta yerine kullanma (JSON'da nokta olmalı)
+❌ Yıllık ile aylık karıştırma
+
+✅ DOĞRU ÖRNEKLER:
+✓ "Aylık Akdi Faiz Oranı % 5,23" → interestRate: 5.23
+✓ "Aylık Akdi Faiz Oranı % 3,89" → interestRate: 3.89
+✓ "Aylık Akdi Faiz Oranı % 4,12" → interestRate: 4.12
+✓ "Yıllık Faiz Oranı % 48,00" → 48 ÷ 12 = interestRate: 4.0
 
 🔢 DEĞİŞKEN FAİZLİ KREDİLER - ULTRA AKILLI ALGORİTMA!
 1. PDF'te "değişken faiz", "TLREF", "endeksli faiz" varsa:
@@ -279,7 +308,7 @@ export async function POST(request: Request) {
 
     const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY)
     const model = genAI.getGenerativeModel({
-      model: "gemini-2.5-flash",
+      model: "gemini-3-pro-preview",
       generationConfig: {
         temperature: 0.05,
         topK: 1,
