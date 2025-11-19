@@ -398,49 +398,73 @@ export default function RiskAnalysisDetailPage() {
               aria-label={`Risk Seviyesi: ${animatedProgress.toFixed(0)}%`}
             />
           </div>
+
+          {/* Key Metrics in Hero */}
+          <div className="mt-6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+            <div className="bg-white/10 backdrop-blur-sm rounded-xl p-4 border border-white/20">
+              <div className="flex items-center gap-3 mb-2">
+                <div className="p-2 rounded-lg bg-white/20">
+                  <Scale className="h-4 w-4 text-white" />
+                </div>
+                <span className="text-white/80 text-xs font-medium">Borç/Gelir Oranı</span>
+              </div>
+              <div className="text-2xl font-bold text-white mb-1">
+                {analysisData.debtToIncomeRatio?.value || "N/A"}
+              </div>
+              <div className="text-white/70 text-xs">
+                {analysisData.debtToIncomeRatio?.assessment || "Değerlendirme yok"}
+              </div>
+            </div>
+
+            <div className="bg-white/10 backdrop-blur-sm rounded-xl p-4 border border-white/20">
+              <div className="flex items-center gap-3 mb-2">
+                <div className="p-2 rounded-lg bg-white/20">
+                  <Banknote className="h-4 w-4 text-white" />
+                </div>
+                <span className="text-white/80 text-xs font-medium">Aylık Gelir</span>
+              </div>
+              <div className="text-2xl font-bold text-white mb-1">
+                {analysis.monthly_income ? `₺${analysis.monthly_income.toLocaleString("tr-TR")}` : "N/A"}
+              </div>
+              <div className="text-white/70 text-xs">Beyan edilen gelir</div>
+            </div>
+
+            <div className="bg-white/10 backdrop-blur-sm rounded-xl p-4 border border-white/20">
+              <div className="flex items-center gap-3 mb-2">
+                <div className="p-2 rounded-lg bg-white/20">
+                  <Landmark className="h-4 w-4 text-white" />
+                </div>
+                <span className="text-white/80 text-xs font-medium">Net Varlık</span>
+              </div>
+              <div className="text-2xl font-bold text-white mb-1">
+                {analysisData.assetLiabilityAnalysis?.netWorth !== null &&
+                analysisData.assetLiabilityAnalysis?.netWorth !== undefined
+                  ? `₺${analysisData.assetLiabilityAnalysis.netWorth.toLocaleString("tr-TR")}`
+                  : "N/A"}
+              </div>
+              <div className="text-white/70 text-xs">Varlık - Yükümlülük</div>
+            </div>
+
+            <div className="bg-white/10 backdrop-blur-sm rounded-xl p-4 border border-white/20">
+              <div className="flex items-center gap-3 mb-2">
+                <div className="p-2 rounded-lg bg-white/20">
+                  <Calendar className="h-4 w-4 text-white" />
+                </div>
+                <span className="text-white/80 text-xs font-medium">Analiz Tarihi</span>
+              </div>
+              <div className="text-2xl font-bold text-white mb-1">
+                {formatDistanceToNow(new Date(analysis.created_at), { addSuffix: true, locale: tr })}
+              </div>
+              <div className="text-white/70 text-xs">Oluşturulma zamanı</div>
+            </div>
+          </div>
+
           {analysisData.overallRiskScore?.detailedExplanation && (
             <p className="mt-4 text-sm text-white/90 bg-black/10 p-3 rounded-lg">
               {analysisData.overallRiskScore.detailedExplanation}
             </p>
           )}
         </div>
-      </div>
-
-      {/* Metric Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
-        <MetricCard
-          title="Borç/Gelir Oranı"
-          value={analysisData.debtToIncomeRatio?.value || "N/A"}
-          subtitle={analysisData.debtToIncomeRatio?.assessment || "Değerlendirme yok"}
-          icon={<Scale />}
-          color="blue"
-        />
-        <MetricCard
-          title="Aylık Gelir"
-          value={analysis.monthly_income ? `₺${analysis.monthly_income.toLocaleString("tr-TR")}` : "N/A"}
-          subtitle="Beyan edilen gelir"
-          icon={<Banknote />}
-          color="green"
-        />
-        <MetricCard
-          title="Net Varlık"
-          value={
-            analysisData.assetLiabilityAnalysis?.netWorth !== null &&
-            analysisData.assetLiabilityAnalysis?.netWorth !== undefined
-              ? `₺${analysisData.assetLiabilityAnalysis.netWorth.toLocaleString("tr-TR")}`
-              : "N/A"
-          }
-          subtitle="Varlık - Yükümlülük"
-          icon={<Landmark />}
-          color="purple"
-        />
-        <MetricCard
-          title="Analiz Tarihi"
-          value={formatDistanceToNow(new Date(analysis.created_at), { addSuffix: true, locale: tr })}
-          subtitle="Oluşturulma zamanı"
-          icon={<Calendar />}
-          color="orange"
-        />
       </div>
 
       {/* Modern Tabs */}
