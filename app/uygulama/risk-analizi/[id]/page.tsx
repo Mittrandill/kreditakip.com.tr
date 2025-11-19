@@ -55,18 +55,7 @@ import { formatDistanceToNow } from "date-fns"
 import { tr } from "date-fns/locale"
 import { MetricCard } from "@/components/metric-card"
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible"
-import {
-  BarChart,
-  Bar,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  Tooltip,
-  ResponsiveContainer,
-  PieChart as RechartsPieChart,
-  Cell,
-  Pie,
-} from "recharts"
+import { DonutChart, BarChart as ApexBarChart } from "@/components/charts"
 
 const CHART_COLORS = ["#10B981", "#3B82F6", "#F59E0B", "#EF4444", "#8B5CF6", "#06B6D4", "#F97316", "#84CC16"]
 
@@ -853,74 +842,28 @@ export default function RiskAnalysisDetailPage() {
                     <div>
                       <h5 className="font-semibold mb-4 text-lg">Borç Dağılımı</h5>
                       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                        {/* Pie Chart */}
-                        <div className="bg-gradient-to-br from-slate-50 to-gray-100 rounded-xl p-4">
-                          <ResponsiveContainer width="100%" height={250}>
-                            <RechartsPieChart>
-                              <Pie
-                                data={analysisData.chartsData.debtBreakdown.map((item, index) => ({
-                                  name: item.name,
-                                  value: item.amount,
-                                  color: item.color || CHART_COLORS[index % CHART_COLORS.length],
-                                }))}
-                                cx="50%"
-                                cy="50%"
-                                outerRadius={80}
-                                innerRadius={40}
-                                paddingAngle={5}
-                                dataKey="value"
-                                label={(({ name, percent }: { name: string; percent: number }) => `${name} ${(percent * 100).toFixed(0)}%`) as any}
-                              >
-                                {analysisData.chartsData.debtBreakdown.map((entry, index) => (
-                                  <Cell
-                                    key={`cell-${index}`}
-                                    fill={entry.color || CHART_COLORS[index % CHART_COLORS.length]}
-                                  />
-                                ))}
-                              </Pie>
-                              <Tooltip
-                                formatter={(value: any) => [`₺${Number(value).toLocaleString("tr-TR")}`, "Tutar"]}
-                                contentStyle={{
-                                  backgroundColor: "white",
-                                  border: "1px solid #E5E7EB",
-                                  borderRadius: "12px",
-                                  boxShadow: "0 10px 15px -3px rgba(0, 0, 0, 0.1)",
-                                }}
-                              />
-                            </RechartsPieChart>
-                          </ResponsiveContainer>
+                        {/* Modern Donut Chart */}
+                        <div className="rounded-xl">
+                          <DonutChart
+                            data={analysisData.chartsData.debtBreakdown.map((item) => ({
+                              label: item.name,
+                              value: item.amount,
+                            }))}
+                            valueFormatter={(value) => `₺${Number(value).toLocaleString("tr-TR")}`}
+                            className="h-[250px]"
+                          />
                         </div>
 
-                        {/* Bar Chart */}
-                        <div className="bg-gradient-to-br from-slate-50 to-gray-100 rounded-xl p-4">
-                          <ResponsiveContainer width="100%" height={250}>
-                            <BarChart data={analysisData.chartsData.debtBreakdown}>
-                              <CartesianGrid strokeDasharray="3 3" stroke="#E5E7EB" />
-                              <XAxis
-                                dataKey="name"
-                                stroke="#6B7280"
-                                fontSize={12}
-                                angle={-45}
-                                textAnchor="end"
-                                height={80}
-                              />
-                              <YAxis
-                                stroke="#6B7280"
-                                fontSize={12}
-                                tickFormatter={(value) => `₺${(value / 1000).toFixed(0)}K`}
-                              />
-                              <Tooltip
-                                formatter={(value: any) => [`₺${Number(value).toLocaleString("tr-TR")}`, "Borç Tutarı"]}
-                                contentStyle={{
-                                  backgroundColor: "white",
-                                  border: "1px solid #E5E7EB",
-                                  borderRadius: "12px",
-                                  boxShadow: "0 10px 15px -3px rgba(0, 0, 0, 0.1)",
-                                }}
-                              />
-                              <Bar dataKey="amount" fill="#10B981" radius={[4, 4, 0, 0]} />
-                            </BarChart>
-                          </ResponsiveContainer>
+                        {/* Modern Bar Chart */}
+                        <div className="rounded-xl">
+                          <ApexBarChart
+                            data={analysisData.chartsData.debtBreakdown.map((item) => ({
+                              category: item.name,
+                              value: item.amount,
+                            }))}
+                            valueFormatter={(value) => `₺${Number(value).toLocaleString("tr-TR")}`}
+                            className="h-[250px]"
+                          />
                         </div>
                       </div>
                     </div>
@@ -930,77 +873,28 @@ export default function RiskAnalysisDetailPage() {
                     <div className="border-t pt-6">
                       <h5 className="font-semibold mb-4 text-lg">Varlık Dağılımı</h5>
                       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                        {/* Asset Pie Chart */}
+                        {/* Asset Donut Chart */}
                         <div className="bg-gradient-to-br from-emerald-50 to-teal-100 rounded-xl p-4">
-                          <ResponsiveContainer width="100%" height={250}>
-                            <RechartsPieChart>
-                              <Pie
-                                data={analysisData.chartsData.assetAllocation.map((item, index) => ({
-                                  name: item.name,
-                                  value: item.value,
-                                  color: item.color || CHART_COLORS[index % CHART_COLORS.length],
-                                }))}
-                                cx="50%"
-                                cy="50%"
-                                outerRadius={80}
-                                innerRadius={40}
-                                paddingAngle={5}
-                                dataKey="value"
-                                label={(({ name, percent }: { name: string; percent: number }) => `${name} ${(percent * 100).toFixed(0)}%`) as any}
-                              >
-                                {analysisData.chartsData.assetAllocation.map((entry, index) => (
-                                  <Cell
-                                    key={`cell-${index}`}
-                                    fill={entry.color || CHART_COLORS[index % CHART_COLORS.length]}
-                                  />
-                                ))}
-                              </Pie>
-                              <Tooltip
-                                formatter={(value: any) => [`₺${Number(value).toLocaleString("tr-TR")}`, "Değer"]}
-                                contentStyle={{
-                                  backgroundColor: "white",
-                                  border: "1px solid #E5E7EB",
-                                  borderRadius: "12px",
-                                  boxShadow: "0 10px 15px -3px rgba(0, 0, 0, 0.1)",
-                                }}
-                              />
-                            </RechartsPieChart>
-                          </ResponsiveContainer>
+                          <DonutChart
+                            data={analysisData.chartsData.assetAllocation.map((item) => ({
+                              label: item.name,
+                              value: item.value,
+                            }))}
+                            valueFormatter={(value) => `₺${Number(value).toLocaleString("tr-TR")}`}
+                            className="h-[250px]"
+                          />
                         </div>
 
                         {/* Asset Bar Chart */}
                         <div className="bg-gradient-to-br from-emerald-50 to-teal-100 rounded-xl p-4">
-                          <ResponsiveContainer width="100%" height={250}>
-                            <BarChart data={analysisData.chartsData.assetAllocation}>
-                              <CartesianGrid strokeDasharray="3 3" stroke="#E5E7EB" />
-                              <XAxis
-                                dataKey="name"
-                                stroke="#6B7280"
-                                fontSize={12}
-                                angle={-45}
-                                textAnchor="end"
-                                height={80}
-                              />
-                              <YAxis
-                                stroke="#6B7280"
-                                fontSize={12}
-                                tickFormatter={(value) => `₺${(value / 1000).toFixed(0)}K`}
-                              />
-                              <Tooltip
-                                formatter={(value: any) => [
-                                  `₺${Number(value).toLocaleString("tr-TR")}`,
-                                  "Varlık Değeri",
-                                ]}
-                                contentStyle={{
-                                  backgroundColor: "white",
-                                  border: "1px solid #E5E7EB",
-                                  borderRadius: "12px",
-                                  boxShadow: "0 10px 15px -3px rgba(0, 0, 0, 0.1)",
-                                }}
-                              />
-                              <Bar dataKey="value" fill="#10B981" radius={[4, 4, 0, 0]} />
-                            </BarChart>
-                          </ResponsiveContainer>
+                          <ApexBarChart
+                            data={analysisData.chartsData.assetAllocation.map((item) => ({
+                              category: item.name,
+                              value: item.value,
+                            }))}
+                            valueFormatter={(value) => `₺${Number(value).toLocaleString("tr-TR")}`}
+                            className="h-[250px]"
+                          />
                         </div>
                       </div>
                     </div>
