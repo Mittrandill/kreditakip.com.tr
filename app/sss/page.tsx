@@ -40,7 +40,7 @@ export default function FAQPage() {
       questions: [
         {
           q: "Verilerim güvende mi?",
-          a: "Evet, verileriniz 256-bit SSL şifreleme ile korunmaktadır. ISO 27001 sertifikalı altyapımız ve KVKK uyumlu süreçlerimiz ile maksimum güvenlik sağlıyoruz. Verileriniz hiçbir şekilde üçüncü taraflarla paylaşılmaz.",
+          a: "Evet, verileriniz AES-256 Şifreleme ile korunmaktadır. SOC 2 Type 2 sertifikalı altyapımız ve KVKK uyumlu süreçlerimiz ile maksimum güvenlik sağlıyoruz. Verileriniz hiçbir şekilde üçüncü taraflarla paylaşılmaz.",
         },
         {
           q: "Banka bilgilerime erişiyor musunuz?",

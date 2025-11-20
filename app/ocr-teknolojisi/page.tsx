@@ -202,7 +202,7 @@ export default function OCRTechnologyPage() {
                     <div>
                       <h3 className="text-xl font-bold text-white mb-2">Güvenli İşlem</h3>
                       <p className="text-white/70">
-                        Belgeleriniz 256-bit SSL şifreleme ile korunur ve işlem sonrası silinir
+                        Belgeleriniz AES-256 Şifreleme ile korunur ve işlem sonrası silinir
                       </p>
                     </div>
                   </div>

@@ -127,7 +127,7 @@ export function StructuredData() {
             name: "Verilerim güvende mi?",
             acceptedAnswer: {
               "@type": "Answer",
-              text: "Evet, tüm verileriniz 256-bit SSL şifreleme ile korunur ve güvenli bulut altyapısında saklanır. Kişisel ve finansal bilgileriniz hiçbir şekilde üçüncü kişilerle paylaşılmaz. KVKK ve GDPR uyumlu çalışıyoruz.",
+              text: "Evet, tüm verileriniz AES-256 Şifreleme ile korunur ve güvenli bulut altyapısında saklanır. Kişisel ve finansal bilgileriniz hiçbir şekilde üçüncü kişilerle paylaşılmaz. KVKK ve GDPR uyumlu çalışıyoruz.",
             },
           },
           {

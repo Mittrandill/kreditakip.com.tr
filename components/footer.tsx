@@ -86,11 +86,11 @@ export default function Footer() {
             <div className="space-y-3">
               <div className="flex items-center gap-3 text-sm text-white/60">
                 <Shield className="w-4 h-4 text-emerald-400" />
-                <span>256-bit SSL Şifreleme</span>
+                <span>AES-256 Şifreleme</span>
               </div>
               <div className="flex items-center gap-3 text-sm text-white/60">
                 <Award className="w-4 h-4 text-teal-400" />
-                <span>ISO 27001 Sertifikalı</span>
+                <span>SOC 2 Type 2 Sertifikalı</span>
               </div>
               <div className="flex items-center gap-3 text-sm text-white/60">
                 <Users className="w-4 h-4 text-emerald-400" />

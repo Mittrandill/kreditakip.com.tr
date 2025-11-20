@@ -76,7 +76,7 @@ export default function PricingPage() {
     {
       question: "Ödeme güvenli mi?",
       answer:
-        "Evet, tüm ödemeler PayTR güvencesi altında 256-bit SSL şifreleme ile korunur. Kredi kartı bilgileriniz bizimle paylaşılmaz.",
+        "Evet, tüm ödemeler PayTR güvencesi altında AES-256 Şifreleme ile korunur. Kredi kartı bilgileriniz bizimle paylaşılmaz.",
     },
     {
       question: "Ücretsiz kullanıcılar hangi reklamları görür?",

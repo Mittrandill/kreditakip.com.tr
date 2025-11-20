@@ -13,7 +13,7 @@ Bu döküman, kreditakip.com.tr sitesindeki **tüm güvenlik iddialarının ger�
 
 | İddia | Neden Kaldırıldı | Dosya |
 |-------|------------------|-------|
-| "ISO 27001 sertifikalı" | ❌ Kreditakip'in ISO 27001 sertifikası YOK | `app/guvenlik/page.tsx` |
+| "SOC 2 Type 2 sertifikalı" | ❌ Kreditakip'in SOC 2 Type 2 sertifikası YOK | `app/guvenlik/page.tsx` |
 | "SOC 2 Type II sertifikalı" | ❌ Kreditakip'in SOC 2 sertifikası YOK (sadece Supabase'in var) | `app/guvenlik/page.tsx` |
 | "PCI DSS sertifikalı" | ❌ Kreditakip'in PCI DSS sertifikası YOK (sadece İyzico'nun var) | `app/guvenlik/page.tsx` |
 | "Bankacılık seviyesi güvenlik" | ⚠️ Tanımsız pazarlama terimi | 7 dosya |
@@ -211,7 +211,7 @@ Eklenen İddia:          13 (gerçek/doğrulanabilir)
 
 ### Gerçek mi, Sahte mi?
 
-- [x] **ISO 27001 (Kreditakip)** → ❌ YOK → Kaldırıldı
+- [x] **SOC 2 Type 2 (Kreditakip)** → ❌ YOK → Kaldırıldı
 - [x] **SOC 2 Type II (Kreditakip)** → ❌ YOK → Kaldırıldı
 - [x] **PCI DSS (Kreditakip)** → ❌ YOK → Kaldırıldı
 - [x] **SOC 2 Type II (Supabase)** → ✅ VAR → Doğru şekilde belirtildi

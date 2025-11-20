@@ -636,7 +636,7 @@ export default function LandingPage() {
                       </div>
                       <div className="flex items-center gap-3 text-sm text-white/60">
                         <div className="w-2 h-2 bg-emerald-400 rounded-full" />
-                        <span>256-bit SSL şifreleme</span>
+                        <span>AES-256 Şifreleme</span>
                       </div>
                       <div className="flex items-center gap-3 text-sm text-white/60">
                         <div className="w-2 h-2 bg-emerald-400 rounded-full" />

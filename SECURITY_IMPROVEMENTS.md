@@ -76,7 +76,7 @@ curl -X POST http://localhost:3000/api/payment/initialize
 
 **Sorun:**
 Uygulama sahip olmadığı sertifikaları iddia ediyordu:
-- ISO 27001 ❌ (yok)
+- SOC 2 Type 2 ❌ (yok)
 - SOC 2 Type II ❌ (yok)
 - PCI DSS ❌ (yok)
 
@@ -88,7 +88,7 @@ Bu 6502 sayılı TKHK (Tüketicinin Korunması Hakkında Kanun) ihlali - yanılt
 **Önce (YANLIŞ):**
 ```typescript
 const certifications = [
-  { title: "ISO 27001", description: "Bilgi Güvenliği..." }, // ❌ YOK
+  { title: "SOC 2 Type 2", description: "Bilgi Güvenliği..." }, // ❌ YOK
   { title: "SOC 2 Type II", description: "Güvenlik..." },    // ❌ YOK
   { title: "PCI DSS", description: "Ödeme Kartı..." },       // ❌ YOK
 ]
