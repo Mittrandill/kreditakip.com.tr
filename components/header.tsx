@@ -123,7 +123,7 @@ const PAGE_INFO: Record<string, { title: string; description: string; parent?: s
   },
   "/uygulama/finansal-saglik": {
     title: "AI Finansal Sağlık Özeti",
-    description: "Finansal risk değerlendirmeniz ve öneriler",
+    description: "Finansal sağlık değerlendirmeniz ve öneriler",
   },
   "/uygulama/bildirimler": {
     title: "Bildirimler",
