@@ -25,7 +25,6 @@ export default function PricingPage() {
         "Risk analizi",
         "Sınırsız OCR analizi",
         "Gelişmiş raporlama",
-        "Şifre yönetimi",
         "Reklamsız deneyim",
         "Öncelikli destek",
       ],
@@ -45,7 +44,6 @@ export default function PricingPage() {
         "AI Finansal Sağlık Özeti",
         "Gelişmiş finansal raporlar",
         "PDF rapor indirme",
-        "Bankacılık şifre yönetimi",
         "Reklamsız deneyim",
         "Öncelikli destek",
         "Tüm gelecek özellikler",
@@ -89,11 +87,6 @@ export default function PricingPage() {
       question: "Premium üyelik otomatik yenilenir mi?",
       answer:
         "Evet, Premium üyelik aylık olarak otomatik yenilenir. İstediğiniz zaman iptal edebilir veya yenilemeyi durdurabilirsiniz.",
-    },
-    {
-      question: "Şifre yönetimi özelliği nedir?",
-      answer:
-        "Premium üyeler, tüm bankacılık şifrelerini güvenli bir şekilde saklayabilir ve yönetebilir. Şifreler 256-bit AES şifreleme ile korunur.",
     },
   ]
 
@@ -260,7 +253,6 @@ export default function PricingPage() {
                       ["AI Finansal Sağlık Özeti", "❌", "✅"],
                       ["Gelişmiş Raporlar", "❌", "✅"],
                       ["PDF Rapor İndirme", "❌", "✅"],
-                      ["Şifre Yönetimi", "❌", "✅"],
                       ["Reklamsız Deneyim", "❌", "✅"],
                       ["Öncelikli Destek", "❌", "✅"],
                       ["Tüm Gelecek Özellikler", "❌", "✅"],

@@ -68,13 +68,6 @@ const navItems: NavItem[] = [
     hoverGradient: "from-emerald-600 to-teal-700",
   },
   {
-    href: "/uygulama/sifrelerim",
-    label: "Şifrelerim",
-    icon: Key,
-    gradient: "from-emerald-500 to-teal-600",
-    hoverGradient: "from-emerald-600 to-teal-700",
-  },
-  {
     href: "/uygulama/odeme-plani",
     label: "Ödeme Planı",
     icon: Calendar,

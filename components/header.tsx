@@ -66,7 +66,6 @@ interface HeaderProps {
 const navItems = [
   { href: "/uygulama/ana-sayfa", label: "Ana Sayfa", icon: Home },
   { href: "/uygulama/krediler", label: "Kredilerim", icon: CreditCard },
-  { href: "/uygulama/sifrelerim", label: "Şifrelerim", icon: KeyRound },
   { href: "/uygulama/odeme-plani", label: "Ödeme Planı", icon: Calendar },
   { href: "/uygulama/raporlar", label: "Raporlar", icon: BarChart3 },
   { href: "/uygulama/risk-analizi", label: "AI Finansal Sağlık Özeti", icon: ShieldCheck },
@@ -114,15 +113,6 @@ const PAGE_INFO: Record<string, { title: string; description: string; parent?: s
     description: "Kredi bilgilerinizi güncelleyin",
     parent: "Kredilerim",
   },
-  "/uygulama/kredi-kartlari": {
-    title: "Kredi Kartlarım",
-    description: "Kredi kartlarınızı görüntüleyin, yönetin ve takip edin",
-  },
-  "/uygulama/kredi-kartlari/ekle": {
-    title: "Kredi Kartı Ekle",
-    description: "Yeni kredi kartı bilgilerinizi sisteme ekleyin",
-    parent: "Kredi Kartlarım",
-  },
   "/uygulama/odeme-plani": {
     title: "Ödeme Planı",
     description: "Tüm kredilerinizin ödeme takvimi ve yaklaşan ödemeler",
@@ -146,20 +136,6 @@ const PAGE_INFO: Record<string, { title: string; description: string; parent?: s
   "/uygulama/profil": {
     title: "Profil",
     description: "Kişisel bilgilerinizi görüntüleyin ve düzenleyin",
-  },
-  "/uygulama/sifrelerim": {
-    title: "Şifrelerim",
-    description: "Bankacılık şifrelerinizi güvenli bir şekilde saklayın ve yönetin",
-  },
-  "/uygulama/sifrelerim/ekle": {
-    title: "Şifre Ekle",
-    description: "Yeni bankacılık şifre bilgisi ekleyin",
-    parent: "Şifrelerim",
-  },
-  "/uygulama/sifrelerim/[id]/duzenle": {
-    title: "Şifre Düzenle",
-    description: "Mevcut şifre bilgilerinizi güncelleyin",
-    parent: "Şifrelerim",
   },
   "/uygulama/hesaplar": {
     title: "Hesaplarım",
@@ -322,12 +298,6 @@ export default function Header({ pageTitle }: HeaderProps) {
         parent: "PDF Ödeme Planı",
       }
 
-    if (pathname.includes("/sifrelerim/") && pathname.includes("/duzenle"))
-      return {
-        title: "Şifre Düzenle",
-        description: "Mevcut şifre bilgilerinizi güncelleyin",
-        parent: "Şifrelerim",
-      }
 
     const info = PAGE_INFO[pathname]
     if (info) return info

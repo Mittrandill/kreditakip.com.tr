@@ -7,7 +7,6 @@ import {
   Calendar,
   BarChart3,
   Bell,
-  Key,
   CreditCard,
   LineChart,
   FileText,
@@ -214,37 +213,6 @@ export default function FeaturesPage() {
                       <div className="text-center">
                         <div className="text-2xl font-bold text-teal-400">%</div>
                         <div className="text-xs text-white/60">Fırsat</div>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              </div>
-
-              {/* Password Management */}
-              <div className="relative group">
-                <div className="absolute inset-0 bg-gradient-to-r from-emerald-500/20 to-transparent rounded-3xl blur-xl group-hover:blur-2xl transition-all duration-500" />
-                <Card className="relative bg-black/20 border-white/10 backdrop-blur-xl hover:border-emerald-500/30 transition-all duration-500 group-hover:transform group-hover:scale-105 overflow-hidden">
-                  <CardContent className="p-8">
-                    <div className="relative mb-6">
-                      <div className="w-20 h-20 bg-gradient-to-br from-emerald-500/30 to-emerald-500/10 rounded-2xl flex items-center justify-center mx-auto backdrop-blur-sm border border-emerald-500/20">
-                        <Key className="w-10 h-10 text-emerald-400" />
-                      </div>
-                      <div className="absolute -top-2 -right-2 w-6 h-6 bg-emerald-500/80 rounded-full flex items-center justify-center">
-                        <div className="w-2 h-2 bg-white rounded-full animate-pulse" />
-                      </div>
-                    </div>
-                    <h3 className="text-2xl font-bold text-white mb-4 text-center">Güvenli Şifre Yönetimi</h3>
-                    <p className="text-white/70 text-center leading-relaxed mb-6">
-                      Banka şifrelerinizi güvenli şekilde saklayın. 256-bit şifreleme ile maksimum koruma.
-                    </p>
-                    <div className="flex justify-center gap-6 pt-4 border-t border-white/10">
-                      <div className="text-center">
-                        <div className="text-2xl font-bold text-emerald-400">256</div>
-                        <div className="text-xs text-white/60">Bit AES</div>
-                      </div>
-                      <div className="text-center">
-                        <div className="text-2xl font-bold text-emerald-400">∞</div>
-                        <div className="text-xs text-white/60">Güvenli</div>
                       </div>
                     </div>
                   </CardContent>
