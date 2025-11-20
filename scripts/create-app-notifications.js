@@ -37,42 +37,101 @@ async function createEmailTemplate(firstName, bankName, installmentNumber, amoun
 
   const getBankLogoUrl = (bankName) => {
     const bankMappings = {
-      "Yapı Kredi": "yapi-kredi-bankasi.png",
-      "Yapı Kredi Bankası": "yapi-kredi-bankasi.png",
-      "Yapı ve Kredi Bankası A.Ş.": "yapi-kredi-bankasi.png",
+      // Akbank
+      Akbank: "akbank.png",
+      "Akbank T.A.Ş.": "akbank.png",
+
+      // Garanti
       Garanti: "turkiye-garanti-bankasi.png",
       "Garanti BBVA": "turkiye-garanti-bankasi.png",
       "Türkiye Garanti Bankası": "turkiye-garanti-bankasi.png",
       "Türkiye Garanti Bankası A.Ş.": "turkiye-garanti-bankasi.png",
-      Akbank: "akbank.png",
-      "Akbank T.A.Ş.": "akbank.png",
+
+      // İş Bankası
       "İş Bankası": "turkiye-is-bankasi.png",
       "Türkiye İş Bankası": "turkiye-is-bankasi.png",
       "Türkiye İş Bankası A.Ş.": "turkiye-is-bankasi.png",
+
+      // Yapı Kredi
+      "Yapı Kredi": "yapi-kredi-bankasi.png",
+      "Yapı Kredi Bankası": "yapi-kredi-bankasi.png",
+      "Yapı ve Kredi Bankası A.Ş.": "yapi-kredi-bankasi.png",
+
+      // Ziraat Bankası
       "Ziraat Bankası": "ziraat-bankasi.png",
       "T.C. Ziraat Bankası A.Ş.": "ziraat-bankasi.png",
+
+      // Vakıfbank
       VakıfBank: "vakifbank.png",
       "Türkiye Vakıflar Bankası": "vakifbank.png",
       "Türkiye Vakıflar Bankası T.A.O.": "vakifbank.png",
+
+      // Halkbank
       Halkbank: "turkiye-halk-bankasi.png",
       "Türkiye Halk Bankası A.Ş.": "turkiye-halk-bankasi.png",
+
+      // DenizBank
       DenizBank: "denizbank.png",
       "DenizBank A.Ş.": "denizbank.png",
+
+      // QNB Finansbank
       "QNB Finansbank": "qnb-finansbank.png",
       "QNB Finansbank A.Ş.": "qnb-finansbank.png",
+
+      // TEB
       TEB: "turkiye-ekonomi-bankasi.png",
       "Türkiye Ekonomi Bankası A.Ş.": "turkiye-ekonomi-bankasi.png",
+      "Türk Ekonomi Bankası A.Ş.": "turkiye-ekonomi-bankasi.png",
+
+      // ING
       ING: "ing-bank.png",
       "ING Bank A.Ş.": "ing-bank.png",
+
+      // Şekerbank
       Şekerbank: "sekerbank.png",
       "Şekerbank T.A.Ş.": "sekerbank.png",
+
+      // Fibabanka
       Fibabanka: "fibabanka.png",
       "Fibabanka A.Ş.": "fibabanka.png",
+
+      // Enpara
       "Enpara.com": "enpara-bank.png",
+      "Enpara Bank A.Ş.": "enpara-bank.png",
+
+      // HSBC
       HSBC: "hsbc-bank.png",
       "HSBC Bank A.Ş.": "hsbc-bank.png",
+
+      // Citibank
       Citibank: "citibank.png",
       "Citibank A.Ş.": "citibank.png",
+
+      // Alternatif Bank
+      "Alternatif Bank": "alternatif-bank.png",
+      "Alternatif Bank A.Ş.": "alternatif-bank.png",
+
+      // Anadolubank
+      Anadolubank: "anadolubank.png",
+      "Anadolubank A.Ş.": "anadolubank.png",
+
+      // Burgan Bank
+      "Burgan Bank": "burgan-bank.png",
+      "Burgan Bank A.Ş.": "burgan-bank.png",
+
+      // Odeabank
+      Odeabank: "odeabank.png",
+      "Odeabank A.Ş.": "odeabank.png",
+
+      // Turkish Bank
+      "Turkish Bank": "turkish-bank.png",
+      "Turkish Bank A.Ş.": "turkish-bank.png",
+
+      // Adabank
+      Adabank: "adabank.png",
+      "Adabank A.Ş.": "adabank.png",
+
+      // Katılım Bankaları
       "Ziraat Katılım": "ziraat-katilim-bankasi.png",
       "Ziraat Katılım Bankası A.Ş.": "ziraat-katilim-bankasi.png",
       "Vakıf Katılım": "vakif-katilim-bankasi.png",
@@ -83,6 +142,39 @@ async function createEmailTemplate(firstName, bankName, installmentNumber, amoun
       "Albaraka Türk Katılım Bankası A.Ş.": "albaraka-turk-katilim-bankasi.png",
       "Türkiye Finans": "turkiye-finans-katilim-bankasi.png",
       "Türkiye Finans Katılım Bankası A.Ş.": "turkiye-finans-katilim-bankasi.png",
+      "Türkiye Emlak Katılım Bankası A.Ş.": "turkiye-emlak-katilim-bankasi.png",
+      "Dünya Katılım Bankası A.Ş.": "dunya-katilim-bankasi.png",
+      "Hayat Finans Katılım Bankası A.Ş.": "hayat-finans-katilim-bankasi.png",
+
+      // Yatırım ve Kalkınma Bankaları
+      "Aktif Yatırım Bankası A.Ş.": "aktif-yatirim-bankasi.png",
+      "GSD Yatırım Bankası A.Ş.": "gsd-yatirim-bankasi.png",
+      "PASHA Yatırım Bankası A.Ş.": "pasha-yatirim-bankasi.png",
+      "Diler Yatırım Bankası A.Ş.": "diler-yatirim-bankasi.png",
+      "Nurol Yatırım Bankası A.Ş.": "nurol-yatirim-bankasi.png",
+      "Golden Global Yatırım Bankası A.Ş.": "golden-global-yatirim-bankasi.png",
+      "Merrill Lynch Yatırım Bank A.Ş.": "merrill-lynch-yatirim-bank.png",
+      "Standard Chartered Yatırım Bankası Türk A.Ş.": "standard-chartered-yatirim-bankasi-turk.png",
+      "BankPozitif Kredi ve Kalkınma Bankası A.Ş.": "bankpozitif-kredi-ve-kalkinma-bankasi.png",
+      "Türkiye Sınai Kalkınma Bankası A.Ş.": "turkiye-sinai-kalkinma-bankasi.png",
+      "Türkiye Kalkınma ve Yatırım Bankası A.Ş.": "turkiye-kalkinma-ve-yatirim-bankasi.png",
+
+      // Diğer Bankalar
+      "Deutsche Bank A.Ş.": "deutsche-bank.png",
+      "ICBC Turkey Bank A.Ş.": "icbc-turkey-bank.png",
+      "MUFG Bank Turkey A.Ş.": "mufg-bank-turkey.png",
+      "Bank Mellat": "bank-mellat.png",
+      "Habib Bank Limited": "habib-bank-limited.png",
+      "Intesa Sanpaolo S.p.A.": "intesa-sanpaolo.png",
+      "JPMorgan Chase Bank N.A.": "jpmorgan-chase-bank.png",
+      "Société Générale": "societe-generale.png",
+      "Rabobank A.Ş.": "rabobank.png",
+      "Colendi Bank A.Ş.": "colendi-bank.png",
+      "Türk Ticaret Bankası A.Ş.": "turk-ticaret-bankasi.png",
+      "Birleşik Fon Bankası A.Ş.": "birlesik-fon-bankasi.png",
+      "İller Bankası A.Ş.": "iller-bankasi.png",
+      "İstanbul Takas ve Saklama Bankası A.Ş.": "istanbul-takas-ve-saklama-bankasi.png",
+      "Türk Eximbank": "turk-eximbank.png",
     }
 
     const logoFileName = bankMappings[bankName] || "default-bank.png"
@@ -582,6 +674,8 @@ async function createAppNotifications() {
             if (preferences?.email_enabled && preferences?.email_3_days_before) {
               await sendEmailForNotification(createdNotif.id, profile.id, payment, profile)
             }
+          } else if (notifError) {
+            console.error(`❌ Error creating 3-day notification for ${profile.email}:`, notifError)
           }
         }
 
@@ -644,6 +738,8 @@ async function createAppNotifications() {
             if (preferences?.email_enabled && preferences?.email_1_day_before) {
               await sendEmailForNotification(createdNotif.id, profile.id, payment, profile)
             }
+          } else if (notifError) {
+            console.error(`❌ Error creating 1-day notification for ${profile.email}:`, notifError)
           }
         }
 
@@ -704,6 +800,8 @@ async function createAppNotifications() {
             if (preferences?.email_enabled && preferences?.email_on_due_date) {
               await sendEmailForNotification(createdNotif.id, profile.id, payment, profile)
             }
+          } else if (notifError) {
+            console.error(`❌ Error creating today notification for ${profile.email}:`, notifError)
           }
         }
 
@@ -773,6 +871,8 @@ async function createAppNotifications() {
             if (preferences?.email_enabled && preferences?.email_overdue) {
               await sendEmailForNotification(createdNotif.id, profile.id, payment, profile)
             }
+          } else if (notifError) {
+            console.error(`❌ Error creating overdue notification for ${profile.email}:`, notifError)
           }
         }
       } catch (userError) {
