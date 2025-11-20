@@ -78,6 +78,13 @@ export async function POST(request: NextRequest) {
     const userId = pendingSubscription.user_id
     const planId = pendingSubscription.plan_id
 
+    // IDEMPOTENCY CHECK: Prevent duplicate processing
+    // If pending subscription is already completed, ignore this webhook
+    if (pendingSubscription.status === "completed") {
+      console.log("[paytr-callback] Order already processed, ignoring duplicate webhook:", merchant_oid)
+      return new Response("OK", { status: 200 })
+    }
+
     // Ödeme başarılı mı kontrol et
     if (status === "success") {
       // Get plan details
@@ -101,11 +108,42 @@ export async function POST(request: NextRequest) {
         expiresAt.setFullYear(expiresAt.getFullYear() + 100)
       }
 
-      // Create or update subscription in database
-      const { data: newSubscription, error: subError } = await supabase
+      // Check if user already has a subscription
+      const { data: existingSubscription } = await supabase
         .from("subscriptions")
-        .upsert(
-          {
+        .select("*")
+        .eq("user_id", userId)
+        .single()
+
+      let newSubscription
+      let subError
+
+      if (existingSubscription) {
+        // Update existing subscription
+        const { data, error } = await supabase
+          .from("subscriptions")
+          .update({
+            plan_id: planId,
+            plan_type: "premium",
+            status: "active",
+            start_date: startDate.toISOString(),
+            expires_at: expiresAt.toISOString(),
+            payment_method: "paytr",
+            paytr_order_id: merchant_oid,
+            payment_subscription_reference: merchant_oid,
+            updated_at: new Date().toISOString(),
+          })
+          .eq("user_id", userId)
+          .select()
+          .single()
+
+        newSubscription = data
+        subError = error
+      } else {
+        // Create new subscription
+        const { data, error } = await supabase
+          .from("subscriptions")
+          .insert({
             user_id: userId,
             plan_id: planId,
             plan_type: "premium",
@@ -114,15 +152,16 @@ export async function POST(request: NextRequest) {
             expires_at: expiresAt.toISOString(),
             payment_method: "paytr",
             paytr_order_id: merchant_oid,
+            payment_subscription_reference: merchant_oid,
             created_at: new Date().toISOString(),
             updated_at: new Date().toISOString(),
-          },
-          {
-            onConflict: "user_id",
-          },
-        )
-        .select()
-        .single()
+          })
+          .select()
+          .single()
+
+        newSubscription = data
+        subError = error
+      }
 
       if (subError || !newSubscription) {
         console.error("[paytr-callback] Subscription creation failed:", subError)
@@ -276,14 +315,38 @@ export async function POST(request: NextRequest) {
 export async function GET(request: NextRequest) {
   const searchParams = request.nextUrl.searchParams
   const merchant_oid = searchParams.get("merchant_oid")
-  const status = searchParams.get("status")
 
   const baseUrl = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000"
 
-  if (status === "success") {
+  // If no merchant_oid, check for status parameter (fallback)
+  const status = searchParams.get("status")
+  if (!merchant_oid) {
+    if (status === "success") {
+      return NextResponse.redirect(`${baseUrl}/uygulama/odeme/basarili`, 303)
+    } else {
+      const reason = searchParams.get("failed_reason_msg") || "unknown"
+      return NextResponse.redirect(`${baseUrl}/uygulama/ayarlar?payment=failed&reason=${encodeURIComponent(reason)}`, 303)
+    }
+  }
+
+  // Check pending subscription status to determine if payment was successful
+  const supabase = createClient(supabaseUrl, supabaseServiceKey, {
+    auth: {
+      autoRefreshToken: false,
+      persistSession: false,
+    },
+  })
+
+  const { data: pendingSubscription } = await supabase
+    .from("pending_subscriptions")
+    .select("status")
+    .eq("conversation_id", merchant_oid)
+    .single()
+
+  if (pendingSubscription?.status === "completed") {
     return NextResponse.redirect(`${baseUrl}/uygulama/odeme/basarili`, 303)
   } else {
-    const reason = searchParams.get("failed_reason_msg") || "unknown"
+    const reason = searchParams.get("failed_reason_msg") || "Payment verification pending"
     return NextResponse.redirect(`${baseUrl}/uygulama/ayarlar?payment=failed&reason=${encodeURIComponent(reason)}`, 303)
   }
 }

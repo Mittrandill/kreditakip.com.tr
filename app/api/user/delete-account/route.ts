@@ -35,7 +35,6 @@ export async function DELETE(request: Request) {
       supabaseAdmin.from("bank_accounts").delete().eq("user_id", user.id),
       supabaseAdmin.from("payments").delete().eq("user_id", user.id),
       supabaseAdmin.from("payment_transactions").delete().eq("user_id", user.id),
-      supabaseAdmin.from("pending_payments").delete().eq("user_id", user.id),
       supabaseAdmin.from("pending_subscriptions").delete().eq("user_id", user.id),
       supabaseAdmin.from("subscriptions").delete().eq("user_id", user.id),
       supabaseAdmin.from("risk_analyses").delete().eq("user_id", user.id),

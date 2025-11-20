@@ -99,13 +99,13 @@ export async function POST(request: NextRequest) {
     // Initialize PayTR client
     const paytrClient = new PayTRClient()
 
+    // Generate unique order ID (alphanumeric only, no special characters)
+    const orderId = `SUB${user.id.replace(/-/g, '')}${Date.now()}`
+
     // Build callback URLs
     const baseUrl = process.env.NEXT_PUBLIC_APP_URL || `${request.nextUrl.protocol}//${request.nextUrl.host}`
-    const successUrl = `${baseUrl}/api/subscription/checkout/callback`
-    const failUrl = `${baseUrl}/uygulama/ayarlar?payment=failed`
-
-    // Generate unique order ID
-    const orderId = `SUB_${user.id}_${Date.now()}`
+    const successUrl = `${baseUrl}/api/subscription/checkout/callback?merchant_oid=${orderId}`
+    const failUrl = `${baseUrl}/api/subscription/checkout/callback?merchant_oid=${orderId}&status=failed`
 
     // Get user IP
     const userIp = ip || "85.34.78.112" // Fallback IP
