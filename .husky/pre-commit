@@ -1,0 +1,34 @@
+#!/usr/bin/env sh
+. "$(dirname -- "$0")/_/husky.sh"
+
+# Prevent committing .env.local or other sensitive files
+if git diff --cached --name-only | grep -E "\.env\.local$|\.env$"; then
+  echo ""
+  echo "❌ ERROR: Sensitive environment file detected!"
+  echo ""
+  echo "You attempted to commit:"
+  git diff --cached --name-only | grep -E "\.env\.local$|\.env$"
+  echo ""
+  echo "These files contain sensitive API keys and should NEVER be committed."
+  echo "Please unstage these files:"
+  echo "  git reset HEAD .env.local"
+  echo ""
+  exit 1
+fi
+
+# Check for potential API keys in staged files
+if git diff --cached | grep -iE "(api_key|api-key|apikey|secret_key|secret-key|secretkey|password|auth_token|access_token).*=.*['\"]?[A-Za-z0-9_-]{20,}['\"]?"; then
+  echo ""
+  echo "⚠️  WARNING: Potential API key or secret detected in staged files!"
+  echo ""
+  echo "Please review your changes and ensure no sensitive data is being committed."
+  echo "If this is a false positive, you can bypass this check with:"
+  echo "  git commit --no-verify"
+  echo ""
+  read -p "Do you want to continue anyway? (yes/no): " confirm
+  if [ "$confirm" != "yes" ]; then
+    exit 1
+  fi
+fi
+
+echo "✅ Pre-commit checks passed"

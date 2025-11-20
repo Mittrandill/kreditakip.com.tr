@@ -585,8 +585,8 @@ export default function FeaturesPage() {
                     <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-emerald-500/30 to-emerald-500/10 flex items-center justify-center mx-auto mb-4 border border-emerald-500/20">
                       <RefreshCw className="w-8 h-8 text-emerald-400" />
                     </div>
-                    <h3 className="text-lg text-white font-bold mb-2">99.9% Uptime</h3>
-                    <p className="text-white/60 text-sm">Her zaman erişilebilir</p>
+                    <h3 className="text-lg text-white font-bold mb-2">99.99% Uptime</h3>
+                    <p className="text-white/60 text-sm">Vercel altyapısı garantisi</p>
                   </CardContent>
                 </Card>
               </div>

@@ -30,6 +30,9 @@ nul
 **/*-test/
 **/test/
 
-# documentation and database scripts (sensitive information)
+# documentation (sensitive information)
 /docs/
-/database-scripts/
+
+# database scripts (exclude sensitive, include migrations)
+/database-scripts/*
+!/database-scripts/migrations/

@@ -6,7 +6,8 @@
     "build": "next build",
     "dev": "next dev",
     "lint": "next lint",
-    "start": "next start"
+    "start": "next start",
+    "prepare": "husky"
   },
   "dependencies": {
     "@ai-sdk/google": "^2.0.27",
@@ -102,6 +103,7 @@
     "canvas-confetti": "^1.9.3",
     "eslint": "^8",
     "eslint-config-next": "14.1.0",
+    "husky": "^9.1.7",
     "postcss": "^8.5",
     "tailwindcss": "^3.4.17",
     "typescript": "^5"

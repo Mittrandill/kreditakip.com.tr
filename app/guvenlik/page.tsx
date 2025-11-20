@@ -22,33 +22,33 @@ export default function SecurityPage() {
   const securityFeatures = [
     {
       icon: Lock,
-      title: "256-bit SSL Şifreleme",
-      description: "Tüm veri iletişimi TLS 1.3 ve AES-256 şifreleme ile korunur",
+      title: "TLS 1.3 Şifreleme",
+      description: "Tüm veri iletişimi güncel TLS 1.3 protokolü ile şifrelenir",
     },
     {
       icon: Server,
-      title: "Güvenli Sunucular",
-      description: "AWS tabanlı, ISO 27001 sertifikalı veri merkezlerinde barındırma",
+      title: "Supabase Altyapısı",
+      description: "SOC 2 Type 2 sertifikalı Supabase veri merkezinde barındırılır (AWS US-East)",
     },
     {
       icon: Eye,
       title: "Gizlilik Odaklı",
-      description: "Verileriniz hiçbir şekilde üçüncü taraflarla paylaşılmaz",
+      description: "Verileriniz hiçbir şekilde üçüncü taraflarla paylaşılmaz veya satılmaz",
     },
     {
       icon: FileCheck,
       title: "KVKK Uyumlu",
-      description: "Türk veri koruma yasalarına tam uyumluluk",
+      description: "6698 sayılı Kişisel Verilerin Korunması Kanunu'na tam uyum",
     },
     {
       icon: Key,
-      title: "İki Faktörlü Doğrulama",
-      description: "Hesap güvenliği için ek koruma katmanı",
+      title: "Supabase Auth",
+      description: "Endüstri standardı kimlik doğrulama ve oturum yönetimi",
     },
     {
       icon: Database,
-      title: "Şifreli Veri Saklama",
-      description: "Tüm veriler şifreli olarak saklanır",
+      title: "AES-256 Şifreleme",
+      description: "Hassas veriler AES-256-GCM algoritması ile şifrelenir",
     },
   ]
 
@@ -174,10 +174,10 @@ export default function SecurityPage() {
           <div className="container mx-auto">
             <div className="text-center mb-16">
               <h2 className="text-4xl md:text-5xl font-bold mb-6">
-                Sertifikalar ve <span className="text-teal-400">Uyumluluk</span>
+                Güvenlik <span className="text-teal-400">Altyapımız</span>
               </h2>
               <p className="text-xl text-white/70 max-w-3xl mx-auto">
-                Uluslararası güvenlik standartlarına tam uyumluluk
+                Güvenilir ve sertifikalı altyapı sağlayıcıları üzerinde çalışır
               </p>
             </div>
 
@@ -250,12 +250,12 @@ export default function SecurityPage() {
                   </h2>
                   <div className="space-y-4">
                     {[
-                      "Düzenli güvenlik denetimleri ve penetrasyon testleri",
-                      "7/24 sistem izleme ve tehdit tespiti",
-                      "Otomatik yedekleme ve felaket kurtarma planları",
-                      "Çalışan güvenlik eğitimleri ve farkındalık programları",
-                      "Güvenlik açığı yönetimi ve hızlı müdahale",
-                      "Şifreli veri iletimi ve saklama",
+                      "Rate limiting ile API endpoint koruması (DDoS önleme)",
+                      "Pre-commit hooks ile API anahtarı sızıntı önleme",
+                      "Supabase otomatik yedekleme (günlük)",
+                      "Webhook idempotency ile çift ücretlendirme koruması",
+                      "PCI-DSS uyumlu ödeme (İyzico checkout form)",
+                      "TLS 1.3 ve AES-256 ile şifreli veri iletimi ve saklama",
                     ].map((practice, index) => (
                       <div key={index} className="flex items-start gap-3">
                         <CheckCircle className="w-5 h-5 text-emerald-400 flex-shrink-0 mt-0.5" />
@@ -267,20 +267,20 @@ export default function SecurityPage() {
                 <div className="bg-gradient-to-br from-emerald-500/10 to-teal-500/10 rounded-2xl p-8 border border-white/10">
                   <div className="space-y-6">
                     <div className="flex items-center justify-between p-4 bg-black/20 rounded-xl">
-                      <span className="text-white/80">Sistem Uptime</span>
-                      <span className="text-emerald-400 font-bold">99.9%</span>
+                      <span className="text-white/80">Altyapı Uptime (Vercel)</span>
+                      <span className="text-emerald-400 font-bold">99.99%</span>
                     </div>
                     <div className="flex items-center justify-between p-4 bg-black/20 rounded-xl">
                       <span className="text-white/80">Veri Şifreleme</span>
-                      <span className="text-emerald-400 font-bold">256-bit</span>
+                      <span className="text-emerald-400 font-bold">AES-256</span>
                     </div>
                     <div className="flex items-center justify-between p-4 bg-black/20 rounded-xl">
-                      <span className="text-white/80">Güvenlik Denetimleri</span>
-                      <span className="text-emerald-400 font-bold">Aylık</span>
+                      <span className="text-white/80">Supabase Backup</span>
+                      <span className="text-emerald-400 font-bold">Otomatik</span>
                     </div>
                     <div className="flex items-center justify-between p-4 bg-black/20 rounded-xl">
-                      <span className="text-white/80">Yedekleme Sıklığı</span>
-                      <span className="text-emerald-400 font-bold">Günlük</span>
+                      <span className="text-white/80">SSL/TLS</span>
+                      <span className="text-emerald-400 font-bold">TLS 1.3</span>
                     </div>
                   </div>
                 </div>
