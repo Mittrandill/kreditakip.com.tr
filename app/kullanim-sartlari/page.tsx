@@ -96,6 +96,36 @@ export default function TermsOfServicePage() {
                 </div>
               </div>
 
+              {/* Section 2.1: Finansal Danışmanlık Feragatnamesi */}
+              <div className="mb-8">
+                <h2 className="text-2xl font-bold text-white mb-4">2.1. Finansal Danışmanlık Feragatnamesi</h2>
+                <div className="text-white/80 leading-relaxed space-y-3 bg-red-500/10 border border-red-500/30 rounded-lg p-6">
+                  <p className="text-red-200 font-bold text-lg">
+                    ⚠️ ÖNEMLİ UYARI: BU BİR FİNANSAL DANIŞMANLIK HİZMETİ DEĞİLDİR
+                  </p>
+                  <p>
+                    <strong>Kredi Takip,</strong> SPK (Sermaye Piyasası Kurulu) lisanslı bir yatırım danışmanlığı
+                    firması DEĞİLDİR. Uygulamamızda sunulan:
+                  </p>
+                  <ul className="list-disc pl-6 space-y-2">
+                    <li>AI Finansal Sağlık Özeti</li>
+                    <li>Risk Analizi Raporları</li>
+                    <li>Refinansman Önerileri</li>
+                    <li>Ödeme Planı Optimizasyonları</li>
+                  </ul>
+                  <p>
+                    <strong className="text-yellow-200">
+                      YALNIZCA BİLGİLENDİRME AMAÇLIDIR ve yatırım tavsiyesi niteliği taşımaz.
+                    </strong>
+                  </p>
+                  <p>
+                    Finansal kararlarınızı almadan önce <strong>lisanslı bir finansal danışmana</strong> veya
+                    bankanıza danışmanız şiddetle tavsiye edilir.
+                  </p>
+                  <p className="text-sm text-white/60">SPK Lisans Durumu: Yok | BDDK Lisans Durumu: Yok</p>
+                </div>
+              </div>
+
               {/* Section 3: Kullanıcının Yükümlülükleri */}
               <div className="mb-8">
                 <h2 className="text-2xl font-bold text-white mb-4">3. Kullanıcının Yükümlülükleri</h2>

@@ -1,7 +1,7 @@
 {
   "name": "Kredi Takip - Akıllı Kredi Yönetimi",
   "short_name": "Kredi Takip",
-  "description": "Kredi kartı ekstrenizi saniyeler içinde akıllı ödeme planına dönüştürün. OCR teknolojisi ve yapay zeka destekli finansal yönetim platformu.",
+  "description": "Kredi ödeme planınızı saniyeler içinde akıllı ödeme planına dönüştürün. OCR teknolojisi ve yapay zeka destekli finansal yönetim platformu.",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#ffffff",

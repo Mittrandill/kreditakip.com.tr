@@ -10,6 +10,7 @@ import { Input } from "@/components/ui/input"
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 import { PaginationModern } from "@/components/ui/pagination-modern"
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 import {
   AlertDialog,
   AlertDialogAction,
@@ -402,6 +403,16 @@ export default function RiskAnaliziPage() {
   return (
     <div className="flex flex-col gap-4 md:gap-6">
       <AdBanner position="top" className="mb-4" />
+
+      {/* Finansal Danışmanlık Uyarısı */}
+      <Alert className="bg-yellow-500/10 border-yellow-500/30">
+        <AlertTriangle className="h-4 w-4 text-yellow-500" />
+        <AlertTitle className="text-yellow-600 dark:text-yellow-500 font-bold">Finansal Danışmanlık Değildir</AlertTitle>
+        <AlertDescription className="text-yellow-700 dark:text-yellow-400">
+          Bu analiz otomatik AI tarafından üretilmiştir ve finansal tavsiye niteliği taşımaz. Önemli kararlar almadan
+          önce lisanslı bir finansal danışmana danışın.
+        </AlertDescription>
+      </Alert>
 
       <Card className="bg-gradient-to-br from-emerald-600 via-teal-600 to-emerald-700 dark:from-emerald-700 dark:via-teal-700 dark:to-emerald-800 text-white border-0 shadow-2xl">
         <CardContent className="p-6 md:p-8">

@@ -23,7 +23,7 @@ export default function SecurityPage() {
     {
       icon: Lock,
       title: "256-bit SSL Şifreleme",
-      description: "Tüm veri iletişimi bankacılık seviyesi SSL şifreleme ile korunur",
+      description: "Tüm veri iletişimi TLS 1.3 ve AES-256 şifreleme ile korunur",
     },
     {
       icon: Server,
@@ -54,24 +54,24 @@ export default function SecurityPage() {
 
   const certifications = [
     {
-      icon: Award,
-      title: "ISO 27001",
-      description: "Bilgi Güvenliği Yönetim Sistemi Sertifikası",
-    },
-    {
-      icon: Shield,
-      title: "SOC 2 Type II",
-      description: "Güvenlik, Gizlilik ve Kullanılabilirlik Sertifikası",
-    },
-    {
       icon: FileCheck,
       title: "KVKK Uyumlu",
       description: "Kişisel Verilerin Korunması Kanunu'na tam uyum",
     },
     {
+      icon: Shield,
+      title: "Supabase Altyapısı",
+      description: "SOC 2 Type 2 sertifikalı veri merkezi üzerinde çalışır",
+    },
+    {
+      icon: Award,
+      title: "Güvenli Ödeme",
+      description: "İyzico PCI-DSS sertifikalı ödeme altyapısı kullanılır",
+    },
+    {
       icon: CheckCircle,
-      title: "PCI DSS",
-      description: "Ödeme Kartı Endüstrisi Veri Güvenliği Standardı",
+      title: "SSL/TLS Şifreleme",
+      description: "TLS 1.3 protokolü ile veri iletimi korunur",
     },
   ]
 
@@ -119,7 +119,7 @@ export default function SecurityPage() {
               Verileriniz <span className="text-emerald-400">Güvende</span>
             </h1>
             <p className="text-xl text-white/70 max-w-3xl mx-auto mb-8 leading-relaxed">
-              Bankacılık seviyesi güvenlik önlemleri ile finansal verilerinizi koruyoruz
+              Endüstri standardı güvenlik önlemleri ile finansal verilerinizi koruyoruz
             </p>
             <Link href="/giris">
               <Button
@@ -327,7 +327,7 @@ export default function SecurityPage() {
                   Güvenliğiniz <span className="text-emerald-400">Önceliğimiz</span>
                 </h2>
                 <p className="text-xl text-white/80 mb-8 max-w-2xl mx-auto">
-                  Bankacılık seviyesi güvenlik ile finansal verilerinizi yönetin
+                  Güvenli ve şifreli altyapı ile finansal verilerinizi yönetin
                 </p>
                 <Link href="/giris">
                   <Button

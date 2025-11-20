@@ -547,7 +547,7 @@ export default function FeaturesPage() {
                 Güvenlik & <span className="text-emerald-400">Performans</span>
               </h2>
               <p className="text-xl text-white/70 max-w-2xl mx-auto">
-                Verileriniz bankacılık seviyesi güvenlik ile korunur
+                Verileriniz endüstri standardı güvenlik ile korunur
               </p>
             </div>
 
@@ -560,7 +560,7 @@ export default function FeaturesPage() {
                       <Shield className="w-8 h-8 text-emerald-400" />
                     </div>
                     <h3 className="text-lg text-white font-bold mb-2">256-bit SSL</h3>
-                    <p className="text-white/60 text-sm">Bankacılık seviyesi şifreleme</p>
+                    <p className="text-white/60 text-sm">AES-256 şifreleme standardı</p>
                   </CardContent>
                 </Card>
               </div>

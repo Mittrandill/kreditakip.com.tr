@@ -3,6 +3,7 @@ import { GoogleGenerativeAI, SchemaType } from "@google/generative-ai"
 export const dynamic = "force-dynamic"
 import { mapBankName } from "@/lib/utils/bank-mapper"
 import { createServerClient } from "@/lib/supabase/server"
+import { rateLimit, getClientIp, RateLimits } from "@/lib/rate-limit"
 
 export const maxDuration = 60
 
@@ -162,6 +163,30 @@ export async function POST(request: Request) {
 
     if (authError || !user) {
       return Response.json({ error: "Oturum açmanız gerekiyor" }, { status: 401 })
+    }
+
+    // Rate limiting - OCR is expensive!
+    const rateLimitResult = rateLimit({
+      identifier: `ocr:${user.id}`,
+      ...RateLimits.EXPENSIVE
+    })
+
+    if (!rateLimitResult.success) {
+      return Response.json(
+        {
+          error: "Çok fazla analiz talebi. Lütfen 1 saat sonra tekrar deneyin.",
+          retryAfter: rateLimitResult.reset
+        },
+        {
+          status: 429,
+          headers: {
+            'X-RateLimit-Limit': rateLimitResult.limit.toString(),
+            'X-RateLimit-Remaining': rateLimitResult.remaining.toString(),
+            'X-RateLimit-Reset': rateLimitResult.reset.toString(),
+            'Retry-After': rateLimitResult.reset.toString()
+          }
+        }
+      )
     }
 
     const { data: canUse, error: checkError } = await supabase.rpc("can_use_feature", {

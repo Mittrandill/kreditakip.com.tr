@@ -4,6 +4,7 @@ export const dynamic = "force-dynamic"
 import type { FinancialProfile, RiskAnalysisData } from "@/lib/types"
 import { createClient } from "@supabase/supabase-js"
 import { GoogleGenerativeAI, SchemaType } from "@google/generative-ai"
+import { rateLimit, RateLimits } from "@/lib/rate-limit"
 
 const CHART_COLORS = ["#10B981", "#3B82F6", "#F59E0B", "#EF4444", "#8B5CF6", "#06B6D4", "#F97316", "#84CC16"]
 
@@ -101,6 +102,29 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Kullanıcı ID gereklidir" }, { status: 400 })
     }
 
+    // Rate limiting - AI analysis is expensive!
+    const rateLimitResult = rateLimit({
+      identifier: `risk-analysis:${userId}`,
+      ...RateLimits.EXPENSIVE
+    })
+
+    if (!rateLimitResult.success) {
+      return NextResponse.json(
+        {
+          error: "Çok fazla risk analizi talebi. Lütfen 1 saat sonra tekrar deneyin.",
+          retryAfter: rateLimitResult.reset
+        },
+        {
+          status: 429,
+          headers: {
+            'X-RateLimit-Limit': rateLimitResult.limit.toString(),
+            'X-RateLimit-Remaining': rateLimitResult.remaining.toString(),
+            'X-RateLimit-Reset': rateLimitResult.reset.toString(),
+            'Retry-After': rateLimitResult.reset.toString()
+          }
+        }
+      )
+    }
 
     const supabaseAdmin = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.SERVICE_ROLE_KEY!, {
       auth: {

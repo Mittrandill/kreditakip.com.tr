@@ -4,6 +4,7 @@ export const dynamic = "force-dynamic"
 import { GoogleGenerativeAI } from "@google/generative-ai"
 // Uses json5 for lenient JSON parsing when Gemini returns trailing commas or comments
 import JSON5 from "json5"
+import { rateLimit, RateLimits } from "@/lib/rate-limit"
 
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY!)
 
@@ -57,6 +58,31 @@ export async function POST(request: NextRequest) {
 
     if (!financialProfile || !credits || credits.length === 0) {
       return NextResponse.json({ error: "Finansal profil ve kredi bilgileri gereklidir" }, { status: 400 })
+    }
+
+    // Rate limiting - AI refinancing analysis is expensive!
+    const userId = financialProfile.id || financialProfile.user_id || 'anonymous'
+    const rateLimitResult = rateLimit({
+      identifier: `refinancing:${userId}`,
+      ...RateLimits.EXPENSIVE
+    })
+
+    if (!rateLimitResult.success) {
+      return NextResponse.json(
+        {
+          error: "Çok fazla refinansman analizi talebi. Lütfen 1 saat sonra tekrar deneyin.",
+          retryAfter: rateLimitResult.reset
+        },
+        {
+          status: 429,
+          headers: {
+            'X-RateLimit-Limit': rateLimitResult.limit.toString(),
+            'X-RateLimit-Remaining': rateLimitResult.remaining.toString(),
+            'X-RateLimit-Reset': rateLimitResult.reset.toString(),
+            'Retry-After': rateLimitResult.reset.toString()
+          }
+        }
+      )
     }
 
     const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" })

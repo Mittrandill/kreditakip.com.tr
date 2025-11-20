@@ -235,7 +235,7 @@ export default function LandingPage() {
 
                       <h3 className="text-2xl font-bold text-white mb-4 text-center">Güvenli ve Gizli</h3>
                       <p className="text-white/70 text-center leading-relaxed mb-6">
-                        Bankacılık seviyesinde şifreleme ile verileriniz tamamen güvende ve gizli kalır
+                        AES-256 şifreleme ile verileriniz tamamen güvende ve gizli kalır
                       </p>
 
                       <div className="flex justify-center gap-6 pt-4 border-t border-white/10">
