@@ -12,7 +12,8 @@
       "Bash(source:*)",
       "Bash(set:*)",
       "Bash(rm:*)",
-      "Bash(npm install:*)"
+      "Bash(npm install:*)",
+      "Bash(pnpm install:*)"
     ],
     "deny": [],
     "ask": []

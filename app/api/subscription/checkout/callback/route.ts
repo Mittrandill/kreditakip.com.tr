@@ -180,6 +180,7 @@ export async function POST(request: NextRequest) {
         status: "completed",
         payment_method: "paytr",
         paytr_order_id: merchant_oid,
+        paytr_conversation_id: merchant_oid, // PayTR uses same ID for both
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString(),
       })
