@@ -110,7 +110,6 @@ export default function TermsOfServicePage() {
                   <ul className="list-disc pl-6 space-y-2">
                     <li>AI Finansal Sağlık Özeti</li>
                     <li>Risk Analizi Raporları</li>
-                    <li>Refinansman Önerileri</li>
                     <li>Ödeme Planı Optimizasyonları</li>
                   </ul>
                   <p>

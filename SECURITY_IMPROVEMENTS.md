@@ -182,7 +182,7 @@ Mevcut hesap silme fonksiyonu genişletildi.
 ### 4. SPK Uyumluluğu - Finansal Danışmanlık Feragatnamesi
 
 **Sorun:**
-Uygulama SPK lisansı olmadan "finansal sağlık analizi" ve "refinansman önerileri" sunuyordu. Bu yatırım tavsiyesi olarak yorumlanabilir.
+Uygulama SPK lisansı olmadan "finansal sağlık analizi" sunuyordu. Bu yatırım tavsiyesi olarak yorumlanabilir.
 
 **Çözüm:**
 
@@ -201,7 +201,6 @@ danışmanlığı firması DEĞİLDİR.
 Uygulamamızda sunulan:
 • AI Finansal Sağlık Özeti
 • Risk Analizi Raporları
-• Refinansman Önerileri
 • Ödeme Planı Optimizasyonları
 
 YALNIZCA BİLGİLENDİRME AMAÇLIDIR ve yatırım tavsiyesi
@@ -274,10 +273,6 @@ if (!rateLimitResult.success) {
 
 #### 5.2. Risk Analizi Endpoint
 **Dosya:** `app/api/risk-analysis/route.ts`
-**Limit:** 10 request / saat (per user)
-
-#### 5.3. Refinansman Analizi Endpoint
-**Dosya:** `app/api/refinancing-analysis/route.ts`
 **Limit:** 10 request / saat (per user)
 
 **Rate Limit Konfigürasyonu:**

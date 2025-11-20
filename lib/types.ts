@@ -389,46 +389,6 @@ export interface Database {
           updated_at?: string
         }
       }
-      refinancing_analyses: {
-        Row: {
-          id: string
-          user_id: string
-          analysis_data: any // JSONB
-          total_potential_savings: number | null
-          refinancing_potential: string | null
-          urgency_level: string | null
-          recommended_strategy: string | null
-          credits_analyzed: number | null
-          market_rates: any | null
-          created_at: string
-          updated_at: string
-        }
-        Insert: {
-          id?: string
-          user_id: string
-          analysis_data: any
-          total_potential_savings?: number | null
-          refinancing_potential?: string | null
-          urgency_level?: string | null
-          recommended_strategy?: string | null
-          credits_analyzed?: number | null
-          market_rates?: any | null
-          created_at?: string
-          updated_at?: string
-        }
-        Update: {
-          id?: string
-          user_id?: string
-          analysis_data?: any
-          total_potential_savings?: number | null
-          refinancing_potential?: string | null
-          urgency_level?: string | null
-          recommended_strategy?: string | null
-          credits_analyzed?: number | null
-          market_rates?: any | null
-          updated_at?: string
-        }
-      }
       accounts: {
         Row: {
           id: string
@@ -681,7 +641,6 @@ export type User = Database["public"]["Tables"]["users"]["Row"]
 export type FinancialProfile = Database["public"]["Tables"]["financial_profiles"]["Row"]
 
 export type RiskAnalysis = Database["public"]["Tables"]["risk_analyses"]["Row"]
-export type RefinancingAnalysis = Database["public"]["Tables"]["refinancing_analyses"]["Row"]
 
 // Yeni tipler
 export type Account = Database["public"]["Tables"]["accounts"]["Row"]
@@ -790,99 +749,6 @@ export interface RiskAnalysisData {
     expenseCategories?: Array<{ name: string; amount: number; color?: string }> // Harcama kategorileri (eğer kullanıcı giderlerini detaylı girerse)
     assetAllocation?: Array<{ name: string; value: number; color?: string }> // Varlık dağılımı
   }
-}
-
-// Refinansman Analizi Veri Yapısı
-export interface RefinancingAnalysisData {
-  overallAssessment: {
-    refinancingPotential: "Yüksek" | "Orta" | "Düşük"
-    totalPotentialSavings: number
-    recommendedStrategy: string
-    urgencyLevel: "Acil" | "Yüksek" | "Orta" | "Düşük"
-    summary: string
-  }
-
-  individualCreditAnalysis: Array<{
-    creditId: string
-    bankName: string
-    creditType: string
-    currentSituation: {
-      remainingDebt: number
-      currentRate: number
-      monthlyPayment: number
-      remainingMonths: number
-      totalRemainingInterest: number
-    }
-    refinancingOptions: Array<{
-      optionName: string
-      newRate: number
-      newMonthlyPayment: number
-      totalSavings: number
-      monthlySavings: number
-      feasibility: "Yüksek" | "Orta" | "Düşük"
-      requirements: string[]
-      timeline: string
-      pros: string[]
-      cons: string[]
-    }>
-    earlyPayoffAnalysis: {
-      requiredAmount: number
-      interestSavings: number
-      breakEvenPoint: string
-      recommendation: string
-      fundingSources: string[]
-    }
-    priority: "Yüksek" | "Orta" | "Düşük"
-    actionPlan: string[]
-  }>
-
-  consolidationAnalysis: {
-    feasibility: string
-    benefits: string[]
-    consolidatedLoanAmount: number
-    suggestedRate: number
-    newMonthlyPayment: number
-    totalSavings: number
-    requirements: string[]
-    risks: string[]
-  }
-
-  marketOpportunities: Array<{
-    opportunity: string
-    description: string
-    impact: string
-    timeline: string
-    actionRequired: string
-  }>
-
-  riskAssessment: {
-    refinancingRisks: Array<{
-      risk: string
-      probability: string
-      impact: string
-      mitigation: string
-    }>
-    overallRiskLevel: string
-    riskMitigationPlan: string[]
-  }
-
-  actionPlan: {
-    immediate: string[]
-    shortTerm: string[]
-    longTerm: string[]
-    timeline: string
-    expectedOutcome: string
-  }
-
-  alternativeStrategies: Array<{
-    strategy: string
-    description: string
-    requiredAmount?: number
-    expectedSavings?: number
-    newMonthlyPayment?: number
-    additionalCost?: number
-    suitability: string
-  }>
 }
 
 // BankingCredential tipini ekle

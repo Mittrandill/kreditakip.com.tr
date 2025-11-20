@@ -283,7 +283,6 @@ async function generateDetailedRiskAnalysis(
       opportunities: [
         ...(disposableIncome > 0 ? ["Tasarruf ve yatırım fırsatları"] : []),
         ...(dtiPercentage < 40 ? ["Ek kredi kapasitesi"] : []),
-        "Refinansman fırsatları",
       ],
     },
     chartsData: {

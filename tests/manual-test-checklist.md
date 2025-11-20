@@ -50,17 +50,6 @@ Retry-After: 3600
 
 ---
 
-### 1.3 Refinansman Analizi Rate Limiting (10 req/hour)
-**Endpoint:** `POST /api/refinancing-analysis`
-
-**Test Adımları:**
-1. En az 1 kredi ekleyin
-2. Refinansman sayfasına gidin
-3. 10 kez ardı ardına analiz başlatın
-4. 11. denemede rate limit hatası almalısınız
-
----
-
 ## ✅ 2. KVKK Endpoint Testleri
 
 ### 2.1 Veri İndirme (KVKK m.11)
@@ -198,7 +187,6 @@ danışmanlığı firması DEĞİLDİR. Uygulamamızda sunulan:
 
 • AI Finansal Sağlık Özeti
 • Risk Analizi Raporları
-• Refinansman Önerileri
 • Ödeme Planı Optimizasyonları
 
 YALNIZCA BİLGİLENDİRME AMAÇLIDIR ve yatırım tavsiyesi
@@ -211,7 +199,7 @@ SPK Lisans Durumu: Yok | BDDK Lisans Durumu: Yok
 - ✅ Kırmızı arka plan (bg-red-500/10)
 - ✅ Kırmızı border
 - ✅ Kalın başlık
-- ✅ 4 madde liste halinde
+- ✅ 3 madde liste halinde
 - ✅ Lisans durumu belirtilmiş
 
 ---
@@ -314,7 +302,6 @@ Test tamamlandığında şu tabloyu doldurun:
 |------|-------|--------|
 | OCR Rate Limiting | ⬜ Pass / ❌ Fail | |
 | Risk Analizi Rate Limiting | ⬜ Pass / ❌ Fail | |
-| Refinansman Rate Limiting | ⬜ Pass / ❌ Fail | |
 | Veri İndirme API | ⬜ Pass / ❌ Fail | |
 | Hesap Silme API | ⬜ Pass / ❌ Fail | |
 | Risk Analizi Uyarı Banner | ⬜ Pass / ❌ Fail | |
