@@ -82,7 +82,7 @@ const navItems: NavItem[] = [
     hoverGradient: "from-emerald-600 to-teal-700",
   },
   {
-    href: "/uygulama/risk-analizi",
+    href: "/uygulama/finansal-saglik",
     label: "AI Finansal Sağlık Özeti",
     icon: ShieldCheck,
     gradient: "from-emerald-500 to-teal-600",

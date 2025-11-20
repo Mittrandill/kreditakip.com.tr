@@ -245,7 +245,7 @@ export default function RiskAnalysisDetailPage() {
         title: "Başarılı",
         description: "Risk analizi başarıyla silindi.",
       })
-      router.push("/uygulama/risk-analizi")
+      router.push("/uygulama/finansal-saglik")
     } catch (err: any) {
       console.error("Risk analizi silinirken hata:", err)
       toast({
@@ -300,7 +300,7 @@ export default function RiskAnalysisDetailPage() {
           <AlertTitle>Hata</AlertTitle>
           <AlertDescription>{error || "Risk analizi verileri yüklenemedi veya bulunamadı."}</AlertDescription>
         </Alert>
-        <Button variant="outline" onClick={() => router.push("/uygulama/risk-analizi")}>
+        <Button variant="outline" onClick={() => router.push("/uygulama/finansal-saglik")}>
           <ArrowLeft className="h-4 w-4 mr-2" />
           AI Finansal Sağlık Özeti Listesine Dön
         </Button>
@@ -329,7 +329,7 @@ export default function RiskAnalysisDetailPage() {
                 <Button
                   variant="outline"
                   size="icon"
-                  onClick={() => router.push("/uygulama/risk-analizi")}
+                  onClick={() => router.push("/uygulama/finansal-saglik")}
                   className="bg-transparent border-white/20 text-white hover:bg-white/10 hover:border-transparent hover:text-white dark:bg-transparent dark:border-white/20 dark:text-white dark:hover:bg-white/10 dark:hover:border-transparent dark:hover:text-white backdrop-blur-sm h-10 w-10 shrink-0"
                 >
                   <ArrowLeft className="h-5 w-5" />

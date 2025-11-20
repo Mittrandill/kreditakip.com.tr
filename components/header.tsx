@@ -68,7 +68,7 @@ const navItems = [
   { href: "/uygulama/krediler", label: "Kredilerim", icon: CreditCard },
   { href: "/uygulama/odeme-plani", label: "Ödeme Planı", icon: Calendar },
   { href: "/uygulama/raporlar", label: "Raporlar", icon: BarChart3 },
-  { href: "/uygulama/risk-analizi", label: "AI Finansal Sağlık Özeti", icon: ShieldCheck },
+  { href: "/uygulama/finansal-saglik", label: "AI Finansal Sağlık Özeti", icon: ShieldCheck },
   { href: "/uygulama/premium", label: "Premium", icon: Crown },
   { href: "/uygulama/faturalandirma", label: "Faturalar", icon: Receipt },
 ]
@@ -121,7 +121,7 @@ const PAGE_INFO: Record<string, { title: string; description: string; parent?: s
     title: "Raporlar",
     description: "Finansal durumunuzun detaylı analizi ve raporları",
   },
-  "/uygulama/risk-analizi": {
+  "/uygulama/finansal-saglik": {
     title: "AI Finansal Sağlık Özeti",
     description: "Finansal risk değerlendirmeniz ve öneriler",
   },
@@ -285,7 +285,7 @@ export default function Header({ pageTitle }: HeaderProps) {
         parent: "Hesaplarım",
       }
 
-    if (pathname.includes("/risk-analizi/") && pathname !== "/uygulama/risk-analizi")
+    if (pathname.includes("/finansal-saglik/") && pathname !== "/uygulama/finansal-saglik")
       return {
         title: "AI Finansal Sağlık Özeti Detayı",
         description: "Detaylı finansal sağlık analizi sonuçları ve öneriler",
