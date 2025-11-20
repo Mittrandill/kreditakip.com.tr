@@ -1,11 +1,10 @@
 "use server"
 
-import { IyzipaySubscriptionClient } from "@/lib/iyzipay-client"
+import { PayTRClient } from "@/lib/paytr-client"
 import { createClient } from "@/lib/supabase/server"
 
 export async function cancelSubscription() {
   try {
-
     // Kullanıcı kontrolü
     const supabase = await createClient()
     const {
@@ -14,7 +13,7 @@ export async function cancelSubscription() {
     } = await supabase.auth.getUser()
 
     // eslint-disable-next-line no-console
-    console.log('[cancelSubscription] Auth check:', {
+    console.log("[cancelSubscription] Auth check:", {
       hasUser: !!user,
       userId: user?.id,
       hasError: !!authError,
@@ -43,28 +42,24 @@ export async function cancelSubscription() {
       }
     }
 
-    // iyzico_subscription_reference veya iyzico_subscription_id kullan
-    const subscriptionRef = subscription.iyzico_subscription_reference || subscription.iyzico_subscription_id
+    // paytr_order_id kullan
+    const orderRef = subscription.paytr_order_id
 
-    if (!subscriptionRef) {
-      console.error("[server-action] No subscription reference found:", subscription)
+    if (!orderRef) {
+      console.error("[server-action] No PayTR order reference found:", subscription)
       return {
         success: false,
         error: "Abonelik referans bilgisi bulunamadı",
       }
     }
 
-    // iyzico servisini başlat
-    const iyzicoClient = new IyzipaySubscriptionClient({
-      apiKey: process.env.IYZICO_API_KEY!,
-      secretKey: process.env.IYZICO_SECRET_KEY!,
-      uri: process.env.IYZICO_BASE_URL!,
-    })
+    // PayTR client
+    const paytrClient = new PayTRClient()
 
     // Aboneliği iptal et
-    const result = await iyzicoClient.cancelSubscription(subscriptionRef)
+    const result = await paytrClient.cancelSubscription(orderRef)
 
-    if (result.status === "success") {
+    if (result.success) {
       // Veritabanında aboneliği güncelle
       const { error: updateError } = await supabase
         .from("subscriptions")
@@ -85,14 +80,13 @@ export async function cancelSubscription() {
 
       return {
         success: true,
-        message: "Abonelik başarıyla iptal edildi",
+        message: result.message || "Abonelik başarıyla iptal edildi",
       }
     } else {
-      console.error("[server-action] Cancel failed:", result.errorMessage, result.errorCode)
+      console.error("[server-action] Cancel failed:", result.message)
       return {
         success: false,
-        error: result.errorMessage || "Abonelik iptal edilemedi",
-        errorCode: result.errorCode,
+        error: result.message || "Abonelik iptal edilemedi",
       }
     }
   } catch (error: any) {

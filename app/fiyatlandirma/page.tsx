@@ -76,7 +76,7 @@ export default function PricingPage() {
     {
       question: "Ödeme güvenli mi?",
       answer:
-        "Evet, tüm ödemeler iyzico güvencesi altında 256-bit SSL şifreleme ile korunur. Kredi kartı bilgileriniz bizimle paylaşılmaz.",
+        "Evet, tüm ödemeler PayTR güvencesi altında 256-bit SSL şifreleme ile korunur. Kredi kartı bilgileriniz bizimle paylaşılmaz.",
     },
     {
       question: "Ücretsiz kullanıcılar hangi reklamları görür?",
@@ -86,7 +86,7 @@ export default function PricingPage() {
     {
       question: "Premium üyelik otomatik yenilenir mi?",
       answer:
-        "Evet, Premium üyelik aylık olarak otomatik yenilenir. İstediğiniz zaman iptal edebilir veya yenilemeyi durdurabilirsiniz.",
+        "PayTR ile yapılan ödemeler tek seferlik işlemlerdir. Aboneliğiniz süre dolduğunda yeniden ödeme yapmanız gerekir.",
     },
   ]
 

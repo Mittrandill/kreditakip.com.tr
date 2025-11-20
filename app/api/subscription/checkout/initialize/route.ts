@@ -1,5 +1,5 @@
 import { type NextRequest, NextResponse } from "next/server"
-import { IyzipaySubscriptionClient } from "@/lib/iyzipay-client"
+import { PayTRClient } from "@/lib/paytr-client"
 import { createServerClient } from "@/lib/supabase/server"
 import { createClient } from "@supabase/supabase-js"
 import { rateLimit, getClientIp, RateLimits } from "@/lib/rate-limit"
@@ -8,9 +8,8 @@ export const dynamic = "force-dynamic"
 export const runtime = "nodejs"
 
 /**
- * PCI-DSS UYUMLU: RECURRING SUBSCRIPTION Checkout Form Başlatma
- * İyzico'nun recurring subscription checkout form'unu başlatır
- * Kart bilgileri sunucuya GELMİYOR - Iyzico'nun güvenli sayfasına yönlendirir
+ * PayTR Subscription Checkout Form Başlatma
+ * PayTR iframe token oluşturur ve kullanıcıyı güvenli ödeme sayfasına yönlendirir
  */
 export async function POST(request: NextRequest) {
   try {
@@ -18,24 +17,24 @@ export async function POST(request: NextRequest) {
     const ip = getClientIp(request.headers)
     const rateLimitResult = rateLimit({
       identifier: `payment-init:${ip}`,
-      ...RateLimits.PAYMENT_INIT
+      ...RateLimits.PAYMENT_INIT,
     })
 
     if (!rateLimitResult.success) {
       return NextResponse.json(
         {
           error: "Too many payment requests. Please try again later.",
-          retryAfter: rateLimitResult.reset
+          retryAfter: rateLimitResult.reset,
         },
         {
           status: 429,
           headers: {
-            'X-RateLimit-Limit': rateLimitResult.limit.toString(),
-            'X-RateLimit-Remaining': rateLimitResult.remaining.toString(),
-            'X-RateLimit-Reset': rateLimitResult.reset.toString(),
-            'Retry-After': rateLimitResult.reset.toString()
-          }
-        }
+            "X-RateLimit-Limit": rateLimitResult.limit.toString(),
+            "X-RateLimit-Remaining": rateLimitResult.remaining.toString(),
+            "X-RateLimit-Reset": rateLimitResult.reset.toString(),
+            "Retry-After": rateLimitResult.reset.toString(),
+          },
+        },
       )
     }
 
@@ -62,7 +61,6 @@ export async function POST(request: NextRequest) {
       !billingInfo.fullName ||
       !billingInfo.email ||
       !billingInfo.phone ||
-      !billingInfo.identityNumber ||
       !billingInfo.address ||
       !billingInfo.city
     ) {
@@ -92,52 +90,46 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Invalid plan" }, { status: 404 })
     }
 
-    // İyzico API credentials
-    const apiKey = process.env.IYZICO_API_KEY
-    const secretKey = process.env.IYZICO_SECRET_KEY
-    const uri = process.env.IYZICO_BASE_URL
-
-    if (!apiKey || !secretKey || !uri) {
-      console.error("[subscription-checkout] Missing Iyzico credentials")
+    // PayTR credentials check
+    if (!process.env.PAYTR_MERCHANT_ID || !process.env.PAYTR_MERCHANT_KEY || !process.env.PAYTR_MERCHANT_SALT) {
+      console.error("[subscription-checkout] Missing PayTR credentials")
       return NextResponse.json({ error: "Payment system not configured" }, { status: 500 })
     }
 
-    // Get pricing plan reference code from environment
-    // Her plan için farklı reference code olabilir
-    const pricingPlanReferenceCode = process.env.IYZICO_PLAN_REFERENCE_CODE
+    // Initialize PayTR client
+    const paytrClient = new PayTRClient()
 
-    if (!pricingPlanReferenceCode) {
-      console.error("[subscription-checkout] Missing pricing plan reference code")
-      return NextResponse.json({ error: "Pricing plan not configured" }, { status: 500 })
-    }
-
-    // Initialize Iyzico client
-    const iyzipayClient = new IyzipaySubscriptionClient({
-      apiKey,
-      secretKey,
-      uri,
-    })
-
-    // Build callback URL
+    // Build callback URLs
     const baseUrl = process.env.NEXT_PUBLIC_APP_URL || `${request.nextUrl.protocol}//${request.nextUrl.host}`
-    const callbackUrl = `${baseUrl}/api/subscription/checkout/callback`
+    const successUrl = `${baseUrl}/api/subscription/checkout/callback`
+    const failUrl = `${baseUrl}/uygulama/ayarlar?payment=failed`
 
+    // Generate unique order ID
+    const orderId = `SUB_${user.id}_${Date.now()}`
 
-    // Initialize subscription checkout form
-    const result = await iyzipayClient.initializeSubscriptionCheckoutForm(
-      pricingPlanReferenceCode,
-      user.id,
-      planId,
+    // Get user IP
+    const userIp = ip || "85.34.78.112" // Fallback IP
+
+    // Create PayTR iframe token
+    const result = await paytrClient.createIframeToken(
+      orderId,
+      plan.price,
       billingInfo,
-      callbackUrl,
+      userIp,
+      successUrl,
+      failUrl,
+      {
+        testMode: process.env.PAYTR_TEST_MODE === "1",
+        noInstallment: true, // Abonelik için taksit kapalı
+        currency: (plan.currency as "TL" | "EUR" | "USD" | "GBP") || "TL",
+      },
     )
 
-    if (result.status !== "success") {
-      console.error("[subscription-checkout] Initialization failed:", result.errorMessage)
+    if (result.status !== "success" || !result.token) {
+      console.error("[subscription-checkout] PayTR token creation failed:", result.reason)
       return NextResponse.json(
         {
-          error: result.errorMessage || "Subscription initialization failed",
-          errorCode: result.errorCode,
+          error: result.reason || "Payment initialization failed",
         },
         { status: 400 },
       )
@@ -148,7 +140,7 @@ export async function POST(request: NextRequest) {
       user_id: user.id,
       plan_id: planId,
       token: result.token,
-      conversation_id: result.conversationId,
+      conversation_id: orderId,
       status: "pending",
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString(),
@@ -172,7 +164,7 @@ export async function POST(request: NextRequest) {
           city: billingInfo.city,
           district: billingInfo.district || null,
           postal_code: billingInfo.zipCode || "",
-          country: "Türkiye",
+          country: billingInfo.country || "Türkiye",
           tax_number: billingInfo.taxNumber || null,
           tax_office: billingInfo.taxOffice || null,
           identity_number: billingInfo.identityNumber || null,
@@ -186,13 +178,14 @@ export async function POST(request: NextRequest) {
       // Don't fail - subscription is more important
     }
 
+    // Return PayTR iframe URL
+    const iframeUrl = paytrClient.getIframeUrl(result.token)
 
-    // Return checkout form content
     return NextResponse.json({
       success: true,
       token: result.token,
-      checkoutFormContent: result.checkoutFormContent,
-      conversationId: result.conversationId,
+      iframeUrl: iframeUrl,
+      orderId: orderId,
     })
   } catch (error: any) {
     console.error("[subscription-checkout] Initialization error:", error)

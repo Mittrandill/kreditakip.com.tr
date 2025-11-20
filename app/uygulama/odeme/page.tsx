@@ -147,8 +147,8 @@ export default function PaymentPage() {
         throw new Error("Kullanıcı oturumu bulunamadı. Lütfen tekrar giriş yapın.")
       }
 
-      // Initialize PCI-DSS compliant checkout
-      const response = await fetch("/api/payment/checkout/initialize", {
+      // Initialize PayTR checkout
+      const response = await fetch("/api/subscription/checkout/initialize", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -177,34 +177,9 @@ export default function PaymentPage() {
         throw new Error(data.error || "Ödeme işlemi başlatılamadı")
       }
 
-      if (data.success && data.checkoutFormContent) {
-        // Move to step 2 and inject iyzico form
-        setCurrentStep(2)
-
-        // Wait for DOM to update
-        setTimeout(() => {
-          const checkoutContainer = document.getElementById("iyzipay-checkout-form")
-          if (checkoutContainer) {
-            checkoutContainer.innerHTML = data.checkoutFormContent
-
-            // Execute the scripts
-            const scripts = checkoutContainer.getElementsByTagName("script")
-            for (let i = 0; i < scripts.length; i++) {
-              const script = scripts[i]
-              const newScript = document.createElement("script")
-              if (script.src) {
-                newScript.src = script.src
-              } else {
-                newScript.textContent = script.textContent
-              }
-              document.body.appendChild(newScript)
-            }
-          }
-          setIsProcessing(false)
-        }, 100)
-      } else if (data.success && data.paymentPageUrl) {
-        // Fallback: Redirect to external page
-        window.location.href = data.paymentPageUrl
+      if (data.success && data.iframeUrl) {
+        // Redirect to PayTR iframe URL
+        window.location.href = data.iframeUrl
       } else {
         throw new Error(data.error || "Ödeme başlatılamadı")
       }
@@ -590,7 +565,7 @@ export default function PaymentPage() {
                   <div className="flex items-start gap-3">
                     <CheckCircle2 className="h-5 w-5 text-blue-600 dark:text-blue-400 mt-0.5" />
                     <div>
-                      <p className="font-medium text-blue-900 dark:text-blue-100">iyzico Güvencesi</p>
+                      <p className="font-medium text-blue-900 dark:text-blue-100">PayTR Güvencesi</p>
                       <p className="text-sm text-blue-700 dark:text-blue-300">
                         Sertifikalı güvenli ödeme altyapısı
                       </p>
@@ -624,19 +599,16 @@ export default function PaymentPage() {
                     Ödeme Bilgileri
                   </CardTitle>
                   <CardDescription>
-                    Kart bilgilerinizi Iyzico'nun güvenli sayfasında girin
+                    PayTR'nin güvenli ödeme sayfasına yönlendirileceksiniz
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
-                  {/* Iyzico Checkout Form - Embedded */}
-                  <div
-                    id="iyzipay-checkout-form"
-                    className="min-h-[400px] w-full"
-                  />
-
                   {isProcessing && (
                     <div className="flex items-center justify-center py-12">
                       <LoadingSpinner size="lg" />
+                      <p className="text-sm text-gray-500 dark:text-gray-400 mt-4">
+                        PayTR ödeme sayfasına yönlendiriliyorsunuz...
+                      </p>
                     </div>
                   )}
                 </CardContent>
@@ -694,7 +666,7 @@ export default function PaymentPage() {
                 <Shield className="h-5 w-5 text-emerald-600 dark:text-emerald-400" />
                 <AlertTitle className="text-emerald-900 dark:text-emerald-100">Güvenli Ödeme</AlertTitle>
                 <AlertDescription className="text-emerald-700 dark:text-emerald-300">
-                  Kart bilgileriniz Iyzico'nun PCI-DSS sertifikalı altyapısında işlenir.
+                  Kart bilgileriniz PayTR'nin PCI-DSS sertifikalı altyapısında işlenir.
                   Bilgileriniz hiçbir zaman sunucularımıza gelmez.
                 </AlertDescription>
               </Alert>
