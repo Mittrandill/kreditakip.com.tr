@@ -11,7 +11,8 @@
       "Bash(set -a)",
       "Bash(source:*)",
       "Bash(set:*)",
-      "Bash(rm:*)"
+      "Bash(rm:*)",
+      "Bash(npm install:*)"
     ],
     "deny": [],
     "ask": []

@@ -10,7 +10,6 @@ import { Input } from "@/components/ui/input"
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 import { PaginationModern } from "@/components/ui/pagination-modern"
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 import {
   AlertDialog,
   AlertDialogAction,
@@ -52,11 +51,7 @@ import { useToast } from "@/hooks/use-toast"
 import { LoadingSpinner } from "@/components/loading-screen"
 import { formatDistanceToNow, format } from "date-fns"
 import { tr } from "date-fns/locale"
-import {
-  Alert,
-  AlertDescription as ShadcnAlertDescription,
-  AlertTitle as ShadcnAlertTitle,
-} from "@/components/ui/alert"
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 import { ListChecks } from "lucide-react"
 import { useSubscription } from "@/hooks/use-subscription"
 import { AdBanner } from "@/components/ad-banner"
@@ -461,8 +456,8 @@ export default function RiskAnaliziPage() {
       {!initialDataLoading && !canAnalyze && (
         <Alert variant="destructive" className="shadow-md dark:bg-red-900/30 dark:border-red-700/50">
           <AlertTriangle className="h-4 w-4" />
-          <ShadcnAlertTitle className="dark:text-white">Eksik Bilgi</ShadcnAlertTitle>
-          <ShadcnAlertDescription className="dark:text-white/70">
+          <AlertTitle className="dark:text-white">Eksik Bilgi</AlertTitle>
+          <AlertDescription className="dark:text-white/70">
             {initialDataError || "Risk analizi için finansal profilinizde en azından aylık gelir bilgisi bulunmalıdır."}
             <Button
               variant="link"
@@ -471,7 +466,7 @@ export default function RiskAnaliziPage() {
             >
               Finansal bilgilerinizi güncellemek için tıklayın.
             </Button>
-          </ShadcnAlertDescription>
+          </AlertDescription>
         </Alert>
       )}
 
@@ -502,8 +497,8 @@ export default function RiskAnaliziPage() {
       {analysisError && !isAnalyzing && (
         <Alert variant="destructive" className="shadow-md dark:bg-red-900/30 dark:border-red-700/50">
           <AlertTriangle className="h-4 w-4" />
-          <ShadcnAlertTitle className="dark:text-white">Analiz Hatası</ShadcnAlertTitle>
-          <ShadcnAlertDescription className="dark:text-white/70">{analysisError}</ShadcnAlertDescription>
+          <AlertTitle className="dark:text-white">Analiz Hatası</AlertTitle>
+          <AlertDescription className="dark:text-white/70">{analysisError}</AlertDescription>
         </Alert>
       )}
 
