@@ -61,7 +61,7 @@ export function StructuredData() {
           "@id": "https://kreditakip.com.tr/#organization",
         },
         description:
-          "Kredi kartı ekstrenizi saniyeler içinde akıllı ödeme planına dönüştürün. OCR teknolojisi, yapay zeka destekli risk analizi ve detaylı finansal raporlama.",
+          "Kredi kartı ekstrenizi saniyeler içinde akıllı ödeme planına dönüştürün. OCR teknolojisi, yapay zeka destekli AI Finansal Sağlık Özeti ve detaylı finansal raporlama.",
         inLanguage: "tr-TR",
       },
       {
@@ -119,7 +119,7 @@ export function StructuredData() {
             name: "Ücretsiz plan ile neler yapabilirim?",
             acceptedAnswer: {
               "@type": "Answer",
-              text: "Ücretsiz plan ile aylık 1 adet OCR analizi yapabilir, temel kredi takibi özelliklerinden yararlanabilir ve ödeme planlarınızı yönetebilirsiniz. Premium plan ile sınırsız OCR analizi, gelişmiş risk analizi ve detaylı raporlama özelliklerine erişebilirsiniz.",
+              text: "Ücretsiz plan ile aylık 1 adet OCR analizi yapabilir, temel kredi takibi özelliklerinden yararlanabilir ve ödeme planlarınızı yönetebilirsiniz. Premium plan ile sınırsız OCR analizi, AI Finansal Sağlık Özeti ve detaylı raporlama özelliklerine erişebilirsiniz.",
             },
           },
           {

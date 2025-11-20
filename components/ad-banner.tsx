@@ -104,7 +104,7 @@ export function AdSidebar({ className = "" }: { className?: string }) {
           </div>
           <div className="flex items-center gap-2 text-sm text-purple-700 dark:text-purple-300">
             <div className="h-1.5 w-1.5 rounded-full bg-purple-600 dark:bg-purple-400"></div>
-            <span>Detaylı risk analizi</span>
+            <span>AI Finansal Sağlık Özeti</span>
           </div>
           <div className="flex items-center gap-2 text-sm text-purple-700 dark:text-purple-300">
             <div className="h-1.5 w-1.5 rounded-full bg-purple-600 dark:bg-purple-400"></div>

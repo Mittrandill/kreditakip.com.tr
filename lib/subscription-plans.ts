@@ -26,7 +26,7 @@ export const FALLBACK_PLANS: SubscriptionPlan[] = [
     periodLabel: "Aylık",
     features: [
       "Sınırsız OCR analizi",
-      "Detaylı risk analizi",
+      "AI Finansal Sağlık Özeti",
       "Gelişmiş raporlar",
       "Şifre yönetimi",
       "Reklamsız deneyim",
@@ -45,7 +45,7 @@ export const FALLBACK_PLANS: SubscriptionPlan[] = [
     popular: true,
     features: [
       "Sınırsız OCR analizi",
-      "Detaylı risk analizi",
+      "AI Finansal Sağlık Özeti",
       "Gelişmiş raporlar",
       "Şifre yönetimi",
       "Reklamsız deneyim",

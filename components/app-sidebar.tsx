@@ -90,7 +90,7 @@ const navItems: NavItem[] = [
   },
   {
     href: "/uygulama/risk-analizi",
-    label: "Risk Analizi",
+    label: "AI Finansal Sağlık Özeti",
     icon: ShieldCheck,
     gradient: "from-emerald-500 to-teal-600",
     hoverGradient: "from-emerald-600 to-teal-700",

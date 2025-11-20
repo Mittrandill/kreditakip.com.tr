@@ -42,7 +42,7 @@ export default function PricingPage() {
       description: "Tüm özelliklere sınırsız erişim",
       features: [
         "Sınırsız OCR analizi",
-        "Detaylı risk analizi",
+        "AI Finansal Sağlık Özeti",
         "Gelişmiş finansal raporlar",
         "PDF rapor indirme",
         "Bankacılık şifre yönetimi",
@@ -257,7 +257,7 @@ export default function PricingPage() {
                   <tbody className="text-white/80">
                     {[
                       ["OCR Analizi", "1/ay", "Sınırsız"],
-                      ["Risk Analizi", "❌", "✅"],
+                      ["AI Finansal Sağlık Özeti", "❌", "✅"],
                       ["Gelişmiş Raporlar", "❌", "✅"],
                       ["PDF Rapor İndirme", "❌", "✅"],
                       ["Şifre Yönetimi", "❌", "✅"],

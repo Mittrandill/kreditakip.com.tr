@@ -267,7 +267,7 @@ export default function RiskAnalysisDetailPage() {
           <Loader2 className="absolute inset-0 m-auto h-12 w-12 animate-spin text-emerald-600" />
         </div>
         <h2 className="text-2xl font-semibold text-gray-700 dark:text-white/70">
-          Detaylı Risk Analiziniz Hazırlanıyor...
+          Detaylı AI Finansal Sağlık Özetiniz Hazırlanıyor...
         </h2>
         <p className="text-gray-500 dark:text-white/60 max-w-md">
           Finansal verileriniz ve kredi bilgileriniz Gemini AI kullanılarak kapsamlı bir şekilde değerlendiriliyor. Bu
@@ -302,7 +302,7 @@ export default function RiskAnalysisDetailPage() {
         </Alert>
         <Button variant="outline" onClick={() => router.push("/uygulama/risk-analizi")}>
           <ArrowLeft className="h-4 w-4 mr-2" />
-          Risk Analizi Listesine Dön
+          AI Finansal Sağlık Özeti Listesine Dön
         </Button>
       </div>
     )
@@ -330,7 +330,7 @@ export default function RiskAnalysisDetailPage() {
                     {analysisData.overallRiskScore?.color === "yellow" && <ShieldAlert className="h-8 w-8" />}
                     {analysisData.overallRiskScore?.color === "red" && <ShieldAlert className="h-8 w-8" />}
                     {!analysisData.overallRiskScore?.color && <ShieldQuestion className="h-8 w-8" />}
-                    Risk Analizi Detayı
+                    AI Finansal Sağlık Özeti Detayı
                   </h1>
                 </div>
               </div>
@@ -1145,9 +1145,9 @@ export default function RiskAnalysisDetailPage() {
       <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Risk Analizini Sil</AlertDialogTitle>
+            <AlertDialogTitle>AI Finansal Sağlık Özetini Sil</AlertDialogTitle>
             <AlertDialogDescription>
-              Bu risk analizini silmek istediğinizden emin misiniz? Bu işlem geri alınamaz.
+              Bu AI Finansal Sağlık Özetini silmek istediğinizden emin misiniz? Bu işlem geri alınamaz.
               <div className="mt-3 p-3 bg-gray-100 dark:bg-black/10 rounded-lg text-sm">
                 <strong>Tarih:</strong> {new Date(analysis.created_at).toLocaleDateString("tr-TR")}
                 <br />

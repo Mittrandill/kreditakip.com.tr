@@ -155,7 +155,7 @@ export default function PaymentSuccessPage() {
               <p className="text-sm text-emerald-800 dark:text-emerald-200 flex items-start gap-2">
                 <CheckCircle2 className="h-5 w-5 mt-0.5 flex-shrink-0" />
                 <span>
-                  Artık tüm premium özelliklere sınırsız erişiminiz var! Sınırsız OCR analizi, detaylı risk analizi ve
+                  Artık tüm premium özelliklere sınırsız erişiminiz var! Sınırsız OCR analizi, AI Finansal Sağlık Özeti ve
                   daha fazlası sizleri bekliyor.
                 </span>
               </p>

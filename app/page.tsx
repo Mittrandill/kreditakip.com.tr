@@ -12,11 +12,11 @@ import type { Metadata } from "next"
 export const metadata: Metadata = {
   title: "Akıllı Kredi Yönetimi ve Ödeme Planlama",
   description:
-    "Kredi kartı ekstrenizi saniyeler içinde akıllı ödeme planına dönüştürün. OCR teknolojisi, yapay zeka destekli risk analizi ve detaylı finansal raporlama ile kredi yönetiminin geleceğini keşfedin. Ücretsiz başlayın!",
+    "Kredi ödeme planınızı saniyeler içinde akıllı ödeme planına dönüştürün. OCR teknolojisi, yapay zeka destekli AI Finansal Sağlık Özeti ve detaylı finansal raporlama ile kredi yönetiminin geleceğini keşfedin. Ücretsiz başlayın!",
   openGraph: {
     title: "Kredi Takip - Akıllı Kredi Yönetimi ve Ödeme Planlama",
     description:
-      "Kredi kartı ekstrenizi saniyeler içinde akıllı ödeme planına dönüştürün. OCR teknolojisi ve yapay zeka destekli finansal yönetim platformu.",
+      "Kredi ödeme planınızı saniyeler içinde akıllı ödeme planına dönüştürün. OCR teknolojisi ve yapay zeka destekli finansal yönetim platformu.",
     images: ["/financial-dashboard.png"],
   },
 }

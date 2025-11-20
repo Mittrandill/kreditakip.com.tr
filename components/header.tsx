@@ -69,7 +69,7 @@ const navItems = [
   { href: "/uygulama/sifrelerim", label: "Şifrelerim", icon: KeyRound },
   { href: "/uygulama/odeme-plani", label: "Ödeme Planı", icon: Calendar },
   { href: "/uygulama/raporlar", label: "Raporlar", icon: BarChart3 },
-  { href: "/uygulama/risk-analizi", label: "Risk Analizi", icon: ShieldCheck },
+  { href: "/uygulama/risk-analizi", label: "AI Finansal Sağlık Özeti", icon: ShieldCheck },
   { href: "/uygulama/premium", label: "Premium", icon: Crown },
   { href: "/uygulama/faturalandirma", label: "Faturalar", icon: Receipt },
 ]
@@ -132,7 +132,7 @@ const PAGE_INFO: Record<string, { title: string; description: string; parent?: s
     description: "Finansal durumunuzun detaylı analizi ve raporları",
   },
   "/uygulama/risk-analizi": {
-    title: "Risk Analizi",
+    title: "AI Finansal Sağlık Özeti",
     description: "Finansal risk değerlendirmeniz ve öneriler",
   },
   "/uygulama/bildirimler": {
@@ -311,9 +311,9 @@ export default function Header({ pageTitle }: HeaderProps) {
 
     if (pathname.includes("/risk-analizi/") && pathname !== "/uygulama/risk-analizi")
       return {
-        title: "Risk Analizi Detayı",
-        description: "Detaylı risk analizi sonuçları ve öneriler",
-        parent: "Risk Analizi",
+        title: "AI Finansal Sağlık Özeti Detayı",
+        description: "Detaylı finansal sağlık analizi sonuçları ve öneriler",
+        parent: "AI Finansal Sağlık Özeti",
       }
     if (pathname.includes("/pdf-odeme-plani/analiz/"))
       return {

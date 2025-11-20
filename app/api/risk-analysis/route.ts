@@ -147,7 +147,7 @@ export async function POST(request: NextRequest) {
             limitExceeded: true,
             planType: subscription?.plan_type || "free",
             upgradeMessage:
-              "Premium üyelik ile risk analizi ve tüm özelliklere sınırsız erişim sağlayabilirsiniz. Sadece 199₺/ay!",
+              "Premium üyelik ile AI Finansal Sağlık Özeti ve tüm özelliklere sınırsız erişim sağlayabilirsiniz. Sadece 199₺/ay!",
           },
           { status: 403 },
         )

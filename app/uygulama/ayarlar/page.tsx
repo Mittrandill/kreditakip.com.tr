@@ -1142,7 +1142,7 @@ export default function AyarlarPage() {
                 <Info className="h-5 w-5 text-sky-600 dark:text-sky-400" />
                 <AlertTitle className="text-sky-700 dark:text-sky-300">Bilgilendirme</AlertTitle>
                 <AlertDescription className="text-sky-600 dark:text-sky-400">
-                  Burada girdiğiniz finansal bilgiler, size özel risk analizi ve finansal öneriler sunmak amacıyla
+                  Burada girdiğiniz finansal bilgiler, size özel AI Finansal Sağlık Özeti ve finansal öneriler sunmak amacıyla
                   kullanılacaktır. Bilgileriniz gizli tutulur ve yalnızca uygulama içinde analiz amaçlı kullanılır.
                 </AlertDescription>
               </Alert>

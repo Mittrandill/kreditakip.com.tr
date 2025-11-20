@@ -27,7 +27,7 @@ export function UpgradePrompt({ open, onOpenChange, feature, usageInfo }: Upgrad
 
   const featureNames = {
     ocr: "OCR Analizi",
-    risk_analysis: "Risk Analizi",
+    risk_analysis: "AI Finansal Sağlık Özeti",
   }
 
   const featureDescriptions = {
@@ -69,7 +69,7 @@ export function UpgradePrompt({ open, onOpenChange, feature, usageInfo }: Upgrad
               </div>
               <div className="flex items-center gap-3">
                 <Sparkles className="h-5 w-5 text-emerald-600 dark:text-emerald-400" />
-                <span className="text-sm text-gray-700 dark:text-gray-300">Detaylı risk analizi</span>
+                <span className="text-sm text-gray-700 dark:text-gray-300">AI Finansal Sağlık Özeti</span>
               </div>
               <div className="flex items-center gap-3">
                 <Zap className="h-5 w-5 text-emerald-600 dark:text-emerald-400" />

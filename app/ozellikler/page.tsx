@@ -171,7 +171,7 @@ export default function FeaturesPage() {
                         <div className="w-2 h-2 bg-white rounded-full animate-pulse" />
                       </div>
                     </div>
-                    <h3 className="text-2xl font-bold text-white mb-4 text-center">Risk Analizi</h3>
+                    <h3 className="text-2xl font-bold text-white mb-4 text-center">AI Finansal Sağlık Özeti</h3>
                     <p className="text-white/70 text-center leading-relaxed mb-6">
                       Finansal durumunuzu detaylı analiz edin. Borç/gelir oranı, nakit akışı ve risk skorunuzu görün.
                     </p>

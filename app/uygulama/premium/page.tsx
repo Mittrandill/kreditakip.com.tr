@@ -346,7 +346,7 @@ export default function PremiumPage() {
             <div className="p-2 sm:p-3 bg-white/20 rounded-xl w-fit backdrop-blur-sm mb-2 sm:mb-3">
               <BarChart3 className="h-5 w-5 sm:h-6 sm:w-6 md:h-7 md:w-7 text-white" />
             </div>
-            <CardTitle className="text-white text-lg sm:text-xl mb-1 sm:mb-2">Risk Analizi</CardTitle>
+            <CardTitle className="text-white text-lg sm:text-xl mb-1 sm:mb-2">AI Finansal Sağlık Özeti</CardTitle>
             <CardDescription className="text-white/90 text-sm sm:text-base leading-relaxed">
               Finansal durumunuzu detaylı analiz edin ve öneriler alın
             </CardDescription>
@@ -396,7 +396,7 @@ export default function PremiumPage() {
             </div>
             <div className="bg-white/10 backdrop-blur-sm rounded-xl p-3 sm:p-5 border border-white/20">
               <div className="flex items-center justify-between mb-2 sm:mb-3 gap-2">
-                <span className="text-sm sm:text-base font-medium text-white">Risk Analizi</span>
+                <span className="text-sm sm:text-base font-medium text-white">AI Finansal Sağlık Özeti</span>
                 <Badge className="bg-white/20 text-white border-white/30 backdrop-blur-sm text-xs">
                   <Crown className="h-3 w-3 mr-1 flex-shrink-0" />
                   <span className="hidden sm:inline">Premium Özellik</span>

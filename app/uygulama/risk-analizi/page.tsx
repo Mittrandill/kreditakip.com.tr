@@ -152,7 +152,7 @@ export default function RiskAnaliziPage() {
             )
           }
         } catch (err) {
-          console.error("Risk Analizi - Başlangıç verileri alınırken hata:", err)
+          console.error("AI Finansal Sağlık Özeti - Başlangıç verileri alınırken hata:", err)
           if (isMounted) {
             setInitialDataError(
               err instanceof Error ? err.message : "Finansal bilgileriniz yüklenirken bir sorun oluştu.",
@@ -310,7 +310,7 @@ export default function RiskAnaliziPage() {
       }
 
       setAllPastAnalyses((prev) => [saved, ...prev.filter((p) => p.id !== saved.id)])
-      toast({ title: "Başarılı", description: "Kapsamlı risk analizi tamamlandı ve kaydedildi." })
+      toast({ title: "Başarılı", description: "Kapsamlı AI Finansal Sağlık Özeti tamamlandı ve kaydedildi." })
 
       setTimeout(() => {
         router.push(`/uygulama/risk-analizi/${saved.id}`)
@@ -409,7 +409,7 @@ export default function RiskAnaliziPage() {
             <div className="flex-1">
               <h1 className="text-3xl md:text-4xl font-bold mb-2 flex items-center gap-3">
                 <ShieldCheck className="h-8 w-8" />
-                Risk Analizi
+                AI Finansal Sağlık Özeti
               </h1>
               <p className="text-white/80 text-base md:text-lg mb-4">
                 Krediler ve hesaplarınızı dahil ederek tam finansal sağlık analizi
@@ -471,7 +471,7 @@ export default function RiskAnaliziPage() {
               <RefreshCw className="h-16 w-16 animate-spin text-emerald-600 dark:text-emerald-400" />
               <div className="space-y-2">
                 <h3 className="text-xl font-semibold text-gray-900 dark:text-white">
-                  Kapsamlı Risk Analizi Hazırlanıyor
+                  Kapsamlı AI Finansal Sağlık Özeti Hazırlanıyor
                 </h3>
                 <p className="text-gray-600 dark:text-white/70">{totalFinancialInstruments} kredi analiz ediliyor...</p>
               </div>
@@ -595,11 +595,11 @@ export default function RiskAnaliziPage() {
                       <History className="h-12 w-12 text-gray-400 dark:text-white/60" />
                     </div>
                     <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">
-                      {totalAnalysesCount === 0 ? "Henüz Risk Analizi Yok" : "Bu Filtreye Uygun Analiz Bulunamadı"}
+                      {totalAnalysesCount === 0 ? "Henüz AI Finansal Sağlık Özeti Yok" : "Bu Filtreye Uygun Analiz Bulunamadı"}
                     </h3>
                     <p className="text-gray-500 dark:text-white/60 mb-6 max-w-md mx-auto">
                       {totalAnalysesCount === 0
-                        ? "İlk risk analizinizi oluşturmak için yukarıdaki 'Kapsamlı Analizi Başlat' butonuna tıklayın."
+                        ? "İlk AI Finansal Sağlık Özetinizi oluşturmak için yukarıdaki 'Kapsamlı Analizi Başlat' butonuna tıklayın."
                         : "Farklı filtreler deneyebilir veya arama terimini değiştirebilirsiniz."}
                     </p>
                     {totalAnalysesCount === 0 && (
@@ -838,9 +838,9 @@ export default function RiskAnaliziPage() {
       <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Risk Analizini Sil</AlertDialogTitle>
+            <AlertDialogTitle>AI Finansal Sağlık Özetini Sil</AlertDialogTitle>
             <AlertDialogDescription>
-              Bu risk analizini silmek istediğinizden emin misiniz? Bu işlem geri alınamaz.
+              Bu AI Finansal Sağlık Özetini silmek istediğinizden emin misiniz? Bu işlem geri alınamaz.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>

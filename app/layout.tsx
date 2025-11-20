@@ -20,13 +20,13 @@ export const metadata: Metadata = {
     template: "%s | Kredi Takip",
   },
   description:
-    "Kredi kartı ekstrenizi saniyeler içinde akıllı ödeme planına dönüştürün. OCR teknolojisi, yapay zeka destekli risk analizi ve detaylı finansal raporlama ile kredi yönetiminin geleceğini keşfedin.",
+    "Kredi ödeme planınızı saniyeler içinde akıllı ödeme planına dönüştürün. OCR teknolojisi, yapay zeka destekli AI Finansal Sağlık Özeti ve detaylı finansal raporlama ile kredi yönetiminin geleceğini keşfedin.",
   keywords: [
     "kredi takip",
-    "kredi kartı yönetimi",
+    "kredi borç yönetimi",
     "ödeme planı",
     "OCR teknoloji",
-    "kredi kartı ekstresi",
+    "kredi ödeme planı",
     "borç yönetimi",
     "finansal planlama",
     "kredi analizi",
@@ -56,7 +56,7 @@ export const metadata: Metadata = {
     siteName: "Kredi Takip",
     title: "Kredi Takip - Akıllı Kredi Yönetimi ve Ödeme Planlama",
     description:
-      "Kredi kartı ekstrenizi saniyeler içinde akıllı ödeme planına dönüştürün. OCR teknolojisi ve yapay zeka destekli finansal yönetim platformu.",
+      "Kredi ödeme planınızı saniyeler içinde akıllı ödeme planına dönüştürün. OCR teknolojisi ve yapay zeka destekli finansal yönetim platformu.",
     images: [
       {
         url: "/logo.png",
