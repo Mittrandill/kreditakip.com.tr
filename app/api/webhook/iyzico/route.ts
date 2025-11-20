@@ -1,6 +1,7 @@
 import { type NextRequest, NextResponse } from "next/server"
 import { createClient } from "@supabase/supabase-js"
 import crypto from "crypto"
+import { rateLimit, getClientIp, RateLimits } from "@/lib/rate-limit"
 
 export const dynamic = "force-dynamic"
 export const runtime = "nodejs"
@@ -57,6 +58,31 @@ function verifyWebhookSignature(
  */
 export async function POST(request: NextRequest) {
   try {
+    // Rate limiting - prevent webhook spam attacks
+    const ip = getClientIp(request.headers)
+    const rateLimitResult = rateLimit({
+      identifier: `webhook-iyzico:${ip}`,
+      ...RateLimits.WEBHOOK
+    })
+
+    if (!rateLimitResult.success) {
+      return NextResponse.json(
+        {
+          error: "Too many webhook requests. Please slow down.",
+          retryAfter: rateLimitResult.reset
+        },
+        {
+          status: 429,
+          headers: {
+            'X-RateLimit-Limit': rateLimitResult.limit.toString(),
+            'X-RateLimit-Remaining': rateLimitResult.remaining.toString(),
+            'X-RateLimit-Reset': rateLimitResult.reset.toString(),
+            'Retry-After': rateLimitResult.reset.toString()
+          }
+        }
+      )
+    }
+
     // Get webhook payload
     const payload = await request.json()
 
@@ -78,6 +104,29 @@ export async function POST(request: NextRequest) {
         persistSession: false,
       },
     })
+
+    // IDEMPOTENCY CHECK: Prevent processing the same webhook multiple times
+    const idempotencyKey = payload.conversationId || payload.paymentId ||
+                          `${payload.subscriptionReferenceCode}-${payload.iyziEventType}-${Date.now()}`
+
+    // Check if webhook was already processed
+    const { data: existingWebhook } = await supabase
+      .from("webhook_logs")
+      .select("id, status")
+      .eq("subscription_reference", payload.subscriptionReferenceCode)
+      .eq("event_type", payload.iyziEventType || "unknown")
+      .or(`payload->>conversationId.eq.${payload.conversationId},payload->>paymentId.eq.${payload.paymentId}`)
+      .eq("status", "processed")
+      .maybeSingle()
+
+    if (existingWebhook) {
+      console.log("[iyzico-webhook] Webhook already processed (idempotent):", idempotencyKey)
+      return NextResponse.json({
+        success: true,
+        message: "Webhook already processed",
+        idempotent: true
+      })
+    }
 
     // Log webhook to database
     const { error: logError } = await supabase.from("webhook_logs").insert({

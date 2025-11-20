@@ -172,5 +172,23 @@ export const RateLimits = {
   NEWSLETTER: {
     limit: 5,
     windowSeconds: 24 * 60 * 60
+  },
+
+  /**
+   * Rate limit for payment initialization
+   * 5 requests per minute per IP (prevent card testing attacks)
+   */
+  PAYMENT_INIT: {
+    limit: 5,
+    windowSeconds: 60
+  },
+
+  /**
+   * Rate limit for webhook endpoints
+   * 100 requests per minute per IP (allow legitimate retries)
+   */
+  WEBHOOK: {
+    limit: 100,
+    windowSeconds: 60
   }
 }

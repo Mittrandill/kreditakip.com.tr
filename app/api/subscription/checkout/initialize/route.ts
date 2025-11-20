@@ -2,6 +2,7 @@ import { type NextRequest, NextResponse } from "next/server"
 import { IyzipaySubscriptionClient } from "@/lib/iyzipay-client"
 import { createServerClient } from "@/lib/supabase/server"
 import { createClient } from "@supabase/supabase-js"
+import { rateLimit, getClientIp, RateLimits } from "@/lib/rate-limit"
 
 export const dynamic = "force-dynamic"
 export const runtime = "nodejs"
@@ -13,6 +14,30 @@ export const runtime = "nodejs"
  */
 export async function POST(request: NextRequest) {
   try {
+    // Rate limiting - prevent card testing attacks
+    const ip = getClientIp(request.headers)
+    const rateLimitResult = rateLimit({
+      identifier: `payment-init:${ip}`,
+      ...RateLimits.PAYMENT_INIT
+    })
+
+    if (!rateLimitResult.success) {
+      return NextResponse.json(
+        {
+          error: "Too many payment requests. Please try again later.",
+          retryAfter: rateLimitResult.reset
+        },
+        {
+          status: 429,
+          headers: {
+            'X-RateLimit-Limit': rateLimitResult.limit.toString(),
+            'X-RateLimit-Remaining': rateLimitResult.remaining.toString(),
+            'X-RateLimit-Reset': rateLimitResult.reset.toString(),
+            'Retry-After': rateLimitResult.reset.toString()
+          }
+        }
+      )
+    }
 
     // Authenticate user
     const supabase = await createServerClient()
