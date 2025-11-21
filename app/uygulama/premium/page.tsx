@@ -181,7 +181,7 @@ export default function PremiumPage() {
                   <div className="p-1 bg-red-100 dark:bg-red-900/30 rounded-full">
                     <X className="h-4 w-4 text-red-600 dark:text-red-400" />
                   </div>
-                  <span className="text-sm text-gray-500 dark:text-white/60">Risk analizi yok</span>
+                  <span className="text-sm text-gray-500 dark:text-white/60">Finansal sağlık analizi yok</span>
                 </div>
                 <div className="flex items-start gap-3">
                   <div className="p-1 bg-emerald-100 dark:bg-emerald-900/30 rounded-full">

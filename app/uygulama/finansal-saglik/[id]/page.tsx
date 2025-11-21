@@ -203,7 +203,7 @@ export default function RiskAnalysisDetailPage() {
     if (!authLoading && userId && params.id) {
       fetchAnalysis()
     } else if (!authLoading && !userId) {
-      setError("Risk analizi detaylarını görüntülemek için lütfen giriş yapın.")
+      setError("Finansal sağlık analizi detaylarını görüntülemek için lütfen giriş yapın.")
       setLoading(false)
     }
   }, [authLoading, userId, params.id])
@@ -216,7 +216,7 @@ export default function RiskAnalysisDetailPage() {
     try {
       const data = await getRiskAnalysisById(params.id as string, userId)
       if (!data) {
-        setError("Risk analizi bulunamadı.")
+        setError("Finansal sağlık analizi bulunamadı.")
         setAnalysis(null)
         setAnalysisData(null)
         return
@@ -226,8 +226,8 @@ export default function RiskAnalysisDetailPage() {
       const parsedAnalysisData = data.analysis_data as RiskAnalysisData
       setAnalysisData(parsedAnalysisData)
     } catch (err: any) {
-      console.error("Risk analizi getirilirken hata:", err)
-      setError("Risk analizi yüklenirken bir sorun oluştu.")
+      console.error("Finansal sağlık analizi getirilirken hata:", err)
+      setError("Finansal sağlık analizi yüklenirken bir sorun oluştu.")
       setAnalysis(null)
       setAnalysisData(null)
     } finally {
@@ -243,14 +243,14 @@ export default function RiskAnalysisDetailPage() {
       await deleteRiskAnalysis(analysis.id, user.id)
       toast({
         title: "Başarılı",
-        description: "Risk analizi başarıyla silindi.",
+        description: "Finansal sağlık analizi başarıyla silindi.",
       })
       router.push("/uygulama/finansal-saglik")
     } catch (err: any) {
-      console.error("Risk analizi silinirken hata:", err)
+      console.error("Finansal sağlık analizi silinirken hata:", err)
       toast({
         title: "Hata",
-        description: "Risk analizi silinirken bir sorun oluştu.",
+        description: "Finansal sağlık analizi silinirken bir sorun oluştu.",
         variant: "destructive",
       })
     } finally {
@@ -283,7 +283,7 @@ export default function RiskAnalysisDetailPage() {
         <Alert variant="destructive" className="max-w-md shadow-lg">
           <AlertTriangle className="h-5 w-5" />
           <AlertTitle className="text-lg font-semibold">Erişim Reddedildi</AlertTitle>
-          <AlertDescription>Risk analizi detaylarını görüntülemek için lütfen giriş yapın.</AlertDescription>
+          <AlertDescription>Finansal sağlık analizi detaylarını görüntülemek için lütfen giriş yapın.</AlertDescription>
           <Button onClick={() => router.push("/giris")} className="mt-4 w-full">
             Giriş Yap
           </Button>
@@ -298,7 +298,7 @@ export default function RiskAnalysisDetailPage() {
         <Alert variant="destructive" className="shadow-md">
           <AlertTriangle className="h-4 w-4" />
           <AlertTitle>Hata</AlertTitle>
-          <AlertDescription>{error || "Risk analizi verileri yüklenemedi veya bulunamadı."}</AlertDescription>
+          <AlertDescription>{error || "Finansal sağlık analizi verileri yüklenemedi veya bulunamadı."}</AlertDescription>
         </Alert>
         <Button variant="outline" onClick={() => router.push("/uygulama/finansal-saglik")}>
           <ArrowLeft className="h-4 w-4 mr-2" />
@@ -310,16 +310,6 @@ export default function RiskAnalysisDetailPage() {
 
   return (
     <div className="flex flex-col gap-8 p-4 md:p-6">
-      {/* Finansal Danışmanlık Uyarısı */}
-      <Alert className="bg-yellow-500/10 border-yellow-500/30">
-        <AlertTriangle className="h-4 w-4 text-yellow-500" />
-        <AlertTitle className="text-yellow-600 dark:text-yellow-500 font-bold">Finansal Danışmanlık Değildir</AlertTitle>
-        <AlertDescription className="text-yellow-700 dark:text-yellow-400">
-          Bu analiz otomatik AI tarafından üretilmiştir ve finansal tavsiye niteliği taşımaz. Önemli kararlar almadan
-          önce lisanslı bir finansal danışmana danışın.
-        </AlertDescription>
-      </Alert>
-
       {/* Hero Section */}
       <Card className="bg-gradient-to-br from-emerald-600 via-teal-600 to-emerald-700 dark:from-emerald-700 dark:via-teal-700 dark:to-emerald-800 text-white border-0 shadow-2xl">
         <CardContent className="p-6 md:p-8">
@@ -1150,6 +1140,16 @@ export default function RiskAnalysisDetailPage() {
           </TabsContent>
         </Tabs>
       </div>
+
+      {/* Finansal Danışmanlık Uyarısı - Tablonun Altında */}
+      <Alert className="bg-yellow-500/10 border-yellow-500/30">
+        <AlertTriangle className="h-4 w-4 text-yellow-500" />
+        <AlertTitle className="text-yellow-600 dark:text-yellow-500 font-bold">Finansal Danışmanlık Değildir</AlertTitle>
+        <AlertDescription className="text-yellow-700 dark:text-yellow-400">
+          Bu analiz otomatik AI tarafından üretilmiştir ve finansal tavsiye niteliği taşımaz. Önemli kararlar almadan
+          önce lisanslı bir finansal danışmana danışın.
+        </AlertDescription>
+      </Alert>
 
       {/* Delete Confirmation Dialog */}
       <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>

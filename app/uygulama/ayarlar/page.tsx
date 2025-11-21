@@ -863,7 +863,7 @@ export default function AyarlarPage() {
                     Finansal Bilgiler
                   </CardTitle>
                   <CardDescription className="dark:text-white/60">
-                    Risk analizi ve finansal planlama için bilgilerinizi girin.
+                    Finansal sağlık analizi ve finansal planlama için bilgilerinizi girin.
                   </CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-6">

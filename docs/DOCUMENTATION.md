@@ -20,7 +20,7 @@
 ### Ana Hedefler
 - Kredi yönetimini basitleştirmek
 - Ödeme takibini otomatikleştirmek
-- Finansal risk analizi sağlamak
+- Finansal finansal sağlık analizi sağlamak
 - PDF ekstreleri OCR ile otomatik okuma
 - Yapay zeka destekli finansal öneriler
 
@@ -153,7 +153,7 @@
 - ✅ Sınırsız kredi ekleme
 - ✅ Gelişmiş raporlar
 - ✅ Refinansman analizi
-- ✅ Risk analizi
+- ✅ Finansal sağlık analizi
 - ✅ PDF rapor indirme
 
 ### 8. Kullanıcı Yönetimi
@@ -394,7 +394,7 @@ Blog sistemi
 
 #### 11. `risk_scores`
 Risk skorları
-- Kredi risk analizi verileri
+- Kredi finansal sağlık analizi verileri
 
 ---
 
@@ -422,7 +422,7 @@ Risk skorları
 - `POST /api/analyze-pdf` - PDF analiz et
 
 ### Risk Analysis
-- `POST /api/risk-analysis` - Risk analizi yap
+- `POST /api/risk-analysis` - Finansal sağlık analizi yap
 - `GET /api/risk-analysis/:id` - Risk raporu getir
 
 ### Refinancing

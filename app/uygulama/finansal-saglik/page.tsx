@@ -144,7 +144,7 @@ export default function FinansalSaglikPage() {
 
           if (!profileData || profileData.monthly_income === null || profileData.monthly_income === undefined || profileData.monthly_income === 0) {
             setInitialDataError(
-              "Risk analizi için finansal profilinizde en azından aylık gelir bilgisi bulunmalıdır. Lütfen Ayarlar > Finansal bölümünden bilgilerinizi güncelleyin.",
+              "Finansal sağlık analizi için finansal profilinizde en azından aylık gelir bilgisi bulunmalıdır. Lütfen Ayarlar > Finansal bölümünden bilgilerinizi güncelleyin.",
             )
           }
         } catch (err) {
@@ -302,7 +302,7 @@ export default function FinansalSaglikPage() {
       const saved = await saveRiskAnalysis(userId, responseData, financialProfile, credits)
 
       if (!saved || !saved.id) {
-        throw new Error("Risk analizi kaydedildi ancak ID alınamadı")
+        throw new Error("Finansal sağlık analizi kaydedildi ancak ID alınamadı")
       }
 
       setAllPastAnalyses((prev) => [saved, ...prev.filter((p) => p.id !== saved.id)])
@@ -313,8 +313,8 @@ export default function FinansalSaglikPage() {
       }, 500)
     } catch (err: any) {
       clearInterval(progressInterval)
-      console.error("Risk analizi hatası:", err)
-      setAnalysisError(err.message || "Risk analizi oluşturulurken bir hata oluştu.")
+      console.error("Finansal sağlık analizi hatası:", err)
+      setAnalysisError(err.message || "Finansal sağlık analizi oluşturulurken bir hata oluştu.")
     } finally {
       setTimeout(() => {
         setIsAnalyzing(false)
@@ -329,7 +329,7 @@ export default function FinansalSaglikPage() {
     try {
       await deleteRiskAnalysis(analysisToDelete.id, userId)
       setAllPastAnalyses((prev) => prev.filter((a) => a.id !== analysisToDelete!.id))
-      toast({ title: "Başarılı", description: "Risk analizi silindi." })
+      toast({ title: "Başarılı", description: "Finansal sağlık analizi silindi." })
     } catch (err) {
       console.error("Analiz silme hatası:", err)
       toast({ title: "Hata", description: "Analiz silinirken bir sorun oluştu.", variant: "destructive" })
@@ -448,7 +448,7 @@ export default function FinansalSaglikPage() {
           <AlertTriangle className="h-4 w-4" />
           <AlertTitle className="dark:text-white">Eksik Bilgi</AlertTitle>
           <AlertDescription className="dark:text-white/70">
-            {initialDataError || "Risk analizi için finansal profilinizde en azından aylık gelir bilgisi bulunmalıdır."}
+            {initialDataError || "Finansal sağlık analizi için finansal profilinizde en azından aylık gelir bilgisi bulunmalıdır."}
             <Button
               variant="link"
               className="p-0 h-auto ml-1 text-red-700 dark:text-red-400 underline"

@@ -31,6 +31,11 @@ const nextConfig = {
   compress: true,
   // Enable React strict mode for better development experience
   reactStrictMode: true,
+  // Fix Jest worker crash
+  experimental: {
+    workerThreads: false,
+    cpus: 1
+  }
 }
 
 export default nextConfig

@@ -86,7 +86,7 @@ export function StructuredData() {
           "OCR ile otomatik kredi planı okuma",
           "Yapay zeka destekli ödeme planı oluşturma",
           "Çoklu banka desteği",
-          "Risk analizi ve finansal öneriler",
+          "Finansal sağlık analizi ve finansal öneriler",
           "Detaylı raporlama ve istatistikler",
           "Mobil uyumlu tasarım",
           "Güvenli veri şifreleme",

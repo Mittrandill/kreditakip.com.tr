@@ -1773,7 +1773,7 @@ export default function OdemePlaniPage() {
         try {
           setLoading(true)
           const [paymentsData, creditsData] = await Promise.all([
-            getAllPayments(user.id, 12, 12), // 12 ay geçmiş + 12 ay gelecek
+            getAllPayments(user.id, 999, 999), // Tüm taksitler - 999 = tarih filtresi yok
             getUserCredits(user.id),
           ])
           setAllPayments(paymentsData || [])

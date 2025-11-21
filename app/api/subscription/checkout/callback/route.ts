@@ -242,8 +242,8 @@ export async function POST(request: NextRequest) {
         console.error("[paytr-callback] Failed to create transaction record:", txError)
       }
 
-      // Create invoice
-      const invoiceNumber = `INV-${new Date().toISOString().split("T")[0].replace(/-/g, "")}-${newSubscription.id.slice(0, 8).toUpperCase()}`
+      // Create invoice with unique number using merchant_oid (always unique)
+      const invoiceNumber = `INV-${merchant_oid}`
       const { error: invoiceError } = await supabase.from("invoices").insert({
         user_id: userId,
         subscription_id: newSubscription.id,
@@ -261,8 +261,34 @@ export async function POST(request: NextRequest) {
         console.error("[paytr-callback] Failed to create invoice:", invoiceError)
       }
 
+      // DEBUG: Kart saklama parametrelerini logla
+      console.log("[DEBUG] PayTR Callback Card Storage Check:")
+      console.log("  - utoken received:", utoken ? "YES" : "NO", utoken ? `(${utoken})` : "")
+      console.log("  - ctoken received:", ctoken ? "YES" : "NO", ctoken ? `(${ctoken})` : "")
+      console.log("  - last_4:", last4)
+      console.log("  - card_brand:", cardBrand)
+      console.log("  - card_bank:", cardBank)
+      console.log("  - require_cvv:", requireCvv)
+      console.log("  - All callback form params:", {
+        merchant_oid,
+        status,
+        utoken,
+        ctoken,
+        last4,
+        cardMonth,
+        cardYear,
+        cardBank,
+        cardName,
+        cardBrand,
+        cardType,
+        cardSchema,
+        businessCard,
+        requireCvv
+      })
+
       // Kart saklama bilgilerini kaydet (CAPI)
       if (utoken && ctoken) {
+        console.log("[paytr-callback] Card storage tokens received, saving to database...")
         // Önce paytr_user_tokens tablosuna utoken'ı kaydet/güncelle
         const { error: utokenError } = await supabase
           .from("paytr_user_tokens")
@@ -340,6 +366,15 @@ export async function POST(request: NextRequest) {
         } else {
           console.log("[paytr-callback] Recurring payment record created for user:", userId)
         }
+      } else {
+        // Token bilgileri gelmedi - kart saklanamadı
+        console.warn("[paytr-callback] ⚠️ Card storage tokens NOT received from PayTR")
+        console.warn("  Possible reasons:")
+        console.warn("  1. 'Kartımı güvenli bir şekilde sakla' checkbox was not checked")
+        console.warn("  2. PayTR CAPI feature is not enabled for this merchant account")
+        console.warn("  3. PayTR test mode does not support card storage")
+        console.warn("  4. Check PayTR panel settings for CAPI activation")
+        console.warn("  → Contact PayTR support to enable CAPI (Card Storage) feature")
       }
 
       // Send subscription notification email

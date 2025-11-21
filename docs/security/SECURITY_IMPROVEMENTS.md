@@ -360,7 +360,7 @@ Detaylı test talimatları için: [`tests/manual-test-checklist.md`](tests/manua
 - [ ] **Rate Limiting:** 11. OCR isteğinde 429 hatası
 - [ ] **Veri İndirme:** `/api/user/export-data` JSON indiriyor
 - [ ] **Hesap Silme:** `/api/user/delete-account` tüm verileri siliyor
-- [ ] **Uyarı Banner:** Risk analizi sayfasında sarı uyarı görünüyor
+- [ ] **Uyarı Banner:** Finansal sağlık analizi sayfasında sarı uyarı görünüyor
 - [ ] **Feragatname:** Kullanım şartlarında bölüm 2.1 mevcut
 - [ ] **Pre-commit:** .env.local commit engellenmiş
 - [ ] **PCI-DSS:** Eski payment endpoint'leri 404 dönüyor
@@ -403,7 +403,7 @@ Detaylı test talimatları için: [`tests/manual-test-checklist.md`](tests/manua
   - [ ] `/api/user/delete-account` çalışıyor mu?
 
 - [ ] **UI Test**
-  - [ ] Risk analizi sayfasında uyarı banner var mı?
+  - [ ] Finansal sağlık analizi sayfasında uyarı banner var mı?
   - [ ] Kullanım şartlarında feragatname var mı?
 
 - [ ] **Security Headers**

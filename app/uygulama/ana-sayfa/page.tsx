@@ -13,7 +13,7 @@ import { formatCurrency, formatPercent } from "@/lib/format"
 import Link from "next/link"
 import { useAuth } from "@/hooks/use-auth"
 import { getCredits } from "@/lib/api/credits"
-import { getUpcomingPayments } from "@/lib/api/payments"
+import { getUpcomingPayments, getAllPayments } from "@/lib/api/payments"
 import {
   Home,
   Settings,
@@ -112,6 +112,7 @@ export default function DashboardPage() {
   const [upcomingPaymentsFilter, setUpcomingPaymentsFilter] = useState<'week' | 'month' | 'all'>('week')
 
   // Grafik state'leri
+  const [monthlyTrendData, setMonthlyTrendData] = useState<Array<{month: string, odeme: number, hedef: number}>>([])
 
   useEffect(() => {
     let isMounted = true
@@ -135,9 +136,10 @@ export default function DashboardPage() {
             // Bildirim hatası ana veri yüklemeyi engellemez
           }
 
-          const [creditsData, upcomingPaymentsData] = await Promise.all([
+          const [creditsData, upcomingPaymentsData, allPaymentsData] = await Promise.all([
             getCredits(user.id) as Promise<any[]>,
             getUpcomingPayments(user.id, 30) as Promise<any[]>,
+            getAllPayments(user.id, 12, 3) as Promise<any[]>, // 12 ay geriye, 3 ay ileriye - trend için yeterli
           ])
 
           if (isMounted) {
@@ -187,9 +189,46 @@ export default function DashboardPage() {
             const thisMonthTotal = thisMonthPayments.reduce((sum, p) => sum + p.total_payment, 0)
             setThisMonthPayment(thisMonthTotal)
 
-            // Line Chart verisi - Finansal trend
+            // Aylık Ödeme Trendi Hesaplama - Gerçek verilerden
+            const monthNames = ["Oca", "Şub", "Mar", "Nis", "May", "Haz", "Tem", "Ağu", "Eyl", "Eki", "Kas", "Ara"]
+            const currentDate = new Date()
+            const monthsToShow = trendPeriod === '6months' ? 6 : 12
 
-            // Bar Chart verisi - Nakit akış
+            const monthlyData = Array.from({ length: monthsToShow }, (_, i) => {
+              const targetDate = new Date(currentDate.getFullYear(), currentDate.getMonth() - (monthsToShow - 1 - i), 1)
+              const monthIndex = targetDate.getMonth()
+              const year = targetDate.getFullYear()
+
+              // O ay içindeki ödemeler
+              const monthPayments = (allPaymentsData || []).filter((p: any) => {
+                const paymentDate = new Date(p.due_date)
+                return paymentDate.getMonth() === monthIndex && paymentDate.getFullYear() === year
+              })
+
+              // O ay için toplam ödeme
+              const monthTotal = monthPayments.reduce((sum: number, p: any) => sum + (p.total_payment || 0), 0)
+
+              // Hedef hesaplama: O ay içinde aktif olan kredilerin aylık ödemelerinin toplamı
+              // Bir kredi o ay içinde ödeme tarihi varsa, o kredi o ay aktifti
+              const activeCreditsInMonth = monthPayments
+                .filter((p: any) => p.status === "pending" || p.status === "paid" || p.status === "overdue")
+                .map((p: any) => p.credits?.id)
+                .filter((id: string, index: number, self: string[]) => self.indexOf(id) === index) // Unique credit IDs
+
+              // Bu kredilerin aylık ödemelerini topla
+              const monthTarget = activeCreditsInMonth.reduce((sum: number, creditId: string) => {
+                const credit = allCredits.find((c) => c.id === creditId)
+                return sum + (credit?.monthly_payment || 0)
+              }, 0)
+
+              return {
+                month: monthNames[monthIndex],
+                odeme: monthTotal,
+                hedef: monthTarget // O ay için aktif kredilerin toplam aylık ödemesi
+              }
+            })
+
+            setMonthlyTrendData(monthlyData)
           }
         } catch (err) {
           console.error("Dashboard data fetch error:", err)
@@ -211,7 +250,7 @@ export default function DashboardPage() {
     return () => {
       isMounted = false
     }
-  }, [user, authLoading])
+  }, [user, authLoading, trendPeriod])
 
   // Removed chart-related helper functions (getBankColor, getColorForCreditType)
 
@@ -545,33 +584,7 @@ export default function DashboardPage() {
         </CardHeader>
         <CardContent className="pt-6">
           <ResponsiveContainer width="100%" height={300}>
-            <AreaChart
-              data={
-                trendPeriod === '6months'
-                  ? [
-                      { month: "Haz", odeme: monthlyPayment * 0.85, hedef: monthlyPayment },
-                      { month: "Tem", odeme: monthlyPayment * 0.92, hedef: monthlyPayment },
-                      { month: "Ağu", odeme: monthlyPayment * 0.88, hedef: monthlyPayment },
-                      { month: "Eyl", odeme: monthlyPayment * 0.95, hedef: monthlyPayment },
-                      { month: "Eki", odeme: monthlyPayment * 1.02, hedef: monthlyPayment },
-                      { month: "Kas", odeme: monthlyPayment, hedef: monthlyPayment },
-                    ]
-                  : [
-                      { month: "Oca", odeme: monthlyPayment * 0.80, hedef: monthlyPayment },
-                      { month: "Şub", odeme: monthlyPayment * 0.83, hedef: monthlyPayment },
-                      { month: "Mar", odeme: monthlyPayment * 0.86, hedef: monthlyPayment },
-                      { month: "Nis", odeme: monthlyPayment * 0.82, hedef: monthlyPayment },
-                      { month: "May", odeme: monthlyPayment * 0.89, hedef: monthlyPayment },
-                      { month: "Haz", odeme: monthlyPayment * 0.85, hedef: monthlyPayment },
-                      { month: "Tem", odeme: monthlyPayment * 0.92, hedef: monthlyPayment },
-                      { month: "Ağu", odeme: monthlyPayment * 0.88, hedef: monthlyPayment },
-                      { month: "Eyl", odeme: monthlyPayment * 0.95, hedef: monthlyPayment },
-                      { month: "Eki", odeme: monthlyPayment * 1.02, hedef: monthlyPayment },
-                      { month: "Kas", odeme: monthlyPayment, hedef: monthlyPayment },
-                      { month: "Ara", odeme: monthlyPayment * 0.97, hedef: monthlyPayment },
-                    ]
-              }
-            >
+            <AreaChart data={monthlyTrendData.length > 0 ? monthlyTrendData : [{ month: "Veri Yok", odeme: 0, hedef: 0 }]}>
               <defs>
                 <linearGradient id="colorOdeme" x1="0" y1="0" x2="0" y2="1">
                   <stop offset="5%" stopColor="#14B8A6" stopOpacity={0.8} />

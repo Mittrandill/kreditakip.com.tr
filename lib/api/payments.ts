@@ -85,14 +85,8 @@ export async function getUpcomingPayments(userId: string, days = 30) {
 }
 
 // Yeni fonksiyon: Tüm ödemeleri çek (geçmiş + gelecek)
-export async function getAllPayments(userId: string, monthsBack = 12, monthsForward = 12) {
-  const pastDate = new Date()
-  pastDate.setMonth(pastDate.getMonth() - monthsBack)
-
-  const futureDate = new Date()
-  futureDate.setMonth(futureDate.getMonth() + monthsForward)
-
-  const { data, error } = await supabase
+export async function getAllPayments(userId: string, monthsBack: number | null = 12, monthsForward: number | null = 12) {
+  let query = supabase
     .from("payment_plans")
     .select(`
       *,
@@ -108,9 +102,21 @@ export async function getAllPayments(userId: string, monthsBack = 12, monthsForw
       )
     `)
     .eq("credits.user_id", userId)
-    .gte("due_date", pastDate.toISOString().split("T")[0])
-    .lte("due_date", futureDate.toISOString().split("T")[0])
-    .order("due_date")
+
+  // Tarih filtreleme - null ise tüm kayıtları al
+  if (monthsBack !== null && monthsBack !== 999) {
+    const pastDate = new Date()
+    pastDate.setMonth(pastDate.getMonth() - monthsBack)
+    query = query.gte("due_date", pastDate.toISOString().split("T")[0])
+  }
+
+  if (monthsForward !== null && monthsForward !== 999) {
+    const futureDate = new Date()
+    futureDate.setMonth(futureDate.getMonth() + monthsForward)
+    query = query.lte("due_date", futureDate.toISOString().split("T")[0])
+  }
+
+  const { data, error } = await query.order("due_date")
 
   if (error) {
     throw error

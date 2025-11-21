@@ -72,7 +72,7 @@ export default function RaporlarPage() {
         setLoading(true)
         const [creditsData, paymentsData] = await Promise.all([
           getCredits(user.id),
-          getAllPayments(user.id, 12, 12),
+          getAllPayments(user.id, 999, 999), // Tüm taksitler - bitiş tarihi hesabı için
         ])
         setCredits((creditsData as PopulatedCredit[]) || [])
         setPayments((paymentsData as PaymentWithCredit[]) || [])
@@ -129,12 +129,43 @@ export default function RaporlarPage() {
     }))
     .sort((a, b) => b.faiz - a.faiz)
 
+  // Direkt en yüksek ve en düşük faizli kredileri bul (banka gözetmeksizin)
+  const highestInterestCredit = filteredCredits.length > 0
+    ? filteredCredits.reduce((max, credit) =>
+        (credit.interest_rate || 0) > (max.interest_rate || 0) ? credit : max
+      )
+    : null
+
+  const lowestInterestCredit = filteredCredits.length > 0
+    ? filteredCredits.reduce((min, credit) =>
+        (credit.interest_rate || 0) < (min.interest_rate || 0) ? credit : min
+      )
+    : null
+
   // Toplam istatistikler
   const totalDebt = filteredCredits.reduce((sum, c) => sum + (c.remaining_debt || 0), 0)
   const totalMonthly = filteredCredits.filter((c) => c.status === "active").reduce((sum, c) => sum + (c.monthly_payment || 0), 0)
   const avgProgress = filteredCredits.length > 0
     ? filteredCredits.reduce((sum, c) => sum + (c.payment_progress || 0), 0) / filteredCredits.length
     : 0
+
+  // Gerçek aylık ödeme hesaplama - sadece bu ayın taksitleri
+  const currentMonth = new Date().getMonth()
+  const currentYear = new Date().getFullYear()
+  const thisMonthPayments = payments.filter((p) => {
+    const paymentDate = new Date(p.due_date)
+    return paymentDate.getMonth() === currentMonth && paymentDate.getFullYear() === currentYear && p.status === "pending"
+  })
+  const realMonthlyPayment = thisMonthPayments.reduce((sum, p) => sum + (p.total_payment || 0), 0)
+
+  // Ödemelerin bitiş tarihi - En son tarihli taksit
+  const lastPaymentDate = payments.length > 0
+    ? payments.reduce((latest, p) => {
+        const pDate = new Date(p.due_date)
+        const latestDate = new Date(latest)
+        return pDate > latestDate ? p.due_date : latest
+      }, payments[0].due_date)
+    : null
 
   // Unique banks for filter
   const uniqueBanks = Array.from(new Set(credits.map(c => c.banks?.name).filter(Boolean))) as string[]
@@ -159,8 +190,8 @@ export default function RaporlarPage() {
                   <p className="text-xl sm:text-2xl font-bold">{formatCurrency(totalDebt)}</p>
                 </div>
                 <div>
-                  <p className="text-white/70 text-xs sm:text-sm mb-1">Aylık Ödeme</p>
-                  <p className="text-xl sm:text-2xl font-bold">{formatCurrency(totalMonthly)}</p>
+                  <p className="text-white/70 text-xs sm:text-sm mb-1">Bu Ay Ödeme</p>
+                  <p className="text-xl sm:text-2xl font-bold">{formatCurrency(realMonthlyPayment)}</p>
                 </div>
                 <div>
                   <p className="text-white/70 text-xs sm:text-sm mb-1">Ort. İlerleme</p>
@@ -353,8 +384,8 @@ export default function RaporlarPage() {
           <CardContent className="p-6">
             <div className="flex items-start justify-between mb-4">
               <div>
-                <h3 className="text-3xl font-bold text-gray-900 dark:text-white mb-1">{filteredCredits.length}</h3>
-                <p className="text-sm text-emerald-600 dark:text-emerald-400">Toplam Kredi</p>
+                <h3 className="text-3xl font-bold text-gray-900 dark:text-white mb-1">{filteredCredits.filter(c => c.status === "active").length}</h3>
+                <p className="text-sm text-emerald-600 dark:text-emerald-400">Aktif Kredi</p>
                 <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">{uniqueBanks.length} bankadan</p>
               </div>
               <Building2 className="h-6 w-6 text-emerald-600 dark:text-emerald-400" />
@@ -792,11 +823,11 @@ export default function RaporlarPage() {
                 <div className="flex items-start justify-between mb-4">
                   <div>
                     <h3 className="text-3xl font-bold text-red-600 dark:text-red-400 mb-1">
-                      {bankInterestData.length > 0 ? `${bankInterestData[0].faiz}%` : "N/A"}
+                      {highestInterestCredit ? `${highestInterestCredit.interest_rate?.toFixed(2)}%` : "N/A"}
                     </h3>
                     <p className="text-sm text-gray-600 dark:text-gray-400">En Yüksek Faiz</p>
                     <p className="text-xs text-gray-500 dark:text-gray-500 mt-1">
-                      {bankInterestData.length > 0 ? bankInterestData[0].name : "Veri yok"}
+                      {highestInterestCredit ? highestInterestCredit.banks?.name || "Bilinmeyen" : "Veri yok"}
                     </p>
                   </div>
                   <TrendingUp className="h-6 w-6 text-red-500" />
@@ -823,11 +854,11 @@ export default function RaporlarPage() {
                 <div className="flex items-start justify-between mb-4">
                   <div>
                     <h3 className="text-3xl font-bold text-emerald-600 dark:text-emerald-400 mb-1">
-                      {bankInterestData.length > 0 ? `${bankInterestData[bankInterestData.length - 1].faiz}%` : "N/A"}
+                      {lowestInterestCredit ? `${lowestInterestCredit.interest_rate?.toFixed(2)}%` : "N/A"}
                     </h3>
                     <p className="text-sm text-gray-600 dark:text-gray-400">En Düşük Faiz</p>
                     <p className="text-xs text-gray-500 dark:text-gray-500 mt-1">
-                      {bankInterestData.length > 0 ? bankInterestData[bankInterestData.length - 1].name : "Veri yok"}
+                      {lowestInterestCredit ? lowestInterestCredit.banks?.name || "Bilinmeyen" : "Veri yok"}
                     </p>
                   </div>
                   <TrendingDown className="h-6 w-6 text-emerald-500" />
@@ -997,10 +1028,10 @@ export default function RaporlarPage() {
               <CardContent className="p-6">
                 <div className="flex items-start justify-between mb-4">
                   <div>
-                    <h3 className="text-3xl font-bold text-gray-900 dark:text-white mb-1">{filteredCredits.length}</h3>
-                    <p className="text-sm text-emerald-600 dark:text-emerald-400">Toplam Kredi</p>
+                    <h3 className="text-3xl font-bold text-gray-900 dark:text-white mb-1">{filteredCredits.filter(c => c.status === "active").length}</h3>
+                    <p className="text-sm text-emerald-600 dark:text-emerald-400">Aktif Kredi</p>
                     <p className="text-xs text-gray-500 dark:text-gray-500 mt-1">
-                      {filteredCredits.filter(c => c.status === "active").length} aktif
+                      {filteredCredits.length - filteredCredits.filter(c => c.status === "active").length} tamamlandı
                     </p>
                   </div>
                   <BarChart3 className="h-6 w-6 text-emerald-600 dark:text-emerald-400" />
@@ -1055,9 +1086,9 @@ export default function RaporlarPage() {
               <CardContent className="p-6">
                 <div className="flex items-start justify-between mb-4">
                   <div>
-                    <h3 className="text-3xl font-bold text-gray-900 dark:text-white mb-1">{formatCurrency(totalMonthly)}</h3>
-                    <p className="text-sm text-blue-600 dark:text-blue-400">Aylık Ödeme</p>
-                    <p className="text-xs text-gray-500 dark:text-gray-500 mt-1">Toplam taksit</p>
+                    <h3 className="text-3xl font-bold text-gray-900 dark:text-white mb-1">{formatCurrency(realMonthlyPayment)}</h3>
+                    <p className="text-sm text-blue-600 dark:text-blue-400">Bu Ay Ödeme</p>
+                    <p className="text-xs text-gray-500 dark:text-gray-500 mt-1">{thisMonthPayments.length} taksit</p>
                   </div>
                   <Calendar className="h-6 w-6 text-blue-600 dark:text-blue-400" />
                 </div>
@@ -1077,36 +1108,31 @@ export default function RaporlarPage() {
               </CardContent>
             </Card>
 
-            {/* Widget 4: Ort. İlerleme - Progress Donut */}
+            {/* Widget 4: Ödemelerin Bitiş Tarihi */}
             <Card className="bg-white dark:bg-black/20 border border-gray-200 dark:border-0 overflow-hidden">
               <CardContent className="p-6">
                 <div className="flex items-start justify-between mb-4">
                   <div>
-                    <h3 className="text-3xl font-bold text-gray-900 dark:text-white mb-1">{Math.round(avgProgress)}%</h3>
-                    <p className="text-sm text-purple-600 dark:text-purple-400">Ort. İlerleme</p>
-                    <p className="text-xs text-gray-500 dark:text-gray-500 mt-1">Tamamlanma</p>
+                    <h3 className="text-3xl font-bold text-gray-900 dark:text-white mb-1">
+                      {lastPaymentDate ? formatDate(lastPaymentDate) : "N/A"}
+                    </h3>
+                    <p className="text-sm text-purple-600 dark:text-purple-400">Bitiş Tarihi</p>
+                    <p className="text-xs text-gray-500 dark:text-gray-500 mt-1">En son taksit</p>
                   </div>
-                  <TrendingDown className="h-6 w-6 text-purple-600 dark:text-purple-400" />
+                  <Calendar className="h-6 w-6 text-purple-600 dark:text-purple-400" />
                 </div>
                 <div className="h-16 flex items-center justify-center">
-                  <div className="relative w-16 h-16">
-                    <svg viewBox="0 0 100 100" className="transform -rotate-90">
-                      <circle cx="50" cy="50" r="40" fill="none" stroke="currentColor" strokeWidth="12" className="text-gray-200 dark:text-gray-700" />
-                      <circle
-                        cx="50"
-                        cy="50"
-                        r="40"
-                        fill="none"
-                        stroke="#9333EA"
-                        strokeWidth="12"
-                        strokeDasharray={`${(avgProgress / 100) * 251.2} 251.2`}
-                        strokeLinecap="round"
-                      />
-                    </svg>
-                    <div className="absolute inset-0 flex items-center justify-center">
-                      <span className="text-xs font-bold text-purple-600 dark:text-purple-400">{Math.round(avgProgress)}%</span>
+                  {lastPaymentDate && (
+                    <div className="text-center w-full">
+                      <div className="flex items-center justify-center gap-2">
+                        <div className="h-1 flex-1 bg-gradient-to-r from-purple-200 via-purple-500 to-purple-600 dark:from-purple-800 dark:via-purple-600 dark:to-purple-400 rounded-full"></div>
+                        <CheckCircle className="h-4 w-4 text-purple-600 dark:text-purple-400" />
+                      </div>
+                      <p className="text-xs text-gray-500 dark:text-gray-400 mt-2">
+                        {Math.ceil((new Date(lastPaymentDate).getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24))} gün kaldı
+                      </p>
                     </div>
-                  </div>
+                  )}
                 </div>
               </CardContent>
             </Card>

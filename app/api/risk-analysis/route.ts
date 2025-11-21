@@ -1,10 +1,10 @@
 import { type NextRequest, NextResponse } from "next/server"
 
+export const maxDuration = 60 // Vercel Hobby plan için maksimum süre
 export const dynamic = "force-dynamic"
 import type { FinancialProfile, RiskAnalysisData } from "@/lib/types"
 import { createClient } from "@supabase/supabase-js"
 import { GoogleGenerativeAI, SchemaType } from "@google/generative-ai"
-import { rateLimit, RateLimits } from "@/lib/rate-limit"
 
 const CHART_COLORS = ["#10B981", "#3B82F6", "#F59E0B", "#EF4444", "#8B5CF6", "#06B6D4", "#F97316", "#84CC16"]
 
@@ -102,29 +102,6 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Kullanıcı ID gereklidir" }, { status: 400 })
     }
 
-    // Rate limiting - AI analysis is expensive!
-    const rateLimitResult = rateLimit({
-      identifier: `risk-analysis:${userId}`,
-      ...RateLimits.EXPENSIVE
-    })
-
-    if (!rateLimitResult.success) {
-      return NextResponse.json(
-        {
-          error: "Çok fazla risk analizi talebi. Lütfen 1 saat sonra tekrar deneyin.",
-          retryAfter: rateLimitResult.reset
-        },
-        {
-          status: 429,
-          headers: {
-            'X-RateLimit-Limit': rateLimitResult.limit.toString(),
-            'X-RateLimit-Remaining': rateLimitResult.remaining.toString(),
-            'X-RateLimit-Reset': rateLimitResult.reset.toString(),
-            'Retry-After': rateLimitResult.reset.toString()
-          }
-        }
-      )
-    }
 
     const supabaseAdmin = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.SERVICE_ROLE_KEY!, {
       auth: {
@@ -167,11 +144,11 @@ export async function POST(request: NextRequest) {
       if (!canUse) {
         return NextResponse.json(
           {
-            error: "Risk analizi sadece Premium üyeler için kullanılabilir",
+            error: "Finansal sağlık analizi sadece Premium üyeler için kullanılabilir",
             limitExceeded: true,
             planType: subscription?.plan_type || "free",
             upgradeMessage:
-              "Premium üyelik ile AI Finansal Sağlık Özeti ve tüm özelliklere sınırsız erişim sağlayabilirsiniz. Sadece 199₺/ay!",
+              "Premium üyelik ile finansal sağlık analizi ve tüm özelliklere sınırsız erişim sağlayabilirsiniz. Sadece 199₺/ay!",
           },
           { status: 403 },
         )
@@ -213,7 +190,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json(
         {
           error:
-            "Risk analizi için aylık gelir bilgisi gereklidir. Lütfen ayarlar sayfasından finansal bilgilerinizi güncelleyin.",
+            "Finansal sağlık analizi için aylık gelir bilgisi gereklidir. Lütfen ayarlar sayfasından finansal bilgilerinizi güncelleyin.",
         },
         { status: 400 },
       )
@@ -299,7 +276,7 @@ export async function POST(request: NextRequest) {
     console.error("[v0] Risk analysis critical error:", error)
     return NextResponse.json(
       {
-        error: "Risk analizi sırasında bir hata oluştu. Lütfen tekrar deneyin.",
+        error: "Finansal sağlık analizi sırasında bir hata oluştu. Lütfen tekrar deneyin.",
       },
       { status: 500 },
     )
@@ -415,8 +392,10 @@ function createFallbackAnalysis(financialProfile: FinancialProfile, credits: any
 }
 
 async function analyzeRiskWithGemini(financialProfile: FinancialProfile, credits: any[]): Promise<any> {
+  // DAHA HIZLI MODEL KULLANIMI
+  // 'gemini-1.5-flash' şu an en hızlı ve maliyet etkin modeldir.
   const model = genAI.getGenerativeModel({
-    model: "gemini-2.5-flash",
+    model: "gemini-1.5-flash",
     generationConfig: {
       temperature: 0.2,
       responseMimeType: "application/json",
@@ -450,38 +429,12 @@ ${credits
 
 Risk skorunu 0-100 arasında belirle (0=mükemmel, 100=çok riskli).`
 
-  // Retry mechanism for 503 errors
-  let result
-  let retryCount = 0
-  const maxRetries = 3
-
-  while (retryCount < maxRetries) {
-    try {
-      result = await model.generateContent(prompt)
-      break // Success, exit retry loop
-    } catch (error: any) {
-      retryCount++
-      if (error.message?.includes("503") || error.message?.includes("overloaded")) {
-        if (retryCount >= maxRetries) {
-          throw new Error("Gemini servisi şu anda aşırı yüklü. Lütfen birkaç dakika sonra tekrar deneyin.")
-        }
-        // Exponential backoff: wait 2s, 4s, 8s
-        await new Promise(resolve => setTimeout(resolve, Math.pow(2, retryCount) * 1000))
-      } else {
-        throw error // Re-throw non-503 errors immediately
-      }
-    }
-  }
-
-  if (!result) {
-    throw new Error("Risk analizi tamamlanamadı. Lütfen tekrar deneyin.")
-  }
-
-  const response = await result.response
-
-  // With structured output, Gemini should return clean JSON directly
   try {
-    // Try to parse the response text as JSON
+    // RETRY MEKANİZMASI KALDIRILDI
+    // Serverless ortamda beklemek (setTimeout) yerine, hata alırsak hemen
+    // fallback (matematiksel hesaplama) mekanizmasına geçmek daha güvenlidir.
+    const result = await model.generateContent(prompt)
+    const response = await result.response
     const text = response.text()
 
     // Check if response contains error message
@@ -500,15 +453,9 @@ Risk skorunu 0-100 arasında belirle (0=mükemmel, 100=çok riskli).`
 
     return analysis
   } catch (error: any) {
-    console.error("[Gemini] Response processing error:", error)
-    console.error("[Gemini] Raw response (first 500 chars):", response.text().substring(0, 500))
-
-    // Check if it's a JSON parse error
-    if (error.message?.includes("JSON") || error.message?.includes("token")) {
-      throw new Error("Gemini API beklenmeyen format döndü. Lütfen tekrar deneyin.")
-    }
-
-    throw new Error(`Risk analizi işlenemedi: ${error.message}`)
+    console.error("[Gemini] Hızlı analiz hatası:", error.message)
+    // Hatayı fırlat ki üst fonksiyon yakalayıp Fallback (Basit Hesaplama) yapsın
+    throw error
   }
 }
 
@@ -555,7 +502,7 @@ function mergeGeminiAnalysisWithData(
       color: (geminiAnalysis.overallRiskColor as "emerald" | "yellow" | "red") || "yellow",
       numericScore: geminiAnalysis.numericScore || 50,
       scoreMax: 100,
-      detailedExplanation: geminiAnalysis.detailedExplanation || "Risk analizi tamamlandı.",
+      detailedExplanation: geminiAnalysis.detailedExplanation || "Finansal sağlık analizi tamamlandı.",
     },
     overallRiskSummary:
       geminiAnalysis.overallRiskSummary ||

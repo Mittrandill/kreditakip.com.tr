@@ -22,7 +22,7 @@ export default function PricingPage() {
       description: "Temel özelliklerle başlayın",
       features: ["1 adet OCR analizi", "Temel kredi takibi", "Ödeme hatırlatıcıları"],
       notIncluded: [
-        "Risk analizi",
+        "Finansal sağlık analizi",
         "Sınırsız OCR analizi",
         "Gelişmiş raporlama",
         "Reklamsız deneyim",
@@ -69,9 +69,9 @@ export default function PricingPage() {
         "Hesap ayarlarınızdan istediğiniz zaman Premium üyeliğinizi iptal edebilirsiniz. İptal sonrası mevcut dönem sonuna kadar Premium özelliklerden yararlanmaya devam edersiniz.",
     },
     {
-      question: "Risk analizi nedir?",
+      question: "Finansal sağlık analizi nedir?",
       answer:
-        "Risk analizi, finansal durumunuzu detaylı olarak değerlendiren ve borç/gelir oranınızı, ödeme kapasitesini analiz eden Premium özelliğimizdir.",
+        "Finansal sağlık analizi, finansal durumunuzu detaylı olarak değerlendiren ve borç/gelir oranınızı, ödeme kapasitesini analiz eden Premium özelliğimizdir.",
     },
     {
       question: "Ödeme güvenli mi?",

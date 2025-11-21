@@ -189,6 +189,9 @@ export async function POST(request: NextRequest) {
 
       // store_card parametresini ekle
       formData.store_card = "1"
+      console.log("[direct-payment] ✓ Card storage requested - store_card=1 added to form")
+    } else {
+      console.log("[direct-payment] ℹ Card storage NOT requested - user did not check the box")
     }
 
     // Return form data for client-side POST

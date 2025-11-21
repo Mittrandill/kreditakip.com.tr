@@ -14,7 +14,9 @@
       "Bash(rm:*)",
       "Bash(npm install:*)",
       "Bash(pnpm install:*)",
-      "Bash(timeout 2 bash:*)"
+      "Bash(timeout 2 bash:*)",
+      "Bash(timeout 3 bash:*)",
+      "Bash(npm run dev:*)"
     ],
     "deny": [],
     "ask": []
