@@ -4,6 +4,7 @@ import { useState, useEffect } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
+import { Checkbox } from "@/components/ui/checkbox"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import Image from "next/image"
@@ -54,6 +55,7 @@ const onlyNumbers = (value: string): string => {
 export function PaymentForm({ planId, planName, amount, billingInfo, onSuccess, onError }: PaymentFormProps) {
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [saveCard, setSaveCard] = useState(false)
 
   // Form state
   const [cardHolder, setCardHolder] = useState("")
@@ -158,6 +160,7 @@ export function PaymentForm({ planId, planName, amount, billingInfo, onSuccess, 
           planId,
           billingInfo,
           installmentCount: 0,
+          storeCard: saveCard, // Kart saklama tercihi
         }),
       })
 
@@ -322,6 +325,22 @@ export function PaymentForm({ planId, planName, amount, billingInfo, onSuccess, 
           </div>
           {errors.expiry && <p className="text-sm text-red-500">{errors.expiry}</p>}
           {errors.cvv && <p className="text-sm text-red-500">{errors.cvv}</p>}
+
+          {/* Kart Saklama */}
+          <div className="flex items-center space-x-2 pt-2">
+            <Checkbox
+              id="saveCard"
+              checked={saveCard}
+              onCheckedChange={(checked) => setSaveCard(checked as boolean)}
+              disabled={isLoading}
+            />
+            <Label
+              htmlFor="saveCard"
+              className="text-sm font-normal cursor-pointer"
+            >
+              Kartımı güvenli bir şekilde sakla (gelecek ödemeler için)
+            </Label>
+          </div>
         </CardContent>
 
         <CardFooter className="flex flex-col space-y-4">

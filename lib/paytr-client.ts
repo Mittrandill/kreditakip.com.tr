@@ -448,6 +448,170 @@ export class PayTRClient {
 
     return true
   }
+
+  // ============================================
+  // CAPI - Kart Saklama Sistemi
+  // ============================================
+
+  /**
+   * CAPI LIST - Kullanıcının kayıtlı kartlarını listele
+   * @param utoken - PayTR kullanıcı token'ı
+   * @returns Kayıtlı kartlar listesi
+   */
+  async listSavedCards(utoken: string): Promise<any> {
+    const paytrToken = this.generateHash(`${this.config.merchantId}${utoken}${this.config.merchantSalt}`)
+
+    const data = {
+      merchant_id: this.config.merchantId,
+      utoken,
+      paytr_token: paytrToken,
+    }
+
+    try {
+      const response = await fetch("https://www.paytr.com/odeme/capi/list", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/x-www-form-urlencoded",
+        },
+        body: new URLSearchParams(data).toString(),
+      })
+
+      const result = await response.json()
+
+      if (result.status === "error") {
+        throw new Error(result.err_msg || "Kartlar listelenemedi")
+      }
+
+      return result
+    } catch (error) {
+      console.error("[PayTR CAPI LIST] Error:", error)
+      throw error
+    }
+  }
+
+  /**
+   * CAPI DELETE - Kayıtlı kartı sil
+   * @param utoken - PayTR kullanıcı token'ı
+   * @param ctoken - PayTR kart token'ı
+   */
+  async deleteSavedCard(utoken: string, ctoken: string): Promise<{ status: string; err_msg?: string }> {
+    const paytrToken = this.generateHash(`${this.config.merchantId}${utoken}${ctoken}${this.config.merchantSalt}`)
+
+    const data = {
+      merchant_id: this.config.merchantId,
+      utoken,
+      ctoken,
+      paytr_token: paytrToken,
+    }
+
+    try {
+      const response = await fetch("https://www.paytr.com/odeme/capi/delete", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/x-www-form-urlencoded",
+        },
+        body: new URLSearchParams(data).toString(),
+      })
+
+      const result = await response.json()
+
+      if (result.status === "error") {
+        throw new Error(result.err_msg || "Kart silinemedi")
+      }
+
+      return result
+    } catch (error) {
+      console.error("[PayTR CAPI DELETE] Error:", error)
+      throw error
+    }
+  }
+
+  /**
+   * RECURRING PAYMENT - Kayıtlı kart ile otomatik ödeme al (Non3D)
+   * @param utoken - PayTR kullanıcı token'ı
+   * @param ctoken - PayTR kart token'ı
+   * @param orderId - Benzersiz sipariş numarası
+   * @param amount - Ödeme tutarı (TL)
+   * @param billingInfo - Fatura bilgileri
+   * @param userIp - Kullanıcı IP adresi
+   * @param cvv - CVV (eğer require_cvv=1 ise gerekli)
+   * @returns Ödeme sonucu
+   */
+  async createRecurringPayment(
+    utoken: string,
+    ctoken: string,
+    orderId: string,
+    amount: number,
+    billingInfo: BillingInfo,
+    userIp: string,
+    cvv?: string
+  ): Promise<{
+    status: "success" | "failed" | "wait_callback"
+    msg?: string
+    try_again?: boolean
+  }> {
+    // Sepet içeriği
+    const basket = [
+      ["Abonelik Yenileme", (amount * 100).toString(), 1], // PayTR kuruş cinsinden ister
+    ]
+    const userBasket = Buffer.from(JSON.stringify(basket)).toString("base64")
+
+    // Hash hesaplama
+    const hashStr = `${this.config.merchantId}${userIp}${orderId}${billingInfo.email}${(amount * 100).toFixed(0)}${userBasket}0${this.config.merchantSalt}`
+    const paytrToken = this.generateHash(hashStr)
+
+    const data: any = {
+      merchant_id: this.config.merchantId,
+      paytr_token: paytrToken,
+      user_ip: userIp,
+      merchant_oid: orderId,
+      email: billingInfo.email,
+      payment_type: "card",
+      payment_amount: (amount * 100).toFixed(0), // Kuruş cinsinden
+      installment_count: 0,
+      currency: "TL",
+      client_lang: "tr",
+      test_mode: process.env.PAYTR_TEST_MODE === "1" ? "1" : "0",
+      non_3d: "1", // Recurring payment Non3D olmak zorunda
+      merchant_ok_url: `${process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000"}/uygulama/ayarlar`,
+      merchant_fail_url: `${process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000"}/uygulama/ayarlar`,
+      user_name: billingInfo.fullName,
+      user_address: billingInfo.address,
+      user_phone: billingInfo.phone,
+      user_basket: userBasket,
+      debug_on: process.env.NODE_ENV === "development" ? "1" : "0",
+      utoken,
+      ctoken,
+      recurring: "1", // Recurring payment flag
+    }
+
+    // CVV varsa ekle
+    if (cvv) {
+      data.cvv = cvv
+    }
+
+    try {
+      const response = await fetch("https://www.paytr.com/odeme", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/x-www-form-urlencoded",
+        },
+        body: new URLSearchParams(data).toString(),
+      })
+
+      const result = await response.json()
+
+      // Recurring payment JSON response döner (redirect olmaz)
+      return {
+        status: result.status,
+        msg: result.msg,
+        try_again: result.try_again,
+      }
+    } catch (error) {
+      console.error("[PayTR RECURRING PAYMENT] Error:", error)
+      throw error
+    }
+  }
 }
 
 export const paytrClient = new PayTRClient()

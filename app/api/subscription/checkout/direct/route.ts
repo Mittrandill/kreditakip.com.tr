@@ -55,7 +55,7 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json()
-    const { planId, billingInfo, installmentCount = 0, cardType } = body
+    const { planId, billingInfo, installmentCount = 0, cardType, storeCard = false } = body
 
     if (!planId || !billingInfo) {
       return NextResponse.json({ error: "Plan ID and billing info required" }, { status: 400 })
@@ -171,6 +171,26 @@ export async function POST(request: NextRequest) {
       // Don't fail - subscription is more important
     }
 
+    // Kart saklama için utoken kontrolü
+    let utoken: string | null = null
+    if (storeCard) {
+      // Kullanıcının daha önce kaydedilmiş utoken'ı var mı kontrol et
+      const { data: existingToken } = await supabaseAdmin
+        .from("paytr_user_tokens")
+        .select("utoken")
+        .eq("user_id", user.id)
+        .single()
+
+      if (existingToken) {
+        utoken = existingToken.utoken
+        // Mevcut utoken varsa, formData'ya ekle
+        formData.utoken = utoken
+      }
+
+      // store_card parametresini ekle
+      formData.store_card = "1"
+    }
+
     // Return form data for client-side POST
     // Client-side kart bilgilerini ekleyip PayTR'ye POST edecek
     return NextResponse.json({
@@ -179,6 +199,8 @@ export async function POST(request: NextRequest) {
       orderId: orderId,
       formData: formData,
       paytrUrl: "https://www.paytr.com/odeme", // Client-side POST endpoint
+      storeCard: storeCard, // Frontend'de checkbox için
+      hasExistingCards: utoken !== null, // Kullanıcının kayıtlı kartı var mı?
     })
   } catch (error: any) {
     console.error("[direct-payment] Initialization error:", error)
