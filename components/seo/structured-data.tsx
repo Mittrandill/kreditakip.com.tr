@@ -83,7 +83,7 @@ export function StructuredData() {
           worstRating: "1",
         },
         featureList: [
-          "OCR ile otomatik ekstre okuma",
+          "OCR ile otomatik kredi planı okuma",
           "Yapay zeka destekli ödeme planı oluşturma",
           "Çoklu banka desteği",
           "Risk analizi ve finansal öneriler",
