@@ -51,6 +51,43 @@ export interface PayTRIframeResponse {
   token?: string
 }
 
+export interface CardInfo {
+  cc_owner: string // Kart sahibi adı
+  card_number: string // Kart numarası (16 haneli)
+  expiry_month: string // Son kullanma ayı (1-12)
+  expiry_year: string // Son kullanma yılı (YY formatında, örn: 25)
+  cvv: string // CVV kodu (3 haneli)
+}
+
+export interface PayTRDirectRequest {
+  merchant_id: string
+  user_ip: string
+  merchant_oid: string
+  email: string
+  payment_type: "card" | "card_points"
+  payment_amount: string // Ondalık noktalı format (örn: 100.99)
+  installment_count: number // 0, 2-12 arası
+  currency?: string // TL, EUR, USD, GBP
+  test_mode?: "0" | "1"
+  non_3d?: "0" | "1"
+  merchant_ok_url: string
+  merchant_fail_url: string
+  user_name: string
+  user_address: string
+  user_phone: string
+  user_basket: string
+  paytr_token: string
+  // Kart bilgileri
+  cc_owner: string
+  card_number: string
+  expiry_month: string
+  expiry_year: string
+  cvv: string
+  card_type?: string
+  client_lang?: string
+  debug_on?: "0" | "1"
+}
+
 export interface PayTRCallbackData {
   merchant_oid: string
   status: string
@@ -240,6 +277,176 @@ export class PayTRClient {
    */
   getIframeUrl(token: string): string {
     return `https://www.paytr.com/odeme/guvenli/${token}`
+  }
+
+  /**
+   * PayTR Direct API ile ödeme başlatma
+   * GÜVENLIK: Kart bilgileri ASLA sunucumuza kaydedilmez!
+   * Kart bilgileri direkt olarak PayTR'ye POST edilir (client-side)
+   *
+   * Bu method sadece token oluşturur, gerçek ödeme client-side yapılır
+   */
+  async createDirectPaymentToken(
+    orderId: string,
+    amount: number, // TL cinsinden (örn: 199.00)
+    billingInfo: BillingInfo,
+    userIp: string,
+    options: {
+      testMode?: boolean
+      non3d?: boolean
+      installmentCount?: number
+      currency?: "TL" | "EUR" | "USD" | "GBP"
+      cardType?: string
+    } = {},
+  ): Promise<{
+    token: string
+    formData: Record<string, string>
+  }> {
+    if (!this.config.merchantId || !this.config.merchantKey || !this.config.merchantSalt) {
+      throw new Error("PayTR API credentials are not configured")
+    }
+
+    // Sepet bilgilerini hazırla
+    const basketItems = [
+      {
+        name: "Premium Üyelik",
+        price: (amount * 100).toString(), // Kuruş cinsine çevir
+        quantity: 1,
+      },
+    ]
+    const userBasket = this.encodeBasket(basketItems)
+
+    // Payment amount - Direct API'de ondalık noktalı format kullanılır
+    const paymentAmount = amount.toFixed(2)
+
+    // Installment count (0 = taksitsiz, 2-12 arası taksitli)
+    const installmentCount = options.installmentCount || 0
+
+    // Token oluşturma için hash string (Direct API formatı)
+    // Sıralama: merchant_id + user_ip + merchant_oid + email + payment_amount + payment_type + installment_count + currency + test_mode + non_3d + merchant_salt
+    const hashStr =
+      this.config.merchantId +
+      userIp +
+      orderId +
+      billingInfo.email +
+      paymentAmount +
+      "card" + // payment_type
+      installmentCount.toString() +
+      (options.currency || "TL") +
+      (options.testMode ? "1" : "0") +
+      (options.non3d ? "1" : "0") +
+      this.config.merchantSalt
+
+    const paytrToken = this.generateToken(hashStr)
+
+    // Form data hazırla (kart bilgileri HARİÇ - onlar client-side eklenecek)
+    const formData: Record<string, string> = {
+      merchant_id: this.config.merchantId,
+      user_ip: userIp,
+      merchant_oid: orderId,
+      email: billingInfo.email,
+      payment_type: "card",
+      payment_amount: paymentAmount,
+      installment_count: installmentCount.toString(),
+      currency: options.currency || "TL",
+      test_mode: options.testMode ? "1" : "0",
+      non_3d: options.non3d ? "1" : "0",
+      user_name: billingInfo.fullName,
+      user_address: billingInfo.address,
+      user_phone: billingInfo.phone,
+      user_basket: userBasket,
+      paytr_token: paytrToken,
+      client_lang: "tr",
+      debug_on: options.testMode ? "1" : "0",
+    }
+
+    // Card type ekle (varsa)
+    if (options.cardType) {
+      formData.card_type = options.cardType
+    }
+
+    return {
+      token: paytrToken,
+      formData,
+    }
+  }
+
+  /**
+   * Kart numarasını validate et
+   * Luhn algoritması ile kart numarası doğrulama
+   */
+  validateCardNumber(cardNumber: string): boolean {
+    // Boşlukları ve tireleri temizle
+    const cleaned = cardNumber.replace(/[\s-]/g, "")
+
+    // Sadece rakam kontrolü
+    if (!/^\d+$/.test(cleaned)) {
+      return false
+    }
+
+    // 13-19 hane arası olmalı
+    if (cleaned.length < 13 || cleaned.length > 19) {
+      return false
+    }
+
+    // Luhn algoritması
+    let sum = 0
+    let isEven = false
+
+    for (let i = cleaned.length - 1; i >= 0; i--) {
+      let digit = parseInt(cleaned.charAt(i), 10)
+
+      if (isEven) {
+        digit *= 2
+        if (digit > 9) {
+          digit -= 9
+        }
+      }
+
+      sum += digit
+      isEven = !isEven
+    }
+
+    return sum % 10 === 0
+  }
+
+  /**
+   * CVV validate et
+   */
+  validateCVV(cvv: string): boolean {
+    return /^\d{3}$/.test(cvv)
+  }
+
+  /**
+   * Son kullanma tarihi validate et
+   */
+  validateExpiryDate(month: string, year: string): boolean {
+    const monthNum = parseInt(month, 10)
+    const yearNum = parseInt(year, 10)
+
+    // Ay kontrolü
+    if (monthNum < 1 || monthNum > 12) {
+      return false
+    }
+
+    // Yıl kontrolü (YY formatı, 2 haneli)
+    if (year.length !== 2) {
+      return false
+    }
+
+    // Geçmiş tarih kontrolü
+    const currentYear = new Date().getFullYear() % 100 // Son 2 hane
+    const currentMonth = new Date().getMonth() + 1
+
+    if (yearNum < currentYear) {
+      return false
+    }
+
+    if (yearNum === currentYear && monthNum < currentMonth) {
+      return false
+    }
+
+    return true
   }
 }
 

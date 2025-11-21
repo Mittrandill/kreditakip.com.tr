@@ -17,6 +17,7 @@ import { getPlanById } from "@/lib/subscription-plans"
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 import { LoadingSpinner } from "@/components/loading-screen"
 import { cn } from "@/lib/utils"
+import { PaymentForm } from "@/components/payment/payment-form"
 
 export default function PaymentPage() {
   const router = useRouter()
@@ -140,58 +141,17 @@ export default function PaymentPage() {
       return
     }
 
-    setIsProcessing(true)
-
-    try {
-      if (!user) {
-        throw new Error("Kullanıcı oturumu bulunamadı. Lütfen tekrar giriş yapın.")
-      }
-
-      // Initialize PayTR checkout
-      const response = await fetch("/api/subscription/checkout/initialize", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        credentials: "include",
-        body: JSON.stringify({
-          planId: selectedPlan.id,
-          billingInfo: {
-            fullName: billingInfo.fullName,
-            email: billingInfo.email,
-            phone: billingInfo.phone,
-            identityNumber: billingInfo.identityNumber,
-            address: billingInfo.address,
-            city: billingInfo.city,
-            district: billingInfo.district,
-            zipCode: billingInfo.zipCode,
-            taxOffice: billingInfo.taxOffice,
-            taxNumber: billingInfo.taxNumber,
-          },
-        }),
-      })
-
-      const data = await response.json()
-
-      if (!response.ok) {
-        throw new Error(data.error || "Ödeme işlemi başlatılamadı")
-      }
-
-      if (data.success && data.iframeUrl) {
-        // Redirect to PayTR iframe URL
-        window.location.href = data.iframeUrl
-      } else {
-        throw new Error(data.error || "Ödeme başlatılamadı")
-      }
-    } catch (error) {
-      console.error("[checkout] Payment initialization error:", error)
+    if (!user) {
       toast({
-        title: "Ödeme Hatası",
-        description: error instanceof Error ? error.message : "Ödeme işlemi başarısız oldu",
+        title: "Oturum Hatası",
+        description: "Kullanıcı oturumu bulunamadı. Lütfen tekrar giriş yapın.",
         variant: "destructive",
       })
-      setIsProcessing(false)
+      return
     }
+
+    // Move to payment step (step 2)
+    setCurrentStep(2)
   }
 
   if (authLoading) {
@@ -592,34 +552,39 @@ export default function PaymentPage() {
         <div className="space-y-6">
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
             <div className="lg:col-span-2">
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <CreditCard className="h-5 w-5 text-emerald-600" />
-                    Ödeme Bilgileri
-                  </CardTitle>
-                  <CardDescription>
-                    PayTR'nin güvenli ödeme sayfasına yönlendirileceksiniz
-                  </CardDescription>
-                </CardHeader>
-                <CardContent>
-                  {isProcessing && (
-                    <div className="flex items-center justify-center py-12">
-                      <LoadingSpinner size="lg" />
-                      <p className="text-sm text-gray-500 dark:text-gray-400 mt-4">
-                        PayTR ödeme sayfasına yönlendiriliyorsunuz...
-                      </p>
-                    </div>
-                  )}
-                </CardContent>
-              </Card>
+              <PaymentForm
+                planId={selectedPlan.id}
+                planName={selectedPlan.name}
+                amount={selectedPlan.price}
+                billingInfo={{
+                  fullName: billingInfo.fullName,
+                  email: billingInfo.email,
+                  phone: billingInfo.phone,
+                  address: `${billingInfo.address}, ${billingInfo.district}`,
+                  city: billingInfo.city,
+                  country: "Türkiye",
+                  zipCode: billingInfo.zipCode,
+                }}
+                onSuccess={() => {
+                  toast({
+                    title: "Yönlendiriliyor",
+                    description: "PayTR ödeme sayfasına yönlendiriliyorsunuz...",
+                  })
+                }}
+                onError={(error) => {
+                  toast({
+                    title: "Ödeme Hatası",
+                    description: error,
+                    variant: "destructive",
+                  })
+                }}
+              />
 
               <div className="mt-6">
                 <Button
                   type="button"
                   variant="outline"
                   onClick={() => setCurrentStep(1)}
-                  disabled={isProcessing}
                   className="w-full sm:w-auto"
                 >
                   <ArrowLeft className="h-4 w-4 mr-2" />

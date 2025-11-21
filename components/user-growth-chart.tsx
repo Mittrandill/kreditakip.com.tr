@@ -73,9 +73,9 @@ export function UserGrowthChart() {
             fillOpacity={1}
             fill="url(#colorSuccess)"
             dot={((props: any) => {
-              const { cx, cy, payload } = props
+              const { cx, cy, payload, index } = props
               if (payload.month === "Haz") {
-                return <circle cx={cx} cy={cy} r={5} fill="#50f1be" stroke="white" strokeWidth={2} />
+                return <circle key={`dot-${index}`} cx={cx} cy={cy} r={5} fill="#50f1be" stroke="white" strokeWidth={2} />
               }
               return null
             }) as any}
