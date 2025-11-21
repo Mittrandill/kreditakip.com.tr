@@ -181,10 +181,10 @@ export async function POST(request: NextRequest) {
         .eq("user_id", user.id)
         .single()
 
-      if (existingToken) {
+      if (existingToken?.utoken) {
         utoken = existingToken.utoken
         // Mevcut utoken varsa, formData'ya ekle
-        formData.utoken = utoken
+        formData.utoken = existingToken.utoken
       }
 
       // store_card parametresini ekle
