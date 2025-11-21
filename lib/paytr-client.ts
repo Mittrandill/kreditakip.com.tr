@@ -322,6 +322,9 @@ export class PayTRClient {
     // Installment count (0 = taksitsiz, 2-12 arası taksitli)
     const installmentCount = options.installmentCount || 0
 
+    // Currency format (PayTR TRY bekliyor, TL değil)
+    const currency = options.currency === "TL" || !options.currency ? "TRY" : options.currency
+
     // Token oluşturma için hash string (Direct API formatı)
     // Sıralama: merchant_id + user_ip + merchant_oid + email + payment_amount + payment_type + installment_count + currency + test_mode + non_3d + merchant_salt
     const hashStr =
@@ -332,7 +335,7 @@ export class PayTRClient {
       paymentAmount +
       "card" + // payment_type
       installmentCount.toString() +
-      (options.currency || "TL") +
+      currency +
       (options.testMode ? "1" : "0") +
       (options.non3d ? "1" : "0") +
       this.config.merchantSalt
@@ -348,7 +351,7 @@ export class PayTRClient {
       payment_type: "card",
       payment_amount: paymentAmount,
       installment_count: installmentCount.toString(),
-      currency: options.currency || "TL",
+      currency: currency,
       test_mode: options.testMode ? "1" : "0",
       non_3d: options.non3d ? "1" : "0",
       user_name: billingInfo.fullName,
@@ -569,7 +572,7 @@ export class PayTRClient {
       payment_type: "card",
       payment_amount: (amount * 100).toFixed(0), // Kuruş cinsinden
       installment_count: 0,
-      currency: "TL",
+      currency: "TRY",
       client_lang: "tr",
       test_mode: process.env.PAYTR_TEST_MODE === "1" ? "1" : "0",
       non_3d: "1", // Recurring payment Non3D olmak zorunda
