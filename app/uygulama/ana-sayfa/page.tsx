@@ -122,19 +122,8 @@ export default function DashboardPage() {
         setLoadingData(true)
         setError(null)
         try {
-          // Önce bildirim kontrolü yap
-          try {
-            await fetch("/api/notifications/auto-create", {
-              method: "POST",
-              headers: {
-                "Content-Type": "application/json",
-              },
-              body: JSON.stringify({ userId: user.id }),
-            })
-          } catch (notificationError) {
-            console.error("Bildirim oluşturma hatası:", notificationError)
-            // Bildirim hatası ana veri yüklemeyi engellemez
-          }
+          // Bildirimler artık GitHub Actions workflow ile otomatik oluşturuluyor
+          // /api/notifications/auto-create endpoint'i kaldırıldı
 
           const [creditsData, upcomingPaymentsData, allPaymentsData] = await Promise.all([
             getCredits(user.id) as Promise<any[]>,
