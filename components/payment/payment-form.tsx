@@ -4,7 +4,6 @@ import { useState, useEffect } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { Checkbox } from "@/components/ui/checkbox"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import Image from "next/image"
@@ -55,7 +54,6 @@ const onlyNumbers = (value: string): string => {
 export function PaymentForm({ planId, planName, amount, billingInfo, onSuccess, onError }: PaymentFormProps) {
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
-  const [saveCard, setSaveCard] = useState(false)
 
   // Form state
   const [cardHolder, setCardHolder] = useState("")
@@ -324,33 +322,6 @@ export function PaymentForm({ planId, planName, amount, billingInfo, onSuccess, 
           </div>
           {errors.expiry && <p className="text-sm text-red-500">{errors.expiry}</p>}
           {errors.cvv && <p className="text-sm text-red-500">{errors.cvv}</p>}
-
-          {/* Kart Saklama (Gelecek özellik) */}
-          <div className="flex items-center space-x-2 pt-2">
-            <Checkbox id="saveCard" checked={saveCard} onCheckedChange={(checked) => setSaveCard(checked as boolean)} disabled />
-            <Label
-              htmlFor="saveCard"
-              className="text-sm font-normal text-muted-foreground cursor-not-allowed opacity-50"
-            >
-              Kart bilgilerimi güvenli bir şekilde sakla (Yakında)
-            </Label>
-          </div>
-
-          {/* Ödeme Özeti */}
-          <div className="rounded-lg bg-muted p-4 space-y-2">
-            <div className="flex justify-between text-sm">
-              <span>Plan</span>
-              <span className="font-medium">{planName}</span>
-            </div>
-            <div className="flex justify-between text-sm">
-              <span>Tutar</span>
-              <span className="font-medium">{amount.toFixed(2)} TL</span>
-            </div>
-            <div className="flex justify-between text-sm pt-2 border-t">
-              <span className="font-semibold">Toplam</span>
-              <span className="font-semibold">{amount.toFixed(2)} TL</span>
-            </div>
-          </div>
         </CardContent>
 
         <CardFooter className="flex flex-col space-y-4">
