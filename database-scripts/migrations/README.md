@@ -1,63 +1,80 @@
 # Database Migrations
 
-Bu klasör veritabanı migration dosyalarını içerir.
+This folder contains SQL migration scripts for the Kredi Takip application.
 
-## Migration'ları Çalıştırma
+## Migration Files
 
-### Supabase Dashboard'dan:
+### PayTR Integration
+- **`database-migration-paytr.sql`** - Initial PayTR tables setup (subscriptions, plans, billing)
+- **`paytr-card-storage.sql`** - PayTR CAPI card storage tables (utoken, ctoken, recurring payments)
 
-1. Supabase Dashboard'a gidin
-2. SQL Editor sekmesine tıklayın
-3. "New Query" butonuna tıklayın
-4. Migration dosyasının içeriğini kopyalayıp yapıştırın
-5. "Run" butonuna tıklayın
+### Security & Fixes
+- **`database-security-fixes.sql`** - Security hardening and RLS policies
 
-### Supabase CLI ile:
+### Notifications
+- **`001-create-notification-preferences-trigger.sql`** - Notification preferences trigger
+- **`002-update-notification-type-constraint.sql`** - Update notification type constraints
 
+### Webhooks
+- **`002_webhook_idempotency.sql`** - Webhook idempotency handling
+
+## Running Migrations
+
+### Local Development
+
+1. Connect to your local Supabase instance:
 ```bash
-# Migration'ı çalıştır
-supabase db execute --file database-scripts/migrations/002_webhook_idempotency.sql
+psql -h localhost -p 54322 -U postgres
 ```
 
-### psql ile (Doğrudan bağlantı):
-
-```bash
-# Supabase connection string ile
-psql "postgresql://postgres:[PASSWORD]@[PROJECT_REF].supabase.co:5432/postgres" \
-  -f database-scripts/migrations/002_webhook_idempotency.sql
-```
-
-## Mevcut Migration'lar
-
-### 002_webhook_idempotency.sql
-**Tarih:** 2025-11-20
-**Amaç:** Webhook idempotency constraint ekler
-**Etki:** `webhook_logs` tablosuna unique constraint eklenir, aynı webhook event'in birden fazla işlenmesini engeller
-
-**Önemli:** Bu migration idempotent'tir (birden fazla çalıştırılabilir), mevcut constraint varsa atlar.
-
-## Migration Kuralları
-
-1. ✅ Her migration idempotent olmalı (tekrar çalıştırılabilir)
-2. ✅ Dosya adı: `XXX_descriptive_name.sql` formatında
-3. ✅ Her migration kendi başına çalışabilmeli
-4. ✅ Rollback script'i olmayan migration'lar dikkatli oluşturulmalı
-5. ✅ Production'da çalıştırmadan önce staging/dev'de test et
-
-## Test Etme
-
-Migration'ı çalıştırdıktan sonra doğrulama:
-
+2. Run migration:
 ```sql
--- Constraint'in eklendiğini kontrol et
-SELECT conname, contype, pg_get_constraintdef(oid)
-FROM pg_constraint
-WHERE conrelid = 'webhook_logs'::regclass
-AND conname = 'unique_webhook_event';
-
--- Index'in oluşturulduğunu kontrol et
-SELECT indexname, indexdef
-FROM pg_indexes
-WHERE tablename = 'webhook_logs'
-AND indexname = 'idx_webhook_logs_lookup';
+\i /path/to/migration.sql
 ```
+
+### Supabase Dashboard
+
+1. Go to SQL Editor in Supabase Dashboard
+2. Copy migration file contents
+3. Execute the query
+
+## Migration Order
+
+Run migrations in this order for fresh database:
+
+1. `database-migration-paytr.sql` - Base PayTR tables
+2. `paytr-card-storage.sql` - Card storage tables
+3. `database-security-fixes.sql` - Security policies
+4. `001-create-notification-preferences-trigger.sql` - Notifications
+5. `002-update-notification-type-constraint.sql` - Notification constraints
+6. `002_webhook_idempotency.sql` - Webhook handling
+
+## Important Notes
+
+- Always backup database before running migrations in production
+- Test migrations in development/staging first
+- Migrations are designed to be idempotent (safe to run multiple times)
+- Check for RLS policies after running migrations
+
+## PayTR Card Storage Tables
+
+### `paytr_user_tokens`
+Stores user tokens (utoken) - one per user for card storage.
+
+### `paytr_saved_cards`
+Stores saved card details (ctoken, last 4 digits, expiry, metadata).
+
+### `paytr_recurring_payments`
+Tracks automatic payment attempts for subscription renewals.
+
+## Security
+
+All tables have Row Level Security (RLS) enabled with policies:
+- Users can only access their own records
+- Service role has full access for backend operations
+
+## Related Documentation
+
+- [PayTR Direct API Integration](../../docs/paytr/PAYTR_DIRECT_API_INTEGRATION.md)
+- [PayTR Card Storage Guide](../../docs/paytr/Paytr%20Kart%20Saklama.pdf)
+- [Security Checklist](../../docs/security/SECURITY_CHECKLIST.md)
