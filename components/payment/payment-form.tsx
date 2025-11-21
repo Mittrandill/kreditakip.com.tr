@@ -20,8 +20,12 @@ interface PaymentFormProps {
     phone: string
     address: string
     city: string
+    district?: string
     country?: string
     zipCode?: string
+    identityNumber?: string
+    taxNumber?: string
+    taxOffice?: string
   }
   onSuccess?: () => void
   onError?: (error: string) => void

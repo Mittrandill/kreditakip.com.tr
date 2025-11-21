@@ -15,6 +15,7 @@ export interface BillingInfo {
   phone: string
   address: string
   city: string
+  district?: string
   country?: string
   zipCode?: string
   identityNumber?: string
@@ -121,6 +122,13 @@ export class PayTRClient {
       .update(data)
       .digest("base64")
     return hash
+  }
+
+  /**
+   * PayTR hash oluşturma (generateToken ile aynı, CAPI için alias)
+   */
+  private generateHash(data: string): string {
+    return this.generateToken(data)
   }
 
   /**
@@ -544,53 +552,80 @@ export class PayTRClient {
     amount: number,
     billingInfo: BillingInfo,
     userIp: string,
-    cvv?: string
+    cvv?: string,
+    options: {
+      currency?: "TL" | "TRY" | "EUR" | "USD"
+      installmentCount?: number
+      testMode?: boolean
+    } = {}
   ): Promise<{
     status: "success" | "failed" | "wait_callback"
     msg?: string
     try_again?: boolean
   }> {
-    // Sepet içeriği
+    // Sepet içeriği (Base64 encoded JSON array)
     const basket = [
-      ["Abonelik Yenileme", (amount * 100).toString(), 1], // PayTR kuruş cinsinden ister
+      ["Abonelik Yenileme", amount.toFixed(2), 1],
     ]
     const userBasket = Buffer.from(JSON.stringify(basket)).toString("base64")
 
-    // Hash hesaplama
-    const hashStr = `${this.config.merchantId}${userIp}${orderId}${billingInfo.email}${(amount * 100).toFixed(0)}${userBasket}0${this.config.merchantSalt}`
+    // Parametreler
+    const paymentAmount = amount.toFixed(2) // Ondalıklı format: 100.99
+    const currency = options.currency || "TL"
+    const installmentCount = options.installmentCount || 0
+    const testMode = options.testMode ?? (process.env.PAYTR_TEST_MODE === "1")
+    const non3d = "1" // Recurring payment için zorunlu
+
+    // Hash hesaplama - PayTR dokümantasyonuna göre sıralama:
+    // merchant_id + user_ip + merchant_oid + email + payment_amount + payment_type + installment_count + currency + test_mode + non_3d + merchant_salt
+    const hashStr =
+      this.config.merchantId +
+      userIp +
+      orderId +
+      billingInfo.email +
+      paymentAmount +
+      "card" + // payment_type
+      installmentCount.toString() +
+      currency +
+      (testMode ? "1" : "0") +
+      non3d +
+      this.config.merchantSalt
+
     const paytrToken = this.generateHash(hashStr)
 
-    const data: any = {
+    const data: Record<string, string> = {
       merchant_id: this.config.merchantId,
       paytr_token: paytrToken,
       user_ip: userIp,
       merchant_oid: orderId,
       email: billingInfo.email,
       payment_type: "card",
-      payment_amount: (amount * 100).toFixed(0), // Kuruş cinsinden
-      installment_count: 0,
-      currency: "TRY",
-      client_lang: "tr",
-      test_mode: process.env.PAYTR_TEST_MODE === "1" ? "1" : "0",
-      non_3d: "1", // Recurring payment Non3D olmak zorunda
-      merchant_ok_url: `${process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000"}/uygulama/ayarlar`,
-      merchant_fail_url: `${process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000"}/uygulama/ayarlar`,
+      payment_amount: paymentAmount,
+      installment_count: installmentCount.toString(),
+      currency: currency,
+      test_mode: testMode ? "1" : "0",
+      non_3d: non3d,
+      merchant_ok_url: `${process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000"}/api/subscription/checkout/callback`,
+      merchant_fail_url: `${process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000"}/api/subscription/checkout/callback`,
       user_name: billingInfo.fullName,
       user_address: billingInfo.address,
       user_phone: billingInfo.phone,
       user_basket: userBasket,
       debug_on: process.env.NODE_ENV === "development" ? "1" : "0",
-      utoken,
-      ctoken,
-      recurring: "1", // Recurring payment flag
+      client_lang: "tr",
+      utoken: utoken,
+      ctoken: ctoken,
+      recurring_payment: "1", // Doğru parametre adı
     }
 
-    // CVV varsa ekle
+    // CVV varsa ekle (require_cvv=1 olan kartlar için)
     if (cvv) {
       data.cvv = cvv
     }
 
     try {
+      console.log("[PayTR RECURRING] Sending request for order:", orderId)
+
       const response = await fetch("https://www.paytr.com/odeme", {
         method: "POST",
         headers: {
@@ -600,6 +635,12 @@ export class PayTRClient {
       })
 
       const result = await response.json()
+
+      console.log("[PayTR RECURRING] Response:", {
+        status: result.status,
+        msg: result.msg,
+        try_again: result.try_again,
+      })
 
       // Recurring payment JSON response döner (redirect olmaz)
       return {

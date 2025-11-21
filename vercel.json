@@ -3,6 +3,15 @@
   "functions": {
     "app/api/**/*.ts": {
       "maxDuration": 30
+    },
+    "app/api/cron/**/*.ts": {
+      "maxDuration": 60
     }
-  }
+  },
+  "crons": [
+    {
+      "path": "/api/cron/subscription-renewal",
+      "schedule": "0 9 * * *"
+    }
+  ]
 }

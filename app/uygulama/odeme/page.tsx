@@ -562,8 +562,12 @@ export default function PaymentPage() {
                   phone: billingInfo.phone,
                   address: `${billingInfo.address}, ${billingInfo.district}`,
                   city: billingInfo.city,
+                  district: billingInfo.district,
                   country: "Türkiye",
                   zipCode: billingInfo.zipCode,
+                  identityNumber: billingInfo.identityNumber,
+                  taxNumber: billingInfo.taxNumber || undefined,
+                  taxOffice: billingInfo.taxOffice || undefined,
                 }}
                 onSuccess={() => {
                   toast({

@@ -29,6 +29,20 @@ export async function POST(request: NextRequest) {
     const currency = body.get("currency") as string
     const payment_amount = body.get("payment_amount") as string
 
+    // Kart saklama (CAPI) parametreleri
+    const utoken = body.get("utoken") as string | null
+    const ctoken = body.get("ctoken") as string | null
+    const last4 = body.get("last_4") as string | null
+    const cardMonth = body.get("month") as string | null
+    const cardYear = body.get("year") as string | null
+    const cardBank = body.get("c_bank") as string | null
+    const cardName = body.get("c_name") as string | null
+    const cardBrand = body.get("c_brand") as string | null
+    const cardType = body.get("c_type") as string | null
+    const cardSchema = body.get("schema") as string | null
+    const businessCard = body.get("businessCard") as string | null
+    const requireCvv = body.get("require_cvv") as string | null
+
     if (!merchant_oid || !status || !hash) {
       console.error("[paytr-callback] Missing required parameters")
       return new Response("OK", { status: 200 }) // PayTR'ye OK dönmeliyiz
@@ -245,6 +259,87 @@ export async function POST(request: NextRequest) {
 
       if (invoiceError) {
         console.error("[paytr-callback] Failed to create invoice:", invoiceError)
+      }
+
+      // Kart saklama bilgilerini kaydet (CAPI)
+      if (utoken && ctoken) {
+        // Önce paytr_user_tokens tablosuna utoken'ı kaydet/güncelle
+        const { error: utokenError } = await supabase
+          .from("paytr_user_tokens")
+          .upsert(
+            {
+              user_id: userId,
+              utoken: utoken,
+              updated_at: new Date().toISOString(),
+            },
+            { onConflict: "user_id" }
+          )
+
+        if (utokenError) {
+          console.error("[paytr-callback] Failed to save utoken:", utokenError)
+        } else {
+          console.log("[paytr-callback] utoken saved successfully for user:", userId)
+        }
+
+        // Sonra paytr_saved_cards tablosuna kart bilgilerini kaydet
+        const { error: cardError } = await supabase
+          .from("paytr_saved_cards")
+          .upsert(
+            {
+              user_id: userId,
+              utoken: utoken,
+              ctoken: ctoken,
+              last_4: last4 || "",
+              card_holder_name: cardName || null,
+              expiry_month: cardMonth || "",
+              expiry_year: cardYear || "",
+              require_cvv: requireCvv === "1",
+              bank_name: cardBank || null,
+              card_brand: cardBrand || null,
+              card_type: cardType || null,
+              card_schema: cardSchema || null,
+              is_business_card: businessCard === "y",
+              is_default: true, // İlk kart varsayılan olsun
+              is_active: true,
+              last_used_at: new Date().toISOString(),
+              updated_at: new Date().toISOString(),
+            },
+            { onConflict: "ctoken" }
+          )
+
+        if (cardError) {
+          console.error("[paytr-callback] Failed to save card:", cardError)
+        } else {
+          console.log("[paytr-callback] Saved card info successfully for user:", userId)
+        }
+
+        // İlk ödeme için recurring payment kaydı oluştur
+        const { error: recurringError } = await supabase
+          .from("paytr_recurring_payments")
+          .insert({
+            user_id: userId,
+            subscription_id: newSubscription.id,
+            utoken: utoken,
+            ctoken: ctoken,
+            merchant_oid: merchant_oid,
+            amount: parseFloat(total_amount) / 100, // Kuruştan TL'ye
+            currency: currency || "TRY",
+            payment_status: "completed",
+            paytr_status: status,
+            completed_at: new Date().toISOString(),
+            metadata: {
+              payment_type: payment_type,
+              test_mode: test_mode,
+              card_last4: last4,
+              card_brand: cardBrand,
+            },
+          })
+
+        if (recurringError) {
+          console.error("[paytr-callback] Failed to save recurring payment:", recurringError)
+        } else {
+          console.log("[paytr-callback] Recurring payment record created for user:", userId)
+        }
       }
 
       // Send subscription notification email
