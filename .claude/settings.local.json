@@ -16,7 +16,11 @@
       "Bash(pnpm install:*)",
       "Bash(timeout 2 bash:*)",
       "Bash(timeout 3 bash:*)",
-      "Bash(npm run dev:*)"
+      "Bash(npm run dev:*)",
+      "Bash(git push:*)",
+      "Bash(dir:*)",
+      "Bash(nul)",
+      "Bash(pnpm dev)"
     ],
     "deny": [],
     "ask": []

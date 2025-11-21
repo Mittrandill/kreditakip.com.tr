@@ -395,7 +395,7 @@ async function analyzeRiskWithGemini(financialProfile: FinancialProfile, credits
   // DAHA HIZLI MODEL KULLANIMI
   // 'gemini-1.5-flash' şu an en hızlı ve maliyet etkin modeldir.
   const model = genAI.getGenerativeModel({
-    model: "gemini-1.5-flash",
+    model: "gemini-2.5-flash",
     generationConfig: {
       temperature: 0.2,
       responseMimeType: "application/json",
