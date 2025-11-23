@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useRef } from "react"
 import { useRouter } from "next/navigation"
-import { Plus, ChevronUp, Scan, CreditCard, KeyRound } from "lucide-react"
+import { Plus, ChevronUp, Scan, CreditCard, Receipt } from "lucide-react"
 import { cn } from "@/lib/utils"
 
 const quickActions = [
@@ -14,15 +14,15 @@ const quickActions = [
   },
   {
     id: 2,
-    label: "Kredi Ekle",
+    label: "Manuel Kredi Ekle",
     route: "/uygulama/krediler/kredi-ekle",
     icon: CreditCard
   },
   {
     id: 3,
-    label: "Şifre Ekle",
-    route: "/uygulama/sifrelerim/ekle",
-    icon: KeyRound
+    label: "Abonelik",
+    route: "/uygulama/abonelik",
+    icon: Receipt
   },
 ]
 

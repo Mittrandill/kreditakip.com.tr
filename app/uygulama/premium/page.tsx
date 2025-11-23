@@ -98,9 +98,48 @@ export default function PremiumPage() {
     }
   }
 
-  const confirmPlanChange = () => {
+  const confirmPlanChange = async () => {
+    setIsProcessing(true)
     setShowConfirmDialog(false)
-    router.push(`/uygulama/odeme?plan=${targetPlanId}&upgrade=true`)
+
+    try {
+      const response = await fetch("/api/subscription/change-plan", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          newPlanId: targetPlanId,
+        }),
+      })
+
+      const data = await response.json()
+
+      if (data.success) {
+        toast({
+          title: "Plan Değişikliği Başarılı",
+          description: data.message,
+        })
+
+        // Sayfayı yenile
+        window.location.reload()
+      } else {
+        toast({
+          title: "Hata",
+          description: data.error || "Plan değiştirilemedi",
+          variant: "destructive",
+        })
+      }
+    } catch (error: any) {
+      console.error("Plan change error:", error)
+      toast({
+        title: "Hata",
+        description: "Bir hata oluştu. Lütfen tekrar deneyin.",
+        variant: "destructive",
+      })
+    } finally {
+      setIsProcessing(false)
+    }
   }
 
   // Seçili planı al
@@ -423,8 +462,8 @@ export default function PremiumPage() {
             </div>
             <DialogDescription className="text-base pt-2">
               {subscription?.plan_id === "premium-yearly"
-                ? "Yıllık planınızdan aylık plana geçmek istediğinize emin misiniz?"
-                : "Aylık planınızdan yıllık plana geçmek istediğinize emin misiniz?"}
+                ? "Yıllık planınızdan aylık plana geçmek istediğinize emin misiniz? Mevcut süreniz bittiğinde aylık plan aktif olacaktır."
+                : "Aylık planınızdan yıllık plana geçmek istediğinize emin misiniz? Mevcut ayınız bittiğinde yıllık plan aktif olacaktır."}
             </DialogDescription>
           </DialogHeader>
           <div className="py-4">
@@ -452,9 +491,17 @@ export default function PremiumPage() {
                 </div>
               </div>
             </div>
-            <p className="text-sm text-gray-600 dark:text-white/60 mt-4">
-              Plan değişikliği hemen gerçekleşecek ve yeni ödeme döngüsü başlayacaktır.
-            </p>
+            <div className="mt-4 p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-200 dark:border-blue-800">
+              <p className="text-sm text-blue-900 dark:text-blue-100">
+                <strong>Önemli:</strong> Plan değişikliğiniz kaydedilecektir. Mevcut abonelik süreniz{" "}
+                {subscription?.expiresAt && (
+                  <span className="font-semibold">
+                    ({new Date(subscription.expiresAt).toLocaleDateString("tr-TR")})
+                  </span>
+                )}{" "}
+                bittiğinde yeni plan otomatik olarak devreye girecektir. Ek ödeme gerekmez.
+              </p>
+            </div>
           </div>
           <DialogFooter className="sm:space-x-2">
             <Button

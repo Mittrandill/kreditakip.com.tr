@@ -1,0 +1,1266 @@
+"use client"
+
+import { useEffect, useState, useMemo } from "react"
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs"
+import { Button } from "@/components/ui/button"
+import { Badge } from "@/components/ui/badge"
+import { Input } from "@/components/ui/input"
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
+import { PaginationModern } from "@/components/ui/pagination-modern"
+import { Separator } from "@/components/ui/separator"
+import { Progress } from "@/components/ui/progress"
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog"
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
+import {
+  Crown,
+  Calendar,
+  CreditCard,
+  AlertCircle,
+  CheckCircle,
+  Star,
+  Plus,
+  Trash2,
+  Receipt,
+  ArrowRight,
+  Settings as SettingsIcon,
+  FileText,
+  CheckCircle2,
+  XCircle,
+  Clock,
+  Download,
+  DollarSign,
+  ArrowUpDown,
+  Search,
+  TrendingUp,
+  Zap,
+  Shield,
+} from "lucide-react"
+import { useRouter } from "next/navigation"
+import { useAuth } from "@/hooks/use-auth"
+import { useSubscription } from "@/hooks/use-subscription"
+import { useToast } from "@/hooks/use-toast"
+import { LoadingSpinner } from "@/components/loading-screen"
+import { cancelSubscription } from "@/app/actions/subscription"
+import { createBrowserClient } from "@supabase/ssr"
+
+const supabase = createBrowserClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!)
+
+interface SavedCard {
+  id: string
+  last_4: string
+  card_holder_name: string
+  expiry_month: string
+  expiry_year: string
+  bank_name?: string
+  card_brand?: string
+  is_default: boolean
+}
+
+interface PaymentTransaction {
+  id: string
+  amount: string
+  currency: string
+  status: string
+  payment_method: string
+  created_at: string
+  iyzico_payment_id: string | null
+}
+
+interface Invoice {
+  id: string
+  invoice_number: string
+  invoice_date: string
+  amount: number
+  currency: string
+  status: string
+  file_url: string | null
+  file_name: string | null
+  payment_date: string | null
+  subscription_id: string | null
+}
+
+export default function SubscriptionPage() {
+  const router = useRouter()
+  const { toast } = useToast()
+  const { user } = useAuth()
+  const { subscription, loading, isPremium, refresh } = useSubscription()
+  const [activeTab, setActiveTab] = useState("overview")
+  const [cards, setCards] = useState<SavedCard[]>([])
+  const [cardsLoading, setCardsLoading] = useState(true)
+  const [showCancelDialog, setShowCancelDialog] = useState(false)
+  const [isCancelling, setIsCancelling] = useState(false)
+  const [deleteCardId, setDeleteCardId] = useState<string | null>(null)
+  const [isDeleting, setIsDeleting] = useState(false)
+  const [settingDefaultId, setSettingDefaultId] = useState<string | null>(null)
+
+  // Invoice and payment history states
+  const [transactions, setTransactions] = useState<PaymentTransaction[]>([])
+  const [invoices, setInvoices] = useState<Invoice[]>([])
+  const [dataLoading, setDataLoading] = useState(true)
+  const [searchTerm, setSearchTerm] = useState("")
+  const [transactionsSortBy, setTransactionsSortBy] = useState("tarih")
+  const [transactionsSortOrder, setTransactionsSortOrder] = useState<"asc" | "desc">("desc")
+  const [invoicesSortBy, setInvoicesSortBy] = useState("tarih")
+  const [invoicesSortOrder, setInvoicesSortOrder] = useState<"asc" | "desc">("desc")
+  const [transactionsPage, setTransactionsPage] = useState(1)
+  const [invoicesPage, setInvoicesPage] = useState(1)
+  const itemsPerPage = 8
+
+  useEffect(() => {
+    fetchCards()
+    fetchPaymentData()
+  }, [user])
+
+  const fetchCards = async () => {
+    try {
+      const response = await fetch("/api/payment/cards")
+      const data = await response.json()
+      if (data.success) {
+        setCards(data.cards || [])
+      }
+    } catch (error) {
+      console.error("Fetch cards error:", error)
+    } finally {
+      setCardsLoading(false)
+    }
+  }
+
+  const fetchPaymentData = async () => {
+    if (!user) {
+      setDataLoading(false)
+      return
+    }
+
+    try {
+      // Fetch transactions
+      const { data: transactionsData, error: transactionsError } = await supabase
+        .from("payment_transactions")
+        .select("*")
+        .eq("user_id", user.id)
+        .order("created_at", { ascending: false })
+
+      if (transactionsError) {
+        console.error("[abonelik] Transactions error:", transactionsError)
+      } else {
+        setTransactions(transactionsData || [])
+      }
+
+      // Fetch invoices
+      const { data: invoicesData, error: invoicesError } = await supabase
+        .from("invoices")
+        .select("*")
+        .eq("user_id", user.id)
+        .order("invoice_date", { ascending: false })
+
+      if (invoicesError) {
+        console.error("[abonelik] Invoices error:", invoicesError)
+      } else {
+        setInvoices(invoicesData || [])
+      }
+    } catch (error) {
+      console.error("[abonelik] Error fetching payment data:", error)
+    } finally {
+      setDataLoading(false)
+    }
+  }
+
+  const handleCancelSubscription = async () => {
+    setIsCancelling(true)
+    try {
+      const result = await cancelSubscription()
+      if (result.success) {
+        toast({
+          title: "Abonelik İptal Edildi",
+          description: result.message || "Aboneliğiniz başarıyla iptal edildi.",
+        })
+        refresh()
+      } else {
+        toast({
+          title: "Hata",
+          description: result.error || "Abonelik iptal edilemedi",
+          variant: "destructive",
+        })
+      }
+    } catch (error) {
+      toast({
+        title: "Hata",
+        description: "Bir hata oluştu. Lütfen tekrar deneyin.",
+        variant: "destructive",
+      })
+    } finally {
+      setIsCancelling(false)
+      setShowCancelDialog(false)
+    }
+  }
+
+  const handleDeleteCard = async (cardId: string) => {
+    setIsDeleting(true)
+    try {
+      const response = await fetch(`/api/payment/cards/${cardId}`, { method: "DELETE" })
+      const data = await response.json()
+      if (data.success) {
+        toast({ title: "Kart Silindi", description: "Kart başarıyla silindi." })
+        fetchCards()
+      } else {
+        toast({ title: "Hata", description: data.error || "Kart silinirken hata oluştu", variant: "destructive" })
+      }
+    } catch (error) {
+      toast({ title: "Hata", description: "Bir hata oluştu. Lütfen tekrar deneyin.", variant: "destructive" })
+    } finally {
+      setIsDeleting(false)
+      setDeleteCardId(null)
+    }
+  }
+
+  const handleSetDefault = async (cardId: string) => {
+    setSettingDefaultId(cardId)
+    try {
+      const response = await fetch("/api/payment/cards/set-default", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ cardId }),
+      })
+      const data = await response.json()
+      if (data.success) {
+        toast({ title: "Varsayılan Kart Güncellendi", description: "Varsayılan kart başarıyla değiştirildi." })
+        fetchCards()
+      } else {
+        toast({
+          title: "Hata",
+          description: data.error || "Varsayılan kart güncellenirken hata oluştu",
+          variant: "destructive",
+        })
+      }
+    } catch (error) {
+      toast({ title: "Hata", description: "Bir hata oluştu. Lütfen tekrar deneyin.", variant: "destructive" })
+    } finally {
+      setSettingDefaultId(null)
+    }
+  }
+
+  const getPlanName = (planId: string) => {
+    if (planId === "premium-yearly") return "Yıllık Premium"
+    if (planId === "premium-monthly") return "Aylık Premium"
+    return "Ücretsiz Plan"
+  }
+
+  const getPlanPrice = (planId: string) => {
+    if (planId === "premium-yearly") return "1,990₺/yıl"
+    if (planId === "premium-monthly") return "199₺/ay"
+    return "0₺"
+  }
+
+  // Filtered and sorted transactions
+  const filteredAndSortedTransactions = useMemo(() => {
+    let filtered = transactions.filter((transaction) => {
+      const searchLower = searchTerm.toLowerCase()
+      return (
+        transaction.amount.toString().toLowerCase().includes(searchLower) ||
+        transaction.currency.toLowerCase().includes(searchLower) ||
+        transaction.payment_method.toLowerCase().includes(searchLower) ||
+        transaction.status.toLowerCase().includes(searchLower)
+      )
+    })
+
+    filtered.sort((a, b) => {
+      let comparison = 0
+      if (transactionsSortBy === "tarih") {
+        comparison = new Date(a.created_at).getTime() - new Date(b.created_at).getTime()
+      } else if (transactionsSortBy === "tutar") {
+        comparison = Number.parseFloat(a.amount) - Number.parseFloat(b.amount)
+      } else if (transactionsSortBy === "durum") {
+        comparison = a.status.localeCompare(b.status)
+      }
+      return transactionsSortOrder === "asc" ? comparison : -comparison
+    })
+
+    return filtered
+  }, [transactions, searchTerm, transactionsSortBy, transactionsSortOrder])
+
+  // Filtered and sorted invoices
+  const filteredAndSortedInvoices = useMemo(() => {
+    let filtered = invoices.filter((invoice) => {
+      const searchLower = searchTerm.toLowerCase()
+      return (
+        invoice.invoice_number.toLowerCase().includes(searchLower) ||
+        invoice.amount.toString().toLowerCase().includes(searchLower) ||
+        invoice.currency.toLowerCase().includes(searchLower) ||
+        invoice.status.toLowerCase().includes(searchLower)
+      )
+    })
+
+    filtered.sort((a, b) => {
+      let comparison = 0
+      if (invoicesSortBy === "tarih") {
+        comparison = new Date(a.invoice_date).getTime() - new Date(b.invoice_date).getTime()
+      } else if (invoicesSortBy === "tutar") {
+        comparison = a.amount - b.amount
+      } else if (invoicesSortBy === "faturaNo") {
+        comparison = a.invoice_number.localeCompare(b.invoice_number)
+      } else if (invoicesSortBy === "durum") {
+        comparison = a.status.localeCompare(b.status)
+      }
+      return invoicesSortOrder === "asc" ? comparison : -comparison
+    })
+
+    return filtered
+  }, [invoices, searchTerm, invoicesSortBy, invoicesSortOrder])
+
+  // Pagination calculations
+  const totalTransactionsPages = Math.ceil(filteredAndSortedTransactions.length / itemsPerPage)
+  const startTransactionsIndex = (transactionsPage - 1) * itemsPerPage
+  const endTransactionsIndex = startTransactionsIndex + itemsPerPage
+  const currentTransactions = filteredAndSortedTransactions.slice(startTransactionsIndex, endTransactionsIndex)
+
+  const totalInvoicesPages = Math.ceil(filteredAndSortedInvoices.length / itemsPerPage)
+  const startInvoicesIndex = (invoicesPage - 1) * itemsPerPage
+  const endInvoicesIndex = startInvoicesIndex + itemsPerPage
+  const currentInvoices = filteredAndSortedInvoices.slice(startInvoicesIndex, endInvoicesIndex)
+
+  const handleTransactionsSort = (column: string) => {
+    if (transactionsSortBy === column) {
+      setTransactionsSortOrder(transactionsSortOrder === "asc" ? "desc" : "asc")
+    } else {
+      setTransactionsSortBy(column)
+      setTransactionsSortOrder("asc")
+    }
+  }
+
+  const handleInvoicesSort = (column: string) => {
+    if (invoicesSortBy === column) {
+      setInvoicesSortOrder(invoicesSortOrder === "asc" ? "desc" : "asc")
+    } else {
+      setInvoicesSortBy(column)
+      setInvoicesSortOrder("asc")
+    }
+  }
+
+  const getStatusBadge = (status: string) => {
+    switch (status) {
+      case "active":
+        return (
+          <Badge className="bg-emerald-600 dark:bg-emerald-500">
+            <CheckCircle className="h-3 w-3 mr-1" />
+            Aktif
+          </Badge>
+        )
+      case "cancelled":
+        return (
+          <Badge variant="outline" className="text-orange-600 border-orange-600">
+            <AlertCircle className="h-3 w-3 mr-1" />
+            İptal Edildi
+          </Badge>
+        )
+      case "expired":
+        return (
+          <Badge variant="outline" className="text-red-600 border-red-600">
+            <AlertCircle className="h-3 w-3 mr-1" />
+            Süresi Doldu
+          </Badge>
+        )
+      case "completed":
+      case "paid":
+        return (
+          <Badge className="bg-gradient-to-r from-emerald-600 to-teal-700 text-white border-transparent hover:from-emerald-700 hover:to-teal-800 flex items-center gap-1">
+            <CheckCircle2 className="h-3 w-3" />
+            {status === "completed" ? "Tamamlandı" : "Ödendi"}
+          </Badge>
+        )
+      case "pending":
+        return (
+          <Badge className="bg-gradient-to-r from-orange-600 to-amber-700 text-white border-transparent hover:from-orange-700 hover:to-amber-800 flex items-center gap-1">
+            <Clock className="h-3 w-3" />
+            Beklemede
+          </Badge>
+        )
+      case "failed":
+        return (
+          <Badge className="bg-gradient-to-r from-red-600 to-rose-700 text-white border-transparent hover:from-red-700 hover:to-rose-800 flex items-center gap-1">
+            <XCircle className="h-3 w-3" />
+            Başarısız
+          </Badge>
+        )
+      default:
+        return <Badge variant="outline">{status}</Badge>
+    }
+  }
+
+  if (loading || cardsLoading) {
+    return (
+      <div className="flex items-center justify-center min-h-[60vh]">
+        <LoadingSpinner size="lg" />
+      </div>
+    )
+  }
+
+  return (
+    <div className="flex flex-col gap-4 md:gap-6">
+      {/* Hero Section - Kredilerim Tarzı */}
+      <Card className="bg-gradient-to-br from-emerald-600 via-teal-600 to-emerald-700 dark:from-emerald-700 dark:via-teal-700 dark:to-emerald-800 text-white border-0 shadow-2xl">
+        <CardContent className="p-6 md:p-8">
+          <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4">
+            <div className="flex-1">
+              <h1 className="text-3xl md:text-4xl font-bold mb-2 flex items-center gap-3">
+                <Crown className="h-8 w-8" />
+                Abonelik Yönetimi
+              </h1>
+              <p className="text-white/80 text-base md:text-lg mb-4">
+                Abonelik bilgilerinizi, kayıtlı kartlarınızı ve ödeme geçmişinizi yönetin
+              </p>
+
+              {/* Stats Grid */}
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4">
+                <div>
+                  <p className="text-white/70 text-xs sm:text-sm mb-1">Kayıtlı Kart</p>
+                  <p className="text-xl sm:text-2xl font-bold truncate">{cards.length} Adet</p>
+                </div>
+                <div>
+                  <p className="text-white/70 text-xs sm:text-sm mb-1">Toplam Fatura</p>
+                  <p className="text-xl sm:text-2xl font-bold">{invoices.length} Adet</p>
+                </div>
+                <div>
+                  <p className="text-white/70 text-xs sm:text-sm mb-1">Abonelik</p>
+                  <p className="text-xl sm:text-2xl font-bold truncate">{isPremium ? "Premium" : "Ücretsiz"}</p>
+                </div>
+              </div>
+            </div>
+
+            {/* CTA Button */}
+            <Button
+              onClick={() => router.push("/uygulama/premium")}
+              size="lg"
+              className="bg-transparent border-white/20 text-white hover:bg-white/10 hover:border-transparent hover:text-white dark:bg-transparent dark:border-white/20 dark:text-white dark:hover:bg-white/10 dark:hover:border-transparent dark:hover:text-white"
+             variant="outline"
+            >
+              <SettingsIcon className="h-5 w-5 mr-2" />
+              Planı Yönet
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Modern Tabs */}
+      <div className="bg-white dark:bg-black/20 rounded-2xl shadow-sm border border-gray-100 dark:border-white/10 overflow-hidden">
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+          <div className="border-b border-gray-100 dark:border-white/10 bg-gray-50/50 dark:bg-emerald-900/10">
+            <TabsList className="grid grid-cols-3 bg-transparent h-auto p-2 gap-2">
+              <TabsTrigger
+                value="overview"
+                className="flex items-center gap-2 py-3 px-4 data-[state=active]:text-emerald-600 dark:data-[state=active]:text-emerald-400 data-[state=active]:bg-white dark:data-[state=active]:bg-emerald-900/20 data-[state=active]:shadow-sm rounded-xl transition-all duration-200 hover:bg-gray-100 dark:hover:bg-white/10 dark:text-white/60"
+              >
+                <Shield className="h-4 w-4" />
+                <span className="font-medium">Abonelik Bilgileri</span>
+              </TabsTrigger>
+              <TabsTrigger
+                value="invoices"
+                className="flex items-center gap-2 py-3 px-4 data-[state=active]:text-emerald-600 dark:data-[state=active]:text-emerald-400 data-[state=active]:bg-white dark:data-[state=active]:bg-emerald-900/20 data-[state=active]:shadow-sm rounded-xl transition-all duration-200 hover:bg-gray-100 dark:hover:bg-white/10 dark:text-white/60"
+              >
+                <FileText className="h-4 w-4" />
+                <span className="font-medium">Faturalar</span>
+              </TabsTrigger>
+              <TabsTrigger
+                value="payments"
+                className="flex items-center gap-2 py-3 px-4 data-[state=active]:text-emerald-600 dark:data-[state=active]:text-emerald-400 data-[state=active]:bg-white dark:data-[state=active]:bg-emerald-900/20 data-[state=active]:shadow-sm rounded-xl transition-all duration-200 hover:bg-gray-100 dark:hover:bg-white/10 dark:text-white/60"
+              >
+                <DollarSign className="h-4 w-4" />
+                <span className="font-medium">Ödeme Geçmişi</span>
+              </TabsTrigger>
+            </TabsList>
+          </div>
+
+          <div className="p-6">
+          {/* Abonelik Bilgileri Tab - Premium Style */}
+          <TabsContent value="overview" className="space-y-6 sm:space-y-8">
+            {!isPremium ? (
+              /* Free Plan - Premium Style Upgrade Prompt */
+              <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-gray-400 via-slate-500 to-gray-600 p-6 sm:p-8 md:p-12 text-white shadow-2xl">
+                <div className="absolute inset-0 bg-[url('/grid.svg')] opacity-10"></div>
+                <div className="absolute top-0 right-0 w-64 sm:w-96 h-64 sm:h-96 bg-white/10 rounded-full blur-3xl"></div>
+                <div className="absolute bottom-0 left-0 w-64 sm:w-96 h-64 sm:h-96 bg-slate-500/20 rounded-full blur-3xl"></div>
+
+                <div className="relative z-10 text-center space-y-4 sm:space-y-6">
+                  <div className="inline-flex p-3 sm:p-5 bg-white/20 rounded-2xl backdrop-blur-sm mb-2 sm:mb-4">
+                    <Crown className="h-8 w-8 sm:h-12 sm:w-12 text-white" />
+                  </div>
+
+                  <div className="space-y-2 sm:space-y-3">
+                    <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold">Ücretsiz Plan</h2>
+                    <p className="text-base sm:text-lg md:text-xl text-white/90 max-w-2xl mx-auto">
+                      Premium'a yükseltin ve tüm özelliklerin kilidini açın
+                    </p>
+                  </div>
+
+                  <Button
+                    onClick={() => router.push("/uygulama/premium")}
+                    size="lg"
+                    className="bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-600 hover:to-orange-700 text-white border-0 shadow-xl hover:shadow-2xl transition-all text-base sm:text-lg px-6 sm:px-8 py-5 sm:py-6 h-auto"
+                  >
+                    <Crown className="h-5 w-5 mr-2" />
+                    Premium'a Yükselt
+                  </Button>
+                </div>
+              </div>
+            ) : (
+              <div className="space-y-6 sm:space-y-8">
+                {/* Premium Hero Banner */}
+                <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-emerald-500 via-teal-600 to-cyan-700 p-6 sm:p-8 md:p-12 text-white shadow-2xl">
+                  <div className="absolute inset-0 bg-[url('/grid.svg')] opacity-10"></div>
+                  <div className="absolute top-0 right-0 w-64 sm:w-96 h-64 sm:h-96 bg-white/10 rounded-full blur-3xl"></div>
+                  <div className="absolute bottom-0 left-0 w-64 sm:w-96 h-64 sm:h-96 bg-cyan-500/20 rounded-full blur-3xl"></div>
+
+                  <div className="relative z-10 text-center space-y-4 sm:space-y-6">
+                    <div className="inline-flex p-3 sm:p-5 bg-white/20 rounded-2xl backdrop-blur-sm mb-2 sm:mb-4">
+                      <Crown className="h-8 w-8 sm:h-12 sm:w-12 text-white" />
+                    </div>
+
+                    <div className="space-y-2 sm:space-y-3">
+                      <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold">
+                        {subscription?.plan_id ? getPlanName(subscription.plan_id) : "Premium"}
+                      </h2>
+                      <p className="text-xl sm:text-2xl md:text-3xl font-semibold text-white/90">
+                        {subscription?.plan_id ? getPlanPrice(subscription.plan_id) : ""}
+                      </p>
+                    </div>
+
+                    <div className="flex flex-wrap items-center justify-center gap-3 sm:gap-4">
+                      {subscription?.status && (
+                        <div className="px-4 sm:px-6 py-2 sm:py-3 bg-white/20 rounded-xl backdrop-blur-sm border border-white/30">
+                          <div className="flex items-center gap-2">
+                            <CheckCircle className="h-4 w-4 sm:h-5 sm:w-5" />
+                            <span className="text-sm sm:text-base font-medium">
+                              {subscription.status === "active" ? "Aktif" : subscription.status === "cancelled" ? "İptal Edildi" : "Süresi Doldu"}
+                            </span>
+                          </div>
+                        </div>
+                      )}
+
+                      {subscription?.expires_at && subscription.status === "active" && (
+                        <div className="px-4 sm:px-6 py-2 sm:py-3 bg-white/20 rounded-xl backdrop-blur-sm border border-white/30">
+                          <div className="flex items-center gap-2">
+                            <Clock className="h-4 w-4 sm:h-5 sm:w-5" />
+                            <span className="text-sm sm:text-base font-medium">
+                              {Math.ceil((new Date(subscription.expires_at).getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24))} gün kaldı
+                            </span>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </div>
+
+                {/* Timeline Stats - Glass Cards */}
+                {subscription?.start_date && subscription?.expires_at && subscription.status === "active" && (
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-6">
+                    {/* Start Date */}
+                    <div className="bg-white/50 dark:bg-black/20 backdrop-blur-sm rounded-2xl p-4 sm:p-6 border border-gray-200 dark:border-white/10 shadow-lg">
+                      <div className="flex items-center gap-3 mb-3">
+                        <div className="p-2 sm:p-3 bg-emerald-100 dark:bg-emerald-900/30 rounded-xl">
+                          <Calendar className="h-5 w-5 sm:h-6 sm:w-6 text-emerald-600 dark:text-emerald-400" />
+                        </div>
+                        <span className="text-sm sm:text-base font-medium text-gray-600 dark:text-gray-400">Başlangıç</span>
+                      </div>
+                      <p className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white">
+                        {new Date(subscription.start_date).toLocaleDateString("tr-TR", {
+                          day: "numeric",
+                          month: "long",
+                          year: "numeric",
+                        })}
+                      </p>
+                    </div>
+
+                    {/* Progress */}
+                    <div className="bg-white/50 dark:bg-black/20 backdrop-blur-sm rounded-2xl p-4 sm:p-6 border border-gray-200 dark:border-white/10 shadow-lg">
+                      <div className="flex items-center gap-3 mb-3">
+                        <div className="p-2 sm:p-3 bg-teal-100 dark:bg-teal-900/30 rounded-xl">
+                          <TrendingUp className="h-5 w-5 sm:h-6 sm:w-6 text-teal-600 dark:text-teal-400" />
+                        </div>
+                        <span className="text-sm sm:text-base font-medium text-gray-600 dark:text-gray-400">İlerleme</span>
+                      </div>
+                      <div className="space-y-2">
+                        <div className="flex justify-between items-center">
+                          <span className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white">
+                            {Math.round(((new Date().getTime() - new Date(subscription.start_date).getTime()) / (new Date(subscription.expires_at).getTime() - new Date(subscription.start_date).getTime())) * 100)}%
+                          </span>
+                        </div>
+                        <div className="w-full bg-gray-200 dark:bg-white/20 rounded-full h-2 sm:h-3 overflow-hidden">
+                          <div
+                            className="bg-gradient-to-r from-emerald-500 to-teal-600 h-2 sm:h-3 rounded-full transition-all shadow-lg"
+                            style={{
+                              width: `${Math.min(100, ((new Date().getTime() - new Date(subscription.start_date).getTime()) / (new Date(subscription.expires_at).getTime() - new Date(subscription.start_date).getTime())) * 100)}%`
+                            }}
+                          ></div>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Next Billing */}
+                    <div className="bg-white/50 dark:bg-black/20 backdrop-blur-sm rounded-2xl p-4 sm:p-6 border border-gray-200 dark:border-white/10 shadow-lg">
+                      <div className="flex items-center gap-3 mb-3">
+                        <div className="p-2 sm:p-3 bg-cyan-100 dark:bg-cyan-900/30 rounded-xl">
+                          <Clock className="h-5 w-5 sm:h-6 sm:w-6 text-cyan-600 dark:text-cyan-400" />
+                        </div>
+                        <span className="text-sm sm:text-base font-medium text-gray-600 dark:text-gray-400">Yenileme</span>
+                      </div>
+                      <p className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white">
+                        {new Date(subscription.expires_at).toLocaleDateString("tr-TR", {
+                          day: "numeric",
+                          month: "long",
+                          year: "numeric",
+                        })}
+                      </p>
+                    </div>
+                  </div>
+                )}
+
+                {/* Premium Feature Cards */}
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-6">
+                  {/* OCR Analysis Card */}
+                  <Card className="relative overflow-hidden border-0 bg-gradient-to-br from-emerald-500 via-teal-600 to-emerald-700 text-white shadow-xl hover:shadow-2xl transition-all duration-300 hover:scale-105">
+                    <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full blur-3xl"></div>
+                    <CardContent className="relative z-10 p-6 space-y-4">
+                      <div className="inline-flex p-3 bg-white/20 rounded-xl backdrop-blur-sm">
+                        <FileText className="h-6 w-6 text-white" />
+                      </div>
+                      <div>
+                        <h3 className="text-sm font-medium text-white/80 mb-1">OCR Kredi Dökümü</h3>
+                        <div className="flex items-baseline gap-2 mb-2">
+                          <p className="text-3xl font-bold">{subscription?.usage?.ocrAnalysis?.used || 0}</p>
+                          <p className="text-lg text-white/80">
+                            / {subscription?.usage?.ocrAnalysis?.limit === 999999 ? "∞" : subscription?.usage?.ocrAnalysis?.limit || 1}
+                          </p>
+                        </div>
+                        <Progress
+                          value={
+                            subscription?.usage?.ocrAnalysis?.limit === 999999
+                              ? 0
+                              : ((subscription?.usage?.ocrAnalysis?.used || 0) / (subscription?.usage?.ocrAnalysis?.limit || 1)) * 100
+                          }
+                          className="h-2 bg-white/20"
+                          indicatorClassName="bg-white"
+                        />
+                        <p className="text-xs text-white/70 mt-2">
+                          {subscription?.usage?.ocrAnalysis?.limit === 999999
+                            ? "Sınırsız Kullanım"
+                            : `${(subscription?.usage?.ocrAnalysis?.limit || 1) - (subscription?.usage?.ocrAnalysis?.used || 0)} Hak Kaldı`}
+                        </p>
+                      </div>
+                    </CardContent>
+                  </Card>
+
+                  {/* Risk Analysis Card */}
+                  <Card className="relative overflow-hidden border-0 bg-gradient-to-br from-blue-500 via-indigo-600 to-purple-700 text-white shadow-xl hover:shadow-2xl transition-all duration-300 hover:scale-105">
+                    <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full blur-3xl"></div>
+                    <CardContent className="relative z-10 p-6 space-y-4">
+                      <div className="inline-flex p-3 bg-white/20 rounded-xl backdrop-blur-sm">
+                        <TrendingUp className="h-6 w-6 text-white" />
+                      </div>
+                      <div>
+                        <h3 className="text-sm font-medium text-white/80 mb-1">Risk Analizi</h3>
+                        <div className="flex items-baseline gap-2 mb-2">
+                          <p className="text-3xl font-bold">{subscription?.usage?.riskAnalysis?.used || 0}</p>
+                          <p className="text-lg text-white/80">
+                            / {subscription?.usage?.riskAnalysis?.limit === 999999 ? "∞" : subscription?.usage?.riskAnalysis?.limit || 0}
+                          </p>
+                        </div>
+                        <Progress
+                          value={
+                            subscription?.usage?.riskAnalysis?.limit === 999999
+                              ? 0
+                              : ((subscription?.usage?.riskAnalysis?.used || 0) / (subscription?.usage?.riskAnalysis?.limit || 1)) * 100
+                          }
+                          className="h-2 bg-white/20"
+                          indicatorClassName="bg-white"
+                        />
+                        <p className="text-xs text-white/70 mt-2">
+                          {subscription?.usage?.riskAnalysis?.limit === 999999
+                            ? "Sınırsız Kullanım"
+                            : subscription?.usage?.riskAnalysis?.limit === 0
+                              ? "Premium Özellik"
+                              : `${(subscription?.usage?.riskAnalysis?.limit || 0) - (subscription?.usage?.riskAnalysis?.used || 0)} Hak Kaldı`}
+                        </p>
+                      </div>
+                    </CardContent>
+                  </Card>
+
+                  {/* Saved Cards Card */}
+                  <Card className="relative overflow-hidden border-0 bg-gradient-to-br from-purple-500 via-pink-600 to-rose-700 text-white shadow-xl hover:shadow-2xl transition-all duration-300 hover:scale-105">
+                    <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full blur-3xl"></div>
+                    <CardContent className="relative z-10 p-6 space-y-4">
+                      <div className="inline-flex p-3 bg-white/20 rounded-xl backdrop-blur-sm">
+                        <CreditCard className="h-6 w-6 text-white" />
+                      </div>
+                      <div>
+                        <h3 className="text-sm font-medium text-white/80 mb-1">Kayıtlı Kartlar</h3>
+                        <div className="flex items-baseline gap-2 mb-2">
+                          <p className="text-3xl font-bold">{cards.length}</p>
+                          <p className="text-lg text-white/80">/ 10</p>
+                        </div>
+                        <Progress
+                          value={(cards.length / 10) * 100}
+                          className="h-2 bg-white/20"
+                          indicatorClassName="bg-white"
+                        />
+                        <p className="text-xs text-white/70 mt-2">
+                          {10 - cards.length} Kart Daha Eklenebilir
+                        </p>
+                      </div>
+                    </CardContent>
+                  </Card>
+                </div>
+
+                {/* Cancellation Warning */}
+                {subscription?.status === "cancelled" && (
+                  <Card className="border-orange-200 dark:border-orange-800/50 bg-orange-50 dark:bg-orange-950/20">
+                    <CardContent className="p-4">
+                      <div className="flex gap-3">
+                        <div className="flex-shrink-0">
+                          <div className="w-10 h-10 rounded-full bg-orange-100 dark:bg-orange-900/30 flex items-center justify-center">
+                            <AlertCircle className="h-5 w-5 text-orange-600 dark:text-orange-400" />
+                          </div>
+                        </div>
+                        <div className="flex-1">
+                          <h4 className="font-semibold text-orange-900 dark:text-orange-100 mb-1">
+                            Aboneliğiniz İptal Edildi
+                          </h4>
+                          <p className="text-sm text-orange-700 dark:text-orange-300 mb-3">
+                            {subscription.expires_at && (
+                              <>
+                                {new Date(subscription.expires_at).toLocaleDateString("tr-TR")} tarihine kadar
+                                premium özelliklerine erişmeye devam edebilirsiniz.
+                              </>
+                            )}
+                          </p>
+                          <Button
+                            onClick={() => router.push("/uygulama/premium")}
+                            size="sm"
+                            className="bg-orange-600 hover:bg-orange-700 text-white"
+                          >
+                            Aboneliği Yeniden Başlat
+                          </Button>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                )}
+
+                {/* Kayıtlı Kartlar - Real Card Preview */}
+                <Card className="bg-white/50 dark:bg-black/20 backdrop-blur-sm border border-gray-200 dark:border-white/10 shadow-lg">
+                  <CardHeader className="pb-3 border-b border-gray-200 dark:border-white/10">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-3">
+                        <div className="p-2 bg-gradient-to-br from-purple-500 to-pink-600 rounded-xl">
+                          <CreditCard className="h-5 w-5 text-white" />
+                        </div>
+                        <CardTitle className="text-lg font-bold dark:text-white">Kayıtlı Kartlarım</CardTitle>
+                      </div>
+                      <Button
+                        onClick={() => router.push("/uygulama/premium")}
+                        size="sm"
+                        className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white border-0 shadow-lg"
+                      >
+                        <Plus className="h-4 w-4 mr-2" />
+                        Yeni Kart Ekle
+                      </Button>
+                    </div>
+                  </CardHeader>
+                  <CardContent>
+                    {cards.length === 0 ? (
+                      <div className="text-center py-12 border-2 border-dashed border-gray-200 dark:border-white/10 rounded-lg">
+                        <CreditCard className="h-12 w-12 mx-auto text-gray-400 dark:text-gray-600 mb-3" />
+                        <p className="text-gray-600 dark:text-gray-400 mb-4">Henüz kayıtlı kartınız yok</p>
+                        <Button onClick={() => router.push("/uygulama/premium")} variant="outline" size="sm">
+                          İlk Kartınızı Ekleyin
+                        </Button>
+                      </div>
+                    ) : (
+                      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+                        {cards.map((card) => {
+                          // Determine gradient based on card schema
+                          const getCardGradient = (schema?: string) => {
+                            switch (schema?.toUpperCase()) {
+                              case "VISA":
+                                return "from-blue-600 to-blue-800"
+                              case "MASTERCARD":
+                                return "from-orange-600 to-red-700"
+                              case "AMEX":
+                                return "from-teal-600 to-emerald-700"
+                              case "TROY":
+                                return "from-red-600 to-rose-700"
+                              default:
+                                return "from-gray-600 to-slate-700"
+                            }
+                          }
+
+                          return (
+                            <div
+                              key={card.id}
+                              className="relative group"
+                            >
+                              {/* Credit Card */}
+                              <div className={`relative h-48 rounded-xl bg-gradient-to-br ${getCardGradient(card.card_schema)} p-6 text-white shadow-lg transition-all duration-300 hover:scale-105 hover:shadow-xl`}>
+                                {/* Card Top */}
+                                <div className="flex items-start justify-between mb-8">
+                                  <div className="flex items-center gap-2">
+                                    {card.card_schema && (
+                                      <span className="text-xs font-bold bg-white/20 px-2 py-1 rounded">
+                                        {card.card_schema}
+                                      </span>
+                                    )}
+                                    {card.bank_name && (
+                                      <span className="text-xs opacity-80">{card.bank_name}</span>
+                                    )}
+                                  </div>
+                                  {card.is_default && (
+                                    <Badge className="bg-amber-500 hover:bg-amber-600 text-white text-xs">
+                                      <Star className="h-3 w-3 mr-1 fill-current" />
+                                      Varsayılan
+                                    </Badge>
+                                  )}
+                                </div>
+
+                                {/* Card Number */}
+                                <div className="mb-6">
+                                  <p className="text-2xl font-mono tracking-wider">
+                                    •••• •••• •••• {card.last_4}
+                                  </p>
+                                </div>
+
+                                {/* Card Bottom */}
+                                <div className="flex items-end justify-between">
+                                  <div>
+                                    <p className="text-xs opacity-70 mb-1">Kart Sahibi</p>
+                                    <p className="text-sm font-semibold uppercase tracking-wide">
+                                      {card.card_holder_name}
+                                    </p>
+                                  </div>
+                                  <div className="text-right">
+                                    <p className="text-xs opacity-70 mb-1">Son Kullanma</p>
+                                    <p className="text-sm font-mono">
+                                      {card.expiry_month}/{card.expiry_year}
+                                    </p>
+                                  </div>
+                                </div>
+
+                                {/* Hover Actions */}
+                                <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity flex gap-2">
+                                  {!card.is_default && (
+                                    <button
+                                      onClick={() => handleSetDefault(card.id)}
+                                      disabled={settingDefaultId === card.id}
+                                      className="p-2 bg-white/20 hover:bg-white/30 rounded-lg backdrop-blur-sm transition-colors"
+                                      title="Varsayılan Yap"
+                                    >
+                                      <Star className="h-4 w-4" />
+                                    </button>
+                                  )}
+                                  <button
+                                    onClick={() => setDeleteCardId(card.id)}
+                                    className="p-2 bg-red-500/80 hover:bg-red-600 rounded-lg backdrop-blur-sm transition-colors"
+                                    title="Kartı Sil"
+                                  >
+                                    <Trash2 className="h-4 w-4" />
+                                  </button>
+                                </div>
+                              </div>
+                            </div>
+                          )
+                        })}
+                      </div>
+                    )}
+                  </CardContent>
+                </Card>
+
+                {/* Quick Actions */}
+                {subscription?.status === "active" && (
+                  <Card className="bg-white/50 dark:bg-black/20 backdrop-blur-sm border border-gray-200 dark:border-white/10 shadow-lg">
+                    <CardHeader className="pb-3 border-b border-gray-200 dark:border-white/10">
+                      <div className="flex items-center gap-3">
+                        <div className="p-2 bg-gradient-to-br from-orange-500 to-red-600 rounded-xl">
+                          <Zap className="h-5 w-5 text-white" />
+                        </div>
+                        <CardTitle className="text-lg font-bold dark:text-white">Hızlı İşlemler</CardTitle>
+                      </div>
+                    </CardHeader>
+                    <CardContent className="pt-6">
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <button
+                          onClick={() => router.push("/uygulama/premium")}
+                          className="group relative overflow-hidden rounded-xl bg-gradient-to-br from-emerald-500 to-teal-600 p-6 text-white shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 text-left"
+                        >
+                          <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full blur-3xl"></div>
+                          <div className="relative z-10">
+                            <div className="inline-flex p-3 bg-white/20 rounded-xl backdrop-blur-sm mb-3">
+                              <SettingsIcon className="h-6 w-6 text-white" />
+                            </div>
+                            <p className="font-bold text-lg mb-1">Planı Değiştir</p>
+                            <p className="text-sm text-white/80">Aylık veya yıllık plana geç</p>
+                            <ArrowRight className="h-5 w-5 mt-3 group-hover:translate-x-1 transition-transform" />
+                          </div>
+                        </button>
+
+                        <button
+                          onClick={() => setShowCancelDialog(true)}
+                          className="group relative overflow-hidden rounded-xl bg-gradient-to-br from-red-500 to-rose-600 p-6 text-white shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 text-left"
+                        >
+                          <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full blur-3xl"></div>
+                          <div className="relative z-10">
+                            <div className="inline-flex p-3 bg-white/20 rounded-xl backdrop-blur-sm mb-3">
+                              <AlertCircle className="h-6 w-6 text-white" />
+                            </div>
+                            <p className="font-bold text-lg mb-1">Aboneliği İptal Et</p>
+                            <p className="text-sm text-white/80">İstediğiniz zaman iptal edebilirsiniz</p>
+                            <ArrowRight className="h-5 w-5 mt-3 group-hover:translate-x-1 transition-transform" />
+                          </div>
+                        </button>
+                      </div>
+                    </CardContent>
+                  </Card>
+                )}
+              </div>
+            )}
+          </TabsContent>
+
+          {/* Faturalar Tab */}
+          <TabsContent value="invoices" className="space-y-0">
+            <Card className="dark:bg-black/20 dark:border-white/10">
+              {/* Search and Sort Header - Kredilerim Style */}
+              <div className="p-4 border-b border-gray-100 dark:border-white/10 bg-white dark:bg-black/20">
+                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                  {/* LEFT: Search + Sort */}
+                  <div className="flex gap-2 flex-1">
+                    <div className="relative flex-1 sm:flex-initial">
+                      <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-gray-400 dark:text-white/60" />
+                      <Input
+                        placeholder="Fatura ara..."
+                        value={searchTerm}
+                        onChange={(e) => setSearchTerm(e.target.value)}
+                        className="pl-8 w-full sm:w-[250px] bg-white dark:bg-black/10 border border-gray-200 dark:border-white/10"
+                      />
+                    </div>
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button variant="outline" className="dark:bg-black/10 dark:border-white/10 dark:text-white flex items-center gap-2">
+                          <ArrowUpDown className="h-4 w-4" />
+                          <span className="hidden sm:inline">Sırala</span>
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="start" className="dark:bg-black/90 dark:border-white/10">
+                        <DropdownMenuItem onClick={() => handleInvoicesSort("tarih")} className="dark:text-white dark:hover:bg-white/10">
+                          Tarihe Göre
+                        </DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => handleInvoicesSort("tutar")} className="dark:text-white dark:hover:bg-white/10">
+                          Tutara Göre
+                        </DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => handleInvoicesSort("faturaNo")} className="dark:text-white dark:hover:bg-white/10">
+                          Fatura No'ya Göre
+                        </DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => handleInvoicesSort("durum")} className="dark:text-white dark:hover:bg-white/10">
+                          Duruma Göre
+                        </DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                  </div>
+                </div>
+              </div>
+              <CardContent>
+                {dataLoading ? (
+                  <p className="text-gray-500 dark:text-white/60 text-center py-8">Yükleniyor...</p>
+                ) : filteredAndSortedInvoices.length === 0 ? (
+                  <div className="text-center py-12">
+                    <Receipt className="mx-auto h-12 w-12 text-gray-400 dark:text-white/40 mb-4" />
+                    <p className="text-gray-500 dark:text-white/60">
+                      {searchTerm ? "Arama kriterlerine uygun fatura bulunamadı" : "Henüz fatura bulunmuyor"}
+                    </p>
+                  </div>
+                ) : (
+                  <div className="space-y-4">
+                    <div className="overflow-x-auto">
+                      <Table>
+                        <TableHeader>
+                          <TableRow className="bg-white dark:bg-black/20">
+                            <TableHead className="font-semibold text-gray-700 dark:text-white/70 cursor-pointer hover:text-emerald-600 dark:hover:text-emerald-400" onClick={() => handleInvoicesSort("faturaNo")}>
+                              <div className="flex items-center gap-1">
+                                Fatura No
+                                <ArrowUpDown className="h-3 w-3" />
+                              </div>
+                            </TableHead>
+                            <TableHead className="font-semibold text-gray-700 dark:text-white/70 cursor-pointer hover:text-emerald-600 dark:hover:text-emerald-400" onClick={() => handleInvoicesSort("tarih")}>
+                              <div className="flex items-center gap-1">
+                                Tarih
+                                <ArrowUpDown className="h-3 w-3" />
+                              </div>
+                            </TableHead>
+                            <TableHead className="font-semibold text-gray-700 dark:text-white/70 cursor-pointer hover:text-emerald-600 dark:hover:text-emerald-400" onClick={() => handleInvoicesSort("tutar")}>
+                              <div className="flex items-center gap-1">
+                                Tutar
+                                <ArrowUpDown className="h-3 w-3" />
+                              </div>
+                            </TableHead>
+                            <TableHead className="font-semibold text-gray-700 dark:text-white/70 cursor-pointer hover:text-emerald-600 dark:hover:text-emerald-400" onClick={() => handleInvoicesSort("durum")}>
+                              <div className="flex items-center gap-1">
+                                Durum
+                                <ArrowUpDown className="h-3 w-3" />
+                              </div>
+                            </TableHead>
+                            <TableHead className="text-right font-semibold text-gray-700 dark:text-white/70">İşlemler</TableHead>
+                          </TableRow>
+                        </TableHeader>
+                        <TableBody>
+                          {currentInvoices.map((invoice, index) => (
+                            <TableRow
+                              key={invoice.id}
+                              className={`hover:bg-emerald-50 dark:hover:bg-white/10 transition-colors ${
+                                index % 2 === 0 ? "bg-white dark:bg-black/20" : "bg-gray-50/50 dark:bg-black/10"
+                              }`}
+                            >
+                              <TableCell className="font-mono font-semibold text-gray-900 dark:text-white">
+                                <div className="flex items-center gap-2">
+                                  <Receipt className="h-4 w-4 text-blue-600 dark:text-blue-400" />
+                                  {invoice.invoice_number}
+                                </div>
+                              </TableCell>
+                              <TableCell className="text-gray-900 dark:text-white">
+                                {new Date(invoice.invoice_date).toLocaleDateString("tr-TR", {
+                                  year: "numeric",
+                                  month: "long",
+                                  day: "numeric",
+                                })}
+                              </TableCell>
+                              <TableCell className="font-semibold text-gray-900 dark:text-white">
+                                {Number(invoice.amount).toFixed(2)} {invoice.currency}
+                              </TableCell>
+                              <TableCell>{getStatusBadge(invoice.status)}</TableCell>
+                              <TableCell className="text-right">
+                                {invoice.file_url ? (
+                                  <Button
+                                    variant="outline"
+                                    size="sm"
+                                    onClick={() => window.open(invoice.file_url!, "_blank")}
+                                    className="dark:bg-black/20 dark:text-white dark:border-white/10 dark:hover:bg-white/10"
+                                  >
+                                    <Download className="h-4 w-4 mr-2" />
+                                    PDF İndir
+                                  </Button>
+                                ) : (
+                                  <Button variant="ghost" size="sm" disabled className="dark:text-white/60">
+                                    <Clock className="h-4 w-4 mr-2" />
+                                    Hazırlanıyor
+                                  </Button>
+                                )}
+                              </TableCell>
+                            </TableRow>
+                          ))}
+                        </TableBody>
+                      </Table>
+                    </div>
+                    {filteredAndSortedInvoices.length > itemsPerPage && (
+                      <PaginationModern
+                        currentPage={invoicesPage}
+                        totalPages={totalInvoicesPages}
+                        totalItems={filteredAndSortedInvoices.length}
+                        itemsPerPage={itemsPerPage}
+                        onPageChange={setInvoicesPage}
+                        itemName="fatura"
+                      />
+                    )}
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          {/* Ödeme Geçmişi Tab */}
+          <TabsContent value="payments" className="space-y-0">
+            <Card className="dark:bg-black/20 dark:border-white/10">
+              {/* Search and Sort Header - Kredilerim Style */}
+              <div className="p-4 border-b border-gray-100 dark:border-white/10 bg-white dark:bg-black/20">
+                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                  {/* LEFT: Search + Sort */}
+                  <div className="flex gap-2 flex-1">
+                    <div className="relative flex-1 sm:flex-initial">
+                      <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-gray-400 dark:text-white/60" />
+                      <Input
+                        placeholder="Ödeme ara..."
+                        value={searchTerm}
+                        onChange={(e) => setSearchTerm(e.target.value)}
+                        className="pl-8 w-full sm:w-[250px] bg-white dark:bg-black/10 border border-gray-200 dark:border-white/10"
+                      />
+                    </div>
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button variant="outline" className="dark:bg-black/10 dark:border-white/10 dark:text-white flex items-center gap-2">
+                          <ArrowUpDown className="h-4 w-4" />
+                          <span className="hidden sm:inline">Sırala</span>
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="start" className="dark:bg-black/90 dark:border-white/10">
+                        <DropdownMenuItem onClick={() => handleTransactionsSort("tarih")} className="dark:text-white dark:hover:bg-white/10">
+                          Tarihe Göre
+                        </DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => handleTransactionsSort("tutar")} className="dark:text-white dark:hover:bg-white/10">
+                          Tutara Göre
+                        </DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => handleTransactionsSort("durum")} className="dark:text-white dark:hover:bg-white/10">
+                          Duruma Göre
+                        </DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                  </div>
+                </div>
+              </div>
+              <CardContent>
+                {dataLoading ? (
+                  <p className="text-gray-500 dark:text-white/60 text-center py-8">Yükleniyor...</p>
+                ) : filteredAndSortedTransactions.length === 0 ? (
+                  <div className="text-center py-12">
+                    <DollarSign className="mx-auto h-12 w-12 text-gray-400 dark:text-white/40 mb-4" />
+                    <p className="text-gray-500 dark:text-white/60">
+                      {searchTerm ? "Arama kriterlerine uygun ödeme bulunamadı" : "Henüz ödeme kaydı bulunmuyor"}
+                    </p>
+                  </div>
+                ) : (
+                  <div className="space-y-4">
+                    <div className="overflow-x-auto">
+                      <Table>
+                        <TableHeader>
+                          <TableRow className="bg-white dark:bg-black/20">
+                            <TableHead className="font-semibold text-gray-700 dark:text-white/70 cursor-pointer hover:text-emerald-600 dark:hover:text-emerald-400" onClick={() => handleTransactionsSort("tarih")}>
+                              <div className="flex items-center gap-1">
+                                Tarih
+                                <ArrowUpDown className="h-3 w-3" />
+                              </div>
+                            </TableHead>
+                            <TableHead className="font-semibold text-gray-700 dark:text-white/70 cursor-pointer hover:text-emerald-600 dark:hover:text-emerald-400" onClick={() => handleTransactionsSort("tutar")}>
+                              <div className="flex items-center gap-1">
+                                Tutar
+                                <ArrowUpDown className="h-3 w-3" />
+                              </div>
+                            </TableHead>
+                            <TableHead className="font-semibold text-gray-700 dark:text-white/70">Ödeme Yöntemi</TableHead>
+                            <TableHead className="font-semibold text-gray-700 dark:text-white/70 cursor-pointer hover:text-emerald-600 dark:hover:text-emerald-400" onClick={() => handleTransactionsSort("durum")}>
+                              <div className="flex items-center gap-1">
+                                Durum
+                                <ArrowUpDown className="h-3 w-3" />
+                              </div>
+                            </TableHead>
+                          </TableRow>
+                        </TableHeader>
+                        <TableBody>
+                          {currentTransactions.map((transaction, index) => (
+                            <TableRow
+                              key={transaction.id}
+                              className={`hover:bg-emerald-50 dark:hover:bg-white/10 transition-colors ${
+                                index % 2 === 0 ? "bg-white dark:bg-black/20" : "bg-gray-50/50 dark:bg-black/10"
+                              }`}
+                            >
+                              <TableCell className="text-gray-900 dark:text-white">
+                                <div className="flex items-center gap-2">
+                                  <DollarSign className="h-4 w-4 text-emerald-600 dark:text-emerald-400" />
+                                  {new Date(transaction.created_at).toLocaleDateString("tr-TR", {
+                                    year: "numeric",
+                                    month: "long",
+                                    day: "numeric",
+                                  })}
+                                </div>
+                              </TableCell>
+                              <TableCell className="font-semibold text-gray-900 dark:text-white">
+                                {Number.parseFloat(transaction.amount).toFixed(2)} {transaction.currency}
+                              </TableCell>
+                              <TableCell className="text-gray-600 dark:text-white/70">
+                                <div className="flex items-center gap-2">
+                                  <CreditCard className="h-4 w-4" />
+                                  {transaction.payment_method === "credit_card" ? "Kredi Kartı" : transaction.payment_method}
+                                </div>
+                              </TableCell>
+                              <TableCell>{getStatusBadge(transaction.status)}</TableCell>
+                            </TableRow>
+                          ))}
+                        </TableBody>
+                      </Table>
+                    </div>
+                    {filteredAndSortedTransactions.length > itemsPerPage && (
+                      <PaginationModern
+                        currentPage={transactionsPage}
+                        totalPages={totalTransactionsPages}
+                        totalItems={filteredAndSortedTransactions.length}
+                        itemsPerPage={itemsPerPage}
+                        onPageChange={setTransactionsPage}
+                        itemName="ödeme"
+                      />
+                    )}
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          </TabsContent>
+          </div>
+        </Tabs>
+      </div>
+
+      {/* Cancel Subscription Dialog */}
+      <AlertDialog open={showCancelDialog} onOpenChange={setShowCancelDialog}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Aboneliği İptal Et</AlertDialogTitle>
+            <AlertDialogDescription className="space-y-2">
+              <p>Aboneliğinizi iptal etmek istediğinize emin misiniz?</p>
+              {subscription?.expires_at && (
+                <p className="font-medium text-gray-900 dark:text-white">
+                  {new Date(subscription.expires_at).toLocaleDateString("tr-TR")} tarihine kadar premium özelliklerine
+                  erişmeye devam edebileceksiniz.
+                </p>
+              )}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Vazgeç</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleCancelSubscription}
+              disabled={isCancelling}
+              className="bg-red-600 hover:bg-red-700"
+            >
+              {isCancelling ? "İptal Ediliyor..." : "Aboneliği İptal Et"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* Delete Card Dialog */}
+      <AlertDialog open={deleteCardId !== null} onOpenChange={() => setDeleteCardId(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Kartı Sil</AlertDialogTitle>
+            <AlertDialogDescription>
+              Bu kartı silmek istediğinize emin misiniz? Bu işlem geri alınamaz.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>İptal</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={() => deleteCardId && handleDeleteCard(deleteCardId)}
+              disabled={isDeleting}
+              className="bg-red-600 hover:bg-red-700"
+            >
+              {isDeleting ? "Siliniyor..." : "Sil"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+    </div>
+  )
+}

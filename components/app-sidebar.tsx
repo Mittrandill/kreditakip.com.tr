@@ -83,7 +83,7 @@ const navItems: NavItem[] = [
   },
   {
     href: "/uygulama/finansal-saglik",
-    label: "AI Finansal Sağlık Özeti",
+    label: "AI Finansal Sağlık",
     icon: ShieldCheck,
     gradient: "from-emerald-500 to-teal-600",
     hoverGradient: "from-emerald-600 to-teal-700",
@@ -97,7 +97,11 @@ const settingsItems = [
     icon: Crown,
     isPremium: true,
   },
-  
+  {
+    href: "/uygulama/abonelik",
+    label: "Abonelik",
+    icon: UserIcon,
+  },
   {
     href: "/uygulama/bildirimler",
     label: "Bildirimler",

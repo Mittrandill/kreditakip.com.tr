@@ -20,7 +20,8 @@
       "Bash(git push:*)",
       "Bash(dir:*)",
       "Bash(nul)",
-      "Bash(pnpm dev)"
+      "Bash(pnpm dev)",
+      "Bash(git restore:*)"
     ],
     "deny": [],
     "ask": []

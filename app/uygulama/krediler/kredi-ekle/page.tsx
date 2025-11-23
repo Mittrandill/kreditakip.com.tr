@@ -394,7 +394,6 @@ export default function KrediEklePage() {
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
-                  <CreditCard className="h-5 w-5 text-emerald-600" />
                   Temel Kredi Bilgileri
                 </CardTitle>
                 <CardDescription>Kredinizin temel bilgilerini giriniz</CardDescription>

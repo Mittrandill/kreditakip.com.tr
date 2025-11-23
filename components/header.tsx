@@ -70,7 +70,7 @@ const navItems = [
   { href: "/uygulama/raporlar", label: "Raporlar", icon: BarChart3 },
   { href: "/uygulama/finansal-saglik", label: "AI Finansal Sağlık Özeti", icon: ShieldCheck },
   { href: "/uygulama/premium", label: "Premium", icon: Crown },
-  { href: "/uygulama/faturalandirma", label: "Faturalar", icon: Receipt },
+  { href: "/uygulama/abonelik", label: "Abonelik", icon: UserIcon },
 ]
 
 const settingsItems = [
@@ -150,14 +150,14 @@ const PAGE_INFO: Record<string, { title: string; description: string; parent?: s
     title: "Premium Üyelik",
     description: "Premium özelliklere erişin ve reklamsız deneyimin keyfini çıkarın",
   },
+  "/uygulama/abonelik": {
+    title: "Abonelik Yönetimi",
+    description: "Abonelik bilgilerinizi, kayıtlı kartlarınızı, faturalarınızı ve ödeme geçmişinizi yönetin",
+  },
   "/uygulama/odeme": {
     title: "Ödeme",
     description: "Güvenli ödeme ile premium üyeliğe geçin",
     parent: "Premium Üyelik",
-  },
-  "/uygulama/faturalandirma": {
-    title: "Faturalandırma",
-    description: "Abonelik durumunuzu ve ödeme geçmişinizi görüntüleyin ve yönetin",
   },
 }
 
@@ -971,11 +971,11 @@ export default function Header({ pageTitle }: HeaderProps) {
               <span>Ayarlar</span>
             </DropdownMenuItem>
             <DropdownMenuItem
-              onClick={() => router.push("/uygulama/faturalandirma")}
+              onClick={() => router.push("/uygulama/abonelik")}
               className="text-gray-700 dark:text-white/70 hover:bg-gray-100 dark:hover:bg-emerald-900/20 focus:bg-gray-100 dark:focus:bg-emerald-900/20 cursor-pointer"
             >
-              <Briefcase className="mr-2 h-4 w-4" />
-              <span>Faturalama</span>
+              <UserIcon className="mr-2 h-4 w-4" />
+              <span>Abonelik</span>
             </DropdownMenuItem>
             <DropdownMenuItem
               onClick={() => window.open("https://www.kreditakip.com.tr/sss", "_blank")}
