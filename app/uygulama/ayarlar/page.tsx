@@ -107,6 +107,11 @@ export default function AyarlarPage() {
   const [compactView, setCompactView] = useState(false)
   const [animationsEnabled, setAnimationsEnabled] = useState(true)
 
+  // Account deletion state
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
+  const [isDeletingAccount, setIsDeletingAccount] = useState(false)
+  const [deleteConfirmText, setDeleteConfirmText] = useState("")
+
 
   // Oturum geçmişi (real data)
   const [sessions, setSessions] = useState<any[]>([])
@@ -593,19 +598,55 @@ export default function AyarlarPage() {
 
   // Account deletion handler
   const handleAccountDeletion = async () => {
-    if (!confirm("Hesabınızı silmek istediğinizden emin misiniz? Bu işlem geri alınamaz.")) {
+    if (!user) {
+      toast({ title: "Hata", description: "Kullanıcı bulunamadı.", variant: "destructive" })
       return
     }
 
-    try {
-      // In a real app, you'd call a server endpoint to handle account deletion
+    // Confirmation text must match
+    if (deleteConfirmText !== "HESABIMI SIL") {
       toast({
-        title: "Bilgi",
-        description: "Hesap silme işlemi için destek ekibiyle iletişime geçin.",
+        title: "Hata",
+        description: 'Lütfen "HESABIMI SIL" yazın.',
         variant: "destructive",
       })
-    } catch (error) {
-      toast({ title: "Hata", description: "Hesap silinirken bir hata oluştu.", variant: "destructive" })
+      return
+    }
+
+    setIsDeletingAccount(true)
+
+    try {
+      // Call delete account API
+      const response = await fetch("/api/user/delete-account", {
+        method: "DELETE",
+      })
+
+      const data = await response.json()
+
+      if (!response.ok) {
+        throw new Error(data.error || "Hesap silme başarısız oldu")
+      }
+
+      // Success - redirect to home with message
+      toast({
+        title: "Hesap Silindi",
+        description: "Hesabınız ve tüm verileriniz kalıcı olarak silindi.",
+      })
+
+      // Sign out and redirect
+      await supabase.auth.signOut()
+      router.push("/?deleted=true")
+    } catch (error: any) {
+      console.error("Account deletion error:", error)
+      toast({
+        title: "Hata",
+        description: error.message || "Hesap silinirken bir hata oluştu.",
+        variant: "destructive",
+      })
+    } finally {
+      setIsDeletingAccount(false)
+      setDeleteDialogOpen(false)
+      setDeleteConfirmText("")
     }
   }
 
@@ -1328,33 +1369,6 @@ export default function AyarlarPage() {
                     )}
                   </CardContent>
                 </Card>
-
-                {/* Hesap Silme */}
-                <Card className="border-red-200 dark:border-red-700/50 dark:bg-black/20">
-                  <CardHeader>
-                    <CardTitle className="flex items-center gap-2 text-red-600 dark:text-red-400">
-                      <AlertTriangle className="h-5 w-5" />
-                      Tehlikeli Bölge
-                    </CardTitle>
-                    <CardDescription className="dark:text-white/60">
-                      Bu işlemler geri alınamaz. Dikkatli olun.
-                    </CardDescription>
-                  </CardHeader>
-                  <CardContent className="space-y-4">
-                    <div className="flex items-center justify-between p-4 border border-red-200 dark:border-red-700/50 rounded-lg bg-red-50 dark:bg-red-900/30">
-                      <div>
-                        <p className="font-medium text-red-800 dark:text-red-300">Hesabı Sil</p>
-                        <p className="text-sm text-red-600 dark:text-red-400">
-                          Hesabınızı ve tüm verilerinizi kalıcı olarak silin. Bu işlem geri alınamaz.
-                        </p>
-                      </div>
-                      <Button variant="destructive" onClick={handleAccountDeletion}>
-                        <Trash2 className="h-4 w-4 mr-2" />
-                        Hesabı Sil
-                      </Button>
-                    </div>
-                  </CardContent>
-                </Card>
               </div>
             </TabsContent>
 
@@ -1437,6 +1451,7 @@ export default function AyarlarPage() {
                     </CardDescription>
                   </CardHeader>
                   <CardContent className="space-y-4">
+                    {/* Veri Dışa Aktarma */}
                     <div className="flex items-center justify-between p-4 border rounded-lg dark:border-white/10 dark:bg-black/10">
                       <div className="flex-1">
                         <p className="font-medium dark:text-white flex items-center gap-2">
@@ -1470,6 +1485,38 @@ export default function AyarlarPage() {
                         Dışa Aktar
                       </Button>
                     </div>
+
+                    {/* Profili Sil */}
+                    <div className="flex items-center justify-between p-4 border border-red-200 dark:border-red-700/50 rounded-lg bg-red-50 dark:bg-red-900/30">
+                      <div className="flex-1">
+                        <p className="font-medium dark:text-white flex items-center gap-2 text-red-600 dark:text-red-400">
+                          <Trash2 className="h-5 w-5" />
+                          Profili Kalıcı Olarak Sil
+                        </p>
+                        <p className="text-sm text-red-600 dark:text-red-400 mt-1">
+                          Hesabınızı ve tüm verilerinizi kalıcı olarak silin. Bu işlem geri alınamaz.
+                        </p>
+                        <div className="flex flex-wrap gap-2 mt-2">
+                          <span className="text-xs bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400 px-2 py-1 rounded">
+                            KVKK Uyumlu
+                          </span>
+                          <span className="text-xs bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400 px-2 py-1 rounded">
+                            Geri Alınamaz
+                          </span>
+                          <span className="text-xs bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400 px-2 py-1 rounded">
+                            Tüm Veriler Silinir
+                          </span>
+                        </div>
+                      </div>
+                      <Button
+                        variant="destructive"
+                        onClick={() => setDeleteDialogOpen(true)}
+                        className="ml-4"
+                      >
+                        <Trash2 className="h-4 w-4 mr-2" />
+                        Profili Sil
+                      </Button>
+                    </div>
                   </CardContent>
                 </Card>
               </div>
@@ -1477,6 +1524,86 @@ export default function AyarlarPage() {
           </div>
         </Tabs>
       </div>
+
+      {/* Account Deletion Confirmation Dialog */}
+      <Dialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2 text-red-600 dark:text-red-400">
+              <AlertTriangle className="h-6 w-6" />
+              Hesabı Kalıcı Olarak Sil
+            </DialogTitle>
+            <DialogDescription className="space-y-3 pt-4">
+              <Alert variant="destructive" className="border-red-300 dark:border-red-700">
+                <AlertTriangle className="h-4 w-4" />
+                <AlertTitle>Uyarı: Bu İşlem Geri Alınamaz</AlertTitle>
+                <AlertDescription className="mt-2 space-y-2">
+                  <p>Bu işlem sonucunda:</p>
+                  <ul className="list-disc list-inside space-y-1 text-sm">
+                    <li>Hesabınız kalıcı olarak silinecek</li>
+                    <li>Tüm kredileriniz ve ödeme geçmişiniz silinecek</li>
+                    <li>Finansal profiliniz ve risk analizleriniz silinecek</li>
+                    <li>Aboneliğiniz iptal edilecek</li>
+                    <li>Tüm verileriniz geri getirilemez</li>
+                  </ul>
+                </AlertDescription>
+              </Alert>
+
+              <div className="bg-gray-50 dark:bg-black/20 p-4 rounded-lg border dark:border-white/10 space-y-3">
+                <p className="text-sm font-medium dark:text-white">
+                  Devam etmek için lütfen aşağıdaki metni yazın:
+                </p>
+                <code className="block p-2 bg-white dark:bg-black/40 border rounded text-center font-mono text-sm text-red-600 dark:text-red-400">
+                  HESABIMI SIL
+                </code>
+                <Input
+                  value={deleteConfirmText}
+                  onChange={(e) => setDeleteConfirmText(e.target.value)}
+                  placeholder="Metni buraya yazın..."
+                  className="text-center font-mono dark:bg-black/10 dark:border-white/10"
+                  disabled={isDeletingAccount}
+                />
+              </div>
+
+              <Alert className="bg-blue-50 dark:bg-blue-950 border-blue-200 dark:border-blue-800">
+                <Info className="h-4 w-4 text-blue-600 dark:text-blue-400" />
+                <AlertDescription className="text-blue-700 dark:text-blue-300 text-sm">
+                  <strong>Öneri:</strong> Hesabınızı silmeden önce verilerinizi dışa aktarmanızı öneririz.
+                </AlertDescription>
+              </Alert>
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter className="gap-2 sm:gap-0">
+            <Button
+              variant="outline"
+              onClick={() => {
+                setDeleteDialogOpen(false)
+                setDeleteConfirmText("")
+              }}
+              disabled={isDeletingAccount}
+            >
+              İptal
+            </Button>
+            <Button
+              variant="destructive"
+              onClick={handleAccountDeletion}
+              disabled={isDeletingAccount || deleteConfirmText !== "HESABIMI SIL"}
+            >
+              {isDeletingAccount ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Siliniyor...
+                </>
+              ) : (
+                <>
+                  <Trash2 className="mr-2 h-4 w-4" />
+                  Hesabı Kalıcı Olarak Sil
+                </>
+              )}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }
