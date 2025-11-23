@@ -458,13 +458,20 @@ export default function SubscriptionPage() {
       <div className="bg-white dark:bg-black/20 rounded-2xl shadow-sm border border-gray-100 dark:border-white/10 overflow-hidden">
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
           <div className="border-b border-gray-100 dark:border-white/10 bg-gray-50/50 dark:bg-emerald-900/10">
-            <TabsList className="grid grid-cols-3 bg-transparent h-auto p-2 gap-2">
+            <TabsList className="grid grid-cols-4 bg-transparent h-auto p-2 gap-2">
               <TabsTrigger
                 value="overview"
                 className="flex items-center gap-2 py-3 px-4 data-[state=active]:text-emerald-600 dark:data-[state=active]:text-emerald-400 data-[state=active]:bg-white dark:data-[state=active]:bg-emerald-900/20 data-[state=active]:shadow-sm rounded-xl transition-all duration-200 hover:bg-gray-100 dark:hover:bg-white/10 dark:text-white/60"
               >
                 <Shield className="h-4 w-4" />
                 <span className="font-medium">Abonelik Bilgileri</span>
+              </TabsTrigger>
+              <TabsTrigger
+                value="cards"
+                className="flex items-center gap-2 py-3 px-4 data-[state=active]:text-emerald-600 dark:data-[state=active]:text-emerald-400 data-[state=active]:bg-white dark:data-[state=active]:bg-emerald-900/20 data-[state=active]:shadow-sm rounded-xl transition-all duration-200 hover:bg-gray-100 dark:hover:bg-white/10 dark:text-white/60"
+              >
+                <CreditCard className="h-4 w-4" />
+                <span className="font-medium">Kayıtlı Kartlarım</span>
               </TabsTrigger>
               <TabsTrigger
                 value="invoices"
@@ -549,12 +556,12 @@ export default function SubscriptionPage() {
                         </div>
                       )}
 
-                      {subscription?.expires_at && subscription.status === "active" && (
+                      {subscription?.expiresAt && subscription.status === "active" && (
                         <div className="px-4 sm:px-6 py-2 sm:py-3 bg-white/20 rounded-xl backdrop-blur-sm border border-white/30">
                           <div className="flex items-center gap-2">
                             <Clock className="h-4 w-4 sm:h-5 sm:w-5" />
                             <span className="text-sm sm:text-base font-medium">
-                              {Math.ceil((new Date(subscription.expires_at).getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24))} gün kaldı
+                              {Math.ceil((new Date(subscription.expiresAt).getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24))} gün kaldı
                             </span>
                           </div>
                         </div>
@@ -564,7 +571,7 @@ export default function SubscriptionPage() {
                 </div>
 
                 {/* Timeline Stats - Glass Cards */}
-                {subscription?.start_date && subscription?.expires_at && subscription.status === "active" && (
+                {subscription?.startDate && subscription?.expiresAt && subscription.status === "active" && (
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-6">
                     {/* Start Date */}
                     <div className="bg-white/50 dark:bg-black/20 backdrop-blur-sm rounded-2xl p-4 sm:p-6 border border-gray-200 dark:border-white/10 shadow-lg">
@@ -575,7 +582,7 @@ export default function SubscriptionPage() {
                         <span className="text-sm sm:text-base font-medium text-gray-600 dark:text-gray-400">Başlangıç</span>
                       </div>
                       <p className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white">
-                        {new Date(subscription.start_date).toLocaleDateString("tr-TR", {
+                        {new Date(subscription.startDate).toLocaleDateString("tr-TR", {
                           day: "numeric",
                           month: "long",
                           year: "numeric",
@@ -594,14 +601,14 @@ export default function SubscriptionPage() {
                       <div className="space-y-2">
                         <div className="flex justify-between items-center">
                           <span className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white">
-                            {Math.round(((new Date().getTime() - new Date(subscription.start_date).getTime()) / (new Date(subscription.expires_at).getTime() - new Date(subscription.start_date).getTime())) * 100)}%
+                            {Math.round(((new Date().getTime() - new Date(subscription.startDate).getTime()) / (new Date(subscription.expiresAt).getTime() - new Date(subscription.startDate).getTime())) * 100)}%
                           </span>
                         </div>
                         <div className="w-full bg-gray-200 dark:bg-white/20 rounded-full h-2 sm:h-3 overflow-hidden">
                           <div
                             className="bg-gradient-to-r from-emerald-500 to-teal-600 h-2 sm:h-3 rounded-full transition-all shadow-lg"
                             style={{
-                              width: `${Math.min(100, ((new Date().getTime() - new Date(subscription.start_date).getTime()) / (new Date(subscription.expires_at).getTime() - new Date(subscription.start_date).getTime())) * 100)}%`
+                              width: `${Math.min(100, ((new Date().getTime() - new Date(subscription.startDate).getTime()) / (new Date(subscription.expiresAt).getTime() - new Date(subscription.startDate).getTime())) * 100)}%`
                             }}
                           ></div>
                         </div>
@@ -617,7 +624,7 @@ export default function SubscriptionPage() {
                         <span className="text-sm sm:text-base font-medium text-gray-600 dark:text-gray-400">Yenileme</span>
                       </div>
                       <p className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white">
-                        {new Date(subscription.expires_at).toLocaleDateString("tr-TR", {
+                        {new Date(subscription.expiresAt).toLocaleDateString("tr-TR", {
                           day: "numeric",
                           month: "long",
                           year: "numeric",
@@ -650,8 +657,7 @@ export default function SubscriptionPage() {
                               ? 0
                               : ((subscription?.usage?.ocrAnalysis?.used || 0) / (subscription?.usage?.ocrAnalysis?.limit || 1)) * 100
                           }
-                          className="h-2 bg-white/20"
-                          indicatorClassName="bg-white"
+                          className="h-2 bg-white/20 [&>div]:bg-white"
                         />
                         <p className="text-xs text-white/70 mt-2">
                           {subscription?.usage?.ocrAnalysis?.limit === 999999
@@ -683,8 +689,7 @@ export default function SubscriptionPage() {
                               ? 0
                               : ((subscription?.usage?.riskAnalysis?.used || 0) / (subscription?.usage?.riskAnalysis?.limit || 1)) * 100
                           }
-                          className="h-2 bg-white/20"
-                          indicatorClassName="bg-white"
+                          className="h-2 bg-white/20 [&>div]:bg-white"
                         />
                         <p className="text-xs text-white/70 mt-2">
                           {subscription?.usage?.riskAnalysis?.limit === 999999
@@ -712,8 +717,7 @@ export default function SubscriptionPage() {
                         </div>
                         <Progress
                           value={(cards.length / 10) * 100}
-                          className="h-2 bg-white/20"
-                          indicatorClassName="bg-white"
+                          className="h-2 bg-white/20 [&>div]:bg-white"
                         />
                         <p className="text-xs text-white/70 mt-2">
                           {10 - cards.length} Kart Daha Eklenebilir
@@ -738,9 +742,9 @@ export default function SubscriptionPage() {
                             Aboneliğiniz İptal Edildi
                           </h4>
                           <p className="text-sm text-orange-700 dark:text-orange-300 mb-3">
-                            {subscription.expires_at && (
+                            {subscription.expiresAt && (
                               <>
-                                {new Date(subscription.expires_at).toLocaleDateString("tr-TR")} tarihine kadar
+                                {new Date(subscription.expiresAt).toLocaleDateString("tr-TR")} tarihine kadar
                                 premium özelliklerine erişmeye devam edebilirsiniz.
                               </>
                             )}
@@ -757,133 +761,6 @@ export default function SubscriptionPage() {
                     </CardContent>
                   </Card>
                 )}
-
-                {/* Kayıtlı Kartlar - Real Card Preview */}
-                <Card className="bg-white/50 dark:bg-black/20 backdrop-blur-sm border border-gray-200 dark:border-white/10 shadow-lg">
-                  <CardHeader className="pb-3 border-b border-gray-200 dark:border-white/10">
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-3">
-                        <div className="p-2 bg-gradient-to-br from-purple-500 to-pink-600 rounded-xl">
-                          <CreditCard className="h-5 w-5 text-white" />
-                        </div>
-                        <CardTitle className="text-lg font-bold dark:text-white">Kayıtlı Kartlarım</CardTitle>
-                      </div>
-                      <Button
-                        onClick={() => router.push("/uygulama/premium")}
-                        size="sm"
-                        className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white border-0 shadow-lg"
-                      >
-                        <Plus className="h-4 w-4 mr-2" />
-                        Yeni Kart Ekle
-                      </Button>
-                    </div>
-                  </CardHeader>
-                  <CardContent>
-                    {cards.length === 0 ? (
-                      <div className="text-center py-12 border-2 border-dashed border-gray-200 dark:border-white/10 rounded-lg">
-                        <CreditCard className="h-12 w-12 mx-auto text-gray-400 dark:text-gray-600 mb-3" />
-                        <p className="text-gray-600 dark:text-gray-400 mb-4">Henüz kayıtlı kartınız yok</p>
-                        <Button onClick={() => router.push("/uygulama/premium")} variant="outline" size="sm">
-                          İlk Kartınızı Ekleyin
-                        </Button>
-                      </div>
-                    ) : (
-                      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
-                        {cards.map((card) => {
-                          // Determine gradient based on card schema
-                          const getCardGradient = (schema?: string) => {
-                            switch (schema?.toUpperCase()) {
-                              case "VISA":
-                                return "from-blue-600 to-blue-800"
-                              case "MASTERCARD":
-                                return "from-orange-600 to-red-700"
-                              case "AMEX":
-                                return "from-teal-600 to-emerald-700"
-                              case "TROY":
-                                return "from-red-600 to-rose-700"
-                              default:
-                                return "from-gray-600 to-slate-700"
-                            }
-                          }
-
-                          return (
-                            <div
-                              key={card.id}
-                              className="relative group"
-                            >
-                              {/* Credit Card */}
-                              <div className={`relative h-48 rounded-xl bg-gradient-to-br ${getCardGradient(card.card_schema)} p-6 text-white shadow-lg transition-all duration-300 hover:scale-105 hover:shadow-xl`}>
-                                {/* Card Top */}
-                                <div className="flex items-start justify-between mb-8">
-                                  <div className="flex items-center gap-2">
-                                    {card.card_schema && (
-                                      <span className="text-xs font-bold bg-white/20 px-2 py-1 rounded">
-                                        {card.card_schema}
-                                      </span>
-                                    )}
-                                    {card.bank_name && (
-                                      <span className="text-xs opacity-80">{card.bank_name}</span>
-                                    )}
-                                  </div>
-                                  {card.is_default && (
-                                    <Badge className="bg-amber-500 hover:bg-amber-600 text-white text-xs">
-                                      <Star className="h-3 w-3 mr-1 fill-current" />
-                                      Varsayılan
-                                    </Badge>
-                                  )}
-                                </div>
-
-                                {/* Card Number */}
-                                <div className="mb-6">
-                                  <p className="text-2xl font-mono tracking-wider">
-                                    •••• •••• •••• {card.last_4}
-                                  </p>
-                                </div>
-
-                                {/* Card Bottom */}
-                                <div className="flex items-end justify-between">
-                                  <div>
-                                    <p className="text-xs opacity-70 mb-1">Kart Sahibi</p>
-                                    <p className="text-sm font-semibold uppercase tracking-wide">
-                                      {card.card_holder_name}
-                                    </p>
-                                  </div>
-                                  <div className="text-right">
-                                    <p className="text-xs opacity-70 mb-1">Son Kullanma</p>
-                                    <p className="text-sm font-mono">
-                                      {card.expiry_month}/{card.expiry_year}
-                                    </p>
-                                  </div>
-                                </div>
-
-                                {/* Hover Actions */}
-                                <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity flex gap-2">
-                                  {!card.is_default && (
-                                    <button
-                                      onClick={() => handleSetDefault(card.id)}
-                                      disabled={settingDefaultId === card.id}
-                                      className="p-2 bg-white/20 hover:bg-white/30 rounded-lg backdrop-blur-sm transition-colors"
-                                      title="Varsayılan Yap"
-                                    >
-                                      <Star className="h-4 w-4" />
-                                    </button>
-                                  )}
-                                  <button
-                                    onClick={() => setDeleteCardId(card.id)}
-                                    className="p-2 bg-red-500/80 hover:bg-red-600 rounded-lg backdrop-blur-sm transition-colors"
-                                    title="Kartı Sil"
-                                  >
-                                    <Trash2 className="h-4 w-4" />
-                                  </button>
-                                </div>
-                              </div>
-                            </div>
-                          )
-                        })}
-                      </div>
-                    )}
-                  </CardContent>
-                </Card>
 
                 {/* Quick Actions */}
                 {subscription?.status === "active" && (
@@ -933,6 +810,142 @@ export default function SubscriptionPage() {
                 )}
               </div>
             )}
+          </TabsContent>
+
+          {/* Kayıtlı Kartlarım Tab */}
+          <TabsContent value="cards" className="space-y-0">
+            <Card className="bg-white/50 dark:bg-black/20 backdrop-blur-sm border border-gray-200 dark:border-white/10 shadow-lg">
+              <CardHeader className="pb-3 border-b border-gray-200 dark:border-white/10">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <div className="p-3 bg-gradient-to-br from-emerald-500 to-teal-600 rounded-xl">
+                      <CreditCard className="h-6 w-6 text-white" />
+                    </div>
+                    <CardTitle className="text-xl font-bold dark:text-white">Kayıtlı Kartlarım</CardTitle>
+                  </div>
+                  <Button
+                    onClick={() => router.push("/uygulama/premium")}
+                    size="sm"
+                    className="bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white border-0 shadow-lg hover:shadow-xl transition-all"
+                  >
+                    <Plus className="h-5 w-5 mr-2" />
+                    Yeni Kart Ekle
+                  </Button>
+                </div>
+              </CardHeader>
+              <CardContent>
+                {cards.length === 0 ? (
+                  <div className="text-center py-16 border-2 border-dashed border-emerald-200 dark:border-emerald-800/50 rounded-2xl bg-emerald-50/50 dark:bg-emerald-950/20">
+                    <div className="inline-flex p-4 bg-gradient-to-br from-emerald-500 to-teal-600 rounded-2xl mb-4">
+                      <CreditCard className="h-12 w-12 text-white" />
+                    </div>
+                    <p className="text-gray-700 dark:text-gray-300 mb-6 text-lg font-medium">Henüz kayıtlı kartınız yok</p>
+                    <Button
+                      onClick={() => router.push("/uygulama/premium")}
+                      size="lg"
+                      className="bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white border-0 shadow-lg hover:shadow-xl transition-all"
+                    >
+                      <Plus className="h-5 w-5 mr-2" />
+                      İlk Kartınızı Ekleyin
+                    </Button>
+                  </div>
+                ) : (
+                  <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+                    {cards.map((card) => {
+                      // Determine gradient based on card brand
+                      const getCardGradient = (brand?: string) => {
+                        switch (brand?.toUpperCase()) {
+                          case "VISA":
+                            return "from-blue-600 to-blue-800"
+                          case "MASTERCARD":
+                            return "from-orange-600 to-red-700"
+                          case "AMEX":
+                            return "from-teal-600 to-emerald-700"
+                          case "TROY":
+                            return "from-red-600 to-rose-700"
+                          default:
+                            return "from-gray-600 to-slate-700"
+                        }
+                      }
+
+                      return (
+                        <div
+                          key={card.id}
+                          className="relative group"
+                        >
+                          {/* Credit Card */}
+                          <div className={`relative h-48 rounded-xl bg-gradient-to-br ${getCardGradient(card.card_brand)} p-6 text-white shadow-lg transition-all duration-300 hover:scale-105 hover:shadow-xl`}>
+                            {/* Card Top */}
+                            <div className="flex items-start justify-between mb-8">
+                              <div className="flex items-center gap-2">
+                                {card.card_brand && (
+                                  <span className="text-xs font-bold bg-white/20 px-2 py-1 rounded">
+                                    {card.card_brand}
+                                  </span>
+                                )}
+                                {card.bank_name && (
+                                  <span className="text-xs opacity-80">{card.bank_name}</span>
+                                )}
+                              </div>
+                              {card.is_default && (
+                                <Badge className="bg-amber-500 hover:bg-amber-600 text-white text-xs">
+                                  <Star className="h-3 w-3 mr-1 fill-current" />
+                                  Varsayılan
+                                </Badge>
+                              )}
+                            </div>
+
+                            {/* Card Number */}
+                            <div className="mb-6">
+                              <p className="text-2xl font-mono tracking-wider">
+                                •••• •••• •••• {card.last_4}
+                              </p>
+                            </div>
+
+                            {/* Card Bottom */}
+                            <div className="flex items-end justify-between">
+                              <div>
+                                <p className="text-xs opacity-70 mb-1">Kart Sahibi</p>
+                                <p className="text-sm font-semibold uppercase tracking-wide">
+                                  {card.card_holder_name}
+                                </p>
+                              </div>
+                              <div className="text-right">
+                                <p className="text-xs opacity-70 mb-1">Son Kullanma</p>
+                                <p className="text-sm font-mono">
+                                  {card.expiry_month}/{card.expiry_year}
+                                </p>
+                              </div>
+                            </div>
+
+                            {/* Hover Actions */}
+                            <div className="absolute top-3 right-3 opacity-0 group-hover:opacity-100 transition-all flex gap-2">
+                              {!card.is_default && (
+                                <button
+                                  onClick={() => handleSetDefault(card.id)}
+                                  disabled={settingDefaultId === card.id}
+                                  className="p-3 bg-gradient-to-br from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 rounded-xl backdrop-blur-sm transition-all shadow-lg hover:shadow-xl hover:scale-110"
+                                  title="Varsayılan Yap"
+                                >
+                                  <Star className="h-5 w-5" />
+                                </button>
+                              )}
+                              <button
+                                onClick={() => setDeleteCardId(card.id)}
+                                className="p-3 bg-gradient-to-br from-red-500 to-rose-600 hover:from-red-600 hover:to-rose-700 rounded-xl backdrop-blur-sm transition-all shadow-lg hover:shadow-xl hover:scale-110"
+                                title="Kartı Sil"
+                              >
+                                <Trash2 className="h-5 w-5" />
+                              </button>
+                            </div>
+                          </div>
+                        </div>
+                      )
+                    })}
+                  </div>
+                )}
+              </CardContent>
+            </Card>
           </TabsContent>
 
           {/* Faturalar Tab */}
@@ -1219,9 +1232,9 @@ export default function SubscriptionPage() {
             <AlertDialogTitle>Aboneliği İptal Et</AlertDialogTitle>
             <AlertDialogDescription className="space-y-2">
               <p>Aboneliğinizi iptal etmek istediğinize emin misiniz?</p>
-              {subscription?.expires_at && (
+              {subscription?.expiresAt && (
                 <p className="font-medium text-gray-900 dark:text-white">
-                  {new Date(subscription.expires_at).toLocaleDateString("tr-TR")} tarihine kadar premium özelliklerine
+                  {new Date(subscription.expiresAt).toLocaleDateString("tr-TR")} tarihine kadar premium özelliklerine
                   erişmeye devam edebileceksiniz.
                 </p>
               )}
