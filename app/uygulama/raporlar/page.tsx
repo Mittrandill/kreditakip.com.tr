@@ -295,7 +295,7 @@ export default function RaporlarPage() {
                   {selectedBank === "all" ? "Tüm Bankalar" : selectedBank}
                 </Button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-48 dark:bg-black/90 dark:border-white/10 dark:backdrop-blur-xl">
+              <DropdownMenuContent align="end" className="w-48 dark:bg-black/20 dark:border-white/10 backdrop-blur-xl">
                 <DropdownMenuItem
                   onClick={() => setSelectedBank("all")}
                   className="dark:hover:bg-white/10 dark:text-white/70 cursor-pointer"
@@ -336,7 +336,7 @@ export default function RaporlarPage() {
                           : "Tümü"}
                 </Button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-48 dark:bg-black/90 dark:border-white/10 dark:backdrop-blur-xl">
+              <DropdownMenuContent align="end" className="w-48 dark:bg-black/20 dark:border-white/10 backdrop-blur-xl">
                 <DropdownMenuItem
                   onClick={() => setSelectedPeriod("1month")}
                   className="dark:hover:bg-white/10 dark:text-white/70 cursor-pointer"
@@ -1158,7 +1158,7 @@ export default function RaporlarPage() {
                       {selectedYear}
                     </Button>
                   </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end" className="w-32 dark:bg-black/90 dark:border-white/10 dark:backdrop-blur-xl">
+                  <DropdownMenuContent align="end" className="w-32 dark:bg-black/20 dark:border-white/10 backdrop-blur-xl">
                     {[selectedYear - 1, selectedYear, selectedYear + 1].map((year) => (
                       <DropdownMenuItem
                         key={year}

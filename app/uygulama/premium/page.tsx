@@ -193,7 +193,7 @@ export default function PremiumPage() {
       <div className="max-w-4xl mx-auto">
         <div className="grid md:grid-cols-2 gap-4 sm:gap-6 md:gap-8 items-stretch">
           {/* Free Plan */}
-          <Card className="relative border-2 border-gray-200 dark:border-white/10 hover:shadow-lg transition-shadow flex flex-col">
+          <Card className="relative border-2 border-gray-200 dark:border-white/10 dark:bg-black/20 hover:shadow-lg transition-shadow flex flex-col">
             <CardHeader className="space-y-4">
               <div className="flex items-center justify-between">
                 <CardTitle className="text-2xl">Ücretsiz</CardTitle>
@@ -250,7 +250,7 @@ export default function PremiumPage() {
           </Card>
 
           {/* Premium Plan with Toggle */}
-          <Card className="relative border-2 border-emerald-500 dark:border-emerald-600 shadow-2xl hover:shadow-xl transition-all flex flex-col">
+          <Card className="relative border-2 border-emerald-500 dark:border-emerald-600 dark:bg-black/20 shadow-2xl hover:shadow-xl transition-all flex flex-col">
             <div className="absolute -top-4 left-1/2 -translate-x-1/2 z-20">
               <Badge className="bg-gradient-to-r from-amber-500 to-orange-600 text-white border-0 px-6 py-2 shadow-lg">
                 <Sparkles className="h-4 w-4 mr-1" />
@@ -468,7 +468,7 @@ export default function PremiumPage() {
           </DialogHeader>
           <div className="py-4">
             <div className="space-y-3">
-              <div className="p-4 bg-gray-50 dark:bg-black/10 rounded-lg">
+              <div className="p-4 bg-gray-50 dark:bg-white/5 rounded-lg">
                 <p className="text-sm font-medium text-gray-900 dark:text-white mb-2">Mevcut Plan:</p>
                 <div className="flex items-center justify-between">
                   <span className="text-base text-gray-700 dark:text-white/70">
@@ -479,7 +479,7 @@ export default function PremiumPage() {
                   </Badge>
                 </div>
               </div>
-              <div className="p-4 bg-emerald-50 dark:bg-emerald-900/20 rounded-lg border-2 border-emerald-200 dark:border-emerald-800">
+              <div className="p-4 bg-emerald-50 dark:bg-emerald-500/10 rounded-lg border-2 border-emerald-200 dark:border-emerald-800">
                 <p className="text-sm font-medium text-emerald-900 dark:text-emerald-100 mb-2">Yeni Plan:</p>
                 <div className="flex items-center justify-between">
                   <span className="text-base text-emerald-700 dark:text-emerald-300">
@@ -491,7 +491,7 @@ export default function PremiumPage() {
                 </div>
               </div>
             </div>
-            <div className="mt-4 p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-200 dark:border-blue-800">
+            <div className="mt-4 p-3 bg-blue-50 dark:bg-blue-500/10 rounded-lg border border-blue-200 dark:border-blue-800">
               <p className="text-sm text-blue-900 dark:text-blue-100">
                 <strong>Önemli:</strong> Plan değişikliğiniz kaydedilecektir. Mevcut abonelik süreniz{" "}
                 {subscription?.expiresAt && (

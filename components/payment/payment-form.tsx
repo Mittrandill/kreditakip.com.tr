@@ -7,8 +7,17 @@ import { Label } from "@/components/ui/label"
 import { Checkbox } from "@/components/ui/checkbox"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog"
+import { ScrollArea } from "@/components/ui/scroll-area"
 import Image from "next/image"
-import { CreditCard, Lock, AlertCircle } from "lucide-react"
+import { CreditCard, Lock, AlertCircle, FileText, Shield } from "lucide-react"
 import FingerprintJS from "@fingerprintjs/fingerprintjs"
 
 interface PaymentFormProps {
@@ -63,6 +72,10 @@ export function PaymentForm({ planId, planName, amount, billingInfo, onSuccess, 
   const [saveCard, setSaveCard] = useState(false)
   const [autoRenewal, setAutoRenewal] = useState(false)
   const [termsAccepted, setTermsAccepted] = useState(false)
+
+  // Modal states
+  const [showTermsModal, setShowTermsModal] = useState(false)
+  const [showPrivacyModal, setShowPrivacyModal] = useState(false)
 
   // Form state
   const [cardHolder, setCardHolder] = useState("")
@@ -262,14 +275,251 @@ export function PaymentForm({ planId, planName, amount, billingInfo, onSuccess, 
   }
 
   return (
-    <Card className="w-full">
+    <>
+      {/* Kullanım Koşulları Modal */}
+      <Dialog open={showTermsModal} onOpenChange={setShowTermsModal}>
+        <DialogContent className="max-w-3xl max-h-[80vh]">
+          <DialogHeader>
+            <div className="flex items-center gap-2">
+              <FileText className="h-5 w-5 text-emerald-600" />
+              <DialogTitle>Kullanım Koşulları</DialogTitle>
+            </div>
+            <DialogDescription>
+              Lütfen kullanım koşullarını okuyup onaylayın
+            </DialogDescription>
+          </DialogHeader>
+          <ScrollArea className="h-[50vh] pr-4">
+            <div className="space-y-4 text-sm">
+              <section>
+                <h3 className="font-semibold text-base mb-2">1. Genel Hükümler</h3>
+                <p className="text-muted-foreground">
+                  Bu kullanım koşulları, kreditakip.com.tr platformunu kullanan tüm kullanıcılar için geçerlidir.
+                  Platformu kullanarak bu koşulları kabul etmiş sayılırsınız.
+                </p>
+              </section>
+
+              <section>
+                <h3 className="font-semibold text-base mb-2">2. Hizmet Tanımı</h3>
+                <p className="text-muted-foreground">
+                  KrediTakip, kredi kartı ve kredi takibi yapmak için geliştirilmiş bir platformdur. Platform,
+                  kullanıcıların kredi kartlarını takip etmesini, ödeme planlarını oluşturmasını ve finansal
+                  durumlarını analiz etmesini sağlar.
+                </p>
+              </section>
+
+              <section>
+                <h3 className="font-semibold text-base mb-2">3. Kullanıcı Sorumlulukları</h3>
+                <ul className="list-disc list-inside space-y-2 text-muted-foreground">
+                  <li>Hesap güvenliğinden kullanıcı sorumludur</li>
+                  <li>Doğru ve güncel bilgi sağlanmalıdır</li>
+                  <li>Platform kötüye kullanılmamalıdır</li>
+                  <li>Ödeme yükümlülükleri zamanında yerine getirilmelidir</li>
+                </ul>
+              </section>
+
+              <section>
+                <h3 className="font-semibold text-base mb-2">4. Abonelik ve Ödeme</h3>
+                <ul className="list-disc list-inside space-y-2 text-muted-foreground">
+                  <li>Premium planlar aylık veya yıllık olarak sunulur</li>
+                  <li>Ödemeler güvenli PayTR altyapısı üzerinden yapılır</li>
+                  <li>Otomatik yenileme seçilirse, süre bitiminden 3 gün önce bildirim gönderilir</li>
+                  <li>İptal işlemi her zaman yapılabilir ancak ödenen tutar iade edilmez</li>
+                </ul>
+              </section>
+
+              <section>
+                <h3 className="font-semibold text-base mb-2">5. Gizlilik ve Veri Güvenliği</h3>
+                <p className="text-muted-foreground">
+                  Kullanıcı verileri Gizlilik Politikası kapsamında korunur. Kart bilgileri PayTR'nin güvenli
+                  altyapısında saklanır ve hiçbir zaman sunucularımıza gelmez.
+                </p>
+              </section>
+
+              <section>
+                <h3 className="font-semibold text-base mb-2">6. Otomatik Yenileme ve Non3D Ödemeler</h3>
+                <p className="text-muted-foreground">
+                  Kart saklama ve otomatik yenileme seçeneğini kabul ederseniz:
+                </p>
+                <ul className="list-disc list-inside space-y-2 text-muted-foreground mt-2">
+                  <li>Kartınız PayTR güvenli token sistemi ile saklanır</li>
+                  <li>Yenileme ödemeleri Non3D (3D Secure olmadan) yapılır</li>
+                  <li>Süre bitiminden 3 gün önce email ile bilgilendirilirsiniz</li>
+                  <li>İstediğiniz zaman ayarlardan iptal edebilirsiniz</li>
+                  <li>Ödeme başarısız olursa abonelik iptal edilir</li>
+                </ul>
+              </section>
+
+              <section>
+                <h3 className="font-semibold text-base mb-2">7. Hizmet Değişiklikleri</h3>
+                <p className="text-muted-foreground">
+                  Platform, hizmet kapsamını ve fiyatlandırmayı değiştirme hakkını saklı tutar. Değişiklikler
+                  kullanıcılara bildirilir.
+                </p>
+              </section>
+
+              <section>
+                <h3 className="font-semibold text-base mb-2">8. Sorumluluk Reddi</h3>
+                <p className="text-muted-foreground">
+                  Platform, kullanıcıların finansal kararlarından sorumlu değildir. Tüm kararlar kullanıcı
+                  sorumluluğundadır.
+                </p>
+              </section>
+            </div>
+          </ScrollArea>
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => setShowTermsModal(false)}
+            >
+              İptal
+            </Button>
+            <Button
+              onClick={() => {
+                setTermsAccepted(true)
+                setShowTermsModal(false)
+              }}
+              className="bg-emerald-600 hover:bg-emerald-700"
+            >
+              Okudum ve Kabul Ediyorum
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Gizlilik Politikası Modal */}
+      <Dialog open={showPrivacyModal} onOpenChange={setShowPrivacyModal}>
+        <DialogContent className="max-w-3xl max-h-[80vh]">
+          <DialogHeader>
+            <div className="flex items-center gap-2">
+              <Shield className="h-5 w-5 text-emerald-600" />
+              <DialogTitle>Gizlilik Politikası</DialogTitle>
+            </div>
+            <DialogDescription>
+              Kişisel verilerinizin nasıl korunduğunu öğrenin
+            </DialogDescription>
+          </DialogHeader>
+          <ScrollArea className="h-[50vh] pr-4">
+            <div className="space-y-4 text-sm">
+              <section>
+                <h3 className="font-semibold text-base mb-2">1. Toplanan Veriler</h3>
+                <p className="text-muted-foreground mb-2">
+                  Hizmetlerimizi sağlamak için aşağıdaki verileri topluyoruz:
+                </p>
+                <ul className="list-disc list-inside space-y-2 text-muted-foreground">
+                  <li>Kimlik bilgileri (ad, soyad, TC kimlik no)</li>
+                  <li>İletişim bilgileri (email, telefon)</li>
+                  <li>Fatura bilgileri (adres, vergi bilgileri)</li>
+                  <li>Kredi kartı bilgileri (tokenize edilmiş, PayTR tarafından saklanır)</li>
+                  <li>Kullanım verileri (platform kullanımı, tercihler)</li>
+                </ul>
+              </section>
+
+              <section>
+                <h3 className="font-semibold text-base mb-2">2. Verilerin Kullanımı</h3>
+                <p className="text-muted-foreground mb-2">Verilerinizi şu amaçlarla kullanırız:</p>
+                <ul className="list-disc list-inside space-y-2 text-muted-foreground">
+                  <li>Hizmet sağlamak ve geliştirmek</li>
+                  <li>Ödeme işlemlerini gerçekleştirmek</li>
+                  <li>Müşteri desteği sağlamak</li>
+                  <li>Yasal yükümlülükleri yerine getirmek</li>
+                  <li>Kullanıcı deneyimini iyileştirmek</li>
+                </ul>
+              </section>
+
+              <section>
+                <h3 className="font-semibold text-base mb-2">3. Veri Güvenliği</h3>
+                <p className="text-muted-foreground">
+                  Verilerinizin güvenliği bizim önceliğimizdir:
+                </p>
+                <ul className="list-disc list-inside space-y-2 text-muted-foreground mt-2">
+                  <li>256-bit SSL şifreleme kullanılır</li>
+                  <li>Kart bilgileri hiçbir zaman sunucularımıza gelmez</li>
+                  <li>PayTR PCI-DSS sertifikalı altyapı kullanılır</li>
+                  <li>Düzenli güvenlik denetimleri yapılır</li>
+                  <li>Erişim kontrolleri ve yetkilendirme sistemleri uygulanır</li>
+                </ul>
+              </section>
+
+              <section>
+                <h3 className="font-semibold text-base mb-2">4. Üçüncü Taraf Paylaşımı</h3>
+                <p className="text-muted-foreground mb-2">Verileriniz sadece şu durumlarda paylaşılır:</p>
+                <ul className="list-disc list-inside space-y-2 text-muted-foreground">
+                  <li>Ödeme işlemleri için PayTR ile (zorunlu)</li>
+                  <li>Yasal yükümlülükler gereği (mahkeme kararı, vb.)</li>
+                  <li>Açık rızanız ile</li>
+                </ul>
+              </section>
+
+              <section>
+                <h3 className="font-semibold text-base mb-2">5. Çerezler ve Takip</h3>
+                <p className="text-muted-foreground">
+                  Kullanıcı deneyimini iyileştirmek için çerezler kullanırız. Çerez tercihlerinizi
+                  tarayıcınızdan yönetebilirsiniz.
+                </p>
+              </section>
+
+              <section>
+                <h3 className="font-semibold text-base mb-2">6. Kullanıcı Hakları (KVKK)</h3>
+                <p className="text-muted-foreground mb-2">
+                  6698 sayılı KVKK kapsamında haklarınız:
+                </p>
+                <ul className="list-disc list-inside space-y-2 text-muted-foreground">
+                  <li>Kişisel verilerinizin işlenip işlenmediğini öğrenme</li>
+                  <li>İşlenmişse bilgi talep etme</li>
+                  <li>İşlenme amacını ve amacına uygun kullanılıp kullanılmadığını öğrenme</li>
+                  <li>Yurt içinde veya yurt dışında aktarıldığı üçüncü kişileri bilme</li>
+                  <li>Eksik veya yanlış işlenmiş olması halinde düzeltilmesini isteme</li>
+                  <li>Silinmesini veya yok edilmesini isteme</li>
+                  <li>Düzeltme, silme ve yok edilme işlemlerinin paylaşıldığı üçüncü kişilere bildirilmesini isteme</li>
+                  <li>Otomatik sistemlerle analiz edilmesi suretiyle aleyhinize bir sonucun ortaya çıkmasına itiraz etme</li>
+                  <li>Kanuna aykırı olarak işlenmesi sebebiyle zarara uğramanız halinde zararın giderilmesini talep etme</li>
+                </ul>
+              </section>
+
+              <section>
+                <h3 className="font-semibold text-base mb-2">7. Veri Saklama Süresi</h3>
+                <p className="text-muted-foreground">
+                  Verileriniz, hizmet sağlamak için gerekli süre boyunca ve yasal yükümlülükler gereği
+                  saklanır. Hesabınızı kapatmanız durumunda verileriniz 1 yıl içinde silinir.
+                </p>
+              </section>
+
+              <section>
+                <h3 className="font-semibold text-base mb-2">8. İletişim</h3>
+                <p className="text-muted-foreground">
+                  Gizlilik politikası ile ilgili sorularınız için:{" "}
+                  <a href="mailto:info@kreditakip.com.tr" className="text-emerald-600 underline">
+                    info@kreditakip.com.tr
+                  </a>
+                </p>
+              </section>
+            </div>
+          </ScrollArea>
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => setShowPrivacyModal(false)}
+            >
+              Kapat
+            </Button>
+            <Button
+              onClick={() => {
+                setTermsAccepted(true)
+                setShowPrivacyModal(false)
+              }}
+              className="bg-emerald-600 hover:bg-emerald-700"
+            >
+              Okudum ve Kabul Ediyorum
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      <Card className="w-full">
       <CardHeader>
         <div className="flex items-center justify-between">
           <div>
             <CardTitle>Ödeme Bilgileri</CardTitle>
-            <CardDescription>
-              {planName} - {amount.toFixed(2)} TL
-            </CardDescription>
           </div>
           <Image src="/paytr-logo.png" alt="PayTR" width={80} height={30} className="object-contain" />
         </div>
@@ -284,14 +534,7 @@ export function PaymentForm({ planId, planName, amount, billingInfo, onSuccess, 
             </Alert>
           )}
 
-          {/* Güvenlik Mesajı */}
-          <Alert>
-            <Lock className="h-4 w-4" />
-            <AlertDescription className="text-sm">
-              Ödemeniz 3D Secure ile güvenli bir şekilde işlenir. Kart bilgileriniz PayTR güvenli ödeme altyapısı
-              tarafından korunur.
-            </AlertDescription>
-          </Alert>
+
 
           {/* Kart Sahibi */}
           <div className="space-y-2">
@@ -444,13 +687,21 @@ export function PaymentForm({ planId, planName, amount, billingInfo, onSuccess, 
                   Kullanım koşullarını kabul ediyorum (Zorunlu)
                 </Label>
                 <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-                  <a href="/kullanim-kosullari" target="_blank" className="underline hover:text-emerald-600">
+                  <button
+                    type="button"
+                    onClick={() => setShowTermsModal(true)}
+                    className="underline hover:text-emerald-600 font-medium"
+                  >
                     Kullanım Koşulları
-                  </a>
+                  </button>
                   {" ve "}
-                  <a href="/gizlilik-politikasi" target="_blank" className="underline hover:text-emerald-600">
+                  <button
+                    type="button"
+                    onClick={() => setShowPrivacyModal(true)}
+                    className="underline hover:text-emerald-600 font-medium"
+                  >
                     Gizlilik Politikası
-                  </a>
+                  </button>
                   'nı okudum ve kabul ediyorum.
                 </p>
               </div>
@@ -494,5 +745,6 @@ export function PaymentForm({ planId, planName, amount, billingInfo, onSuccess, 
         </CardFooter>
       </form>
     </Card>
+    </>
   )
 }

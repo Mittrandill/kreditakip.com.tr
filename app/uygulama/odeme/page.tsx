@@ -456,7 +456,7 @@ export default function PaymentPage() {
             </div>
 
             <div className="space-y-6">
-              <Card className="sticky top-6">
+              <Card className="sticky top-6 dark:bg-black/20">
                 <CardHeader>
                   <CardTitle>Ödeme Özeti</CardTitle>
                   <CardDescription>Seçtiğiniz plan</CardDescription>
@@ -598,7 +598,7 @@ export default function PaymentPage() {
             </div>
 
             <div className="space-y-6">
-              <Card className="sticky top-6">
+              <Card className="sticky top-6 dark:bg-black/20">
                 <CardHeader>
                   <CardTitle>Ödeme Özeti</CardTitle>
                   <CardDescription>Seçtiğiniz plan</CardDescription>

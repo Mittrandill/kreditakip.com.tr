@@ -47,7 +47,9 @@ import {
   ShieldQuestion,
   ClipboardList,
   Zap,
+  Download,
 } from "lucide-react"
+import { generateFinancialHealthPDF } from "@/lib/utils/financial-health-pdf-generator"
 import { useRouter, useParams } from "next/navigation"
 import { Badge } from "@/components/ui/badge"
 import { useToast } from "@/hooks/use-toast"
@@ -176,6 +178,7 @@ export default function RiskAnalysisDetailPage() {
   const [error, setError] = useState<string | null>(null)
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
   const [isDeleting, setIsDeleting] = useState(false)
+  const [isGeneratingPDF, setIsGeneratingPDF] = useState(false)
   const [activeTab, setActiveTab] = useState("summary")
 
   const riskProgressData = useMemo(
@@ -259,6 +262,30 @@ export default function RiskAnalysisDetailPage() {
     }
   }
 
+  const handleDownloadPDF = async () => {
+    if (!analysis || !analysisData) return
+
+    setIsGeneratingPDF(true)
+
+    try {
+      await generateFinancialHealthPDF(analysis, analysisData)
+
+      toast({
+        title: "Başarılı",
+        description: "Finansal sağlık analizi PDF olarak indirildi.",
+      })
+    } catch (err: any) {
+      console.error("PDF oluşturulurken hata:", err)
+      toast({
+        title: "Hata",
+        description: "PDF oluşturulurken bir sorun oluştu. Lütfen tekrar deneyin.",
+        variant: "destructive",
+      })
+    } finally {
+      setIsGeneratingPDF(false)
+    }
+  }
+
   if (authLoading || loading) {
     return (
       <div className="flex flex-col items-center justify-center min-h-[calc(100vh-200px)] gap-6 p-4 text-center">
@@ -336,12 +363,22 @@ export default function RiskAnalysisDetailPage() {
               </div>
               <Button
                 variant="outline"
-                onClick={() => setDeleteDialogOpen(true)}
+                onClick={handleDownloadPDF}
+                disabled={isGeneratingPDF}
                 className="bg-transparent border-white/20 text-white hover:bg-white/10 hover:border-transparent hover:text-white dark:bg-transparent dark:border-white/20 dark:text-white dark:hover:bg-white/10 dark:hover:border-transparent dark:hover:text-white shrink-0"
                 size="lg"
               >
-                <Trash2 className="mr-2 h-5 w-5" />
-                Analizi Sil
+                {isGeneratingPDF ? (
+                  <>
+                    <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+                    PDF Hazırlanıyor...
+                  </>
+                ) : (
+                  <>
+                    <Download className="mr-2 h-5 w-5" />
+                    Analizi PDF İndir
+                  </>
+                )}
               </Button>
             </div>
               <p className="text-white/80 text-base md:text-lg mb-4">

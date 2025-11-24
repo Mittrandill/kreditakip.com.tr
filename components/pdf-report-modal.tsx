@@ -369,7 +369,7 @@ export default function PDFReportModal({ userData, trigger }: PDFReportModalProp
         )}
       </DialogTrigger>
 
-      <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto bg-white dark:bg-gray-900">
+      <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto bg-white dark:bg-black/20 backdrop-blur-sm">
         <DialogHeader className="pb-6 border-b border-gray-100 dark:border-gray-800">
           <DialogTitle className="flex items-center gap-4 text-2xl font-semibold text-gray-900 dark:text-white">
             <div className="p-3 bg-emerald-100 dark:bg-emerald-900/30 rounded-xl">

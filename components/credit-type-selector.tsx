@@ -264,8 +264,8 @@ export function CreditTypeSelector({
         <div className="flex flex-1 min-h-0">
           {/* Kategori Listesi */}
           {!searchTerm.trim() && (
-            <div className="w-72 border-r bg-gray-50/80 dark:bg-gray-900/50 backdrop-blur-sm flex-shrink-0 flex flex-col">
-              <div className="p-4 border-b bg-white/50 dark:bg-gray-800/50 dark:border-gray-700 flex-shrink-0">
+            <div className="w-72 border-r bg-gray-50/80 dark:bg-black/20 backdrop-blur-sm flex-shrink-0 flex flex-col">
+              <div className="p-4 border-b bg-white/50 dark:bg-black/20 dark:border-gray-700 flex-shrink-0 backdrop-blur-sm">
                 <h3 className="font-semibold text-gray-900 dark:text-gray-100 flex items-center gap-2">
                   <Target className="h-4 w-4" />
                   Kategoriler
@@ -311,7 +311,7 @@ export function CreditTypeSelector({
 
           {/* Kredi Türleri Listesi */}
           <div className="flex-1 flex flex-col min-w-0">
-            <div className="p-4 border-b bg-white/50 dark:bg-gray-800/50 dark:border-gray-700 flex-shrink-0">
+            <div className="p-4 border-b bg-white/50 dark:bg-black/20 dark:border-gray-700 flex-shrink-0">
               <h3 className="font-semibold text-gray-900 dark:text-gray-100 flex items-center gap-2">
                 <CreditCard className="h-4 w-4" />
                 {searchTerm.trim()

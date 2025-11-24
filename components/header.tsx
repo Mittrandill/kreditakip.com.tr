@@ -806,9 +806,9 @@ export default function Header({ pageTitle }: HeaderProps) {
           </Button>
 
           {notificationOpen && (
-            <div className="absolute right-0 top-full mt-3 w-96 bg-white dark:bg-gray-900 rounded-xl shadow-2xl border border-gray-200 dark:border-gray-700 z-50 overflow-hidden">
+            <div className="absolute right-0 top-full mt-3 w-96 bg-white dark:bg-black/20 rounded-xl shadow-2xl border border-gray-200 dark:border-gray-700 z-50 overflow-hidden backdrop-blur-sm">
               {/* Header */}
-              <div className="px-4 py-3 border-b border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900">
+              <div className="px-4 py-3 border-b border-gray-200 dark:border-gray-700 bg-white dark:bg-black/20 backdrop-blur-sm">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-3">
                     <div className="p-2 bg-gradient-to-br from-emerald-500 to-emerald-600 dark:from-emerald-600 dark:to-emerald-700 rounded-lg">
@@ -833,7 +833,7 @@ export default function Header({ pageTitle }: HeaderProps) {
               </div>
 
               {/* Notifications List */}
-              <div className="max-h-96 overflow-y-auto bg-white dark:bg-gray-900">
+              <div className="max-h-96 overflow-y-auto bg-white dark:bg-black/20">
                 {notifications.length === 0 ? (
                   <div className="p-8 text-center">
                     <div className="w-16 h-16 bg-gray-100 dark:bg-gray-800 rounded-full flex items-center justify-center mx-auto mb-3">
@@ -855,7 +855,7 @@ export default function Header({ pageTitle }: HeaderProps) {
                             p-4 cursor-pointer transition-all duration-200
                             ${
                               notification.is_read
-                                ? "bg-white dark:bg-gray-900 hover:bg-gray-50 dark:hover:bg-gray-800"
+                                ? "bg-white dark:bg-black/20 hover:bg-gray-50 dark:hover:bg-black/30"
                                 : "bg-emerald-50 dark:bg-emerald-950 hover:bg-emerald-100 dark:hover:bg-emerald-900"
                             }
                           `}

@@ -86,7 +86,7 @@ export function NotificationSheet({ notification, open, onOpenChange, onDelete }
 
         <div className="space-y-4">
           {/* Mesaj */}
-          <div className="text-gray-700 dark:text-gray-300 leading-relaxed bg-gray-50 dark:bg-gray-900/30 p-4 rounded-lg">
+          <div className="text-gray-700 dark:text-gray-300 leading-relaxed bg-gray-50 dark:bg-black/20 p-4 rounded-lg backdrop-blur-sm">
             {notification.message}
           </div>
 

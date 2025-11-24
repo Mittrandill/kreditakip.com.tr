@@ -972,7 +972,7 @@ export default function SubscriptionPage() {
                           <span className="hidden sm:inline">Sırala</span>
                         </Button>
                       </DropdownMenuTrigger>
-                      <DropdownMenuContent align="start" className="dark:bg-black/90 dark:border-white/10">
+                      <DropdownMenuContent align="start" className="dark:bg-black/20 dark:border-white/10 backdrop-blur-xl">
                         <DropdownMenuItem onClick={() => handleInvoicesSort("tarih")} className="dark:text-white dark:hover:bg-white/10">
                           Tarihe Göre
                         </DropdownMenuItem>
@@ -1121,7 +1121,7 @@ export default function SubscriptionPage() {
                           <span className="hidden sm:inline">Sırala</span>
                         </Button>
                       </DropdownMenuTrigger>
-                      <DropdownMenuContent align="start" className="dark:bg-black/90 dark:border-white/10">
+                      <DropdownMenuContent align="start" className="dark:bg-black/20 dark:border-white/10 backdrop-blur-xl">
                         <DropdownMenuItem onClick={() => handleTransactionsSort("tarih")} className="dark:text-white dark:hover:bg-white/10">
                           Tarihe Göre
                         </DropdownMenuItem>

@@ -21,7 +21,9 @@
       "Bash(dir:*)",
       "Bash(nul)",
       "Bash(pnpm dev)",
-      "Bash(git restore:*)"
+      "Bash(git restore:*)",
+      "Bash(find:*)",
+      "Bash(npm uninstall:*)"
     ],
     "deny": [],
     "ask": []

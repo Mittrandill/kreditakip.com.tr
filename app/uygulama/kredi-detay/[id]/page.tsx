@@ -3018,7 +3018,7 @@ export default function KrediDetayPage() {
 
       {/* Ödeme Modal */}
       <Dialog open={odemeModalOpen} onOpenChange={setOdemeModalOpen}>
-        <DialogContent className="sm:max-w-md dark:bg-gray-900 dark:border-white/10">
+        <DialogContent className="sm:max-w-md dark:bg-black/20 dark:border-white/10 backdrop-blur-sm">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2 dark:text-white">
               <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center">

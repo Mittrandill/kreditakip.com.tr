@@ -68,7 +68,7 @@
     "framer-motion": "latest",
     "input-otp": "latest",
     "json5": "latest",
-    "jspdf": "latest",
+    "jspdf": "^3.0.4",
     "lucide-react": "^0.454.0",
     "mailersend": "latest",
     "next": "14.2.33",
