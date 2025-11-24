@@ -12,6 +12,10 @@
     {
       "path": "/api/cron/subscription-renewal",
       "schedule": "0 9 * * *"
+    },
+    {
+      "path": "/api/cron/renewal-notification",
+      "schedule": "0 10 * * *"
     }
   ]
 }

@@ -715,3 +715,175 @@ Aboneliğinizin kesintiye uğramaması için lütfen:
 © ${new Date().getFullYear()} Kredi Takip
   `
 }
+
+// ============================================
+// Yenileme Öncesi Bildirim (3 Gün Önceden)
+// ============================================
+
+interface UpcomingRenewalData {
+  userName: string
+  userEmail: string
+  planName: string
+  amount: number
+  currency: string
+  renewalDate: string
+  last4: string
+  cancelUrl: string
+}
+
+/**
+ * Yenileme öncesi bildirim - 3 gün önceden gönderilir
+ */
+export async function sendUpcomingRenewalNotification(data: UpcomingRenewalData) {
+  try {
+    const MAILJET_API_KEY = process.env.MAILJET_API_KEY
+    const MAILJET_SECRET_KEY = process.env.MAILJET_SECRET_KEY
+
+    if (!MAILJET_API_KEY || !MAILJET_SECRET_KEY) {
+      console.error("[upcoming-renewal-email] Mailjet credentials missing")
+      return { success: false, error: "Mailjet credentials missing" }
+    }
+
+    const emailData = {
+      Messages: [
+        {
+          From: {
+            Email: "info@kreditakip.com.tr",
+            Name: "Kredi Takip",
+          },
+          To: [
+            {
+              Email: data.userEmail,
+              Name: data.userName,
+            },
+          ],
+          Subject: `📅 Aboneliğiniz 3 Gün Sonra Yenilenecek`,
+          HTMLPart: generateUpcomingRenewalHTML(data),
+          TextPart: generateUpcomingRenewalText(data),
+        },
+      ],
+    }
+
+    const auth = Buffer.from(`${MAILJET_API_KEY}:${MAILJET_SECRET_KEY}`).toString("base64")
+
+    const response = await fetch("https://api.mailjet.com/v3.1/send", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Basic ${auth}`,
+      },
+      body: JSON.stringify(emailData),
+    })
+
+    if (!response.ok) {
+      const errorText = await response.text()
+      console.error("[upcoming-renewal-email] Mailjet error:", errorText)
+      return { success: false, error: errorText }
+    }
+
+    const result = await response.json()
+    return { success: true, result }
+  } catch (error: any) {
+    console.error("[upcoming-renewal-email] Error:", error)
+    return { success: false, error: error.message }
+  }
+}
+
+function generateUpcomingRenewalHTML(data: UpcomingRenewalData): string {
+  const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://kreditakip.com.tr"
+  return `
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Abonelik Yenilenecek</title>
+</head>
+<body style="font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif; line-height: 1.6; color: #ffffff; background-color: #0f172a; margin: 0; padding: 40px 20px;">
+    <div style="max-width: 600px; margin: 0 auto; background-color: #1e293b; border-radius: 16px; overflow: hidden; border: 1px solid #334155;">
+        <div style="background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%); padding: 40px; text-align: center;">
+            <h1 style="color: #ffffff; margin: 0; font-size: 24px;">📅 Aboneliğiniz Yenilenecek</h1>
+            <p style="color: rgba(255,255,255,0.9); margin: 10px 0 0 0;">3 gün sonra otomatik yenileme</p>
+        </div>
+
+        <div style="padding: 40px;">
+            <p style="color: #e2e8f0; margin-bottom: 24px;">Merhaba ${data.userName},</p>
+
+            <p style="color: #e2e8f0; margin-bottom: 24px;">
+                kreditakip.com.tr Premium aboneliğiniz <strong>${new Date(data.renewalDate).toLocaleDateString('tr-TR')}</strong> tarihinde otomatik olarak yenilenecektir.
+            </p>
+
+            <div style="background: #334155; border-radius: 12px; padding: 24px; margin-bottom: 24px;">
+                <div style="display: flex; justify-content: space-between; padding: 12px 0; border-bottom: 1px solid #475569;">
+                    <span style="color: #94a3b8;">Plan</span>
+                    <span style="color: #ffffff; font-weight: 600;">${data.planName}</span>
+                </div>
+                <div style="display: flex; justify-content: space-between; padding: 12px 0; border-bottom: 1px solid #475569;">
+                    <span style="color: #94a3b8;">Yenileme Tutarı</span>
+                    <span style="color: #3b82f6; font-weight: 700; font-size: 18px;">${data.amount.toFixed(2)} ${data.currency}</span>
+                </div>
+                <div style="display: flex; justify-content: space-between; padding: 12px 0; border-bottom: 1px solid #475569;">
+                    <span style="color: #94a3b8;">Yenileme Tarihi</span>
+                    <span style="color: #ffffff;">${new Date(data.renewalDate).toLocaleDateString('tr-TR')}</span>
+                </div>
+                <div style="display: flex; justify-content: space-between; padding: 12px 0;">
+                    <span style="color: #94a3b8;">Kart (Son 4 Hane)</span>
+                    <span style="color: #ffffff;">**** ${data.last4}</span>
+                </div>
+            </div>
+
+            <div style="background: #1e40af; border-left: 4px solid #3b82f6; padding: 16px; margin-bottom: 24px; border-radius: 8px;">
+                <p style="color: #dbeafe; margin: 0; font-size: 14px;">
+                    <strong>Önemli Bilgi:</strong> Kayıtlı kartınızdan otomatik ödeme alınacaktır. İptal etmek isterseniz, yenileme tarihinden önce aboneliğinizi iptal edebilirsiniz.
+                </p>
+            </div>
+
+            <div style="text-align: center; margin-bottom: 24px;">
+                <a href="${data.cancelUrl}" style="display: inline-block; background: #dc2626; color: #ffffff; text-decoration: none; padding: 14px 32px; border-radius: 8px; font-weight: 600; margin-right: 10px;">
+                    Aboneliği İptal Et
+                </a>
+                <a href="${baseUrl}/uygulama/ayarlar" style="display: inline-block; background: #334155; color: #ffffff; text-decoration: none; padding: 14px 32px; border-radius: 8px; font-weight: 600;">
+                    Ayarlara Git
+                </a>
+            </div>
+
+            <p style="color: #94a3b8; font-size: 14px; text-align: center;">
+                Herhangi bir sorunuz varsa destek ekibimizle iletişime geçebilirsiniz.
+            </p>
+        </div>
+
+        <div style="padding: 24px 40px; background: #0f172a; border-top: 1px solid #334155; text-align: center;">
+            <p style="color: #64748b; font-size: 12px; margin: 0;">
+                © ${new Date().getFullYear()} kreditakip.com.tr • Tüm hakları saklıdır
+            </p>
+        </div>
+    </div>
+</body>
+</html>
+  `
+}
+
+function generateUpcomingRenewalText(data: UpcomingRenewalData): string {
+  const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://kreditakip.com.tr"
+  return `
+Aboneliğiniz 3 Gün Sonra Yenilenecek
+
+Merhaba ${data.userName},
+
+kreditakip.com.tr Premium aboneliğiniz ${new Date(data.renewalDate).toLocaleDateString('tr-TR')} tarihinde otomatik olarak yenilenecektir.
+
+Yenileme Detayları:
+- Plan: ${data.planName}
+- Tutar: ${data.amount.toFixed(2)} ${data.currency}
+- Kart: **** ${data.last4}
+- Tarih: ${new Date(data.renewalDate).toLocaleDateString('tr-TR')}
+
+Kayıtlı kartınızdan otomatik ödeme alınacaktır.
+
+İptal etmek isterseniz: ${data.cancelUrl}
+Ayarlar: ${baseUrl}/uygulama/ayarlar
+
+---
+© ${new Date().getFullYear()} Kredi Takip
+  `
+}

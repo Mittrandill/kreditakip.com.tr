@@ -60,6 +60,8 @@ export function PaymentForm({ planId, planName, amount, billingInfo, onSuccess, 
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [saveCard, setSaveCard] = useState(false)
+  const [autoRenewal, setAutoRenewal] = useState(false)
+  const [termsAccepted, setTermsAccepted] = useState(false)
 
   // Form state
   const [cardHolder, setCardHolder] = useState("")
@@ -148,6 +150,20 @@ export function PaymentForm({ planId, planName, amount, billingInfo, onSuccess, 
     setIsLoading(true)
 
     try {
+      // Validate terms acceptance
+      if (!termsAccepted) {
+        setError("Lütfen kullanım koşullarını ve gizlilik politikasını kabul edin")
+        setIsLoading(false)
+        return
+      }
+
+      // Validate auto-renewal if card is being saved
+      if (saveCard && !autoRenewal) {
+        setError("Kart saklama için otomatik yenileme onayı gereklidir")
+        setIsLoading(false)
+        return
+      }
+
       // Validate
       if (!validateForm()) {
         setIsLoading(false)
@@ -330,20 +346,83 @@ export function PaymentForm({ planId, planName, amount, billingInfo, onSuccess, 
           {errors.expiry && <p className="text-sm text-red-500">{errors.expiry}</p>}
           {errors.cvv && <p className="text-sm text-red-500">{errors.cvv}</p>}
 
-          {/* Kart Saklama */}
-          <div className="flex items-center space-x-2 pt-2">
-            <Checkbox
-              id="saveCard"
-              checked={saveCard}
-              onCheckedChange={(checked) => setSaveCard(checked as boolean)}
-              disabled={isLoading}
-            />
-            <Label
-              htmlFor="saveCard"
-              className="text-sm font-normal cursor-pointer"
-            >
-              Kartımı güvenli bir şekilde sakla (gelecek ödemeler için)
-            </Label>
+          {/* Kart Saklama ve Otomatik Yenileme */}
+          <div className="space-y-3 pt-2">
+            <div className="flex items-start space-x-2">
+              <Checkbox
+                id="saveCard"
+                checked={saveCard}
+                onCheckedChange={(checked) => {
+                  setSaveCard(checked as boolean)
+                  if (!checked) setAutoRenewal(false)
+                }}
+                disabled={isLoading}
+                className="mt-1"
+              />
+              <div className="flex-1">
+                <Label
+                  htmlFor="saveCard"
+                  className="text-sm font-medium cursor-pointer block"
+                >
+                  Kartımı güvenli bir şekilde sakla
+                </Label>
+                <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                  Kart bilgileriniz PayTR güvenli altyapısında saklanır. Sunucularımızda tutulmaz.
+                </p>
+              </div>
+            </div>
+
+            {saveCard && (
+              <div className="flex items-start space-x-2 ml-6 pl-4 border-l-2 border-emerald-500 dark:border-emerald-600">
+                <Checkbox
+                  id="autoRenewal"
+                  checked={autoRenewal}
+                  onCheckedChange={(checked) => setAutoRenewal(checked as boolean)}
+                  disabled={isLoading}
+                  className="mt-1"
+                />
+                <div className="flex-1">
+                  <Label
+                    htmlFor="autoRenewal"
+                    className="text-sm font-medium cursor-pointer block"
+                  >
+                    Otomatik yenileme onayı (Zorunlu)
+                  </Label>
+                  <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                    Aboneliğiniz süre dolmadan 3 gün önce email ile bilgilendirilecek ve otomatik yenilenecektir.
+                    Yenileme ödemeleri Non3D (3D Secure olmadan) yapılacaktır. İstediğiniz zaman iptal edebilirsiniz.
+                  </p>
+                </div>
+              </div>
+            )}
+
+            <div className="flex items-start space-x-2">
+              <Checkbox
+                id="termsAccepted"
+                checked={termsAccepted}
+                onCheckedChange={(checked) => setTermsAccepted(checked as boolean)}
+                disabled={isLoading}
+                className="mt-1"
+              />
+              <div className="flex-1">
+                <Label
+                  htmlFor="termsAccepted"
+                  className="text-sm font-medium cursor-pointer block"
+                >
+                  Kullanım koşullarını kabul ediyorum (Zorunlu)
+                </Label>
+                <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                  <a href="/kullanim-kosullari" target="_blank" className="underline hover:text-emerald-600">
+                    Kullanım Koşulları
+                  </a>
+                  {" ve "}
+                  <a href="/gizlilik-politikasi" target="_blank" className="underline hover:text-emerald-600">
+                    Gizlilik Politikası
+                  </a>
+                  'nı okudum ve kabul ediyorum.
+                </p>
+              </div>
+            </div>
           </div>
         </CardContent>
 
