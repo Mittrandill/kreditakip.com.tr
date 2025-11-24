@@ -16,7 +16,7 @@ import { AdminLayoutWrapper } from "@/components/admin-layout-wrapper"
 import { Badge } from "@/components/ui/badge"
 
 export default async function PaymentRiskMonitoring() {
-  await checkAdminAccess()
+  const { session } = await checkAdminAccess()
 
   const supabase = createSupabaseServer()
 
@@ -95,7 +95,7 @@ export default async function PaymentRiskMonitoring() {
   const riskLevel = getRiskLevel()
 
   return (
-    <AdminLayoutWrapper>
+    <AdminLayoutWrapper userEmail={session.user.email || ""}>
       <div className="space-y-6">
         {/* Header */}
         <div>
