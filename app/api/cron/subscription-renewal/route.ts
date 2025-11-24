@@ -5,6 +5,7 @@ import {
   sendRenewalSuccessNotification,
   sendRenewalFailedNotification,
 } from "@/lib/email/subscription-notification"
+import { calculateRiskScore, logSecurityEvent, getUserPaymentActivity, type RiskFactors } from "@/lib/security-utils"
 
 export const dynamic = "force-dynamic"
 export const runtime = "nodejs"
@@ -124,8 +125,85 @@ export async function GET(request: NextRequest) {
           continue
         }
 
+        // FRAUD DETECTION: Risk skorunu hesapla
+        const userCreatedAt = new Date(profile.created_at)
+        const userRegisteredDaysAgo = Math.floor((now.getTime() - userCreatedAt.getTime()) / (24 * 60 * 60 * 1000))
+
+        // Son giriş zamanını kontrol et
+        const lastSignInAt = profile.last_sign_in_at ? new Date(profile.last_sign_in_at) : null
+        const daysSinceLastLogin = lastSignInAt
+          ? Math.floor((now.getTime() - lastSignInAt.getTime()) / (24 * 60 * 60 * 1000))
+          : 999 // Hiç giriş yapmamışsa çok büyük bir değer
+
+        // Son 24 saatte başarısız ödeme var mı?
+        const recentPayments = await getUserPaymentActivity(supabase, userId, 24)
+        const failedPaymentCount = recentPayments.filter((p: any) => p.payment_status === "failed").length
+
+        // Risk faktörlerini belirle
+        const riskFactors: RiskFactors = {
+          isNewUser: userRegisteredDaysAgo < 7,
+          isInactiveUser: daysSinceLastLogin > 30,
+          hasMultipleFailedPayments: failedPaymentCount >= 3,
+          isHighAmount: plan.price > 1000,
+          userRegisteredDaysAgo,
+          daysSinceLastLogin,
+          failedPaymentCount,
+          paymentAmount: plan.price,
+        }
+
+        // Risk skorunu hesapla
+        const riskAssessment = calculateRiskScore(riskFactors)
+
+        console.log(`[subscription-renewal] User ${userId} risk assessment:`, {
+          score: riskAssessment.score,
+          level: riskAssessment.level,
+          flags: riskAssessment.flags,
+        })
+
+        // CRITICAL risk ise ödemeyi yapma, manual review gerekiyor
+        if (riskAssessment.level === "critical" && riskAssessment.score >= 70) {
+          console.warn(`[subscription-renewal] CRITICAL RISK - Skipping payment for user ${userId}`)
+
+          // Security log kaydet
+          await logSecurityEvent(supabase, {
+            userId,
+            eventType: "suspicious_activity",
+            ipAddress: "cron-server", // Cron job'dan geldiği için server IP
+            userAgent: "Vercel Cron Job",
+            riskScore: riskAssessment.score,
+            riskFactors: riskAssessment.flags,
+            metadata: {
+              reason: "Critical risk score during renewal",
+              subscription_id: subscription.id,
+              plan_name: plan.name,
+              amount: plan.price,
+            },
+          })
+
+          results.skipped++
+          results.errors.push(`User ${userId}: Critical risk score (${riskAssessment.score}) - Manual review required`)
+          continue // Bu ödemeyi atlat, devam et
+        }
+
         // Benzersiz sipariş numarası oluştur
         const orderId = `REN${userId.replace(/-/g, "").substring(0, 16)}${Date.now()}`
+
+        // Security event log: Payment attempt
+        await logSecurityEvent(supabase, {
+          userId,
+          eventType: "payment_attempt",
+          ipAddress: "cron-server",
+          userAgent: "Vercel Cron Job - Automatic Renewal",
+          riskScore: riskAssessment.score,
+          riskFactors: riskAssessment.flags,
+          metadata: {
+            merchant_oid: orderId,
+            subscription_id: subscription.id,
+            plan_name: plan.name,
+            amount: plan.price,
+            renewal_type: "automatic",
+          },
+        })
 
         // Recurring payment yap
         const paymentResult = await paytrClient.createRecurringPayment(
@@ -169,7 +247,7 @@ export async function GET(request: NextRequest) {
             })
             .eq("id", subscription.id)
 
-          // Recurring payment kaydı oluştur
+          // Recurring payment kaydı oluştur (risk skoru ile birlikte)
           await supabase.from("paytr_recurring_payments").insert({
             user_id: userId,
             subscription_id: subscription.id,
@@ -181,11 +259,32 @@ export async function GET(request: NextRequest) {
             payment_status: paymentResult.status === "success" ? "completed" : "pending",
             paytr_status: paymentResult.status,
             completed_at: paymentResult.status === "success" ? new Date().toISOString() : null,
+            ip_address: "cron-server",
+            user_agent: "Vercel Cron Job - Automatic Renewal",
+            risk_score: riskAssessment.score,
+            fraud_flags: riskAssessment.flags,
             metadata: {
               renewal_type: "automatic",
               plan_id: plan.id,
               plan_name: plan.name,
               billing_period: plan.billing_period,
+              risk_level: riskAssessment.level,
+            },
+          })
+
+          // Security log: Payment success
+          await logSecurityEvent(supabase, {
+            userId,
+            eventType: "payment_success",
+            ipAddress: "cron-server",
+            userAgent: "Vercel Cron Job - Automatic Renewal",
+            riskScore: riskAssessment.score,
+            riskFactors: riskAssessment.flags,
+            metadata: {
+              merchant_oid: orderId,
+              subscription_id: subscription.id,
+              amount: plan.price,
+              renewal_type: "automatic",
             },
           })
 
@@ -230,7 +329,7 @@ export async function GET(request: NextRequest) {
           // Ödeme başarısız
           console.error(`[subscription-renewal] Payment failed for user ${userId}:`, paymentResult.msg)
 
-          // Başarısız ödeme kaydı
+          // Başarısız ödeme kaydı (risk skoru ile)
           await supabase.from("paytr_recurring_payments").insert({
             user_id: userId,
             subscription_id: subscription.id,
@@ -243,9 +342,32 @@ export async function GET(request: NextRequest) {
             paytr_status: paymentResult.status,
             error_message: paymentResult.msg,
             try_again: paymentResult.try_again || false,
+            ip_address: "cron-server",
+            user_agent: "Vercel Cron Job - Automatic Renewal",
+            risk_score: riskAssessment.score,
+            fraud_flags: riskAssessment.flags,
             metadata: {
               renewal_type: "automatic",
               plan_id: plan.id,
+              risk_level: riskAssessment.level,
+            },
+          })
+
+          // Security log: Payment failed
+          await logSecurityEvent(supabase, {
+            userId,
+            eventType: "payment_failed",
+            ipAddress: "cron-server",
+            userAgent: "Vercel Cron Job - Automatic Renewal",
+            riskScore: riskAssessment.score,
+            riskFactors: riskAssessment.flags,
+            metadata: {
+              merchant_oid: orderId,
+              subscription_id: subscription.id,
+              amount: plan.price,
+              renewal_type: "automatic",
+              error_message: paymentResult.msg,
+              try_again: paymentResult.try_again,
             },
           })
 
