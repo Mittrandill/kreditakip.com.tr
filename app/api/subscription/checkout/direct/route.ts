@@ -3,6 +3,7 @@ import { PayTRClient } from "@/lib/paytr-client"
 import { createServerClient } from "@/lib/supabase/server"
 import { createClient } from "@supabase/supabase-js"
 import { rateLimit, getClientIp, RateLimits } from "@/lib/rate-limit"
+import { getSecurityContext, getUserAgent } from "@/lib/security-utils"
 
 export const dynamic = "force-dynamic"
 export const runtime = "nodejs"
@@ -55,7 +56,12 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json()
-    const { planId, billingInfo, installmentCount = 0, cardType, storeCard = false } = body
+    const { planId, billingInfo, installmentCount = 0, cardType, storeCard = false, securityContext } = body
+
+    // Capture security context from request
+    const requestSecurityContext = getSecurityContext(request)
+    const deviceFingerprint = securityContext?.deviceFingerprint || ""
+    const browserInfo = securityContext?.browserInfo || {}
 
     if (!planId || !billingInfo) {
       return NextResponse.json({ error: "Plan ID and billing info required" }, { status: 400 })
@@ -128,13 +134,22 @@ export async function POST(request: NextRequest) {
     formData.merchant_ok_url = successUrl
     formData.merchant_fail_url = failUrl
 
-    // Save pending subscription record with billing info
+    // Save pending subscription record with billing info and security context
     const { error: insertError } = await supabaseAdmin.from("pending_subscriptions").insert({
       user_id: user.id,
       plan_id: planId,
       token: token,
       conversation_id: orderId,
       status: "pending",
+      metadata: {
+        security: {
+          ip_address: requestSecurityContext.ipAddress,
+          user_agent: requestSecurityContext.userAgent,
+          device_fingerprint: deviceFingerprint,
+          browser_info: browserInfo,
+          timestamp: requestSecurityContext.timestamp,
+        },
+      },
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString(),
     })

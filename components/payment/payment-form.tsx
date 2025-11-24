@@ -9,6 +9,7 @@ import { Alert, AlertDescription } from "@/components/ui/alert"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import Image from "next/image"
 import { CreditCard, Lock, AlertCircle } from "lucide-react"
+import FingerprintJS from "@fingerprintjs/fingerprintjs"
 
 interface PaymentFormProps {
   planId: string
@@ -71,8 +72,26 @@ export function PaymentForm({ planId, planName, amount, billingInfo, onSuccess, 
   const [cvv, setCvv] = useState("")
   const [cardType, setCardType] = useState<string>("unknown")
 
+  // Security: Device fingerprinting
+  const [deviceFingerprint, setDeviceFingerprint] = useState<string>("")
+
   // Validation state
   const [errors, setErrors] = useState<Record<string, string>>({})
+
+  // Initialize device fingerprinting on mount
+  useEffect(() => {
+    const initFingerprint = async () => {
+      try {
+        const fp = await FingerprintJS.load()
+        const result = await fp.get()
+        setDeviceFingerprint(result.visitorId)
+        console.log("[Security] Device fingerprint initialized:", result.visitorId)
+      } catch (error) {
+        console.error("[Security] Failed to initialize fingerprint:", error)
+      }
+    }
+    initFingerprint()
+  }, [])
 
   // Kart türünü tespit et
   useEffect(() => {
@@ -170,6 +189,15 @@ export function PaymentForm({ planId, planName, amount, billingInfo, onSuccess, 
         return
       }
 
+      // Collect browser/device information for security
+      const browserInfo = {
+        userAgent: navigator.userAgent,
+        language: navigator.language,
+        screenResolution: `${window.screen.width}x${window.screen.height}`,
+        timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+        platform: navigator.platform,
+      }
+
       // Step 1: Get token from backend
       const response = await fetch("/api/subscription/checkout/direct", {
         method: "POST",
@@ -181,6 +209,10 @@ export function PaymentForm({ planId, planName, amount, billingInfo, onSuccess, 
           billingInfo,
           installmentCount: 0,
           storeCard: saveCard, // Kart saklama tercihi
+          securityContext: {
+            deviceFingerprint,
+            browserInfo,
+          },
         }),
       })
 

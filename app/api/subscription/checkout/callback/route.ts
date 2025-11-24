@@ -339,7 +339,10 @@ export async function POST(request: NextRequest) {
           console.log("[paytr-callback] Saved card info successfully for user:", userId)
         }
 
-        // İlk ödeme için recurring payment kaydı oluştur
+        // Extract security context from pending subscription
+        const securityContext = pendingSubscription.metadata?.security || {}
+
+        // İlk ödeme için recurring payment kaydı oluştur (IP ve device bilgileriyle)
         const { error: recurringError } = await supabase
           .from("paytr_recurring_payments")
           .insert({
@@ -353,11 +356,15 @@ export async function POST(request: NextRequest) {
             payment_status: "completed",
             paytr_status: status,
             completed_at: new Date().toISOString(),
+            ip_address: securityContext.ip_address,
+            user_agent: securityContext.user_agent,
+            device_fingerprint: securityContext.device_fingerprint,
             metadata: {
               payment_type: payment_type,
               test_mode: test_mode,
               card_last4: last4,
               card_brand: cardBrand,
+              browser_info: securityContext.browser_info,
             },
           })
 

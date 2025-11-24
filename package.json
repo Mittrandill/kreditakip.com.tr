@@ -12,6 +12,7 @@
   "dependencies": {
     "@ai-sdk/google": "^2.0.27",
     "@emotion/is-prop-valid": "latest",
+    "@fingerprintjs/fingerprintjs": "^5.0.1",
     "@fullcalendar/core": "^6.1.19",
     "@fullcalendar/daygrid": "^6.1.19",
     "@fullcalendar/interaction": "^6.1.19",
