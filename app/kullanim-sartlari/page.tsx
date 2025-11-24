@@ -171,9 +171,75 @@ export default function TermsOfServicePage() {
                 </div>
               </div>
 
-              {/* Section 5: Uyuşmazlık */}
+              {/* Section 5: Abonelik ve Otomatik Yenileme */}
               <div className="mb-8">
-                <h2 className="text-2xl font-bold text-white mb-4">5. Uyuşmazlık</h2>
+                <h2 className="text-2xl font-bold text-white mb-4">5. Abonelik ve Otomatik Yenileme</h2>
+                <div className="text-white/80 leading-relaxed space-y-3 bg-emerald-500/10 border border-emerald-500/30 rounded-lg p-6">
+                  <p>
+                    <strong>Premium Abonelik:</strong> Kredi Takip Premium özelliklerine aylık veya yıllık abonelik satın alabilirsiniz.
+                  </p>
+
+                  <p>
+                    <strong className="text-emerald-200">Otomatik Yenileme Sistemi:</strong>
+                  </p>
+                  <ul className="list-disc pl-6 space-y-2">
+                    <li>İlk ödemeniz <strong>3D Secure</strong> ile güvenli bir şekilde yapılır</li>
+                    <li>Kart saklama ve otomatik yenileme için açık onayınız alınır</li>
+                    <li>Aboneliğiniz sona ermeden <strong>3 gün önce</strong> email ile bilgilendirilirsiniz</li>
+                    <li>Bildirim emailinde iptal linki bulunur</li>
+                    <li>İptal etmezseniz, aboneliğiniz otomatik olarak yenilenir</li>
+                  </ul>
+
+                  <p className="text-yellow-200 bg-yellow-500/10 border border-yellow-500/30 rounded p-3">
+                    <strong>⚠️ Önemli Risk Bildirimi:</strong> Otomatik yenileme ödemeleri <strong>Non3D (3D Secure olmadan)</strong> yapılmaktadır.
+                    Bu ödeme yöntemi, kartınızın izinsiz kullanımına karşı 3D Secure kadar koruma sağlamaz.
+                    Otomatik yenileme onayı vererek bu riski anladığınızı ve kabul ettiğinizi beyan edersiniz.
+                  </p>
+
+                  <p>
+                    <strong>Kart Bilgilerinizin Güvenliği:</strong>
+                  </p>
+                  <ul className="list-disc pl-6 space-y-2">
+                    <li>Kart bilgileriniz PayTR güvenli altyapısında saklanır</li>
+                    <li>Sunucularımızda kredi kartı bilgisi tutulmaz (PCI-DSS uyumlu)</li>
+                    <li>Sadece PayTR token bilgileri saklanır</li>
+                  </ul>
+
+                  <p>
+                    <strong>İptal ve Değişiklik Hakkı:</strong>
+                  </p>
+                  <ul className="list-disc pl-6 space-y-2">
+                    <li>Aboneliğinizi istediğiniz zaman iptal edebilirsiniz</li>
+                    <li>İptal için: Ayarlar → Abonelik → İptal Et</li>
+                    <li>Kayıtlı kartınızı istediğiniz zaman silebilirsiniz</li>
+                    <li>İptal ettiğinizde mevcut abonelik dönemi sonuna kadar erişiminiz devam eder</li>
+                    <li>İptal sonrası yeni ödeme alınmaz</li>
+                  </ul>
+
+                  <p>
+                    <strong>İade Politikası:</strong>
+                  </p>
+                  <ul className="list-disc pl-6 space-y-2">
+                    <li>Otomatik yenilenen abonelikler için 14 gün içinde iade talep edebilirsiniz</li>
+                    <li>İade talebiniz info@kreditakip.com.tr adresine gönderilmelidir</li>
+                    <li>İlk satın alma ödemeleri için tüketici hakları çerçevesinde cayma hakkı geçerlidir</li>
+                  </ul>
+
+                  <p>
+                    <strong>Bildirim Yükümlülüğümüz:</strong>
+                  </p>
+                  <ul className="list-disc pl-6 space-y-2">
+                    <li>Yenileme öncesi bildirim (3 gün önce)</li>
+                    <li>Başarılı ödeme bildirimi</li>
+                    <li>Başarısız ödeme bildirimi</li>
+                    <li>İptal işlemi onayı</li>
+                  </ul>
+                </div>
+              </div>
+
+              {/* Section 6: Uyuşmazlık */}
+              <div className="mb-8">
+                <h2 className="text-2xl font-bold text-white mb-4">6. Uyuşmazlık</h2>
                 <div className="text-white/80 leading-relaxed space-y-2">
                   <p>
                     Taraflar arasında çıkabilecek uyuşmazlıklarda{" "}

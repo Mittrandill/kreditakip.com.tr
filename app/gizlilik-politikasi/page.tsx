@@ -108,9 +108,74 @@ export default function PrivacyPolicyPage() {
                 </div>
               </div>
 
-              {/* Section 5: Haklarınız */}
+              {/* Section 5: Ödeme Bilgileri ve Kart Saklama */}
               <div className="mb-8">
-                <h2 className="text-2xl font-bold text-white mb-4">5. Haklarınız</h2>
+                <h2 className="text-2xl font-bold text-white mb-4">5. Ödeme Bilgileri ve Kart Saklama</h2>
+                <div className="text-white/80 leading-relaxed space-y-3 bg-blue-500/10 border border-blue-500/30 rounded-lg p-6">
+                  <p>
+                    <strong className="text-blue-200">Ödeme Güvenliği:</strong> Tüm ödemeleriniz PayTR güvenli ödeme altyapısı
+                    üzerinden işlenir. Kredi Takip olarak kredi kartı bilgilerinizi hiçbir şekilde görmüyor veya sunucularımızda saklamıyoruz.
+                  </p>
+
+                  <p>
+                    <strong>PCI-DSS Uyumluluk:</strong>
+                  </p>
+                  <ul className="list-disc pl-6 space-y-2">
+                    <li>Kredi kartı bilgileriniz doğrudan PayTR'ye iletilir</li>
+                    <li>Sunucularımızda kredi kartı numarası, CVV veya son kullanma tarihi saklanmaz</li>
+                    <li>Tüm ödeme işlemleri PCI-DSS standardına uygun şekilde gerçekleşir</li>
+                  </ul>
+
+                  <p>
+                    <strong>Kart Saklama Sistemi (CAPI):</strong>
+                  </p>
+                  <ul className="list-disc pl-6 space-y-2">
+                    <li>Otomatik yenileme için kart saklama özelliği <strong>isteğe bağlıdır</strong></li>
+                    <li>Kart bilgileriniz PayTR güvenli altyapısında saklanır (Kredi Takip sunucularında değil)</li>
+                    <li>Sunucularımızda sadece PayTR tarafından oluşturulan <strong>token bilgileri</strong> (utoken, ctoken) saklanır</li>
+                    <li>Token bilgileri kart numaranızı içermez, sadece tekrarlayan ödeme yapabilmemizi sağlar</li>
+                    <li>Kayıtlı kartınızı istediğiniz zaman silebilirsiniz</li>
+                  </ul>
+
+                  <p>
+                    <strong>Saklanan Bilgiler:</strong>
+                  </p>
+                  <ul className="list-disc pl-6 space-y-2">
+                    <li>Kartınızın son 4 hanesi (gösterim amaçlı)</li>
+                    <li>Kart markası (Visa, Mastercard, vb.)</li>
+                    <li>Son kullanma tarihi (yıl/ay)</li>
+                    <li>PayTR token bilgileri (utoken, ctoken)</li>
+                    <li>Kart sahibi adı</li>
+                  </ul>
+
+                  <p className="text-yellow-200 bg-yellow-500/10 border border-yellow-500/30 rounded p-3">
+                    <strong>⚠️ Önemli:</strong> Tam kart numaranız veya CVV kodunuz hiçbir zaman sunucularımızda saklanmaz.
+                    PayTR'nin güvenli altyapısı dışında bu bilgilere kimse erişemez.
+                  </p>
+
+                  <p>
+                    <strong>Fatura ve Ödeme Geçmişi:</strong>
+                  </p>
+                  <ul className="list-disc pl-6 space-y-2">
+                    <li>Fatura bilgileriniz (ad, adres, vergi/TC no) yasal zorunluluk gereği saklanır</li>
+                    <li>Ödeme geçmişiniz ve işlem logları güvenlik ve muhasebe amaçlı tutulur</li>
+                    <li>Bu bilgiler yasal saklama süreleri boyunca korunur</li>
+                  </ul>
+
+                  <p>
+                    <strong>Kartınızı Silme Hakkı:</strong>
+                  </p>
+                  <ul className="list-disc pl-6 space-y-2">
+                    <li>Ayarlar sayfasından kartınızı istediğiniz zaman silebilirsiniz</li>
+                    <li>Kart silme işlemi hem Kredi Takip hem de PayTR sistemlerinde gerçekleştirilir</li>
+                    <li>Kart sildikten sonra otomatik yenileme durdurulur</li>
+                  </ul>
+                </div>
+              </div>
+
+              {/* Section 6: Haklarınız */}
+              <div className="mb-8">
+                <h2 className="text-2xl font-bold text-white mb-4">6. Haklarınız</h2>
                 <div className="text-white/80 leading-relaxed space-y-3">
                   <p>KVKK kapsamında aşağıdaki haklara sahipsiniz:</p>
                   <p>• Verilerinize erişme hakkı</p>
