@@ -1,6 +1,6 @@
 import { checkAdminAccess } from "@/lib/admin-check"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { FileText, FolderOpen, Eye, TrendingUp, Users, Receipt, CreditCard, DollarSign } from "lucide-react"
+import { FileText, FolderOpen, Eye, TrendingUp, Users, Receipt, CreditCard, DollarSign, ShieldAlert } from "lucide-react"
 import { createSupabaseServer } from "@/lib/supabase-server"
 import Link from "next/link"
 import { AdminLayoutWrapper } from "@/components/admin-layout-wrapper"
@@ -177,7 +177,7 @@ export default async function AdminDashboard() {
           <CardTitle className="text-white">Hızlı İşlemler</CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
             <Link
               href="/admin/kullanicilar"
               className="flex items-center gap-4 p-4 bg-gradient-to-r from-purple-500/10 to-pink-500/10 border border-purple-500/20 rounded-lg hover:border-purple-500/40 transition-all"
@@ -201,6 +201,19 @@ export default async function AdminDashboard() {
               <div>
                 <h3 className="font-semibold text-white">Fatura Oluştur</h3>
                 <p className="text-sm text-white/60">Yeni fatura ekle</p>
+              </div>
+            </Link>
+
+            <Link
+              href="/admin/odeme-risk-takip"
+              className="flex items-center gap-4 p-4 bg-gradient-to-r from-red-500/10 to-orange-500/10 border border-red-500/20 rounded-lg hover:border-red-500/40 transition-all"
+            >
+              <div className="w-12 h-12 bg-red-500/20 rounded-full flex items-center justify-center">
+                <ShieldAlert className="h-6 w-6 text-red-400" />
+              </div>
+              <div>
+                <h3 className="font-semibold text-white">Risk Takip</h3>
+                <p className="text-sm text-white/60">Ödeme güvenliği</p>
               </div>
             </Link>
 
