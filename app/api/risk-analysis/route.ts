@@ -260,15 +260,14 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    if (!isPremium) {
-      const { error: incrementError } = await supabaseAdmin.rpc("increment_usage", {
-        p_user_id: userId,
-        p_feature_type: "risk_analysis",
-      })
+    // Risk analizi sayısını artır (istatistik için - tüm kullanıcılar)
+    const { error: incrementError } = await supabaseAdmin.rpc("increment_usage", {
+      p_user_id: userId,
+      p_feature_type: "risk_analysis",
+    })
 
-      if (incrementError) {
-        console.error("[v0] Usage increment error:", incrementError)
-      }
+    if (incrementError) {
+      console.error("[Risk Analysis] Usage increment error:", incrementError)
     }
 
     return NextResponse.json(analysisData)

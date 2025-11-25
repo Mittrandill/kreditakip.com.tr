@@ -574,15 +574,15 @@ export async function POST(request: Request) {
       )
     }
 
-    // Kullanım sayısı artırımı kaydetme işleminde yapılacak
-    // const { error: incrementError } = await supabase.rpc("increment_usage", {
-    //   p_user_id: user.id,
-    //   p_feature_type: "ocr_analysis",
-    // })
+    // OCR analizi sayısını artır (istatistik için)
+    const { error: incrementError } = await supabase.rpc("increment_usage", {
+      p_user_id: user.id,
+      p_feature_type: "ocr_analysis",
+    })
 
-    // if (incrementError) {
-    //   console.error("[v0] Usage increment error:", incrementError)
-    // }
+    if (incrementError) {
+      console.error("[OCR] Usage increment error:", incrementError)
+    }
 
     return Response.json({
       success: true,

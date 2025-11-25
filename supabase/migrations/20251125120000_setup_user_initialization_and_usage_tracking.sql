@@ -84,7 +84,7 @@ BEGIN
   )
   ON CONFLICT (user_id, feature_type) DO NOTHING;
 
-  -- Create usage tracking for risk analysis (0 for free users, unlimited for premium)
+  -- Create usage tracking for risk analysis (1 for free users, unlimited for premium)
   INSERT INTO public.usage_tracking (
     user_id,
     feature_type,
@@ -96,7 +96,7 @@ BEGIN
     NEW.id,
     'risk_analysis',
     0,
-    0, -- Free users cannot use risk analysis (premium only)
+    1, -- Free users can use risk analysis once
     0,
     NOW() + INTERVAL '30 days'
   )
@@ -212,7 +212,7 @@ SELECT
   p.id,
   'risk_analysis',
   0,
-  0, -- Free users cannot use risk analysis (premium only)
+  1, -- Free users can use risk analysis once
   0,
   NOW() + INTERVAL '30 days'
 FROM public.profiles p
@@ -235,12 +235,19 @@ SET
   updated_at = NOW()
 WHERE feature_type = 'ocr_analysis';
 
--- Update all existing risk analysis tracking to 0 (free users cannot use)
-UPDATE public.usage_tracking
+-- Update all existing risk analysis tracking to 1 (free users can use once)
+UPDATE public.usage_tracking ut
 SET
-  limit_count = 0,
+  limit_count = 1,
   updated_at = NOW()
-WHERE feature_type = 'risk_analysis';
+WHERE ut.feature_type = 'risk_analysis'
+  -- Sadece free kullanıcıları güncelle, premium olanlar aşağıda güncellenir
+  AND NOT EXISTS (
+    SELECT 1 FROM public.subscriptions s
+    WHERE s.user_id = ut.user_id
+    AND s.status = 'active'
+    AND s.plan_type = 'premium'
+  );
 
 -- ============================================================================
 -- PART 6: Update can_use_feature to handle saved credits logic
@@ -270,11 +277,6 @@ BEGIN
     RETURN TRUE;
   END IF;
 
-  -- Risk analysis is premium-only feature
-  IF p_feature_type = 'risk_analysis' THEN
-    RETURN FALSE; -- Free users cannot use risk analysis
-  END IF;
-
   -- Special handling for OCR analysis (checking saved credits, not analysis count)
   IF p_feature_type = 'ocr_analysis' THEN
     -- Free users: check saved_credits_count for OCR analysis
@@ -290,6 +292,22 @@ BEGIN
 
     -- Free users can save only 1 credit (saved_credits_count < 1)
     RETURN (COALESCE(v_usage.saved_credits_count, 0) < 1);
+  END IF;
+
+  -- Risk analysis: check used_count (free users have limit of 1)
+  IF p_feature_type = 'risk_analysis' THEN
+    SELECT * INTO v_usage
+    FROM public.usage_tracking
+    WHERE user_id = p_user_id
+      AND feature_type = 'risk_analysis';
+
+    -- No usage record = can use (first time)
+    IF v_usage.id IS NULL THEN
+      RETURN TRUE;
+    END IF;
+
+    -- Check if under limit (used_count < limit_count)
+    RETURN (COALESCE(v_usage.used_count, 0) < COALESCE(v_usage.limit_count, 0));
   END IF;
 
   -- For other features, use the normal usage limit check
@@ -339,10 +357,10 @@ BEGIN
     -- OCR zaten sınırsız, değişiklik yok (sadece saved_credits_count farklı çalışıyor)
 
   ELSE
-    -- Free kullanıcı: Risk analizi 0 yap
+    -- Free kullanıcı: Risk analizi 1 yap (sadece 1 kez kullanabilir)
     UPDATE public.usage_tracking
     SET
-      limit_count = 0,
+      limit_count = 1,
       updated_at = NOW()
     WHERE user_id = p_user_id
     AND feature_type = 'risk_analysis';
@@ -408,8 +426,7 @@ WHERE ut.user_id = s.user_id
 -- PART 9: Create/update functions for incrementing usage
 -- ============================================================================
 
--- Update increment_usage to NOT increment used_count for OCR (unlimited analysis)
--- But keep the function for other features
+-- Increment usage counter for analytics and limit checking
 CREATE OR REPLACE FUNCTION public.increment_usage(
   p_user_id UUID,
   p_feature_type TEXT
@@ -418,37 +435,14 @@ RETURNS BOOLEAN AS $$
 DECLARE
   v_limit INT;
 BEGIN
-  -- OCR analysis is unlimited, so we don't increment used_count
-  -- Only saved_credits_count is tracked (use increment_saved_credits instead)
-  IF p_feature_type = 'ocr_analysis' THEN
-    -- Just ensure the record exists, don't increment anything
-    INSERT INTO public.usage_tracking (
-      user_id,
-      feature_type,
-      used_count,
-      limit_count,
-      saved_credits_count,
-      reset_at
-    ) VALUES (
-      p_user_id,
-      p_feature_type,
-      0,
-      999999,
-      0,
-      NOW() + INTERVAL '30 days'
-    )
-    ON CONFLICT (user_id, feature_type) DO NOTHING;
-
-    RETURN TRUE;
-  END IF;
-
-  -- Set limits based on feature type (for other features)
+  -- Set limits based on feature type
   v_limit := CASE p_feature_type
-    WHEN 'risk_analysis' THEN 0 -- Free users cannot use risk analysis
+    WHEN 'ocr_analysis' THEN 999999 -- Unlimited OCR analysis
+    WHEN 'risk_analysis' THEN 1     -- Free users: 1 risk analysis
     ELSE 5
   END;
 
-  -- Insert or update usage for other features
+  -- Insert or update usage - increment used_count for all features
   INSERT INTO public.usage_tracking (
     user_id,
     feature_type,
