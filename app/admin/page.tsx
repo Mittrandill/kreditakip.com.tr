@@ -1,6 +1,6 @@
 import { checkAdminAccess } from "@/lib/admin-check"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { FileText, FolderOpen, Eye, TrendingUp, Users, Receipt, CreditCard, DollarSign, ShieldAlert } from "lucide-react"
+import { FileText, FolderOpen, Eye, TrendingUp, Users, Receipt, CreditCard, DollarSign, ShieldAlert, Scan, Activity, Zap, Save } from "lucide-react"
 import { createSupabaseServer } from "@/lib/supabase-server"
 import Link from "next/link"
 import { AdminLayoutWrapper } from "@/components/admin-layout-wrapper"
@@ -62,6 +62,32 @@ export default async function AdminDashboard() {
     .select("views")
 
   const totalViews = viewsData?.reduce((sum, post) => sum + (post.views || 0), 0) || 0
+
+  // Get usage statistics
+  const { data: usageStats } = await supabase
+    .from("usage_tracking")
+    .select("feature_type, used_count, saved_credits_count")
+
+  const totalOcrAnalyses = usageStats
+    ?.filter(u => u.feature_type === 'ocr_analysis')
+    .reduce((sum, u) => sum + (u.used_count || 0), 0) || 0
+
+  const totalSavedCredits = usageStats
+    ?.filter(u => u.feature_type === 'ocr_analysis')
+    .reduce((sum, u) => sum + (u.saved_credits_count || 0), 0) || 0
+
+  const totalRiskAnalyses = usageStats
+    ?.filter(u => u.feature_type === 'risk_analysis')
+    .reduce((sum, u) => sum + (u.used_count || 0), 0) || 0
+
+  // Get premium vs free users
+  const { count: premiumUsers } = await supabase
+    .from("subscriptions")
+    .select("*", { count: "exact", head: true })
+    .eq("status", "active")
+    .eq("plan_type", "premium")
+
+  const freeUsers = (totalUsers || 0) - (premiumUsers || 0)
 
   return (
     <AdminLayoutWrapper userEmail={session.user.email || ""}>
@@ -166,6 +192,56 @@ export default async function AdminDashboard() {
             <CardContent>
               <div className="text-3xl font-bold text-white">{totalViews.toLocaleString()}</div>
               <p className="text-xs text-white/60 mt-1">Tüm yazıların görüntülenme sayısı</p>
+            </CardContent>
+          </Card>
+        </div>
+      </div>
+
+      {/* Usage Statistics */}
+      <div>
+        <h2 className="text-xl font-semibold text-white mb-4">Kullanım İstatistikleri</h2>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+          <Card className="bg-black/20 border-white/10 backdrop-blur-xl">
+            <CardHeader className="flex flex-row items-center justify-between pb-2">
+              <CardTitle className="text-sm font-medium text-white/80">OCR Analizi</CardTitle>
+              <Scan className="h-4 w-4 text-blue-400" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-3xl font-bold text-white">{totalOcrAnalyses.toLocaleString()}</div>
+              <p className="text-xs text-white/60 mt-1">Toplam PDF analizi</p>
+            </CardContent>
+          </Card>
+
+          <Card className="bg-black/20 border-white/10 backdrop-blur-xl">
+            <CardHeader className="flex flex-row items-center justify-between pb-2">
+              <CardTitle className="text-sm font-medium text-white/80">Kaydedilen Kredi</CardTitle>
+              <Save className="h-4 w-4 text-emerald-400" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-3xl font-bold text-white">{totalSavedCredits.toLocaleString()}</div>
+              <p className="text-xs text-white/60 mt-1">Sisteme kaydedildi</p>
+            </CardContent>
+          </Card>
+
+          <Card className="bg-black/20 border-white/10 backdrop-blur-xl">
+            <CardHeader className="flex flex-row items-center justify-between pb-2">
+              <CardTitle className="text-sm font-medium text-white/80">Risk Analizi</CardTitle>
+              <Activity className="h-4 w-4 text-orange-400" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-3xl font-bold text-white">{totalRiskAnalyses.toLocaleString()}</div>
+              <p className="text-xs text-white/60 mt-1">Finansal sağlık analizi</p>
+            </CardContent>
+          </Card>
+
+          <Card className="bg-black/20 border-white/10 backdrop-blur-xl">
+            <CardHeader className="flex flex-row items-center justify-between pb-2">
+              <CardTitle className="text-sm font-medium text-white/80">Free / Premium</CardTitle>
+              <Zap className="h-4 w-4 text-yellow-400" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-3xl font-bold text-white">{freeUsers} / {premiumUsers}</div>
+              <p className="text-xs text-white/60 mt-1">Kullanıcı dağılımı</p>
             </CardContent>
           </Card>
         </div>
