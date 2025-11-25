@@ -1,6 +1,8 @@
 import { NextResponse } from "next/server"
 import { createServerClient } from "@/lib/supabase/server"
 
+export const dynamic = 'force-dynamic'
+
 /**
  * KVKK Madde 11(d): Kişisel verilerin bir kopyasını talep etme hakkı
  * Kullanıcının tüm verilerini JSON formatında indirmesini sağlar
