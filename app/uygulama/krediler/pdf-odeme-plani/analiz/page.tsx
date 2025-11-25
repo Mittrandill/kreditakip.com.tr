@@ -448,15 +448,15 @@ export default function PDFAnalysisPage() {
       // Timeout'u temizle
       clearTimeout(timeoutId)
 
-      // Kaydetme başarılı oldu, kullanım sayısını artır (sadece free kullanıcılar için)
+      // Kaydetme başarılı oldu, saved_credits_count'u artır (sadece free kullanıcılar için)
       if (!isPremium) {
-        const { error: incrementError } = await supabase.rpc("increment_usage", {
+        const { error: incrementError } = await supabase.rpc("increment_saved_credits", {
           p_user_id: user.id,
-          p_feature_type: "ocr_analysis",
         })
 
         if (incrementError) {
           // Hata olsa da kayıt başarılı, sadece log
+          console.error("Saved credits increment error:", incrementError)
         }
       }
 
