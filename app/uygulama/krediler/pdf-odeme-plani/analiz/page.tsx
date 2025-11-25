@@ -367,14 +367,19 @@ export default function PDFAnalysisPage() {
       for (let i = 0; i < paymentPlan.installments.length; i++) {
         const installment = paymentPlan.installments[i]
 
+        // Yuvarlama sonrası eşitliği korumak için önce principal hesapla, sonra interest = total - principal
+        const totalPayment = Math.round(installment.amount * 100) / 100 // 2 ondalık basamağa yuvarla
+        const principalAmount = Math.round(installment.amount * 0.7 * 100) / 100
+        const interestAmount = Math.round((totalPayment - principalAmount) * 100) / 100
+
         const paymentPlanData = {
           credit_id: savedCredit.id,
           installment_number: installment.installmentNumber,
           due_date: installment.dueDate,
-          principal_amount: Math.round(installment.amount * 0.7),
-          interest_amount: Math.round(installment.amount * 0.3),
-          total_payment: installment.amount,
-          remaining_debt: paymentPlan.installments.slice(i + 1).reduce((sum, inst) => sum + inst.amount, 0),
+          principal_amount: principalAmount,
+          interest_amount: interestAmount,
+          total_payment: totalPayment,
+          remaining_debt: Math.round(paymentPlan.installments.slice(i + 1).reduce((sum, inst) => sum + inst.amount, 0) * 100) / 100,
           status: installment.isPaid ? "paid" : "pending",
           payment_date: installment.isPaid ? installment.dueDate : null,
           payment_channel: "Banka",

@@ -31,10 +31,10 @@ export function generatePaymentPlanPreview(creditData: {
     const monthlyInterestRate = creditData.interest_rate / 100 / 12
 
     // Faiz tutarını hesapla (aylık faiz oranı * kalan borç)
-    const interestAmount = remainingDebt * monthlyInterestRate
+    const interestAmount = Math.round(remainingDebt * monthlyInterestRate * 100) / 100
 
     // Ana para tutarını hesapla
-    const principalAmount = creditData.monthly_payment - interestAmount
+    const principalAmount = Math.round((creditData.monthly_payment - interestAmount) * 100) / 100
 
     // Kalan borcu güncelle
     const newRemainingDebt = Math.max(0, remainingDebt - principalAmount)
@@ -51,13 +51,18 @@ export function generatePaymentPlanPreview(creditData: {
       remainingDebt = newRemainingDebt
     }
 
+    // Yuvarlama sonrası eşitliği garanti etmek için
+    const roundedPrincipal = Math.round(Math.max(0, adjustedPrincipal) * 100) / 100
+    const roundedInterest = Math.round(Math.max(0, interestAmount) * 100) / 100
+    const totalPayment = Math.round((roundedPrincipal + roundedInterest) * 100) / 100
+
     paymentPlans.push({
       installment_number: i,
       due_date: dueDate.toISOString().split("T")[0],
-      principal_amount: Math.max(0, adjustedPrincipal),
-      interest_amount: Math.max(0, interestAmount),
-      total_payment: adjustedTotal,
-      remaining_debt: remainingDebt,
+      principal_amount: roundedPrincipal,
+      interest_amount: roundedInterest,
+      total_payment: totalPayment,
+      remaining_debt: Math.round(remainingDebt * 100) / 100,
     })
   }
 

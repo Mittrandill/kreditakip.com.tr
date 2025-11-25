@@ -22,10 +22,10 @@ export async function createPaymentPlansForCredit(
     dueDate.setMonth(dueDate.getMonth() + i - 1)
 
     // Faiz tutarını hesapla (aylık faiz oranı * kalan borç)
-    const interestAmount = remainingDebt * (creditData.interest_rate / 100)
+    const interestAmount = Math.round(remainingDebt * (creditData.interest_rate / 100) * 100) / 100
 
     // Ana para tutarını hesapla
-    const principalAmount = creditData.monthly_payment - interestAmount
+    const principalAmount = Math.round((creditData.monthly_payment - interestAmount) * 100) / 100
 
     // Kalan borcu güncelle
     remainingDebt = Math.max(0, remainingDebt - principalAmount)
@@ -37,14 +37,19 @@ export async function createPaymentPlansForCredit(
       remainingDebt = 0
     }
 
+    // Yuvarlama sonrası eşitliği garanti etmek için
+    const roundedPrincipal = Math.round(Math.max(0, adjustedPrincipal) * 100) / 100
+    const roundedInterest = Math.round(Math.max(0, interestAmount) * 100) / 100
+    const totalPayment = Math.round((roundedPrincipal + roundedInterest) * 100) / 100
+
     paymentPlans.push({
       credit_id: creditId,
       installment_number: i,
       due_date: dueDate.toISOString().split("T")[0],
-      principal_amount: Math.max(0, adjustedPrincipal),
-      interest_amount: Math.max(0, interestAmount),
-      total_payment: creditData.monthly_payment,
-      remaining_debt: remainingDebt,
+      principal_amount: roundedPrincipal,
+      interest_amount: roundedInterest,
+      total_payment: totalPayment,
+      remaining_debt: Math.round(remainingDebt * 100) / 100,
       status: "pending",
       payment_date: null,
       payment_channel: null,

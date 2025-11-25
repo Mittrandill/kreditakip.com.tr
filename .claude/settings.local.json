@@ -22,8 +22,10 @@
       "Bash(nul)",
       "Bash(pnpm dev)",
       "Bash(git restore:*)",
+      "Bash(pnpm add:*)",
       "Bash(find:*)",
-      "Bash(npm uninstall:*)"
+      "Bash(npm uninstall:*)",
+      "Bash(git stash:*)"
     ],
     "deny": [],
     "ask": []
