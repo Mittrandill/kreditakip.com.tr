@@ -49,12 +49,22 @@ export function UpgradePrompt({ open, onOpenChange, feature, usageInfo }: Upgrad
             {feature === "ocr" ? "Ücretsiz Kaydetme Hakkınız Doldu" : "Premium Özellik"}
           </AlertDialogTitle>
           <AlertDialogDescription className="text-center space-y-4">
-            {feature === "ocr" && usageInfo && (
+            {usageInfo && (
               <div className="bg-gray-100 dark:bg-gray-800 rounded-lg p-4">
                 <p className="text-sm text-gray-600 dark:text-gray-400">
-                  <span className="font-semibold text-gray-900 dark:text-gray-100">
-                    {usageInfo.saved ?? usageInfo.used}
-                  </span> / {usageInfo.limit} kredi kaydedildi
+                  {feature === "ocr" ? (
+                    <>
+                      <span className="font-semibold text-gray-900 dark:text-gray-100">
+                        {usageInfo.saved}
+                      </span> / {usageInfo.limit} kredi kaydedildi
+                    </>
+                  ) : (
+                    <>
+                      <span className="font-semibold text-gray-900 dark:text-gray-100">
+                        {usageInfo.used}
+                      </span> / {usageInfo.limit} analiz yapıldı
+                    </>
+                  )}
                 </p>
               </div>
             )}
