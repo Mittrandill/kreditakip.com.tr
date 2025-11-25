@@ -126,7 +126,10 @@ export function useSubscription() {
   // OCR: Analiz sınırsız, kaydetme sınırlı (saved count kontrolü)
   const canUseOCR =
     isPremium || (subscription?.usage.ocrAnalysis.saved || 0) < (subscription?.usage.ocrAnalysis.limit || 1)
-  const canUseRiskAnalysis = isPremium
+
+  // Risk Analysis: Premium sınırsız, free kullanıcılar 1 kez (used count kontrolü)
+  const canUseRiskAnalysis =
+    isPremium || (subscription?.usage.riskAnalysis.used || 0) < (subscription?.usage.riskAnalysis.limit || 1)
 
   return {
     subscription,
