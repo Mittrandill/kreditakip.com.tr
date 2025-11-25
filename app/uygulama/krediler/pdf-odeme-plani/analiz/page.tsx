@@ -33,6 +33,8 @@ import { createCredit, getBanks, getCreditTypes } from "@/lib/api/credits"
 import { useAuth } from "@/hooks/use-auth"
 import { mapBankName, findBestBankMatch } from "@/lib/utils/bank-mapper"
 import { supabase } from "@/lib/supabase"
+import { useSubscription } from "@/hooks/use-subscription"
+import { UpgradePrompt } from "@/components/upgrade-prompt"
 
 interface PaymentPlan {
   bankName: string | null
@@ -62,6 +64,7 @@ export default function PDFAnalysisPage() {
   const searchParams = useSearchParams()
   const { toast } = useToast()
   const { user } = useAuth()
+  const { subscription, isPremium } = useSubscription()
 
   const [paymentPlan, setPaymentPlan] = useState<PaymentPlan | null>(null)
   const [isEditing, setIsEditing] = useState(false)
@@ -75,6 +78,7 @@ export default function PDFAnalysisPage() {
   const [selectedCreditType, setSelectedCreditType] = useState<any>(null)
   const [selectedBank, setSelectedBank] = useState<any>(null)
   const [bankMatchStatus, setBankMatchStatus] = useState<"loading" | "matched" | "unmatched" | "none">("loading")
+  const [showUpgradePrompt, setShowUpgradePrompt] = useState(false)
 
   // Memoize the data param so it's stable between renders
   const dataParam = useMemo(() => searchParams.get("data"), [searchParams.get("data")])
@@ -87,7 +91,6 @@ export default function PDFAnalysisPage() {
         setBanks(banksData || [])
         setCreditTypes(creditTypesData || [])
       } catch (err) {
-        console.error("Error loading banks/credit types:", err)
         toast({
           title: "Veri Yükleme Hatası",
           description: "Banka ve kredi türü verileri yüklenemedi. Lütfen sayfayı yenileyin.",
@@ -147,7 +150,6 @@ export default function PDFAnalysisPage() {
       }
     } catch (err) {
       setError("Veri yüklenirken hata oluştu")
-      console.error("Data parse error:", err)
     }
   }, [dataParam, creditTypes])
 
@@ -156,25 +158,19 @@ export default function PDFAnalysisPage() {
     if (paymentPlan && paymentPlan.bankName && banks.length > 0 && !selectedBank) {
       setBankMatchStatus("loading")
 
-      console.log("🔍 Banka eşleştirme başlıyor...")
-      console.log("PDF'den gelen banka adı:", paymentPlan.bankName)
-
       // Önce mapping ile standart hale getir
       const mappedBankName = mapBankName(paymentPlan.bankName)
-      console.log("Eşleştirilen banka adı:", mappedBankName)
 
       // findBestBankMatch ile veritabanında ara
       const matchedBank = findBestBankMatch(paymentPlan.bankName, banks)
 
       if (matchedBank) {
-        console.log("✅ Banka eşleşti:", matchedBank.name, "| Logo:", matchedBank.logo_url ? "Var" : "Yok")
         setSelectedBank(matchedBank)
         setBankMatchStatus("matched")
 
         // PaymentPlan'deki banka adını da veritabanındaki adla güncelle
         setPaymentPlan(prev => prev ? { ...prev, bankName: matchedBank.name } : null)
       } else {
-        console.log("⚠️ Banka eşleşmedi, eşleştirilen ad kullanılacak:", mappedBankName)
         setBankMatchStatus("unmatched")
 
         // Eşleştirilen adı kullan (logo olmayacak)
@@ -254,8 +250,6 @@ export default function PDFAnalysisPage() {
     setSelectedBank(bank)
     setBankMatchStatus("matched")
     setShowBankSelector(false)
-
-    console.log("👤 Kullanıcı banka seçti:", bank.name)
   }
 
   const handleCreditTypeSelect = (creditType: any) => {
@@ -271,6 +265,34 @@ export default function PDFAnalysisPage() {
         variant: "destructive",
       })
       return
+    }
+
+    // Premium kontrolü - Free kullanıcılar sadece 1 kez kaydedebilir
+    if (!isPremium) {
+      // Kaydetme hakkı kontrolü (can_use_feature RPC)
+      const { data: canSave, error: checkError } = await supabase.rpc("can_use_feature", {
+        p_user_id: user.id,
+        p_feature_type: "ocr_analysis",
+      })
+
+      if (checkError) {
+        toast({
+          title: "Kontrol Hatası",
+          description: "Kaydetme yetkisi kontrol edilemedi. Lütfen tekrar deneyin.",
+          variant: "destructive",
+        })
+        return
+      }
+
+      if (!canSave) {
+        setShowUpgradePrompt(true)
+        toast({
+          title: "Premium Üyelik Gerekli",
+          description: "Ücretsiz kaydetme hakkınızı kullandınız. Daha fazla kaydetmek için premium üyeliğe geçin.",
+          variant: "destructive",
+        })
+        return
+      }
     }
 
     // Bankalar ve kredi türleri yüklenmemişse bekle
@@ -309,9 +331,6 @@ export default function PDFAnalysisPage() {
         clearTimeout(timeoutId)
         return
       }
-
-      console.log("💾 Kaydediliyor - Seçilen banka:", selectedBank.name)
-
 
       if (!selectedCreditType) {
         throw new Error("Kredi türü seçilmedi")
@@ -393,7 +412,6 @@ export default function PDFAnalysisPage() {
           .single()
 
         if (error) {
-          console.error(`${i + 1}. taksit kaydedilemedi:`, error)
           throw new Error(`Taksit kaydetme hatası: ${error.message}`)
         }
 
@@ -423,15 +441,25 @@ export default function PDFAnalysisPage() {
           .insert(paymentHistoryRecords)
 
         if (historyError) {
-          console.error("Ödeme geçmişi kaydedilemedi:", historyError)
-          // Bu hata kritik değil, sadece log'la
-          console.warn("Ödeme geçmişi kaydetme hatası, ancak kredi başarıyla kaydedildi")
-        } else {
+          // Bu hata kritik değil, kredi başarıyla kaydedildi
         }
       }
 
       // Timeout'u temizle
       clearTimeout(timeoutId)
+
+      // Kaydetme başarılı oldu, kullanım sayısını artır (sadece free kullanıcılar için)
+      if (!isPremium) {
+        const { error: incrementError } = await supabase.rpc("increment_usage", {
+          p_user_id: user.id,
+          p_feature_type: "ocr_analysis",
+        })
+
+        if (incrementError) {
+          // Hata olsa da kayıt başarılı, sadece log
+        }
+      }
+
       setIsSaving(false)
 
       toast({
@@ -445,7 +473,6 @@ export default function PDFAnalysisPage() {
       // Timeout'u temizle
       clearTimeout(timeoutId)
       setIsSaving(false)
-      console.error("Kaydetme hatası:", err)
 
       toast({
         title: "Kaydetme Hatası",
@@ -796,6 +823,14 @@ export default function PDFAnalysisPage() {
           open={showCreditTypeSelector}
           onOpenChange={setShowCreditTypeSelector}
           onSelect={handleCreditTypeSelect}
+        />
+      )}
+      {showUpgradePrompt && (
+        <UpgradePrompt
+          open={showUpgradePrompt}
+          onOpenChange={setShowUpgradePrompt}
+          feature="ocr"
+          usageInfo={subscription?.usage.ocrAnalysis}
         />
       )}
     </div>

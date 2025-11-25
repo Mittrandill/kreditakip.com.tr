@@ -102,7 +102,7 @@ export default function KrediEklePage() {
         if (banksResult.data) setBanks(banksResult.data)
         if (creditTypesResult.data) setCreditTypes(creditTypesResult.data)
       } catch (error) {
-        console.error("Error loading data:", error)
+        // Error loading banks and credit types
       }
     }
     loadData()
@@ -313,7 +313,6 @@ export default function KrediEklePage() {
           description: `Kredi ve ${paymentPlans.length} taksitlik ödeme planı başarıyla oluşturuldu`,
         })
       } catch (paymentPlanError) {
-        console.error("Error creating payment plans:", paymentPlanError)
         // Credit was created but payment plans failed
         toast({
           title: "Kısmi Başarı",
@@ -325,7 +324,6 @@ export default function KrediEklePage() {
 
       router.push("/uygulama/krediler")
     } catch (error) {
-      console.error("Error creating credit:", error)
       toast({
         title: "Hata",
         description: `Kredi eklenirken bir hata oluştu: ${error instanceof Error ? error.message : "Bilinmeyen hata"}`,

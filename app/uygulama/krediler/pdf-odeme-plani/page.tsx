@@ -95,10 +95,11 @@ export default function PDFOdemePlaniPage() {
   const analyzeFile = async () => {
     if (!file) return
 
-    if (!canUseOCR) {
-      setShowUpgradePrompt(true)
-      return
-    }
+    // Free kullanıcılar sınırsız analiz yapabilir, sadece kaydetme sınırlı
+    // if (!canUseOCR) {
+    //   setShowUpgradePrompt(true)
+    //   return
+    // }
 
     setIsAnalyzing(true)
     setProgress(0)
@@ -174,7 +175,6 @@ export default function PDFOdemePlaniPage() {
         throw new Error(data.error || "PDF analizi tamamlanamadı")
       }
     } catch (err: any) {
-      console.error("PDF analiz hatası:", err)
       setError(err.message || "PDF analizi sırasında bir hata oluştu")
       toast({
         title: "Analiz Hatası",

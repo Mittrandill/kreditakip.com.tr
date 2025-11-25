@@ -189,45 +189,46 @@ export async function POST(request: Request) {
       )
     }
 
-    const { data: canUse, error: checkError } = await supabase.rpc("can_use_feature", {
-      p_user_id: user.id,
-      p_feature_type: "ocr_analysis",
-    })
+    // Free kullanıcılar sınırsız analiz yapabilir, sadece kaydetme sınırlı
+    // const { data: canUse, error: checkError } = await supabase.rpc("can_use_feature", {
+    //   p_user_id: user.id,
+    //   p_feature_type: "ocr_analysis",
+    // })
 
-    if (checkError) {
-      console.error("[v0] Feature check error:", checkError)
-      return Response.json({ error: "Özellik kontrolü başarısız oldu" }, { status: 500 })
-    }
+    // if (checkError) {
+    //   console.error("[v0] Feature check error:", checkError)
+    //   return Response.json({ error: "Özellik kontrolü başarısız oldu" }, { status: 500 })
+    // }
 
-    if (!canUse) {
-      const { data: subscription } = await supabase
-        .from("subscriptions")
-        .select("plan_type")
-        .eq("user_id", user.id)
-        .eq("status", "active")
-        .single()
+    // if (!canUse) {
+    //   const { data: subscription } = await supabase
+    //     .from("subscriptions")
+    //     .select("plan_type")
+    //     .eq("user_id", user.id)
+    //     .eq("status", "active")
+    //     .single()
 
-      const { data: usage } = await supabase
-        .from("usage_tracking")
-        .select("used_count, limit_count")
-        .eq("user_id", user.id)
-        .eq("feature_type", "ocr_analysis")
-        .single()
+    //   const { data: usage } = await supabase
+    //     .from("usage_tracking")
+    //     .select("used_count, limit_count")
+    //     .eq("user_id", user.id)
+    //     .eq("feature_type", "ocr_analysis")
+    //     .single()
 
-      return Response.json(
-        {
-          error: "Ücretsiz analiz hakkınız doldu",
-          limitExceeded: true,
-          usageInfo: {
-            used: usage?.used_count || 0,
-            limit: usage?.limit_count || 1,
-            planType: subscription?.plan_type || "free",
-          },
-          upgradeMessage: "Premium üyelik ile sınırsız analiz yapabilirsiniz. Sadece 199₺/ay!",
-        },
-        { status: 403 },
-      )
-    }
+    //   return Response.json(
+    //     {
+    //       error: "Ücretsiz analiz hakkınız doldu",
+    //       limitExceeded: true,
+    //       usageInfo: {
+    //         used: usage?.used_count || 0,
+    //         limit: usage?.limit_count || 1,
+    //         planType: subscription?.plan_type || "free",
+    //       },
+    //       upgradeMessage: "Premium üyelik ile sınırsız analiz yapabilirsiniz. Sadanya 199₺/ay!",
+    //     },
+    //     { status: 403 },
+    //   )
+    // }
 
     if (!process.env.GEMINI_API_KEY) {
       return Response.json({ error: "Google API anahtarı bulunamadı" }, { status: 500 })
@@ -573,14 +574,15 @@ export async function POST(request: Request) {
       )
     }
 
-    const { error: incrementError } = await supabase.rpc("increment_usage", {
-      p_user_id: user.id,
-      p_feature_type: "ocr_analysis",
-    })
+    // Kullanım sayısı artırımı kaydetme işleminde yapılacak
+    // const { error: incrementError } = await supabase.rpc("increment_usage", {
+    //   p_user_id: user.id,
+    //   p_feature_type: "ocr_analysis",
+    // })
 
-    if (incrementError) {
-      console.error("[v0] Usage increment error:", incrementError)
-    }
+    // if (incrementError) {
+    //   console.error("[v0] Usage increment error:", incrementError)
+    // }
 
     return Response.json({
       success: true,

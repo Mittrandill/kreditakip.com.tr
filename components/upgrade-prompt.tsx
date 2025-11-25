@@ -18,6 +18,7 @@ interface UpgradePromptProps {
   feature: "ocr" | "risk_analysis"
   usageInfo?: {
     used: number
+    saved?: number // OCR ile kaydedilen kredi sayısı
     limit: number
   }
 }
@@ -45,14 +46,15 @@ export function UpgradePrompt({ open, onOpenChange, feature, usageInfo }: Upgrad
             </div>
           </div>
           <AlertDialogTitle className="text-center text-2xl">
-            {feature === "ocr" ? "Ücretsiz Analiz Hakkınız Doldu" : "Premium Özellik"}
+            {feature === "ocr" ? "Ücretsiz Kaydetme Hakkınız Doldu" : "Premium Özellik"}
           </AlertDialogTitle>
           <AlertDialogDescription className="text-center space-y-4">
             {feature === "ocr" && usageInfo && (
               <div className="bg-gray-100 dark:bg-gray-800 rounded-lg p-4">
                 <p className="text-sm text-gray-600 dark:text-gray-400">
-                  <span className="font-semibold text-gray-900 dark:text-gray-100">{usageInfo.used}</span> /{" "}
-                  {usageInfo.limit} analiz kullanıldı
+                  <span className="font-semibold text-gray-900 dark:text-gray-100">
+                    {usageInfo.saved ?? usageInfo.used}
+                  </span> / {usageInfo.limit} kredi kaydedildi
                 </p>
               </div>
             )}

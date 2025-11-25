@@ -12,6 +12,7 @@ export interface SubscriptionStatus {
   usage: {
     ocrAnalysis: {
       used: number
+      saved: number // OCR ile kaydedilen kredi sayısı
       limit: number
     }
     riskAnalysis: {
@@ -82,6 +83,7 @@ export function useSubscription() {
             usage: {
               ocrAnalysis: {
                 used: ocrUsage?.used_count || 0,
+                saved: ocrUsage?.saved_credits_count || 0, // Kaydedilen kredi sayısı
                 limit: ocrUsage?.limit_count || (isPremiumUser ? 999999 : 1),
               },
               riskAnalysis: {
@@ -121,8 +123,9 @@ export function useSubscription() {
     (subscription?.status === "active" ||
       (subscription?.status === "cancelled" && subscription?.expiresAt && new Date(subscription.expiresAt) > new Date()))
 
+  // OCR: Analiz sınırsız, kaydetme sınırlı (saved count kontrolü)
   const canUseOCR =
-    isPremium || (subscription?.usage.ocrAnalysis.used || 0) < (subscription?.usage.ocrAnalysis.limit || 1)
+    isPremium || (subscription?.usage.ocrAnalysis.saved || 0) < (subscription?.usage.ocrAnalysis.limit || 1)
   const canUseRiskAnalysis = isPremium
 
   return {
@@ -154,6 +157,7 @@ export function useSubscription() {
             usage: {
               ocrAnalysis: {
                 used: ocrUsage?.used_count || 0,
+                saved: ocrUsage?.saved_credits_count || 0, // Kaydedilen kredi sayısı
                 limit: ocrUsage?.limit_count || (isPremiumUser ? 999999 : 1),
               },
               riskAnalysis: {
