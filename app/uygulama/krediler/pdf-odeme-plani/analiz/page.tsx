@@ -448,15 +448,24 @@ export default function PDFAnalysisPage() {
       // Timeout'u temizle
       clearTimeout(timeoutId)
 
-      // Kaydetme başarılı oldu, saved_credits_count'u artır (sadece free kullanıcılar için)
-      if (!isPremium) {
-        const { error: incrementError } = await supabase.rpc("increment_saved_credits", {
-          p_user_id: user.id,
-        })
+      // Kaydetme başarılı oldu, saved_credits_count'u artır (tüm kullanıcılar için)
+      const { data: saveSuccess, error: incrementError } = await supabase.rpc("increment_saved_credits", {
+        p_user_id: user.id,
+      })
 
-        if (incrementError) {
-          // Hata olsa da kayıt başarılı, sadece log
-          console.error("Saved credits increment error:", incrementError)
+      if (incrementError || saveSuccess === false) {
+        console.error("Saved credits increment error:", incrementError)
+
+        // Premium kullanıcılar için hata gösterme (sınırsız olmalı)
+        if (!isPremium) {
+          toast({
+            title: "Kredi Kaydetme Hatası",
+            description: "Kredi kaydetme limitiniz dolmuş. Premium üyelik ile sınırsız kayıt yapabilirsiniz.",
+            variant: "destructive"
+          })
+          setIsSaving(false)
+          clearTimeout(timeoutId)
+          return
         }
       }
 
@@ -830,7 +839,11 @@ export default function PDFAnalysisPage() {
           open={showUpgradePrompt}
           onOpenChange={setShowUpgradePrompt}
           feature="ocr"
-          usageInfo={subscription?.usage.ocrAnalysis}
+          usageInfo={{
+            used: subscription?.usage.ocrAnalysis.used || 0,
+            saved: subscription?.usage.ocrAnalysis.saved || 0,
+            limit: isPremium ? 999999 : 1  // Kaydetme limiti: premium sınırsız, free 1
+          }}
         />
       )}
     </div>

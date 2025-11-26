@@ -409,9 +409,7 @@ interface RenewalNotificationData {
   planName: string
   amount: number
   currency: string
-  renewalDate: string
-  newExpiresAt: string
-  isAutomatic: boolean
+  newExpiryDate: string
 }
 
 /**
@@ -479,8 +477,10 @@ export async function sendRenewalFailedNotification(data: {
   userName: string
   userEmail: string
   planName: string
-  errorMessage: string
-  expiresAt: string
+  amount: number
+  currency: string
+  failureReason: string
+  retryUrl: string
 }) {
   try {
     const MAILJET_API_KEY = process.env.MAILJET_API_KEY
@@ -556,7 +556,7 @@ function generateRenewalSuccessHTML(data: RenewalNotificationData): string {
             <p style="color: #e2e8f0; margin-bottom: 24px;">Merhaba ${data.userName},</p>
 
             <p style="color: #e2e8f0; margin-bottom: 24px;">
-                ${data.isAutomatic ? "Kayıtlı kartınızdan otomatik olarak" : "Manuel olarak"} abonelik yenileme işleminiz başarıyla tamamlandı.
+                Abonelik yenileme işleminiz başarıyla tamamlandı. Premium üyeliğiniz devam ediyor!
             </p>
 
             <div style="background: #334155; border-radius: 12px; padding: 24px; margin-bottom: 24px;">
@@ -568,13 +568,9 @@ function generateRenewalSuccessHTML(data: RenewalNotificationData): string {
                     <span style="color: #94a3b8;">Ödenen Tutar</span>
                     <span style="color: #10b981; font-weight: 700; font-size: 18px;">${data.amount.toFixed(2)} ${data.currency}</span>
                 </div>
-                <div style="display: flex; justify-content: space-between; padding: 12px 0; border-bottom: 1px solid #475569;">
-                    <span style="color: #94a3b8;">Yenileme Tarihi</span>
-                    <span style="color: #ffffff;">${new Date(data.renewalDate).toLocaleDateString('tr-TR')}</span>
-                </div>
                 <div style="display: flex; justify-content: space-between; padding: 12px 0;">
                     <span style="color: #94a3b8;">Yeni Bitiş Tarihi</span>
-                    <span style="color: #ffffff; font-weight: 600;">${new Date(data.newExpiresAt).toLocaleDateString('tr-TR')}</span>
+                    <span style="color: #ffffff; font-weight: 600;">${new Date(data.newExpiryDate).toLocaleDateString('tr-TR')}</span>
                 </div>
             </div>
 
@@ -600,12 +596,11 @@ Aboneliğiniz Yenilendi!
 
 Merhaba ${data.userName},
 
-${data.isAutomatic ? "Kayıtlı kartınızdan otomatik olarak" : "Manuel olarak"} abonelik yenileme işleminiz başarıyla tamamlandı.
+Abonelik yenileme işleminiz başarıyla tamamlandı. Premium üyeliğiniz devam ediyor!
 
 Plan: ${data.planName}
 Ödenen Tutar: ${data.amount.toFixed(2)} ${data.currency}
-Yenileme Tarihi: ${new Date(data.renewalDate).toLocaleDateString('tr-TR')}
-Yeni Bitiş Tarihi: ${new Date(data.newExpiresAt).toLocaleDateString('tr-TR')}
+Yeni Bitiş Tarihi: ${new Date(data.newExpiryDate).toLocaleDateString('tr-TR')}
 
 Premium özellikleriniz kesintisiz devam edecektir.
 
@@ -618,10 +613,11 @@ function generateRenewalFailedHTML(data: {
   userName: string
   userEmail: string
   planName: string
-  errorMessage: string
-  expiresAt: string
+  amount: number
+  currency: string
+  failureReason: string
+  retryUrl: string
 }): string {
-  const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://kreditakip.com.tr"
   return `
 <!DOCTYPE html>
 <html lang="tr">
@@ -641,35 +637,29 @@ function generateRenewalFailedHTML(data: {
             <p style="color: #e2e8f0; margin-bottom: 24px;">Merhaba ${data.userName},</p>
 
             <p style="color: #e2e8f0; margin-bottom: 24px;">
-                ${data.planName} aboneliğinizi yenilemek için yapılan otomatik ödeme işlemi başarısız oldu.
+                ${data.planName} aboneliğinizi yenilemek için yapılan ödeme işlemi başarısız oldu.
             </p>
 
             <div style="background: #7f1d1d; border: 1px solid #991b1b; border-radius: 12px; padding: 16px; margin-bottom: 24px;">
                 <p style="color: #fca5a5; margin: 0; font-size: 14px;">
-                    <strong>Hata:</strong> ${data.errorMessage}
+                    <strong>Hata:</strong> ${data.failureReason}
                 </p>
             </div>
 
             <div style="background: #334155; border-radius: 12px; padding: 24px; margin-bottom: 24px;">
                 <div style="display: flex; justify-content: space-between; padding: 12px 0;">
-                    <span style="color: #94a3b8;">Abonelik Bitiş Tarihi</span>
-                    <span style="color: #fbbf24; font-weight: 600;">${new Date(data.expiresAt).toLocaleDateString('tr-TR')}</span>
+                    <span style="color: #94a3b8;">Ödeme Tutarı</span>
+                    <span style="color: #fbbf24; font-weight: 600;">${data.amount.toFixed(2)} ${data.currency}</span>
                 </div>
             </div>
 
             <p style="color: #e2e8f0; margin-bottom: 24px;">
-                Aboneliğinizin kesintiye uğramaması için lütfen aşağıdaki adımları izleyin:
+                Aboneliğinizin kesintiye uğramaması için lütfen ödeme ayarlarınızı kontrol edin ve tekrar deneyin.
             </p>
 
-            <ul style="color: #e2e8f0; padding-left: 20px; margin-bottom: 24px;">
-                <li>Kayıtlı kart bilgilerinizi kontrol edin</li>
-                <li>Kartınızda yeterli bakiye olduğundan emin olun</li>
-                <li>Gerekirse yeni bir kart ekleyin</li>
-            </ul>
-
             <div style="text-align: center;">
-                <a href="${baseUrl}/uygulama/ayarlar" style="display: inline-block; background: linear-gradient(135deg, #10b981 0%, #14b8a6 100%); color: #ffffff; text-decoration: none; padding: 14px 32px; border-radius: 8px; font-weight: 600;">
-                    Ödeme Ayarlarına Git
+                <a href="${data.retryUrl}" style="display: inline-block; background: linear-gradient(135deg, #10b981 0%, #14b8a6 100%); color: #ffffff; text-decoration: none; padding: 14px 32px; border-radius: 8px; font-weight: 600;">
+                    Tekrar Dene
                 </a>
             </div>
         </div>
@@ -689,27 +679,24 @@ function generateRenewalFailedText(data: {
   userName: string
   userEmail: string
   planName: string
-  errorMessage: string
-  expiresAt: string
+  amount: number
+  currency: string
+  failureReason: string
+  retryUrl: string
 }): string {
-  const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://kreditakip.com.tr"
   return `
 Abonelik Yenileme Başarısız
 
 Merhaba ${data.userName},
 
-${data.planName} aboneliğinizi yenilemek için yapılan otomatik ödeme işlemi başarısız oldu.
+${data.planName} aboneliğinizi yenilemek için yapılan ödeme işlemi başarısız oldu.
 
-Hata: ${data.errorMessage}
+Hata: ${data.failureReason}
+Ödeme Tutarı: ${data.amount.toFixed(2)} ${data.currency}
 
-Abonelik Bitiş Tarihi: ${new Date(data.expiresAt).toLocaleDateString('tr-TR')}
+Aboneliğinizin kesintiye uğramaması için lütfen ödeme ayarlarınızı kontrol edin ve tekrar deneyin.
 
-Aboneliğinizin kesintiye uğramaması için lütfen:
-- Kayıtlı kart bilgilerinizi kontrol edin
-- Kartınızda yeterli bakiye olduğundan emin olun
-- Gerekirse yeni bir kart ekleyin
-
-Ödeme ayarlarına gitmek için: ${baseUrl}/uygulama/ayarlar
+Tekrar denemek için: ${data.retryUrl}
 
 ---
 © ${new Date().getFullYear()} Kredi Takip
@@ -882,6 +869,484 @@ Kayıtlı kartınızdan otomatik ödeme alınacaktır.
 
 İptal etmek isterseniz: ${data.cancelUrl}
 Ayarlar: ${baseUrl}/uygulama/ayarlar
+
+---
+© ${new Date().getFullYear()} Kredi Takip
+  `
+}
+
+// ============================================
+// 3D Secure Renewal Request Notification
+// ============================================
+
+interface RenewalRequestData {
+  userName: string
+  userEmail: string
+  planName: string
+  amount: number
+  currency: string
+  renewalDate: string
+  paymentUrl: string
+  linkExpiresIn: string
+}
+
+/**
+ * 3D Secure ödeme isteği bildirimi - Kullanıcıya ödeme URL'i gönderilir
+ */
+export async function sendRenewalRequestNotification(data: RenewalRequestData) {
+  try {
+    const MAILJET_API_KEY = process.env.MAILJET_API_KEY
+    const MAILJET_SECRET_KEY = process.env.MAILJET_SECRET_KEY
+
+    if (!MAILJET_API_KEY || !MAILJET_SECRET_KEY) {
+      console.error("[renewal-request-email] Mailjet credentials missing")
+      return { success: false, error: "Mailjet credentials missing" }
+    }
+
+    const emailData = {
+      Messages: [
+        {
+          From: {
+            Email: "info@kreditakip.com.tr",
+            Name: "Kredi Takip",
+          },
+          To: [
+            {
+              Email: data.userEmail,
+              Name: data.userName,
+            },
+          ],
+          Subject: `🔔 Abonelik Yenileme Onayı Gerekiyor - ${data.planName}`,
+          HTMLPart: generateRenewalRequestHTML(data),
+          TextPart: generateRenewalRequestText(data),
+        },
+      ],
+    }
+
+    const auth = Buffer.from(`${MAILJET_API_KEY}:${MAILJET_SECRET_KEY}`).toString("base64")
+
+    const response = await fetch("https://api.mailjet.com/v3.1/send", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Basic ${auth}`,
+      },
+      body: JSON.stringify(emailData),
+    })
+
+    if (!response.ok) {
+      const errorText = await response.text()
+      console.error("[renewal-request-email] Mailjet error:", errorText)
+      return { success: false, error: errorText }
+    }
+
+    const result = await response.json()
+    return { success: true, result }
+  } catch (error: any) {
+    console.error("[renewal-request-email] Error:", error)
+    return { success: false, error: error.message }
+  }
+}
+
+function generateRenewalRequestHTML(data: RenewalRequestData): string {
+  return `
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Abonelik Yenileme Onayı</title>
+</head>
+<body style="font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif; line-height: 1.6; color: #ffffff; background-color: #0f172a; margin: 0; padding: 40px 20px;">
+    <div style="max-width: 600px; margin: 0 auto; background-color: #1e293b; border-radius: 16px; overflow: hidden; border: 1px solid #334155;">
+        <div style="background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%); padding: 40px; text-align: center;">
+            <h1 style="color: #ffffff; margin: 0; font-size: 24px;">🔔 Abonelik Yenileme Onayı</h1>
+            <p style="color: rgba(255,255,255,0.9); margin: 10px 0 0 0;">Ödemenizi onaylamanız gerekiyor</p>
+        </div>
+
+        <div style="padding: 40px;">
+            <p style="color: #e2e8f0; margin-bottom: 24px;">Merhaba ${data.userName},</p>
+
+            <p style="color: #e2e8f0; margin-bottom: 24px;">
+                ${data.planName} aboneliğinizin süresi dolmak üzere. Aboneliğinizi yenilemek için ödeme onayınıza ihtiyacımız var.
+            </p>
+
+            <div style="background: #334155; border-radius: 12px; padding: 24px; margin-bottom: 24px;">
+                <div style="display: flex; justify-content: space-between; padding: 12px 0; border-bottom: 1px solid #475569;">
+                    <span style="color: #94a3b8;">Plan</span>
+                    <span style="color: #ffffff; font-weight: 600;">${data.planName}</span>
+                </div>
+                <div style="display: flex; justify-content: space-between; padding: 12px 0; border-bottom: 1px solid #475569;">
+                    <span style="color: #94a3b8;">Tutar</span>
+                    <span style="color: #3b82f6; font-weight: 700; font-size: 18px;">${data.amount.toFixed(2)} ${data.currency}</span>
+                </div>
+                <div style="display: flex; justify-content: space-between; padding: 12px 0;">
+                    <span style="color: #94a3b8;">Bitiş Tarihi</span>
+                    <span style="color: #ffffff;">${new Date(data.renewalDate).toLocaleDateString('tr-TR')}</span>
+                </div>
+            </div>
+
+            <div style="background: #1e40af; border-left: 4px solid #3b82f6; padding: 16px; margin-bottom: 24px; border-radius: 8px;">
+                <p style="color: #dbeafe; margin: 0; font-size: 14px;">
+                    <strong>Önemli:</strong> Bu ödeme linki ${data.linkExpiresIn} içinde geçerliliğini yitirecektir. Lütfen en kısa sürede ödemenizi tamamlayın.
+                </p>
+            </div>
+
+            <div style="text-align: center; margin-bottom: 24px;">
+                <a href="${data.paymentUrl}" style="display: inline-block; background: linear-gradient(135deg, #10b981 0%, #14b8a6 100%); color: #ffffff; text-decoration: none; padding: 16px 40px; border-radius: 8px; font-weight: 600; font-size: 16px;">
+                    Ödemeyi Onayla ve Tamamla
+                </a>
+            </div>
+
+            <p style="color: #94a3b8; font-size: 14px; text-align: center;">
+                Güvenli ödeme sayfasında kartınızdan ${data.amount.toFixed(2)} ${data.currency} tutarında ödeme alınacaktır.
+            </p>
+        </div>
+
+        <div style="padding: 24px 40px; background: #0f172a; border-top: 1px solid #334155; text-align: center;">
+            <p style="color: #64748b; font-size: 12px; margin: 0;">
+                © ${new Date().getFullYear()} kreditakip.com.tr • Tüm hakları saklıdır
+            </p>
+        </div>
+    </div>
+</body>
+</html>
+  `
+}
+
+function generateRenewalRequestText(data: RenewalRequestData): string {
+  return `
+Abonelik Yenileme Onayı Gerekiyor
+
+Merhaba ${data.userName},
+
+${data.planName} aboneliğinizin süresi dolmak üzere. Aboneliğinizi yenilemek için ödeme onayınıza ihtiyacımız var.
+
+Yenileme Detayları:
+- Plan: ${data.planName}
+- Tutar: ${data.amount.toFixed(2)} ${data.currency}
+- Bitiş Tarihi: ${new Date(data.renewalDate).toLocaleDateString('tr-TR')}
+
+ÖNEMLI: Bu ödeme linki ${data.linkExpiresIn} içinde geçerliliğini yitirecektir.
+
+Ödemeyi tamamlamak için: ${data.paymentUrl}
+
+---
+© ${new Date().getFullYear()} Kredi Takip
+  `
+}
+
+// ============================================
+// Grace Period Notifications
+// ============================================
+
+interface GracePeriodStartData {
+  userName: string
+  userEmail: string
+  planName: string
+  expiresAt: string
+  gracePeriodEndsAt: string
+  daysRemaining: number
+}
+
+/**
+ * Grace period başlangıç bildirimi - Day 0
+ */
+export async function sendGracePeriodStartNotification(data: GracePeriodStartData) {
+  try {
+    const MAILJET_API_KEY = process.env.MAILJET_API_KEY
+    const MAILJET_SECRET_KEY = process.env.MAILJET_SECRET_KEY
+
+    if (!MAILJET_API_KEY || !MAILJET_SECRET_KEY) {
+      console.error("[grace-period-start-email] Mailjet credentials missing")
+      return { success: false, error: "Mailjet credentials missing" }
+    }
+
+    const emailData = {
+      Messages: [
+        {
+          From: {
+            Email: "info@kreditakip.com.tr",
+            Name: "Kredi Takip",
+          },
+          To: [
+            {
+              Email: data.userEmail,
+              Name: data.userName,
+            },
+          ],
+          Subject: `⏰ Abonelik Süresi Doldu - ${data.daysRemaining} Gün Ek Süre`,
+          HTMLPart: generateGracePeriodStartHTML(data),
+          TextPart: generateGracePeriodStartText(data),
+        },
+      ],
+    }
+
+    const auth = Buffer.from(`${MAILJET_API_KEY}:${MAILJET_SECRET_KEY}`).toString("base64")
+
+    const response = await fetch("https://api.mailjet.com/v3.1/send", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Basic ${auth}`,
+      },
+      body: JSON.stringify(emailData),
+    })
+
+    if (!response.ok) {
+      const errorText = await response.text()
+      console.error("[grace-period-start-email] Mailjet error:", errorText)
+      return { success: false, error: errorText }
+    }
+
+    const result = await response.json()
+    return { success: true, result }
+  } catch (error: any) {
+    console.error("[grace-period-start-email] Error:", error)
+    return { success: false, error: error.message }
+  }
+}
+
+function generateGracePeriodStartHTML(data: GracePeriodStartData): string {
+  const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://kreditakip.com.tr"
+  return `
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Abonelik Süresi Doldu</title>
+</head>
+<body style="font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif; line-height: 1.6; color: #ffffff; background-color: #0f172a; margin: 0; padding: 40px 20px;">
+    <div style="max-width: 600px; margin: 0 auto; background-color: #1e293b; border-radius: 16px; overflow: hidden; border: 1px solid #334155;">
+        <div style="background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); padding: 40px; text-align: center;">
+            <h1 style="color: #ffffff; margin: 0; font-size: 24px;">⏰ Abonelik Süresi Doldu</h1>
+            <p style="color: rgba(255,255,255,0.9); margin: 10px 0 0 0;">${data.daysRemaining} gün ek süre tanındı</p>
+        </div>
+
+        <div style="padding: 40px;">
+            <p style="color: #e2e8f0; margin-bottom: 24px;">Merhaba ${data.userName},</p>
+
+            <p style="color: #e2e8f0; margin-bottom: 24px;">
+                ${data.planName} aboneliğinizin süresi ${new Date(data.expiresAt).toLocaleDateString('tr-TR')} tarihinde sona erdi. Size <strong>${data.daysRemaining} gün ek süre</strong> tanıdık.
+            </p>
+
+            <div style="background: #334155; border-radius: 12px; padding: 24px; margin-bottom: 24px;">
+                <div style="display: flex; justify-content: space-between; padding: 12px 0; border-bottom: 1px solid #475569;">
+                    <span style="color: #94a3b8;">Abonelik Bitiş</span>
+                    <span style="color: #ffffff;">${new Date(data.expiresAt).toLocaleDateString('tr-TR')}</span>
+                </div>
+                <div style="display: flex; justify-content: space-between; padding: 12px 0; border-bottom: 1px solid #475569;">
+                    <span style="color: #94a3b8;">Ek Süre Bitiş</span>
+                    <span style="color: #f59e0b; font-weight: 600;">${new Date(data.gracePeriodEndsAt).toLocaleDateString('tr-TR')}</span>
+                </div>
+                <div style="display: flex; justify-content: space-between; padding: 12px 0;">
+                    <span style="color: #94a3b8;">Kalan Süre</span>
+                    <span style="color: #ffffff; font-weight: 700; font-size: 18px;">${data.daysRemaining} Gün</span>
+                </div>
+            </div>
+
+            <div style="background: #78350f; border-left: 4px solid #f59e0b; padding: 16px; margin-bottom: 24px; border-radius: 8px;">
+                <p style="color: #fcd34d; margin: 0; font-size: 14px;">
+                    <strong>Önemli:</strong> ${data.daysRemaining} gün içinde aboneliğinizi yenilemezseniz, premium özelliklerinize erişiminiz kapatılacaktır.
+                </p>
+            </div>
+
+            <div style="text-align: center; margin-bottom: 24px;">
+                <a href="${baseUrl}/uygulama/ayarlar" style="display: inline-block; background: linear-gradient(135deg, #10b981 0%, #14b8a6 100%); color: #ffffff; text-decoration: none; padding: 16px 40px; border-radius: 8px; font-weight: 600; font-size: 16px;">
+                    Aboneliği Yenile
+                </a>
+            </div>
+
+            <p style="color: #94a3b8; font-size: 14px; text-align: center;">
+                Kesintisiz hizmet için lütfen en kısa sürede aboneliğinizi yenileyin.
+            </p>
+        </div>
+
+        <div style="padding: 24px 40px; background: #0f172a; border-top: 1px solid #334155; text-align: center;">
+            <p style="color: #64748b; font-size: 12px; margin: 0;">
+                © ${new Date().getFullYear()} kreditakip.com.tr • Tüm hakları saklıdır
+            </p>
+        </div>
+    </div>
+</body>
+</html>
+  `
+}
+
+function generateGracePeriodStartText(data: GracePeriodStartData): string {
+  const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://kreditakip.com.tr"
+  return `
+Abonelik Süresi Doldu - ${data.daysRemaining} Gün Ek Süre
+
+Merhaba ${data.userName},
+
+${data.planName} aboneliğinizin süresi ${new Date(data.expiresAt).toLocaleDateString('tr-TR')} tarihinde sona erdi. Size ${data.daysRemaining} gün ek süre tanıdık.
+
+Detaylar:
+- Abonelik Bitiş: ${new Date(data.expiresAt).toLocaleDateString('tr-TR')}
+- Ek Süre Bitiş: ${new Date(data.gracePeriodEndsAt).toLocaleDateString('tr-TR')}
+- Kalan Süre: ${data.daysRemaining} Gün
+
+ÖNEMLI: ${data.daysRemaining} gün içinde aboneliğinizi yenilemezseniz, premium özelliklerinize erişiminiz kapatılacaktır.
+
+Aboneliği yenilemek için: ${baseUrl}/uygulama/ayarlar
+
+---
+© ${new Date().getFullYear()} Kredi Takip
+  `
+}
+
+interface GracePeriodEndingData {
+  userName: string
+  userEmail: string
+  planName: string
+  gracePeriodEndsAt: string
+  hoursRemaining: number
+  paymentUrl: string | null
+}
+
+/**
+ * Grace period bitiş uyarısı - Day 6 (24 hours before end)
+ */
+export async function sendGracePeriodEndingNotification(data: GracePeriodEndingData) {
+  try {
+    const MAILJET_API_KEY = process.env.MAILJET_API_KEY
+    const MAILJET_SECRET_KEY = process.env.MAILJET_SECRET_KEY
+
+    if (!MAILJET_API_KEY || !MAILJET_SECRET_KEY) {
+      console.error("[grace-period-ending-email] Mailjet credentials missing")
+      return { success: false, error: "Mailjet credentials missing" }
+    }
+
+    const emailData = {
+      Messages: [
+        {
+          From: {
+            Email: "info@kreditakip.com.tr",
+            Name: "Kredi Takip",
+          },
+          To: [
+            {
+              Email: data.userEmail,
+              Name: data.userName,
+            },
+          ],
+          Subject: `⚠️ ACİL: Abonelik ${data.hoursRemaining} Saat İçinde Kapanacak`,
+          HTMLPart: generateGracePeriodEndingHTML(data),
+          TextPart: generateGracePeriodEndingText(data),
+        },
+      ],
+    }
+
+    const auth = Buffer.from(`${MAILJET_API_KEY}:${MAILJET_SECRET_KEY}`).toString("base64")
+
+    const response = await fetch("https://api.mailjet.com/v3.1/send", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Basic ${auth}`,
+      },
+      body: JSON.stringify(emailData),
+    })
+
+    if (!response.ok) {
+      const errorText = await response.text()
+      console.error("[grace-period-ending-email] Mailjet error:", errorText)
+      return { success: false, error: errorText }
+    }
+
+    const result = await response.json()
+    return { success: true, result }
+  } catch (error: any) {
+    console.error("[grace-period-ending-email] Error:", error)
+    return { success: false, error: error.message }
+  }
+}
+
+function generateGracePeriodEndingHTML(data: GracePeriodEndingData): string {
+  const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://kreditakip.com.tr"
+  const ctaUrl = data.paymentUrl || `${baseUrl}/uygulama/ayarlar`
+  const ctaText = data.paymentUrl ? "Ödemeyi Hemen Tamamla" : "Aboneliği Yenile"
+
+  return `
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Abonelik Bitiyor</title>
+</head>
+<body style="font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif; line-height: 1.6; color: #ffffff; background-color: #0f172a; margin: 0; padding: 40px 20px;">
+    <div style="max-width: 600px; margin: 0 auto; background-color: #1e293b; border-radius: 16px; overflow: hidden; border: 1px solid #334155;">
+        <div style="background: linear-gradient(135deg, #dc2626 0%, #991b1b 100%); padding: 40px; text-align: center;">
+            <h1 style="color: #ffffff; margin: 0; font-size: 24px;">⚠️ ACİL: Abonelik Bitiyor</h1>
+            <p style="color: rgba(255,255,255,0.9); margin: 10px 0 0 0;">${data.hoursRemaining} saat içinde erişim kapanacak</p>
+        </div>
+
+        <div style="padding: 40px;">
+            <p style="color: #e2e8f0; margin-bottom: 24px;">Merhaba ${data.userName},</p>
+
+            <p style="color: #e2e8f0; margin-bottom: 24px;">
+                <strong>Son uyarı!</strong> ${data.planName} aboneliğinize verilen ek süre <strong>${data.hoursRemaining} saat</strong> içinde sona erecek.
+            </p>
+
+            <div style="background: #7f1d1d; border: 2px solid #dc2626; border-radius: 12px; padding: 24px; margin-bottom: 24px;">
+                <div style="display: flex; justify-content: space-between; padding: 12px 0; border-bottom: 1px solid #991b1b;">
+                    <span style="color: #fca5a5;">Bitiş Zamanı</span>
+                    <span style="color: #ffffff; font-weight: 600;">${new Date(data.gracePeriodEndsAt).toLocaleDateString('tr-TR')} ${new Date(data.gracePeriodEndsAt).toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit' })}</span>
+                </div>
+                <div style="display: flex; justify-content: space-between; padding: 12px 0;">
+                    <span style="color: #fca5a5;">Kalan Süre</span>
+                    <span style="color: #dc2626; font-weight: 700; font-size: 20px;">${data.hoursRemaining} Saat</span>
+                </div>
+            </div>
+
+            <div style="background: #7f1d1d; border-left: 4px solid #dc2626; padding: 16px; margin-bottom: 24px; border-radius: 8px;">
+                <p style="color: #fca5a5; margin: 0; font-size: 14px;">
+                    <strong>Dikkat:</strong> Bu süre sonunda premium özelliklerinize erişiminiz kapanacak ve risk analizi limitleriniz sıfırlanacaktır.
+                </p>
+            </div>
+
+            <div style="text-align: center; margin-bottom: 24px;">
+                <a href="${ctaUrl}" style="display: inline-block; background: linear-gradient(135deg, #10b981 0%, #14b8a6 100%); color: #ffffff; text-decoration: none; padding: 16px 40px; border-radius: 8px; font-weight: 600; font-size: 16px;">
+                    ${ctaText}
+                </a>
+            </div>
+
+            <p style="color: #94a3b8; font-size: 14px; text-align: center;">
+                Aboneliğinizi yenileyerek kesintisiz hizmet almaya devam edin.
+            </p>
+        </div>
+
+        <div style="padding: 24px 40px; background: #0f172a; border-top: 1px solid #334155; text-align: center;">
+            <p style="color: #64748b; font-size: 12px; margin: 0;">
+                © ${new Date().getFullYear()} kreditakip.com.tr • Tüm hakları saklıdır
+            </p>
+        </div>
+    </div>
+</body>
+</html>
+  `
+}
+
+function generateGracePeriodEndingText(data: GracePeriodEndingData): string {
+  const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://kreditakip.com.tr"
+  const actionUrl = data.paymentUrl || `${baseUrl}/uygulama/ayarlar`
+
+  return `
+ACİL: Abonelik ${data.hoursRemaining} Saat İçinde Kapanacak
+
+Merhaba ${data.userName},
+
+SON UYARI! ${data.planName} aboneliğinize verilen ek süre ${data.hoursRemaining} saat içinde sona erecek.
+
+Bitiş Zamanı: ${new Date(data.gracePeriodEndsAt).toLocaleDateString('tr-TR')} ${new Date(data.gracePeriodEndsAt).toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit' })}
+Kalan Süre: ${data.hoursRemaining} Saat
+
+DİKKAT: Bu süre sonunda premium özelliklerinize erişiminiz kapanacak ve risk analizi limitleriniz sıfırlanacaktır.
+
+${data.paymentUrl ? `Ödemeyi tamamlamak için: ${actionUrl}` : `Aboneliği yenilemek için: ${actionUrl}`}
 
 ---
 © ${new Date().getFullYear()} Kredi Takip

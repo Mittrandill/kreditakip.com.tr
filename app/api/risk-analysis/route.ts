@@ -130,29 +130,28 @@ export async function POST(request: NextRequest) {
 
     const isPremium = subscription?.plan_type === "premium" && subscription?.status === "active"
 
+    // Risk analizi için öncelikle increment_usage'ı çalıştır (bu da limit kontrolü yapar)
+    const { data: canProceed, error: incrementError } = await supabaseAdmin.rpc("increment_usage", {
+      p_user_id: userId,
+      p_feature_type: "risk_analysis",
+    })
 
-    if (!isPremium) {
-      const { data: canUse, error: checkError } = await supabaseAdmin.rpc("can_use_feature", {
-        p_user_id: userId,
-        p_feature_type: "risk_analysis",
-      })
+    if (incrementError) {
+      console.error("[Risk Analysis] Usage increment error:", incrementError)
+      return NextResponse.json({
+        error: "Kullanım takibi sırasında hata oluştu",
+        debugError: incrementError.message
+      }, { status: 500 })
+    }
 
-      if (checkError) {
-        console.error("[v0] Feature check error:", checkError)
-      }
-
-      if (!canUse) {
-        return NextResponse.json(
-          {
-            error: "Finansal sağlık analizi sadece Premium üyeler için kullanılabilir",
-            limitExceeded: true,
-            planType: subscription?.plan_type || "free",
-            upgradeMessage:
-              "Premium üyelik ile finansal sağlık analizi ve tüm özelliklere sınırsız erişim sağlayabilirsiniz. Sadece 199₺/ay!",
-          },
-          { status: 403 },
-        )
-      }
+    // Eğer increment_usage FALSE döndürdüyse, limit dolmuş demektir (sadece free kullanıcılar için)
+    if (canProceed === false) {
+      return NextResponse.json({
+        error: "Ücretsiz risk analizi hakkınız dolmuş. Premium üyelik ile sınırsız analiz yapabilirsiniz.",
+        limitExceeded: true,
+        planType: subscription?.plan_type || "free",
+        upgradeMessage: "Sadece 199₺/ay ile sınırsız risk analizi yapın!",
+      }, { status: 403 })
     }
 
     // FIXED: Use admin client instead of browser client to bypass RLS
@@ -260,16 +259,7 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    // Risk analizi sayısını artır (istatistik için - tüm kullanıcılar)
-    const { error: incrementError } = await supabaseAdmin.rpc("increment_usage", {
-      p_user_id: userId,
-      p_feature_type: "risk_analysis",
-    })
-
-    if (incrementError) {
-      console.error("[Risk Analysis] Usage increment error:", incrementError)
-    }
-
+  
     return NextResponse.json(analysisData)
   } catch (error) {
     console.error("[v0] Risk analysis critical error:", error)

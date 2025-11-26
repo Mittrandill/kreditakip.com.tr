@@ -535,6 +535,133 @@ export class PayTRClient {
   }
 
   /**
+   * 3D SECURE RECURRING PAYMENT - Kayıtlı kart ile 3D Secure zorunlu otomatik ödeme
+   * PayTR'den payment URL döndürür, kullanıcı SMS ile onaylar
+   * @param utoken - PayTR kullanıcı token'ı
+   * @param ctoken - PayTR kart token'ı
+   * @param orderId - Benzersiz sipariş numarası
+   * @param amount - Ödeme tutarı (TL)
+   * @param billingInfo - Fatura bilgileri
+   * @param userIp - Kullanıcı IP adresi
+   * @param options - Opsiyonel parametreler
+   * @returns Payment URL ve status
+   */
+  async create3DSecureRecurringPayment(
+    utoken: string,
+    ctoken: string,
+    orderId: string,
+    amount: number,
+    billingInfo: BillingInfo,
+    userIp: string,
+    options: {
+      currency?: "TL" | "TRY" | "EUR" | "USD"
+      testMode?: boolean
+    } = {}
+  ): Promise<{
+    status: "success" | "failed"
+    payment_url?: string
+    merchant_oid: string
+    msg?: string
+  }> {
+    // Sepet içeriği (Base64 encoded JSON array)
+    const basket = [["Abonelik Yenileme", amount.toFixed(2), 1]]
+    const userBasket = Buffer.from(JSON.stringify(basket)).toString("base64")
+
+    // Parametreler
+    const paymentAmount = amount.toFixed(2) // Ondalıklı format: 100.99
+    const currency = options.currency || "TL"
+    const testMode = options.testMode ?? (process.env.PAYTR_TEST_MODE === "1")
+
+    // Callback URLs - renewal endpoint'ine point eder
+    const baseUrl = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000"
+    const merchant_ok_url = `${baseUrl}/api/subscription/renewal/callback`
+    const merchant_fail_url = `${baseUrl}/api/subscription/renewal/callback`
+
+    // CRITICAL: non_3d = "0" for 3D Secure enabled
+    // Hash hesaplama - PayTR dokümantasyonuna göre sıralama:
+    // merchant_id + user_ip + merchant_oid + email + payment_amount + payment_type + installment_count + currency + test_mode + non_3d + merchant_salt
+    const hashStr =
+      this.config.merchantId +
+      userIp +
+      orderId +
+      billingInfo.email +
+      paymentAmount +
+      "card" + // payment_type
+      "0" + // installment_count (0 = no installment)
+      currency +
+      (testMode ? "1" : "0") +
+      "0" + // non_3d = "0" (3D Secure enabled)
+      this.config.merchantSalt
+
+    const paytrToken = this.generateHash(hashStr)
+
+    const data: Record<string, string> = {
+      merchant_id: this.config.merchantId,
+      paytr_token: paytrToken,
+      user_ip: userIp,
+      merchant_oid: orderId,
+      email: billingInfo.email,
+      payment_type: "card",
+      payment_amount: paymentAmount,
+      installment_count: "0",
+      currency: currency,
+      test_mode: testMode ? "1" : "0",
+      non_3d: "0", // 3D Secure enabled
+      merchant_ok_url,
+      merchant_fail_url,
+      user_name: billingInfo.fullName,
+      user_address: billingInfo.address,
+      user_phone: billingInfo.phone,
+      user_basket: userBasket,
+      debug_on: process.env.NODE_ENV === "development" ? "1" : "0",
+      client_lang: "tr",
+      utoken: utoken,
+      ctoken: ctoken,
+      recurring_payment: "1",
+    }
+
+    try {
+      console.log("[PayTR 3D RECURRING] Sending request for order:", orderId)
+
+      const response = await fetch("https://www.paytr.com/odeme", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/x-www-form-urlencoded",
+        },
+        body: new URLSearchParams(data).toString(),
+      })
+
+      const result = await response.json()
+
+      console.log("[PayTR 3D RECURRING] Response:", {
+        status: result.status,
+        has_payment_url: !!result.payment_url,
+      })
+
+      // 3D Secure için payment_url döner
+      if (result.status === "success" && result.payment_url) {
+        return {
+          status: "success",
+          payment_url: result.payment_url,
+          merchant_oid: orderId,
+        }
+      } else {
+        return {
+          status: "failed",
+          msg: result.msg || "3D Secure payment initialization failed",
+          merchant_oid: orderId,
+        }
+      }
+    } catch (error) {
+      console.error("[PayTR 3D RECURRING] Error:", error)
+      throw error
+    }
+  }
+
+  /**
+   * @deprecated Non-3D recurring payments are no longer supported by PayTR
+   * Use create3DSecureRecurringPayment() instead for SMS-approved 3D Secure payments
+   *
    * RECURRING PAYMENT - Kayıtlı kart ile otomatik ödeme al (Non3D)
    * @param utoken - PayTR kullanıcı token'ı
    * @param ctoken - PayTR kart token'ı

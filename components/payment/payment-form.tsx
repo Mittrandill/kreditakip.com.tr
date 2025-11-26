@@ -189,13 +189,7 @@ export function PaymentForm({ planId, planName, amount, billingInfo, onSuccess, 
         return
       }
 
-      // Validate auto-renewal if card is being saved
-      if (saveCard && !autoRenewal) {
-        setError("Kart saklama için otomatik yenileme onayı gereklidir")
-        setIsLoading(false)
-        return
-      }
-
+  
       // Validate
       if (!validateForm()) {
         setIsLoading(false)
@@ -336,16 +330,15 @@ export function PaymentForm({ planId, planName, amount, billingInfo, onSuccess, 
               </section>
 
               <section>
-                <h3 className="font-semibold text-base mb-2">6. Otomatik Yenileme ve Non3D Ödemeler</h3>
+                <h3 className="font-semibold text-base mb-2">6. Otomatik Yenileme Hatırlatmaları</h3>
                 <p className="text-muted-foreground">
-                  Kart saklama ve otomatik yenileme seçeneğini kabul ederseniz:
+                  Kart saklama seçeneğini tercih ederseniz:
                 </p>
                 <ul className="list-disc list-inside space-y-2 text-muted-foreground mt-2">
                   <li>Kartınız PayTR güvenli token sistemi ile saklanır</li>
-                  <li>Yenileme ödemeleri Non3D (3D Secure olmadan) yapılır</li>
-                  <li>Süre bitiminden 3 gün önce email ile bilgilendirilirsiniz</li>
-                  <li>İstediğiniz zaman ayarlardan iptal edebilirsiniz</li>
-                  <li>Ödeme başarısız olursa abonelik iptal edilir</li>
+                  <li>Aboneliğiniz bitmeden 3 gün önce email ile hatırlatılır</li>
+                  <li>İstediğiniz zaman ayarlardan yenileme tercihlerinizi değiştirebilirsiniz</li>
+                  <li>Kart bilgileriniz hiçbir zaman sunucularımızda saklanmaz</li>
                 </ul>
               </section>
 
@@ -661,11 +654,11 @@ export function PaymentForm({ planId, planName, amount, billingInfo, onSuccess, 
                     htmlFor="autoRenewal"
                     className="text-sm font-medium cursor-pointer block"
                   >
-                    Otomatik yenileme onayı (Zorunlu)
+                    Otomatik yenileme hatırlatması
                   </Label>
                   <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-                    Aboneliğiniz süre dolmadan 3 gün önce email ile bilgilendirilecek ve otomatik yenilenecektir.
-                    Yenileme ödemeleri Non3D (3D Secure olmadan) yapılacaktır. İstediğiniz zaman iptal edebilirsiniz.
+                    Aboneliğiniz bitmeden 3 gün önce email ile hatırlatılır.
+                    İsterseniz ayarlardan kolayca iptal edebilir veya yenileyebilirsiniz.
                   </p>
                 </div>
               </div>

@@ -56,7 +56,16 @@ export async function GET(request: NextRequest) {
           })
           .eq("id", subscription.id)
 
-        // Usage limits'i free plan'e düşür
+        // Usage limits'i free plan'e düşür - her feature_type için ayrı update
+        await supabase
+          .from("usage_tracking")
+          .update({
+            limit_count: 3,
+            updated_at: new Date().toISOString(),
+          })
+          .eq("user_id", userId)
+          .eq("feature_type", "ocr_analysis");
+
         await supabase
           .from("usage_tracking")
           .update({
@@ -64,7 +73,7 @@ export async function GET(request: NextRequest) {
             updated_at: new Date().toISOString(),
           })
           .eq("user_id", userId)
-          .eq("feature_type", "ocr_analysis")
+          .eq("feature_type", "risk_analysis");
 
         // Response'ta expired subscription döndür
         subscription.status = "expired"

@@ -25,7 +25,10 @@
       "Bash(pnpm add:*)",
       "Bash(find:*)",
       "Bash(npm uninstall:*)",
-      "Bash(git stash:*)"
+      "Bash(git stash:*)",
+      "WebFetch(domain:dev.paytr.com)",
+      "Bash(taskkill:*)",
+      "Bash(ngrok:*)"
     ],
     "deny": [],
     "ask": []

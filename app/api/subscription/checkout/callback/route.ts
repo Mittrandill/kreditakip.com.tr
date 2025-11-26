@@ -339,8 +339,12 @@ export async function POST(request: NextRequest) {
           console.log("[paytr-callback] Saved card info successfully for user:", userId)
         }
 
-        // Extract security context from pending subscription
-        const securityContext = pendingSubscription.metadata?.security || {}
+        // Security context temporarily removed - using default values
+        const securityContext = {
+          ip_address: null,
+          user_agent: null,
+          device_fingerprint: null,
+        }
 
         // İlk ödeme için recurring payment kaydı oluştur (IP ve device bilgileriyle)
         const { error: recurringError } = await supabase

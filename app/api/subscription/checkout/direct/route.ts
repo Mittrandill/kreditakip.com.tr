@@ -134,22 +134,13 @@ export async function POST(request: NextRequest) {
     formData.merchant_ok_url = successUrl
     formData.merchant_fail_url = failUrl
 
-    // Save pending subscription record with billing info and security context
+    // Save pending subscription record (metadata column temporarily removed)
     const { error: insertError } = await supabaseAdmin.from("pending_subscriptions").insert({
       user_id: user.id,
       plan_id: planId,
       token: token,
       conversation_id: orderId,
       status: "pending",
-      metadata: {
-        security: {
-          ip_address: requestSecurityContext.ipAddress,
-          user_agent: requestSecurityContext.userAgent,
-          device_fingerprint: deviceFingerprint,
-          browser_info: browserInfo,
-          timestamp: requestSecurityContext.timestamp,
-        },
-      },
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString(),
     })
