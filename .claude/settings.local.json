@@ -28,7 +28,13 @@
       "Bash(git stash:*)",
       "WebFetch(domain:dev.paytr.com)",
       "Bash(taskkill:*)",
-      "Bash(ngrok:*)"
+      "Bash(ngrok:*)",
+      "Bash(lsof:*)",
+      "Bash(xargs kill -9)",
+      "Bash(curl:*)",
+      "Bash(pkill:*)",
+      "Bash(ngrok http:*)",
+      "Bash(python3:*)"
     ],
     "deny": [],
     "ask": []

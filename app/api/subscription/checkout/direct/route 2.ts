@@ -16,13 +16,6 @@ export const runtime = "nodejs"
  * - Kart bilgileri ASLA bu endpoint'e gönderilmez
  * - Kart bilgileri client-side'dan DOĞRUDAN PayTR'ye POST edilir
  * - PCI DSS uyumluluğu için kart bilgileri sunucumuza asla ulaşmaz
- *
- * KART SAKLAMA (CAPI) AKIŞI:
- * 1. İlk ödeme: store_card=1 + non_3d=0 (3D Secure) gönderilir
- * 2. Callback: PayTR'den sadece utoken döner
- * 3. CAPI LIST: utoken ile /capi/list çağrılır → ctoken alınır
- * 4. Database: utoken + ctoken + kart bilgileri kaydedilir
- * 5. Yenileme: utoken + ctoken + non_3d=1 ile recurring payment
  */
 export async function POST(request: NextRequest) {
   try {
@@ -63,7 +56,7 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json()
-    const { planId, billingInfo, installmentCount = 0, storeCard = false, securityContext } = body
+    const { planId, billingInfo, installmentCount = 0, cardType, storeCard = false, securityContext } = body
 
     // Capture security context from request
     const requestSecurityContext = getSecurityContext(request)
@@ -129,24 +122,19 @@ export async function POST(request: NextRequest) {
     const userIp = ip || "85.34.78.112" // Fallback IP
 
     // Create Direct API token
-    // NOT: İlk ödeme 3D Secure ile yapılır (non_3d=0)
-    const { token, formData } = await paytrClient.createDirectPaymentToken(
-      orderId,
-      plan.price,
-      billingInfo,
-      userIp,
-      {
-        testMode: process.env.PAYTR_TEST_MODE === "1",
-        installmentCount: installmentCount || 0,
-        currency: (plan.currency as "TL" | "EUR" | "USD" | "GBP") || "TL",
-      }
-    )
+    const { token, formData } = await paytrClient.createDirectPaymentToken(orderId, plan.price, billingInfo, userIp, {
+      testMode: process.env.PAYTR_TEST_MODE === "1",
+      non3d: false, // 3D Secure kullan (güvenlik için)
+      installmentCount: installmentCount || 0,
+      currency: (plan.currency as "TL" | "EUR" | "USD" | "GBP") || "TL",
+      cardType,
+    })
 
     // Add merchant URLs to form data
     formData.merchant_ok_url = successUrl
     formData.merchant_fail_url = failUrl
 
-    // Save pending subscription record
+    // Save pending subscription record (metadata column temporarily removed)
     const { error: insertError } = await supabaseAdmin.from("pending_subscriptions").insert({
       user_id: user.id,
       plan_id: planId,
@@ -162,7 +150,7 @@ export async function POST(request: NextRequest) {
       // Continue anyway - subscription can still succeed
     }
 
-    // Save billing info for future use
+    // Also save billing info for future use
     const { error: billingError } = await supabaseAdmin
       .from("billing_info")
       .upsert(

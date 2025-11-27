@@ -186,17 +186,17 @@ export async function GET(request: NextRequest) {
           continue // Bu ödemeyi atlat, devam et
         }
 
-        // Benzersiz sipariş numarası oluştur (REN3D prefix for 3D Secure)
-        const orderId = `REN3D${userId.replace(/-/g, "").substring(0, 14)}${Date.now()}`
+        // Benzersiz sipariş numarası oluştur (REN prefix for recurring Non-3D)
+        const orderId = `REN${userId.replace(/-/g, "").substring(0, 18)}${Date.now()}`
 
-        console.log(`[subscription-renewal] Creating 3D Secure payment request for user ${userId}`)
+        console.log(`[subscription-renewal] Creating Non-3D recurring payment for user ${userId}`)
 
-        // Security event log: Payment request
+        // Security event log: Payment attempt
         await logSecurityEvent(supabase, {
           userId,
           eventType: "payment_attempt",
           ipAddress: "cron-server",
-          userAgent: "Vercel Cron Job - 3D Secure Renewal",
+          userAgent: "Vercel Cron Job - Non-3D Recurring",
           riskScore: riskAssessment.score,
           riskFactors: riskAssessment.flags,
           metadata: {
@@ -204,12 +204,15 @@ export async function GET(request: NextRequest) {
             subscription_id: subscription.id,
             plan_name: plan.name,
             amount: plan.price,
-            renewal_type: "3d_secure_sms",
+            renewal_type: "non_3d_recurring",
           },
         })
 
-        // 3D SECURE PAYMENT REQUEST (yeni metod)
-        const paymentResult = await paytrClient.create3DSecureRecurringPayment(
+        // NON-3D RECURRING PAYMENT (otomatik, kullanıcı etkileşimi yok)
+        // CVV gerekli mi kontrol et
+        const cvv = savedCard.require_cvv ? undefined : undefined // CVV istenemez, stored card'da yok
+
+        const paymentResult = await paytrClient.createRecurringPayment(
           savedCard.paytr_user_tokens.utoken,
           savedCard.ctoken,
           orderId,
@@ -223,6 +226,7 @@ export async function GET(request: NextRequest) {
             district: billingInfo.district || undefined,
           },
           "85.34.78.112", // Server IP
+          cvv,
           {
             currency: (plan.currency as "TL" | "TRY" | "EUR" | "USD") || "TL",
             testMode: process.env.PAYTR_TEST_MODE === "1",
@@ -231,75 +235,99 @@ export async function GET(request: NextRequest) {
 
         results.processed++
 
-        if (paymentResult.status === "success" && paymentResult.payment_url) {
-          // Payment URL oluşturuldu - pending renewal kaydet
-          const paymentExpiresAt = new Date(now.getTime() + 72 * 60 * 60 * 1000) // 72 hours
+        console.log(`[subscription-renewal] Payment result for user ${userId}:`, paymentResult.status)
 
-          await supabase.from("pending_renewal_payments").insert({
+        if (paymentResult.status === "success") {
+          // Ödeme başarılı - direkt yenile
+          const now = new Date()
+          const currentExpiry = new Date(subscription.expires_at)
+          const newExpiry = new Date(currentExpiry)
+
+          if (plan.billing_period === "yearly") {
+            newExpiry.setFullYear(newExpiry.getFullYear() + 1)
+          } else {
+            newExpiry.setMonth(newExpiry.getMonth() + 1)
+          }
+
+          await supabase
+            .from("subscriptions")
+            .update({
+              expires_at: newExpiry.toISOString(),
+              status: "active",
+              updated_at: now.toISOString(),
+            })
+            .eq("id", subscription.id)
+
+          // Recurring payment kaydı oluştur
+          await supabase.from("paytr_recurring_payments").insert({
             user_id: userId,
             subscription_id: subscription.id,
             merchant_oid: orderId,
-            payment_url: paymentResult.payment_url,
             utoken: savedCard.paytr_user_tokens.utoken,
             ctoken: savedCard.ctoken,
             amount: plan.price,
             currency: plan.currency || "TRY",
-            plan_id: plan.id,
-            status: "pending",
-            expires_at: paymentExpiresAt.toISOString(),
+            payment_status: "completed",
+            paytr_status: "success",
+            completed_at: now.toISOString(),
             metadata: {
+              renewal_type: "non_3d_recurring",
               risk_score: riskAssessment.score,
-              risk_level: riskAssessment.level,
-              fraud_flags: riskAssessment.flags,
-              initiated_by: "cron_job",
             },
           })
 
-          // Subscription'ı "requires_payment_action" olarak işaretle
-          await supabase
-            .from("subscriptions")
-            .update({
-              requires_payment_action: true,
-              updated_at: new Date().toISOString(),
-            })
-            .eq("id", subscription.id)
-
-          // Kullanıcıya renewal request email gönder
+          // Başarı email'i gönder
           if (profile?.email) {
-            await sendRenewalRequestNotification({
+            await sendRenewalSuccessNotification({
               userName: `${profile.first_name || ""} ${profile.last_name || ""}`.trim() || profile.email,
               userEmail: profile.email,
               planName: plan.name,
               amount: plan.price,
               currency: plan.currency || "TRY",
-              renewalDate: subscription.expires_at,
-              paymentUrl: paymentResult.payment_url,
-              linkExpiresIn: "72 saat",
+              newExpiryDate: newExpiry.toISOString(),
             })
           }
 
-          console.log(`[subscription-renewal] Payment request created for user ${userId}`)
+          console.log(`[subscription-renewal] ✓ Subscription renewed successfully for user ${userId}`)
+          results.payment_requests_created++
+        } else if (paymentResult.status === "wait_callback") {
+          // Callback bekleniyor
+          console.log(`[subscription-renewal] Payment waiting callback for user ${userId}`)
           results.payment_requests_created++
         } else {
-          // Payment request başarısız
-          console.error(`[subscription-renewal] Payment request failed for user ${userId}:`, paymentResult.msg)
+          // Ödeme başarısız
+          console.error(`[subscription-renewal] Payment failed for user ${userId}:`, paymentResult.msg)
 
-          // Security log: Payment request failed
+          // Security log: Payment failed
           await logSecurityEvent(supabase, {
             userId,
             eventType: "payment_failed",
             ipAddress: "cron-server",
-            userAgent: "Vercel Cron Job - 3D Secure Renewal",
+            userAgent: "Vercel Cron Job - Non-3D Recurring",
             riskScore: riskAssessment.score,
             riskFactors: riskAssessment.flags,
             metadata: {
               merchant_oid: orderId,
               subscription_id: subscription.id,
               amount: plan.price,
-              renewal_type: "3d_secure_sms",
+              renewal_type: "non_3d_recurring",
               error_message: paymentResult.msg,
+              try_again: paymentResult.try_again,
             },
           })
+
+          // Başarısız email gönder
+          if (profile?.email) {
+            await sendRenewalFailedNotification({
+              userName: `${profile.first_name || ""} ${profile.last_name || ""}`.trim() || profile.email,
+              userEmail: profile.email,
+              planName: plan.name,
+              amount: plan.price,
+              currency: plan.currency || "TRY",
+              failureReason: paymentResult.msg || "Ödeme başarısız",
+              retryUrl: `${process.env.NEXT_PUBLIC_SITE_URL}/uygulama/ayarlar`,
+            })
+          }
 
           results.failed++
           results.errors.push(`User ${userId}: ${paymentResult.msg}`)

@@ -1,0 +1,989 @@
+[
+{
+"fonksiyon_adi": "calculate_credit_status",
+"donus_tipi": "record",
+"guvenlik_tipi": "INVOKER",
+"dil": "PLPGSQL"
+},
+{
+"fonksiyon_adi": "calculate_financial_health_metrics",
+"donus_tipi": "json",
+"guvenlik_tipi": "DEFINER",
+"dil": "PLPGSQL"
+},
+{
+"fonksiyon_adi": "can_use_feature",
+"donus_tipi": "boolean",
+"guvenlik_tipi": "DEFINER",
+"dil": "PLPGSQL"
+},
+{
+"fonksiyon_adi": "can_user_save_credit",
+"donus_tipi": "boolean",
+"guvenlik_tipi": "DEFINER",
+"dil": "PLPGSQL"
+},
+{
+"fonksiyon_adi": "check_subscription_status",
+"donus_tipi": "record",
+"guvenlik_tipi": "DEFINER",
+"dil": "PLPGSQL"
+},
+{
+"fonksiyon_adi": "cleanup_expired_pending_payments",
+"donus_tipi": "void",
+"guvenlik_tipi": "INVOKER",
+"dil": "PLPGSQL"
+},
+{
+"fonksiyon_adi": "cleanup_expired_pending_subscriptions",
+"donus_tipi": "json",
+"guvenlik_tipi": "DEFINER",
+"dil": "PLPGSQL"
+},
+{
+"fonksiyon_adi": "cleanup_old_notifications",
+"donus_tipi": "json",
+"guvenlik_tipi": "DEFINER",
+"dil": "PLPGSQL"
+},
+{
+"fonksiyon_adi": "cleanup_old_pending_subscriptions",
+"donus_tipi": "void",
+"guvenlik_tipi": "DEFINER",
+"dil": "PLPGSQL"
+},
+{
+"fonksiyon_adi": "cleanup_old_webhook_logs",
+"donus_tipi": "void",
+"guvenlik_tipi": "DEFINER",
+"dil": "PLPGSQL"
+},
+{
+"fonksiyon_adi": "create_default_notification_preferences",
+"donus_tipi": "trigger",
+"guvenlik_tipi": "DEFINER",
+"dil": "PLPGSQL"
+},
+{
+"fonksiyon_adi": "create_invoice_for_payment",
+"donus_tipi": "uuid",
+"guvenlik_tipi": "DEFINER",
+"dil": "PLPGSQL"
+},
+{
+"fonksiyon_adi": "create_payment_reminders_batch",
+"donus_tipi": "json",
+"guvenlik_tipi": "DEFINER",
+"dil": "PLPGSQL"
+},
+{
+"fonksiyon_adi": "get_bank_debt_breakdown",
+"donus_tipi": "record",
+"guvenlik_tipi": "DEFINER",
+"dil": "PLPGSQL"
+},
+{
+"fonksiyon_adi": "get_credit_details",
+"donus_tipi": "json",
+"guvenlik_tipi": "DEFINER",
+"dil": "PLPGSQL"
+},
+{
+"fonksiyon_adi": "get_matched_card_type",
+"donus_tipi": "text",
+"guvenlik_tipi": "INVOKER",
+"dil": "PLPGSQL"
+},
+{
+"fonksiyon_adi": "get_ocr_save_count",
+"donus_tipi": "integer",
+"guvenlik_tipi": "DEFINER",
+"dil": "PLPGSQL"
+},
+{
+"fonksiyon_adi": "get_upcoming_payments",
+"donus_tipi": "record",
+"guvenlik_tipi": "DEFINER",
+"dil": "PLPGSQL"
+},
+{
+"fonksiyon_adi": "get_user_dashboard_summary",
+"donus_tipi": "json",
+"guvenlik_tipi": "DEFINER",
+"dil": "PLPGSQL"
+},
+{
+"fonksiyon_adi": "handle_new_user",
+"donus_tipi": "trigger",
+"guvenlik_tipi": "DEFINER",
+"dil": "PLPGSQL"
+},
+{
+"fonksiyon_adi": "handle_subscription_change",
+"donus_tipi": "trigger",
+"guvenlik_tipi": "DEFINER",
+"dil": "PLPGSQL"
+},
+{
+"fonksiyon_adi": "handle_updated_at",
+"donus_tipi": "trigger",
+"guvenlik_tipi": "INVOKER",
+"dil": "PLPGSQL"
+},
+{
+"fonksiyon_adi": "increment_saved_credits",
+"donus_tipi": "boolean",
+"guvenlik_tipi": "DEFINER",
+"dil": "PLPGSQL"
+},
+{
+"fonksiyon_adi": "increment_usage",
+"donus_tipi": "boolean",
+"guvenlik_tipi": "DEFINER",
+"dil": "PLPGSQL"
+},
+{
+"fonksiyon_adi": "initialize_free_tier",
+"donus_tipi": "trigger",
+"guvenlik_tipi": "DEFINER",
+"dil": "PLPGSQL"
+},
+{
+"fonksiyon_adi": "initialize_new_user",
+"donus_tipi": "trigger",
+"guvenlik_tipi": "DEFINER",
+"dil": "PLPGSQL"
+},
+{
+"fonksiyon_adi": "is_admin",
+"donus_tipi": "boolean",
+"guvenlik_tipi": "DEFINER",
+"dil": "PLPGSQL"
+},
+{
+"fonksiyon_adi": "update_account_balance_after_transaction",
+"donus_tipi": "trigger",
+"guvenlik_tipi": "INVOKER",
+"dil": "PLPGSQL"
+},
+{
+"fonksiyon_adi": "update_banking_credentials_updated_at",
+"donus_tipi": "trigger",
+"guvenlik_tipi": "INVOKER",
+"dil": "PLPGSQL"
+},
+{
+"fonksiyon_adi": "update_billing_info_updated_at",
+"donus_tipi": "trigger",
+"guvenlik_tipi": "INVOKER",
+"dil": "PLPGSQL"
+},
+{
+"fonksiyon_adi": "update_blog_category_updated_at",
+"donus_tipi": "trigger",
+"guvenlik_tipi": "INVOKER",
+"dil": "PLPGSQL"
+},
+{
+"fonksiyon_adi": "update_blog_post_updated_at",
+"donus_tipi": "trigger",
+"guvenlik_tipi": "INVOKER",
+"dil": "PLPGSQL"
+},
+{
+"fonksiyon_adi": "update_credit_after_payment_change",
+"donus_tipi": "trigger",
+"guvenlik_tipi": "INVOKER",
+"dil": "PLPGSQL"
+},
+{
+"fonksiyon_adi": "update_credit_card_debt_after_transaction",
+"donus_tipi": "trigger",
+"guvenlik_tipi": "INVOKER",
+"dil": "PLPGSQL"
+},
+{
+"fonksiyon_adi": "update_credit_card_types_updated_at",
+"donus_tipi": "trigger",
+"guvenlik_tipi": "INVOKER",
+"dil": "PLPGSQL"
+},
+{
+"fonksiyon_adi": "update_credit_cards_updated_at",
+"donus_tipi": "trigger",
+"guvenlik_tipi": "INVOKER",
+"dil": "PLPGSQL"
+},
+{
+"fonksiyon_adi": "update_invoice_updated_at",
+"donus_tipi": "trigger",
+"guvenlik_tipi": "INVOKER",
+"dil": "PLPGSQL"
+},
+{
+"fonksiyon_adi": "update_notification_preferences_updated_at",
+"donus_tipi": "trigger",
+"guvenlik_tipi": "INVOKER",
+"dil": "PLPGSQL"
+},
+{
+"fonksiyon_adi": "update_subscription_plans_updated_at",
+"donus_tipi": "trigger",
+"guvenlik_tipi": "INVOKER",
+"dil": "PLPGSQL"
+},
+{
+"fonksiyon_adi": "update_updated_at_column",
+"donus_tipi": "trigger",
+"guvenlik_tipi": "INVOKER",
+"dil": "PLPGSQL"
+},
+{
+"fonksiyon_adi": "update_usage_limits_for_subscription",
+"donus_tipi": "void",
+"guvenlik_tipi": "DEFINER",
+"dil": "PLPGSQL"
+}
+]
+
+
+
+[
+{
+"tablo_adi": "banking_credentials",
+"politika_adi": "Users can delete their own banking credentials",
+"islem": "DELETE",
+"roller": "{public}",
+"gorunurluk_kurali": "(user_id = ( SELECT auth.uid() AS uid))",
+"ekleme_kurali": null
+},
+{
+"tablo_adi": "banking_credentials",
+"politika_adi": "Users can insert their own banking credentials",
+"islem": "INSERT",
+"roller": "{public}",
+"gorunurluk_kurali": null,
+"ekleme_kurali": "(user_id = ( SELECT auth.uid() AS uid))"
+},
+{
+"tablo_adi": "banking_credentials",
+"politika_adi": "Users can update their own banking credentials",
+"islem": "UPDATE",
+"roller": "{public}",
+"gorunurluk_kurali": "(user_id = ( SELECT auth.uid() AS uid))",
+"ekleme_kurali": "(user_id = ( SELECT auth.uid() AS uid))"
+},
+{
+"tablo_adi": "banking_credentials",
+"politika_adi": "Users can view their own banking credentials",
+"islem": "SELECT",
+"roller": "{public}",
+"gorunurluk_kurali": "(user_id = ( SELECT auth.uid() AS uid))",
+"ekleme_kurali": null
+},
+{
+"tablo_adi": "banks",
+"politika_adi": "Banks are viewable by everyone",
+"islem": "SELECT",
+"roller": "{public}",
+"gorunurluk_kurali": "(is_active = true)",
+"ekleme_kurali": null
+},
+{
+"tablo_adi": "billing_info",
+"politika_adi": "Users can delete their own billing info",
+"islem": "DELETE",
+"roller": "{public}",
+"gorunurluk_kurali": "(user_id = ( SELECT auth.uid() AS uid))",
+"ekleme_kurali": null
+},
+{
+"tablo_adi": "billing_info",
+"politika_adi": "Users can insert their own billing info",
+"islem": "INSERT",
+"roller": "{public}",
+"gorunurluk_kurali": null,
+"ekleme_kurali": "(user_id = ( SELECT auth.uid() AS uid))"
+},
+{
+"tablo_adi": "billing_info",
+"politika_adi": "Users can update their own billing info",
+"islem": "UPDATE",
+"roller": "{public}",
+"gorunurluk_kurali": "(user_id = ( SELECT auth.uid() AS uid))",
+"ekleme_kurali": "(user_id = ( SELECT auth.uid() AS uid))"
+},
+{
+"tablo_adi": "billing_info",
+"politika_adi": "Users can view billing info (admins see all)",
+"islem": "SELECT",
+"roller": "{public}",
+"gorunurluk_kurali": "((user_id = ( SELECT auth.uid() AS uid)) OR (EXISTS ( SELECT 1\n   FROM profiles\n  WHERE ((profiles.id = ( SELECT auth.uid() AS uid)) AND (profiles.is_admin = true)))))",
+"ekleme_kurali": null
+},
+{
+"tablo_adi": "blog_categories",
+"politika_adi": "Anyone can view blog categories",
+"islem": "SELECT",
+"roller": "{public}",
+"gorunurluk_kurali": "true",
+"ekleme_kurali": null
+},
+{
+"tablo_adi": "blog_categories",
+"politika_adi": "Only admins can delete blog categories",
+"islem": "DELETE",
+"roller": "{public}",
+"gorunurluk_kurali": "(EXISTS ( SELECT 1\n   FROM profiles\n  WHERE ((profiles.id = ( SELECT auth.uid() AS uid)) AND (profiles.is_admin = true))))",
+"ekleme_kurali": null
+},
+{
+"tablo_adi": "blog_categories",
+"politika_adi": "Only admins can insert blog categories",
+"islem": "INSERT",
+"roller": "{public}",
+"gorunurluk_kurali": null,
+"ekleme_kurali": "(EXISTS ( SELECT 1\n   FROM profiles\n  WHERE ((profiles.id = ( SELECT auth.uid() AS uid)) AND (profiles.is_admin = true))))"
+},
+{
+"tablo_adi": "blog_categories",
+"politika_adi": "Only admins can update blog categories",
+"islem": "UPDATE",
+"roller": "{public}",
+"gorunurluk_kurali": "(EXISTS ( SELECT 1\n   FROM profiles\n  WHERE ((profiles.id = ( SELECT auth.uid() AS uid)) AND (profiles.is_admin = true))))",
+"ekleme_kurali": null
+},
+{
+"tablo_adi": "blog_posts",
+"politika_adi": "Published blog posts are publicly viewable",
+"islem": "SELECT",
+"roller": "{public}",
+"gorunurluk_kurali": "((status = 'published'::text) OR (author_id = ( SELECT auth.uid() AS uid)))",
+"ekleme_kurali": null
+},
+{
+"tablo_adi": "blog_posts",
+"politika_adi": "Users can delete their own blog posts",
+"islem": "DELETE",
+"roller": "{public}",
+"gorunurluk_kurali": "(author_id = ( SELECT auth.uid() AS uid))",
+"ekleme_kurali": null
+},
+{
+"tablo_adi": "blog_posts",
+"politika_adi": "Users can insert their own blog posts",
+"islem": "INSERT",
+"roller": "{public}",
+"gorunurluk_kurali": null,
+"ekleme_kurali": "(author_id = ( SELECT auth.uid() AS uid))"
+},
+{
+"tablo_adi": "blog_posts",
+"politika_adi": "Users can update their own blog posts",
+"islem": "UPDATE",
+"roller": "{public}",
+"gorunurluk_kurali": "(author_id = ( SELECT auth.uid() AS uid))",
+"ekleme_kurali": "(author_id = ( SELECT auth.uid() AS uid))"
+},
+{
+"tablo_adi": "credit_types",
+"politika_adi": "Credit types are viewable by everyone",
+"islem": "SELECT",
+"roller": "{public}",
+"gorunurluk_kurali": "(is_active = true)",
+"ekleme_kurali": null
+},
+{
+"tablo_adi": "credits",
+"politika_adi": "Users can delete their own credits",
+"islem": "DELETE",
+"roller": "{public}",
+"gorunurluk_kurali": "(user_id = ( SELECT auth.uid() AS uid))",
+"ekleme_kurali": null
+},
+{
+"tablo_adi": "credits",
+"politika_adi": "Users can insert their own credits",
+"islem": "INSERT",
+"roller": "{public}",
+"gorunurluk_kurali": null,
+"ekleme_kurali": "(user_id = ( SELECT auth.uid() AS uid))"
+},
+{
+"tablo_adi": "credits",
+"politika_adi": "Users can update their own credits",
+"islem": "UPDATE",
+"roller": "{public}",
+"gorunurluk_kurali": "(user_id = ( SELECT auth.uid() AS uid))",
+"ekleme_kurali": "(user_id = ( SELECT auth.uid() AS uid))"
+},
+{
+"tablo_adi": "credits",
+"politika_adi": "Users can view credits (admins see all)",
+"islem": "SELECT",
+"roller": "{public}",
+"gorunurluk_kurali": "((user_id = ( SELECT auth.uid() AS uid)) OR (EXISTS ( SELECT 1\n   FROM profiles\n  WHERE ((profiles.id = ( SELECT auth.uid() AS uid)) AND (profiles.is_admin = true)))))",
+"ekleme_kurali": null
+},
+{
+"tablo_adi": "financial_profiles",
+"politika_adi": "Users can delete their own financial profile",
+"islem": "DELETE",
+"roller": "{public}",
+"gorunurluk_kurali": "(user_id = ( SELECT auth.uid() AS uid))",
+"ekleme_kurali": null
+},
+{
+"tablo_adi": "financial_profiles",
+"politika_adi": "Users can insert their own financial profile",
+"islem": "INSERT",
+"roller": "{public}",
+"gorunurluk_kurali": null,
+"ekleme_kurali": "(user_id = ( SELECT auth.uid() AS uid))"
+},
+{
+"tablo_adi": "financial_profiles",
+"politika_adi": "Users can update their own financial profile",
+"islem": "UPDATE",
+"roller": "{public}",
+"gorunurluk_kurali": "(user_id = ( SELECT auth.uid() AS uid))",
+"ekleme_kurali": "(user_id = ( SELECT auth.uid() AS uid))"
+},
+{
+"tablo_adi": "financial_profiles",
+"politika_adi": "Users can view their own financial profile",
+"islem": "SELECT",
+"roller": "{public}",
+"gorunurluk_kurali": "(user_id = ( SELECT auth.uid() AS uid))",
+"ekleme_kurali": null
+},
+{
+"tablo_adi": "invoices",
+"politika_adi": "Admins can view all invoices",
+"islem": "SELECT",
+"roller": "{public}",
+"gorunurluk_kurali": "is_admin()",
+"ekleme_kurali": null
+},
+{
+"tablo_adi": "invoices",
+"politika_adi": "Only admins can delete invoices",
+"islem": "DELETE",
+"roller": "{public}",
+"gorunurluk_kurali": "(EXISTS ( SELECT 1\n   FROM profiles\n  WHERE ((profiles.id = ( SELECT auth.uid() AS uid)) AND (profiles.is_admin = true))))",
+"ekleme_kurali": null
+},
+{
+"tablo_adi": "invoices",
+"politika_adi": "Only admins can insert invoices",
+"islem": "INSERT",
+"roller": "{public}",
+"gorunurluk_kurali": null,
+"ekleme_kurali": "(EXISTS ( SELECT 1\n   FROM profiles\n  WHERE ((profiles.id = ( SELECT auth.uid() AS uid)) AND (profiles.is_admin = true))))"
+},
+{
+"tablo_adi": "invoices",
+"politika_adi": "Only admins can update invoices",
+"islem": "UPDATE",
+"roller": "{public}",
+"gorunurluk_kurali": "(EXISTS ( SELECT 1\n   FROM profiles\n  WHERE ((profiles.id = ( SELECT auth.uid() AS uid)) AND (profiles.is_admin = true))))",
+"ekleme_kurali": null
+},
+{
+"tablo_adi": "invoices",
+"politika_adi": "Service role can manage all invoices",
+"islem": "ALL",
+"roller": "{service_role}",
+"gorunurluk_kurali": "true",
+"ekleme_kurali": "true"
+},
+{
+"tablo_adi": "newsletter_subscribers",
+"politika_adi": "Anyone can subscribe to newsletter",
+"islem": "INSERT",
+"roller": "{public}",
+"gorunurluk_kurali": null,
+"ekleme_kurali": "true"
+},
+{
+"tablo_adi": "newsletter_subscribers",
+"politika_adi": "Only admins can view subscribers",
+"islem": "SELECT",
+"roller": "{public}",
+"gorunurluk_kurali": "is_admin()",
+"ekleme_kurali": null
+},
+{
+"tablo_adi": "newsletter_subscribers",
+"politika_adi": "Public can update newsletter subscribers",
+"islem": "UPDATE",
+"roller": "{anon}",
+"gorunurluk_kurali": "true",
+"ekleme_kurali": "true"
+},
+{
+"tablo_adi": "newsletter_subscribers",
+"politika_adi": "Service role can manage newsletter subscribers",
+"islem": "ALL",
+"roller": "{service_role}",
+"gorunurluk_kurali": "true",
+"ekleme_kurali": "true"
+},
+{
+"tablo_adi": "notification_preferences",
+"politika_adi": "Users can delete their own notification preferences",
+"islem": "DELETE",
+"roller": "{public}",
+"gorunurluk_kurali": "(user_id = ( SELECT auth.uid() AS uid))",
+"ekleme_kurali": null
+},
+{
+"tablo_adi": "notification_preferences",
+"politika_adi": "Users can insert their own notification preferences",
+"islem": "INSERT",
+"roller": "{public}",
+"gorunurluk_kurali": null,
+"ekleme_kurali": "(user_id = ( SELECT auth.uid() AS uid))"
+},
+{
+"tablo_adi": "notification_preferences",
+"politika_adi": "Users can update their own notification preferences",
+"islem": "UPDATE",
+"roller": "{public}",
+"gorunurluk_kurali": "(user_id = ( SELECT auth.uid() AS uid))",
+"ekleme_kurali": "(user_id = ( SELECT auth.uid() AS uid))"
+},
+{
+"tablo_adi": "notification_preferences",
+"politika_adi": "Users can view their own notification preferences",
+"islem": "SELECT",
+"roller": "{public}",
+"gorunurluk_kurali": "(user_id = ( SELECT auth.uid() AS uid))",
+"ekleme_kurali": null
+},
+{
+"tablo_adi": "notifications",
+"politika_adi": "Users can delete their own notifications",
+"islem": "DELETE",
+"roller": "{public}",
+"gorunurluk_kurali": "(user_id = ( SELECT auth.uid() AS uid))",
+"ekleme_kurali": null
+},
+{
+"tablo_adi": "notifications",
+"politika_adi": "Users can insert their own notifications",
+"islem": "INSERT",
+"roller": "{public}",
+"gorunurluk_kurali": null,
+"ekleme_kurali": "(user_id = ( SELECT auth.uid() AS uid))"
+},
+{
+"tablo_adi": "notifications",
+"politika_adi": "Users can update their own notifications",
+"islem": "UPDATE",
+"roller": "{public}",
+"gorunurluk_kurali": "(user_id = ( SELECT auth.uid() AS uid))",
+"ekleme_kurali": "(user_id = ( SELECT auth.uid() AS uid))"
+},
+{
+"tablo_adi": "notifications",
+"politika_adi": "Users can view their own notifications",
+"islem": "SELECT",
+"roller": "{public}",
+"gorunurluk_kurali": "(user_id = ( SELECT auth.uid() AS uid))",
+"ekleme_kurali": null
+},
+{
+"tablo_adi": "payment_history",
+"politika_adi": "Users can delete payment history for their credits",
+"islem": "DELETE",
+"roller": "{public}",
+"gorunurluk_kurali": "(EXISTS ( SELECT 1\n   FROM credits\n  WHERE ((credits.id = payment_history.credit_id) AND (credits.user_id = ( SELECT auth.uid() AS uid)))))",
+"ekleme_kurali": null
+},
+{
+"tablo_adi": "payment_history",
+"politika_adi": "Users can insert payment history for their credits",
+"islem": "INSERT",
+"roller": "{public}",
+"gorunurluk_kurali": null,
+"ekleme_kurali": "(EXISTS ( SELECT 1\n   FROM credits\n  WHERE ((credits.id = payment_history.credit_id) AND (credits.user_id = ( SELECT auth.uid() AS uid)))))"
+},
+{
+"tablo_adi": "payment_history",
+"politika_adi": "Users can update payment history for their credits",
+"islem": "UPDATE",
+"roller": "{public}",
+"gorunurluk_kurali": "(EXISTS ( SELECT 1\n   FROM credits\n  WHERE ((credits.id = payment_history.credit_id) AND (credits.user_id = ( SELECT auth.uid() AS uid)))))",
+"ekleme_kurali": "(EXISTS ( SELECT 1\n   FROM credits\n  WHERE ((credits.id = payment_history.credit_id) AND (credits.user_id = ( SELECT auth.uid() AS uid)))))"
+},
+{
+"tablo_adi": "payment_history",
+"politika_adi": "Users can view payment history for their credits",
+"islem": "SELECT",
+"roller": "{public}",
+"gorunurluk_kurali": "(EXISTS ( SELECT 1\n   FROM credits\n  WHERE ((credits.id = payment_history.credit_id) AND (credits.user_id = ( SELECT auth.uid() AS uid)))))",
+"ekleme_kurali": null
+},
+{
+"tablo_adi": "payment_plans",
+"politika_adi": "Users can delete payment plans for their credits",
+"islem": "DELETE",
+"roller": "{public}",
+"gorunurluk_kurali": "(EXISTS ( SELECT 1\n   FROM credits\n  WHERE ((credits.id = payment_plans.credit_id) AND (credits.user_id = ( SELECT auth.uid() AS uid)))))",
+"ekleme_kurali": null
+},
+{
+"tablo_adi": "payment_plans",
+"politika_adi": "Users can insert payment plans for their credits",
+"islem": "INSERT",
+"roller": "{public}",
+"gorunurluk_kurali": null,
+"ekleme_kurali": "(EXISTS ( SELECT 1\n   FROM credits\n  WHERE ((credits.id = payment_plans.credit_id) AND (credits.user_id = ( SELECT auth.uid() AS uid)))))"
+},
+{
+"tablo_adi": "payment_plans",
+"politika_adi": "Users can update payment plans for their credits",
+"islem": "UPDATE",
+"roller": "{public}",
+"gorunurluk_kurali": "(EXISTS ( SELECT 1\n   FROM credits\n  WHERE ((credits.id = payment_plans.credit_id) AND (credits.user_id = ( SELECT auth.uid() AS uid)))))",
+"ekleme_kurali": "(EXISTS ( SELECT 1\n   FROM credits\n  WHERE ((credits.id = payment_plans.credit_id) AND (credits.user_id = ( SELECT auth.uid() AS uid)))))"
+},
+{
+"tablo_adi": "payment_plans",
+"politika_adi": "Users can view payment plans for their credits",
+"islem": "SELECT",
+"roller": "{public}",
+"gorunurluk_kurali": "(EXISTS ( SELECT 1\n   FROM credits\n  WHERE ((credits.id = payment_plans.credit_id) AND (credits.user_id = ( SELECT auth.uid() AS uid)))))",
+"ekleme_kurali": null
+},
+{
+"tablo_adi": "payment_transactions",
+"politika_adi": "Service role can manage all transactions",
+"islem": "ALL",
+"roller": "{service_role}",
+"gorunurluk_kurali": "true",
+"ekleme_kurali": "true"
+},
+{
+"tablo_adi": "payment_transactions",
+"politika_adi": "Service role can update transactions",
+"islem": "UPDATE",
+"roller": "{public}",
+"gorunurluk_kurali": "true",
+"ekleme_kurali": null
+},
+{
+"tablo_adi": "payment_transactions",
+"politika_adi": "Users can insert their own payment transactions",
+"islem": "INSERT",
+"roller": "{public}",
+"gorunurluk_kurali": null,
+"ekleme_kurali": "(user_id = ( SELECT auth.uid() AS uid))"
+},
+{
+"tablo_adi": "payment_transactions",
+"politika_adi": "Users can view transactions (admins see all)",
+"islem": "SELECT",
+"roller": "{public}",
+"gorunurluk_kurali": "((user_id = ( SELECT auth.uid() AS uid)) OR (EXISTS ( SELECT 1\n   FROM profiles\n  WHERE ((profiles.id = ( SELECT auth.uid() AS uid)) AND (profiles.is_admin = true)))))",
+"ekleme_kurali": null
+},
+{
+"tablo_adi": "paytr_recurring_payments",
+"politika_adi": "Users can delete their own recurring payments",
+"islem": "DELETE",
+"roller": "{public}",
+"gorunurluk_kurali": "(user_id = ( SELECT auth.uid() AS uid))",
+"ekleme_kurali": null
+},
+{
+"tablo_adi": "paytr_recurring_payments",
+"politika_adi": "Users can insert their own recurring payments",
+"islem": "INSERT",
+"roller": "{public}",
+"gorunurluk_kurali": null,
+"ekleme_kurali": "(user_id = ( SELECT auth.uid() AS uid))"
+},
+{
+"tablo_adi": "paytr_recurring_payments",
+"politika_adi": "Users can update their own recurring payments",
+"islem": "UPDATE",
+"roller": "{public}",
+"gorunurluk_kurali": "(user_id = ( SELECT auth.uid() AS uid))",
+"ekleme_kurali": "(user_id = ( SELECT auth.uid() AS uid))"
+},
+{
+"tablo_adi": "paytr_recurring_payments",
+"politika_adi": "Users can view their own recurring payments",
+"islem": "SELECT",
+"roller": "{public}",
+"gorunurluk_kurali": "(user_id = ( SELECT auth.uid() AS uid))",
+"ekleme_kurali": null
+},
+{
+"tablo_adi": "paytr_saved_cards",
+"politika_adi": "Users can delete their own saved cards",
+"islem": "DELETE",
+"roller": "{public}",
+"gorunurluk_kurali": "(user_id = ( SELECT auth.uid() AS uid))",
+"ekleme_kurali": null
+},
+{
+"tablo_adi": "paytr_saved_cards",
+"politika_adi": "Users can insert their own saved cards",
+"islem": "INSERT",
+"roller": "{public}",
+"gorunurluk_kurali": null,
+"ekleme_kurali": "(user_id = ( SELECT auth.uid() AS uid))"
+},
+{
+"tablo_adi": "paytr_saved_cards",
+"politika_adi": "Users can update their own saved cards",
+"islem": "UPDATE",
+"roller": "{public}",
+"gorunurluk_kurali": "(user_id = ( SELECT auth.uid() AS uid))",
+"ekleme_kurali": "(user_id = ( SELECT auth.uid() AS uid))"
+},
+{
+"tablo_adi": "paytr_saved_cards",
+"politika_adi": "Users can view their own saved cards",
+"islem": "SELECT",
+"roller": "{public}",
+"gorunurluk_kurali": "(user_id = ( SELECT auth.uid() AS uid))",
+"ekleme_kurali": null
+},
+{
+"tablo_adi": "paytr_user_tokens",
+"politika_adi": "Users can delete their own tokens",
+"islem": "DELETE",
+"roller": "{public}",
+"gorunurluk_kurali": "(user_id = ( SELECT auth.uid() AS uid))",
+"ekleme_kurali": null
+},
+{
+"tablo_adi": "paytr_user_tokens",
+"politika_adi": "Users can insert their own tokens",
+"islem": "INSERT",
+"roller": "{public}",
+"gorunurluk_kurali": null,
+"ekleme_kurali": "(user_id = ( SELECT auth.uid() AS uid))"
+},
+{
+"tablo_adi": "paytr_user_tokens",
+"politika_adi": "Users can update their own tokens",
+"islem": "UPDATE",
+"roller": "{public}",
+"gorunurluk_kurali": "(user_id = ( SELECT auth.uid() AS uid))",
+"ekleme_kurali": "(user_id = ( SELECT auth.uid() AS uid))"
+},
+{
+"tablo_adi": "paytr_user_tokens",
+"politika_adi": "Users can view their own tokens",
+"islem": "SELECT",
+"roller": "{public}",
+"gorunurluk_kurali": "(user_id = ( SELECT auth.uid() AS uid))",
+"ekleme_kurali": null
+},
+{
+"tablo_adi": "pending_renewal_payments",
+"politika_adi": "Service role has full access",
+"islem": "ALL",
+"roller": "{public}",
+"gorunurluk_kurali": "((auth.jwt() ->> 'role'::text) = 'service_role'::text)",
+"ekleme_kurali": null
+},
+{
+"tablo_adi": "pending_renewal_payments",
+"politika_adi": "Users can view own pending renewals",
+"islem": "SELECT",
+"roller": "{public}",
+"gorunurluk_kurali": "(auth.uid() = user_id)",
+"ekleme_kurali": null
+},
+{
+"tablo_adi": "pending_subscriptions",
+"politika_adi": "Users can delete their own pending subscriptions",
+"islem": "DELETE",
+"roller": "{public}",
+"gorunurluk_kurali": "(user_id = ( SELECT auth.uid() AS uid))",
+"ekleme_kurali": null
+},
+{
+"tablo_adi": "pending_subscriptions",
+"politika_adi": "Users can insert their own pending subscriptions",
+"islem": "INSERT",
+"roller": "{public}",
+"gorunurluk_kurali": null,
+"ekleme_kurali": "(user_id = ( SELECT auth.uid() AS uid))"
+},
+{
+"tablo_adi": "pending_subscriptions",
+"politika_adi": "Users can update their own pending subscriptions",
+"islem": "UPDATE",
+"roller": "{public}",
+"gorunurluk_kurali": "(user_id = ( SELECT auth.uid() AS uid))",
+"ekleme_kurali": "(user_id = ( SELECT auth.uid() AS uid))"
+},
+{
+"tablo_adi": "pending_subscriptions",
+"politika_adi": "Users can view their own pending subscriptions",
+"islem": "SELECT",
+"roller": "{public}",
+"gorunurluk_kurali": "(user_id = ( SELECT auth.uid() AS uid))",
+"ekleme_kurali": null
+},
+{
+"tablo_adi": "profiles",
+"politika_adi": "Only admins can delete profiles",
+"islem": "DELETE",
+"roller": "{public}",
+"gorunurluk_kurali": "(EXISTS ( SELECT 1\n   FROM profiles p\n  WHERE ((p.id = ( SELECT auth.uid() AS uid)) AND (p.is_admin = true))))",
+"ekleme_kurali": null
+},
+{
+"tablo_adi": "profiles",
+"politika_adi": "Users can insert their own profile",
+"islem": "INSERT",
+"roller": "{public}",
+"gorunurluk_kurali": null,
+"ekleme_kurali": "(id = ( SELECT auth.uid() AS uid))"
+},
+{
+"tablo_adi": "profiles",
+"politika_adi": "Users can update their own profile",
+"islem": "UPDATE",
+"roller": "{public}",
+"gorunurluk_kurali": "(id = ( SELECT auth.uid() AS uid))",
+"ekleme_kurali": "(id = ( SELECT auth.uid() AS uid))"
+},
+{
+"tablo_adi": "profiles",
+"politika_adi": "Users can view own profile",
+"islem": "SELECT",
+"roller": "{public}",
+"gorunurluk_kurali": "(( SELECT auth.uid() AS uid) = id)",
+"ekleme_kurali": null
+},
+{
+"tablo_adi": "request_logs",
+"politika_adi": "Service role can insert request logs",
+"islem": "INSERT",
+"roller": "{public}",
+"gorunurluk_kurali": null,
+"ekleme_kurali": "(( SELECT auth.role() AS role) = 'service_role'::text)"
+},
+{
+"tablo_adi": "request_logs",
+"politika_adi": "Users can view request logs (admins see all)",
+"islem": "SELECT",
+"roller": "{public}",
+"gorunurluk_kurali": "((user_id = ( SELECT auth.uid() AS uid)) OR (EXISTS ( SELECT 1\n   FROM profiles\n  WHERE ((profiles.id = ( SELECT auth.uid() AS uid)) AND (profiles.is_admin = true)))))",
+"ekleme_kurali": null
+},
+{
+"tablo_adi": "risk_analyses",
+"politika_adi": "Users can delete their own risk analyses",
+"islem": "DELETE",
+"roller": "{public}",
+"gorunurluk_kurali": "(user_id = ( SELECT auth.uid() AS uid))",
+"ekleme_kurali": null
+},
+{
+"tablo_adi": "risk_analyses",
+"politika_adi": "Users can insert their own risk analyses",
+"islem": "INSERT",
+"roller": "{public}",
+"gorunurluk_kurali": null,
+"ekleme_kurali": "(user_id = ( SELECT auth.uid() AS uid))"
+},
+{
+"tablo_adi": "risk_analyses",
+"politika_adi": "Users can update their own risk analyses",
+"islem": "UPDATE",
+"roller": "{public}",
+"gorunurluk_kurali": "(user_id = ( SELECT auth.uid() AS uid))",
+"ekleme_kurali": "(user_id = ( SELECT auth.uid() AS uid))"
+},
+{
+"tablo_adi": "risk_analyses",
+"politika_adi": "Users can view their own risk analyses",
+"islem": "SELECT",
+"roller": "{public}",
+"gorunurluk_kurali": "(user_id = ( SELECT auth.uid() AS uid))",
+"ekleme_kurali": null
+},
+{
+"tablo_adi": "subscription_plans",
+"politika_adi": "Anyone can view active subscription plans",
+"islem": "SELECT",
+"roller": "{public}",
+"gorunurluk_kurali": "(is_active = true)",
+"ekleme_kurali": null
+},
+{
+"tablo_adi": "subscriptions",
+"politika_adi": "Service role can insert subscriptions",
+"islem": "INSERT",
+"roller": "{public}",
+"gorunurluk_kurali": null,
+"ekleme_kurali": "(( SELECT auth.role() AS role) = 'service_role'::text)"
+},
+{
+"tablo_adi": "subscriptions",
+"politika_adi": "Service role can manage all subscriptions",
+"islem": "ALL",
+"roller": "{service_role}",
+"gorunurluk_kurali": "true",
+"ekleme_kurali": "true"
+},
+{
+"tablo_adi": "subscriptions",
+"politika_adi": "Service role can update subscriptions",
+"islem": "UPDATE",
+"roller": "{public}",
+"gorunurluk_kurali": "(( SELECT auth.role() AS role) = 'service_role'::text)",
+"ekleme_kurali": "(( SELECT auth.role() AS role) = 'service_role'::text)"
+},
+{
+"tablo_adi": "subscriptions",
+"politika_adi": "Users can view subscriptions (admins see all)",
+"islem": "SELECT",
+"roller": "{public}",
+"gorunurluk_kurali": "((user_id = ( SELECT auth.uid() AS uid)) OR (EXISTS ( SELECT 1\n   FROM profiles\n  WHERE ((profiles.id = ( SELECT auth.uid() AS uid)) AND (profiles.is_admin = true)))))",
+"ekleme_kurali": null
+},
+{
+"tablo_adi": "usage_tracking",
+"politika_adi": "Service role can manage usage",
+"islem": "ALL",
+"roller": "{public}",
+"gorunurluk_kurali": "(( SELECT auth.role() AS role) = 'service_role'::text)",
+"ekleme_kurali": "(( SELECT auth.role() AS role) = 'service_role'::text)"
+},
+{
+"tablo_adi": "usage_tracking",
+"politika_adi": "Users can view own usage",
+"islem": "SELECT",
+"roller": "{public}",
+"gorunurluk_kurali": "(( SELECT auth.uid() AS uid) = user_id)",
+"ekleme_kurali": null
+},
+{
+"tablo_adi": "webhook_logs",
+"politika_adi": "Only admins can view webhook logs",
+"islem": "SELECT",
+"roller": "{public}",
+"gorunurluk_kurali": "is_admin()",
+"ekleme_kurali": null
+},
+{
+"tablo_adi": "webhook_logs",
+"politika_adi": "Service role can insert webhook logs",
+"islem": "INSERT",
+"roller": "{public}",
+"gorunurluk_kurali": null,
+"ekleme_kurali": "true"
+}
+]

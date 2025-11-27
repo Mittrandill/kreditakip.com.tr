@@ -189,8 +189,7 @@ export function PaymentForm({ planId, planName, amount, billingInfo, onSuccess, 
         return
       }
 
-  
-      // Validate
+      // Validate card form
       if (!validateForm()) {
         setIsLoading(false)
         return
@@ -205,7 +204,7 @@ export function PaymentForm({ planId, planName, amount, billingInfo, onSuccess, 
         platform: navigator.platform,
       }
 
-      // Step 1: Get token from backend
+      // Get Direct API token from backend
       const response = await fetch("/api/subscription/checkout/direct", {
         method: "POST",
         headers: {
@@ -215,7 +214,7 @@ export function PaymentForm({ planId, planName, amount, billingInfo, onSuccess, 
           planId,
           billingInfo,
           installmentCount: 0,
-          storeCard: saveCard, // Kart saklama tercihi
+          storeCard: saveCard,
           securityContext: {
             deviceFingerprint,
             browserInfo,
@@ -230,14 +229,14 @@ export function PaymentForm({ planId, planName, amount, billingInfo, onSuccess, 
 
       const { formData, paytrUrl } = await response.json()
 
-      // Step 2: Add card info to form data
+      // Add card info to form data
       formData.cc_owner = cardHolder.toUpperCase()
       formData.card_number = cardNumber.replace(/\s/g, "")
       formData.expiry_month = expiryMonth.padStart(2, "0")
       formData.expiry_year = expiryYear
       formData.cvv = cvv
 
-      // Step 3: Create form and submit to PayTR
+      // Create form and submit to PayTR
       const form = document.createElement("form")
       form.method = "POST"
       form.action = paytrUrl
@@ -527,92 +526,93 @@ export function PaymentForm({ planId, planName, amount, billingInfo, onSuccess, 
             </Alert>
           )}
 
-
-
-          {/* Kart Sahibi */}
-          <div className="space-y-2">
-            <Label htmlFor="cardHolder">Kart Üzerindeki İsim</Label>
-            <Input
-              id="cardHolder"
-              placeholder="AD SOYAD"
-              value={cardHolder}
-              onChange={(e) => setCardHolder(e.target.value.toUpperCase())}
-              disabled={isLoading}
-              required
-              maxLength={50}
-              className={errors.cardHolder ? "border-red-500" : ""}
-            />
-            {errors.cardHolder && <p className="text-sm text-red-500">{errors.cardHolder}</p>}
-          </div>
-
-          {/* Kart Numarası */}
-          <div className="space-y-2">
-            <Label htmlFor="cardNumber">Kart Numarası</Label>
-            <div className="relative">
-              <Input
-                id="cardNumber"
-                placeholder="0000 0000 0000 0000"
-                value={cardNumber}
-                onChange={(e) => setCardNumber(formatCardNumber(onlyNumbers(e.target.value)))}
-                disabled={isLoading}
-                required
-                maxLength={19}
-                className={errors.cardNumber ? "border-red-500" : ""}
-              />
-              {cardType !== "unknown" && (
-                <div className="absolute right-3 top-1/2 -translate-y-1/2">
-                  <CreditCard className="h-5 w-5 text-gray-400" />
-                </div>
-              )}
-            </div>
-            {errors.cardNumber && <p className="text-sm text-red-500">{errors.cardNumber}</p>}
-          </div>
-
-          {/* Son Kullanma ve CVV */}
-          <div className="grid grid-cols-3 gap-4">
+          {/* Kart Bilgileri Formu */}
+          <div className="space-y-4">
+            {/* Kart Sahibi */}
             <div className="space-y-2">
-              <Label htmlFor="expiryMonth">Ay</Label>
+              <Label htmlFor="cardHolder">Kart Üzerindeki İsim</Label>
               <Input
-                id="expiryMonth"
-                placeholder="MM"
-                value={expiryMonth}
-                onChange={(e) => setExpiryMonth(onlyNumbers(e.target.value))}
+                id="cardHolder"
+                placeholder="AD SOYAD"
+                value={cardHolder}
+                onChange={(e) => setCardHolder(e.target.value.toUpperCase())}
                 disabled={isLoading}
                 required
-                maxLength={2}
-                className={errors.expiry ? "border-red-500" : ""}
+                maxLength={50}
+                className={errors.cardHolder ? "border-red-500" : ""}
               />
+              {errors.cardHolder && <p className="text-sm text-red-500">{errors.cardHolder}</p>}
             </div>
+
+            {/* Kart Numarası */}
             <div className="space-y-2">
-              <Label htmlFor="expiryYear">Yıl</Label>
-              <Input
-                id="expiryYear"
-                placeholder="YY"
-                value={expiryYear}
-                onChange={(e) => setExpiryYear(onlyNumbers(e.target.value))}
-                disabled={isLoading}
-                required
-                maxLength={2}
-                className={errors.expiry ? "border-red-500" : ""}
-              />
+              <Label htmlFor="cardNumber">Kart Numarası</Label>
+              <div className="relative">
+                <Input
+                  id="cardNumber"
+                  placeholder="0000 0000 0000 0000"
+                  value={cardNumber}
+                  onChange={(e) => setCardNumber(formatCardNumber(onlyNumbers(e.target.value)))}
+                  disabled={isLoading}
+                  required
+                  maxLength={19}
+                  className={errors.cardNumber ? "border-red-500" : ""}
+                />
+                {cardType !== "unknown" && (
+                  <div className="absolute right-3 top-1/2 -translate-y-1/2">
+                    <CreditCard className="h-5 w-5 text-gray-400" />
+                  </div>
+                )}
+              </div>
+              {errors.cardNumber && <p className="text-sm text-red-500">{errors.cardNumber}</p>}
             </div>
-            <div className="space-y-2">
-              <Label htmlFor="cvv">CVV</Label>
-              <Input
-                id="cvv"
-                placeholder="000"
-                value={cvv}
-                onChange={(e) => setCvv(onlyNumbers(e.target.value))}
-                disabled={isLoading}
-                required
-                maxLength={3}
-                type="password"
-                className={errors.cvv ? "border-red-500" : ""}
-              />
+
+            {/* Son Kullanma ve CVV */}
+            <div className="grid grid-cols-3 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="expiryMonth">Ay</Label>
+                <Input
+                  id="expiryMonth"
+                  placeholder="MM"
+                  value={expiryMonth}
+                  onChange={(e) => setExpiryMonth(onlyNumbers(e.target.value))}
+                  disabled={isLoading}
+                  required
+                  maxLength={2}
+                  className={errors.expiry ? "border-red-500" : ""}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="expiryYear">Yıl</Label>
+                <Input
+                  id="expiryYear"
+                  placeholder="YY"
+                  value={expiryYear}
+                  onChange={(e) => setExpiryYear(onlyNumbers(e.target.value))}
+                  disabled={isLoading}
+                  required
+                  maxLength={2}
+                  className={errors.expiry ? "border-red-500" : ""}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="cvv">CVV</Label>
+                <Input
+                  id="cvv"
+                  placeholder="000"
+                  value={cvv}
+                  onChange={(e) => setCvv(onlyNumbers(e.target.value))}
+                  disabled={isLoading}
+                  required
+                  maxLength={3}
+                  type="password"
+                  className={errors.cvv ? "border-red-500" : ""}
+                />
+              </div>
             </div>
+            {errors.expiry && <p className="text-sm text-red-500">{errors.expiry}</p>}
+            {errors.cvv && <p className="text-sm text-red-500">{errors.cvv}</p>}
           </div>
-          {errors.expiry && <p className="text-sm text-red-500">{errors.expiry}</p>}
-          {errors.cvv && <p className="text-sm text-red-500">{errors.cvv}</p>}
 
           {/* Kart Saklama ve Otomatik Yenileme */}
           <div className="space-y-3 pt-2">
@@ -657,8 +657,8 @@ export function PaymentForm({ planId, planName, amount, billingInfo, onSuccess, 
                     Otomatik yenileme hatırlatması
                   </Label>
                   <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-                    Aboneliğiniz bitmeden 3 gün önce email ile hatırlatılır.
-                    İsterseniz ayarlardan kolayca iptal edebilir veya yenileyebilirsiniz.
+                    Aboneliğiniz bitmeden 3 gün önce otomatik olarak yenilenir.
+                    İsterseniz ayarlardan kolayca iptal edebilirsiniz.
                   </p>
                 </div>
               </div>

@@ -262,122 +262,102 @@ export async function POST(request: NextRequest) {
       }
 
       // DEBUG: Kart saklama parametrelerini logla
-      console.log("[DEBUG] PayTR Callback Card Storage Check:")
-      console.log("  - utoken received:", utoken ? "YES" : "NO", utoken ? `(${utoken})` : "")
-      console.log("  - ctoken received:", ctoken ? "YES" : "NO", ctoken ? `(${ctoken})` : "")
-      console.log("  - last_4:", last4)
-      console.log("  - card_brand:", cardBrand)
-      console.log("  - card_bank:", cardBank)
-      console.log("  - require_cvv:", requireCvv)
-      console.log("  - All callback form params:", {
-        merchant_oid,
-        status,
-        utoken,
-        ctoken,
-        last4,
-        cardMonth,
-        cardYear,
-        cardBank,
-        cardName,
-        cardBrand,
-        cardType,
-        cardSchema,
-        businessCard,
-        requireCvv
-      })
+      console.log("[paytr-callback] Card Storage Check - utoken received:", utoken ? "YES" : "NO", utoken || "")
+      console.log("[paytr-callback] NOTE: ctoken is NOT returned in callback - will fetch via CAPI LIST")
 
       // Kart saklama bilgilerini kaydet (CAPI)
-      if (utoken && ctoken) {
-        console.log("[paytr-callback] Card storage tokens received, saving to database...")
-        // Önce paytr_user_tokens tablosuna utoken'ı kaydet/güncelle
-        const { error: utokenError } = await supabase
+      // NOT: Callback'te sadece utoken döner, ctoken için CAPI LIST çağırmalıyız
+      if (utoken) {
+        console.log("[paytr-callback] utoken received, saving and fetching card details via CAPI LIST...")
+
+        // 1. Önce paytr_user_tokens tablosuna utoken'ı kaydet
+        // NOT: Constraint adı "paytr_user_tokens_user_id_key" olduğu için onConflict kullanamıyoruz
+        // Önce kontrol edip sonra insert veya update yapacağız
+        const { data: existingUtoken } = await supabase
           .from("paytr_user_tokens")
-          .upsert(
-            {
+          .select("id")
+          .eq("user_id", userId)
+          .maybeSingle()
+
+        let utokenError = null
+        if (existingUtoken) {
+          // Update existing
+          const { error } = await supabase
+            .from("paytr_user_tokens")
+            .update({
+              utoken: utoken,
+              updated_at: new Date().toISOString(),
+            })
+            .eq("user_id", userId)
+          utokenError = error
+        } else {
+          // Insert new
+          const { error } = await supabase
+            .from("paytr_user_tokens")
+            .insert({
               user_id: userId,
               utoken: utoken,
               updated_at: new Date().toISOString(),
-            },
-            { onConflict: "user_id" }
-          )
+            })
+          utokenError = error
+        }
 
         if (utokenError) {
           console.error("[paytr-callback] Failed to save utoken:", utokenError)
         } else {
-          console.log("[paytr-callback] utoken saved successfully for user:", userId)
+          console.log("[paytr-callback] ✓ utoken saved successfully")
         }
 
-        // Sonra paytr_saved_cards tablosuna kart bilgilerini kaydet
-        const { error: cardError } = await supabase
-          .from("paytr_saved_cards")
-          .upsert(
-            {
-              user_id: userId,
-              utoken: utoken,
-              ctoken: ctoken,
-              last_4: last4 || "",
-              card_holder_name: cardName || null,
-              expiry_month: cardMonth || "",
-              expiry_year: cardYear || "",
-              require_cvv: requireCvv === "1",
-              bank_name: cardBank || null,
-              card_brand: cardBrand || null,
-              card_type: cardType || null,
-              card_schema: cardSchema || null,
-              is_business_card: businessCard === "y",
-              is_default: true, // İlk kart varsayılan olsun
-              is_active: true,
-              last_used_at: new Date().toISOString(),
-              updated_at: new Date().toISOString(),
-            },
-            { onConflict: "ctoken" }
-          )
+        // 2. CAPI LIST çağır - utoken ile kart bilgilerini al
+        try {
+          console.log("[paytr-callback] Calling CAPI LIST to get ctoken...")
+          const cardList = await paytrClient.listSavedCards(utoken)
 
-        if (cardError) {
-          console.error("[paytr-callback] Failed to save card:", cardError)
-        } else {
-          console.log("[paytr-callback] Saved card info successfully for user:", userId)
+          console.log("[paytr-callback] CAPI LIST response:", cardList)
+
+          // Kartlar varsa kaydet
+          if (cardList && Array.isArray(cardList) && cardList.length > 0) {
+            console.log(`[paytr-callback] Found ${cardList.length} saved card(s)`)
+
+            for (const card of cardList) {
+              const { error: cardError } = await supabase
+                .from("paytr_saved_cards")
+                .upsert(
+                  {
+                    user_id: userId,
+                    utoken: utoken,
+                    ctoken: card.ctoken,
+                    last_4: card.last_4 || "",
+                    card_holder_name: card.c_name || null,
+                    expiry_month: card.month || "",
+                    expiry_year: card.year || "",
+                    require_cvv: card.require_cvv === "1",
+                    bank_name: card.c_bank || null,
+                    card_brand: card.c_brand || null,
+                    card_type: card.c_type || null,
+                    card_schema: card.schema || null,
+                    is_business_card: card.businessCard === "y",
+                    is_default: true, // İlk kart varsayılan
+                    is_active: true,
+                    last_used_at: new Date().toISOString(),
+                    updated_at: new Date().toISOString(),
+                  },
+                  { onConflict: "ctoken" }
+                )
+
+              if (cardError) {
+                console.error("[paytr-callback] Failed to save card:", cardError)
+              } else {
+                console.log("[paytr-callback] ✓ Card saved - ctoken:", card.ctoken, "last_4:", card.last_4)
+              }
+            }
+          } else {
+            console.warn("[paytr-callback] ⚠️ CAPI LIST returned no cards")
+          }
+        } catch (capiError: any) {
+          console.error("[paytr-callback] ❌ CAPI LIST error:", capiError.message)
         }
 
-        // Security context temporarily removed - using default values
-        const securityContext = {
-          ip_address: null,
-          user_agent: null,
-          device_fingerprint: null,
-          browser_info: null,
-        }
-
-        // İlk ödeme için recurring payment kaydı oluştur (IP ve device bilgileriyle)
-        const { error: recurringError } = await supabase
-          .from("paytr_recurring_payments")
-          .insert({
-            user_id: userId,
-            subscription_id: newSubscription.id,
-            utoken: utoken,
-            ctoken: ctoken,
-            merchant_oid: merchant_oid,
-            amount: parseFloat(total_amount) / 100, // Kuruştan TL'ye
-            currency: currency || "TRY",
-            payment_status: "completed",
-            paytr_status: status,
-            completed_at: new Date().toISOString(),
-            ip_address: securityContext.ip_address,
-            user_agent: securityContext.user_agent,
-            device_fingerprint: securityContext.device_fingerprint,
-            metadata: {
-              payment_type: payment_type,
-              test_mode: test_mode,
-              card_last4: last4,
-              card_brand: cardBrand,
-              browser_info: securityContext.browser_info,
-            },
-          })
-
-        if (recurringError) {
-          console.error("[paytr-callback] Failed to save recurring payment:", recurringError)
-        } else {
-          console.log("[paytr-callback] Recurring payment record created for user:", userId)
-        }
       } else {
         // Token bilgileri gelmedi - kart saklanamadı
         console.warn("[paytr-callback] ⚠️ Card storage tokens NOT received from PayTR")

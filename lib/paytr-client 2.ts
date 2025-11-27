@@ -293,8 +293,6 @@ export class PayTRClient {
    * Kart bilgileri direkt olarak PayTR'ye POST edilir (client-side)
    *
    * Bu method sadece token oluşturur, gerçek ödeme client-side yapılır
-   *
-   * ÖNEMLİ: 3D Secure ZORUNLUDUR (non_3d her zaman "0")
    */
   async createDirectPaymentToken(
     orderId: string,
@@ -303,6 +301,7 @@ export class PayTRClient {
     userIp: string,
     options: {
       testMode?: boolean
+      non3d?: boolean
       installmentCount?: number
       currency?: "TL" | "EUR" | "USD" | "GBP"
       cardType?: string
@@ -334,7 +333,6 @@ export class PayTRClient {
     // Token oluşturma için hash string (Direct API formatı)
     // ÖNEMLI: currency token hesaplamasında KULLANILMAZ!
     // Sıralama: merchant_id + user_ip + merchant_oid + email + payment_amount + payment_type + installment_count + test_mode + non_3d + merchant_salt
-    // ZORUNLU: non_3d her zaman "0" (3D Secure aktif)
     const hashStr =
       this.config.merchantId +
       userIp +
@@ -344,7 +342,7 @@ export class PayTRClient {
       "card" + // payment_type
       installmentCount.toString() +
       (options.testMode ? "1" : "0") +
-      "0" + // non_3d = "0" (3D Secure ZORUNLU)
+      (options.non3d ? "1" : "0") +
       this.config.merchantSalt
 
     const paytrToken = this.generateToken(hashStr)
@@ -360,7 +358,7 @@ export class PayTRClient {
       installment_count: installmentCount.toString(),
       // currency opsiyonel - boş ise TL kabul edilir
       test_mode: options.testMode ? "1" : "0",
-      non_3d: "0", // 3D Secure ZORUNLU
+      non_3d: options.non3d ? "1" : "0",
       user_name: billingInfo.fullName,
       user_address: billingInfo.address,
       user_phone: billingInfo.phone,
@@ -661,11 +659,10 @@ export class PayTRClient {
   }
 
   /**
-   * RECURRING PAYMENT - Kayıtlı kart ile otomatik ödeme al (Non-3D)
+   * @deprecated Non-3D recurring payments are no longer supported by PayTR
+   * Use create3DSecureRecurringPayment() instead for SMS-approved 3D Secure payments
    *
-   * PayTR CAPI Dokümanı: Kayıtlı kartla ödeme için non_3d=1 ZORUNLU
-   * Kullanıcı etkileşimi olmadan otomatik ödeme alınır.
-   *
+   * RECURRING PAYMENT - Kayıtlı kart ile otomatik ödeme al (Non3D)
    * @param utoken - PayTR kullanıcı token'ı
    * @param ctoken - PayTR kart token'ı
    * @param orderId - Benzersiz sipariş numarası
@@ -693,7 +690,6 @@ export class PayTRClient {
     msg?: string
     try_again?: boolean
   }> {
-
     // Sepet içeriği (Base64 encoded JSON array)
     const basket = [
       ["Abonelik Yenileme", amount.toFixed(2), 1],
