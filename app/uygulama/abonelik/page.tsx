@@ -912,7 +912,7 @@ export default function SubscriptionPage() {
                           </div>
                           <TrendingUp className="h-6 w-6 text-blue-600 dark:text-blue-400" />
                         </div>
-                        {subscription?.usage?.riskAnalysis?.limit !== 999999 && subscription?.usage?.riskAnalysis?.limit > 0 && (
+                        {subscription?.usage?.riskAnalysis?.limit !== 999999 && (subscription?.usage?.riskAnalysis?.limit ?? 0) > 0 && (
                           <Progress
                             value={((subscription?.usage?.riskAnalysis?.used || 0) / (subscription?.usage?.riskAnalysis?.limit || 1)) * 100}
                             className="h-2"
