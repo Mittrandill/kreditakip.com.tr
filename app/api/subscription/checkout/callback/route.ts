@@ -344,6 +344,7 @@ export async function POST(request: NextRequest) {
           ip_address: null,
           user_agent: null,
           device_fingerprint: null,
+          browser_info: null,
         }
 
         // İlk ödeme için recurring payment kaydı oluştur (IP ve device bilgileriyle)
