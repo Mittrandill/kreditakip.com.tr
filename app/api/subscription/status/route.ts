@@ -39,6 +39,27 @@ export async function GET(request: NextRequest) {
       .limit(1)
       .maybeSingle()
 
+    // Get plan details to determine limits
+    let planLimits = {
+      ocr_limit: null, // null means unlimited for free
+      risk_analysis_limit: null, // null means unlimited for free
+    }
+
+    if (subscription?.plan_id) {
+      const { data: plan } = await supabase
+        .from("subscription_plans")
+        .select("metadata")
+        .eq("id", subscription.plan_id)
+        .single()
+
+      if (plan?.metadata) {
+        // Plan metadata has limits: -1 = unlimited, positive number = limit, null = free tier
+        planLimits = {
+          ocr_limit: plan.metadata.ocr_limit ?? null,
+          risk_analysis_limit: plan.metadata.risk_analysis_limit ?? null,
+        }
+      }
+    }
 
     // Abonelik bitiş kontrolü - süresi dolmuşsa otomatik iptal et
     if (subscription && subscription.expires_at) {
@@ -57,10 +78,11 @@ export async function GET(request: NextRequest) {
           .eq("id", subscription.id)
 
         // Usage limits'i free plan'e düşür - her feature_type için ayrı update
+        // Free plan: OCR unlimited, risk analysis 0
         await supabase
           .from("usage_tracking")
           .update({
-            limit_count: 3,
+            limit_count: -1, // unlimited for free
             updated_at: new Date().toISOString(),
           })
           .eq("user_id", userId)
@@ -69,7 +91,7 @@ export async function GET(request: NextRequest) {
         await supabase
           .from("usage_tracking")
           .update({
-            limit_count: 1,
+            limit_count: 0, // no risk analysis for free
             updated_at: new Date().toISOString(),
           })
           .eq("user_id", userId)

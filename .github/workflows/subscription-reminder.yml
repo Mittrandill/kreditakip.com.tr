@@ -1,0 +1,31 @@
+name: Subscription Payment Reminder
+
+on:
+  schedule:
+    # Run daily at 9:00 AM UTC (12:00 PM Turkey time)
+    - cron: '0 9 * * *'
+  workflow_dispatch: # Allow manual trigger
+
+jobs:
+  send-reminders:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Send Subscription Reminders
+        run: |
+          curl -X POST "${{ secrets.APP_URL }}/api/cron/subscription-reminder" \
+            -H "Authorization: Bearer ${{ secrets.CRON_SECRET }}" \
+            -H "Content-Type: application/json"
+        continue-on-error: true
+
+  check-expired-subscriptions:
+    runs-on: ubuntu-latest
+    needs: send-reminders
+
+    steps:
+      - name: Check and Downgrade Expired Subscriptions
+        run: |
+          curl -X POST "${{ secrets.APP_URL }}/api/cron/subscription-expiry-check" \
+            -H "Authorization: Bearer ${{ secrets.CRON_SECRET }}" \
+            -H "Content-Type: application/json"
+        continue-on-error: true

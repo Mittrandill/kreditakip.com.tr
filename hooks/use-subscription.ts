@@ -74,6 +74,11 @@ export function useSubscription() {
 
           const isPremiumUser = data.subscription?.plan_type === "premium"
 
+          // Get limits from usage tracking (which reflects current plan)
+          // -1 or null means unlimited
+          const ocrLimit = ocrUsage?.limit_count ?? -1
+          const riskLimit = riskUsage?.limit_count ?? 0
+
           const subscriptionStatus = {
             planType: data.subscription?.plan_type || "free",
             plan_id: data.subscription?.plan_id || null,
@@ -84,11 +89,11 @@ export function useSubscription() {
               ocrAnalysis: {
                 used: ocrUsage?.used_count || 0,
                 saved: ocrUsage?.saved_credits_count || 0, // Kaydedilen kredi sayısı
-                limit: ocrUsage?.limit_count || (isPremiumUser ? 999999 : 1),
+                limit: ocrLimit === -1 ? 999999 : ocrLimit, // -1 = unlimited, show as high number
               },
               riskAnalysis: {
                 used: riskUsage?.used_count || 0,
-                limit: riskUsage?.limit_count || (isPremiumUser ? 999999 : 0),
+                limit: riskLimit === -1 ? 999999 : riskLimit, // -1 = unlimited, show as high number
               },
             },
           }
@@ -151,6 +156,11 @@ export function useSubscription() {
 
           const isPremiumUser = data.subscription?.plan_type === "premium"
 
+          // Get limits from usage tracking (which reflects current plan)
+          // -1 or null means unlimited
+          const ocrLimit = ocrUsage?.limit_count ?? -1
+          const riskLimit = riskUsage?.limit_count ?? 0
+
           const subscriptionStatus = {
             planType: data.subscription?.plan_type || "free",
             plan_id: data.subscription?.plan_id || null,
@@ -161,11 +171,11 @@ export function useSubscription() {
               ocrAnalysis: {
                 used: ocrUsage?.used_count || 0,
                 saved: ocrUsage?.saved_credits_count || 0, // Kaydedilen kredi sayısı
-                limit: ocrUsage?.limit_count || (isPremiumUser ? 999999 : 1),
+                limit: ocrLimit === -1 ? 999999 : ocrLimit, // -1 = unlimited, show as high number
               },
               riskAnalysis: {
                 used: riskUsage?.used_count || 0,
-                limit: riskUsage?.limit_count || (isPremiumUser ? 999999 : 0),
+                limit: riskLimit === -1 ? 999999 : riskLimit, // -1 = unlimited, show as high number
               },
             },
           }

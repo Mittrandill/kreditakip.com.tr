@@ -182,15 +182,17 @@ export async function POST(request: NextRequest) {
         return new Response("OK", { status: 200 })
       }
 
-      // Update usage limits for premium users
-      const premiumLimit = plan.billing_period === "yearly" ? 9999999 : 999999
+      // Update usage limits based on plan metadata
+      // Get limits from plan metadata: -1 = unlimited, positive number = specific limit
+      const ocrLimit = plan.metadata?.ocr_limit ?? -1
+      const riskLimit = plan.metadata?.risk_analysis_limit ?? -1
 
       const { error: usageError } = await supabase.from("usage_tracking").upsert(
         [
           {
             user_id: userId,
             feature_type: "ocr_analysis",
-            limit_count: premiumLimit,
+            limit_count: ocrLimit, // -1 = unlimited, 10 = 10 credits, etc.
             used_count: 0,
             reset_at: expiresAt.toISOString(),
             updated_at: new Date().toISOString(),
@@ -198,7 +200,7 @@ export async function POST(request: NextRequest) {
           {
             user_id: userId,
             feature_type: "risk_analysis",
-            limit_count: premiumLimit,
+            limit_count: riskLimit, // -1 = unlimited, 5 = 5 analyses, etc.
             used_count: 0,
             reset_at: expiresAt.toISOString(),
             updated_at: new Date().toISOString(),

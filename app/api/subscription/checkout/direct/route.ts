@@ -63,7 +63,8 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json()
-    const { planId, billingInfo, installmentCount = 0, storeCard = false, securityContext } = body
+    const { planId, billingInfo, installmentCount = 0, securityContext } = body
+    // Note: storeCard removed - no longer storing cards, using manual reminders instead
 
     // Capture security context from request
     const requestSecurityContext = getSecurityContext(request)
@@ -189,28 +190,9 @@ export async function POST(request: NextRequest) {
       // Don't fail - subscription is more important
     }
 
-    // Kart saklama için utoken kontrolü
-    let utoken: string | null = null
-    if (storeCard) {
-      // Kullanıcının daha önce kaydedilmiş utoken'ı var mı kontrol et
-      const { data: existingToken } = await supabaseAdmin
-        .from("paytr_user_tokens")
-        .select("utoken")
-        .eq("user_id", user.id)
-        .single()
-
-      if (existingToken?.utoken) {
-        utoken = existingToken.utoken
-        // Mevcut utoken varsa, formData'ya ekle
-        formData.utoken = existingToken.utoken
-      }
-
-      // store_card parametresini ekle
-      formData.store_card = "1"
-      console.log("[direct-payment] ✓ Card storage requested - store_card=1 added to form")
-    } else {
-      console.log("[direct-payment] ℹ Card storage NOT requested - user did not check the box")
-    }
+    // REMOVED: Card storage functionality
+    // System now uses manual payment reminders instead of recurring payments
+    console.log("[direct-payment] ℹ Card storage DISABLED - using manual payment reminder system")
 
     // Return form data for client-side POST
     // Client-side kart bilgilerini ekleyip PayTR'ye POST edecek
@@ -220,8 +202,6 @@ export async function POST(request: NextRequest) {
       orderId: orderId,
       formData: formData,
       paytrUrl: "https://www.paytr.com/odeme", // Client-side POST endpoint
-      storeCard: storeCard, // Frontend'de checkbox için
-      hasExistingCards: utoken !== null, // Kullanıcının kayıtlı kartı var mı?
     })
   } catch (error: any) {
     console.error("[direct-payment] Initialization error:", error)

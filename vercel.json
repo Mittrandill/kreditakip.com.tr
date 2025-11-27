@@ -10,12 +10,12 @@
   },
   "crons": [
     {
-      "path": "/api/cron/subscription-renewal",
+      "path": "/api/cron/subscription-reminder",
       "schedule": "0 9 * * *"
     },
     {
-      "path": "/api/cron/grace-period-handler",
-      "schedule": "0 11 * * *"
+      "path": "/api/cron/subscription-expiry-check",
+      "schedule": "0 10 * * *"
     }
   ]
 }

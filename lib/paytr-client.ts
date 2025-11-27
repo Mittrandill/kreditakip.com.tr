@@ -294,7 +294,7 @@ export class PayTRClient {
    *
    * Bu method sadece token oluşturur, gerçek ödeme client-side yapılır
    *
-   * ÖNEMLİ: 3D Secure ZORUNLUDUR (non_3d her zaman "0")
+   * ÖNEMLİ: 3D Secure KAPALI (non_3d her zaman "1") - Manuel hatırlatma sistemi kullanılıyor
    */
   async createDirectPaymentToken(
     orderId: string,
@@ -334,7 +334,7 @@ export class PayTRClient {
     // Token oluşturma için hash string (Direct API formatı)
     // ÖNEMLI: currency token hesaplamasında KULLANILMAZ!
     // Sıralama: merchant_id + user_ip + merchant_oid + email + payment_amount + payment_type + installment_count + test_mode + non_3d + merchant_salt
-    // ZORUNLU: non_3d her zaman "0" (3D Secure aktif)
+    // YENİ: non_3d her zaman "1" (3D Secure KAPALI - Manuel hatırlatma kullanılıyor)
     const hashStr =
       this.config.merchantId +
       userIp +
@@ -344,7 +344,7 @@ export class PayTRClient {
       "card" + // payment_type
       installmentCount.toString() +
       (options.testMode ? "1" : "0") +
-      "0" + // non_3d = "0" (3D Secure ZORUNLU)
+      "1" + // non_3d = "1" (3D Secure KAPALI)
       this.config.merchantSalt
 
     const paytrToken = this.generateToken(hashStr)
@@ -360,7 +360,7 @@ export class PayTRClient {
       installment_count: installmentCount.toString(),
       // currency opsiyonel - boş ise TL kabul edilir
       test_mode: options.testMode ? "1" : "0",
-      non_3d: "0", // 3D Secure ZORUNLU
+      non_3d: "1", // 3D Secure KAPALI
       user_name: billingInfo.fullName,
       user_address: billingInfo.address,
       user_phone: billingInfo.phone,
