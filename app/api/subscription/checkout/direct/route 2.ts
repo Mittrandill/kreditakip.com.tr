@@ -124,7 +124,6 @@ export async function POST(request: NextRequest) {
     // Create Direct API token
     const { token, formData } = await paytrClient.createDirectPaymentToken(orderId, plan.price, billingInfo, userIp, {
       testMode: process.env.PAYTR_TEST_MODE === "1",
-      non3d: false, // 3D Secure kullan (güvenlik için)
       installmentCount: installmentCount || 0,
       currency: (plan.currency as "TL" | "EUR" | "USD" | "GBP") || "TL",
       cardType,
