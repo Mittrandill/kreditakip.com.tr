@@ -12,9 +12,12 @@ jobs:
 
     steps:
       - name: Send Subscription Reminders
+        env:
+          CRON_SECRET: ${{ secrets.CRON_SECRET }}
+          NEXT_PUBLIC_SITE_URL: ${{ secrets.NEXT_PUBLIC_SITE_URL || 'https://kreditakip.com.tr' }}
         run: |
-          curl -X POST "${{ secrets.APP_URL }}/api/cron/subscription-reminder" \
-            -H "Authorization: Bearer ${{ secrets.CRON_SECRET }}" \
+          curl -X POST "${NEXT_PUBLIC_SITE_URL}/api/cron/subscription-reminder" \
+            -H "Authorization: Bearer ${CRON_SECRET}" \
             -H "Content-Type: application/json"
         continue-on-error: true
 
@@ -24,8 +27,11 @@ jobs:
 
     steps:
       - name: Check and Downgrade Expired Subscriptions
+        env:
+          CRON_SECRET: ${{ secrets.CRON_SECRET }}
+          NEXT_PUBLIC_SITE_URL: ${{ secrets.NEXT_PUBLIC_SITE_URL || 'https://kreditakip.com.tr' }}
         run: |
-          curl -X POST "${{ secrets.APP_URL }}/api/cron/subscription-expiry-check" \
-            -H "Authorization: Bearer ${{ secrets.CRON_SECRET }}" \
+          curl -X POST "${NEXT_PUBLIC_SITE_URL}/api/cron/subscription-expiry-check" \
+            -H "Authorization: Bearer ${CRON_SECRET}" \
             -H "Content-Type: application/json"
         continue-on-error: true

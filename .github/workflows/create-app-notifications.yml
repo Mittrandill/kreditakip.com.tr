@@ -83,7 +83,7 @@ jobs:
         NEXT_PUBLIC_SITE_URL: ${{ secrets.NEXT_PUBLIC_SITE_URL || 'https://kreditakip.com.tr' }}
       run: |
         echo "🔔 Sending renewal notifications..."
-        response=$(curl -s -w "\n%{http_code}" \
+        response=$(curl -s -w "\n%{http_code}" -L -X POST \
           -H "Authorization: Bearer ${CRON_SECRET}" \
           -H "Content-Type: application/json" \
           "${NEXT_PUBLIC_SITE_URL}/api/cron/renewal-notification")
