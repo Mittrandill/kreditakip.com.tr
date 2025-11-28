@@ -89,8 +89,13 @@ jobs:
         fi
         echo "✓ CRON_SECRET is set (length: ${#CRON_SECRET})"
 
-        echo "📡 Sending request with both Authorization and X-Cron-Secret headers..."
-        response=$(curl -s -w "\n%{http_code}" -X POST \
+        # First, check where the URL redirects to
+        echo "🔍 Checking redirect location..."
+        curl -I -X POST "${NEXT_PUBLIC_SITE_URL}/api/cron/renewal-notification" 2>&1 | grep -i "location:" || true
+
+        echo ""
+        echo "📡 Sending request with both headers and following redirects..."
+        response=$(curl -s -w "\n%{http_code}" -L -X POST \
           -H "Authorization: Bearer ${CRON_SECRET}" \
           -H "X-Cron-Secret: ${CRON_SECRET}" \
           -H "Content-Type: application/json" \
