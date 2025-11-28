@@ -25,6 +25,13 @@ export async function GET(request: NextRequest) {
     const authHeader = request.headers.get("authorization")
     const cronSecret = process.env.CRON_SECRET
 
+    console.log("[renewal-notification] Auth check:", {
+      hasCronSecret: !!cronSecret,
+      cronSecretLength: cronSecret?.length || 0,
+      hasAuthHeader: !!authHeader,
+      authHeaderLength: authHeader?.length || 0,
+    })
+
     if (cronSecret && authHeader !== `Bearer ${cronSecret}`) {
       console.error("[renewal-notification] Unauthorized cron request")
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 })

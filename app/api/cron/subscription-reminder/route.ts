@@ -49,7 +49,8 @@ async function handler(request: NextRequest) {
       .select(`
         *,
         profiles:user_id (
-          full_name,
+          first_name,
+          last_name,
           email
         ),
         subscription_plans:plan_id (
@@ -98,7 +99,7 @@ async function handler(request: NextRequest) {
 
         // Send reminder email
         const emailResult = await sendManualPaymentReminder({
-          userName: profile.full_name || "Kullanıcı",
+          userName: `${profile.first_name || ""} ${profile.last_name || ""}`.trim() || profile.email || "Kullanıcı",
           userEmail: profile.email,
           planName: plan.name,
           amount: plan.price,
