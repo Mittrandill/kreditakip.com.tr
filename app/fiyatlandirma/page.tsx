@@ -5,7 +5,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge"
 import Header from "@/components/layout/header"
 import Footer from "@/components/footer"
-import { CheckCircle, X, Star, Crown, Sparkles, ArrowRight } from "lucide-react"
+import { CheckCircle, X, Star, Crown, Sparkles, ArrowRight, Zap } from "lucide-react"
 import { useRouter } from "next/navigation"
 import { useState } from "react"
 
@@ -23,7 +23,6 @@ export default function PricingPage() {
       features: ["1 adet OCR analizi", "Temel kredi takibi", "Ödeme hatırlatıcıları"],
       notIncluded: [
         "Finansal sağlık analizi",
-        "Sınırsız OCR analizi",
         "Gelişmiş raporlama",
         "Reklamsız deneyim",
         "Öncelikli destek",
@@ -34,18 +33,43 @@ export default function PricingPage() {
       note: "Reklamlar gösterilir",
     },
     {
-      name: "Premium",
+      name: "Pro",
       monthlyPrice: "199",
       yearlyPrice: "1,910",
+      period: billingPeriod === "monthly" ? "₺/ay" : "₺/yıl",
+      description: "Profesyonel kullanım için",
+      features: [
+        "10 adet OCR analizi/ay",
+        "5 adet AI Finansal Sağlık Analizi/ay",
+        "Gelişmiş finansal raporlar",
+        "Reklamsız deneyim",
+        "Öncelikli destek",
+      ],
+      notIncluded: [
+        "Sınırsız OCR analizi",
+        "Sınırsız AI analizi",
+        "Premium badge",
+      ],
+      popular: false,
+      cta: "Pro'ya Geç",
+      color: "from-blue-500 to-indigo-500",
+      note: "İşletmeler için ideal",
+      savings: billingPeriod === "yearly" ? "478₺ tasarruf" : undefined,
+    },
+    {
+      name: "Premium",
+      monthlyPrice: "399",
+      yearlyPrice: "3,830",
       period: billingPeriod === "monthly" ? "₺/ay" : "₺/yıl",
       description: "Tüm özelliklere sınırsız erişim",
       features: [
         "Sınırsız OCR analizi",
-        "AI Finansal Sağlık Özeti",
+        "Sınırsız AI Finansal Sağlık Analizi",
         "Gelişmiş finansal raporlar",
         "PDF rapor indirme",
         "Reklamsız deneyim",
         "Öncelikli destek",
+        "Premium badge",
         "Tüm gelecek özellikler",
       ],
       notIncluded: [],
@@ -53,7 +77,7 @@ export default function PricingPage() {
       cta: "Premium'a Geç",
       color: "from-emerald-500 to-teal-500",
       note: "En popüler seçim",
-      savings: "2 ay bedava",
+      savings: billingPeriod === "yearly" ? "958₺ tasarruf" : undefined,
     },
   ]
 
@@ -61,17 +85,22 @@ export default function PricingPage() {
     {
       question: "Ücretsiz planda kaç analiz yapabilirim?",
       answer:
-        "Ücretsiz planda ayda 1 adet OCR destekli kredi dökümü analizi yapabilirsiniz. Daha fazla analiz için Premium plana geçebilirsiniz.",
+        "Ücretsiz planda ayda 1 adet OCR destekli kredi dökümü analizi yapabilirsiniz. Daha fazla analiz için Pro veya Premium plana geçebilirsiniz.",
+    },
+    {
+      question: "Pro ve Premium arasındaki fark nedir?",
+      answer:
+        "Pro plan aylık 10 OCR ve 5 AI analiz limiti ile profesyonel kullanım için uygundur. Premium plan sınırsız OCR ve AI analiz sunar, tüm gelecek özelliklere erişim sağlar.",
     },
     {
       question: "Premium üyelik nasıl iptal edilir?",
       answer:
-        "Hesap ayarlarınızdan istediğiniz zaman Premium üyeliğinizi iptal edebilirsiniz. İptal sonrası mevcut dönem sonuna kadar Premium özelliklerden yararlanmaya devam edersiniz.",
+        "Hesap ayarlarınızdan istediğiniz zaman üyeliğinizi iptal edebilirsiniz. İptal sonrası mevcut dönem sonuna kadar Premium özelliklerden yararlanmaya devam edersiniz.",
     },
     {
       question: "Finansal sağlık analizi nedir?",
       answer:
-        "Finansal sağlık analizi, finansal durumunuzu detaylı olarak değerlendiren ve borç/gelir oranınızı, ödeme kapasitesini analiz eden Premium özelliğimizdir.",
+        "Finansal sağlık analizi, AI ile finansal durumunuzu detaylı olarak değerlendiren, borç/gelir oranınızı ve ödeme kapasitesini analiz eden premium özelliğimizdir.",
     },
     {
       question: "Ödeme güvenli mi?",
@@ -79,14 +108,9 @@ export default function PricingPage() {
         "Evet, tüm ödemeler PayTR güvencesi altında AES-256 Şifreleme ile korunur. Kredi kartı bilgileriniz bizimle paylaşılmaz.",
     },
     {
-      question: "Ücretsiz kullanıcılar hangi reklamları görür?",
+      question: "Yıllık planlarda indirim var mı?",
       answer:
-        "Ücretsiz kullanıcılar uygulama içinde belirli aralıklarla finansal ürün ve hizmet reklamları görürler. Premium üyeler reklamsız deneyim yaşar.",
-    },
-    {
-      question: "Premium üyelik otomatik yenilenir mi?",
-      answer:
-        "PayTR ile yapılan ödemeler tek seferlik işlemlerdir. Aboneliğiniz süre dolduğunda yeniden ödeme yapmanız gerekir.",
+        "Evet! Yıllık planlarda %20 indirim sunuyoruz. Pro için 478₺, Premium için 958₺ tasarruf edersiniz.",
     },
   ]
 
@@ -110,7 +134,7 @@ export default function PricingPage() {
               İhtiyacınıza Uygun <span className="text-emerald-400">Planı Seçin</span>
             </h1>
             <p className="text-xl text-white/70 max-w-3xl mx-auto mb-8 leading-relaxed">
-              Ücretsiz başlayın, ihtiyacınız olduğunda Premium'a geçin. Kredi kartı gerekmez, istediğiniz zaman iptal
+              Ücretsiz başlayın, ihtiyacınız olduğunda Pro veya Premium'a geçin. Kredi kartı gerekmez, istediğiniz zaman iptal
               edebilirsiniz.
             </p>
 
@@ -141,12 +165,12 @@ export default function PricingPage() {
         {/* Pricing Plans */}
         <section className="py-16 px-4 md:px-8 lg:px-16">
           <div className="container mx-auto">
-            <div className="grid md:grid-cols-2 gap-8 max-w-5xl mx-auto">
+            <div className="grid md:grid-cols-3 gap-8 max-w-7xl mx-auto">
               {plans.map((plan, index) => (
                 <Card
                   key={index}
                   className={`relative bg-black/20 border-white/10 backdrop-blur-xl hover:border-emerald-500/30 transition-all duration-500 ${
-                    plan.popular ? "ring-2 ring-emerald-500/50 scale-105 md:scale-110" : ""
+                    plan.popular ? "ring-2 ring-emerald-500/50 md:scale-105" : ""
                   }`}
                 >
                   {plan.popular && (
@@ -164,6 +188,8 @@ export default function PricingPage() {
                     >
                       {index === 0 ? (
                         <Sparkles className="h-10 w-10 text-white" />
+                      ) : index === 1 ? (
+                        <Zap className="h-10 w-10 text-white" />
                       ) : (
                         <Crown className="h-10 w-10 text-white" />
                       )}
@@ -175,7 +201,7 @@ export default function PricingPage() {
                         {billingPeriod === "monthly" ? plan.monthlyPrice : plan.yearlyPrice}
                       </span>
                       <span className="text-xl text-white/70">{plan.period}</span>
-                      {billingPeriod === "yearly" && plan.popular && (
+                      {billingPeriod === "yearly" && plan.savings && (
                         <div className="mt-2">
                           <Badge variant="outline" className="border-emerald-500/50 text-emerald-400">
                             {plan.savings}
@@ -210,7 +236,9 @@ export default function PricingPage() {
                       className={`w-full ${
                         plan.popular
                           ? "bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600"
-                          : "bg-white/10 hover:bg-white/20 border border-white/20"
+                          : index === 1
+                            ? "bg-gradient-to-r from-blue-500 to-indigo-500 hover:from-blue-600 hover:to-indigo-600"
+                            : "bg-white/10 hover:bg-white/20 border border-white/20"
                       } text-white text-lg py-6`}
                       onClick={() => router.push("/giris")}
                     >
@@ -237,30 +265,33 @@ export default function PricingPage() {
               <p className="text-xl text-white/70">Hangi planın size uygun olduğunu görün</p>
             </div>
 
-            <div className="max-w-4xl mx-auto bg-black/20 border border-white/10 rounded-3xl backdrop-blur-xl overflow-hidden">
+            <div className="max-w-6xl mx-auto bg-black/20 border border-white/10 rounded-3xl backdrop-blur-xl overflow-hidden">
               <div className="overflow-x-auto">
                 <table className="w-full">
                   <thead>
                     <tr className="border-b border-white/10">
                       <th className="text-left py-6 px-8 text-white font-semibold text-lg">Özellikler</th>
-                      <th className="text-center py-6 px-8 text-white font-semibold text-lg">Ücretsiz</th>
-                      <th className="text-center py-6 px-8 text-white font-semibold text-lg">Premium</th>
+                      <th className="text-center py-6 px-4 text-white font-semibold text-lg">Ücretsiz</th>
+                      <th className="text-center py-6 px-4 text-white font-semibold text-lg">Pro</th>
+                      <th className="text-center py-6 px-4 text-white font-semibold text-lg">Premium</th>
                     </tr>
                   </thead>
                   <tbody className="text-white/80">
                     {[
-                      ["OCR Analizi", "1/ay", "Sınırsız"],
-                      ["AI Finansal Sağlık Özeti", "❌", "✅"],
-                      ["Gelişmiş Raporlar", "❌", "✅"],
-                      ["PDF Rapor İndirme", "❌", "✅"],
-                      ["Reklamsız Deneyim", "❌", "✅"],
-                      ["Öncelikli Destek", "❌", "✅"],
-                      ["Tüm Gelecek Özellikler", "❌", "✅"],
+                      ["OCR Analizi", "1/ay", "10/ay", "Sınırsız"],
+                      ["AI Finansal Sağlık Analizi", "❌", "5/ay", "Sınırsız"],
+                      ["Gelişmiş Raporlar", "❌", "✅", "✅"],
+                      ["PDF Rapor İndirme", "❌", "❌", "✅"],
+                      ["Reklamsız Deneyim", "❌", "✅", "✅"],
+                      ["Öncelikli Destek", "❌", "✅", "✅"],
+                      ["Premium Badge", "❌", "❌", "✅"],
+                      ["Tüm Gelecek Özellikler", "❌", "❌", "✅"],
                     ].map((row, index) => (
                       <tr key={index} className="border-b border-white/5 hover:bg-white/5 transition-colors">
                         <td className="py-5 px-8 font-medium">{row[0]}</td>
-                        <td className="py-5 px-8 text-center">{row[1]}</td>
-                        <td className="py-5 px-8 text-center text-emerald-400 font-medium">{row[2]}</td>
+                        <td className="py-5 px-4 text-center">{row[1]}</td>
+                        <td className="py-5 px-4 text-center text-blue-400 font-medium">{row[2]}</td>
+                        <td className="py-5 px-4 text-center text-emerald-400 font-medium">{row[3]}</td>
                       </tr>
                     ))}
                   </tbody>
