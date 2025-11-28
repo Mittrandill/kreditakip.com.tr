@@ -80,5 +80,9 @@ export async function middleware(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ["/auth/callback", "/api/:path*", "/uygulama/:path*"],
+  matcher: [
+    "/auth/callback",
+    "/api/((?!cron).*)", // Exclude /api/cron/* routes from middleware
+    "/uygulama/:path*"
+  ],
 }
