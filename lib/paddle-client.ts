@@ -66,11 +66,13 @@ export interface PaddleCheckoutOptions {
 export class PaddleClient {
   private vendorId: string
   private vendorAuthCode: string
+  private apiKey: string
   private isTest: boolean
 
   constructor() {
     this.vendorId = process.env.NEXT_PUBLIC_PADDLE_VENDOR_ID!
     this.vendorAuthCode = process.env.PADDLE_VENDOR_AUTH_CODE!
+    this.apiKey = process.env.PADDLE_API_KEY!
     this.isTest = process.env.NEXT_PUBLIC_PADDLE_ENVIRONMENT === "sandbox"
   }
 
@@ -90,7 +92,7 @@ export class PaddleClient {
       ...options,
       headers: {
         "Content-Type": "application/json",
-        Authorization: `Bearer ${this.vendorAuthCode}`,
+        Authorization: `Bearer ${this.apiKey}`,
         ...options.headers,
       },
     })

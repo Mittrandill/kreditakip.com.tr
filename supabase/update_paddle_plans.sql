@@ -1,35 +1,35 @@
 -- Update subscription plans with Paddle product IDs
--- NOTE: You need to replace these with your actual Paddle product and price IDs
+-- Using actual Paddle product and price IDs from sandbox
 
 -- Update Pro Monthly Plan
 UPDATE subscription_plans
 SET
-  paddle_product_id = 'pro_01HSFNYK5K8WQMN5QZ8A9Y6M2R',
-  paddle_price_id = 'pri_01HSFNZ5X3G4V6B2Z5Y6W8Q3K',
+  paddle_product_id = 'pro_01kb5xk5bb98dbye59qbrhpxzc',
+  paddle_price_id = 'pri_01kb5xwj6fj97mzf9csj96k1z2',
   payment_provider = 'paddle'
 WHERE id = 'pro-monthly';
 
 -- Update Pro Yearly Plan
 UPDATE subscription_plans
 SET
-  paddle_product_id = 'pro_01HSFNYK5K8WQMN5QZ8A9Y6M2R',
-  paddle_price_id = 'pri_01HSFNZ8Y4V7B2Z5X9W8Q3K',
+  paddle_product_id = 'pro_01kb5xk5bb98dbye59qbrhpxzc',
+  paddle_price_id = 'pri_01kb5y6e6mm2xad7s46pnhw191',
   payment_provider = 'paddle'
 WHERE id = 'pro-yearly';
 
 -- Update Premium Monthly Plan
 UPDATE subscription_plans
 SET
-  paddle_product_id = 'pre_01HSFNZ0W2X1Y4K6M8N9Q7P5R',
-  paddle_price_id = 'pri_01HSFNZ3Z5Y6X9W8Q2K3V7B4',
+  paddle_product_id = 'pro_01kb5xvqecr4strv2w3kd6p7tf',
+  paddle_price_id = 'pri_01kb5xwj6fj97mzf9csj96k1z2',
   payment_provider = 'paddle'
 WHERE id = 'premium-monthly';
 
 -- Update Premium Yearly Plan
 UPDATE subscription_plans
 SET
-  paddle_product_id = 'pre_01HSFNZ0W2X1Y4K6M8N9Q7P5R',
-  paddle_price_id = 'pri_01HSFNZ6X8Y9W2K3V5B7Q9Z4',
+  paddle_product_id = 'pro_01kb5xvqecr4strv2w3kd6p7tf',
+  paddle_price_id = 'pri_01kb5xzndnphf3gqqv0ay4ha1c',
   payment_provider = 'paddle'
 WHERE id = 'premium-yearly';
 
