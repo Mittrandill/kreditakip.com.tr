@@ -27,7 +27,7 @@ export default function CancellationRefundPolicyPage() {
                 Abonelik <span className="text-emerald-400">İptali</span> ve İade
               </h1>
               <p className="text-xl text-white/70 max-w-3xl mx-auto">
-                KrediTakip abonelikleriniz için iptal ve iade koşulları.
+                Kredi Takip abonelikleriniz için iptal ve iade koşulları.
               </p>
               <div className="flex items-center justify-center gap-2 mt-6 text-white/60">
                 <Calendar className="w-4 h-4" />
@@ -50,7 +50,7 @@ export default function CancellationRefundPolicyPage() {
                 </h2>
                 <div className="text-white/80 leading-relaxed space-y-3">
                   <p className="bg-emerald-500/10 border border-emerald-500/30 rounded-lg p-4">
-                    <strong className="text-emerald-200">Herhangi bir Zaman İptal Hakkı:</strong> KrediTakip aboneliğinizi
+                    <strong className="text-emerald-200">Herhangi bir Zaman İptal Hakkı:</strong> Kredi Takip aboneliğinizi
                     istediğiniz zaman, herhangi bir ceza ödemeden iptal edebilirsiniz. İptal işlemi sonrasında, ödenmiş olan
                     mevcut abonelik döneminizin sonuna kadar Premium özelliklere erişiminiz devam eder.
                   </p>
@@ -80,17 +80,18 @@ export default function CancellationRefundPolicyPage() {
                 </h2>
                 <div className="text-white/80 leading-relaxed space-y-3">
                   <p className="bg-yellow-500/10 border border-yellow-500/30 rounded-lg p-4">
-                    <strong className="text-yellow-200">Kullanılmış Hizmetler İade Edilmez:</strong> KrediTakip'te
+                    <strong className="text-yellow-200">Kullanılmış Hizmetler İade Edilmez:</strong> Kredi Takip'te
                     kullanılmış hizmetler için iade yapılmaz. Örneğin, analiz edilen kredi dökümanları veya kullanılan AI
                     özellikleri için iade talep edilemez.
                   </p>
 
                   <p><strong>İade Koşulları:</strong></p>
                   <ul className="list-disc pl-6 space-y-2">
-                    <li>Sadece yıllık abonelikler için belirli koşullarda pro-rata iade mümkündür</li>
-                    <li>İade talebi, hizmetin kullanılmadığını kanıtlamalıdır</li>
-                    <li>Hata veya teknik sorunlar nedeniyle hizmet alınamadıysa iade değerlendirilir</li>
-                    <li>İade talepleri 14 iş günü içinde sonuçlandırılır</li>
+                    <li><strong>İlk Satın Alma İade Hakkı:</strong> İlk aboneliğiniz için 14 gün içinde iade talep edebilirsiniz. Hizmeti kullanmadığınızı kanıtlamanız gerekir.</li>
+                    <li><strong>Yıllık Abonelikler:</strong> Sadece yıllık abonelikler için belirli koşullarda pro-rata iade mümkündür</li>
+                    <li><strong>İade Talebi:</strong> İade talebiniz <a href="mailto:info@kreditakip.com.tr" className="text-emerald-400 hover:underline">info@kreditakip.com.tr</a> adresine gönderilmelidir</li>
+                    <li><strong>İşlem Süresi:</strong> İade talepleri en geç 14 iş günü içinde sonuçlandırılır</li>
+                    <li><strong>Chargeback:</strong> Chargeback talepleri Paddle politikasına göre işlenir</li>
                   </ul>
 
                   <p><strong>İade Süreci:</strong></p>
@@ -113,7 +114,7 @@ export default function CancellationRefundPolicyPage() {
                 <div className="text-white/80 leading-relaxed space-y-3">
                   <p><strong>Teknik Sorunlar:</strong></p>
                   <ul className="list-disc pl-6 space-y-2">
-                    <li>KrediTakip hizmetinde 48 saatten uzun süren kesinti durumunda</li>
+                    <li>Kredi Takip hizmetinde 48 saatten uzun süren kesinti durumunda</li>
                     <li>Analiz sonuçlarının sistematik olarak yanlış çıkması durumunda</li>
                     <li>Veri güvenliği ihlali veya gizlilik sorunu yaşanması halinde</li>
                   </ul>
@@ -127,11 +128,35 @@ export default function CancellationRefundPolicyPage() {
                 </div>
               </div>
 
-              {/* Section 4: Paddle Rollü */}
+              {/* Section 4: Ödeme Güvenliği ve Otomatik Yenileme */}
               <div className="mb-10">
                 <h2 className="text-2xl font-bold text-white mb-4 flex items-center gap-2">
                   <CreditCard className="w-6 h-6 text-emerald-400" />
-                  4. Paddle'ın Rolü
+                  4. Ödeme Güvenliği ve Otomatik Yenileme
+                </h2>
+                <div className="text-white/80 leading-relaxed space-y-3">
+                  <p><strong>3D Secure Güvenliği:</strong></p>
+                  <ul className="list-disc pl-6 space-y-2">
+                    <li>İlk ödemede 3D Secure kart doğrulaması yapılır</li>
+                    <li>Kart bilgileriniz hiçbir zaman sunucularımızda saklanmaz</li>
+                    <li>Tüm ödemeler Paddle'ın PCI-DSS Level 1 sertifikalı altyapısında güvende</li>
+                  </ul>
+
+                  <p><strong>Otomatik Yenileme:</strong></p>
+                  <ul className="list-disc pl-6 space-y-2">
+                    <li>Otomatik yenileme açık kullanıcı onayı ile yapılır</li>
+                    <li>Abonelik yenileme tarihinden önce e-posta ile bilgilendirme yapılır</li>
+                    <li>İstediğiniz zaman aboneliğinizi iptal edebilirsiniz</li>
+                    <li>İptal ettiğinizde mevcut dönem sonuna kadar erişim devam eder</li>
+                  </ul>
+                </div>
+              </div>
+
+              {/* Section 5: Paddle Rollü */}
+              <div className="mb-10">
+                <h2 className="text-2xl font-bold text-white mb-4 flex items-center gap-2">
+                  <CreditCard className="w-6 h-6 text-emerald-400" />
+                  5. Paddle'ın Rolü
                 </h2>
                 <div className="text-white/80 leading-relaxed space-y-3 bg-blue-500/10 border border-blue-500/30 rounded-lg p-4">
                   <p>
@@ -198,7 +223,7 @@ export default function CancellationRefundPolicyPage() {
                 Önemli Bilgilendirme
               </h3>
               <p className="text-white/80 leading-relaxed">
-                Bu politika, KrediTakip ve Paddle arasındaki resmi anlaşmaya dayanır. Politika değişiklikleri,
+                Bu politika, Kredi Takip ve Paddle arasındaki resmi anlaşmaya dayanır. Politika değişiklikleri,
                 kullanıcılarımıza e-posta ve uygulama içi bildirimler ile duyurulur. Devam eden abonelikler,
                 değişikliklerden önceki şartlara tabidir. Politikamız KVKK, GDPR ve ilgili tüm yerel yasalara
                 uygundur.

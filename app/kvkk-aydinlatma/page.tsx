@@ -32,7 +32,7 @@ export default function KVKKPage() {
               </p>
               <div className="flex items-center justify-center gap-2 mt-6 text-white/60">
                 <Calendar className="w-4 h-4" />
-                <span className="text-sm">Yürürlük Tarihi: 15 Ocak 2024</span>
+                <span className="text-sm">Yürürlük Tarihi: 28 Kasım 2025</span>
               </div>
             </div>
           </div>

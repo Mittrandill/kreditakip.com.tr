@@ -31,7 +31,7 @@ export default function TermsOfServicePage() {
               </p>
               <div className="flex items-center justify-center gap-2 mt-6 text-white/60">
                 <Calendar className="w-4 h-4" />
-                <span className="text-sm">Yürürlük Tarihi: 15 Ocak 2024</span>
+                <span className="text-sm">Yürürlük Tarihi: 28 Kasım 2025</span>
               </div>
             </div>
           </div>
@@ -251,9 +251,14 @@ export default function TermsOfServicePage() {
 
               {/* Contact Section */}
               <div className="border-t border-white/10 pt-8">
-                <h3 className="text-xl font-bold text-white mb-4">Sorularınız için İletişim</h3>
+                <h3 className="text-xl font-bold text-white mb-4">İletişim Bilgileri</h3>
                 <div className="text-white/80 space-y-2">
-                  <p>Kullanım şartları hakkında sorularınız varsa bizimle iletişime geçebilirsiniz:</p>
+                  <p>
+                    <strong>Şirket:</strong> Kredi Takip
+                  </p>
+                  <p>
+                    <strong>Adres:</strong> Çeşme, İzmir, Turkey
+                  </p>
                   <p>
                     <strong>E-posta:</strong>{" "}
                     <a href="mailto:info@kreditakip.com.tr" className="text-emerald-400 hover:underline">
@@ -266,6 +271,34 @@ export default function TermsOfServicePage() {
                       0 543 203 53 09
                     </a>
                   </p>
+                </div>
+              </div>
+
+              {/* Legal Business Information */}
+              <div className="border-t border-white/10 pt-8 mt-8">
+                <h3 className="text-xl font-bold text-white mb-4">Yasal Bilgiler</h3>
+                <div className="text-white/80 space-y-3">
+                  <p>
+                    <strong>Biz Kimiz:</strong> Bu web sitesi ve Kredi Takip hizmetleri Kredi Takip tarafından işletilmektedir.
+                  </p>
+                  <p>
+                    <strong>Ödeme İşlemcisi:</strong> Tüm ödeme işlemleri Paddle.com (Merchant of Record) tarafından işlenir.
+                    Paddle, tüm ödeme işlemlerinden, vergi uyumluluğundan ve yasal düzenlemelerden sorumludur.
+                  </p>
+                  <div className="bg-emerald-500/10 border border-emerald-500/30 rounded-lg p-4 mt-4">
+                    <p className="text-sm">
+                      <strong>Ödeme Onayı:</strong> Satın alma yaparak, Paddle'ın{" "}
+                      <a
+                        href="https://paddle.com/legal/buyer-terms/"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-emerald-400 hover:underline"
+                      >
+                        Buyer Terms &amp; Privacy Policy
+                      </a>{" "}
+                      koşullarını kabul etmiş olursunuz.
+                    </p>
+                  </div>
                 </div>
               </div>
             </div>
