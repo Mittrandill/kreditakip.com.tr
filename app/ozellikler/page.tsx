@@ -99,7 +99,7 @@ export default function FeaturesPage() {
               <div className="relative group">
                 <div className="absolute inset-0 bg-gradient-to-r from-emerald-500/20 to-transparent rounded-3xl blur-xl group-hover:blur-2xl transition-all duration-500" />
                 <Card className="relative bg-black/20 border-white/10 backdrop-blur-xl hover:border-emerald-500/30 transition-all duration-500 lg:group-hover:transform lg:group-hover:scale-105 overflow-hidden">
-                  <CardContent className="p-6 lg:p-8">
+                  <CardContent className="p-6 lg:p-8 h-full flex flex-col">
                     <div className="relative mb-6">
                       <div className="w-20 h-20 bg-gradient-to-br from-emerald-500/30 to-emerald-500/10 rounded-2xl flex items-center justify-center mx-auto backdrop-blur-sm border border-emerald-500/20">
                         <Scan className="w-10 h-10 text-emerald-400" />
@@ -109,7 +109,7 @@ export default function FeaturesPage() {
                       </div>
                     </div>
                     <h3 className="text-2xl font-bold text-white mb-4 text-center">Gelişmiş OCR Teknolojisi</h3>
-                    <p className="text-white/70 text-center leading-relaxed mb-6">
+                    <p className="text-white/70 text-center leading-relaxed mb-6 flex-grow">
                       %99.8 doğruluk oranıyla PDF, JPG ve PNG formatındaki kredi ekstrelerinizi saniyeler içinde dijital veriye dönüştürün.
                     </p>
                     <div className="flex justify-center gap-6 pt-4 border-t border-white/10">
@@ -130,7 +130,7 @@ export default function FeaturesPage() {
               <div className="relative group">
                 <div className="absolute inset-0 bg-gradient-to-r from-teal-500/20 to-transparent rounded-3xl blur-xl group-hover:blur-2xl transition-all duration-500" />
                 <Card className="relative bg-black/20 border-white/10 backdrop-blur-xl hover:border-teal-500/30 transition-all duration-500 group-hover:transform group-hover:scale-105 overflow-hidden">
-                  <CardContent className="p-6 lg:p-8">
+                  <CardContent className="p-6 lg:p-8 h-full flex flex-col">
                     <div className="relative mb-6">
                       <div className="w-20 h-20 bg-gradient-to-br from-teal-500/30 to-teal-500/10 rounded-2xl flex items-center justify-center mx-auto backdrop-blur-sm border border-teal-500/20">
                         <Calendar className="w-10 h-10 text-teal-400" />
@@ -140,10 +140,10 @@ export default function FeaturesPage() {
                       </div>
                     </div>
                     <h3 className="text-2xl font-bold text-white mb-4 text-center">Akıllı Ödeme Planları</h3>
-                    <p className="text-white/70 text-center leading-relaxed mb-6">
+                    <p className="text-white/70 text-center leading-relaxed mb-6 flex-grow">
                       Yapay zeka destekli algoritma ile kişiselleştirilmiş ödeme planları oluşturun ve borcunuzu optimize edin.
                     </p>
-                    <div className="flex justify-center gap-6 pt-4 border-t border-white/10">
+                    <div className="flex justify-center gap-6 pt-4 border-t border-white/10 mt-auto">
                       <div className="text-center">
                         <div className="text-2xl font-bold text-teal-400">AI</div>
                         <div className="text-xs text-white/60">Destekli</div>
@@ -192,7 +192,7 @@ export default function FeaturesPage() {
               <div className="relative group">
                 <div className="absolute inset-0 bg-gradient-to-r from-teal-500/20 to-transparent rounded-3xl blur-xl group-hover:blur-2xl transition-all duration-500" />
                 <Card className="relative bg-black/20 border-white/10 backdrop-blur-xl hover:border-teal-500/30 transition-all duration-500 group-hover:transform group-hover:scale-105 overflow-hidden">
-                  <CardContent className="p-6 lg:p-8">
+                  <CardContent className="p-6 lg:p-8 h-full flex flex-col">
                     <div className="relative mb-6">
                       <div className="w-20 h-20 bg-gradient-to-br from-teal-500/30 to-teal-500/10 rounded-2xl flex items-center justify-center mx-auto backdrop-blur-sm border border-teal-500/20">
                         <BarChart3 className="w-10 h-10 text-teal-400" />
@@ -201,9 +201,9 @@ export default function FeaturesPage() {
                         <div className="w-2 h-2 bg-white rounded-full animate-pulse" />
                       </div>
                     </div>
-                    <h3 className="text-2xl font-bold text-white mb-4 text-center">Detaylı Raporlar</h3>
-                    <p className="text-white/70 text-center leading-relaxed mb-6">
-                      Finansal durumunuzu görselleştirin. İnteraktif grafikler ve detaylı analizler.
+                    <h3 className="text-2xl font-bold text-white mb-4 text-center">Detaylı Raporlar Alın</h3>
+                    <p className="text-white/70 text-center leading-relaxed mb-6 flex-grow">
+                      Finansal durumunuzu görselleştirin. İnteraktif grafikler ve detaylı analizler. Özelleştirilebilir raporlar.
                     </p>
                     <div className="flex justify-center gap-6 pt-4 border-t border-white/10">
                       <div className="text-center">
