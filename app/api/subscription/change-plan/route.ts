@@ -1,6 +1,17 @@
 import { createClient } from "@/lib/supabase/server"
 import { NextResponse } from "next/server"
 
+/**
+ * Plan değişikliği API endpoint
+ *
+ * Desteklenen plan geçişleri:
+ * 1. Pro Monthly <-> Pro Yearly
+ * 2. Premium Monthly <-> Premium Yearly
+ * 3. Pro -> Premium (upgrade)
+ * 4. Premium -> Pro (downgrade)
+ *
+ * Not: Free kullanıcılar bu endpoint'i kullanmaz, doğrudan checkout'a gider
+ */
 export async function POST(request: Request) {
   try {
     const supabase = await createClient()
@@ -22,6 +33,15 @@ export async function POST(request: Request) {
       return NextResponse.json({ success: false, error: "Plan ID gerekli" }, { status: 400 })
     }
 
+    // Geçerli plan ID'leri
+    const validPlanIds = ["pro-monthly", "pro-yearly", "premium-monthly", "premium-yearly"]
+    if (!validPlanIds.includes(newPlanId)) {
+      return NextResponse.json(
+        { success: false, error: "Geçersiz plan ID" },
+        { status: 400 }
+      )
+    }
+
     // Mevcut aboneliği kontrol et
     const { data: currentSubscription, error: subError } = await supabase
       .from("subscriptions")
@@ -33,16 +53,18 @@ export async function POST(request: Request) {
       return NextResponse.json({ success: false, error: "Aktif abonelik bulunamadı" }, { status: 404 })
     }
 
-    // Premium kontrolü
-    if (currentSubscription.plan_type !== "premium") {
+    const currentPlanId = currentSubscription.plan_id
+
+    // Free kullanıcı kontrolü
+    if (!currentPlanId || currentPlanId === "free") {
       return NextResponse.json(
-        { success: false, error: "Sadece premium kullanıcılar plan değiştirebilir" },
+        { success: false, error: "Ücretsiz kullanıcılar plan değiştiremez, lütfen yeni plan satın alın" },
         { status: 403 }
       )
     }
 
     // Aynı plan kontrolü
-    if (currentSubscription.plan_id === newPlanId) {
+    if (currentPlanId === newPlanId) {
       return NextResponse.json(
         { success: false, error: "Zaten bu plandayken aynı plana geçemezsiniz" },
         { status: 400 }
@@ -52,44 +74,79 @@ export async function POST(request: Request) {
     const now = new Date()
     const currentExpiry = currentSubscription.expires_at ? new Date(currentSubscription.expires_at) : null
 
-    // Plan değişikliği mantığı
-    let updateData: any = {
+    // Plan tipleri ve billing period'ları çıkar
+    const currentPlanType = currentPlanId.includes("premium") ? "premium" : "pro"
+    const currentBillingPeriod = currentPlanId.includes("yearly") ? "yearly" : "monthly"
+
+    const newPlanType = newPlanId.includes("premium") ? "premium" : "pro"
+    const newBillingPeriod = newPlanId.includes("yearly") ? "yearly" : "monthly"
+
+    // Plan değişikliği tipini belirle
+    let changeType: "billing_period" | "upgrade" | "downgrade"
+    if (currentPlanType === newPlanType) {
+      changeType = "billing_period"
+    } else if (currentPlanType === "pro" && newPlanType === "premium") {
+      changeType = "upgrade"
+    } else {
+      changeType = "downgrade"
+    }
+
+    // Yeni plan bilgilerini al
+    const { data: newPlan, error: planError } = await supabase
+      .from("subscription_plans")
+      .select("*")
+      .eq("id", newPlanId)
+      .single()
+
+    if (planError || !newPlan) {
+      return NextResponse.json(
+        { success: false, error: "Yeni plan bilgileri alınamadı" },
+        { status: 500 }
+      )
+    }
+
+    // Update data hazırla
+    const updateData: any = {
+      next_billing_plan_id: newPlanId, // Yeni plan ID'sini kaydet
       updated_at: now.toISOString(),
     }
 
+    // Mesaj oluştur
     let message = ""
     let effectiveDate = ""
 
-    if (newPlanId === "premium-yearly") {
-      // Aylık → Yıllık: Mevcut ay bitsin, sonra yıllık başlasın
-      updateData.next_billing_plan = "yearly"
-      // plan_id şimdilik değişmez, expires_at'ta değişecek
+    if (currentExpiry && currentExpiry > now) {
+      effectiveDate = currentExpiry.toLocaleDateString("tr-TR", {
+        year: "numeric",
+        month: "long",
+        day: "numeric",
+      })
+    }
 
-      if (currentExpiry && currentExpiry > now) {
-        effectiveDate = currentExpiry.toLocaleDateString("tr-TR", {
-          year: "numeric",
-          month: "long",
-          day: "numeric",
-        })
-        message = `Plan değişikliği kaydedildi. ${effectiveDate} tarihinde yıllık plana geçeceksiniz.`
-      } else {
-        message = "Plan değişikliği kaydedildi. Bir sonraki ödeme döneminizde yıllık plana geçeceksiniz."
-      }
-    } else if (newPlanId === "premium-monthly") {
-      // Yıllık → Aylık: Mevcut süre korunsun, bitince aylık olsun
-      updateData.next_billing_plan = "monthly"
-      // plan_id ve expires_at aynı kalır
+    switch (changeType) {
+      case "billing_period":
+        if (newBillingPeriod === "yearly") {
+          message = effectiveDate
+            ? `Faturalama dönemi değişikliği kaydedildi. ${effectiveDate} tarihinde yıllık faturalama dönemine geçeceksiniz.`
+            : "Faturalama dönemi değişikliği kaydedildi. Bir sonraki ödeme döneminizde yıllık faturalama dönemine geçeceksiniz."
+        } else {
+          message = effectiveDate
+            ? `Faturalama dönemi değişikliği kaydedildi. ${effectiveDate} tarihinde aylık faturalama dönemine geçeceksiniz.`
+            : "Faturalama dönemi değişikliği kaydedildi. Bir sonraki ödeme döneminizde aylık faturalama dönemine geçeceksiniz."
+        }
+        break
 
-      if (currentExpiry && currentExpiry > now) {
-        effectiveDate = currentExpiry.toLocaleDateString("tr-TR", {
-          year: "numeric",
-          month: "long",
-          day: "numeric",
-        })
-        message = `Plan değişikliği kaydedildi. ${effectiveDate} tarihinde aylık plana geçeceksiniz.`
-      } else {
-        message = "Plan değişikliği kaydedildi. Bir sonraki ödeme döneminizde aylık plana geçeceksiniz."
-      }
+      case "upgrade":
+        message = effectiveDate
+          ? `Plan yükseltme kaydedildi! ${effectiveDate} tarihinde ${newPlan.name} planına geçeceksiniz. ${newBillingPeriod === "yearly" ? "Yıllık" : "Aylık"} faturalama ile ${newPlan.price}₺ ödenecektir.`
+          : `Plan yükseltme kaydedildi! Bir sonraki ödeme döneminizde ${newPlan.name} planına geçeceksiniz.`
+        break
+
+      case "downgrade":
+        message = effectiveDate
+          ? `Plan düşürme kaydedildi. ${effectiveDate} tarihinde ${newPlan.name} planına geçeceksiniz. ${newBillingPeriod === "yearly" ? "Yıllık" : "Aylık"} faturalama ile ${newPlan.price}₺ ödenecektir.`
+          : `Plan düşürme kaydedildi. Bir sonraki ödeme döneminizde ${newPlan.name} planına geçeceksiniz.`
+        break
     }
 
     // Veritabanında güncelle
@@ -110,7 +167,18 @@ export async function POST(request: Request) {
       success: true,
       message,
       effectiveDate,
-      nextBillingPlan: newPlanId.replace("premium-", ""),
+      changeType,
+      currentPlan: {
+        id: currentPlanId,
+        type: currentPlanType,
+        billingPeriod: currentBillingPeriod,
+      },
+      newPlan: {
+        id: newPlanId,
+        type: newPlanType,
+        billingPeriod: newBillingPeriod,
+        price: newPlan.price,
+      },
     })
   } catch (error: any) {
     console.error("[change-plan] Error:", error)

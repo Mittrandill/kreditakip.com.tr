@@ -297,15 +297,37 @@ export default function SubscriptionPage() {
   }
 
   const getPlanName = (planId: string) => {
-    if (planId === "premium-yearly") return "Yıllık Premium"
-    if (planId === "premium-monthly") return "Aylık Premium"
-    return "Ücretsiz Plan"
+    switch (planId) {
+      case "pro-monthly":
+        return "Aylık Pro"
+      case "pro-yearly":
+        return "Yıllık Pro"
+      case "premium-monthly":
+        return "Aylık Premium"
+      case "premium-yearly":
+        return "Yıllık Premium"
+      case "free":
+        return "Ücretsiz Plan"
+      default:
+        return "Ücretsiz Plan"
+    }
   }
 
   const getPlanPrice = (planId: string) => {
-    if (planId === "premium-yearly") return "1,990₺/yıl"
-    if (planId === "premium-monthly") return "199₺/ay"
-    return "0₺"
+    switch (planId) {
+      case "pro-monthly":
+        return "199₺/ay"
+      case "pro-yearly":
+        return "1,910₺/yıl"
+      case "premium-monthly":
+        return "399₺/ay"
+      case "premium-yearly":
+        return "3,830₺/yıl"
+      case "free":
+        return "0₺"
+      default:
+        return "0₺"
+    }
   }
 
   // Filtered and sorted transactions
@@ -477,7 +499,13 @@ export default function SubscriptionPage() {
                 <div>
                   <p className="text-white/70 text-xs sm:text-sm mb-1">Plan</p>
                   <p className="text-xl sm:text-2xl font-bold">
-                    {subscription?.plan_id === "premium-yearly" ? "Yıllık" : subscription?.plan_id === "premium-monthly" ? "Aylık" : "Ücretsiz"}
+                    {subscription?.plan_id
+                      ? subscription.plan_id.includes("premium")
+                        ? "Premium"
+                        : subscription.plan_id.includes("pro")
+                          ? "Pro"
+                          : "Ücretsiz"
+                      : "Ücretsiz"}
                   </p>
                 </div>
               </div>

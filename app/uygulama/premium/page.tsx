@@ -17,16 +17,15 @@ import { Crown, Check, Sparkles, TrendingUp, X, Shield, BarChart3, Zap, AlertCir
 import { useSubscription } from "@/hooks/use-subscription"
 import { useRouter, useSearchParams } from "next/navigation"
 import { useToast } from "@/hooks/use-toast"
-import { fetchPlans, FALLBACK_PLANS, calculateSavings, type SubscriptionPlan } from "@/lib/subscription-plans"
+import { fetchPlans, calculateSavings, type SubscriptionPlan } from "@/lib/subscription-plans"
 import { LoadingSpinner } from "@/components/loading-screen"
 
 export default function PremiumPage() {
   const { subscription, loading, isPremium } = useSubscription()
   const [isProcessing, setIsProcessing] = useState(false)
-  const [isYearly, setIsYearly] = useState(true) // Varsayılan olarak yıllık seçili (indirim için)
   const [showConfirmDialog, setShowConfirmDialog] = useState(false)
   const [targetPlanId, setTargetPlanId] = useState<string>("")
-  const [plans, setPlans] = useState<SubscriptionPlan[]>(FALLBACK_PLANS)
+  const [plans, setPlans] = useState<SubscriptionPlan[]>([])
   const [plansLoading, setPlansLoading] = useState(true)
   const router = useRouter()
   const searchParams = useSearchParams()
@@ -41,20 +40,12 @@ export default function PremiumPage() {
         setPlans(fetchedPlans)
       } catch (error) {
         console.error("Error loading plans:", error)
-        // Fallback plans already set in initial state
       } finally {
         setPlansLoading(false)
       }
     }
     loadPlans()
   }, [])
-
-  // Kullanıcının mevcut planına göre toggle'ı ayarla
-  useEffect(() => {
-    if (isPremium && subscription?.plan_id) {
-      setIsYearly(subscription.plan_id === "premium-yearly")
-    }
-  }, [isPremium, subscription?.plan_id])
 
   useEffect(() => {
     if (hasProcessedParams.current) return
@@ -66,7 +57,7 @@ export default function PremiumPage() {
       hasProcessedParams.current = true
       toast({
         title: "Ödeme Başarılı",
-        description: "Premium üyeliğiniz aktif edildi. Tüm özelliklere erişebilirsiniz!",
+        description: "Aboneliğiniz aktif edildi. Tüm özelliklere erişebilirsiniz!",
       })
       router.replace("/uygulama/premium")
     } else if (error) {
@@ -80,22 +71,23 @@ export default function PremiumPage() {
     }
   }, [searchParams, toast, router])
 
-  const handleUpgrade = async () => {
-    const planId = isYearly ? "premium-yearly" : "premium-monthly"
+  const handlePlanSelect = async (planId: string) => {
+    const currentPlanId = subscription?.plan_id
 
-    // Eğer mevcut planla aynı plana tıklandıysa, hiçbir şey yapma
-    if (isPremium && subscription?.plan_id === planId) {
+    // Aynı plan kontrolü
+    if (currentPlanId === planId) {
       return
     }
 
-    // Eğer zaten premium ise ve farklı bir plana geçmek istiyorsa
-    if (isPremium && subscription?.plan_id !== planId) {
-      setTargetPlanId(planId)
-      setShowConfirmDialog(true)
-    } else {
-      // Yeni premium kullanıcı
+    // Free kullanıcı -> Ödeme sayfasına yönlendir
+    if (!currentPlanId || currentPlanId === "free") {
       router.push(`/uygulama/odeme?plan=${planId}`)
+      return
     }
+
+    // Ücretli kullanıcı -> Plan değişikliği onayı iste
+    setTargetPlanId(planId)
+    setShowConfirmDialog(true)
   }
 
   const confirmPlanChange = async () => {
@@ -142,16 +134,185 @@ export default function PremiumPage() {
     }
   }
 
-  // Seçili planı al
-  const selectedPlan = plans.find((p) => p.period === (isYearly ? "yearly" : "monthly"))
-  const monthlyPlan = plans.find((p) => p.period === "monthly")
-  const yearlyPlan = plans.find((p) => p.period === "yearly")
+  // Plan grupları oluştur
+  const freePlan = plans.find((p) => p.id === "free")
+  const proMonthly = plans.find((p) => p.id === "pro-monthly")
+  const proYearly = plans.find((p) => p.id === "pro-yearly")
+  const premiumMonthly = plans.find((p) => p.id === "premium-monthly")
+  const premiumYearly = plans.find((p) => p.id === "premium-yearly")
+
+  // Kullanıcının mevcut planı
+  const currentPlanId = subscription?.plan_id || "free"
+  const currentPlanType = currentPlanId.includes("premium") ? "premium" : currentPlanId.includes("pro") ? "pro" : "free"
+  const isYearlyUser = currentPlanId.includes("yearly")
+
+  // Toggle states - varsayılan olarak kullanıcının mevcut tercihine göre ayarla
+  const [isProYearly, setIsProYearly] = useState(isYearlyUser && currentPlanType === "pro")
+  const [isPremiumYearly, setIsPremiumYearly] = useState(isYearlyUser && currentPlanType === "premium")
 
   if (loading || plansLoading) {
     return (
       <div className="flex items-center justify-center min-h-[60vh]">
         <LoadingSpinner size="lg" />
       </div>
+    )
+  }
+
+  // Plan kartı bileşeni
+  const PlanCard = ({
+    title,
+    subtitle,
+    price,
+    originalPrice,
+    period,
+    features,
+    planId,
+    badge,
+    isPopular,
+    showToggle,
+    isYearly,
+    onToggleChange,
+    monthlyPrice,
+  }: {
+    title: string
+    subtitle: string
+    price: number
+    originalPrice?: number
+    period: string
+    features: string[]
+    planId: string
+    badge?: { text: string; variant: "default" | "outline" | "secondary" }
+    isPopular?: boolean
+    showToggle?: boolean
+    isYearly?: boolean
+    onToggleChange?: (checked: boolean) => void
+    monthlyPrice?: number
+  }) => {
+    const isCurrent = currentPlanId === planId
+    const isCurrentType = currentPlanType === title.toLowerCase()
+
+    return (
+      <Card
+        className={`relative border-2 flex flex-col ${
+          isPopular
+            ? "border-emerald-500 dark:border-emerald-600 shadow-2xl hover:shadow-xl"
+            : "border-gray-200 dark:border-white/10 hover:shadow-lg"
+        } dark:bg-black/20 transition-all`}
+      >
+        {isPopular && (
+          <div className="absolute -top-4 left-1/2 -translate-x-1/2 z-20">
+            <Badge className="bg-gradient-to-r from-amber-500 to-orange-600 text-white border-0 px-6 py-2 shadow-lg">
+              <Sparkles className="h-4 w-4 mr-1" />
+              En Popüler
+            </Badge>
+          </div>
+        )}
+        {isPopular && (
+          <div className="absolute inset-0 bg-gradient-to-br from-emerald-50/50 to-teal-50/50 dark:from-emerald-950/20 dark:to-teal-950/20 rounded-lg -z-10"></div>
+        )}
+
+        <CardHeader className="space-y-4">
+          <div className="flex items-center justify-between">
+            <CardTitle className="flex items-center gap-2 text-2xl">
+              {title === "Premium" && <Crown className="h-7 w-7 text-amber-500" />}
+              {title === "Pro" && <Sparkles className="h-7 w-7 text-blue-500" />}
+              <span>{title}</span>
+            </CardTitle>
+            {badge && (
+              <Badge variant={badge.variant} className="text-xs">
+                {badge.text}
+              </Badge>
+            )}
+          </div>
+
+          {/* Toggle Switch */}
+          {showToggle && (
+            <div className="flex items-center justify-center gap-2 sm:gap-3 p-3 sm:p-4 bg-white/50 dark:bg-black/20 rounded-xl border border-gray-200 dark:border-gray-800">
+              <span
+                className={`text-xs sm:text-sm font-medium transition-colors ${!isYearly ? "text-emerald-600 dark:text-emerald-400" : "text-gray-500"}`}
+              >
+                Aylık
+              </span>
+              <Switch checked={isYearly} onCheckedChange={onToggleChange} className="data-[state=checked]:bg-emerald-600" />
+              <span
+                className={`text-xs sm:text-sm font-medium transition-colors ${isYearly ? "text-emerald-600 dark:text-emerald-400" : "text-gray-500"}`}
+              >
+                Yıllık
+                {isYearly && monthlyPrice && (
+                  <span className="ml-1 text-[10px] sm:text-xs text-emerald-600 dark:text-emerald-400 whitespace-nowrap">
+                    ({calculateSavings(price, monthlyPrice)}₺ tasarruf)
+                  </span>
+                )}
+              </span>
+            </div>
+          )}
+
+          <CardDescription className="text-base text-center">{subtitle}</CardDescription>
+
+          <div className="pt-4">
+            {originalPrice && (
+              <p className="text-lg sm:text-xl text-gray-500 dark:text-white/60 line-through text-center">{originalPrice}₺</p>
+            )}
+            <p className="text-4xl sm:text-5xl font-bold text-center">
+              {price}₺<span className="text-base sm:text-lg font-normal text-gray-600 dark:text-white/60">/{period}</span>
+            </p>
+            {showToggle && isYearly && monthlyPrice && (
+              <div className="mt-3 p-2 sm:p-3 bg-emerald-100 dark:bg-emerald-900/30 rounded-lg">
+                <p className="text-xs sm:text-sm text-emerald-800 dark:text-emerald-200 text-center flex items-center justify-center gap-1 sm:gap-2">
+                  <Zap className="h-3 w-3 sm:h-4 sm:w-4 flex-shrink-0" />
+                  <span>{calculateSavings(price, monthlyPrice)}₺ tasarruf ediyorsunuz!</span>
+                </p>
+              </div>
+            )}
+          </div>
+        </CardHeader>
+
+        <CardContent className="space-y-6 flex-1 flex flex-col">
+          <div className="space-y-4 flex-1">
+            {features.map((feature, idx) => (
+              <div key={idx} className="flex items-start gap-3">
+                <div className="p-1 bg-emerald-100 dark:bg-emerald-900/30 rounded-full">
+                  <Check className="h-4 w-4 text-emerald-600 dark:text-emerald-400" />
+                </div>
+                <span className="text-sm font-medium">{feature}</span>
+              </div>
+            ))}
+          </div>
+          {isCurrent ? (
+            <Button
+              className="w-full bg-gray-400 dark:bg-emerald-900/40 cursor-not-allowed shadow-lg mt-auto opacity-60"
+              disabled
+              size="lg"
+            >
+              <Check className="h-5 w-5 mr-2" />
+              Mevcut Planınız
+            </Button>
+          ) : (
+            <Button
+              onClick={() => handlePlanSelect(planId)}
+              disabled={isProcessing || !planId}
+              className={`w-full shadow-lg hover:shadow-xl transition-all mt-auto ${
+                isPopular
+                  ? "bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white"
+                  : "bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white"
+              }`}
+              size="lg"
+            >
+              {isProcessing ? (
+                <>
+                  <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-2"></div>
+                  İşleniyor...
+                </>
+              ) : (
+                <>
+                  <Crown className="h-5 w-5 mr-2" />
+                  {currentPlanType === "free" ? `${title} Al (${price}₺)` : `${title} Planına Geç`}
+                </>
+              )}
+            </Button>
+          )}
+        </CardContent>
+      </Card>
     )
   }
 
@@ -167,17 +328,23 @@ export default function PremiumPage() {
               <Crown className="h-12 w-12 sm:h-16 sm:w-16 md:h-20 md:w-20 text-white" />
             </div>
           </div>
-          <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold">Premium Üyelik</h1>
+          <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold">Abonelik Planları</h1>
           <p className="text-base sm:text-lg md:text-xl lg:text-2xl text-white/90 max-w-2xl mx-auto leading-relaxed px-4">
             {isPremium
               ? "Premium üyeliğiniz aktif! İstediğiniz zaman planınızı değiştirebilirsiniz."
-              : "Tüm özelliklere sınırsız erişim, reklamsız deneyim ve gelişmiş analiz araçları"}
+              : "Size uygun planı seçin ve finansal kontrolünüzü arttırın"}
           </p>
-          {isPremium && subscription && (
+          {subscription && subscription.plan_id !== "free" && (
             <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
               <Badge className="bg-white/20 text-white border-white/30 backdrop-blur-sm px-6 py-3 text-lg shadow-lg">
                 <Check className="h-5 w-5 mr-2" />
-                {subscription.plan_id === "premium-yearly" ? "Yıllık Premium" : "Aylık Premium"}
+                {subscription.plan_id === "premium-yearly"
+                  ? "Yıllık Premium"
+                  : subscription.plan_id === "premium-monthly"
+                    ? "Aylık Premium"
+                    : subscription.plan_id === "pro-yearly"
+                      ? "Yıllık Pro"
+                      : "Aylık Pro"}
               </Badge>
               {subscription.expiresAt && (
                 <Badge className="bg-white/15 text-white/90 border-white/20 backdrop-blur-sm px-6 py-3 text-base">
@@ -190,178 +357,55 @@ export default function PremiumPage() {
         </div>
       </div>
 
-      <div className="max-w-4xl mx-auto">
-        <div className="grid md:grid-cols-2 gap-4 sm:gap-6 md:gap-8 items-stretch">
+      <div className="max-w-6xl mx-auto">
+        <div className="grid md:grid-cols-3 gap-4 sm:gap-6 md:gap-8 items-stretch">
           {/* Free Plan */}
-          <Card className="relative border-2 border-gray-200 dark:border-white/10 dark:bg-black/20 hover:shadow-lg transition-shadow flex flex-col">
-            <CardHeader className="space-y-4">
-              <div className="flex items-center justify-between">
-                <CardTitle className="text-2xl">Ücretsiz</CardTitle>
-                <Badge variant="outline" className="text-xs">
-                  Temel
-                </Badge>
-              </div>
-              <CardDescription className="text-base">Temel özellikler ile başlayın</CardDescription>
-              <div className="pt-4">
-                <p className="text-5xl font-bold">
-                  0₺<span className="text-lg font-normal text-gray-600 dark:text-white/60">/ay</span>
-                </p>
-              </div>
-            </CardHeader>
-            <CardContent className="space-y-6 flex-1 flex flex-col">
-              <div className="space-y-4 flex-1">
-                <div className="flex items-start gap-3">
-                  <div className="p-1 bg-emerald-100 dark:bg-emerald-900/30 rounded-full">
-                    <Check className="h-4 w-4 text-emerald-600 dark:text-emerald-400" />
-                  </div>
-                  <span className="text-sm">1 adet OCR analizi</span>
-                </div>
-                <div className="flex items-start gap-3">
-                  <div className="p-1 bg-red-100 dark:bg-red-900/30 rounded-full">
-                    <X className="h-4 w-4 text-red-600 dark:text-red-400" />
-                  </div>
-                  <span className="text-sm text-gray-500 dark:text-white/60">Finansal sağlık analizi yok</span>
-                </div>
-                <div className="flex items-start gap-3">
-                  <div className="p-1 bg-emerald-100 dark:bg-emerald-900/30 rounded-full">
-                    <Check className="h-4 w-4 text-emerald-600 dark:text-emerald-400" />
-                  </div>
-                  <span className="text-sm">Temel kredi takibi</span>
-                </div>
-                <div className="flex items-start gap-3">
-                  <div className="p-1 bg-emerald-100 dark:bg-emerald-900/30 rounded-full">
-                    <Check className="h-4 w-4 text-emerald-600 dark:text-emerald-400" />
-                  </div>
-                  <span className="text-sm">Ödeme hatırlatıcıları</span>
-                </div>
-                <div className="flex items-start gap-3">
-                  <div className="p-1 bg-red-100 dark:bg-red-900/30 rounded-full">
-                    <X className="h-4 w-4 text-red-600 dark:text-red-400" />
-                  </div>
-                  <span className="text-sm text-gray-500 dark:text-white/60">Reklamlar gösterilir</span>
-                </div>
-              </div>
-              {!isPremium && (
-                <Button variant="outline" className="w-full bg-transparent mt-auto" disabled>
-                  Mevcut Plan
-                </Button>
-              )}
-            </CardContent>
-          </Card>
+          {freePlan && (
+            <PlanCard
+              title="Free"
+              subtitle="Temel özellikler ile başlayın"
+              price={0}
+              period="ay"
+              features={freePlan.features}
+              planId="free"
+              badge={{ text: "Temel", variant: "outline" }}
+            />
+          )}
 
-          {/* Premium Plan with Toggle */}
-          <Card className="relative border-2 border-emerald-500 dark:border-emerald-600 dark:bg-black/20 shadow-2xl hover:shadow-xl transition-all flex flex-col">
-            <div className="absolute -top-4 left-1/2 -translate-x-1/2 z-20">
-              <Badge className="bg-gradient-to-r from-amber-500 to-orange-600 text-white border-0 px-6 py-2 shadow-lg">
-                <Sparkles className="h-4 w-4 mr-1" />
-                En Popüler
-              </Badge>
-            </div>
-            <div className="absolute inset-0 bg-gradient-to-br from-emerald-50/50 to-teal-50/50 dark:from-emerald-950/20 dark:to-teal-950/20 rounded-lg -z-10"></div>
+          {/* Pro Plan */}
+          {proMonthly && proYearly && (
+            <PlanCard
+              title="Pro"
+              subtitle={isProYearly ? "Yıllık öde, %20 tasarruf et" : "Aylık ödeme ile profesyonel özelliklere erişin"}
+              price={isProYearly ? proYearly.price : proMonthly.price}
+              originalPrice={isProYearly ? proYearly.originalPrice : undefined}
+              period={isProYearly ? "yıl" : "ay"}
+              features={isProYearly ? proYearly.features : proMonthly.features}
+              planId={isProYearly ? "pro-yearly" : "pro-monthly"}
+              showToggle
+              isYearly={isProYearly}
+              onToggleChange={setIsProYearly}
+              monthlyPrice={proMonthly.price}
+            />
+          )}
 
-            <CardHeader className="relative space-y-4">
-              <div className="flex items-center justify-between">
-                <CardTitle className="flex items-center gap-2 text-2xl">
-                  <Crown className="h-7 w-7 text-amber-500" />
-                  <span>Premium</span>
-                </CardTitle>
-                {isYearly && yearlyPlan?.discount && (
-                  <Badge className="bg-gradient-to-r from-red-500 to-orange-500 text-white border-0">
-                    {yearlyPlan.discount}
-                  </Badge>
-                )}
-              </div>
-
-              {/* Toggle Switch */}
-              <div className="flex items-center justify-center gap-2 sm:gap-3 p-3 sm:p-4 bg-white/50 dark:bg-black/20 rounded-xl border border-emerald-200 dark:border-emerald-800">
-                <span className={`text-xs sm:text-sm font-medium transition-colors ${!isYearly ? "text-emerald-600 dark:text-emerald-400" : "text-gray-500"}`}>
-                  Aylık
-                </span>
-                <Switch checked={isYearly} onCheckedChange={setIsYearly} className="data-[state=checked]:bg-emerald-600" />
-                <span className={`text-xs sm:text-sm font-medium transition-colors ${isYearly ? "text-emerald-600 dark:text-emerald-400" : "text-gray-500"}`}>
-                  Yıllık
-                  {yearlyPlan && (
-                    <span className="ml-1 text-[10px] sm:text-xs text-emerald-600 dark:text-emerald-400 whitespace-nowrap">
-                      (398₺ tasarruf)
-                    </span>
-                  )}
-                </span>
-              </div>
-
-              <CardDescription className="text-base text-center">
-                {isYearly ? "Yıllık öde, 2 ay bedava kazan!" : "Aylık ödeme ile premium özelliklere erişin"}
-              </CardDescription>
-
-              <div className="pt-4">
-                {isYearly && yearlyPlan?.originalPrice && (
-                  <p className="text-lg sm:text-xl text-gray-500 dark:text-white/60 line-through text-center">
-                    {yearlyPlan.originalPrice}₺/yıllık
-                  </p>
-                )}
-                <p className="text-4xl sm:text-5xl font-bold text-center">
-                  {selectedPlan?.price}₺
-                  <span className="text-base sm:text-lg font-normal text-gray-600 dark:text-white/60">
-                    /{isYearly ? "yıl" : "ay"}
-                  </span>
-                </p>
-                {isYearly && yearlyPlan && monthlyPlan && (
-                  <div className="mt-3 p-2 sm:p-3 bg-emerald-100 dark:bg-emerald-900/30 rounded-lg">
-                    <p className="text-xs sm:text-sm text-emerald-800 dark:text-emerald-200 text-center flex items-center justify-center gap-1 sm:gap-2">
-                      <Zap className="h-3 w-3 sm:h-4 sm:w-4 flex-shrink-0" />
-                      <span>{calculateSavings(yearlyPlan.price, monthlyPlan.price)}₺ tasarruf ediyorsunuz!</span>
-                    </p>
-                  </div>
-                )}
-                {!isYearly && (
-                  <p className="text-xs sm:text-sm text-gray-600 dark:text-white/60 text-center mt-2">
-                    Yıllık plan ile %17 indirim kazanın
-                  </p>
-                )}
-              </div>
-            </CardHeader>
-
-            <CardContent className="relative space-y-6 flex-1 flex flex-col">
-              <div className="space-y-4 flex-1">
-                {selectedPlan?.features.map((feature, idx) => (
-                  <div key={idx} className="flex items-start gap-3">
-                    <div className="p-1 bg-emerald-100 dark:bg-emerald-900/30 rounded-full">
-                      <Check className="h-4 w-4 text-emerald-600 dark:text-emerald-400" />
-                    </div>
-                    <span className="text-sm font-medium">{feature}</span>
-                  </div>
-                ))}
-              </div>
-              {isPremium && subscription?.plan_id === (isYearly ? "premium-yearly" : "premium-monthly") ? (
-                <Button
-                  className="w-full bg-gray-400 dark:bg-emerald-900/40 cursor-not-allowed shadow-lg mt-auto opacity-60"
-                  disabled
-                  size="lg"
-                >
-                  <Check className="h-5 w-5 mr-2" />
-                  Mevcut Planınız
-                </Button>
-              ) : (
-                <Button
-                  onClick={handleUpgrade}
-                  disabled={isProcessing}
-                  className="w-full bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 dark:from-emerald-500 dark:to-teal-600 dark:hover:from-emerald-600 dark:hover:to-teal-700 text-white shadow-lg hover:shadow-xl transition-all mt-auto"
-                  size="lg"
-                >
-                  {isProcessing ? (
-                    <>
-                      <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-2"></div>
-                      İşleniyor...
-                    </>
-                  ) : (
-                    <>
-                      <Crown className="h-5 w-5 mr-2" />
-                      {isPremium ? `Plana Geç (${selectedPlan?.price}₺)` : `Premium Al (${selectedPlan?.price}₺)`}
-                    </>
-                  )}
-                </Button>
-              )}
-            </CardContent>
-          </Card>
+          {/* Premium Plan */}
+          {premiumMonthly && premiumYearly && (
+            <PlanCard
+              title="Premium"
+              subtitle={isPremiumYearly ? "Yıllık öde, %20 tasarruf et" : "Aylık ödeme ile sınırsız özelliklere erişin"}
+              price={isPremiumYearly ? premiumYearly.price : premiumMonthly.price}
+              originalPrice={isPremiumYearly ? premiumYearly.originalPrice : undefined}
+              period={isPremiumYearly ? "yıl" : "ay"}
+              features={isPremiumYearly ? premiumYearly.features : premiumMonthly.features}
+              planId={isPremiumYearly ? "premium-yearly" : "premium-monthly"}
+              isPopular
+              showToggle
+              isYearly={isPremiumYearly}
+              onToggleChange={setIsPremiumYearly}
+              monthlyPrice={premiumMonthly.price}
+            />
+          )}
         </div>
       </div>
 
@@ -372,9 +416,9 @@ export default function PremiumPage() {
             <div className="p-2 sm:p-3 bg-white/20 rounded-xl w-fit backdrop-blur-sm mb-2 sm:mb-3">
               <Sparkles className="h-5 w-5 sm:h-6 sm:w-6 md:h-7 md:w-7 text-white" />
             </div>
-            <CardTitle className="text-white text-lg sm:text-xl mb-1 sm:mb-2">Sınırsız Analiz</CardTitle>
+            <CardTitle className="text-white text-lg sm:text-xl mb-1 sm:mb-2">OCR Teknolojisi</CardTitle>
             <CardDescription className="text-white/90 text-sm sm:text-base leading-relaxed">
-              OCR teknolojisi ile sınırsız kredi dökümü analizi yapın
+              Kredi döküm analizi otomasyonu
             </CardDescription>
           </CardHeader>
         </Card>
@@ -385,9 +429,9 @@ export default function PremiumPage() {
             <div className="p-2 sm:p-3 bg-white/20 rounded-xl w-fit backdrop-blur-sm mb-2 sm:mb-3">
               <BarChart3 className="h-5 w-5 sm:h-6 sm:w-6 md:h-7 md:w-7 text-white" />
             </div>
-            <CardTitle className="text-white text-lg sm:text-xl mb-1 sm:mb-2">AI Finansal Sağlık Özeti</CardTitle>
+            <CardTitle className="text-white text-lg sm:text-xl mb-1 sm:mb-2">AI Finansal Sağlık Analizi</CardTitle>
             <CardDescription className="text-white/90 text-sm sm:text-base leading-relaxed">
-              Finansal durumunuzu detaylı analiz edin ve öneriler alın
+              Yapay zeka destekli finansal öneriler
             </CardDescription>
           </CardHeader>
         </Card>
@@ -398,14 +442,16 @@ export default function PremiumPage() {
             <div className="p-2 sm:p-3 bg-white/20 rounded-xl w-fit backdrop-blur-sm mb-2 sm:mb-3">
               <Shield className="h-5 w-5 sm:h-6 sm:w-6 md:h-7 md:w-7 text-white" />
             </div>
-            <CardTitle className="text-white text-lg sm:text-xl mb-1 sm:mb-2">Reklamsız</CardTitle>
-            <CardDescription className="text-white/90 text-sm sm:text-base leading-relaxed">Kesintisiz, reklamsız bir deneyim yaşayın</CardDescription>
+            <CardTitle className="text-white text-lg sm:text-xl mb-1 sm:mb-2">Reklamsız Deneyim</CardTitle>
+            <CardDescription className="text-white/90 text-sm sm:text-base leading-relaxed">
+              Kesintisiz kullanım imkanı
+            </CardDescription>
           </CardHeader>
         </Card>
       </div>
 
-      {/* Current Usage */}
-      {!isPremium && subscription && (
+      {/* Current Usage for Free Users */}
+      {!isPremium && subscription && currentPlanType === "free" && (
         <Card className="relative overflow-hidden border-0 bg-gradient-to-br from-amber-500 via-orange-600 to-red-600 dark:from-amber-600 dark:via-orange-700 dark:to-red-700 text-white shadow-2xl">
           <div className="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full blur-3xl"></div>
           <div className="absolute bottom-0 left-0 w-64 h-64 bg-orange-500/20 rounded-full blur-3xl"></div>
@@ -435,11 +481,11 @@ export default function PremiumPage() {
             </div>
             <div className="bg-white/10 backdrop-blur-sm rounded-xl p-3 sm:p-5 border border-white/20">
               <div className="flex items-center justify-between mb-2 sm:mb-3 gap-2">
-                <span className="text-sm sm:text-base font-medium text-white">AI Finansal Sağlık Özeti</span>
+                <span className="text-sm sm:text-base font-medium text-white">AI Finansal Sağlık Analizi</span>
                 <Badge className="bg-white/20 text-white border-white/30 backdrop-blur-sm text-xs">
                   <Crown className="h-3 w-3 mr-1 flex-shrink-0" />
-                  <span className="hidden sm:inline">Premium Özellik</span>
-                  <span className="sm:hidden">Premium</span>
+                  <span className="hidden sm:inline">Ücretli Özellik</span>
+                  <span className="sm:hidden">Ücretli</span>
                 </Badge>
               </div>
               <div className="w-full bg-white/20 rounded-full h-2 sm:h-3 overflow-hidden">
@@ -461,9 +507,8 @@ export default function PremiumPage() {
               <DialogTitle className="text-xl">Plan Değişikliği Onayı</DialogTitle>
             </div>
             <DialogDescription className="text-base pt-2">
-              {subscription?.plan_id === "premium-yearly"
-                ? "Yıllık planınızdan aylık plana geçmek istediğinize emin misiniz? Mevcut süreniz bittiğinde aylık plan aktif olacaktır."
-                : "Aylık planınızdan yıllık plana geçmek istediğinize emin misiniz? Mevcut ayınız bittiğinde yıllık plan aktif olacaktır."}
+              Plan değişikliğiniz kaydedilecektir. Mevcut abonelik süreniz bittiğinde yeni plan otomatik olarak devreye
+              girecektir.
             </DialogDescription>
           </DialogHeader>
           <div className="py-4">
@@ -472,21 +517,35 @@ export default function PremiumPage() {
                 <p className="text-sm font-medium text-gray-900 dark:text-white mb-2">Mevcut Plan:</p>
                 <div className="flex items-center justify-between">
                   <span className="text-base text-gray-700 dark:text-white/70">
-                    {subscription?.plan_id === "premium-yearly" ? "Yıllık Premium" : "Aylık Premium"}
+                    {currentPlanId === "premium-yearly"
+                      ? "Yıllık Premium"
+                      : currentPlanId === "premium-monthly"
+                        ? "Aylık Premium"
+                        : currentPlanId === "pro-yearly"
+                          ? "Yıllık Pro"
+                          : currentPlanId === "pro-monthly"
+                            ? "Aylık Pro"
+                            : "Ücretsiz"}
                   </span>
-                  <Badge variant="outline">
-                    {subscription?.plan_id === "premium-yearly" ? "1,990₺/yıl" : "199₺/ay"}
-                  </Badge>
+                  <Badge variant="outline">{plans.find((p) => p.id === currentPlanId)?.price || 0}₺</Badge>
                 </div>
               </div>
               <div className="p-4 bg-emerald-50 dark:bg-emerald-500/10 rounded-lg border-2 border-emerald-200 dark:border-emerald-800">
                 <p className="text-sm font-medium text-emerald-900 dark:text-emerald-100 mb-2">Yeni Plan:</p>
                 <div className="flex items-center justify-between">
                   <span className="text-base text-emerald-700 dark:text-emerald-300">
-                    {targetPlanId === "premium-yearly" ? "Yıllık Premium" : "Aylık Premium"}
+                    {targetPlanId === "premium-yearly"
+                      ? "Yıllık Premium"
+                      : targetPlanId === "premium-monthly"
+                        ? "Aylık Premium"
+                        : targetPlanId === "pro-yearly"
+                          ? "Yıllık Pro"
+                          : targetPlanId === "pro-monthly"
+                            ? "Aylık Pro"
+                            : "Bilinmiyor"}
                   </span>
                   <Badge className="bg-emerald-600 dark:bg-emerald-500">
-                    {targetPlanId === "premium-yearly" ? "1,990₺/yıl" : "199₺/ay"}
+                    {plans.find((p) => p.id === targetPlanId)?.price || 0}₺
                   </Badge>
                 </div>
               </div>
@@ -495,11 +554,9 @@ export default function PremiumPage() {
               <p className="text-sm text-blue-900 dark:text-blue-100">
                 <strong>Önemli:</strong> Plan değişikliğiniz kaydedilecektir. Mevcut abonelik süreniz{" "}
                 {subscription?.expiresAt && (
-                  <span className="font-semibold">
-                    ({new Date(subscription.expiresAt).toLocaleDateString("tr-TR")})
-                  </span>
+                  <span className="font-semibold">({new Date(subscription.expiresAt).toLocaleDateString("tr-TR")})</span>
                 )}{" "}
-                bittiğinde yeni plan otomatik olarak devreye girecektir. Ek ödeme gerekmez.
+                bittiğinde yeni plan otomatik olarak devreye girecektir.
               </p>
             </div>
           </div>
