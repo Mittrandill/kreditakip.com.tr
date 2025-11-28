@@ -154,3 +154,8 @@ export async function GET(request: NextRequest) {
     )
   }
 }
+
+// POST metodu da destekle (GitHub Actions için)
+export async function POST(request: NextRequest) {
+  return GET(request)
+}
