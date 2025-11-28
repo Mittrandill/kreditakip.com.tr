@@ -835,25 +835,6 @@ export default function SubscriptionPage() {
                       </CardContent>
                     </Card>
 
-                    {/* Saved Cards Card */}
-                    <Card className="bg-white dark:bg-black/20 border border-gray-200 dark:border-white/10 overflow-hidden">
-                      <CardContent className="p-4 sm:p-6">
-                        <div className="flex items-start justify-between mb-4">
-                          <div>
-                            <h3 className="text-3xl font-bold text-gray-900 dark:text-white mb-1">{cards.length}</h3>
-                            <p className="text-sm text-orange-600 dark:text-orange-400">Kayıtlı Kartlar</p>
-                            <p className="text-xs text-gray-500 dark:text-gray-500 mt-1">
-                              Toplam 10 kart limit
-                            </p>
-                          </div>
-                          <CreditCard className="h-6 w-6 text-orange-600 dark:text-orange-400" />
-                        </div>
-                        <Progress
-                          value={(cards.length / 10) * 100}
-                          className="h-2"
-                        />
-                      </CardContent>
-                    </Card>
                   </div>
 
                   {/* Cancellation Warning */}
