@@ -121,7 +121,7 @@ export default function AppSidebar() {
   const { state, toggleSidebar } = useSidebar()
   const isCollapsed = state === "collapsed"
   const { user, profile, loading } = useAuth()
-  const { isPremium } = useSubscription()
+  const { isPro, isPremium } = useSubscription()
   const { toast } = useToast()
   const [unreadCount, setUnreadCount] = useState(0)
 
@@ -199,6 +199,9 @@ export default function AppSidebar() {
                 <span className="text-lg tracking-tight text-[#0c241f] dark:text-white" style={{ fontFamily: "'Work Sans', sans-serif", fontWeight: 700 }}>Kredi Takip</span>
                 {isPremium && (
                   <Crown className="h-4 w-4 text-amber-500 flex-shrink-0" />
+                )}
+                {isPro && !isPremium && (
+                  <Zap className="h-4 w-4 text-blue-500 flex-shrink-0" />
                 )}
               </div>
             </div>
@@ -425,7 +428,7 @@ export default function AppSidebar() {
                           : user?.email || "Kullanıcı"}
                     </span>
                     <span className="truncate text-xs text-gray-500 dark:text-white/60">
-                      {isPremium ? "Premium Üye" : "Ücretsiz"}
+                      {isPremium ? "Premium Üye" : isPro ? "Pro Üye" : "Ücretsiz"}
                     </span>
                   </div>
 
@@ -445,6 +448,7 @@ export default function AppSidebar() {
                 <div className="flex items-center gap-2">
                   <span>Hesabım</span>
                   {isPremium && <Crown className="h-4 w-4 text-amber-500" />}
+                  {isPro && !isPremium && <Zap className="h-4 w-4 text-blue-500" />}
                 </div>
               </DropdownMenuLabel>
               <DropdownMenuSeparator className="bg-gray-200 dark:bg-emerald-900/20" />

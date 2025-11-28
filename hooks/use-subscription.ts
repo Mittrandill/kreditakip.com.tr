@@ -122,6 +122,12 @@ export function useSubscription() {
     fetchSubscription()
   }, [user?.id])
 
+  // Pro check: plan_id includes "pro" and active
+  const isPro =
+    subscription?.plan_id?.includes("pro") &&
+    (subscription?.status === "active" ||
+      (subscription?.status === "cancelled" && subscription?.expiresAt && new Date(subscription.expiresAt) > new Date()))
+
   // Premium check: active OR (cancelled but not expired yet)
   const isPremium =
     subscription?.planType === "premium" &&
@@ -139,6 +145,7 @@ export function useSubscription() {
   return {
     subscription,
     loading,
+    isPro,
     isPremium,
     canUseOCR,
     canUseRiskAnalysis,

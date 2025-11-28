@@ -781,122 +781,114 @@ export default function SubscriptionPage() {
                     </CardContent>
                   </Card>
 
-                  {/* Timeline Stats - Clean Widget Cards */}
+                  {/* Timeline - Elegant Single Card */}
                   {subscription?.startDate && subscription?.expiresAt && subscription.status === "active" && (
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-6">
-                      {/* Start Date Widget */}
-                      <Card className="bg-white dark:bg-black/20 border border-gray-200 dark:border-white/10 overflow-hidden">
-                        <CardContent className="p-4 sm:p-6">
-                          <div className="flex items-start justify-between mb-4">
-                            <div>
-                              <h3 className="text-3xl font-bold text-gray-900 dark:text-white mb-1">
-                                {new Date(subscription.startDate).toLocaleDateString("tr-TR", {
-                                  day: "numeric",
-                                  month: "short",
-                                })}
-                              </h3>
-                              <p className="text-sm text-gray-600 dark:text-gray-400">Başlangıç</p>
-                              <p className="text-xs text-gray-500 dark:text-gray-500 mt-1">
-                                {new Date(subscription.startDate).toLocaleDateString("tr-TR", {
-                                  year: "numeric",
-                                })}
-                              </p>
+                    <Card className="bg-gradient-to-br from-white via-emerald-50/30 to-white dark:from-black/40 dark:via-emerald-950/20 dark:to-black/40 border border-emerald-200 dark:border-emerald-900/30 overflow-hidden shadow-lg">
+                      <CardHeader className="pb-4">
+                        <CardTitle className="flex items-center gap-2 text-emerald-900 dark:text-emerald-100">
+                          <Calendar className="h-5 w-5 text-emerald-600 dark:text-emerald-400" />
+                          Abonelik Dönemi
+                        </CardTitle>
+                        <CardDescription className="dark:text-emerald-200/60">
+                          {Math.ceil((new Date(subscription.expiresAt).getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24))} gün sonra yenilenecek
+                        </CardDescription>
+                      </CardHeader>
+                      <CardContent className="space-y-8 pb-8">
+                        {/* Timeline Visualization */}
+                        <div className="relative">
+                          {/* Progress Bar */}
+                          <div className="relative h-2 bg-gray-200 dark:bg-gray-800 rounded-full overflow-hidden">
+                            <div
+                              className="absolute h-full bg-gradient-to-r from-emerald-500 via-teal-500 to-emerald-600 rounded-full transition-all duration-1000 shadow-lg"
+                              style={{
+                                width: `${Math.min(100, ((new Date().getTime() - new Date(subscription.startDate).getTime()) / (new Date(subscription.expiresAt).getTime() - new Date(subscription.startDate).getTime())) * 100)}%`
+                              }}
+                            >
+                              <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/30 to-transparent animate-pulse"></div>
                             </div>
-                            <Calendar className="h-6 w-6 text-emerald-600 dark:text-emerald-400" />
                           </div>
-                          <div className="h-16 relative">
-                            {/* Timeline representation */}
-                            <div className="absolute inset-0 flex items-center">
-                              <div className="w-full">
-                                <div className="relative">
-                                  <div className="h-2 bg-gray-200 dark:bg-gray-700 rounded-full"></div>
-                                  <div className="absolute top-0 left-0 h-2 bg-emerald-500 rounded-full" style={{width: "0%"}}></div>
-                                  <div className="absolute -top-2 left-0 w-4 h-4 bg-emerald-500 rounded-full border-2 border-white dark:border-gray-900"></div>
+
+                          {/* Timeline Markers */}
+                          <div className="relative mt-6">
+                            <div className="flex justify-between items-start">
+                              {/* Start Marker */}
+                              <div className="flex flex-col items-center w-1/3">
+                                <div className="relative mb-3">
+                                  <div className="w-12 h-12 rounded-full bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center shadow-lg border-4 border-white dark:border-gray-900">
+                                    <Calendar className="h-6 w-6 text-white" />
+                                  </div>
+                                  <div className="absolute -top-1 -right-1 w-4 h-4 bg-emerald-400 rounded-full animate-ping"></div>
+                                </div>
+                                <div className="text-center">
+                                  <p className="text-lg font-bold text-emerald-900 dark:text-emerald-100">
+                                    {new Date(subscription.startDate).toLocaleDateString("tr-TR", {
+                                      day: "numeric",
+                                      month: "short",
+                                      year: "numeric"
+                                    })}
+                                  </p>
+                                  <p className="text-sm text-emerald-700 dark:text-emerald-300 font-medium mt-1">Başlangıç</p>
+                                </div>
+                              </div>
+
+                              {/* Current Progress Marker */}
+                              <div className="flex flex-col items-center w-1/3">
+                                <div className="relative mb-3">
+                                  <div className="w-12 h-12 rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center shadow-lg border-4 border-white dark:border-gray-900 animate-pulse">
+                                    <TrendingUp className="h-6 w-6 text-white" />
+                                  </div>
+                                </div>
+                                <div className="text-center">
+                                  <p className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
+                                    {Math.round(((new Date().getTime() - new Date(subscription.startDate).getTime()) / (new Date(subscription.expiresAt).getTime() - new Date(subscription.startDate).getTime())) * 100)}%
+                                  </p>
+                                  <p className="text-sm text-blue-700 dark:text-blue-300 font-medium mt-1">İlerleme</p>
+                                  <p className="text-xs text-gray-600 dark:text-gray-400 mt-1">
+                                    {Math.ceil((new Date(subscription.expiresAt).getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24))} gün kaldı
+                                  </p>
+                                </div>
+                              </div>
+
+                              {/* End Marker */}
+                              <div className="flex flex-col items-center w-1/3">
+                                <div className="relative mb-3">
+                                  <div className="w-12 h-12 rounded-full bg-gradient-to-br from-orange-500 to-amber-600 flex items-center justify-center shadow-lg border-4 border-white dark:border-gray-900">
+                                    <Clock className="h-6 w-6 text-white" />
+                                  </div>
+                                </div>
+                                <div className="text-center">
+                                  <p className="text-lg font-bold text-orange-900 dark:text-orange-100">
+                                    {new Date(subscription.expiresAt).toLocaleDateString("tr-TR", {
+                                      day: "numeric",
+                                      month: "short",
+                                      year: "numeric"
+                                    })}
+                                  </p>
+                                  <p className="text-sm text-orange-700 dark:text-orange-300 font-medium mt-1">Yenileme</p>
                                 </div>
                               </div>
                             </div>
                           </div>
-                        </CardContent>
-                      </Card>
+                        </div>
 
-                      {/* Progress Widget */}
-                      <Card className="bg-white dark:bg-black/20 border border-gray-200 dark:border-white/10 overflow-hidden">
-                        <CardContent className="p-4 sm:p-6">
-                          <div className="flex items-start justify-between mb-4">
-                            <div>
-                              <h3 className="text-3xl font-bold text-gray-900 dark:text-white mb-1">
-                                {Math.round(((new Date().getTime() - new Date(subscription.startDate).getTime()) / (new Date(subscription.expiresAt).getTime() - new Date(subscription.startDate).getTime())) * 100)}%
-                              </h3>
-                              <p className="text-sm text-blue-600 dark:text-blue-400">İlerleme</p>
-                              <p className="text-xs text-gray-500 dark:text-gray-500 mt-1">
-                                {Math.ceil((new Date(subscription.expiresAt).getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24))} gün kaldı
+                        {/* Info Box */}
+                        <div className="p-4 bg-emerald-100 dark:bg-emerald-900/30 rounded-xl border border-emerald-200 dark:border-emerald-800">
+                          <div className="flex items-start gap-3">
+                            <div className="p-2 bg-emerald-500 rounded-lg">
+                              <Zap className="h-4 w-4 text-white" />
+                            </div>
+                            <div className="flex-1">
+                              <p className="text-sm font-medium text-emerald-900 dark:text-emerald-100">
+                                Aboneliğiniz otomatik yenilenmeyecek
+                              </p>
+                              <p className="text-xs text-emerald-700 dark:text-emerald-300 mt-1">
+                                {new Date(subscription.expiresAt).toLocaleDateString("tr-TR")} tarihinde size hatırlatma gönderilecek
                               </p>
                             </div>
-                            <TrendingUp className="h-6 w-6 text-blue-600 dark:text-blue-400" />
                           </div>
-                          <Progress
-                            value={Math.min(100, ((new Date().getTime() - new Date(subscription.startDate).getTime()) / (new Date(subscription.expiresAt).getTime() - new Date(subscription.startDate).getTime())) * 100)}
-                            className="h-2"
-                          />
-                        </CardContent>
-                      </Card>
-
-                      {/* Next Billing Widget */}
-                      <Card className="bg-white dark:bg-black/20 border border-gray-200 dark:border-white/10 overflow-hidden">
-                        <CardContent className="p-4 sm:p-6">
-                          <div className="flex items-start justify-between mb-4">
-                            <div>
-                              <h3 className="text-3xl font-bold text-gray-900 dark:text-white mb-1">
-                                {new Date(subscription.expiresAt).toLocaleDateString("tr-TR", {
-                                  day: "numeric",
-                                  month: "short",
-                                })}
-                              </h3>
-                              <p className="text-sm text-orange-600 dark:text-orange-400">Yenileme</p>
-                              <p className="text-xs text-gray-500 dark:text-gray-500 mt-1">
-                                {new Date(subscription.expiresAt).toLocaleDateString("tr-TR", {
-                                  year: "numeric",
-                                })}
-                              </p>
-                            </div>
-                            <Clock className="h-6 w-6 text-orange-600 dark:text-orange-400" />
-                          </div>
-                          <div className="h-16 relative">
-                            {/* Clock/Timer representation */}
-                            <div className="absolute inset-0 flex items-center justify-center">
-                              <div className="relative w-12 h-12">
-                                <svg className="w-12 h-12 transform -rotate-90">
-                                  <circle
-                                    cx="24"
-                                    cy="24"
-                                    r="20"
-                                    fill="none"
-                                    stroke="currentColor"
-                                    strokeWidth="3"
-                                    className="text-gray-200 dark:text-gray-700"
-                                  />
-                                  <circle
-                                    cx="24"
-                                    cy="24"
-                                    r="20"
-                                    fill="none"
-                                    stroke="currentColor"
-                                    strokeWidth="3"
-                                    strokeLinecap="round"
-                                    className="text-orange-500"
-                                    strokeDasharray={`${2 * Math.PI * 20}`}
-                                    strokeDashoffset={`${2 * Math.PI * 20 * (1 - (new Date(subscription.expiresAt).getTime() - new Date(subscription.startDate).getTime()) / (new Date(subscription.expiresAt).getTime() - new Date(subscription.startDate).getTime()))}`}
-                                  />
-                                </svg>
-                                <div className="absolute inset-0 flex items-center justify-center">
-                                  <Clock className="h-5 w-5 text-orange-600" />
-                                </div>
-                              </div>
-                            </div>
-                          </div>
-                        </CardContent>
-                      </Card>
-                    </div>
+                        </div>
+                      </CardContent>
+                    </Card>
                   )}
 
                   {/* Premium Feature Cards */}
