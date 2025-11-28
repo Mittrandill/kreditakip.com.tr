@@ -1,11 +1,21 @@
--- Combined script: First run migration, then update plans
--- Execute this script in order
+-- Complete Paddle Integration Setup
+-- Run this entire script in Supabase SQL Editor
 
--- ============================================
--- PART 1: Run Migration (if not already done)
--- ============================================
+-- =====================================================
+-- STEP 1: Check existing table structure
+-- =====================================================
 
--- Add Paddle integration to existing subscriptions table
+-- First, let's see what columns exist in subscription_plans
+-- (This is just for debugging, will be commented out after)
+SELECT column_name, data_type, is_nullable
+FROM information_schema.columns
+WHERE table_name = 'subscription_plans'
+ORDER BY ordinal_position;
+
+-- =====================================================
+-- STEP 2: Add missing columns to subscriptions table
+-- =====================================================
+
 ALTER TABLE subscriptions
 ADD COLUMN IF NOT EXISTS paddle_subscription_id VARCHAR(255),
 ADD COLUMN IF NOT EXISTS paddle_plan_id VARCHAR(255),
@@ -16,10 +26,14 @@ ADD COLUMN IF NOT EXISTS cancel_url TEXT,
 ADD COLUMN IF NOT EXISTS update_url TEXT,
 ADD COLUMN IF NOT EXISTS paddle_subscription_data JSONB;
 
--- Create indexes for Paddle fields
+-- Create indexes for subscriptions
 CREATE INDEX IF NOT EXISTS idx_subscriptions_paddle_sub_id ON subscriptions(paddle_subscription_id);
 CREATE INDEX IF NOT EXISTS idx_subscriptions_paddle_customer_id ON subscriptions(paddle_customer_id);
 CREATE INDEX IF NOT EXISTS idx_subscriptions_paddle_plan_id ON subscriptions(paddle_plan_id);
+
+-- =====================================================
+-- STEP 3: Create new Paddle tables
+-- =====================================================
 
 -- Create paddle_customers table
 CREATE TABLE IF NOT EXISTS paddle_customers (
@@ -54,45 +68,18 @@ CREATE INDEX IF NOT EXISTS idx_paddle_webhook_events_event_id ON paddle_webhook_
 CREATE INDEX IF NOT EXISTS idx_paddle_webhook_events_event_type ON paddle_webhook_events(event_type);
 CREATE INDEX IF NOT EXISTS idx_paddle_webhook_events_processed ON paddle_webhook_events(processed);
 
--- RLS Policies for paddle_customers
-ALTER TABLE paddle_customers ENABLE ROW LEVEL SECURITY;
+-- =====================================================
+-- STEP 4: Add Paddle columns to subscription_plans
+-- =====================================================
 
--- Drop existing policies if they exist (to avoid errors)
-DROP POLICY IF EXISTS "Users can view own paddle customer data" ON paddle_customers;
-DROP POLICY IF EXISTS "Users can update own paddle customer data" ON paddle_customers;
-DROP POLICY IF EXISTS "Service role can insert paddle customers" ON paddle_customers;
-
--- Users can see their own Paddle customer data
-CREATE POLICY "Users can view own paddle customer data" ON paddle_customers
-    FOR SELECT USING (auth.uid() = user_id);
-
--- Users can update their own Paddle customer data
-CREATE POLICY "Users can update own paddle customer data" ON paddle_customers
-    FOR UPDATE USING (auth.uid() = user_id);
-
--- Only service role can insert Paddle customer data
-CREATE POLICY "Service role can insert paddle customers" ON paddle_customers
-    FOR INSERT WITH CHECK (true);
-
--- RLS Policies for paddle_webhook_events (only service role)
-ALTER TABLE paddle_webhook_events ENABLE ROW LEVEL SECURITY;
-
--- Drop existing policy if it exists
-DROP POLICY IF EXISTS "Service role full access to webhook events" ON paddle_webhook_events;
-
--- Only service role can access webhook events
-CREATE POLICY "Service role full access to webhook events" ON paddle_webhook_events
-    FOR ALL USING (true);
-
--- Update subscription_plans table to include Paddle product IDs
 ALTER TABLE subscription_plans
 ADD COLUMN IF NOT EXISTS paddle_product_id VARCHAR(255),
 ADD COLUMN IF NOT EXISTS paddle_price_id VARCHAR(255),
 ADD COLUMN IF NOT EXISTS payment_provider VARCHAR(255) DEFAULT 'paddle';
 
--- ============================================
--- PART 2: Update Plans with Actual Paddle IDs
--- ============================================
+-- =====================================================
+-- STEP 5: Update plans with Paddle IDs
+-- =====================================================
 
 -- Update Pro Monthly Plan
 UPDATE subscription_plans
@@ -126,38 +113,65 @@ SET
   payment_provider = 'paddle'
 WHERE id = 'premium-yearly';
 
--- ============================================
--- PART 3: Verify Updates
--- ============================================
+-- =====================================================
+-- STEP 6: Set up RLS policies (simplified)
+-- =====================================================
 
--- Verify subscription_plans updates
+-- Enable RLS on new tables
+ALTER TABLE paddle_customers ENABLE ROW LEVEL SECURITY;
+ALTER TABLE paddle_webhook_events ENABLE ROW LEVEL SECURITY;
+
+-- Create simple policies (drop if exists first)
+DROP POLICY IF EXISTS "Users can view own paddle customer data" ON paddle_customers;
+DROP POLICY IF EXISTS "Users can update own paddle customer data" ON paddle_customers;
+DROP POLICY IF EXISTS "Service role can insert paddle customers" ON paddle_customers;
+
+CREATE POLICY "Users can view own paddle customer data" ON paddle_customers
+    FOR SELECT USING (auth.uid() = user_id);
+
+CREATE POLICY "Users can update own paddle customer data" ON paddle_customers
+    FOR UPDATE USING (auth.uid() = user_id);
+
+CREATE POLICY "Service role can insert paddle customers" ON paddle_customers
+    FOR INSERT WITH CHECK (true);
+
+DROP POLICY IF EXISTS "Service role full access to webhook events" ON paddle_webhook_events;
+
+CREATE POLICY "Service role full access to webhook events" ON paddle_webhook_events
+    FOR ALL USING (true);
+
+-- =====================================================
+-- STEP 7: Verification queries
+-- =====================================================
+
+-- Check if columns were added successfully
 SELECT
-  id,
-  name,
-  price,
-  period,
-  paddle_product_id,
-  paddle_price_id,
-  payment_provider,
-  is_active
+    'subscription_plans' as table_name,
+    column_name,
+    data_type
+FROM information_schema.columns
+WHERE table_name = 'subscription_plans'
+    AND column_name IN ('paddle_product_id', 'paddle_price_id', 'payment_provider')
+UNION ALL
+SELECT
+    'subscriptions' as table_name,
+    column_name,
+    data_type
+FROM information_schema.columns
+WHERE table_name = 'subscriptions'
+    AND column_name LIKE '%paddle%'
+ORDER BY table_name, column_name;
+
+-- Verify the plan updates
+SELECT
+    id,
+    name,
+    price,
+    billing_interval,
+    paddle_product_id,
+    paddle_price_id,
+    payment_provider,
+    is_active
 FROM subscription_plans
 WHERE id IN ('pro-monthly', 'pro-yearly', 'premium-monthly', 'premium-yearly')
 ORDER BY price;
-
--- Check if all tables were created
-SELECT
-  'subscriptions' as table_name,
-  column_name,
-  data_type
-FROM information_schema.columns
-WHERE table_name = 'subscriptions'
-  AND column_name LIKE '%paddle%'
-UNION ALL
-SELECT
-  'subscription_plans' as table_name,
-  column_name,
-  data_type
-FROM information_schema.columns
-WHERE table_name = 'subscription_plans'
-  AND column_name LIKE '%paddle%'
-ORDER BY table_name, column_name;
