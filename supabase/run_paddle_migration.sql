@@ -57,23 +57,31 @@ CREATE INDEX IF NOT EXISTS idx_paddle_webhook_events_processed ON paddle_webhook
 -- RLS Policies for paddle_customers
 ALTER TABLE paddle_customers ENABLE ROW LEVEL SECURITY;
 
+-- Drop existing policies if they exist (to avoid errors)
+DROP POLICY IF EXISTS "Users can view own paddle customer data" ON paddle_customers;
+DROP POLICY IF EXISTS "Users can update own paddle customer data" ON paddle_customers;
+DROP POLICY IF EXISTS "Service role can insert paddle customers" ON paddle_customers;
+
 -- Users can see their own Paddle customer data
-CREATE POLICY IF NOT EXISTS "Users can view own paddle customer data" ON paddle_customers
+CREATE POLICY "Users can view own paddle customer data" ON paddle_customers
     FOR SELECT USING (auth.uid() = user_id);
 
 -- Users can update their own Paddle customer data
-CREATE POLICY IF NOT EXISTS "Users can update own paddle customer data" ON paddle_customers
+CREATE POLICY "Users can update own paddle customer data" ON paddle_customers
     FOR UPDATE USING (auth.uid() = user_id);
 
 -- Only service role can insert Paddle customer data
-CREATE POLICY IF NOT EXISTS "Service role can insert paddle customers" ON paddle_customers
+CREATE POLICY "Service role can insert paddle customers" ON paddle_customers
     FOR INSERT WITH CHECK (true);
 
 -- RLS Policies for paddle_webhook_events (only service role)
 ALTER TABLE paddle_webhook_events ENABLE ROW LEVEL SECURITY;
 
+-- Drop existing policy if it exists
+DROP POLICY IF EXISTS "Service role full access to webhook events" ON paddle_webhook_events;
+
 -- Only service role can access webhook events
-CREATE POLICY IF NOT EXISTS "Service role full access to webhook events" ON paddle_webhook_events
+CREATE POLICY "Service role full access to webhook events" ON paddle_webhook_events
     FOR ALL USING (true);
 
 -- Update subscription_plans table to include Paddle product IDs
