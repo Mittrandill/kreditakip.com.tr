@@ -69,8 +69,6 @@ const onlyNumbers = (value: string): string => {
 export function PaymentForm({ planId, planName, amount, billingInfo, onSuccess, onError }: PaymentFormProps) {
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
-  const [saveCard, setSaveCard] = useState(false)
-  const [autoRenewal, setAutoRenewal] = useState(false)
   const [termsAccepted, setTermsAccepted] = useState(false)
 
   // Modal states
@@ -213,7 +211,6 @@ export function PaymentForm({ planId, planName, amount, billingInfo, onSuccess, 
           planId,
           billingInfo,
           installmentCount: 0,
-          storeCard: saveCard,
           securityContext: {
             deviceFingerprint,
             browserInfo,
@@ -328,15 +325,15 @@ export function PaymentForm({ planId, planName, amount, billingInfo, onSuccess, 
               </section>
 
               <section>
-                <h3 className="font-semibold text-base mb-2">6. Otomatik Yenileme Hatırlatmaları</h3>
+                <h3 className="font-semibold text-base mb-2">6. Abonelik Yenileme</h3>
                 <p className="text-muted-foreground">
-                  Kart saklama seçeneğini tercih ederseniz:
+                  Abonelikleriniz otomatik olarak yenilenmez:
                 </p>
                 <ul className="list-disc list-inside space-y-2 text-muted-foreground mt-2">
-                  <li>Kartınız PayTR güvenli token sistemi ile saklanır</li>
-                  <li>Aboneliğiniz bitmeden 3 gün önce email ile hatırlatılır</li>
-                  <li>İstediğiniz zaman ayarlardan yenileme tercihlerinizi değiştirebilirsiniz</li>
-                  <li>Kart bilgileriniz hiçbir zaman sunucularımızda saklanmaz</li>
+                  <li>Abonelik süreniz dolmadan 3 gün önce email ile hatırlatma gönderilir</li>
+                  <li>Yenileme işlemini manuel olarak yapmanız gerekir</li>
+                  <li>Ödeme bilgileri hiçbir zaman sunucularımızda saklanmaz</li>
+                  <li>Her ödeme için kart bilgilerinizi güvenli bir şekilde girersiniz</li>
                 </ul>
               </section>
 
@@ -400,7 +397,7 @@ export function PaymentForm({ planId, planName, amount, billingInfo, onSuccess, 
                   <li>Kimlik bilgileri (ad, soyad, TC kimlik no)</li>
                   <li>İletişim bilgileri (email, telefon)</li>
                   <li>Fatura bilgileri (adres, vergi bilgileri)</li>
-                  <li>Kredi kartı bilgileri (tokenize edilmiş, PayTR tarafından saklanır)</li>
+                  <li>Kredi kartı bilgileri (yalnızca ödeme anında PayTR'ye iletilir, saklanmaz)</li>
                   <li>Kullanım verileri (platform kullanımı, tercihler)</li>
                 </ul>
               </section>
@@ -613,56 +610,8 @@ export function PaymentForm({ planId, planName, amount, billingInfo, onSuccess, 
             {errors.cvv && <p className="text-sm text-red-500">{errors.cvv}</p>}
           </div>
 
-          {/* Kart Saklama ve Otomatik Yenileme */}
+          {/* Kullanım Koşulları */}
           <div className="space-y-3 pt-2">
-            <div className="flex items-start space-x-2">
-              <Checkbox
-                id="saveCard"
-                checked={saveCard}
-                onCheckedChange={(checked) => {
-                  setSaveCard(checked as boolean)
-                  if (!checked) setAutoRenewal(false)
-                }}
-                disabled={isLoading}
-                className="mt-1"
-              />
-              <div className="flex-1">
-                <Label
-                  htmlFor="saveCard"
-                  className="text-sm font-medium cursor-pointer block"
-                >
-                  Kartımı güvenli bir şekilde sakla
-                </Label>
-                <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-                  Kart bilgileriniz PayTR güvenli altyapısında saklanır. Sunucularımızda tutulmaz.
-                </p>
-              </div>
-            </div>
-
-            {saveCard && (
-              <div className="flex items-start space-x-2 ml-6 pl-4 border-l-2 border-emerald-500 dark:border-emerald-600">
-                <Checkbox
-                  id="autoRenewal"
-                  checked={autoRenewal}
-                  onCheckedChange={(checked) => setAutoRenewal(checked as boolean)}
-                  disabled={isLoading}
-                  className="mt-1"
-                />
-                <div className="flex-1">
-                  <Label
-                    htmlFor="autoRenewal"
-                    className="text-sm font-medium cursor-pointer block"
-                  >
-                    Otomatik yenileme hatırlatması
-                  </Label>
-                  <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-                    Aboneliğiniz bitmeden 3 gün önce otomatik olarak yenilenir.
-                    İsterseniz ayarlardan kolayca iptal edebilirsiniz.
-                  </p>
-                </div>
-              </div>
-            )}
-
             <div className="flex items-start space-x-2">
               <Checkbox
                 id="termsAccepted"

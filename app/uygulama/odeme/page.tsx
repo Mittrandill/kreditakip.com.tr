@@ -17,7 +17,7 @@ import { getPlanById } from "@/lib/subscription-plans"
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 import { LoadingSpinner } from "@/components/loading-screen"
 import { cn } from "@/lib/utils"
-import { PaymentForm } from "@/components/payment/payment-form"
+import { PaddleCheckout } from "@/components/payment/paddle-checkout"
 
 export default function PaymentPage() {
   const router = useRouter()
@@ -291,7 +291,7 @@ export default function PaymentPage() {
                     Fatura Bilgileri
                   </CardTitle>
                   <CardDescription>
-                    Fatura bilgilerinizi girin. Bir sonraki adımda kart bilgilerinizi güvenli bir şekilde gireceksiniz.
+                    Fatura bilgilerinizi girin. Bir sonraki adımda Paddle üzerinden güvenli ödeme yapacaksınız.
                   </CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-4">
@@ -552,9 +552,10 @@ export default function PaymentPage() {
         <div className="space-y-6">
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
             <div className="lg:col-span-2">
-              <PaymentForm
+              <PaddleCheckout
                 planId={selectedPlan.id}
                 planName={selectedPlan.name}
+                paddlePriceId={selectedPlan.paddle_price_id || ''}
                 amount={selectedPlan.price}
                 billingInfo={{
                   fullName: billingInfo.fullName,
@@ -562,17 +563,13 @@ export default function PaymentPage() {
                   phone: billingInfo.phone,
                   address: `${billingInfo.address}, ${billingInfo.district}`,
                   city: billingInfo.city,
-                  district: billingInfo.district,
-                  country: "Türkiye",
+                  country: "TR",
                   zipCode: billingInfo.zipCode,
-                  identityNumber: billingInfo.identityNumber,
-                  taxNumber: billingInfo.taxNumber || undefined,
-                  taxOffice: billingInfo.taxOffice || undefined,
                 }}
                 onSuccess={() => {
                   toast({
-                    title: "Yönlendiriliyor",
-                    description: "PayTR ödeme sayfasına yönlendiriliyorsunuz...",
+                    title: "Ödeme Başlatıldı",
+                    description: "Paddle ödeme penceresi açıldı...",
                   })
                 }}
                 onError={(error) => {
@@ -635,8 +632,8 @@ export default function PaymentPage() {
                 <Shield className="h-5 w-5 text-emerald-600 dark:text-emerald-400" />
                 <AlertTitle className="text-emerald-900 dark:text-emerald-100">Güvenli Ödeme</AlertTitle>
                 <AlertDescription className="text-emerald-700 dark:text-emerald-300">
-                  Kart bilgileriniz PayTR'nin PCI-DSS sertifikalı altyapısında işlenir.
-                  Bilgileriniz hiçbir zaman sunucularımıza gelmez.
+                  Ödemeleriniz Paddle'ın PCI-DSS sertifikalı altyapısında güvenli bir şekilde işlenir.
+                  Kart bilgileriniz hiçbir zaman sunucularımıza gelmez.
                 </AlertDescription>
               </Alert>
             </div>

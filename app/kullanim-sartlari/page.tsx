@@ -171,68 +171,66 @@ export default function TermsOfServicePage() {
                 </div>
               </div>
 
-              {/* Section 5: Abonelik ve Otomatik Yenileme */}
+              {/* Section 5: Abonelikler ve Ödemeler */}
               <div className="mb-8">
-                <h2 className="text-2xl font-bold text-white mb-4">5. Abonelik ve Otomatik Yenileme</h2>
+                <h2 className="text-2xl font-bold text-white mb-4">5. Abonelikler ve Ödemeler</h2>
                 <div className="text-white/80 leading-relaxed space-y-3 bg-emerald-500/10 border border-emerald-500/30 rounded-lg p-6">
                   <p>
                     <strong>Premium Abonelik:</strong> Kredi Takip Premium özelliklerine aylık veya yıllık abonelik satın alabilirsiniz.
                   </p>
 
                   <p>
-                    <strong className="text-emerald-200">Otomatik Yenileme Sistemi:</strong>
+                    <strong className="text-emerald-200">Paddle ile Güvenli Ödeme:</strong>
                   </p>
                   <ul className="list-disc pl-6 space-y-2">
-                    <li>İlk ödemeniz <strong>3D Secure</strong> ile güvenli bir şekilde yapılır</li>
-                    <li>Kart saklama ve otomatik yenileme için açık onayınız alınır</li>
-                    <li>Aboneliğiniz sona ermeden <strong>3 gün önce</strong> email ile bilgilendirilirsiniz</li>
-                    <li>Bildirim emailinde iptal linki bulunur</li>
-                    <li>İptal etmezseniz, aboneliğiniz otomatik olarak yenilenir</li>
-                  </ul>
-
-                  <p className="text-yellow-200 bg-yellow-500/10 border border-yellow-500/30 rounded p-3">
-                    <strong>⚠️ Önemli Risk Bildirimi:</strong> Otomatik yenileme ödemeleri <strong>Non3D (3D Secure olmadan)</strong> yapılmaktadır.
-                    Bu ödeme yöntemi, kartınızın izinsiz kullanımına karşı 3D Secure kadar koruma sağlamaz.
-                    Otomatik yenileme onayı vererek bu riski anladığınızı ve kabul ettiğinizi beyan edersiniz.
-                  </p>
-
-                  <p>
-                    <strong>Kart Bilgilerinizin Güvenliği:</strong>
-                  </p>
-                  <ul className="list-disc pl-6 space-y-2">
-                    <li>Kart bilgileriniz PayTR güvenli altyapısında saklanır</li>
-                    <li>Sunucularımızda kredi kartı bilgisi tutulmaz (PCI-DSS uyumlu)</li>
-                    <li>Sadece PayTR token bilgileri saklanır</li>
+                    <li>Tüm ödemeler Paddle.com güvencesi altında PCI-DSS Level 1 sertifikalı altyapı üzerinden işlenir</li>
+                    <li>Kredi kartı bilgileriniz hiçbir zaman sunucularımızda saklanmaz</li>
+                    <li>Paddle, 135+ ülkede otomatik vergi hesaplaması yapar</li>
+                    <li>Ödemeleriniz SSL/TLS şifrelemesi ile korunur</li>
                   </ul>
 
                   <p>
-                    <strong>İptal ve Değişiklik Hakkı:</strong>
+                    <strong>Abonelik Yönetimi:</strong>
                   </p>
                   <ul className="list-disc pl-6 space-y-2">
-                    <li>Aboneliğinizi istediğiniz zaman iptal edebilirsiniz</li>
-                    <li>İptal için: Ayarlar → Abonelik → İptal Et</li>
-                    <li>Kayıtlı kartınızı istediğiniz zaman silebilirsiniz</li>
-                    <li>İptal ettiğinizde mevcut abonelik dönemi sonuna kadar erişiminiz devam eder</li>
-                    <li>İptal sonrası yeni ödeme alınmaz</li>
+                    <li>Abonelikleriniz Paddle müşteri portalı üzerinden yönetilir</li>
+                    <li>Ödeme bilgilerinizi güncellemek, plan değiştirmek veya iptal etmek için portalı kullanabilirsiniz</li>
+                    <li>Abonelik durumunuz hakkında otomatik e-posta bildirimleri alırsınız</li>
+                    <li>Ödeme hatırlatmaları ve başarısız ödeme takibi (dunning) otomatik olarak yönetilir</li>
+                  </ul>
+
+                  <p className="text-blue-200 bg-blue-500/10 border border-blue-500/30 rounded p-3">
+                    <strong>📦 Merchant of Record:</strong> Paddle, resmi ödeme sağlayıcımız ve Merchant of Record'dur.
+                    Tüm finansal işlemlerden, vergi uyumluluğundan ve düzenlemelerden Paddle sorumludur.
+                  </p>
+
+                  <p>
+                    <strong>Abonelik İptali:</strong>
+                  </p>
+                  <ul className="list-disc pl-6 space-y-2">
+                    <li>Aboneliğinizi istediğiniz zaman, herhangi bir ceza ödemeden iptal edebilirsiniz</li>
+                    <li>İptal ettiğinizde, mevcut abonelik döneminizin sonuna kadar Premium özelliklere erişiminiz devam eder</li>
+                    <li>İptal Paddle müşteri portalı üzerinden veya destek talebi ile yapılabilir</li>
+                    <li>İptal onayı e-posta ile bildirilir</li>
                   </ul>
 
                   <p>
-                    <strong>İade Politikası:</strong>
+                    <strong>Faturalandırma:</strong>
                   </p>
                   <ul className="list-disc pl-6 space-y-2">
-                    <li>Otomatik yenilenen abonelikler için 14 gün içinde iade talep edebilirsiniz</li>
-                    <li>İade talebiniz info@kreditakip.com.tr adresine gönderilmelidir</li>
-                    <li>İlk satın alma ödemeleri için tüketici hakları çerçevesinde cayma hakkı geçerlidir</li>
+                    <li>Faturalarınız Paddle tarafından otomatik olarak oluşturulur</li>
+                    <li>Faturalar e-posta adresinize gönderilir</li>
+                    <li>Ödeme geçmişiniz Paddle dashboard'ında görüntülenebilir</li>
+                    <li>Faturalarınızda vergi detayları otomatik olarak hesaplanır</li>
                   </ul>
 
                   <p>
-                    <strong>Bildirim Yükümlülüğümüz:</strong>
+                    <strong>Fiyat Değişiklikleri:</strong>
                   </p>
                   <ul className="list-disc pl-6 space-y-2">
-                    <li>Yenileme öncesi bildirim (3 gün önce)</li>
-                    <li>Başarılı ödeme bildirimi</li>
-                    <li>Başarısız ödeme bildirimi</li>
-                    <li>İptal işlemi onayı</li>
+                    <li>Fiyat değişiklikleri en az 30 gün önceden bildirilir</li>
+                    <li>Mevcut abonelikler, değişiklikten önceki fiyattan etkilenmez</li>
+                    <li>Yenileme sırasında yeni fiyatlar uygulanır</li>
                   </ul>
                 </div>
               </div>
@@ -273,7 +271,7 @@ export default function TermsOfServicePage() {
             </div>
 
             {/* Related Links */}
-            <div className="mt-12 grid md:grid-cols-3 gap-6">
+            <div className="mt-12 grid md:grid-cols-4 gap-6">
               <Card className="bg-black/20 border-white/10 backdrop-blur-xl hover:border-emerald-500/30 transition-all duration-300">
                 <CardContent className="p-6">
                   <h3 className="text-lg font-bold text-white mb-3">Gizlilik Politikası</h3>
@@ -295,6 +293,22 @@ export default function TermsOfServicePage() {
                   <h3 className="text-lg font-bold text-white mb-3">Çerez Politikası</h3>
                   <p className="text-white/70 text-sm mb-4">Çerez kullanımı ve yönetimi hakkında</p>
                   <Link href="/cerez-politikasi">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="bg-transparent border-white/20 text-white hover:bg-white/10 hover:border-transparent hover:text-white dark:bg-transparent dark:border-white/20 dark:text-white dark:hover:bg-white/10 dark:hover:border-transparent dark:hover:text-white"
+                    >
+                      İncele <ArrowRight className="w-4 h-4 ml-2" />
+                    </Button>
+                  </Link>
+                </CardContent>
+              </Card>
+
+              <Card className="bg-black/20 border-white/10 backdrop-blur-xl hover:border-emerald-500/30 transition-all duration-300">
+                <CardContent className="p-6">
+                  <h3 className="text-lg font-bold text-white mb-3">İptal ve İade Politikası</h3>
+                  <p className="text-white/70 text-sm mb-4">Abonelik iptali ve iade koşulları</p>
+                  <Link href="/iptal-iade-politikasi">
                     <Button
                       variant="outline"
                       size="sm"

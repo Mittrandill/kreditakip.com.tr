@@ -316,12 +316,15 @@ export default function Footer() {
                 <span>v1.0.0 - Son güncelleme: 1 Kasım 2025</span>
               </div>
             </div>
-            <div className="flex items-center gap-6">
+            <div className="flex items-center gap-4 md:gap-6 flex-wrap">
               <Link href="/gizlilik-politikasi" className="text-white/60 hover:text-white text-sm transition-colors">
                 Gizlilik Politikası
               </Link>
               <Link href="/kullanim-sartlari" className="text-white/60 hover:text-white text-sm transition-colors">
                 Kullanım Şartları
+              </Link>
+              <Link href="/iptal-iade-politikasi" className="text-white/60 hover:text-white text-sm transition-colors">
+                İptal ve İade
               </Link>
               <Link href="/cerez-politikasi" className="text-white/60 hover:text-white text-sm transition-colors">
                 Çerez Politikası

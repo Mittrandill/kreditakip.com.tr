@@ -108,49 +108,39 @@ export default function PrivacyPolicyPage() {
                 </div>
               </div>
 
-              {/* Section 5: Ödeme Bilgileri ve Kart Saklama */}
+              {/* Section 5: Ödeme Bilgileri ve Abonelikler */}
               <div className="mb-8">
-                <h2 className="text-2xl font-bold text-white mb-4">5. Ödeme Bilgileri ve Kart Saklama</h2>
-                <div className="text-white/80 leading-relaxed space-y-3 bg-blue-500/10 border border-blue-500/30 rounded-lg p-6">
+                <h2 className="text-2xl font-bold text-white mb-4">5. Ödeme Bilgileri ve Abonelikler</h2>
+                <div className="text-white/80 leading-relaxed space-y-3 bg-emerald-500/10 border border-emerald-500/30 rounded-lg p-6">
                   <p>
-                    <strong className="text-blue-200">Ödeme Güvenliği:</strong> Tüm ödemeleriniz PayTR güvenli ödeme altyapısı
-                    üzerinden işlenir. Kredi Takip olarak kredi kartı bilgilerinizi hiçbir şekilde görmüyor veya sunucularımızda saklamıyoruz.
+                    <strong className="text-emerald-200">Ödeme Güvenliği:</strong> Tüm ödemeleriniz Paddle.com güvencesi altında
+                    PCI-DSS sertifikalı altyapı üzerinden işlenir. Kredi Takip olarak kredi kartı bilgilerinizi hiçbir şekilde görmüyor veya sunucularımızda saklamıyoruz.
                   </p>
 
                   <p>
-                    <strong>PCI-DSS Uyumluluk:</strong>
+                    <strong>Paddle ile Ödeme İşlemleri:</strong>
                   </p>
                   <ul className="list-disc pl-6 space-y-2">
-                    <li>Kredi kartı bilgileriniz doğrudan PayTR'ye iletilir</li>
+                    <li>Kredi kartı bilgileriniz doğrudan ve güvenli bir şekilde Paddle'ya iletilir</li>
                     <li>Sunucularımızda kredi kartı numarası, CVV veya son kullanma tarihi saklanmaz</li>
-                    <li>Tüm ödeme işlemleri PCI-DSS standardına uygun şekilde gerçekleşir</li>
+                    <li>Tüm ödeme işlemleri PCI-DSS Level 1 standardına uygun şekilde gerçekleşir</li>
+                    <li>Paddle, 135+ ülkede vergi hesaplamasını otomatik olarak yapar</li>
+                    <li>Ödemeleriniz SSL/TLS şifrelemesi ile korunur</li>
                   </ul>
 
                   <p>
-                    <strong>Kart Saklama Sistemi (CAPI):</strong>
+                    <strong>Abonelik Yönetimi:</strong>
                   </p>
                   <ul className="list-disc pl-6 space-y-2">
-                    <li>Otomatik yenileme için kart saklama özelliği <strong>isteğe bağlıdır</strong></li>
-                    <li>Kart bilgileriniz PayTR güvenli altyapısında saklanır (Kredi Takip sunucularında değil)</li>
-                    <li>Sunucularımızda sadece PayTR tarafından oluşturulan <strong>token bilgileri</strong> (utoken, ctoken) saklanır</li>
-                    <li>Token bilgileri kart numaranızı içermez, sadece tekrarlayan ödeme yapabilmemizi sağlar</li>
-                    <li>Kayıtlı kartınızı istediğiniz zaman silebilirsiniz</li>
-                  </ul>
-
-                  <p>
-                    <strong>Saklanan Bilgiler:</strong>
-                  </p>
-                  <ul className="list-disc pl-6 space-y-2">
-                    <li>Kartınızın son 4 hanesi (gösterim amaçlı)</li>
-                    <li>Kart markası (Visa, Mastercard, vb.)</li>
-                    <li>Son kullanma tarihi (yıl/ay)</li>
-                    <li>PayTR token bilgileri (utoken, ctoken)</li>
-                    <li>Kart sahibi adı</li>
+                    <li>Abonelikleriniz Paddle'ın müşteri portalı üzerinden yönetilir</li>
+                    <li>Ödeme bilgilerinizi güncellemek, plan değiştirmek veya iptal etmek için güvenli portalı kullanabilirsiniz</li>
+                    <li>Ödeme hatırlatmaları ve dunning (başarısız ödeme takibi) otomatik olarak Paddle tarafından yönetilir</li>
+                    <li>Abonelik durumunuz hakkında e-posta bildirimleri alırsınız</li>
                   </ul>
 
                   <p className="text-yellow-200 bg-yellow-500/10 border border-yellow-500/30 rounded p-3">
-                    <strong>⚠️ Önemli:</strong> Tam kart numaranız veya CVV kodunuz hiçbir zaman sunucularımızda saklanmaz.
-                    PayTR'nin güvenli altyapısı dışında bu bilgilere kimse erişemez.
+                    <strong>🔒 Güvenlik Notu:</strong> Tam kart numaranız, CVV kodunuz veya diğer hassas ödeme bilgileriniz
+                    hiçbir zaman sunucularımızda saklanmaz. Bu bilgiler sadece Paddle'ın güvenli altyapısında işlenir.
                   </p>
 
                   <p>
@@ -158,17 +148,19 @@ export default function PrivacyPolicyPage() {
                   </p>
                   <ul className="list-disc pl-6 space-y-2">
                     <li>Fatura bilgileriniz (ad, adres, vergi/TC no) yasal zorunluluk gereği saklanır</li>
-                    <li>Ödeme geçmişiniz ve işlem logları güvenlik ve muhasebe amaçlı tutulur</li>
-                    <li>Bu bilgiler yasal saklama süreleri boyunca korunur</li>
+                    <li>Ödeme geçmişiniz Paddle dashboard'ında ve hesabınızda görüntülenir</li>
+                    <li>Faturalarınız Paddle tarafından otomatik olarak oluşturulur ve e-posta ile gönderilir</li>
+                    <li>Tüm finansal kayıtlar muhasebe ve yasal uyumluluk amaçlı tutulur</li>
                   </ul>
 
                   <p>
-                    <strong>Kartınızı Silme Hakkı:</strong>
+                    <strong>Üçüncü Taraf Ödeme Sağlayıcı:</strong>
                   </p>
                   <ul className="list-disc pl-6 space-y-2">
-                    <li>Ayarlar sayfasından kartınızı istediğiniz zaman silebilirsiniz</li>
-                    <li>Kart silme işlemi hem Kredi Takip hem de PayTR sistemlerinde gerçekleştirilir</li>
-                    <li>Kart sildikten sonra otomatik yenileme durdurulur</li>
+                    <li>Paddle, resmi ödeme sağlayıcımız ve Merchant of Record'dur</li>
+                    <li>Paddle, tüm finansal işlemlerden, vergi uyumluluğundan ve düzenlemelerden sorumludur</li>
+                    <li>Ödeme iadeleri ve chargeback'ler Paddle politikalarına göre yönetilir</li>
+                    <li>Destek için: <a href="https://paddle.com/support/" target="_blank" className="text-emerald-400 hover:underline">Paddle Support</a></li>
                   </ul>
                 </div>
               </div>
@@ -215,12 +207,28 @@ export default function PrivacyPolicyPage() {
             </div>
 
             {/* Related Links */}
-            <div className="mt-12 grid md:grid-cols-3 gap-6">
+            <div className="mt-12 grid md:grid-cols-4 gap-6">
               <Card className="bg-black/20 border-white/10 backdrop-blur-xl hover:border-emerald-500/30 transition-all duration-300">
                 <CardContent className="p-6">
                   <h3 className="text-lg font-bold text-white mb-3">Kullanım Şartları</h3>
                   <p className="text-white/70 text-sm mb-4">Uygulama kullanım kuralları ve sorumluluklar</p>
                   <Link href="/kullanim-sartlari">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="bg-transparent border-white/20 text-white hover:bg-white/10 hover:border-transparent hover:text-white dark:bg-transparent dark:border-white/20 dark:text-white dark:hover:bg-white/10 dark:hover:border-transparent dark:hover:text-white"
+                    >
+                      İncele <ArrowRight className="w-4 h-4 ml-2" />
+                    </Button>
+                  </Link>
+                </CardContent>
+              </Card>
+
+              <Card className="bg-black/20 border-white/10 backdrop-blur-xl hover:border-emerald-500/30 transition-all duration-300">
+                <CardContent className="p-6">
+                  <h3 className="text-lg font-bold text-white mb-3">İptal ve İade Politikası</h3>
+                  <p className="text-white/70 text-sm mb-4">Abonelik iptali ve iade koşulları</p>
+                  <Link href="/iptal-iade-politikasi">
                     <Button
                       variant="outline"
                       size="sm"

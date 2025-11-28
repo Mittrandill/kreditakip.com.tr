@@ -32,9 +32,18 @@ export async function GET(request: NextRequest) {
 
     const { data: subscription, error: subError } = await supabase
       .from("subscriptions")
-      .select("*")
+      .select(`
+        *,
+        subscription_plans (
+          id,
+          name,
+          price,
+          currency,
+          paddle_price_id
+        )
+      `)
       .eq("user_id", userId)
-      .in("status", ["active", "cancelled"])
+      .in("status", ["active", "canceled", "paused", "past_due"])
       .order("created_at", { ascending: false })
       .limit(1)
       .maybeSingle()
