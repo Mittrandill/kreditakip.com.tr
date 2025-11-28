@@ -555,7 +555,7 @@ export default function PaymentPage() {
               <PaddleCheckout
                 planId={selectedPlan.id}
                 planName={selectedPlan.name}
-                paddlePriceId={selectedPlan.paddle_price_id || ''}
+                paddlePriceId={selectedPlan.paddlePriceId || ''}
                 amount={selectedPlan.price}
                 billingInfo={{
                   fullName: billingInfo.fullName,
