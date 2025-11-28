@@ -21,8 +21,9 @@ const supabaseServiceKey = process.env.SERVICE_ROLE_KEY!
  */
 export async function GET(request: NextRequest) {
   try {
-    // Cron secret doğrulama
+    // Cron secret doğrulama - try both Authorization and X-Cron-Secret headers
     const authHeader = request.headers.get("authorization")
+    const customHeader = request.headers.get("x-cron-secret")
     const cronSecret = process.env.CRON_SECRET
 
     console.log("[renewal-notification] Auth check:", {
@@ -30,11 +31,18 @@ export async function GET(request: NextRequest) {
       cronSecretLength: cronSecret?.length || 0,
       hasAuthHeader: !!authHeader,
       authHeaderLength: authHeader?.length || 0,
+      hasCustomHeader: !!customHeader,
+      customHeaderLength: customHeader?.length || 0,
     })
 
-    if (cronSecret && authHeader !== `Bearer ${cronSecret}`) {
-      console.error("[renewal-notification] Unauthorized cron request")
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
+    if (cronSecret) {
+      const isValidAuth = authHeader === `Bearer ${cronSecret}`
+      const isValidCustom = customHeader === cronSecret
+
+      if (!isValidAuth && !isValidCustom) {
+        console.error("[renewal-notification] Unauthorized cron request")
+        return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
+      }
     }
 
     console.log("[renewal-notification] Starting renewal notification process...")

@@ -89,17 +89,10 @@ jobs:
         fi
         echo "✓ CRON_SECRET is set (length: ${#CRON_SECRET})"
 
-        # Test request first to debug
-        echo "🔍 Testing request headers..."
-        curl -v -X POST \
-          -H "Authorization: Bearer ${CRON_SECRET}" \
-          -H "Content-Type: application/json" \
-          "${NEXT_PUBLIC_SITE_URL}/api/cron/renewal-notification" 2>&1 | head -20
-
-        echo ""
-        echo "📡 Sending actual request..."
+        echo "📡 Sending request with both Authorization and X-Cron-Secret headers..."
         response=$(curl -s -w "\n%{http_code}" -X POST \
           -H "Authorization: Bearer ${CRON_SECRET}" \
+          -H "X-Cron-Secret: ${CRON_SECRET}" \
           -H "Content-Type: application/json" \
           "${NEXT_PUBLIC_SITE_URL}/api/cron/renewal-notification")
 
