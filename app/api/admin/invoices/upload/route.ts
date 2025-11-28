@@ -64,14 +64,14 @@ export async function POST(request: NextRequest) {
       data: { publicUrl },
     } = supabase.storage.from("invoices").getPublicUrl(fileName)
 
-    // Update invoice with file URL and mark as paid
+    // Update invoice with file URL and mark as ready
 
     const { data: updatedInvoice, error: updateError } = await supabase
       .from("invoices")
       .update({
         file_url: publicUrl,
         file_name: file.name,
-        status: "paid", // Automatically mark as paid when PDF is uploaded
+        status: "ready", // Fatura hazır - kullanıcı indirebilir
         payment_date: new Date().toISOString(),
         updated_at: new Date().toISOString(),
       })

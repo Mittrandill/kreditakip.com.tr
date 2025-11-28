@@ -143,12 +143,12 @@ export default async function InvoicesManagement() {
   const { count: paidInvoices } = await supabase
     .from("invoices")
     .select("*", { count: "exact", head: true })
-    .eq("status", "paid")
+    .eq("status", "ready") // Fatura hazır ve kullanıcı indirdi
 
   const { count: pendingInvoices } = await supabase
     .from("invoices")
     .select("*", { count: "exact", head: true })
-    .eq("status", "pending")
+    .eq("status", "preparing") // Paraşüt'ten fatura hazırlanıyor
 
   const { count: overdueInvoices } = await supabase
     .from("invoices")
@@ -159,7 +159,7 @@ export default async function InvoicesManagement() {
   const { data: revenueData } = await supabase
     .from("invoices")
     .select("amount")
-    .eq("status", "paid")
+    .eq("status", "ready") // Sadece hazır faturalar gelir olarak sayılır
 
   const totalRevenue = revenueData?.reduce((sum, inv) => sum + Number(inv.amount), 0) || 0
 
@@ -186,23 +186,23 @@ export default async function InvoicesManagement() {
 
         <Card className="bg-black/20 border-white/10 backdrop-blur-xl">
           <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium text-white/80">Ödendi</CardTitle>
+            <CardTitle className="text-sm font-medium text-white/80">Hazır</CardTitle>
             <CheckCircle className="h-4 w-4 text-teal-400" />
           </CardHeader>
           <CardContent>
             <div className="text-3xl font-bold text-white">{paidInvoices || 0}</div>
-            <p className="text-xs text-white/60 mt-1">Ödenen faturalar</p>
+            <p className="text-xs text-white/60 mt-1">Fatura hazır (PDF yüklendi)</p>
           </CardContent>
         </Card>
 
         <Card className="bg-black/20 border-white/10 backdrop-blur-xl">
           <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium text-white/80">Bekliyor</CardTitle>
+            <CardTitle className="text-sm font-medium text-white/80">Hazırlanıyor</CardTitle>
             <Clock className="h-4 w-4 text-yellow-400" />
           </CardHeader>
           <CardContent>
             <div className="text-3xl font-bold text-white">{pendingInvoices || 0}</div>
-            <p className="text-xs text-white/60 mt-1">Bekleyen ödemeler</p>
+            <p className="text-xs text-white/60 mt-1">Fatura hazırlanıyor</p>
           </CardContent>
         </Card>
 

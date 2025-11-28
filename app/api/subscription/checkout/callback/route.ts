@@ -1,7 +1,7 @@
 import { type NextRequest, NextResponse } from "next/server"
 import { PayTRClient } from "@/lib/paytr-client"
 import { createClient } from "@supabase/supabase-js"
-import { sendNewSubscriptionNotification } from "@/lib/email/subscription-notification"
+import { sendNewSubscriptionNotification, sendRenewalSuccessNotification } from "@/lib/email/subscription-notification"
 
 export const dynamic = "force-dynamic"
 export const runtime = "nodejs"
@@ -255,7 +255,7 @@ export async function POST(request: NextRequest) {
         due_date: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString().split("T")[0],
         amount: amountInTL,
         currency: currency || "TRY",
-        status: "paid",
+        status: "preparing", // Fatura hazırlanıyor - admin Paraşüt'ten PDF yükleyecek
         description: `Abonelik - ${plan.name}`,
       })
 
@@ -381,6 +381,7 @@ export async function POST(request: NextRequest) {
       if (userProfile) {
         const userName = `${userProfile.first_name || ""} ${userProfile.last_name || ""}`.trim() || userProfile.email
 
+        // Admin'e yeni abonelik bildirimi gönder
         const emailResult = await sendNewSubscriptionNotification({
           userName,
           userEmail: userProfile.email,
@@ -393,6 +394,22 @@ export async function POST(request: NextRequest) {
 
         if (!emailResult.success) {
           console.error("[paytr-callback] Failed to send subscription notification:", emailResult.error)
+        }
+
+        // Kullanıcıya ödeme başarılı maili gönder
+        const paymentEmailResult = await sendRenewalSuccessNotification({
+          userName,
+          userEmail: userProfile.email,
+          planName: plan.name,
+          amount: amountInTL,
+          currency: currency || "TRY",
+          newExpiryDate: expiresAt.toISOString(),
+        })
+
+        if (!paymentEmailResult.success) {
+          console.error("[paytr-callback] Failed to send payment success notification to user:", paymentEmailResult.error)
+        } else {
+          console.log("[paytr-callback] Payment success email sent to user:", userProfile.email)
         }
       }
 

@@ -186,13 +186,13 @@ export default function InvoiceDetailPage() {
               <CardHeader>
                 <CardTitle className="text-white flex items-center justify-between">
                   <span>Fatura Bilgileri</span>
-                  {invoice.status === "pending" ? (
+                  {invoice.status === "preparing" ? (
                     <Badge className="bg-yellow-500/20 text-yellow-400 border-yellow-500/20">
-                      Bekliyor - PDF Yükle
+                      Fatura Hazırlanıyor - PDF Yükle
                     </Badge>
-                  ) : invoice.status === "paid" ? (
+                  ) : invoice.status === "ready" ? (
                     <Badge className="bg-emerald-500/20 text-emerald-400 border-emerald-500/20">
-                      Ödendi
+                      Hazır
                     </Badge>
                   ) : (
                     <Badge className="bg-gray-500/20 text-gray-400 border-gray-500/20">

@@ -370,6 +370,20 @@ export default function SubscriptionPage() {
             {status === "completed" ? "Tamamlandı" : "Ödendi"}
           </Badge>
         )
+      case "preparing":
+        return (
+          <Badge className="bg-gradient-to-r from-yellow-600 to-amber-700 text-white border-transparent hover:from-yellow-700 hover:to-amber-800 flex items-center gap-1">
+            <Clock className="h-3 w-3" />
+            Hazırlanıyor
+          </Badge>
+        )
+      case "ready":
+        return (
+          <Badge className="bg-gradient-to-r from-emerald-600 to-teal-700 text-white border-transparent hover:from-emerald-700 hover:to-teal-800 flex items-center gap-1">
+            <CheckCircle2 className="h-3 w-3" />
+            Hazır
+          </Badge>
+        )
       case "pending":
         return (
           <Badge className="bg-gradient-to-r from-orange-600 to-amber-700 text-white border-transparent hover:from-orange-700 hover:to-amber-800 flex items-center gap-1">
