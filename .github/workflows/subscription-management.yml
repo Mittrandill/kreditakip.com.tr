@@ -1,0 +1,274 @@
+name: Subscription Management
+
+on:
+  schedule:
+    # Automatic renewal - 08:00 UTC (11:00 TR)
+    - cron: '0 8 * * *'
+    # 7-day reminder - 09:00 UTC (12:00 TR)
+    - cron: '0 9 * * *'
+    # 3-day reminder - 12:00 UTC (15:00 TR)
+    - cron: '0 12 * * *'
+    # Renewal notification - 13:00 UTC (16:00 TR)
+    - cron: '0 13 * * *'
+    # Expiry check - 14:00 UTC (17:00 TR)
+    - cron: '0 14 * * *'
+    # Grace period handler - 15:00 UTC (18:00 TR)
+    - cron: '0 15 * * *'
+    # 1-day reminder - 18:00 UTC (21:00 TR)
+    - cron: '0 18 * * *'
+    # Same-day reminder - 20:00 UTC (23:00 TR)
+    - cron: '0 20 * * *'
+  workflow_dispatch:
+
+jobs:
+  automatic-renewal:
+    runs-on: ubuntu-latest
+    if: github.event.schedule == '0 8 * * *' || github.event_name == 'workflow_dispatch'
+
+    steps:
+      - name: Trigger Automatic Renewal
+        env:
+          CRON_SECRET: ${{ secrets.CRON_SECRET }}
+          NEXT_PUBLIC_SITE_URL: ${{ secrets.NEXT_PUBLIC_SITE_URL || 'https://kreditakip.com.tr' }}
+        run: |
+          echo "🔄 Triggering automatic subscription renewal..."
+
+          response=$(curl -s -w "\n%{http_code}" -L -X POST \
+            -H "Authorization: Bearer ${CRON_SECRET}" \
+            -H "X-Cron-Secret: ${CRON_SECRET}" \
+            -H "Content-Type: application/json" \
+            "${NEXT_PUBLIC_SITE_URL}/api/cron/subscription-renewal")
+
+          http_code=$(echo "$response" | tail -n1)
+          body=$(echo "$response" | head -n-1)
+
+          echo "📊 Response status: $http_code"
+          echo "📝 Response body: $body"
+
+          if [ "$http_code" -ne 200 ]; then
+            echo "❌ Automatic renewal failed with status $http_code"
+            exit 1
+          fi
+
+          echo "✅ Automatic renewal completed successfully"
+
+  reminder-7-days:
+    runs-on: ubuntu-latest
+    if: github.event.schedule == '0 9 * * *' || github.event_name == 'workflow_dispatch'
+
+    steps:
+      - name: Send 7-Day Reminder
+        env:
+          CRON_SECRET: ${{ secrets.CRON_SECRET }}
+          NEXT_PUBLIC_SITE_URL: ${{ secrets.NEXT_PUBLIC_SITE_URL || 'https://kreditakip.com.tr' }}
+        run: |
+          echo "📧 Sending 7-day expiry reminders..."
+
+          response=$(curl -s -w "\n%{http_code}" -L -X POST \
+            -H "Authorization: Bearer ${CRON_SECRET}" \
+            -H "X-Cron-Secret: ${CRON_SECRET}" \
+            -H "Content-Type: application/json" \
+            -d '{"days": 7}' \
+            "${NEXT_PUBLIC_SITE_URL}/api/cron/subscription-reminder")
+
+          http_code=$(echo "$response" | tail -n1)
+          body=$(echo "$response" | head -n-1)
+
+          echo "📊 Response status: $http_code"
+          echo "📝 Response body: $body"
+
+          if [ "$http_code" -ne 200 ]; then
+            echo "❌ 7-day reminder failed with status $http_code"
+            exit 1
+          fi
+
+          echo "✅ 7-day reminders sent successfully"
+
+  reminder-3-days:
+    runs-on: ubuntu-latest
+    if: github.event.schedule == '0 12 * * *' || github.event_name == 'workflow_dispatch'
+
+    steps:
+      - name: Send 3-Day Reminder
+        env:
+          CRON_SECRET: ${{ secrets.CRON_SECRET }}
+          NEXT_PUBLIC_SITE_URL: ${{ secrets.NEXT_PUBLIC_SITE_URL || 'https://kreditakip.com.tr' }}
+        run: |
+          echo "📧 Sending 3-day expiry reminders..."
+
+          response=$(curl -s -w "\n%{http_code}" -L -X POST \
+            -H "Authorization: Bearer ${CRON_SECRET}" \
+            -H "X-Cron-Secret: ${CRON_SECRET}" \
+            -H "Content-Type: application/json" \
+            -d '{"days": 3}' \
+            "${NEXT_PUBLIC_SITE_URL}/api/cron/subscription-reminder")
+
+          http_code=$(echo "$response" | tail -n1)
+          body=$(echo "$response" | head -n-1)
+
+          echo "📊 Response status: $http_code"
+          echo "📝 Response body: $body"
+
+          if [ "$http_code" -ne 200 ]; then
+            echo "❌ 3-day reminder failed with status $http_code"
+            exit 1
+          fi
+
+          echo "✅ 3-day reminders sent successfully"
+
+  reminder-1-day:
+    runs-on: ubuntu-latest
+    if: github.event.schedule == '0 18 * * *' || github.event_name == 'workflow_dispatch'
+
+    steps:
+      - name: Send 1-Day Reminder
+        env:
+          CRON_SECRET: ${{ secrets.CRON_SECRET }}
+          NEXT_PUBLIC_SITE_URL: ${{ secrets.NEXT_PUBLIC_SITE_URL || 'https://kreditakip.com.tr' }}
+        run: |
+          echo "📧 Sending 1-day expiry reminders..."
+
+          response=$(curl -s -w "\n%{http_code}" -L -X POST \
+            -H "Authorization: Bearer ${CRON_SECRET}" \
+            -H "X-Cron-Secret: ${CRON_SECRET}" \
+            -H "Content-Type: application/json" \
+            -d '{"days": 1}' \
+            "${NEXT_PUBLIC_SITE_URL}/api/cron/subscription-reminder")
+
+          http_code=$(echo "$response" | tail -n1)
+          body=$(echo "$response" | head -n-1)
+
+          echo "📊 Response status: $http_code"
+          echo "📝 Response body: $body"
+
+          if [ "$http_code" -ne 200 ]; then
+            echo "❌ 1-day reminder failed with status $http_code"
+            exit 1
+          fi
+
+          echo "✅ 1-day reminders sent successfully"
+
+  reminder-same-day:
+    runs-on: ubuntu-latest
+    if: github.event.schedule == '0 20 * * *' || github.event_name == 'workflow_dispatch'
+
+    steps:
+      - name: Send Same-Day Reminder
+        env:
+          CRON_SECRET: ${{ secrets.CRON_SECRET }}
+          NEXT_PUBLIC_SITE_URL: ${{ secrets.NEXT_PUBLIC_SITE_URL || 'https://kreditakip.com.tr' }}
+        run: |
+          echo "📧 Sending same-day expiry reminders..."
+
+          response=$(curl -s -w "\n%{http_code}" -L -X POST \
+            -H "Authorization: Bearer ${CRON_SECRET}" \
+            -H "X-Cron-Secret: ${CRON_SECRET}" \
+            -H "Content-Type: application/json" \
+            -d '{"days": 0}' \
+            "${NEXT_PUBLIC_SITE_URL}/api/cron/subscription-reminder")
+
+          http_code=$(echo "$response" | tail -n1)
+          body=$(echo "$response" | head -n-1)
+
+          echo "📊 Response status: $http_code"
+          echo "📝 Response body: $body"
+
+          if [ "$http_code" -ne 200 ]; then
+            echo "❌ Same-day reminder failed with status $http_code"
+            exit 1
+          fi
+
+          echo "✅ Same-day reminders sent successfully"
+
+  renewal-notification:
+    runs-on: ubuntu-latest
+    if: github.event.schedule == '0 13 * * *' || github.event_name == 'workflow_dispatch'
+
+    steps:
+      - name: Send Renewal Notifications
+        env:
+          CRON_SECRET: ${{ secrets.CRON_SECRET }}
+          NEXT_PUBLIC_SITE_URL: ${{ secrets.NEXT_PUBLIC_SITE_URL || 'https://kreditakip.com.tr' }}
+        run: |
+          echo "🔔 Sending renewal notifications..."
+
+          response=$(curl -s -w "\n%{http_code}" -L -X POST \
+            -H "Authorization: Bearer ${CRON_SECRET}" \
+            -H "X-Cron-Secret: ${CRON_SECRET}" \
+            -H "Content-Type: application/json" \
+            "${NEXT_PUBLIC_SITE_URL}/api/cron/renewal-notification")
+
+          http_code=$(echo "$response" | tail -n1)
+          body=$(echo "$response" | head -n-1)
+
+          echo "📊 Response status: $http_code"
+          echo "📝 Response body: $body"
+
+          if [ "$http_code" -ne 200 ]; then
+            echo "❌ Renewal notification failed with status $http_code"
+            exit 1
+          fi
+
+          echo "✅ Renewal notifications sent successfully"
+
+  expiry-check:
+    runs-on: ubuntu-latest
+    if: github.event.schedule == '0 14 * * *' || github.event_name == 'workflow_dispatch'
+
+    steps:
+      - name: Check Expired Subscriptions
+        env:
+          CRON_SECRET: ${{ secrets.CRON_SECRET }}
+          NEXT_PUBLIC_SITE_URL: ${{ secrets.NEXT_PUBLIC_SITE_URL || 'https://kreditakip.com.tr' }}
+        run: |
+          echo "⏰ Checking expired subscriptions..."
+
+          response=$(curl -s -w "\n%{http_code}" -L -X POST \
+            -H "Authorization: Bearer ${CRON_SECRET}" \
+            -H "X-Cron-Secret: ${CRON_SECRET}" \
+            -H "Content-Type: application/json" \
+            "${NEXT_PUBLIC_SITE_URL}/api/cron/subscription-expiry-check")
+
+          http_code=$(echo "$response" | tail -n1)
+          body=$(echo "$response" | head -n-1)
+
+          echo "📊 Response status: $http_code"
+          echo "📝 Response body: $body"
+
+          if [ "$http_code" -ne 200 ]; then
+            echo "❌ Expiry check failed with status $http_code"
+            exit 1
+          fi
+
+          echo "✅ Expiry check completed successfully"
+
+  grace-period:
+    runs-on: ubuntu-latest
+    if: github.event.schedule == '0 15 * * *' || github.event_name == 'workflow_dispatch'
+
+    steps:
+      - name: Handle Grace Period
+        env:
+          CRON_SECRET: ${{ secrets.CRON_SECRET }}
+          NEXT_PUBLIC_SITE_URL: ${{ secrets.NEXT_PUBLIC_SITE_URL || 'https://kreditakip.com.tr' }}
+        run: |
+          echo "🚨 Handling grace period..."
+
+          response=$(curl -s -w "\n%{http_code}" -L -X POST \
+            -H "Authorization: Bearer ${CRON_SECRET}" \
+            -H "X-Cron-Secret: ${CRON_SECRET}" \
+            -H "Content-Type: application/json" \
+            "${NEXT_PUBLIC_SITE_URL}/api/cron/grace-period-handler")
+
+          http_code=$(echo "$response" | tail -n1)
+          body=$(echo "$response" | head -n-1)
+
+          echo "📊 Response status: $http_code"
+          echo "📝 Response body: $body"
+
+          if [ "$http_code" -ne 200 ]; then
+            echo "❌ Grace period handler failed with status $http_code"
+            exit 1
+          fi
+
+          echo "✅ Grace period handled successfully"

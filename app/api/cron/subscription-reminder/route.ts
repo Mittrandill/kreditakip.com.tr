@@ -21,14 +21,33 @@ const supabaseServiceKey = process.env.SERVICE_ROLE_KEY!
  */
 async function handler(request: NextRequest) {
   try {
-    // Verify cron secret
+    // Verify cron secret - support both Authorization and X-Cron-Secret headers
     const authHeader = request.headers.get("authorization")
+    const customHeader = request.headers.get("x-cron-secret")
     const cronSecret = process.env.CRON_SECRET
 
-    if (!cronSecret || authHeader !== `Bearer ${cronSecret}`) {
-      console.error("[subscription-reminder] Unauthorized request")
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
+    if (cronSecret) {
+      const isValidAuth = authHeader === `Bearer ${cronSecret}`
+      const isValidCustom = customHeader === cronSecret
+
+      if (!isValidAuth && !isValidCustom) {
+        console.error("[subscription-reminder] Unauthorized request")
+        return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
+      }
     }
+
+    // Parse request body to get days parameter (default: 7)
+    let daysUntilExpiry = 7
+    try {
+      const body = await request.json()
+      if (body.days !== undefined) {
+        daysUntilExpiry = parseInt(body.days.toString())
+      }
+    } catch {
+      // No body or invalid JSON, use default
+    }
+
+    console.log(`[subscription-reminder] Checking subscriptions expiring in ${daysUntilExpiry} days`)
 
     const supabase = createClient(supabaseUrl, supabaseServiceKey, {
       auth: {
@@ -37,12 +56,12 @@ async function handler(request: NextRequest) {
       },
     })
 
-    // Get all active premium subscriptions expiring in 7 days
-    const sevenDaysFromNow = new Date()
-    sevenDaysFromNow.setDate(sevenDaysFromNow.getDate() + 7)
+    // Get all active subscriptions expiring in N days
+    const targetDaysFromNow = new Date()
+    targetDaysFromNow.setDate(targetDaysFromNow.getDate() + daysUntilExpiry)
 
-    const eightDaysFromNow = new Date()
-    eightDaysFromNow.setDate(eightDaysFromNow.getDate() + 8)
+    const nextDayFromNow = new Date()
+    nextDayFromNow.setDate(nextDayFromNow.getDate() + daysUntilExpiry + 1)
 
     const { data: expiringSubscriptions, error: subError } = await supabase
       .from("subscriptions")
@@ -61,8 +80,8 @@ async function handler(request: NextRequest) {
       `)
       .eq("status", "active")
       .in("plan_type", ["premium", "pro"])
-      .gte("expires_at", sevenDaysFromNow.toISOString())
-      .lt("expires_at", eightDaysFromNow.toISOString())
+      .gte("expires_at", targetDaysFromNow.toISOString())
+      .lt("expires_at", nextDayFromNow.toISOString())
       .is("reminder_sent_at", null)
 
     if (subError) {
@@ -71,11 +90,12 @@ async function handler(request: NextRequest) {
     }
 
     if (!expiringSubscriptions || expiringSubscriptions.length === 0) {
-      console.log("[subscription-reminder] No subscriptions expiring in 7 days")
+      console.log(`[subscription-reminder] No subscriptions expiring in ${daysUntilExpiry} days`)
       return NextResponse.json({
         success: true,
-        message: "No reminders to send",
-        count: 0
+        message: `No reminders to send for ${daysUntilExpiry}-day expiry`,
+        count: 0,
+        days: daysUntilExpiry
       })
     }
 
@@ -105,7 +125,7 @@ async function handler(request: NextRequest) {
           amount: plan.price,
           currency: plan.currency || "TRY",
           expiresAt: subscription.expires_at,
-          daysUntilExpiry: 7,
+          daysUntilExpiry: daysUntilExpiry,
           paymentUrl,
         })
 
@@ -131,13 +151,14 @@ async function handler(request: NextRequest) {
       }
     }
 
-    console.log(`[subscription-reminder] Completed: ${sentCount} sent, ${failedCount} failed`)
+    console.log(`[subscription-reminder] Completed (${daysUntilExpiry}-day): ${sentCount} sent, ${failedCount} failed`)
 
     return NextResponse.json({
       success: true,
-      message: `Sent ${sentCount} reminders, ${failedCount} failed`,
+      message: `Sent ${sentCount} ${daysUntilExpiry}-day reminders, ${failedCount} failed`,
       sent: sentCount,
       failed: failedCount,
+      days: daysUntilExpiry,
     })
   } catch (error: any) {
     console.error("[subscription-reminder] Cron job error:", error)
