@@ -68,7 +68,7 @@ export async function GET(request: NextRequest) {
         profiles (id, email, first_name, last_name)
       `)
       .eq("status", "active")
-      .eq("plan_type", "premium")
+      .in("plan_type", ["premium", "pro"])
       .gte("expires_at", threeDaysLaterStart.toISOString())
       .lte("expires_at", threeDaysLaterEnd.toISOString())
 

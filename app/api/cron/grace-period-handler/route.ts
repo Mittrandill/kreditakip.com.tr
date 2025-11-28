@@ -51,7 +51,7 @@ export async function GET(request: NextRequest) {
       .from("subscriptions")
       .select("*, subscription_plans(*), profiles(id, email, first_name, last_name)")
       .eq("status", "active")
-      .eq("plan_type", "premium")
+      .in("plan_type", ["premium", "pro"])
       .lte("expires_at", now.toISOString())
       .is("grace_period_started_at", null)
 

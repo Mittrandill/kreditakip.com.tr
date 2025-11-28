@@ -45,7 +45,7 @@ async function handler(request: NextRequest) {
       .from("subscriptions")
       .select("*")
       .eq("status", "active")
-      .eq("plan_type", "premium")
+      .in("plan_type", ["premium", "pro"])
       .lt("expires_at", now.toISOString())
 
     if (subError) {

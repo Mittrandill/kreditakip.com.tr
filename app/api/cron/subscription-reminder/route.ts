@@ -60,7 +60,7 @@ async function handler(request: NextRequest) {
         )
       `)
       .eq("status", "active")
-      .eq("plan_type", "premium")
+      .in("plan_type", ["premium", "pro"])
       .gte("expires_at", sevenDaysFromNow.toISOString())
       .lt("expires_at", eightDaysFromNow.toISOString())
       .is("reminder_sent_at", null)
