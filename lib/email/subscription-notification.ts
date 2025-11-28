@@ -1428,70 +1428,131 @@ export async function sendManualPaymentReminder(data: ManualPaymentReminderData)
 }
 
 function generateManualPaymentReminderHTML(data: ManualPaymentReminderData): string {
+  const urgencyColor = data.daysUntilExpiry <= 1 ? '#DC2626' : data.daysUntilExpiry <= 3 ? '#F59E0B' : '#0369A1'
+  const urgencyBg = data.daysUntilExpiry <= 1 ? '#FEF2F2' : data.daysUntilExpiry <= 3 ? '#FFFBEB' : '#F0F9FF'
+
   return `
 <!DOCTYPE html>
 <html lang="tr">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Abonelik Yenileme Hatırlatması</title>
+    <title>Ödeme Hatırlatması</title>
 </head>
-<body style="font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif; line-height: 1.6; color: #ffffff; background-color: #0f172a; margin: 0; padding: 40px 20px;">
-    <div style="max-width: 600px; margin: 0 auto; background-color: #1e293b; border-radius: 16px; overflow: hidden; border: 1px solid #334155;">
-        <div style="background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%); padding: 40px; text-align: center;">
-            <h1 style="color: #ffffff; margin: 0; font-size: 24px;">🔔 Abonelik Yenileme Hatırlatması</h1>
-            <p style="color: rgba(255,255,255,0.9); margin: 10px 0 0 0;">${data.daysUntilExpiry} gün sonra sona erecek</p>
-        </div>
+<body style="font-family: Arial, Helvetica, sans-serif; line-height: 1.6; color: #1F2937; background-color: #F3F4F6; margin: 0; padding: 20px;">
+    <table width="100%" cellpadding="0" cellspacing="0" style="max-width: 600px; margin: 0 auto; background-color: #FFFFFF;">
+        <!-- Header -->
+        <tr>
+            <td style="background-color: #1E3A8A; padding: 30px 40px; text-align: center;">
+                <h1 style="color: #FFFFFF; margin: 0; font-size: 22px; font-weight: 600;">KREDİ TAKİP</h1>
+                <p style="color: #BFDBFE; margin: 8px 0 0 0; font-size: 13px;">Ödeme Hatırlatma Sistemi</p>
+            </td>
+        </tr>
 
-        <div style="padding: 40px;">
-            <p style="color: #e2e8f0; margin-bottom: 24px;">Merhaba ${data.userName},</p>
-
-            <p style="color: #e2e8f0; margin-bottom: 24px;">
-                ${data.planName} aboneliğinizin süresi <strong>${data.daysUntilExpiry} gün</strong> sonra dolacak. Kesintisiz hizmet almaya devam etmek için manuel ödeme yapmanız gerekmektedir.
-            </p>
-
-            <div style="background: #334155; border-radius: 12px; padding: 24px; margin-bottom: 24px;">
-                <div style="display: flex; justify-content: space-between; padding: 12px 0; border-bottom: 1px solid #475569;">
-                    <span style="color: #94a3b8;">Plan</span>
-                    <span style="color: #ffffff; font-weight: 600;">${data.planName}</span>
-                </div>
-                <div style="display: flex; justify-content: space-between; padding: 12px 0; border-bottom: 1px solid #475569;">
-                    <span style="color: #94a3b8;">Ödeme Tutarı</span>
-                    <span style="color: #3b82f6; font-weight: 700; font-size: 18px;">${data.amount.toFixed(2)} ${data.currency}</span>
-                </div>
-                <div style="display: flex; justify-content: space-between; padding: 12px 0; border-bottom: 1px solid #475569;">
-                    <span style="color: #94a3b8;">Bitiş Tarihi</span>
-                    <span style="color: #ffffff;">${new Date(data.expiresAt).toLocaleDateString('tr-TR')}</span>
-                </div>
-                <div style="display: flex; justify-content: space-between; padding: 12px 0;">
-                    <span style="color: #94a3b8;">Kalan Gün</span>
-                    <span style="color: #f59e0b; font-weight: 600;">${data.daysUntilExpiry} Gün</span>
-                </div>
-            </div>
-
-            <div style="background: #1e40af; border-left: 4px solid #3b82f6; padding: 16px; margin-bottom: 24px; border-radius: 8px;">
-                <p style="color: #dbeafe; margin: 0; font-size: 14px;">
-                    <strong>Önemli Bilgi:</strong> Otomatik ödeme sistemimiz bulunmamaktadır. Lütfen aboneliğinizi manuel olarak yenileyiniz.
+        <!-- Urgency Banner -->
+        <tr>
+            <td style="background-color: ${urgencyColor}; padding: 15px 40px; text-align: center;">
+                <p style="color: #FFFFFF; margin: 0; font-size: 14px; font-weight: 600;">
+                    ${data.daysUntilExpiry === 0 ? '⚠️ ACİL: BUGÜN ÖDEME YAPMANIZ GEREKMEKTEDİR' :
+                      data.daysUntilExpiry === 1 ? '⚠️ DİKKAT: YARIN SON ÖDEME GÜNÜ' :
+                      `SON ÖDEME TARİHİNE ${data.daysUntilExpiry} GÜN KALDI`}
                 </p>
-            </div>
+            </td>
+        </tr>
 
-            <div style="text-align: center; margin-bottom: 24px;">
-                <a href="${data.paymentUrl}" style="display: inline-block; background: linear-gradient(135deg, #10b981 0%, #14b8a6 100%); color: #ffffff; text-decoration: none; padding: 16px 40px; border-radius: 8px; font-weight: 600; font-size: 16px;">
-                    Şimdi Yenile ve Ödeme Yap
-                </a>
-            </div>
+        <!-- Content -->
+        <tr>
+            <td style="padding: 40px;">
+                <p style="margin: 0 0 20px 0; font-size: 15px; color: #374151;">Sayın ${data.userName},</p>
 
-            <p style="color: #94a3b8; font-size: 14px; text-align: center;">
-                Aboneliğinizi zamanında yenileyerek kesintisiz hizmet alın.
-            </p>
-        </div>
+                <p style="margin: 0 0 25px 0; font-size: 14px; color: #4B5563; line-height: 1.7;">
+                    ${data.planName} hizmet paketinize ait ödeme tarihiniz yaklaşmaktadır. Hizmetinizin kesintiye uğramaması için lütfen ödemenizi zamanında yapınız.
+                </p>
 
-        <div style="padding: 24px 40px; background: #0f172a; border-top: 1px solid #334155; text-align: center;">
-            <p style="color: #64748b; font-size: 12px; margin: 0;">
-                © ${new Date().getFullYear()} kreditakip.com.tr • Tüm hakları saklıdır
-            </p>
-        </div>
-    </div>
+                <!-- Payment Details Table -->
+                <table width="100%" cellpadding="0" cellspacing="0" style="border: 2px solid #E5E7EB; border-radius: 8px; margin: 0 0 25px 0;">
+                    <tr>
+                        <td colspan="2" style="background-color: #F9FAFB; padding: 15px 20px; border-bottom: 2px solid #E5E7EB;">
+                            <h3 style="margin: 0; font-size: 15px; color: #1F2937; font-weight: 600;">ÖDEME DETAYLARI</h3>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td style="padding: 15px 20px; border-bottom: 1px solid #E5E7EB; font-size: 14px; color: #6B7280; width: 45%;">
+                            Hizmet Paketi
+                        </td>
+                        <td style="padding: 15px 20px; border-bottom: 1px solid #E5E7EB; font-size: 14px; color: #1F2937; font-weight: 600; text-align: right;">
+                            ${data.planName}
+                        </td>
+                    </tr>
+                    <tr>
+                        <td style="padding: 15px 20px; border-bottom: 1px solid #E5E7EB; font-size: 14px; color: #6B7280;">
+                            Ödeme Tutarı
+                        </td>
+                        <td style="padding: 15px 20px; border-bottom: 1px solid #E5E7EB; font-size: 18px; color: #DC2626; font-weight: 700; text-align: right;">
+                            ${data.amount.toFixed(2)} ${data.currency}
+                        </td>
+                    </tr>
+                    <tr>
+                        <td style="padding: 15px 20px; border-bottom: 1px solid #E5E7EB; font-size: 14px; color: #6B7280;">
+                            Son Ödeme Tarihi
+                        </td>
+                        <td style="padding: 15px 20px; border-bottom: 1px solid #E5E7EB; font-size: 14px; color: #1F2937; font-weight: 600; text-align: right;">
+                            ${new Date(data.expiresAt).toLocaleDateString('tr-TR', { day: '2-digit', month: 'long', year: 'numeric' })}
+                        </td>
+                    </tr>
+                    <tr>
+                        <td style="padding: 15px 20px; font-size: 14px; color: #6B7280;">
+                            Kalan Süre
+                        </td>
+                        <td style="padding: 15px 20px; font-size: 16px; color: ${urgencyColor}; font-weight: 700; text-align: right;">
+                            ${data.daysUntilExpiry === 0 ? 'BUGÜN' : data.daysUntilExpiry === 1 ? '1 GÜN' : data.daysUntilExpiry + ' GÜN'}
+                        </td>
+                    </tr>
+                </table>
+
+                <!-- Warning Box -->
+                <div style="background-color: ${urgencyBg}; border-left: 4px solid ${urgencyColor}; padding: 15px 20px; margin: 0 0 25px 0;">
+                    <p style="margin: 0; font-size: 13px; color: ${urgencyColor}; font-weight: 600;">
+                        ⚠️ ÖNEMLİ UYARI
+                    </p>
+                    <p style="margin: 8px 0 0 0; font-size: 13px; color: #4B5563; line-height: 1.6;">
+                        Ödemenizin zamanında yapılmaması durumunda hizmetiniz otomatik olarak ${data.daysUntilExpiry <= 3 ? 'BUGÜN' : '3 gün içinde'} askıya alınacaktır. Kesintisiz hizmet almak için lütfen ödemenizi geciktirmeyiniz.
+                    </p>
+                </div>
+
+                <!-- Payment Button -->
+                <table width="100%" cellpadding="0" cellspacing="0">
+                    <tr>
+                        <td style="text-align: center; padding: 10px 0 25px 0;">
+                            <a href="${data.paymentUrl}" style="display: inline-block; background-color: #DC2626; color: #FFFFFF; text-decoration: none; padding: 14px 40px; border-radius: 6px; font-weight: 600; font-size: 15px; border: none;">
+                                HEMEN ÖDEME YAP
+                            </a>
+                        </td>
+                    </tr>
+                </table>
+
+                <p style="margin: 0 0 15px 0; font-size: 13px; color: #6B7280; line-height: 1.6;">
+                    Ödeme yapmak için yukarıdaki butona tıklayarak güvenli ödeme sayfamıza yönlendirileceksiniz. Tüm işlemleriniz SSL sertifikası ile korunmaktadır.
+                </p>
+
+                <p style="margin: 0; font-size: 12px; color: #9CA3AF;">
+                    Bu e-posta otomatik sistem tarafından gönderilmiştir. Herhangi bir sorunuz için destek@kreditakip.com.tr adresinden bize ulaşabilirsiniz.
+                </p>
+            </td>
+        </tr>
+
+        <!-- Footer -->
+        <tr>
+            <td style="background-color: #F9FAFB; padding: 25px 40px; border-top: 1px solid #E5E7EB; text-align: center;">
+                <p style="margin: 0 0 8px 0; font-size: 12px; color: #6B7280;">
+                    Kredi Takip - Finansal Yönetim Platformu
+                </p>
+                <p style="margin: 0; font-size: 11px; color: #9CA3AF;">
+                    © ${new Date().getFullYear()} kreditakip.com.tr • Tüm hakları saklıdır.
+                </p>
+            </td>
+        </tr>
+    </table>
 </body>
 </html>
   `
@@ -1499,23 +1560,35 @@ function generateManualPaymentReminderHTML(data: ManualPaymentReminderData): str
 
 function generateManualPaymentReminderText(data: ManualPaymentReminderData): string {
   return `
-Abonelik Yenileme Hatırlatması
+KREDİ TAKİP - ÖDEME HATIRLATMASI
 
-Merhaba ${data.userName},
+${data.daysUntilExpiry === 0 ? '⚠️ ACİL: BUGÜN ÖDEME YAPMANIZ GEREKMEKTEDİR' :
+  data.daysUntilExpiry === 1 ? '⚠️ DİKKAT: YARIN SON ÖDEME GÜNÜ' :
+  `SON ÖDEME TARİHİNE ${data.daysUntilExpiry} GÜN KALDI`}
 
-${data.planName} aboneliğinizin süresi ${data.daysUntilExpiry} gün sonra dolacak. Kesintisiz hizmet almaya devam etmek için manuel ödeme yapmanız gerekmektedir.
+═══════════════════════════════════════
 
-Detaylar:
-- Plan: ${data.planName}
-- Ödeme Tutarı: ${data.amount.toFixed(2)} ${data.currency}
-- Bitiş Tarihi: ${new Date(data.expiresAt).toLocaleDateString('tr-TR')}
-- Kalan Gün: ${data.daysUntilExpiry} Gün
+Sayın ${data.userName},
 
-ÖNEMLİ: Otomatik ödeme sistemimiz bulunmamaktadır. Lütfen aboneliğinizi manuel olarak yenileyiniz.
+${data.planName} hizmet paketinize ait ödeme tarihiniz yaklaşmaktadır. Hizmetinizin kesintiye uğramaması için lütfen ödemenizi zamanında yapınız.
 
-Yenilemek için: ${data.paymentUrl}
+ÖDEME DETAYLARI
+═══════════════════════════════════════
+Hizmet Paketi    : ${data.planName}
+Ödeme Tutarı     : ${data.amount.toFixed(2)} ${data.currency}
+Son Ödeme Tarihi : ${new Date(data.expiresAt).toLocaleDateString('tr-TR', { day: '2-digit', month: 'long', year: 'numeric' })}
+Kalan Süre       : ${data.daysUntilExpiry === 0 ? 'BUGÜN' : data.daysUntilExpiry === 1 ? '1 GÜN' : data.daysUntilExpiry + ' GÜN'}
 
----
-© ${new Date().getFullYear()} Kredi Takip
+⚠️ ÖNEMLİ UYARI
+═══════════════════════════════════════
+Ödemenizin zamanında yapılmaması durumunda hizmetiniz otomatik olarak ${data.daysUntilExpiry <= 3 ? 'BUGÜN' : '3 gün içinde'} askıya alınacaktır.
+
+HEMEN ÖDEME YAP: ${data.paymentUrl}
+
+───────────────────────────────────────
+Bu e-posta otomatik sistem tarafından gönderilmiştir.
+Destek: destek@kreditakip.com.tr
+
+© ${new Date().getFullYear()} Kredi Takip - Tüm hakları saklıdır.
   `
 }
