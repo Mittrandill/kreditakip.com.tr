@@ -98,7 +98,6 @@ export function PaymentForm({ planId, planName, amount, billingInfo, onSuccess, 
         const fp = await FingerprintJS.load()
         const result = await fp.get()
         setDeviceFingerprint(result.visitorId)
-        console.log("[Security] Device fingerprint initialized:", result.visitorId)
       } catch (error) {
         console.error("[Security] Failed to initialize fingerprint:", error)
       }

@@ -270,7 +270,6 @@ export class PayTRClient {
   async cancelSubscription(subscriptionId: string): Promise<{ success: boolean; message: string }> {
     // PayTR'de abonelik iptali genellikle manual yapılır
     // Veya PayTR Direct API kullanılarak kayıtlı kart bilgisi silinir
-    console.log("[PayTR] Subscription cancellation requested for:", subscriptionId)
 
     // Şimdilik sadece veritabanı tarafında iptal ediyoruz
     // Gerçek implementasyonda PayTR'nin kart saklama servisini kullanabilirsiniz
@@ -623,7 +622,6 @@ export class PayTRClient {
     }
 
     try {
-      console.log("[PayTR 3D RECURRING] Sending request for order:", orderId)
 
       const response = await fetch("https://www.paytr.com/odeme", {
         method: "POST",
@@ -634,11 +632,6 @@ export class PayTRClient {
       })
 
       const result = await response.json()
-
-      console.log("[PayTR 3D RECURRING] Response:", {
-        status: result.status,
-        has_payment_url: !!result.payment_url,
-      })
 
       // 3D Secure için payment_url döner
       if (result.status === "success" && result.payment_url) {
@@ -755,7 +748,6 @@ export class PayTRClient {
     }
 
     try {
-      console.log("[PayTR RECURRING] Sending request for order:", orderId)
 
       const response = await fetch("https://www.paytr.com/odeme", {
         method: "POST",
@@ -766,12 +758,6 @@ export class PayTRClient {
       })
 
       const result = await response.json()
-
-      console.log("[PayTR RECURRING] Response:", {
-        status: result.status,
-        msg: result.msg,
-        try_again: result.try_again,
-      })
 
       // Recurring payment JSON response döner (redirect olmaz)
       return {

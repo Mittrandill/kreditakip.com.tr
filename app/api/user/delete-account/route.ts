@@ -27,7 +27,6 @@ export async function DELETE(request: Request) {
     })
 
     // KVKK m.7 uyarınca - Kullanıcının TÜM verilerini sil
-    console.log(`[delete-account] Deleting all data for user: ${user.id}`)
 
     // Tüm ilişkili verileri sil (foreign key cascade ile bazıları otomatik silinebilir)
     await Promise.allSettled([
@@ -52,7 +51,6 @@ export async function DELETE(request: Request) {
       return NextResponse.json({ error: "Hesap silme başarısız oldu" }, { status: 500 })
     }
 
-    console.log(`[delete-account] Successfully deleted user: ${user.id}`)
 
     return NextResponse.json({
       success: true,

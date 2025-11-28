@@ -285,20 +285,15 @@ export function findBestBankMatch(detectedBankName: string, availableBanks: any[
     return null
   }
 
-  console.log("🔍 Banka eşleştirme - Girdi:", detectedBankName)
-  console.log("📊 Veritabanında", availableBanks.length, "banka var")
 
   const normalizedDetected = normalizeBankName(detectedBankName)
   const coreDetected = extractBankCore(detectedBankName)
 
-  console.log("  → Normalize edilmiş:", normalizedDetected)
-  console.log("  → Core ad:", coreDetected)
 
   // 1. Tam eşleşme (case-insensitive, normalize edilmiş)
   let match = availableBanks.find((bank) => normalizeBankName(bank.name) === normalizedDetected)
 
   if (match) {
-    console.log("✅ Tam eşleşme bulundu:", match.name)
     return match
   }
 
@@ -306,7 +301,6 @@ export function findBestBankMatch(detectedBankName: string, availableBanks: any[
   match = availableBanks.find((bank) => extractBankCore(bank.name) === coreDetected)
 
   if (match) {
-    console.log("✅ Core eşleşme bulundu:", match.name)
     return match
   }
 
@@ -314,12 +308,10 @@ export function findBestBankMatch(detectedBankName: string, availableBanks: any[
   const mappedName = mapBankName(detectedBankName)
   const normalizedMapped = normalizeBankName(mappedName)
 
-  console.log("  → Mapped ad:", mappedName)
 
   match = availableBanks.find((bank) => normalizeBankName(bank.name) === normalizedMapped)
 
   if (match) {
-    console.log("✅ Mapped eşleşme bulundu:", match.name)
     return match
   }
 
@@ -330,7 +322,6 @@ export function findBestBankMatch(detectedBankName: string, availableBanks: any[
   })
 
   if (match) {
-    console.log("✅ Core içerme eşleşmesi bulundu:", match.name)
     return match
   }
 
@@ -358,7 +349,6 @@ export function findBestBankMatch(detectedBankName: string, availableBanks: any[
       match = availableBanks.find((bank) => normalizeBankName(bank.name).includes(target))
 
       if (match) {
-        console.log("✅ Keyword eşleşmesi bulundu:", match.name, "(keyword:", target, ")")
         return match
       }
     }
@@ -371,11 +361,9 @@ export function findBestBankMatch(detectedBankName: string, availableBanks: any[
   })
 
   if (match) {
-    console.log("✅ Genel kısmi eşleşme bulundu:", match.name)
     return match
   }
 
-  console.log("❌ Hiçbir eşleşme bulunamadı")
   return null
 }
 

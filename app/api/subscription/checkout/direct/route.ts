@@ -192,7 +192,6 @@ export async function POST(request: NextRequest) {
 
     // REMOVED: Card storage functionality
     // System now uses manual payment reminders instead of recurring payments
-    console.log("[direct-payment] ℹ Card storage DISABLED - using manual payment reminder system")
 
     // Return form data for client-side POST
     // Client-side kart bilgilerini ekleyip PayTR'ye POST edecek

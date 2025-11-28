@@ -54,7 +54,6 @@ async function handler(request: NextRequest) {
     }
 
     if (!expiredSubscriptions || expiredSubscriptions.length === 0) {
-      console.log("[subscription-expiry-check] No expired subscriptions to process")
       return NextResponse.json({
         success: true,
         message: "No expired subscriptions to process",
@@ -81,7 +80,6 @@ async function handler(request: NextRequest) {
           (expiresAt <= sevenDaysAgo)
 
         if (!shouldDowngrade) {
-          console.log(`[subscription-expiry-check] Subscription ${subscription.id} not ready for downgrade yet`)
           continue
         }
 
@@ -132,14 +130,12 @@ async function handler(request: NextRequest) {
         }
 
         downgradedCount++
-        console.log(`[subscription-expiry-check] Downgraded subscription ${subscription.id} to free`)
       } catch (error) {
         failedCount++
         console.error("[subscription-expiry-check] Error processing subscription:", error)
       }
     }
 
-    console.log(`[subscription-expiry-check] Completed: ${downgradedCount} downgraded, ${failedCount} failed`)
 
     return NextResponse.json({
       success: true,

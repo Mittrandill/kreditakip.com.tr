@@ -47,7 +47,6 @@ async function handler(request: NextRequest) {
       // No body or invalid JSON, use default
     }
 
-    console.log(`[subscription-reminder] Checking subscriptions expiring in ${daysUntilExpiry} days`)
 
     const supabase = createClient(supabaseUrl, supabaseServiceKey, {
       auth: {
@@ -90,7 +89,6 @@ async function handler(request: NextRequest) {
     }
 
     if (!expiringSubscriptions || expiringSubscriptions.length === 0) {
-      console.log(`[subscription-reminder] No subscriptions expiring in ${daysUntilExpiry} days`)
       return NextResponse.json({
         success: true,
         message: `No reminders to send for ${daysUntilExpiry}-day expiry`,
@@ -109,7 +107,6 @@ async function handler(request: NextRequest) {
         const plan = subscription.subscription_plans as any
 
         if (!profile || !plan) {
-          console.warn("[subscription-reminder] Missing profile or plan data for subscription:", subscription.id)
           failedCount++
           continue
         }
@@ -140,7 +137,6 @@ async function handler(request: NextRequest) {
             .eq("id", subscription.id)
 
           sentCount++
-          console.log(`[subscription-reminder] Sent reminder to ${profile.email}`)
         } else {
           failedCount++
           console.error(`[subscription-reminder] Failed to send reminder to ${profile.email}:`, emailResult.error)
@@ -151,7 +147,6 @@ async function handler(request: NextRequest) {
       }
     }
 
-    console.log(`[subscription-reminder] Completed (${daysUntilExpiry}-day): ${sentCount} sent, ${failedCount} failed`)
 
     return NextResponse.json({
       success: true,

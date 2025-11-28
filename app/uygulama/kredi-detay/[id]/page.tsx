@@ -477,7 +477,6 @@ export default function KrediDetayPage() {
       try {
         whiteLogo = await loadImageAsBase64("/logo-white.png")
       } catch (error) {
-        console.log("White logo could not be loaded")
       }
 
       try {
@@ -486,7 +485,6 @@ export default function KrediDetayPage() {
           bankLogo = await loadImageAsBase64(bankLogoPath)
         }
       } catch (error) {
-        console.log("Bank logo could not be loaded")
       }
 
       const COLORS = {
@@ -535,7 +533,6 @@ export default function KrediDetayPage() {
             logoHeight
           )
         } catch (error) {
-          console.log("Could not add white logo to cover")
           // Fallback: Show brand text
           doc.setTextColor(...COLORS.white)
           doc.setFontSize(24)
@@ -639,7 +636,6 @@ export default function KrediDetayPage() {
         try {
           doc.addImage(bankLogo, "PNG", pageWidth - margin - 30, 10, 30, 30)
         } catch (error) {
-          console.log("Could not add bank logo to header")
         }
       }
 
@@ -901,7 +897,6 @@ export default function KrediDetayPage() {
       try {
         whiteLogo = await loadImageAsBase64("/logo-white.png")
       } catch (error) {
-        console.log("White logo could not be loaded")
       }
 
       try {
@@ -910,7 +905,6 @@ export default function KrediDetayPage() {
           bankLogo = await loadImageAsBase64(bankLogoPath)
         }
       } catch (error) {
-        console.log("Bank logo could not be loaded")
       }
 
       const COLORS = {
@@ -959,7 +953,6 @@ export default function KrediDetayPage() {
             logoHeight
           )
         } catch (error) {
-          console.log("Could not add white logo to cover")
           // Fallback: Show brand text
           doc.setTextColor(...COLORS.white)
           doc.setFontSize(24)
@@ -1063,7 +1056,6 @@ export default function KrediDetayPage() {
         try {
           doc.addImage(bankLogo, "PNG", pageWidth - margin - 30, 10, 30, 30)
         } catch (error) {
-          console.log("Could not add bank logo to header")
         }
       }
 

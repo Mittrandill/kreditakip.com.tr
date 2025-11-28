@@ -36,7 +36,6 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
     }
 
-    console.log("[subscription-renewal] Starting automatic renewal process...")
 
     const supabase = createClient(supabaseUrl, supabaseServiceKey, {
       auth: {
@@ -67,7 +66,6 @@ export async function GET(request: NextRequest) {
     }
 
     if (!expiringSubscriptions || expiringSubscriptions.length === 0) {
-      console.log("[subscription-renewal] No subscriptions to renew")
       return NextResponse.json({
         success: true,
         message: "No subscriptions to renew",
@@ -75,7 +73,6 @@ export async function GET(request: NextRequest) {
       })
     }
 
-    console.log(`[subscription-renewal] Found ${expiringSubscriptions.length} subscriptions to process`)
 
     const paytrClient = new PayTRClient()
     const results = {
@@ -93,7 +90,6 @@ export async function GET(request: NextRequest) {
         const profile = subscription.profiles
 
         if (!plan) {
-          console.log(`[subscription-renewal] No plan found for subscription ${subscription.id}`)
           results.skipped++
           continue
         }
@@ -108,7 +104,6 @@ export async function GET(request: NextRequest) {
           .single()
 
         if (cardError || !savedCard) {
-          console.log(`[subscription-renewal] No saved card for user ${userId}`)
           results.skipped++
           continue
         }
@@ -121,7 +116,6 @@ export async function GET(request: NextRequest) {
           .single()
 
         if (!billingInfo) {
-          console.log(`[subscription-renewal] No billing info for user ${userId}`)
           results.skipped++
           continue
         }
@@ -155,15 +149,8 @@ export async function GET(request: NextRequest) {
         // Risk skorunu hesapla
         const riskAssessment = calculateRiskScore(riskFactors)
 
-        console.log(`[subscription-renewal] User ${userId} risk assessment:`, {
-          score: riskAssessment.score,
-          level: riskAssessment.level,
-          flags: riskAssessment.flags,
-        })
-
         // CRITICAL risk ise ödemeyi yapma, manual review gerekiyor
         if (riskAssessment.level === "critical" && riskAssessment.score >= 70) {
-          console.warn(`[subscription-renewal] CRITICAL RISK - Skipping payment for user ${userId}`)
 
           // Security log kaydet
           await logSecurityEvent(supabase, {
@@ -189,7 +176,6 @@ export async function GET(request: NextRequest) {
         // Benzersiz sipariş numarası oluştur (REN prefix for recurring Non-3D)
         const orderId = `REN${userId.replace(/-/g, "").substring(0, 18)}${Date.now()}`
 
-        console.log(`[subscription-renewal] Creating Non-3D recurring payment for user ${userId}`)
 
         // Security event log: Payment attempt
         await logSecurityEvent(supabase, {
@@ -235,7 +221,6 @@ export async function GET(request: NextRequest) {
 
         results.processed++
 
-        console.log(`[subscription-renewal] Payment result for user ${userId}:`, paymentResult.status)
 
         if (paymentResult.status === "success") {
           // Ödeme başarılı - direkt yenile
@@ -288,11 +273,9 @@ export async function GET(request: NextRequest) {
             })
           }
 
-          console.log(`[subscription-renewal] ✓ Subscription renewed successfully for user ${userId}`)
           results.payment_requests_created++
         } else if (paymentResult.status === "wait_callback") {
           // Callback bekleniyor
-          console.log(`[subscription-renewal] Payment waiting callback for user ${userId}`)
           results.payment_requests_created++
         } else {
           // Ödeme başarısız
@@ -339,7 +322,6 @@ export async function GET(request: NextRequest) {
       }
     }
 
-    console.log("[subscription-renewal] Renewal process completed:", results)
 
     return NextResponse.json({
       success: true,

@@ -124,7 +124,6 @@ class FinancialHealthPDFGenerator {
         this.doc.addImage(logoBase64, "PNG", this.pageWidth / 2 - 85, logoY - 17, 170, 33)
       }
     } catch (error) {
-      console.warn("Could not load logo")
     }
 
     // Main title

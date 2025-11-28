@@ -125,18 +125,14 @@ export async function generateEarlyPaymentPDF(data: EarlyPaymentData): Promise<v
   try {
     whiteLogo = await loadImageAsBase64("/logo-white.png")
   } catch (error) {
-    console.log("White logo could not be loaded")
   }
 
   try {
     const bankLogoUrl = krediDetay?.banks?.logo_url
-    console.log("Bank logo URL:", bankLogoUrl)
     if (bankLogoUrl) {
       bankLogo = await loadImageAsBase64(bankLogoUrl)
-      console.log("Bank logo loaded successfully")
     }
   } catch (error) {
-    console.log("Bank logo could not be loaded:", error)
   }
 
   const pageWidth = doc.internal.pageSize.getWidth()
@@ -164,7 +160,6 @@ export async function generateEarlyPaymentPDF(data: EarlyPaymentData): Promise<v
     try {
       doc.addImage(whiteLogo, "PNG", pageWidth / 2 - logoWidth / 2, logoY - logoHeight / 2, logoWidth, logoHeight)
     } catch (error) {
-      console.log("Could not add white logo to cover")
       doc.setTextColor(...COLORS.white)
       doc.setFontSize(24)
       doc.setFont("helvetica", "bold")
@@ -248,12 +243,9 @@ export async function generateEarlyPaymentPDF(data: EarlyPaymentData): Promise<v
       const logoSize = 6 // Reduced by 75% from 25
       doc.addImage(bankLogo, "PNG", margin, 2, logoSize, logoSize)
       leftStartX = margin + logoSize + 3
-      console.log("Bank logo added to header")
     } catch (error) {
-      console.log("Could not add bank logo to header:", error)
     }
   } else {
-    console.log("Bank logo is null, not adding to header")
   }
 
   // Bank name next to logo

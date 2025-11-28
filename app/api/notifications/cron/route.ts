@@ -77,7 +77,6 @@ export async function GET(request: NextRequest) {
     // Bu endpoint sadece email bildirimleri için kullanılıyor
 
     // Email tercihine göre email bildirimleri gönder
-    console.log("[cron] Sending email notifications...")
     for (const user of users) {
       try {
         if (user.email_3_days_before) {

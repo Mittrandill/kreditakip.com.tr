@@ -26,15 +26,6 @@ export async function GET(request: NextRequest) {
     const customHeader = request.headers.get("x-cron-secret")
     const cronSecret = process.env.CRON_SECRET
 
-    console.log("[renewal-notification] Auth check:", {
-      hasCronSecret: !!cronSecret,
-      cronSecretLength: cronSecret?.length || 0,
-      hasAuthHeader: !!authHeader,
-      authHeaderLength: authHeader?.length || 0,
-      hasCustomHeader: !!customHeader,
-      customHeaderLength: customHeader?.length || 0,
-    })
-
     if (cronSecret) {
       const isValidAuth = authHeader === `Bearer ${cronSecret}`
       const isValidCustom = customHeader === cronSecret
@@ -45,7 +36,6 @@ export async function GET(request: NextRequest) {
       }
     }
 
-    console.log("[renewal-notification] Starting renewal notification process...")
 
     const supabase = createClient(supabaseUrl, supabaseServiceKey, {
       auth: {
@@ -78,7 +68,6 @@ export async function GET(request: NextRequest) {
     }
 
     if (!expiringSubscriptions || expiringSubscriptions.length === 0) {
-      console.log("[renewal-notification] No subscriptions expiring in 3 days")
       return NextResponse.json({
         success: true,
         message: "No subscriptions to notify",
@@ -86,7 +75,6 @@ export async function GET(request: NextRequest) {
       })
     }
 
-    console.log(`[renewal-notification] Found ${expiringSubscriptions.length} subscriptions to notify`)
 
     const results = {
       processed: 0,
@@ -103,7 +91,6 @@ export async function GET(request: NextRequest) {
         const profile = subscription.profiles
 
         if (!plan || !profile?.email) {
-          console.log(`[renewal-notification] Missing plan or profile for subscription ${subscription.id}`)
           results.skipped++
           continue
         }
@@ -118,7 +105,6 @@ export async function GET(request: NextRequest) {
           .single()
 
         if (!savedCard) {
-          console.log(`[renewal-notification] No saved card for user ${userId}, skipping`)
           results.skipped++
           continue
         }
@@ -139,7 +125,6 @@ export async function GET(request: NextRequest) {
         })
 
         if (emailResult.success) {
-          console.log(`[renewal-notification] Notification sent to ${profile.email}`)
           results.notified++
         } else {
           console.error(`[renewal-notification] Failed to send email to ${profile.email}:`, emailResult.error)
@@ -154,7 +139,6 @@ export async function GET(request: NextRequest) {
       }
     }
 
-    console.log("[renewal-notification] Notification process completed:", results)
 
     return NextResponse.json({
       success: true,

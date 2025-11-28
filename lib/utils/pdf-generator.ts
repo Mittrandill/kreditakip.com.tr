@@ -98,7 +98,6 @@ class ModernPDFGenerator {
       // Load image and convert to base64
       const response = await fetch(imagePath)
       if (!response.ok) {
-        console.warn(`Could not load bank logo: ${imagePath}`)
         return null
       }
 
@@ -114,7 +113,6 @@ class ModernPDFGenerator {
         reader.readAsDataURL(blob)
       })
     } catch (error) {
-      console.warn(`Error loading bank logo for ${bankName}:`, error)
       return null
     }
   }
@@ -193,7 +191,6 @@ class ModernPDFGenerator {
         )
       }
     } catch (error) {
-      console.warn("Could not load logo, using fallback")
       // Fallback: Simple text logo
       this.doc.setFillColor(...COLORS.white)
       this.doc.roundedRect(
@@ -573,7 +570,6 @@ class ModernPDFGenerator {
         // Add bank logo image (slightly smaller than background)
         this.doc.addImage(logoBase64, "PNG", logoX - logoSize / 2, logoY - logoSize / 2, logoSize, logoSize)
       } catch (error) {
-        console.warn("Could not add bank logo image:", error)
         // Fallback to initials
         this.addBankInitials(logoX, logoY, bankName)
       }

@@ -77,13 +77,6 @@ export async function POST(request: NextRequest) {
     const currency = formData.get("currency") as string
     const paymentAmount = formData.get("payment_amount") as string
 
-    console.log("[renewal-callback] Received callback:", {
-      merchant_oid: merchantOid,
-      status,
-      total_amount: totalAmount,
-      test_mode: testMode,
-    })
-
     if (!merchantOid || !status || !hash) {
       console.error("[renewal-callback] Missing required parameters")
       return new Response("OK", { status: 200 }) // Return OK to prevent PayTR retries
@@ -103,7 +96,6 @@ export async function POST(request: NextRequest) {
       return new Response("OK", { status: 200 })
     }
 
-    console.log("[renewal-callback] Hash verified successfully")
 
     const supabase = createClient(supabaseUrl, supabaseServiceKey, {
       auth: { autoRefreshToken: false, persistSession: false },
@@ -131,7 +123,6 @@ export async function POST(request: NextRequest) {
 
     // Handle payment SUCCESS
     if (status === "success") {
-      console.log(`[renewal-callback] Processing successful payment for user ${userId}`)
 
       const now = new Date()
       const currentExpiry = new Date(subscription.expires_at)
@@ -228,11 +219,9 @@ export async function POST(request: NextRequest) {
         })
       }
 
-      console.log(`[renewal-callback] Successfully renewed subscription for user ${userId}`)
     }
     // Handle payment FAILURE
     else if (status === "failed") {
-      console.log(`[renewal-callback] Payment failed for user ${userId}: ${failedReasonMsg}`)
 
       const now = new Date()
 
@@ -306,7 +295,6 @@ export async function POST(request: NextRequest) {
         })
       }
 
-      console.log(`[renewal-callback] Recorded failed payment for user ${userId}`)
     }
 
     // Return OK to PayTR

@@ -37,7 +37,6 @@ export async function GET(request: NextRequest) {
       }
     }
 
-    console.log("[grace-period-handler] Starting grace period management...")
 
     const supabase = createClient(supabaseUrl, supabaseServiceKey, {
       auth: { autoRefreshToken: false, persistSession: false },
@@ -64,7 +63,6 @@ export async function GET(request: NextRequest) {
     if (fetchError1) {
       console.error("[grace-period-handler] Error fetching expired subs:", fetchError1)
     } else if (expiredSubs && expiredSubs.length > 0) {
-      console.log(`[grace-period-handler] Starting grace period for ${expiredSubs.length} subscriptions`)
 
       for (const sub of expiredSubs) {
         try {
@@ -121,7 +119,6 @@ export async function GET(request: NextRequest) {
     if (fetchError2) {
       console.error("[grace-period-handler] Error fetching ending subs:", fetchError2)
     } else if (endingSubs && endingSubs.length > 0) {
-      console.log(`[grace-period-handler] Sending day 2 reminders to ${endingSubs.length} users`)
 
       for (const sub of endingSubs) {
         try {
@@ -159,7 +156,6 @@ export async function GET(request: NextRequest) {
     if (fetchError3) {
       console.error("[grace-period-handler] Error fetching expired grace:", fetchError3)
     } else if (expiredGrace && expiredGrace.length > 0) {
-      console.log(`[grace-period-handler] Suspending ${expiredGrace.length} subscriptions`)
 
       for (const sub of expiredGrace) {
         try {
@@ -202,7 +198,6 @@ export async function GET(request: NextRequest) {
       }
     }
 
-    console.log("[grace-period-handler] Completed:", results)
 
     return NextResponse.json({
       success: true,

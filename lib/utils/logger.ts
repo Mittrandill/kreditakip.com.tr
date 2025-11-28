@@ -28,7 +28,6 @@ export const logger = {
    * Log warnings (shown in all environments)
    */
   warn: (message: string, ...args: any[]) => {
-    console.warn(`[WARN] ${message}`, ...args)
   },
 
   /**

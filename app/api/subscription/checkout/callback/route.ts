@@ -95,7 +95,6 @@ export async function POST(request: NextRequest) {
     // IDEMPOTENCY CHECK: Prevent duplicate processing
     // If pending subscription is already completed, ignore this webhook
     if (pendingSubscription.status === "completed") {
-      console.log("[paytr-callback] Order already processed, ignoring duplicate webhook:", merchant_oid)
       return new Response("OK", { status: 200 })
     }
 
@@ -264,13 +263,10 @@ export async function POST(request: NextRequest) {
       }
 
       // DEBUG: Kart saklama parametrelerini logla
-      console.log("[paytr-callback] Card Storage Check - utoken received:", utoken ? "YES" : "NO", utoken || "")
-      console.log("[paytr-callback] NOTE: ctoken is NOT returned in callback - will fetch via CAPI LIST")
 
       // Kart saklama bilgilerini kaydet (CAPI)
       // NOT: Callback'te sadece utoken döner, ctoken için CAPI LIST çağırmalıyız
       if (utoken) {
-        console.log("[paytr-callback] utoken received, saving and fetching card details via CAPI LIST...")
 
         // 1. Önce paytr_user_tokens tablosuna utoken'ı kaydet
         // NOT: Constraint adı "paytr_user_tokens_user_id_key" olduğu için onConflict kullanamıyoruz
@@ -307,19 +303,15 @@ export async function POST(request: NextRequest) {
         if (utokenError) {
           console.error("[paytr-callback] Failed to save utoken:", utokenError)
         } else {
-          console.log("[paytr-callback] ✓ utoken saved successfully")
         }
 
         // 2. CAPI LIST çağır - utoken ile kart bilgilerini al
         try {
-          console.log("[paytr-callback] Calling CAPI LIST to get ctoken...")
           const cardList = await paytrClient.listSavedCards(utoken)
 
-          console.log("[paytr-callback] CAPI LIST response:", cardList)
 
           // Kartlar varsa kaydet
           if (cardList && Array.isArray(cardList) && cardList.length > 0) {
-            console.log(`[paytr-callback] Found ${cardList.length} saved card(s)`)
 
             for (const card of cardList) {
               const { error: cardError } = await supabase
@@ -350,11 +342,9 @@ export async function POST(request: NextRequest) {
               if (cardError) {
                 console.error("[paytr-callback] Failed to save card:", cardError)
               } else {
-                console.log("[paytr-callback] ✓ Card saved - ctoken:", card.ctoken, "last_4:", card.last_4)
               }
             }
           } else {
-            console.warn("[paytr-callback] ⚠️ CAPI LIST returned no cards")
           }
         } catch (capiError: any) {
           console.error("[paytr-callback] ❌ CAPI LIST error:", capiError.message)
@@ -362,13 +352,6 @@ export async function POST(request: NextRequest) {
 
       } else {
         // Token bilgileri gelmedi - kart saklanamadı
-        console.warn("[paytr-callback] ⚠️ Card storage tokens NOT received from PayTR")
-        console.warn("  Possible reasons:")
-        console.warn("  1. 'Kartımı güvenli bir şekilde sakla' checkbox was not checked")
-        console.warn("  2. PayTR CAPI feature is not enabled for this merchant account")
-        console.warn("  3. PayTR test mode does not support card storage")
-        console.warn("  4. Check PayTR panel settings for CAPI activation")
-        console.warn("  → Contact PayTR support to enable CAPI (Card Storage) feature")
       }
 
       // Send subscription notification email
@@ -409,11 +392,9 @@ export async function POST(request: NextRequest) {
         if (!paymentEmailResult.success) {
           console.error("[paytr-callback] Failed to send payment success notification to user:", paymentEmailResult.error)
         } else {
-          console.log("[paytr-callback] Payment success email sent to user:", userProfile.email)
         }
       }
 
-      console.log("[paytr-callback] Subscription activated successfully:", merchant_oid)
     } else {
       // Ödeme başarısız
       console.error("[paytr-callback] Payment failed:", failed_reason_msg)
