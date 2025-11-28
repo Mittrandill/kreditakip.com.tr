@@ -94,12 +94,12 @@ export default function FeaturesPage() {
               </p>
             </div>
 
-            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8 mb-20">
+            <div className="grid md:grid-cols-2 gap-8 mb-20 lg:grid-cols-4">
               {/* OCR Technology */}
               <div className="relative group">
                 <div className="absolute inset-0 bg-gradient-to-r from-emerald-500/20 to-transparent rounded-3xl blur-xl group-hover:blur-2xl transition-all duration-500" />
-                <Card className="relative bg-black/20 border-white/10 backdrop-blur-xl hover:border-emerald-500/30 transition-all duration-500 group-hover:transform group-hover:scale-105 overflow-hidden">
-                  <CardContent className="p-8">
+                <Card className="relative bg-black/20 border-white/10 backdrop-blur-xl hover:border-emerald-500/30 transition-all duration-500 lg:group-hover:transform lg:group-hover:scale-105 overflow-hidden">
+                  <CardContent className="p-6 lg:p-8">
                     <div className="relative mb-6">
                       <div className="w-20 h-20 bg-gradient-to-br from-emerald-500/30 to-emerald-500/10 rounded-2xl flex items-center justify-center mx-auto backdrop-blur-sm border border-emerald-500/20">
                         <Scan className="w-10 h-10 text-emerald-400" />
@@ -130,7 +130,7 @@ export default function FeaturesPage() {
               <div className="relative group">
                 <div className="absolute inset-0 bg-gradient-to-r from-teal-500/20 to-transparent rounded-3xl blur-xl group-hover:blur-2xl transition-all duration-500" />
                 <Card className="relative bg-black/20 border-white/10 backdrop-blur-xl hover:border-teal-500/30 transition-all duration-500 group-hover:transform group-hover:scale-105 overflow-hidden">
-                  <CardContent className="p-8">
+                  <CardContent className="p-6 lg:p-8">
                     <div className="relative mb-6">
                       <div className="w-20 h-20 bg-gradient-to-br from-teal-500/30 to-teal-500/10 rounded-2xl flex items-center justify-center mx-auto backdrop-blur-sm border border-teal-500/20">
                         <Calendar className="w-10 h-10 text-teal-400" />
@@ -160,8 +160,8 @@ export default function FeaturesPage() {
               {/* Risk Analysis */}
               <div className="relative group">
                 <div className="absolute inset-0 bg-gradient-to-r from-emerald-500/20 to-transparent rounded-3xl blur-xl group-hover:blur-2xl transition-all duration-500" />
-                <Card className="relative bg-black/20 border-white/10 backdrop-blur-xl hover:border-emerald-500/30 transition-all duration-500 group-hover:transform group-hover:scale-105 overflow-hidden">
-                  <CardContent className="p-8">
+                <Card className="relative bg-black/20 border-white/10 backdrop-blur-xl hover:border-emerald-500/30 transition-all duration-500 lg:group-hover:transform lg:group-hover:scale-105 overflow-hidden">
+                  <CardContent className="p-6 lg:p-8">
                     <div className="relative mb-6">
                       <div className="w-20 h-20 bg-gradient-to-br from-emerald-500/30 to-emerald-500/10 rounded-2xl flex items-center justify-center mx-auto backdrop-blur-sm border border-emerald-500/20">
                         <ShieldCheck className="w-10 h-10 text-emerald-400" />
@@ -192,7 +192,7 @@ export default function FeaturesPage() {
               <div className="relative group">
                 <div className="absolute inset-0 bg-gradient-to-r from-teal-500/20 to-transparent rounded-3xl blur-xl group-hover:blur-2xl transition-all duration-500" />
                 <Card className="relative bg-black/20 border-white/10 backdrop-blur-xl hover:border-teal-500/30 transition-all duration-500 group-hover:transform group-hover:scale-105 overflow-hidden">
-                  <CardContent className="p-8">
+                  <CardContent className="p-6 lg:p-8">
                     <div className="relative mb-6">
                       <div className="w-20 h-20 bg-gradient-to-br from-teal-500/30 to-teal-500/10 rounded-2xl flex items-center justify-center mx-auto backdrop-blur-sm border border-teal-500/20">
                         <BarChart3 className="w-10 h-10 text-teal-400" />
@@ -524,7 +524,7 @@ export default function FeaturesPage() {
               <div className="relative group">
                 <div className="absolute inset-0 bg-gradient-to-r from-emerald-500/20 to-transparent rounded-3xl blur-xl group-hover:blur-2xl transition-all duration-500" />
                 <Card className="relative bg-black/20 border-white/10 backdrop-blur-xl hover:border-emerald-500/30 transition-all duration-500 text-center">
-                  <CardContent className="p-8">
+                  <CardContent className="p-6 lg:p-8">
                     <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-emerald-500/30 to-emerald-500/10 flex items-center justify-center mx-auto mb-4 border border-emerald-500/20">
                       <Shield className="w-8 h-8 text-emerald-400" />
                     </div>
@@ -537,7 +537,7 @@ export default function FeaturesPage() {
               <div className="relative group">
                 <div className="absolute inset-0 bg-gradient-to-r from-teal-500/20 to-transparent rounded-3xl blur-xl group-hover:blur-2xl transition-all duration-500" />
                 <Card className="relative bg-black/20 border-white/10 backdrop-blur-xl hover:border-teal-500/30 transition-all duration-500 text-center">
-                  <CardContent className="p-8">
+                  <CardContent className="p-6 lg:p-8">
                     <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-teal-500/30 to-teal-500/10 flex items-center justify-center mx-auto mb-4 border border-teal-500/20">
                       <Zap className="w-8 h-8 text-teal-400" />
                     </div>
@@ -550,7 +550,7 @@ export default function FeaturesPage() {
               <div className="relative group">
                 <div className="absolute inset-0 bg-gradient-to-r from-emerald-500/20 to-transparent rounded-3xl blur-xl group-hover:blur-2xl transition-all duration-500" />
                 <Card className="relative bg-black/20 border-white/10 backdrop-blur-xl hover:border-emerald-500/30 transition-all duration-500 text-center">
-                  <CardContent className="p-8">
+                  <CardContent className="p-6 lg:p-8">
                     <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-emerald-500/30 to-emerald-500/10 flex items-center justify-center mx-auto mb-4 border border-emerald-500/20">
                       <RefreshCw className="w-8 h-8 text-emerald-400" />
                     </div>
@@ -563,7 +563,7 @@ export default function FeaturesPage() {
               <div className="relative group">
                 <div className="absolute inset-0 bg-gradient-to-r from-teal-500/20 to-transparent rounded-3xl blur-xl group-hover:blur-2xl transition-all duration-500" />
                 <Card className="relative bg-black/20 border-white/10 backdrop-blur-xl hover:border-teal-500/30 transition-all duration-500 text-center">
-                  <CardContent className="p-8">
+                  <CardContent className="p-6 lg:p-8">
                     <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-teal-500/30 to-teal-500/10 flex items-center justify-center mx-auto mb-4 border border-teal-500/20">
                       <Lock className="w-8 h-8 text-teal-400" />
                     </div>
