@@ -40,13 +40,13 @@ async function handler(request: NextRequest) {
     const now = new Date()
 
     // Get all active premium subscriptions that have expired
+    // Note: We check both with and without reminder_sent_at
     const { data: expiredSubscriptions, error: subError } = await supabase
       .from("subscriptions")
       .select("*")
       .eq("status", "active")
       .eq("plan_type", "premium")
       .lt("expires_at", now.toISOString())
-      .not("reminder_sent_at", "is", null)
 
     if (subError) {
       console.error("[subscription-expiry-check] Error fetching subscriptions:", subError)
