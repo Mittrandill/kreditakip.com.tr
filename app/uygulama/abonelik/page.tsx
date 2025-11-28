@@ -63,17 +63,6 @@ import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 
 const supabase = createBrowserClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!)
 
-interface SavedCard {
-  id: string
-  last_4: string
-  card_holder_name: string
-  expiry_month: string
-  expiry_year: string
-  bank_name?: string
-  card_brand?: string
-  is_default: boolean
-}
-
 interface PaymentTransaction {
   id: string
   amount: string
@@ -103,13 +92,8 @@ export default function SubscriptionPage() {
   const { user } = useAuth()
   const { subscription, loading, isPremium, refresh } = useSubscription()
   const [activeTab, setActiveTab] = useState("overview")
-  const [cards, setCards] = useState<SavedCard[]>([])
-  const [cardsLoading, setCardsLoading] = useState(true)
   const [showCancelDialog, setShowCancelDialog] = useState(false)
   const [isCancelling, setIsCancelling] = useState(false)
-  const [deleteCardId, setDeleteCardId] = useState<string | null>(null)
-  const [isDeleting, setIsDeleting] = useState(false)
-  const [settingDefaultId, setSettingDefaultId] = useState<string | null>(null)
 
   // Invoice and payment history states
   const [transactions, setTransactions] = useState<PaymentTransaction[]>([])
@@ -130,7 +114,6 @@ export default function SubscriptionPage() {
   const [loadingSubscription, setLoadingSubscription] = useState(true)
 
   useEffect(() => {
-    fetchCards()
     fetchPaymentData()
     fetchSubscriptionData()
   }, [user])
@@ -166,20 +149,6 @@ export default function SubscriptionPage() {
       console.error("Error fetching subscription:", error)
     } finally {
       setLoadingSubscription(false)
-    }
-  }
-
-  const fetchCards = async () => {
-    try {
-      const response = await fetch("/api/payment/cards")
-      const data = await response.json()
-      if (data.success) {
-        setCards(data.cards || [])
-      }
-    } catch (error) {
-      console.error("Fetch cards error:", error)
-    } finally {
-      setCardsLoading(false)
     }
   }
 
@@ -248,51 +217,6 @@ export default function SubscriptionPage() {
     } finally {
       setIsCancelling(false)
       setShowCancelDialog(false)
-    }
-  }
-
-  const handleDeleteCard = async (cardId: string) => {
-    setIsDeleting(true)
-    try {
-      const response = await fetch(`/api/payment/cards/${cardId}`, { method: "DELETE" })
-      const data = await response.json()
-      if (data.success) {
-        toast({ title: "Kart Silindi", description: "Kart başarıyla silindi." })
-        fetchCards()
-      } else {
-        toast({ title: "Hata", description: data.error || "Kart silinirken hata oluştu", variant: "destructive" })
-      }
-    } catch (error) {
-      toast({ title: "Hata", description: "Bir hata oluştu. Lütfen tekrar deneyin.", variant: "destructive" })
-    } finally {
-      setIsDeleting(false)
-      setDeleteCardId(null)
-    }
-  }
-
-  const handleSetDefault = async (cardId: string) => {
-    setSettingDefaultId(cardId)
-    try {
-      const response = await fetch("/api/payment/cards/set-default", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ cardId }),
-      })
-      const data = await response.json()
-      if (data.success) {
-        toast({ title: "Varsayılan Kart Güncellendi", description: "Varsayılan kart başarıyla değiştirildi." })
-        fetchCards()
-      } else {
-        toast({
-          title: "Hata",
-          description: data.error || "Varsayılan kart güncellenirken hata oluştu",
-          variant: "destructive",
-        })
-      }
-    } catch (error) {
-      toast({ title: "Hata", description: "Bir hata oluştu. Lütfen tekrar deneyin.", variant: "destructive" })
-    } finally {
-      setSettingDefaultId(null)
     }
   }
 
@@ -465,7 +389,7 @@ export default function SubscriptionPage() {
     }
   }
 
-  if (loading || cardsLoading) {
+  if (loading) {
     return (
       <div className="flex items-center justify-center min-h-[60vh]">
         <LoadingSpinner size="lg" />
@@ -485,13 +409,9 @@ export default function SubscriptionPage() {
                 Abonelik Yönetimi
               </h1>
               <p className="text-white/80 text-base md:text-lg mb-4">
-                Abonelik bilgilerinizi, kayıtlı kartlarınızı ve ödeme geçmişinizi buradan yönetebilirsiniz
+                Abonelik bilgilerinizi ve ödeme geçmişinizi buradan yönetebilirsiniz
               </p>
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4">
-                <div>
-                  <p className="text-white/70 text-xs sm:text-sm mb-1">Kayıtlı Kart</p>
-                  <p className="text-xl sm:text-2xl font-bold">{cards.length} Adet</p>
-                </div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
                 <div>
                   <p className="text-white/70 text-xs sm:text-sm mb-1">Toplam Fatura</p>
                   <p className="text-xl sm:text-2xl font-bold">{invoices.length} Adet</p>
@@ -691,7 +611,7 @@ export default function SubscriptionPage() {
       <div className="bg-white dark:bg-black/20 rounded-2xl shadow-sm border border-gray-100 dark:border-white/10 overflow-hidden">
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
           <div className="border-b border-gray-100 dark:border-white/10 bg-gray-50/50 dark:bg-emerald-900/10">
-            <TabsList className="grid grid-cols-4 bg-transparent h-auto p-1 sm:p-2 gap-1 sm:gap-2">
+            <TabsList className="grid grid-cols-3 bg-transparent h-auto p-1 sm:p-2 gap-1 sm:gap-2">
               <TabsTrigger
                 value="overview"
                 className="flex items-center gap-1 sm:gap-2 py-2 sm:py-3 px-2 sm:px-4 text-xs sm:text-sm data-[state=active]:text-emerald-600 dark:data-[state=active]:text-emerald-400 data-[state=active]:bg-white dark:data-[state=active]:bg-emerald-900/20 data-[state=active]:shadow-sm rounded-xl transition-all duration-200 hover:bg-gray-100 dark:hover:bg-white/10 dark:text-white/60"
@@ -699,14 +619,6 @@ export default function SubscriptionPage() {
                 <Shield className="h-3 w-3 sm:h-4 sm:w-4" />
                 <span className="hidden sm:inline font-medium">Abonelik Bilgileri</span>
                 <span className="sm:hidden font-medium">Genel</span>
-              </TabsTrigger>
-              <TabsTrigger
-                value="cards"
-                className="flex items-center gap-1 sm:gap-2 py-2 sm:py-3 px-2 sm:px-4 text-xs sm:text-sm data-[state=active]:text-emerald-600 dark:data-[state=active]:text-emerald-400 data-[state=active]:bg-white dark:data-[state=active]:bg-emerald-900/20 data-[state=active]:shadow-sm rounded-xl transition-all duration-200 hover:bg-gray-100 dark:hover:bg-white/10 dark:text-white/60"
-              >
-                <CreditCard className="h-3 w-3 sm:h-4 sm:w-4" />
-                <span className="hidden sm:inline font-medium">Kayıtlı Kartlarım</span>
-                <span className="sm:hidden font-medium">Kartlar</span>
               </TabsTrigger>
               <TabsTrigger
                 value="invoices"
@@ -783,10 +695,9 @@ export default function SubscriptionPage() {
 
                   {/* Timeline - Elegant Single Card */}
                   {subscription?.startDate && subscription?.expiresAt && subscription.status === "active" && (
-                    <Card className="bg-gradient-to-br from-white via-emerald-50/30 to-white dark:from-black/40 dark:via-emerald-950/20 dark:to-black/40 border border-emerald-200 dark:border-emerald-900/30 overflow-hidden shadow-lg">
+                    <Card className="bg-white via-emerald-50/30 to-white dark:from-black/40 dark:via-emerald-950/20 dark:to-black/40 border border-gray-200 dark:border-gray-900/30 overflow-hidden shadow-lg">
                       <CardHeader className="pb-4">
                         <CardTitle className="flex items-center gap-2 text-emerald-900 dark:text-emerald-100">
-                          <Calendar className="h-5 w-5 text-emerald-600 dark:text-emerald-400" />
                           Abonelik Dönemi
                         </CardTitle>
                         <CardDescription className="dark:text-emerald-200/60">
@@ -831,24 +742,7 @@ export default function SubscriptionPage() {
                                 </div>
                               </div>
 
-                              {/* Current Progress Marker */}
-                              <div className="flex flex-col items-center w-1/3">
-                                <div className="relative mb-3">
-                                  <div className="w-12 h-12 rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center shadow-lg border-4 border-white dark:border-gray-900 animate-pulse">
-                                    <TrendingUp className="h-6 w-6 text-white" />
-                                  </div>
-                                </div>
-                                <div className="text-center">
-                                  <p className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
-                                    {Math.round(((new Date().getTime() - new Date(subscription.startDate).getTime()) / (new Date(subscription.expiresAt).getTime() - new Date(subscription.startDate).getTime())) * 100)}%
-                                  </p>
-                                  <p className="text-sm text-blue-700 dark:text-blue-300 font-medium mt-1">İlerleme</p>
-                                  <p className="text-xs text-gray-600 dark:text-gray-400 mt-1">
-                                    {Math.ceil((new Date(subscription.expiresAt).getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24))} gün kaldı
-                                  </p>
-                                </div>
-                              </div>
-
+                      
                               {/* End Marker */}
                               <div className="flex flex-col items-center w-1/3">
                                 <div className="relative mb-3">
@@ -872,7 +766,7 @@ export default function SubscriptionPage() {
                         </div>
 
                         {/* Info Box */}
-                        <div className="p-4 bg-emerald-100 dark:bg-emerald-900/30 rounded-xl border border-emerald-200 dark:border-emerald-800">
+                        <div className="p-4 bg-white-20 dark:bg-white-900/30 rounded-xl border border-gray-700/20 dark:border-emerald-800">
                           <div className="flex items-start gap-3">
                             <div className="p-2 bg-emerald-500 rounded-lg">
                               <Zap className="h-4 w-4 text-white" />
@@ -1035,142 +929,6 @@ export default function SubscriptionPage() {
                   )}
                 </div>
               )}
-            </TabsContent>
-
-            {/* Kayıtlı Kartlarım Tab */}
-            <TabsContent value="cards" className="space-y-0">
-              <Card className="bg-white/50 dark:bg-black/20 backdrop-blur-sm border border-gray-200 dark:border-white/10 shadow-lg">
-                <CardHeader className="pb-3 border-b border-gray-200 dark:border-white/10">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-3">
-                      <div className="p-3 bg-gradient-to-br from-emerald-500 to-teal-600 rounded-xl">
-                        <CreditCard className="h-6 w-6 text-white" />
-                      </div>
-                      <CardTitle className="text-xl font-bold dark:text-white">Kayıtlı Kartlarım</CardTitle>
-                    </div>
-                    <Button
-                      onClick={() => router.push("/uygulama/premium")}
-                      size="sm"
-                      className="bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white border-0 shadow-lg hover:shadow-xl transition-all"
-                    >
-                      <Plus className="h-5 w-5 mr-2" />
-                      Yeni Kart Ekle
-                    </Button>
-                  </div>
-                </CardHeader>
-                <CardContent>
-                  {cards.length === 0 ? (
-                    <div className="text-center py-16 border-2 border-dashed border-emerald-200 dark:border-emerald-800/50 rounded-2xl bg-emerald-50/50 dark:bg-emerald-950/20">
-                      <div className="inline-flex p-4 bg-gradient-to-br from-emerald-500 to-teal-600 rounded-2xl mb-4">
-                        <CreditCard className="h-12 w-12 text-white" />
-                      </div>
-                      <p className="text-gray-700 dark:text-gray-300 mb-6 text-lg font-medium">Henüz kayıtlı kartınız yok</p>
-                      <Button
-                        onClick={() => router.push("/uygulama/premium")}
-                        size="lg"
-                        className="bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white border-0 shadow-lg hover:shadow-xl transition-all"
-                      >
-                        <Plus className="h-5 w-5 mr-2" />
-                        İlk Kartınızı Ekleyin
-                      </Button>
-                    </div>
-                  ) : (
-                    <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
-                      {cards.map((card) => {
-                        // Determine gradient based on card brand
-                        const getCardGradient = (brand?: string) => {
-                          switch (brand?.toUpperCase()) {
-                            case "VISA":
-                              return "from-blue-600 to-blue-800"
-                            case "MASTERCARD":
-                              return "from-orange-600 to-red-700"
-                            case "AMEX":
-                              return "from-teal-600 to-emerald-700"
-                            case "TROY":
-                              return "from-red-600 to-rose-700"
-                            default:
-                              return "from-gray-600 to-slate-700"
-                          }
-                        }
-
-                        return (
-                          <div
-                            key={card.id}
-                            className="relative group"
-                          >
-                            {/* Credit Card */}
-                            <div className={`relative h-48 rounded-xl bg-gradient-to-br ${getCardGradient(card.card_brand)} p-6 text-white shadow-lg transition-all duration-300 hover:scale-105 hover:shadow-xl`}>
-                              {/* Card Top */}
-                              <div className="flex items-start justify-between mb-8">
-                                <div className="flex items-center gap-2">
-                                  {card.card_brand && (
-                                    <span className="text-xs font-bold bg-white/20 px-2 py-1 rounded">
-                                      {card.card_brand}
-                                    </span>
-                                  )}
-                                  {card.bank_name && (
-                                    <span className="text-xs opacity-80">{card.bank_name}</span>
-                                  )}
-                                </div>
-                                {card.is_default && (
-                                  <Badge className="bg-amber-500 hover:bg-amber-600 text-white text-xs">
-                                    <Star className="h-3 w-3 mr-1 fill-current" />
-                                    Varsayılan
-                                  </Badge>
-                                )}
-                              </div>
-
-                              {/* Card Number */}
-                              <div className="mb-6">
-                                <p className="text-2xl font-mono tracking-wider">
-                                  •••• •••• •••• {card.last_4}
-                                </p>
-                              </div>
-
-                              {/* Card Bottom */}
-                              <div className="flex items-end justify-between">
-                                <div>
-                                  <p className="text-xs opacity-70 mb-1">Kart Sahibi</p>
-                                  <p className="text-sm font-semibold uppercase tracking-wide">
-                                    {card.card_holder_name}
-                                  </p>
-                                </div>
-                                <div className="text-right">
-                                  <p className="text-xs opacity-70 mb-1">Son Kullanma</p>
-                                  <p className="text-sm font-mono">
-                                    {card.expiry_month}/{card.expiry_year}
-                                  </p>
-                                </div>
-                              </div>
-
-                              {/* Hover Actions */}
-                              <div className="absolute top-3 right-3 opacity-0 group-hover:opacity-100 transition-all flex gap-2">
-                                {!card.is_default && (
-                                  <button
-                                    onClick={() => handleSetDefault(card.id)}
-                                    disabled={settingDefaultId === card.id}
-                                    className="p-3 bg-gradient-to-br from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 rounded-xl backdrop-blur-sm transition-all shadow-lg hover:shadow-xl hover:scale-110"
-                                    title="Varsayılan Yap"
-                                  >
-                                    <Star className="h-5 w-5" />
-                                  </button>
-                                )}
-                                <button
-                                  onClick={() => setDeleteCardId(card.id)}
-                                  className="p-3 bg-gradient-to-br from-red-500 to-rose-600 hover:from-red-600 hover:to-rose-700 rounded-xl backdrop-blur-sm transition-all shadow-lg hover:shadow-xl hover:scale-110"
-                                  title="Kartı Sil"
-                                >
-                                  <Trash2 className="h-5 w-5" />
-                                </button>
-                              </div>
-                            </div>
-                          </div>
-                        )
-                      })}
-                    </div>
-                  )}
-                </CardContent>
-              </Card>
             </TabsContent>
 
             {/* Faturalar Tab */}
@@ -1478,27 +1236,6 @@ export default function SubscriptionPage() {
         </AlertDialogContent>
       </AlertDialog>
 
-      {/* Delete Card Dialog */}
-      <AlertDialog open={deleteCardId !== null} onOpenChange={() => setDeleteCardId(null)}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Kartı Sil</AlertDialogTitle>
-            <AlertDialogDescription>
-              Bu kartı silmek istediğinize emin misiniz? Bu işlem geri alınamaz.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>İptal</AlertDialogCancel>
-            <AlertDialogAction
-              onClick={() => deleteCardId && handleDeleteCard(deleteCardId)}
-              disabled={isDeleting}
-              className="bg-red-600 hover:bg-red-700"
-            >
-              {isDeleting ? "Siliniyor..." : "Sil"}
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
     </div>
   )
 }
