@@ -1428,131 +1428,342 @@ export async function sendManualPaymentReminder(data: ManualPaymentReminderData)
 }
 
 function generateManualPaymentReminderHTML(data: ManualPaymentReminderData): string {
-  const urgencyColor = data.daysUntilExpiry <= 1 ? '#DC2626' : data.daysUntilExpiry <= 3 ? '#F59E0B' : '#0369A1'
-  const urgencyBg = data.daysUntilExpiry <= 1 ? '#FEF2F2' : data.daysUntilExpiry <= 3 ? '#FFFBEB' : '#F0F9FF'
+  // Dynamic urgency colors based on days remaining
+  const urgencyColor = data.daysUntilExpiry === 0 ? '#dc2626' : data.daysUntilExpiry <= 1 ? '#f59e0b' : '#10b981'
+  const urgencyIcon = data.daysUntilExpiry === 0 ? '🚨' : data.daysUntilExpiry <= 1 ? '⚠️' : '📅'
 
   return `
 <!DOCTYPE html>
 <html lang="tr">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Ödeme Hatırlatması</title>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Abonelik Ödeme Hatırlatması</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background-color: #0f172a;
+      color: #ffffff;
+      line-height: 1.6;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    .wrapper {
+      width: 100%;
+      background-color: #0f172a;
+      padding: 60px 0;
+    }
+
+    .main {
+      max-width: 600px;
+      margin: 0 auto;
+      background-color: #1e293b;
+      border-radius: 16px;
+      overflow: hidden;
+      box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+      border: 1px solid #334155;
+    }
+
+    .header {
+      background: linear-gradient(135deg, #10b981 0%, #14b8a6 50%, #0d9488 100%);
+      padding: 48px 40px;
+      text-align: center;
+      position: relative;
+    }
+
+    .logo {
+      max-width: 150px;
+      height: auto;
+      margin-bottom: 20px;
+      filter: brightness(0) invert(1);
+    }
+
+    .header-title {
+      font-size: 28px;
+      font-weight: 700;
+      color: #ffffff;
+      margin: 0;
+    }
+
+    .header-subtitle {
+      font-size: 16px;
+      color: rgba(255, 255, 255, 0.9);
+      margin-top: 8px;
+    }
+
+    .content {
+      padding: 48px 40px;
+      background-color: #1e293b;
+    }
+
+    .greeting {
+      font-size: 18px;
+      color: #ffffff;
+      margin-bottom: 32px;
+    }
+
+    .greeting strong {
+      color: #ffffff;
+      font-weight: 600;
+    }
+
+    .payment-card {
+      background: linear-gradient(145deg, #334155 0%, #475569 100%);
+      border: 1px solid #475569;
+      border-radius: 12px;
+      padding: 32px;
+      margin-bottom: 32px;
+      position: relative;
+    }
+
+    .payment-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 4px;
+      background: ${urgencyColor};
+    }
+
+    .plan-section {
+      display: flex;
+      align-items: center;
+      margin-bottom: 24px;
+      padding-bottom: 20px;
+      border-bottom: 1px solid #475569;
+    }
+
+    .plan-icon {
+      width: 48px;
+      height: 48px;
+      background: linear-gradient(135deg, #10b981 0%, #0d9488 100%);
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-right: 16px;
+      font-size: 24px;
+    }
+
+    .plan-name {
+      font-size: 16px;
+      color: #ffffff;
+      font-weight: 600;
+    }
+
+    .amount-section {
+      text-align: center;
+      margin: 32px 0;
+    }
+
+    .amount {
+      font-size: 42px;
+      font-weight: 800;
+      color: #ffffff;
+    }
+
+    .info-grid {
+      display: flex;
+      gap: 32px;
+      margin-top: 24px;
+    }
+
+    .info-item {
+      flex: 1;
+      padding: 16px;
+      background: #475569;
+      border-radius: 8px;
+      text-align: center;
+    }
+
+    .info-label {
+      font-size: 12px;
+      color: #94a3b8;
+      text-transform: uppercase;
+      margin-bottom: 8px;
+    }
+
+    .info-value {
+      font-size: 16px;
+      color: #ffffff;
+      font-weight: 700;
+    }
+
+    .urgency-indicator {
+      background: #475569;
+      border-left: 4px solid ${urgencyColor};
+      border-radius: 8px;
+      padding: 20px;
+      margin: 24px 0;
+      text-align: center;
+    }
+
+    .urgency-text {
+      font-size: 16px;
+      color: ${urgencyColor};
+      font-weight: 700;
+      margin-bottom: 8px;
+    }
+
+    .urgency-desc {
+      font-size: 14px;
+      color: #cbd5e1;
+      line-height: 1.6;
+    }
+
+    .cta-button {
+      display: inline-block;
+      padding: 16px 40px;
+      background: linear-gradient(135deg, #10b981 0%, #0d9488 100%);
+      color: #ffffff !important;
+      text-decoration: none;
+      border-radius: 12px;
+      font-weight: 600;
+      margin: 32px 0;
+      font-size: 15px;
+    }
+
+    .footer {
+      padding: 40px;
+      background: #0f172a;
+      border-top: 1px solid #334155;
+      text-align: center;
+    }
+
+    .footer-logo {
+      width: 80px;
+      height: auto;
+      margin-bottom: 20px;
+      opacity: 0.8;
+    }
+
+    .footer-text {
+      font-size: 12px;
+      color: #64748b;
+      margin-bottom: 16px;
+    }
+
+    .copyright {
+      font-size: 11px;
+      color: #475569;
+      border-top: 1px solid #334155;
+      padding-top: 20px;
+    }
+
+    @media screen and (max-width: 600px) {
+      .header, .content, .footer {
+        padding: 32px 24px;
+      }
+
+      .payment-card {
+        padding: 24px;
+      }
+
+      .plan-section {
+        flex-direction: column;
+        text-align: center;
+      }
+
+      .plan-icon {
+        margin: 0 auto 12px;
+      }
+
+      .info-grid {
+        flex-direction: column;
+      }
+
+      .amount {
+        font-size: 32px;
+      }
+    }
+  </style>
 </head>
-<body style="font-family: Arial, Helvetica, sans-serif; line-height: 1.6; color: #1F2937; background-color: #F3F4F6; margin: 0; padding: 20px;">
-    <table width="100%" cellpadding="0" cellspacing="0" style="max-width: 600px; margin: 0 auto; background-color: #FFFFFF;">
-        <!-- Header -->
-        <tr>
-            <td style="background-color: #1E3A8A; padding: 30px 40px; text-align: center;">
-                <h1 style="color: #FFFFFF; margin: 0; font-size: 22px; font-weight: 600;">KREDİ TAKİP</h1>
-                <p style="color: #BFDBFE; margin: 8px 0 0 0; font-size: 13px;">Ödeme Hatırlatma Sistemi</p>
-            </td>
-        </tr>
+<body>
+  <div class="wrapper">
+    <div class="main">
+      <div class="header">
+        <img src="https://oymjjceuiotxfbpwsdym.supabase.co/storage/v1/object/public/Logo/logo-white.png" alt="Kredi Takip" class="logo">
+        <h1 class="header-title">Ödeme Hatırlatması</h1>
+        <p class="header-subtitle">Finansal takibiniz bizimle güvende</p>
+      </div>
 
-        <!-- Urgency Banner -->
-        <tr>
-            <td style="background-color: ${urgencyColor}; padding: 15px 40px; text-align: center;">
-                <p style="color: #FFFFFF; margin: 0; font-size: 14px; font-weight: 600;">
-                    ${data.daysUntilExpiry === 0 ? '⚠️ ACİL: BUGÜN ÖDEME YAPMANIZ GEREKMEKTEDİR' :
-                      data.daysUntilExpiry === 1 ? '⚠️ DİKKAT: YARIN SON ÖDEME GÜNÜ' :
-                      `SON ÖDEME TARİHİNE ${data.daysUntilExpiry} GÜN KALDI`}
-                </p>
-            </td>
-        </tr>
+      <div class="content">
+        <p class="greeting">
+          Merhaba <strong>${data.userName}</strong>,
+        </p>
 
-        <!-- Content -->
-        <tr>
-            <td style="padding: 40px;">
-                <p style="margin: 0 0 20px 0; font-size: 15px; color: #374151;">Sayın ${data.userName},</p>
+        <div class="payment-card">
+          <div class="plan-section">
+            <div class="plan-icon">
+              ${urgencyIcon}
+            </div>
+            <div>
+              <div class="plan-name">${data.planName}</div>
+            </div>
+          </div>
 
-                <p style="margin: 0 0 25px 0; font-size: 14px; color: #4B5563; line-height: 1.7;">
-                    ${data.planName} hizmet paketinize ait ödeme tarihiniz yaklaşmaktadır. Hizmetinizin kesintiye uğramaması için lütfen ödemenizi zamanında yapınız.
-                </p>
+          <div class="amount-section">
+            <div class="amount">${data.amount.toFixed(2)} ${data.currency}</div>
+          </div>
 
-                <!-- Payment Details Table -->
-                <table width="100%" cellpadding="0" cellspacing="0" style="border: 2px solid #E5E7EB; border-radius: 8px; margin: 0 0 25px 0;">
-                    <tr>
-                        <td colspan="2" style="background-color: #F9FAFB; padding: 15px 20px; border-bottom: 2px solid #E5E7EB;">
-                            <h3 style="margin: 0; font-size: 15px; color: #1F2937; font-weight: 600;">ÖDEME DETAYLARI</h3>
-                        </td>
-                    </tr>
-                    <tr>
-                        <td style="padding: 15px 20px; border-bottom: 1px solid #E5E7EB; font-size: 14px; color: #6B7280; width: 45%;">
-                            Hizmet Paketi
-                        </td>
-                        <td style="padding: 15px 20px; border-bottom: 1px solid #E5E7EB; font-size: 14px; color: #1F2937; font-weight: 600; text-align: right;">
-                            ${data.planName}
-                        </td>
-                    </tr>
-                    <tr>
-                        <td style="padding: 15px 20px; border-bottom: 1px solid #E5E7EB; font-size: 14px; color: #6B7280;">
-                            Ödeme Tutarı
-                        </td>
-                        <td style="padding: 15px 20px; border-bottom: 1px solid #E5E7EB; font-size: 18px; color: #DC2626; font-weight: 700; text-align: right;">
-                            ${data.amount.toFixed(2)} ${data.currency}
-                        </td>
-                    </tr>
-                    <tr>
-                        <td style="padding: 15px 20px; border-bottom: 1px solid #E5E7EB; font-size: 14px; color: #6B7280;">
-                            Son Ödeme Tarihi
-                        </td>
-                        <td style="padding: 15px 20px; border-bottom: 1px solid #E5E7EB; font-size: 14px; color: #1F2937; font-weight: 600; text-align: right;">
-                            ${new Date(data.expiresAt).toLocaleDateString('tr-TR', { day: '2-digit', month: 'long', year: 'numeric' })}
-                        </td>
-                    </tr>
-                    <tr>
-                        <td style="padding: 15px 20px; font-size: 14px; color: #6B7280;">
-                            Kalan Süre
-                        </td>
-                        <td style="padding: 15px 20px; font-size: 16px; color: ${urgencyColor}; font-weight: 700; text-align: right;">
-                            ${data.daysUntilExpiry === 0 ? 'BUGÜN' : data.daysUntilExpiry === 1 ? '1 GÜN' : data.daysUntilExpiry + ' GÜN'}
-                        </td>
-                    </tr>
-                </table>
+          <div class="info-grid">
+            <div class="info-item">
+              <div class="info-label">Son Ödeme</div>
+              <div class="info-value">${new Date(data.expiresAt).toLocaleDateString('tr-TR', { day: '2-digit', month: 'short' })}</div>
+            </div>
+            <div class="info-item">
+              <div class="info-label">Kalan Süre</div>
+              <div class="info-value" style="color: ${urgencyColor};">
+                ${data.daysUntilExpiry === 0 ? 'BUGÜN' : data.daysUntilExpiry === 1 ? '1 GÜN' : data.daysUntilExpiry + ' GÜN'}
+              </div>
+            </div>
+          </div>
+        </div>
 
-                <!-- Warning Box -->
-                <div style="background-color: ${urgencyBg}; border-left: 4px solid ${urgencyColor}; padding: 15px 20px; margin: 0 0 25px 0;">
-                    <p style="margin: 0; font-size: 13px; color: ${urgencyColor}; font-weight: 600;">
-                        ⚠️ ÖNEMLİ UYARI
-                    </p>
-                    <p style="margin: 8px 0 0 0; font-size: 13px; color: #4B5563; line-height: 1.6;">
-                        Ödemenizin zamanında yapılmaması durumunda hizmetiniz otomatik olarak ${data.daysUntilExpiry <= 3 ? 'BUGÜN' : '3 gün içinde'} askıya alınacaktır. Kesintisiz hizmet almak için lütfen ödemenizi geciktirmeyiniz.
-                    </p>
-                </div>
+        <div class="urgency-indicator">
+          <div class="urgency-text">
+            ${data.daysUntilExpiry === 0 ? '🚨 ACİL: BUGÜN ÖDEME YAPMANIZ GEREKMEKTEDİR' :
+              data.daysUntilExpiry === 1 ? '⚠️ DİKKAT: YARIN SON ÖDEME GÜNÜ' :
+              `📅 SON ÖDEME TARİHİNE ${data.daysUntilExpiry} GÜN KALDI`}
+          </div>
+          <div class="urgency-desc">
+            ${data.planName} aboneliğiniz için ödeme süreniz ${data.daysUntilExpiry === 0 ? 'bugün' : data.daysUntilExpiry === 1 ? 'yarın' : data.daysUntilExpiry + ' gün içinde'} sona erecektir. Kesintisiz hizmet almak için lütfen ödemenizi zamanında tamamlayınız.
+          </div>
+        </div>
 
-                <!-- Payment Button -->
-                <table width="100%" cellpadding="0" cellspacing="0">
-                    <tr>
-                        <td style="text-align: center; padding: 10px 0 25px 0;">
-                            <a href="${data.paymentUrl}" style="display: inline-block; background-color: #DC2626; color: #FFFFFF; text-decoration: none; padding: 14px 40px; border-radius: 6px; font-weight: 600; font-size: 15px; border: none;">
-                                HEMEN ÖDEME YAP
-                            </a>
-                        </td>
-                    </tr>
-                </table>
+        <div style="text-align: center;">
+          <a href="${data.paymentUrl}" class="cta-button">
+            HEMEN ÖDEME YAP
+          </a>
+        </div>
 
-                <p style="margin: 0 0 15px 0; font-size: 13px; color: #6B7280; line-height: 1.6;">
-                    Ödeme yapmak için yukarıdaki butona tıklayarak güvenli ödeme sayfamıza yönlendirileceksiniz. Tüm işlemleriniz SSL sertifikası ile korunmaktadır.
-                </p>
+        <p class="footer-text" style="margin-top: 24px; text-align: center;">
+          Ödeme yapmak için yukarıdaki butona tıklayarak güvenli ödeme sayfamıza yönlendirileceksiniz.<br>
+          Tüm işlemleriniz SSL sertifikası ile korunmaktadır.
+        </p>
+      </div>
 
-                <p style="margin: 0; font-size: 12px; color: #9CA3AF;">
-                    Bu e-posta otomatik sistem tarafından gönderilmiştir. Herhangi bir sorunuz için destek@kreditakip.com.tr adresinden bize ulaşabilirsiniz.
-                </p>
-            </td>
-        </tr>
+      <div class="footer">
+        <img src="https://oymjjceuiotxfbpwsdym.supabase.co/storage/v1/object/public/Logo/logo-white.png" alt="Kredi Takip" class="footer-logo">
 
-        <!-- Footer -->
-        <tr>
-            <td style="background-color: #F9FAFB; padding: 25px 40px; border-top: 1px solid #E5E7EB; text-align: center;">
-                <p style="margin: 0 0 8px 0; font-size: 12px; color: #6B7280;">
-                    Kredi Takip - Finansal Yönetim Platformu
-                </p>
-                <p style="margin: 0; font-size: 11px; color: #9CA3AF;">
-                    © ${new Date().getFullYear()} kreditakip.com.tr • Tüm hakları saklıdır.
-                </p>
-            </td>
-        </tr>
-    </table>
+        <p class="footer-text">
+          Bu e-posta otomatik olarak gönderilmiştir.<br>
+          Herhangi bir sorunuz için destek@kreditakip.com.tr adresinden bize ulaşabilirsiniz.
+        </p>
+
+        <div class="copyright">
+          © ${new Date().getFullYear()} kreditakip.com.tr • Tüm hakları saklıdır
+        </div>
+      </div>
+    </div>
+  </div>
 </body>
 </html>
   `
