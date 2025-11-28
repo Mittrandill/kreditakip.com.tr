@@ -16,19 +16,25 @@ const supabaseServiceKey = process.env.SERVICE_ROLE_KEY!
  * Grace Period Handler Cron - Runs daily at 11:00 UTC (14:00 TR)
  *
  * Responsibilities:
- * A. Start grace period for expired subscriptions
- * B. Send reminder emails (day 0 and day 6)
+ * A. Start grace period for expired subscriptions (3 days)
+ * B. Send reminder emails (day 0 and day 2)
  * C. Suspend subscriptions after grace period ends
  */
 export async function GET(request: NextRequest) {
   try {
-    // Cron secret validation
+    // Cron secret validation - support both Authorization and X-Cron-Secret headers
     const authHeader = request.headers.get("authorization")
+    const customHeader = request.headers.get("x-cron-secret")
     const cronSecret = process.env.CRON_SECRET
 
-    if (cronSecret && authHeader !== `Bearer ${cronSecret}`) {
-      console.error("[grace-period-handler] Unauthorized")
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
+    if (cronSecret) {
+      const isValidAuth = authHeader === `Bearer ${cronSecret}`
+      const isValidCustom = customHeader === cronSecret
+
+      if (!isValidAuth && !isValidCustom) {
+        console.error("[grace-period-handler] Unauthorized")
+        return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
+      }
     }
 
     console.log("[grace-period-handler] Starting grace period management...")
@@ -41,7 +47,7 @@ export async function GET(request: NextRequest) {
     const results = {
       grace_periods_started: 0,
       day_0_reminders: 0,
-      day_6_reminders: 0,
+      day_2_reminders: 0,
       subscriptions_suspended: 0,
       errors: [] as string[],
     }
@@ -62,7 +68,7 @@ export async function GET(request: NextRequest) {
 
       for (const sub of expiredSubs) {
         try {
-          const gracePeriodEnd = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000) // +7 days
+          const gracePeriodEnd = new Date(now.getTime() + 3 * 24 * 60 * 60 * 1000) // +3 days
 
           // Update subscription
           await supabase
@@ -95,7 +101,7 @@ export async function GET(request: NextRequest) {
       }
     }
 
-    // B. SEND DAY 6 REMINDERS (24 hours before grace period ends)
+    // B. SEND DAY 2 REMINDERS (24 hours before grace period ends)
     const tomorrow = new Date(now.getTime() + 24 * 60 * 60 * 1000)
     const dayAfterTomorrow = new Date(now.getTime() + 48 * 60 * 60 * 1000)
 
@@ -115,7 +121,7 @@ export async function GET(request: NextRequest) {
     if (fetchError2) {
       console.error("[grace-period-handler] Error fetching ending subs:", fetchError2)
     } else if (endingSubs && endingSubs.length > 0) {
-      console.log(`[grace-period-handler] Sending day 6 reminders to ${endingSubs.length} users`)
+      console.log(`[grace-period-handler] Sending day 2 reminders to ${endingSubs.length} users`)
 
       for (const sub of endingSubs) {
         try {
@@ -133,11 +139,11 @@ export async function GET(request: NextRequest) {
               hoursRemaining: 24,
               paymentUrl,
             })
-            results.day_6_reminders++
+            results.day_2_reminders++
           }
         } catch (error: any) {
-          console.error(`[grace-period-handler] Error sending day 6 reminder for ${sub.id}:`, error)
-          results.errors.push(`Day 6 reminder ${sub.id}: ${error.message}`)
+          console.error(`[grace-period-handler] Error sending day 2 reminder for ${sub.id}:`, error)
+          results.errors.push(`Day 2 reminder ${sub.id}: ${error.message}`)
         }
       }
     }
@@ -207,4 +213,9 @@ export async function GET(request: NextRequest) {
     console.error("[grace-period-handler] Fatal error:", error)
     return NextResponse.json({ error: error.message }, { status: 500 })
   }
+}
+
+// POST metodu da destekle (GitHub Actions için)
+export async function POST(request: NextRequest) {
+  return GET(request)
 }

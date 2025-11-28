@@ -2,14 +2,10 @@ name: Subscription Management
 
 on:
   schedule:
-    # Automatic renewal - 08:00 UTC (11:00 TR)
-    - cron: '0 8 * * *'
     # 7-day reminder - 09:00 UTC (12:00 TR)
     - cron: '0 9 * * *'
     # 3-day reminder - 12:00 UTC (15:00 TR)
     - cron: '0 12 * * *'
-    # Renewal notification - 13:00 UTC (16:00 TR)
-    - cron: '0 13 * * *'
     # Expiry check - 14:00 UTC (17:00 TR)
     - cron: '0 14 * * *'
     # Grace period handler - 15:00 UTC (18:00 TR)
@@ -21,37 +17,6 @@ on:
   workflow_dispatch:
 
 jobs:
-  automatic-renewal:
-    runs-on: ubuntu-latest
-    if: github.event.schedule == '0 8 * * *' || github.event_name == 'workflow_dispatch'
-
-    steps:
-      - name: Trigger Automatic Renewal
-        env:
-          CRON_SECRET: ${{ secrets.CRON_SECRET }}
-          NEXT_PUBLIC_SITE_URL: ${{ secrets.NEXT_PUBLIC_SITE_URL || 'https://kreditakip.com.tr' }}
-        run: |
-          echo "🔄 Triggering automatic subscription renewal..."
-
-          response=$(curl -s -w "\n%{http_code}" -L -X POST \
-            -H "Authorization: Bearer ${CRON_SECRET}" \
-            -H "X-Cron-Secret: ${CRON_SECRET}" \
-            -H "Content-Type: application/json" \
-            "${NEXT_PUBLIC_SITE_URL}/api/cron/subscription-renewal")
-
-          http_code=$(echo "$response" | tail -n1)
-          body=$(echo "$response" | head -n-1)
-
-          echo "📊 Response status: $http_code"
-          echo "📝 Response body: $body"
-
-          if [ "$http_code" -ne 200 ]; then
-            echo "❌ Automatic renewal failed with status $http_code"
-            exit 1
-          fi
-
-          echo "✅ Automatic renewal completed successfully"
-
   reminder-7-days:
     runs-on: ubuntu-latest
     if: github.event.schedule == '0 9 * * *' || github.event_name == 'workflow_dispatch'
@@ -179,37 +144,6 @@ jobs:
           fi
 
           echo "✅ Same-day reminders sent successfully"
-
-  renewal-notification:
-    runs-on: ubuntu-latest
-    if: github.event.schedule == '0 13 * * *' || github.event_name == 'workflow_dispatch'
-
-    steps:
-      - name: Send Renewal Notifications
-        env:
-          CRON_SECRET: ${{ secrets.CRON_SECRET }}
-          NEXT_PUBLIC_SITE_URL: ${{ secrets.NEXT_PUBLIC_SITE_URL || 'https://kreditakip.com.tr' }}
-        run: |
-          echo "🔔 Sending renewal notifications..."
-
-          response=$(curl -s -w "\n%{http_code}" -L -X POST \
-            -H "Authorization: Bearer ${CRON_SECRET}" \
-            -H "X-Cron-Secret: ${CRON_SECRET}" \
-            -H "Content-Type: application/json" \
-            "${NEXT_PUBLIC_SITE_URL}/api/cron/renewal-notification")
-
-          http_code=$(echo "$response" | tail -n1)
-          body=$(echo "$response" | head -n-1)
-
-          echo "📊 Response status: $http_code"
-          echo "📝 Response body: $body"
-
-          if [ "$http_code" -ne 200 ]; then
-            echo "❌ Renewal notification failed with status $http_code"
-            exit 1
-          fi
-
-          echo "✅ Renewal notifications sent successfully"
 
   expiry-check:
     runs-on: ubuntu-latest
