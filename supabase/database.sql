@@ -239,6 +239,29 @@ CREATE TABLE public.notifications (
   CONSTRAINT notifications_credit_id_fkey FOREIGN KEY (credit_id) REFERENCES public.credits(id),
   CONSTRAINT notifications_payment_plan_id_fkey FOREIGN KEY (payment_plan_id) REFERENCES public.payment_plans(id)
 );
+CREATE TABLE public.paddle_customers (
+  id uuid NOT NULL DEFAULT gen_random_uuid(),
+  user_id uuid,
+  paddle_customer_id character varying NOT NULL UNIQUE,
+  email character varying,
+  name character varying,
+  country character varying,
+  created_at timestamp with time zone DEFAULT now(),
+  updated_at timestamp with time zone DEFAULT now(),
+  CONSTRAINT paddle_customers_pkey PRIMARY KEY (id),
+  CONSTRAINT paddle_customers_user_id_fkey FOREIGN KEY (user_id) REFERENCES auth.users(id)
+);
+CREATE TABLE public.paddle_webhook_events (
+  id uuid NOT NULL DEFAULT gen_random_uuid(),
+  event_id character varying NOT NULL UNIQUE,
+  event_type character varying NOT NULL,
+  event_data jsonb NOT NULL,
+  processed boolean DEFAULT false,
+  processed_at timestamp with time zone,
+  error_message text,
+  created_at timestamp with time zone DEFAULT now(),
+  CONSTRAINT paddle_webhook_events_pkey PRIMARY KEY (id)
+);
 CREATE TABLE public.payment_history (
   id uuid NOT NULL DEFAULT gen_random_uuid(),
   credit_id uuid NOT NULL,
@@ -290,62 +313,6 @@ CREATE TABLE public.payment_transactions (
   CONSTRAINT payment_transactions_pkey PRIMARY KEY (id),
   CONSTRAINT payment_transactions_subscription_id_fkey FOREIGN KEY (subscription_id) REFERENCES public.subscriptions(id),
   CONSTRAINT payment_transactions_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.profiles(id)
-);
-CREATE TABLE public.paytr_recurring_payments (
-  id uuid NOT NULL DEFAULT uuid_generate_v4(),
-  user_id uuid NOT NULL,
-  subscription_id uuid,
-  utoken character varying NOT NULL,
-  ctoken character varying NOT NULL,
-  merchant_oid character varying NOT NULL UNIQUE,
-  amount numeric NOT NULL,
-  currency character varying DEFAULT 'TRY'::character varying,
-  payment_status character varying NOT NULL,
-  paytr_status character varying,
-  error_message text,
-  try_again boolean DEFAULT false,
-  created_at timestamp with time zone DEFAULT now(),
-  completed_at timestamp with time zone,
-  metadata jsonb DEFAULT '{}'::jsonb,
-  is_3d_secure boolean DEFAULT false,
-  user_approval_at timestamp with time zone,
-  payment_url text,
-  CONSTRAINT paytr_recurring_payments_pkey PRIMARY KEY (id),
-  CONSTRAINT paytr_recurring_payments_user_id_fkey FOREIGN KEY (user_id) REFERENCES auth.users(id),
-  CONSTRAINT paytr_recurring_payments_subscription_id_fkey FOREIGN KEY (subscription_id) REFERENCES public.subscriptions(id)
-);
-CREATE TABLE public.paytr_saved_cards (
-  id uuid NOT NULL DEFAULT uuid_generate_v4(),
-  user_id uuid NOT NULL,
-  utoken character varying NOT NULL,
-  ctoken character varying NOT NULL UNIQUE,
-  last_4 character varying NOT NULL,
-  card_holder_name character varying,
-  expiry_month character varying NOT NULL,
-  expiry_year character varying NOT NULL,
-  require_cvv boolean DEFAULT false,
-  bank_name character varying,
-  card_brand character varying,
-  card_type character varying,
-  card_schema character varying,
-  is_business_card boolean DEFAULT false,
-  is_default boolean DEFAULT false,
-  is_active boolean DEFAULT true,
-  created_at timestamp with time zone DEFAULT now(),
-  updated_at timestamp with time zone DEFAULT now(),
-  last_used_at timestamp with time zone,
-  CONSTRAINT paytr_saved_cards_pkey PRIMARY KEY (id),
-  CONSTRAINT paytr_saved_cards_user_id_fkey FOREIGN KEY (user_id) REFERENCES auth.users(id),
-  CONSTRAINT paytr_saved_cards_utoken_fkey FOREIGN KEY (utoken) REFERENCES public.paytr_user_tokens(utoken)
-);
-CREATE TABLE public.paytr_user_tokens (
-  id uuid NOT NULL DEFAULT uuid_generate_v4(),
-  user_id uuid NOT NULL UNIQUE,
-  utoken character varying NOT NULL UNIQUE,
-  created_at timestamp with time zone DEFAULT now(),
-  updated_at timestamp with time zone DEFAULT now(),
-  CONSTRAINT paytr_user_tokens_pkey PRIMARY KEY (id),
-  CONSTRAINT paytr_user_tokens_user_id_fkey FOREIGN KEY (user_id) REFERENCES auth.users(id)
 );
 CREATE TABLE public.pending_renewal_payments (
   id uuid NOT NULL DEFAULT gen_random_uuid(),
@@ -400,14 +367,6 @@ CREATE TABLE public.profiles (
   CONSTRAINT profiles_pkey PRIMARY KEY (id),
   CONSTRAINT profiles_id_fkey FOREIGN KEY (id) REFERENCES auth.users(id)
 );
-CREATE TABLE public.request_logs (
-  id uuid NOT NULL DEFAULT gen_random_uuid(),
-  ip inet,
-  path text,
-  user_id uuid,
-  created_at timestamp with time zone DEFAULT now(),
-  CONSTRAINT request_logs_pkey PRIMARY KEY (id)
-);
 CREATE TABLE public.risk_analyses (
   id uuid NOT NULL DEFAULT gen_random_uuid(),
   user_id uuid NOT NULL,
@@ -445,6 +404,9 @@ CREATE TABLE public.subscription_plans (
   metadata jsonb DEFAULT '{}'::jsonb,
   created_at timestamp with time zone DEFAULT now(),
   updated_at timestamp with time zone DEFAULT now(),
+  paddle_product_id character varying,
+  paddle_price_id character varying,
+  payment_provider character varying DEFAULT 'paddle'::character varying,
   CONSTRAINT subscription_plans_pkey PRIMARY KEY (id)
 );
 CREATE TABLE public.subscriptions (
@@ -455,11 +417,9 @@ CREATE TABLE public.subscriptions (
   start_date timestamp with time zone DEFAULT now(),
   expires_at timestamp with time zone,
   payment_method text,
-  paytr_order_id text,
   created_at timestamp with time zone DEFAULT now(),
   updated_at timestamp with time zone DEFAULT now(),
-  payment_subscription_reference character varying,
-  plan_id text CHECK ((plan_id = ANY (ARRAY['premium-monthly'::text, 'premium-yearly'::text])) OR plan_id IS NULL),
+  plan_id text CHECK ((plan_id = ANY (ARRAY['free'::text, 'pro-monthly'::text, 'pro-yearly'::text, 'premium-monthly'::text, 'premium-yearly'::text])) OR plan_id IS NULL),
   payment_id text,
   end_date timestamp with time zone,
   deleted_at timestamp with time zone,
@@ -468,10 +428,120 @@ CREATE TABLE public.subscriptions (
   grace_period_ends_at timestamp with time zone,
   requires_payment_action boolean DEFAULT false,
   suspended_at timestamp with time zone,
+  reminder_sent_at timestamp with time zone,
+  paddle_subscription_id character varying,
+  paddle_plan_id character varying,
+  paddle_customer_id character varying,
+  paddle_checkout_id character varying,
+  status_updated_at timestamp with time zone,
+  cancel_url text,
+  update_url text,
+  paddle_subscription_data jsonb,
   CONSTRAINT subscriptions_pkey PRIMARY KEY (id),
   CONSTRAINT subscriptions_plan_id_fkey FOREIGN KEY (plan_id) REFERENCES public.subscription_plans(id),
   CONSTRAINT subscriptions_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.profiles(id)
 );
+
+-- =============================================================================
+-- subscription_status_view - Subscription status with computed grace period logic
+-- =============================================================================
+CREATE VIEW public.subscription_status_view AS
+SELECT
+    s.id,
+    s.user_id,
+    s.plan_id,
+    s.status,
+
+    -- Computed field: Grace period status
+    -- If subscription is expired/past_due/cancelled BUT grace period hasn't ended,
+    -- show 'grace_period' as the effective status
+    CASE
+        WHEN s.status IN ('expired', 'past_due', 'cancelled')
+             AND s.grace_period_ends_at IS NOT NULL
+             AND s.grace_period_ends_at > now()
+        THEN 'grace_period'
+        ELSE s.status
+    END as effective_status,
+
+    -- Subscription timing fields
+    s.start_date,
+    s.expires_at,
+    s.canceled_at,
+    s.paused_at,
+    s.suspended_at,
+
+    -- Grace period fields
+    s.grace_period_started_at,
+    s.grace_period_ends_at,
+
+    -- Payment action required flag
+    s.requires_payment_action,
+
+    -- Paddle integration fields
+    s.paddle_subscription_id,
+    s.paddle_customer_id,
+    s.paddle_plan_id,
+    s.paddle_checkout_id,
+
+    -- Management URLs from Paddle
+    s.cancel_url,
+    s.update_url,
+
+    -- Plan details (joined from subscription_plans)
+    sp.name as plan_name,
+    sp.description as plan_description,
+    sp.price as plan_price,
+    sp.currency as plan_currency,
+    sp.billing_period,
+    sp.features as plan_features,
+
+    -- Timestamps
+    s.created_at,
+    s.updated_at,
+    s.status_updated_at,
+
+    -- Usage data (aggregated from usage_tracking)
+    jsonb_build_object(
+        'ocrAnalysis', COALESCE((
+            SELECT jsonb_build_object(
+                'limit', ut.limit_count,
+                'used', ut.used_count,
+                'savedCredits', ut.saved_credits_count,
+                'resetAt', ut.reset_at,
+                'canUse', (ut.used_count < ut.limit_count)
+            )
+            FROM usage_tracking ut
+            WHERE ut.user_id = s.user_id
+                AND ut.feature_type = 'ocr_analysis'
+            ORDER BY ut.created_at DESC
+            LIMIT 1
+        ), jsonb_build_object('limit', 0, 'used', 0, 'savedCredits', 0, 'resetAt', null, 'canUse', false)),
+        'riskAnalysis', COALESCE((
+            SELECT jsonb_build_object(
+                'limit', ut.limit_count,
+                'used', ut.used_count,
+                'savedCredits', ut.saved_credits_count,
+                'resetAt', ut.reset_at,
+                'canUse', (ut.used_count < ut.limit_count)
+            )
+            FROM usage_tracking ut
+            WHERE ut.user_id = s.user_id
+                AND ut.feature_type = 'risk_analysis'
+            ORDER BY ut.created_at DESC
+            LIMIT 1
+        ), jsonb_build_object('limit', 0, 'used', 0, 'savedCredits', 0, 'resetAt', null, 'canUse', false))
+    ) as usage
+
+FROM subscriptions s
+LEFT JOIN subscription_plans sp ON s.plan_id = sp.id
+WHERE s.deleted_at IS NULL;
+
+COMMENT ON VIEW public.subscription_status_view IS
+'Subscription status with computed grace period logic and plan details.
+This view computes effective_status based on grace period, joins subscription plan details,
+aggregates usage tracking data, and filters out soft-deleted subscriptions.
+Note: This view does NOT use SECURITY DEFINER - RLS policies from underlying tables apply.';
+
 CREATE TABLE public.usage_tracking (
   id uuid NOT NULL DEFAULT gen_random_uuid(),
   user_id uuid NOT NULL,
@@ -484,14 +554,4 @@ CREATE TABLE public.usage_tracking (
   saved_credits_count integer NOT NULL DEFAULT 0,
   CONSTRAINT usage_tracking_pkey PRIMARY KEY (id),
   CONSTRAINT usage_tracking_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.profiles(id)
-);
-CREATE TABLE public.webhook_logs (
-  id uuid NOT NULL DEFAULT gen_random_uuid(),
-  event_type text NOT NULL,
-  subscription_reference text,
-  payload jsonb,
-  status text DEFAULT 'received'::text CHECK (status = ANY (ARRAY['received'::text, 'processed'::text, 'failed'::text])),
-  created_at timestamp with time zone DEFAULT now(),
-  updated_at timestamp with time zone DEFAULT now(),
-  CONSTRAINT webhook_logs_pkey PRIMARY KEY (id)
 );

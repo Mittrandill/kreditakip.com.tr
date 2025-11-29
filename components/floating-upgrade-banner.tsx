@@ -4,10 +4,10 @@ import { useState, useEffect } from "react"
 import { Button } from "@/components/ui/button"
 import { Crown, X } from "lucide-react"
 import { useRouter, usePathname } from "next/navigation"
-import { useSubscription } from "@/hooks/use-subscription"
+import { useSubscriptionV2 } from "@/hooks/use-subscription-v2"
 
 export function FloatingUpgradeBanner() {
-  const { subscription, loading, isPremium } = useSubscription()
+  const { subscription, loading, isPremium } = useSubscriptionV2()
   const [isVisible, setIsVisible] = useState(false)
   const [isDismissed, setIsDismissed] = useState(false)
   const router = useRouter()

@@ -53,7 +53,7 @@ import { formatDistanceToNow, format } from "date-fns"
 import { tr } from "date-fns/locale"
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 import { ListChecks } from "lucide-react"
-import { useSubscription } from "@/hooks/use-subscription"
+import { useSubscriptionV2 } from "@/hooks/use-subscription-v2"
 import { AdBanner } from "@/components/ad-banner"
 
 const getRiskBadgeText = (color: string | null | undefined): string => {
@@ -85,7 +85,7 @@ export default function FinansalSaglikPage() {
   const { toast } = useToast()
   const router = useRouter()
   const userId = user?.id
-  const { canUseRiskAnalysis } = useSubscription()
+  const { canUseRiskAnalysis } = useSubscriptionV2()
 
   const [financialProfile, setFinancialProfile] = useState<any | null>(null)
   const [credits, setCredits] = useState<Credit[]>([])

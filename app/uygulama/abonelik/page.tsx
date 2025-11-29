@@ -54,10 +54,9 @@ import {
 } from "lucide-react"
 import { useRouter } from "next/navigation"
 import { useAuth } from "@/hooks/use-auth"
-import { useSubscription } from "@/hooks/use-subscription"
+import { useSubscriptionV2 } from "@/hooks/use-subscription-v2"
 import { useToast } from "@/hooks/use-toast"
 import { LoadingSpinner } from "@/components/loading-screen"
-import { cancelSubscription } from "@/app/actions/subscription"
 import { createBrowserClient } from "@supabase/ssr"
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 
@@ -90,7 +89,7 @@ export default function SubscriptionPage() {
   const router = useRouter()
   const { toast } = useToast()
   const { user } = useAuth()
-  const { subscription, loading, isPremium, refresh } = useSubscription()
+  const { subscription, loading, isPremium, refresh, cancelSubscription: cancelSubscriptionHook } = useSubscriptionV2()
   const [activeTab, setActiveTab] = useState("overview")
   const [showCancelDialog, setShowCancelDialog] = useState(false)
   const [isCancelling, setIsCancelling] = useState(false)
@@ -194,19 +193,11 @@ export default function SubscriptionPage() {
   const handleCancelSubscription = async () => {
     setIsCancelling(true)
     try {
-      const result = await cancelSubscription()
-      if (result.success) {
-        toast({
-          title: "Abonelik İptal Edildi",
-          description: result.message || "Aboneliğiniz başarıyla iptal edildi.",
-        })
+      const success = await cancelSubscriptionHook()
+      if (success) {
         refresh()
       } else {
-        toast({
-          title: "Hata",
-          description: result.error || "Abonelik iptal edilemedi",
-          variant: "destructive",
-        })
+        // Error toast already shown by the hook
       }
     } catch (error) {
       toast({
@@ -779,7 +770,7 @@ export default function SubscriptionPage() {
                           </div>
                         </div>
 
-                        {/* Info Box */}
+                        {/* Info Box - Auto Renewal */}
                         <div className="p-4 bg-white-20 dark:bg-white-900/30 rounded-xl border border-gray-700/20 dark:border-emerald-800">
                           <div className="flex items-start gap-3">
                             <div className="p-2 bg-emerald-500 rounded-lg">
@@ -787,10 +778,10 @@ export default function SubscriptionPage() {
                             </div>
                             <div className="flex-1">
                               <p className="text-sm font-medium text-emerald-900 dark:text-emerald-100">
-                                Aboneliğiniz otomatik yenilenmeyecek
+                                Otomatik Yenileme Aktif
                               </p>
                               <p className="text-xs text-emerald-700 dark:text-emerald-300 mt-1">
-                                {new Date(subscription.expiresAt).toLocaleDateString("tr-TR")} tarihinde size hatırlatma gönderilecek
+                                Aboneliğiniz {new Date(subscription.expiresAt).toLocaleDateString("tr-TR")} tarihinde otomatik olarak yenilenecektir
                               </p>
                             </div>
                           </div>

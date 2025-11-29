@@ -6,10 +6,10 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Lock, ArrowLeft, Shield, Zap, Clock, Building2, CheckCircle2, CreditCard, AlertCircle, ChevronRight, Check } from "lucide-react"
+import { Lock, ArrowLeft, Shield, Zap, Clock, Building2, CheckCircle2, CreditCard, AlertCircle, ChevronRight, Check, CheckCircle } from "lucide-react"
 import { useRouter, useSearchParams } from "next/navigation"
 import { useToast } from "@/hooks/use-toast"
-import { useSubscription } from "@/hooks/use-subscription"
+import { useSubscriptionV2 } from "@/hooks/use-subscription-v2"
 import { useAuth } from "@/hooks/use-auth"
 import Link from "next/link"
 import { turkishCities, cityDistricts } from "@/lib/turkish-cities"
@@ -17,12 +17,12 @@ import { getPlanById } from "@/lib/subscription-plans"
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 import { LoadingSpinner } from "@/components/loading-screen"
 import { cn } from "@/lib/utils"
-import { PaddleCheckout } from "@/components/payment/paddle-checkout"
+import PaddleCheckout from "@/components/paddle-checkout-button"
 
 export default function PaymentPage() {
   const router = useRouter()
   const { toast } = useToast()
-  const { refresh: refreshSubscription } = useSubscription()
+  const { refresh: refreshSubscription } = useSubscriptionV2()
   const { user, loading: authLoading } = useAuth()
   const searchParams = useSearchParams()
 
@@ -525,7 +525,7 @@ export default function PaymentPage() {
                   <div className="flex items-start gap-3">
                     <CheckCircle2 className="h-5 w-5 text-blue-600 dark:text-blue-400 mt-0.5" />
                     <div>
-                      <p className="font-medium text-blue-900 dark:text-blue-100">PayTR Güvencesi</p>
+                      <p className="font-medium text-emerald-900 dark:text-emerald-100">Paddle Güvencesi</p>
                       <p className="text-sm text-blue-700 dark:text-blue-300">
                         Sertifikalı güvenli ödeme altyapısı
                       </p>
@@ -553,33 +553,53 @@ export default function PaymentPage() {
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
             <div className="lg:col-span-2">
               <PaddleCheckout
-                planId={selectedPlan.id}
-                planName={selectedPlan.name}
-                paddlePriceId={selectedPlan.paddlePriceId || ''}
-                amount={selectedPlan.price}
-                billingInfo={{
-                  fullName: billingInfo.fullName,
-                  email: billingInfo.email,
-                  phone: billingInfo.phone,
-                  address: `${billingInfo.address}, ${billingInfo.district}`,
-                  city: billingInfo.city,
-                  country: "TR",
-                  zipCode: billingInfo.zipCode,
-                }}
-                onSuccess={() => {
-                  toast({
-                    title: "Ödeme Başlatıldı",
-                    description: "Paddle ödeme penceresi açıldı...",
-                  })
-                }}
-                onError={(error) => {
-                  toast({
-                    title: "Ödeme Hatası",
-                    description: error,
-                    variant: "destructive",
-                  })
-                }}
-              />
+              planId={selectedPlan.id}
+              planName={selectedPlan.name}
+              priceId={selectedPlan.paddlePriceId || ''}
+              userEmail={billingInfo.email}
+              userId={user?.id}
+              onSuccess={() => {
+                toast({
+                  title: "Ödeme Başarılı!",
+                  description: "Aboneliğiniz başarıyla oluşturuldu.",
+                })
+                // Force refresh subscription cache
+                refreshSubscription()
+                setTimeout(() => {
+                  router.push('/uygulama/abonelik')
+                }, 1000)
+              }}
+              onClose={() => {
+                console.log("Checkout closed")
+              }}
+              className="w-full"
+            >
+              <div className="bg-emerald-50 dark:bg-emerald-950/20 border border-emerald-200 dark:border-emerald-800 rounded-lg p-6 text-center">
+                <Shield className="h-12 w-12 text-emerald-600 dark:text-emerald-400 mx-auto mb-4" />
+                <h3 className="text-lg font-semibold mb-2">Güvenli Ödeme</h3>
+                <p className="text-gray-600 dark:text-gray-300 mb-4">
+                  {selectedPlan.name} planına geçiş yapmak için aşağıdaki butona tıklayın.
+                  Ödemeleriniz Paddle'ın PCI-DSS sertifikalı altyapısında güvenli bir şekilde işlenir.
+                </p>
+                <div className="space-y-2">
+                  <p className="text-sm text-gray-500">
+                    <span className="font-medium">Plan:</span> {selectedPlan.name}
+                  </p>
+                  <p className="text-sm text-gray-500">
+                    <span className="font-medium">Fiyat:</span> ₺{selectedPlan.price}
+                  </p>
+                  <p className="text-sm text-gray-500">
+                    <span className="font-medium">Periyot:</span> {selectedPlan.billing_period}
+                  </p>
+                </div>
+                <div className="mt-4 pt-4 border-t border-emerald-200 dark:border-emerald-700">
+                  <div className="flex items-center justify-center text-sm text-emerald-600 dark:text-emerald-400">
+                    <CheckCircle className="h-4 w-4 mr-2" />
+                    <span>Güvenli ödeme sistemi aktif</span>
+                  </div>
+                </div>
+              </div>
+            </PaddleCheckout>
 
               <div className="mt-6">
                 <Button

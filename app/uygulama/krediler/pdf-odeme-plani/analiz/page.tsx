@@ -33,7 +33,7 @@ import { createCredit, getBanks, getCreditTypes } from "@/lib/api/credits"
 import { useAuth } from "@/hooks/use-auth"
 import { mapBankName, findBestBankMatch } from "@/lib/utils/bank-mapper"
 import { supabase } from "@/lib/supabase"
-import { useSubscription } from "@/hooks/use-subscription"
+import { useSubscriptionV2 } from "@/hooks/use-subscription-v2"
 import { UpgradePrompt } from "@/components/upgrade-prompt"
 
 interface PaymentPlan {
@@ -64,7 +64,7 @@ export default function PDFAnalysisPage() {
   const searchParams = useSearchParams()
   const { toast } = useToast()
   const { user } = useAuth()
-  const { subscription, isPremium } = useSubscription()
+  const { subscription, isPremium } = useSubscriptionV2()
 
   const [paymentPlan, setPaymentPlan] = useState<PaymentPlan | null>(null)
   const [isEditing, setIsEditing] = useState(false)

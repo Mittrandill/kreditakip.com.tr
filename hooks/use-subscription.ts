@@ -1,5 +1,26 @@
 "use client"
 
+/**
+ * @deprecated This hook is deprecated and will be removed in a future version.
+ * Please use `useSubscriptionV2` from '@/hooks/use-subscription-v2' instead.
+ *
+ * Migration guide:
+ * - Replace `import { useSubscription } from "@/hooks/use-subscription"`
+ *   with `import { useSubscriptionV2 } from "@/hooks/use-subscription-v2"`
+ * - Replace `useSubscription()` with `useSubscriptionV2()`
+ * - Replace `canUseOCR` with `usage?.ocrAnalysis?.canUse`
+ * - Replace `canUseRiskAnalysis` with `usage?.riskAnalysis?.canUse`
+ * - Property `subscription.plan_id` is now `subscription.planId`
+ * - Property `subscription.user_id` is now `subscription.userId`
+ * - Method `refresh()` is now `refetch()`
+ *
+ * The v2 hook provides:
+ * - Better Paddle integration
+ * - Grace period handling
+ * - Subscription management (pause/resume/cancel)
+ * - More comprehensive status handling
+ */
+
 import { useEffect, useState } from "react"
 import { useAuthContext } from "@/components/auth-provider"
 

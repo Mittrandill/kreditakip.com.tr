@@ -24,7 +24,7 @@ import { useDropzone } from "react-dropzone"
 import { useToast } from "@/hooks/use-toast"
 import BankSelector from "@/components/bank-selector"
 import { UpgradePrompt } from "@/components/upgrade-prompt"
-import { useSubscription } from "@/hooks/use-subscription"
+import { useSubscriptionV2 } from "@/hooks/use-subscription-v2"
 import { AdBanner } from "@/components/ad-banner"
 
 interface AnalysisResult {
@@ -49,7 +49,7 @@ interface AnalysisResult {
 export default function PDFOdemePlaniPage() {
   const router = useRouter()
   const { toast } = useToast()
-  const { subscription, canUseOCR } = useSubscription()
+  const { subscription, canUseOCR } = useSubscriptionV2()
 
   const [file, setFile] = useState<File | null>(null)
   const [isAnalyzing, setIsAnalyzing] = useState(false)

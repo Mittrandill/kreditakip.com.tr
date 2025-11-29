@@ -5,7 +5,7 @@ import { Card } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { X, Crown } from "lucide-react"
 import { useRouter } from "next/navigation"
-import { useSubscription } from "@/hooks/use-subscription"
+import { useSubscriptionV2 } from "@/hooks/use-subscription-v2"
 
 interface AdBannerProps {
   position?: "top" | "bottom" | "sidebar"
@@ -13,7 +13,7 @@ interface AdBannerProps {
 }
 
 export function AdBanner({ position = "top", className = "" }: AdBannerProps) {
-  const { isPremium, loading } = useSubscription()
+  const { isPremium, loading } = useSubscriptionV2()
   const [isDismissed, setIsDismissed] = useState(false)
   const router = useRouter()
 
@@ -72,7 +72,7 @@ export function AdBanner({ position = "top", className = "" }: AdBannerProps) {
 }
 
 export function AdSidebar({ className = "" }: { className?: string }) {
-  const { isPremium, loading } = useSubscription()
+  const { isPremium, loading } = useSubscriptionV2()
   const router = useRouter()
 
   if (loading || isPremium) {

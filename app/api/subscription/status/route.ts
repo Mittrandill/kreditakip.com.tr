@@ -89,7 +89,7 @@ export async function GET(request: NextRequest) {
         // Usage limits'i free plan'e düşür - her feature_type için ayrı update
         // Free plan: OCR unlimited, risk analysis 0
         await supabase
-          .from("usage_tracking")
+          .from("subscription_usage")
           .update({
             limit_count: -1, // unlimited for free
             updated_at: new Date().toISOString(),
@@ -98,7 +98,7 @@ export async function GET(request: NextRequest) {
           .eq("feature_type", "ocr_analysis");
 
         await supabase
-          .from("usage_tracking")
+          .from("subscription_usage")
           .update({
             limit_count: 0, // no risk analysis for free
             updated_at: new Date().toISOString(),
@@ -112,7 +112,7 @@ export async function GET(request: NextRequest) {
     }
 
     // Get usage tracking
-    const { data: usage, error: usageError } = await supabase.from("usage_tracking").select("*").eq("user_id", userId)
+    const { data: usage, error: usageError } = await supabase.from("subscription_usage").select("*").eq("user_id", userId)
 
 
     const response = {

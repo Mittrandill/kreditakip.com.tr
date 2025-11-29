@@ -244,12 +244,8 @@
 "donus_tipi": "void",
 "guvenlik_tipi": "DEFINER",
 "dil": "PLPGSQL"
-}
-]
+},
 
-
-
-[
 {
 "tablo_adi": "banking_credentials",
 "politika_adi": "Users can delete their own banking credentials",

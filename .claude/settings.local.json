@@ -34,7 +34,21 @@
       "Bash(curl:*)",
       "Bash(pkill:*)",
       "Bash(ngrok http:*)",
-      "Bash(python3:*)"
+      "Bash(python3:*)",
+      "WebFetch(domain:developer.paddle.com)",
+      "WebSearch",
+      "Bash(timeout:*)",
+      "Bash(node scripts/test-paddle-webhook:*)",
+      "Bash(node scripts/check-paddle-products.js:*)",
+      "WebFetch(domain:github.com)",
+      "Bash(node scripts/check-paddle-price.js:*)",
+      "Bash(node scripts/check-table-structure:*)",
+      "Bash(node scripts/check-subscription:*)",
+      "Bash(node scripts/fix-subscription:*)",
+      "Bash(for file in supabase/migrations/2025113000000*.sql)",
+      "Bash(done)",
+      "Bash(mv:*)",
+      "Bash(if exist .next rmdir /s /q .next)"
     ],
     "deny": [],
     "ask": []

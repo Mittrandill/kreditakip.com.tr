@@ -14,14 +14,14 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog"
 import { Crown, Check, Sparkles, TrendingUp, X, Shield, BarChart3, Zap, AlertCircle } from "lucide-react"
-import { useSubscription } from "@/hooks/use-subscription"
+import { useSubscriptionV2 } from "@/hooks/use-subscription-v2"
 import { useRouter, useSearchParams } from "next/navigation"
 import { useToast } from "@/hooks/use-toast"
 import { fetchPlans, calculateSavings, type SubscriptionPlan } from "@/lib/subscription-plans"
 import { LoadingSpinner } from "@/components/loading-screen"
 
 export default function PremiumPage() {
-  const { subscription, loading, isPremium } = useSubscription()
+  const { subscription, loading, isPremium } = useSubscriptionV2()
   const [isProcessing, setIsProcessing] = useState(false)
   const [showConfirmDialog, setShowConfirmDialog] = useState(false)
   const [targetPlanId, setTargetPlanId] = useState<string>("")

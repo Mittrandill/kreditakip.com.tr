@@ -625,7 +625,7 @@ export default function LandingPage() {
 
                     <h3 className="text-2xl lg:text-3xl font-bold text-white mb-6 text-center">Döküm Yükle</h3>
                     <p className="text-white/70 text-center leading-relaxed mb-8">
-                      Kredi planı ödeme dökümünüzü PDF formatında güvenli bir şekilde yükleyin
+                      Kredi planı ödeme dökümünüzü PDF formatında saniyeler içinde güvenli bir şekilde yükleyin
                     </p>
 
                     {/* Features */}

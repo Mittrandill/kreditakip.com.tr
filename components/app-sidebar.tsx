@@ -36,7 +36,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { useAuth } from "@/hooks/use-auth"
-import { useSubscription } from "@/hooks/use-subscription"
+import { useSubscriptionV2 } from "@/hooks/use-subscription-v2"
 import { signOut } from "@/lib/auth"
 import { useToast } from "@/hooks/use-toast"
 import Image from "next/image"
@@ -121,7 +121,8 @@ export default function AppSidebar() {
   const { state, toggleSidebar } = useSidebar()
   const isCollapsed = state === "collapsed"
   const { user, profile, loading } = useAuth()
-  const { isPro, isPremium } = useSubscription()
+  const { isPremium, subscription } = useSubscriptionV2()
+  const isPro = subscription?.planId?.includes("pro-") || false
   const { toast } = useToast()
   const [unreadCount, setUnreadCount] = useState(0)
 

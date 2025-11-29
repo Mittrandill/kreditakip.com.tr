@@ -45,10 +45,19 @@ export async function middleware(request: NextRequest) {
   // Control referrer information
   headers.set("Referrer-Policy", "strict-origin-when-cross-origin")
 
-  // Content Security Policy - PayTR için tüm gerekli domain'ler eklendi
+  // Content Security Policy - Paddle için gerekli domain'ler
   headers.set(
     "Content-Security-Policy",
-    "default-src 'self'; script-src 'self' 'unsafe-eval' 'unsafe-inline' https://www.paytr.com; style-src 'self' 'unsafe-inline' https://www.paytr.com; img-src 'self' data: https:; font-src 'self' data:; connect-src 'self' https://*.supabase.co https://www.paytr.com https://o120955.ingest.sentry.io https://generativelanguage.googleapis.com; frame-src 'self' https://www.paytr.com; frame-ancestors 'none';",
+    [
+      "default-src 'self'",
+      "script-src 'self' 'unsafe-eval' 'unsafe-inline' https://cdn.paddle.com",
+      "style-src 'self' 'unsafe-inline'",
+      "img-src 'self' data: https:",
+      "font-src 'self' data:",
+      "connect-src 'self' https://*.supabase.co https://api.paddle.com https://sandbox-api.paddle.com https://o120955.ingest.sentry.io https://generativelanguage.googleapis.com",
+      "frame-src 'self' https://checkout.paddle.com https://sandbox-checkout.paddle.com https://sandbox-checkout-service.paddle.com",
+      "frame-ancestors 'none'",
+    ].join('; ') + ';',
   )
 
   // Permissions Policy (formerly Feature Policy)

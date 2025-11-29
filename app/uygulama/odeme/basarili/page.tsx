@@ -5,14 +5,14 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button"
 import { CheckCircle2, Sparkles, ArrowRight, Download } from "lucide-react"
 import { useRouter } from "next/navigation"
-import { useSubscription } from "@/hooks/use-subscription"
+import { useSubscriptionV2 } from "@/hooks/use-subscription-v2"
 import Link from "next/link"
 import confetti from "canvas-confetti"
 import { LoadingSpinner } from "@/components/loading-screen"
 
 export default function PaymentSuccessPage() {
   const router = useRouter()
-  const { subscription, loading } = useSubscription()
+  const { subscription, loading } = useSubscriptionV2()
   const [showContent, setShowContent] = useState(false)
 
   useEffect(() => {

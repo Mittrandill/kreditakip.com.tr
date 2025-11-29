@@ -10,7 +10,7 @@ import { Input } from "@/components/ui/input"
 import { Download, BarChart3, Filter, Calendar, TrendingUp, TrendingDown, Building2, GitCompare, FileText, Search, CreditCard, Percent, CheckCircle } from "lucide-react"
 import BankLogo from "@/components/bank-logo"
 import { useAuth } from "@/hooks/use-auth"
-import { useSubscription } from "@/hooks/use-subscription"
+import { useSubscriptionV2 } from "@/hooks/use-subscription-v2"
 import { useRouter } from "next/navigation"
 import { getCredits } from "@/lib/api/credits"
 import { getAllPayments } from "@/lib/api/payments"
@@ -48,7 +48,7 @@ const CHART_COLORS = ["#10B981", "#14B8A6", "#06B6D4", "#3B82F6", "#8B5CF6", "#E
 
 export default function RaporlarPage() {
   const { user, loading: authLoading } = useAuth()
-  const { isPremium, loading: subscriptionLoading } = useSubscription()
+  const { isPremium, loading: subscriptionLoading } = useSubscriptionV2()
   const router = useRouter()
   const [credits, setCredits] = useState<PopulatedCredit[]>([])
   const [payments, setPayments] = useState<PaymentWithCredit[]>([])

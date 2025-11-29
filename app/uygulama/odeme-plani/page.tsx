@@ -23,7 +23,7 @@ import {
   X,
 } from "lucide-react"
 import { useAuth } from "@/hooks/use-auth"
-import { useSubscription } from "@/hooks/use-subscription" // Import subscription hook
+import { useSubscriptionV2 } from "@/hooks/use-subscription-v2" // Import subscription hook
 import { useRouter } from "next/navigation" // Import router for redirect
 import { getAllPayments } from "@/lib/api/payments"
 import { getUserCredits } from "@/lib/api/credits"
@@ -1753,7 +1753,7 @@ function ReminderSettings({ payments }: { payments: PaymentWithCredit[] }) {
 
 export default function OdemePlaniPage() {
   const { user } = useAuth()
-  const { isPremium, loading: subscriptionLoading } = useSubscription() // Check premium status
+  const { isPremium, loading: subscriptionLoading } = useSubscriptionV2() // Check premium status
   const router = useRouter() // Router for redirect
   const [allPayments, setAllPayments] = useState<PaymentWithCredit[]>([])
   const [credits, setCredits] = useState<Credit[]>([])

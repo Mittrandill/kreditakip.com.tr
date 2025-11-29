@@ -7,6 +7,7 @@ import Header from "@/components/header"
 import FloatingActionMenu from "@/components/floating-action-menu"
 import { FloatingUpgradeBanner } from "@/components/floating-upgrade-banner"
 import { UserThemeProvider } from "@/components/user-theme-provider"
+import { PaddleProvider } from "@/components/providers/paddle-provider"
 
 export default function UygulamaLayout({
   children,
@@ -16,8 +17,9 @@ export default function UygulamaLayout({
   return (
     <AuthProvider>
       <AuthGuard requireAuth={true}>
-        <UserThemeProvider>
-          <SidebarProvider defaultOpen={true}>
+        <PaddleProvider>
+          <UserThemeProvider>
+            <SidebarProvider defaultOpen={true}>
         <div className="min-h-screen flex w-full bg-gray-50 dark:bg-[#151515] relative">
           {/* Gradient Background Effects for Dark Mode */}
           <div className="absolute inset-0 -z-0 dark:block hidden pointer-events-none">
@@ -45,6 +47,7 @@ export default function UygulamaLayout({
         </div>
         </SidebarProvider>
         </UserThemeProvider>
+        </PaddleProvider>
       </AuthGuard>
     </AuthProvider>
   )
