@@ -139,17 +139,30 @@ export default function DashboardPage() {
             const activeCredits = creditsData?.filter((c) => c.status === "active" || c.status === "overdue") || []
             setTotalCredits(activeCredits.length)
 
-            // Aylık ödeme hesaplama: Gelecek 12 aydaki ödemelerin ortalaması
+            // Aylık ödeme hesaplama: Son 6 ayın gerçek ödemelerinin ortalaması
             const now = new Date()
-            const oneYearLater = new Date(now.getFullYear() + 1, now.getMonth(), now.getDate())
+            const sixMonthsAgo = new Date(now.getFullYear(), now.getMonth() - 6, 1)
 
-            const paymentsNext12Months = (allPaymentsData || []).filter((p: any) => {
+            // Son 6 aydaki ödenmiş ve yapılacak ödemeleri al
+            const last6MonthsPayments = (allPaymentsData || []).filter((p: any) => {
               const paymentDate = new Date(p.due_date)
-              return paymentDate >= now && paymentDate <= oneYearLater
+              return paymentDate >= sixMonthsAgo && paymentDate <= now
             })
 
-            const totalPaymentsNext12Months = paymentsNext12Months.reduce((sum: number, p: any) => sum + (p.total_payment || 0), 0)
-            const averageMonthlyPayment = totalPaymentsNext12Months / 12
+            // Aylık bazda grupla
+            const monthlyTotals: { [key: string]: number } = {}
+            last6MonthsPayments.forEach((p: any) => {
+              const paymentDate = new Date(p.due_date)
+              const monthKey = `${paymentDate.getFullYear()}-${paymentDate.getMonth()}`
+              monthlyTotals[monthKey] = (monthlyTotals[monthKey] || 0) + (p.total_payment || 0)
+            })
+
+            // Ortalama hesapla (en az 1 ay verisi varsa)
+            const monthlyValues = Object.values(monthlyTotals)
+            const averageMonthlyPayment = monthlyValues.length > 0
+              ? monthlyValues.reduce((sum, val) => sum + val, 0) / monthlyValues.length
+              : activeCredits.reduce((sum, c) => sum + c.monthly_payment, 0) // Fallback: mevcut monthly_payment toplamı
+
             setMonthlyPayment(averageMonthlyPayment)
 
             // Toplam geri ödeme tutarı ve kalan borç hesaplama (TÜM krediler dahil)
