@@ -320,7 +320,7 @@ export default function PremiumPage() {
       {/* Hero Section */}
       <Card className="bg-gradient-to-br from-emerald-600 via-teal-600 to-emerald-700 dark:from-emerald-700 dark:via-teal-700 dark:to-emerald-800 text-white border-0 shadow-2xl">
         <CardContent className="p-6 md:p-8">
-          <div className="flex flex-col gap-4">
+          <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4">
             <div className="flex-1">
               <h1 className="text-3xl md:text-4xl font-bold mb-2 flex items-center gap-3">
                 <Crown className="h-8 w-8" />
@@ -330,8 +330,8 @@ export default function PremiumPage() {
                 Size uygun planı seçin ve finansal kontrolünüzü arttırın
               </p>
 
-              {/* Plan Bilgileri ve Switch */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
+              {/* Plan Bilgileri */}
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4">
                 <div>
                   <p className="text-white/70 text-xs sm:text-sm mb-1">Mevcut Plan</p>
                   <p className="text-xl sm:text-2xl font-bold">
@@ -358,27 +358,25 @@ export default function PremiumPage() {
                 )}
               </div>
             </div>
+  
 
-            {/* Yearly/Monthly Switch */}
-            <div className="flex items-center justify-start gap-3 sm:gap-4 p-4 bg-white/10 backdrop-blur-sm rounded-xl border border-white/20">
-              <span className={`text-sm sm:text-base font-semibold transition-colors ${!isYearly ? "text-white" : "text-white/60"}`}>
-                Aylık
-              </span>
-              <Switch
-                checked={isYearly}
-                onCheckedChange={setIsYearly}
-                className="data-[state=checked]:bg-white/90 scale-110"
-              />
-              <div className="flex items-center gap-2">
-                <span className={`text-sm sm:text-base font-semibold transition-colors ${isYearly ? "text-white" : "text-white/60"}`}>
+            {/* Yearly/Monthly Switch - Right Side */}
+            <div className="flex flex-col gap-2">
+              <p className="text-sm font-medium text-white-900 dark:text-white text-center">
+                Yıllık Alın, %20 İndirimden Faydalanın!
+              </p>
+              <div className="flex items-center gap-3">
+                <span className={`text-sm font-semibold transition-colors ${!isYearly ? "text-white" : "text-white/60"}`}>
+                  Aylık
+                </span>
+                <Switch
+                  checked={isYearly}
+                  onCheckedChange={setIsYearly}
+                  className="data-[state=checked]:bg-white/90"
+                />
+                <span className={`text-sm font-semibold transition-colors ${isYearly ? "text-white" : "text-white/60"}`}>
                   Yıllık
                 </span>
-                {isYearly && (
-                  <Badge className="bg-white/20 text-white border-white/30 backdrop-blur-sm px-2 py-0.5 text-xs font-bold">
-                    <Zap className="h-3 w-3 mr-1" />
-                    %20 İndirim
-                  </Badge>
-                )}
               </div>
             </div>
           </div>
@@ -480,16 +478,16 @@ export default function PremiumPage() {
           <CardContent className="relative space-y-3 p-3 sm:p-4 pt-0">
             <div className="bg-white/10 backdrop-blur-sm rounded-lg p-2 sm:p-3 border border-white/20">
               <div className="flex items-center justify-between mb-1.5 sm:mb-2 gap-2">
-                <span className="text-xs sm:text-sm font-medium text-white">OCR Analizi</span>
+                <span className="text-xs sm:text-sm font-medium text-white">OCR Teknolojisi İle Kayıt Edilebilir Kredi Sayısı</span>
                 <span className="text-xs sm:text-sm font-bold text-white whitespace-nowrap">
-                  {subscription?.usage?.ocrAnalysis?.used || 0} / {subscription?.usage?.ocrAnalysis?.limit || 0}
+                  {subscription?.usage?.ocrAnalysis?.savedCredits || 0} / 1
                 </span>
               </div>
               <div className="w-full bg-white/20 rounded-full h-1.5 sm:h-2 overflow-hidden">
                 <div
                   className="bg-white h-1.5 sm:h-2 rounded-full transition-all shadow-lg"
                   style={{
-                    width: `${((subscription?.usage?.ocrAnalysis?.used || 0) / (subscription?.usage?.ocrAnalysis?.limit || 1)) * 100}%`,
+                    width: `${((subscription?.usage?.ocrAnalysis?.savedCredits || 0) / 1) * 100}%`,
                   }}
                 ></div>
               </div>

@@ -59,25 +59,37 @@ export const metadata: Metadata = {
       "Kredi ödeme planınızı saniyeler içinde akıllı ödeme planına dönüştürün. OCR teknolojisi ve yapay zeka destekli finansal yönetim platformu.",
     images: [
       {
-        url: "/logo.png",
+        url: "https://kreditakip.com.tr/og-image.png",
         width: 1200,
         height: 630,
         alt: "Kredi Takip - Akıllı Kredi Yönetimi",
+        type: "image/png",
       },
     ],
   },
   twitter: {
     card: "summary_large_image",
+    site: "@kreditakipcomtr",
+    creator: "@kreditakipcomtr",
     title: "Kredi Takip - Akıllı Kredi Yönetimi",
     description:
       "Kredi ödeme planınızı saniyeler içinde akıllı ödeme planına dönüştürün. OCR teknolojisi ve yapay zeka destekli finansal yönetim.",
-    images: ["/logo.png"],
-    creator: "@kreditakipcomtr",
+    images: ["https://kreditakip.com.tr/og-image.png"],
   },
   icons: {
-    icon: "/favicon.svg",
+    icon: [
+      { url: "/favicon.svg", type: "image/svg+xml" },
+      { url: "/images/favicon.svg", sizes: "any" },
+    ],
     shortcut: "/favicon.svg",
-    apple: "/favicon.svg",
+    apple: "/images/favicon.svg",
+    other: [
+      {
+        rel: "mask-icon",
+        url: "/images/favicon.svg",
+        color: "#10b981",
+      },
+    ],
   },
   manifest: "/manifest.json",
   alternates: {

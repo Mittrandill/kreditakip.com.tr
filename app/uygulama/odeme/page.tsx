@@ -241,9 +241,9 @@ export default function PaymentPage() {
                       className={cn(
                         "flex items-center justify-center w-12 h-12 rounded-full border-2 transition-all",
                         isCompleted
-                          ? "bg-emerald-600 border-emerald-600 text-white"
+                          ? "bg-gradient-to-br from-emerald-600 to-teal-600 border-emerald-600 text-white"
                           : isActive
-                          ? "bg-emerald-50 dark:bg-emerald-950/20 border-emerald-600 text-emerald-600"
+                          ? "bg-gradient-to-br from-emerald-600 to-teal-600 border-emerald-600 text-white"
                           : "bg-gray-100 dark:bg-gray-800 border-gray-300 dark:border-gray-700 text-gray-400"
                       )}
                     >
@@ -478,8 +478,14 @@ export default function PaymentPage() {
                       <span className="font-medium">{selectedPlan.price}₺</span>
                     </div>
                     <div className="flex justify-between text-sm">
-                      <span className="text-gray-600 dark:text-white/60">Periyot:</span>
-                      <span className="font-medium">{selectedPlan.periodLabel}</span>
+                       <span className="text-gray-600 dark:text-white/60">Periyot:</span>
+                      <span className="font-medium">
+                        {selectedPlan.period === "monthly"
+                          ? "Aylık"
+                          : selectedPlan.period === "yearly"
+                            ? "Yıllık"
+                            : selectedPlan.periodLabel}
+                      </span>
                     </div>
                     {selectedPlan.originalPrice && (
                       <div className="flex justify-between text-sm text-emerald-600 dark:text-emerald-400">
@@ -764,7 +770,6 @@ export default function PaymentPage() {
               <Card className="dark:bg-black/20">
                 <CardHeader>
                   <div className="flex items-center gap-2">
-                    <Shield className="h-5 w-5 text-emerald-600 dark:text-emerald-400" />
                     <CardTitle>Güvenli Ödeme</CardTitle>
                   </div>
                 </CardHeader>

@@ -158,6 +158,10 @@ const PAGE_INFO: Record<string, { title: string; description: string; parent?: s
     title: "Ödeme",
     description: "Güvenli ödeme ile premium üyeliğe geçin",
     parent: "Premium Üyelik",
+  },  "/uyguluma/odeme/basarili": {
+    title: "Ödeme Başarılı",
+    description: "Ödemeniz başarıyla tamamlandı. Premium üyeliğiniz aktif edildi.",
+    parent: "Premium Üyelik",
   },
 }
 
