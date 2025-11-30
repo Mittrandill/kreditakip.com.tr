@@ -397,7 +397,11 @@ export function useSubscriptionV2() {
   }, [user, subscription, toast, refresh])
 
   // Computed properties
-  const isPremium = subscription?.planType === "premium" || false
+  const isPremium =
+    subscription?.planType === "premium" ||
+    subscription?.planId?.includes("premium") ||
+    subscription?.planId?.includes("pro") ||
+    false
   const isActive = subscription?.status === "active" || subscription?.status === "trialing" || false
   const isInGracePeriod = subscription?.status === "grace_period" || false
   const requiresPayment = subscription?.requiresPaymentAction || false

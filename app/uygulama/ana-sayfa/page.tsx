@@ -139,9 +139,18 @@ export default function DashboardPage() {
             const activeCredits = creditsData?.filter((c) => c.status === "active" || c.status === "overdue") || []
             setTotalCredits(activeCredits.length)
 
-            // Aylık ödeme sadece aktif kredilerden
-            const currentMonthlyPayment = activeCredits.reduce((sum, c) => sum + c.monthly_payment, 0)
-            setMonthlyPayment(currentMonthlyPayment)
+            // Aylık ödeme hesaplama: Gelecek 12 aydaki ödemelerin ortalaması
+            const now = new Date()
+            const oneYearLater = new Date(now.getFullYear() + 1, now.getMonth(), now.getDate())
+
+            const paymentsNext12Months = (allPaymentsData || []).filter((p: any) => {
+              const paymentDate = new Date(p.due_date)
+              return paymentDate >= now && paymentDate <= oneYearLater
+            })
+
+            const totalPaymentsNext12Months = paymentsNext12Months.reduce((sum: number, p: any) => sum + (p.total_payment || 0), 0)
+            const averageMonthlyPayment = totalPaymentsNext12Months / 12
+            setMonthlyPayment(averageMonthlyPayment)
 
             // Toplam geri ödeme tutarı ve kalan borç hesaplama (TÜM krediler dahil)
             const allCredits = creditsData || []
@@ -168,7 +177,6 @@ export default function DashboardPage() {
             setUpcomingPaymentCount(upcomingPaymentsData?.length || 0)
 
             // Bu ayki toplam ödeme hesaplama
-            const now = new Date()
             const currentMonth = now.getMonth()
             const currentYear = now.getFullYear()
             const thisMonthPayments = upcomingPaymentsData?.filter((p) => {
@@ -507,7 +515,7 @@ export default function DashboardPage() {
                     {formatCurrency(monthlyPaymentPeriod === 'monthly' ? monthlyPayment : monthlyPayment * 12)}
                   </h3>
                   <p className="text-xs sm:text-sm text-emerald-600 dark:text-emerald-400">
-                    {monthlyPaymentPeriod === 'monthly' ? 'Aylık Ödeme' : 'Yıllık Ödeme'}
+                    {monthlyPaymentPeriod === 'monthly' ? 'Aylık Ort. Ödeme' : 'Yıllık Ort. Ödeme'}
                   </p>
                 </div>
                 <select

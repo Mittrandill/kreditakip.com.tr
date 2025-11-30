@@ -48,10 +48,18 @@ export default function PremiumPage() {
   }, [])
 
   useEffect(() => {
-    if (hasProcessedParams.current) return
-
     const success = searchParams.get("success")
     const error = searchParams.get("error")
+
+    // Eğer query param yoksa, hiçbir şey yapma
+    if (!success && !error) {
+      return
+    }
+
+    // Zaten işlendiyse, tekrar işleme
+    if (hasProcessedParams.current) {
+      return
+    }
 
     if (success === "true") {
       hasProcessedParams.current = true
@@ -59,7 +67,10 @@ export default function PremiumPage() {
         title: "Ödeme Başarılı",
         description: "Aboneliğiniz aktif edildi. Tüm özelliklere erişebilirsiniz!",
       })
-      router.replace("/uygulama/premium")
+      // Query params'ı temizle
+      setTimeout(() => {
+        router.replace("/uygulama/premium")
+      }, 100)
     } else if (error) {
       hasProcessedParams.current = true
       toast({
@@ -67,7 +78,10 @@ export default function PremiumPage() {
         description: "Ödeme işlemi tamamlanamadı. Lütfen tekrar deneyin.",
         variant: "destructive",
       })
-      router.replace("/uygulama/premium")
+      // Query params'ı temizle
+      setTimeout(() => {
+        router.replace("/uygulama/premium")
+      }, 100)
     }
   }, [searchParams, toast, router])
 
@@ -113,8 +127,9 @@ export default function PremiumPage() {
           description: data.message,
         })
 
-        // Sayfayı yenile
-        window.location.reload()
+        // Sayfayı yenile - query params olmadan
+        router.replace("/uygulama/premium")
+        router.refresh()
       } else {
         toast({
           title: "Hata",

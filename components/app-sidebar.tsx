@@ -199,9 +199,8 @@ export default function AppSidebar() {
               <div className="flex items-center gap-2">
                 <span className="text-lg tracking-tight text-[#0c241f] dark:text-white" style={{ fontFamily: "'Work Sans', sans-serif", fontWeight: 700 }}>Kredi Takip</span>
                 {isPremium && (
-                  <Badge className="bg-gradient-to-r from-amber-500 to-orange-600 text-white border-0 px-2 py-0.5 text-[10px] font-bold shadow-md">
-                    <Crown className="h-3 w-3 mr-1" />
-                    Premium
+                  <Badge className="bg-gradient-to-r from-amber-500 to-orange-600 text-white border-0 px-1.5 py-0.5 text-[10px] font-bold shadow-md">
+                    <Crown className="h-3 w-3" />
                   </Badge>
                 )}
                 {isPro && !isPremium && (
