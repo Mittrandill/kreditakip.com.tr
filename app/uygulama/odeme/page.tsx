@@ -9,6 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Lock, ArrowLeft, Shield, Zap, Clock, Building2, CheckCircle2, CreditCard, AlertCircle, ChevronRight, Check, CheckCircle, ExternalLink } from "lucide-react"
 import { useRouter, useSearchParams } from "next/navigation"
 import Link from "next/link"
+import Image from "next/image"
 import { Checkbox } from "@/components/ui/checkbox"
 import { useToast } from "@/hooks/use-toast"
 import { useSubscriptionV2 } from "@/hooks/use-subscription-v2"
@@ -581,8 +582,14 @@ export default function PaymentPage() {
                 <CardContent className="space-y-6">
                   {/* Paddle Logo and Info */}
                   <div className="flex flex-col items-center justify-center py-6 border-b">
-                    <div className="bg-gradient-to-r from-emerald-600 to-teal-600 text-white px-8 py-3 rounded-lg font-bold text-2xl mb-4">
-                      Paddle
+                    <div className="bg-gradient-to-r from-emerald-600 to-teal-600 px-8 py-4 rounded-lg mb-4">
+                      <Image
+                        src="/paddle-logo-white.svg"
+                        alt="Paddle"
+                        width={120}
+                        height={40}
+                        className="h-10 w-auto"
+                      />
                     </div>
                     <p className="text-center text-sm text-gray-600 dark:text-gray-400">
                       Paddle ile güvenli ödemeye geçmek için aşağıdaki koşulları kabul edin ve "Ödemeye Geç" butonuna tıklayın.
