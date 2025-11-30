@@ -10,18 +10,19 @@ const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
 const supabaseServiceKey = process.env.SERVICE_ROLE_KEY!
 
 /**
- * Yenileme Bildirimi Cron Job
+ * Renewal Notification Cron Job (Paddle)
  *
- * Bu endpoint her gün çalışır ve:
- * 1. Süresi 3 gün sonra dolacak aktif abonelikleri bulur
- * 2. Kullanıcılara "aboneliğiniz yenilenecek" email'i gönderir
- * 3. İptal linkiyle birlikte bilgilendirme yapar
+ * This endpoint runs daily and:
+ * 1. Finds active subscriptions expiring in 3 days
+ * 2. Sends "your subscription will renew" emails to users
+ * 3. Includes cancellation link for transparency
  *
- * Vercel Cron: Her gün 10:00 UTC'de çalışır (13:00 TR)
+ * Note: Paddle handles automatic renewal - we just notify users
+ * Vercel Cron: Runs daily at 10:00 UTC (13:00 TR)
  */
 export async function GET(request: NextRequest) {
   try {
-    // Cron secret doğrulama - try both Authorization and X-Cron-Secret headers
+    // Cron secret validation - try both Authorization and X-Cron-Secret headers
     const authHeader = request.headers.get("authorization")
     const customHeader = request.headers.get("x-cron-secret")
     const cronSecret = process.env.CRON_SECRET
@@ -36,7 +37,6 @@ export async function GET(request: NextRequest) {
       }
     }
 
-
     const supabase = createClient(supabaseUrl, supabaseServiceKey, {
       auth: {
         autoRefreshToken: false,
@@ -44,7 +44,7 @@ export async function GET(request: NextRequest) {
       },
     })
 
-    // Tam olarak 3 gün sonra dolacak abonelikleri bul
+    // Find subscriptions expiring in exactly 3 days
     const now = new Date()
     const threeDaysLater = new Date(now.getTime() + 3 * 24 * 60 * 60 * 1000)
     const threeDaysLaterStart = new Date(threeDaysLater.setHours(0, 0, 0, 0))
@@ -55,12 +55,14 @@ export async function GET(request: NextRequest) {
       .select(`
         *,
         subscription_plans (*),
-        profiles (id, email, first_name, last_name)
+        profiles (id, email, first_name, last_name),
+        paddle_customers (paddle_customer_id)
       `)
       .eq("status", "active")
       .in("plan_type", ["premium", "pro"])
       .gte("expires_at", threeDaysLaterStart.toISOString())
       .lte("expires_at", threeDaysLaterEnd.toISOString())
+      .not("paddle_subscription_id", "is", null) // Only Paddle subscriptions
 
     if (fetchError) {
       console.error("[renewal-notification] Error fetching subscriptions:", fetchError)
@@ -71,10 +73,9 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({
         success: true,
         message: "No subscriptions to notify",
-        processed: 0
+        processed: 0,
       })
     }
-
 
     const results = {
       processed: 0,
@@ -95,23 +96,10 @@ export async function GET(request: NextRequest) {
           continue
         }
 
-        // Kullanıcının kayıtlı kartını bul
-        const { data: savedCard } = await supabase
-          .from("paytr_saved_cards")
-          .select("*")
-          .eq("user_id", userId)
-          .eq("is_active", true)
-          .eq("is_default", true)
-          .single()
-
-        if (!savedCard) {
-          results.skipped++
-          continue
-        }
-
+        // Paddle manages payment methods - no need to check saved cards
+        // Send notification email
         results.processed++
 
-        // Email gönder
         const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://kreditakip.com.tr"
         const emailResult = await sendUpcomingRenewalNotification({
           userName: `${profile.first_name || ""} ${profile.last_name || ""}`.trim() || profile.email,
@@ -120,25 +108,28 @@ export async function GET(request: NextRequest) {
           amount: plan.price,
           currency: plan.currency || "TRY",
           renewalDate: subscription.expires_at,
-          last4: savedCard.last_4,
-          cancelUrl: `${baseUrl}/uygulama/ayarlar?action=cancel-subscription`,
+          // Paddle handles payment method - don't show card details
+          last4: "****", // Paddle manages this
+          cancelUrl: subscription.cancel_url || `${baseUrl}/uygulama/ayarlar?action=cancel-subscription`,
         })
 
         if (emailResult.success) {
           results.notified++
+          console.log(`[renewal-notification] Notification sent to ${profile.email}`)
         } else {
-          console.error(`[renewal-notification] Failed to send email to ${profile.email}:`, emailResult.error)
+          console.error(
+            `[renewal-notification] Failed to send email to ${profile.email}:`,
+            emailResult.error
+          )
           results.failed++
           results.errors.push(`${profile.email}: ${emailResult.error}`)
         }
-
       } catch (error: any) {
         console.error(`[renewal-notification] Error processing subscription:`, error)
         results.failed++
         results.errors.push(error.message || "Unknown error")
       }
     }
-
 
     return NextResponse.json({
       success: true,
@@ -147,14 +138,11 @@ export async function GET(request: NextRequest) {
     })
   } catch (error: any) {
     console.error("[renewal-notification] Cron job error:", error)
-    return NextResponse.json(
-      { error: error.message || "Internal server error" },
-      { status: 500 }
-    )
+    return NextResponse.json({ error: error.message || "Internal server error" }, { status: 500 })
   }
 }
 
-// POST metodu da destekle (GitHub Actions için)
+// Also support POST method (for GitHub Actions)
 export async function POST(request: NextRequest) {
   return GET(request)
 }

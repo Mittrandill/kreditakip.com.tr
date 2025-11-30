@@ -339,7 +339,7 @@ export default function SubscriptionPage() {
             Aktif
           </Badge>
         )
-      case "cancelled":
+      case "canceled":
         return (
           <Badge variant="outline" className="text-orange-600 border-orange-600">
             <AlertCircle className="h-3 w-3 mr-1" />
@@ -424,10 +424,10 @@ export default function SubscriptionPage() {
                 <div>
                   <p className="text-white/70 text-xs sm:text-sm mb-1">Plan</p>
                   <p className="text-xl sm:text-2xl font-bold">
-                    {subscription?.plan_id
-                      ? subscription.plan_id.includes("premium")
+                    {subscription?.planId
+                      ? subscription.planId.includes("premium")
                         ? "Premium"
-                        : subscription.plan_id.includes("pro")
+                        : subscription.planId.includes("pro")
                           ? "Pro"
                           : "Ücretsiz"
                       : "Ücretsiz"}
@@ -674,10 +674,10 @@ export default function SubscriptionPage() {
                     <CardHeader>
                       <CardTitle className="flex items-center gap-2">
                         <Crown className="h-6 w-6 text-emerald-600 dark:text-emerald-400" />
-                        {subscription?.plan_id ? getPlanName(subscription.plan_id) : "Premium"}
+                        {subscription?.planId ? getPlanName(subscription.planId) : "Premium"}
                       </CardTitle>
                       <CardDescription>
-                        {subscription?.plan_id ? getPlanPrice(subscription.plan_id) : ""}
+                        {subscription?.planId ? getPlanPrice(subscription.planId) : ""}
                       </CardDescription>
                     </CardHeader>
                     <CardContent className="space-y-4">
@@ -685,7 +685,7 @@ export default function SubscriptionPage() {
                         {subscription?.status && (
                           <Badge className="bg-emerald-600 dark:bg-emerald-500">
                             <CheckCircle className="h-3 w-3 mr-1" />
-                            {subscription.status === "active" ? "Aktif" : subscription.status === "cancelled" ? "İptal Edildi" : "Süresi Doldu"}
+                            {subscription.status === "active" ? "Aktif" : subscription.status === "canceled" ? "İptal Edildi" : "Süresi Doldu"}
                           </Badge>
                         )}
                         {subscription?.expiresAt && subscription.status === "active" && (
@@ -843,7 +843,7 @@ export default function SubscriptionPage() {
                   </div>
 
                   {/* Cancellation Warning */}
-                  {subscription?.status === "cancelled" && (
+                  {subscription?.status === "canceled" && (
                     <Card className="border-orange-200 dark:border-orange-800/50 bg-orange-50 dark:bg-orange-950/20">
                       <CardContent className="p-4">
                         <div className="flex gap-3">

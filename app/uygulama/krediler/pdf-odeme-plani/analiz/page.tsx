@@ -840,8 +840,8 @@ export default function PDFAnalysisPage() {
           onOpenChange={setShowUpgradePrompt}
           feature="ocr"
           usageInfo={{
-            used: subscription?.usage.ocrAnalysis.used || 0,
-            saved: subscription?.usage.ocrAnalysis.saved || 0,
+            used: subscription?.usage?.ocrAnalysis?.used || 0,
+            saved: subscription?.usage?.ocrAnalysis?.savedCredits || 0,
             limit: isPremium ? 999999 : 1  // Kaydetme limiti: premium sınırsız, free 1
           }}
         />

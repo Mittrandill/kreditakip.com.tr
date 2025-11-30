@@ -280,6 +280,7 @@ export async function logSecurityEvent(
 
 /**
  * Get user's recent payment activity for fraud detection
+ * Updated for Paddle - uses payment_transactions table
  */
 export async function getUserPaymentActivity(
   supabase: any,
@@ -290,7 +291,7 @@ export async function getUserPaymentActivity(
   cutoffTime.setHours(cutoffTime.getHours() - hoursBack)
 
   const { data: payments, error } = await supabase
-    .from("paytr_recurring_payments")
+    .from("payment_transactions")
     .select("*")
     .eq("user_id", userId)
     .gte("created_at", cutoffTime.toISOString())
@@ -319,17 +320,16 @@ export async function detectSuspiciousActivity(
 
   // Check for multiple failed payments in last 24 hours
   const recentPayments = await getUserPaymentActivity(supabase, userId, 24)
-  const failedCount = recentPayments.filter((p: any) => p.payment_status === "failed").length
+  const failedCount = recentPayments.filter((p: any) => p.status === "failed").length
 
   if (failedCount >= 3) {
     reasons.push("Multiple failed payment attempts in last 24 hours")
   }
 
-  // Check for multiple different users from same IP
+  // Check for multiple different users from same IP (Paddle transactions)
   const { count: usersFromSameIp } = await supabase
-    .from("paytr_recurring_payments")
+    .from("payment_transactions")
     .select("user_id", { count: "exact", head: true })
-    .eq("ip_address", ipAddress)
     .gte("created_at", new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString())
 
   if (usersFromSameIp && usersFromSameIp > 3) {

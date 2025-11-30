@@ -1,12 +1,13 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Crown, Check, Loader2, AlertCircle, Star } from "lucide-react"
 import { useToast } from "@/hooks/use-toast"
 import { useSubscriptionV2 } from "@/hooks/use-subscription-v2"
+import { useAuth } from "@/hooks/use-auth"
 
 interface PaddleCheckoutProps {
   planId: string
@@ -32,7 +33,8 @@ export function PaddleCheckout({
   className,
 }: PaddleCheckoutProps) {
   const [isCreatingCheckout, setIsCreatingCheckout] = useState(false)
-  const { createCheckout, user } = useSubscriptionV2()
+  const { createCheckout } = useSubscriptionV2()
+  const { user } = useAuth()
   const { toast } = useToast()
 
   const handleSubscribe = async () => {

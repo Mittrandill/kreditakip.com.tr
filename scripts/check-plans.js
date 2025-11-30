@@ -1,7 +1,15 @@
+require('dotenv').config()
 const { createClient } = require('@supabase/supabase-js')
 
-const supabaseUrl = 'https://oymjjceuiotxfbpwsdym.supabase.co'
-const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im95bWpqY2V1aW90eGZicHdzZHltIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc2MzY2OTAwOSwiZXhwIjoyMDc5MDI5MDA5fQ.OJmm3qWC75PMHHqBGl-sVSkD-qKXWqssSm8n1KduJYE'
+// SECURITY: Always use environment variables for sensitive credentials
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
+const supabaseKey = process.env.SERVICE_ROLE_KEY
+
+if (!supabaseUrl || !supabaseKey) {
+  console.error('❌ Missing required environment variables!')
+  console.error('Please ensure NEXT_PUBLIC_SUPABASE_URL and SERVICE_ROLE_KEY are set in .env')
+  process.exit(1)
+}
 
 const supabase = createClient(supabaseUrl, supabaseKey)
 

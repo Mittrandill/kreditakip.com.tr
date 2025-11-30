@@ -41,7 +41,7 @@ interface PaddleCheckoutProps {
 
 declare global {
   interface Window {
-    Paddle: any
+    Paddle?: any
   }
 }
 

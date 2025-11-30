@@ -72,7 +72,7 @@ export default function PremiumPage() {
   }, [searchParams, toast, router])
 
   const handlePlanSelect = async (planId: string) => {
-    const currentPlanId = subscription?.plan_id
+    const currentPlanId = subscription?.planId
 
     // Aynı plan kontrolü
     if (currentPlanId === planId) {
@@ -142,13 +142,12 @@ export default function PremiumPage() {
   const premiumYearly = plans.find((p) => p.id === "premium-yearly")
 
   // Kullanıcının mevcut planı
-  const currentPlanId = subscription?.plan_id || "free"
+  const currentPlanId = subscription?.planId || "free"
   const currentPlanType = currentPlanId.includes("premium") ? "premium" : currentPlanId.includes("pro") ? "pro" : "free"
   const isYearlyUser = currentPlanId.includes("yearly")
 
-  // Toggle states - varsayılan olarak kullanıcının mevcut tercihine göre ayarla
-  const [isProYearly, setIsProYearly] = useState(isYearlyUser && currentPlanType === "pro")
-  const [isPremiumYearly, setIsPremiumYearly] = useState(isYearlyUser && currentPlanType === "premium")
+  // Global toggle state - varsayılan olarak kullanıcının mevcut tercihine göre ayarla
+  const [isYearly, setIsYearly] = useState(isYearlyUser)
 
   if (loading || plansLoading) {
     return (
@@ -292,9 +291,9 @@ export default function PremiumPage() {
               onClick={() => handlePlanSelect(planId)}
               disabled={isProcessing || !planId}
               className={`w-full shadow-lg hover:shadow-xl transition-all mt-auto ${
-                isPopular
-                  ? "bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white"
-                  : "bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white"
+                title === "Free"
+                  ? "bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white"
+                  : "bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white"
               }`}
               size="lg"
             >
@@ -317,74 +316,90 @@ export default function PremiumPage() {
   }
 
   return (
-    <div className="space-y-6 sm:space-y-8">
-      <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-emerald-500 via-teal-600 to-cyan-700 dark:from-emerald-600 dark:via-teal-700 dark:to-cyan-800 p-6 sm:p-8 md:p-12 text-white shadow-2xl">
-        <div className="absolute inset-0 bg-[url('/grid.svg')] opacity-10"></div>
-        <div className="absolute top-0 right-0 w-96 h-96 bg-white/10 rounded-full blur-3xl"></div>
-        <div className="absolute bottom-0 left-0 w-96 h-96 bg-cyan-500/20 rounded-full blur-3xl"></div>
-        <div className="relative z-10 text-center space-y-4 sm:space-y-6">
-          <div className="flex items-center justify-center">
-            <div className="p-3 sm:p-5 bg-white/20 rounded-2xl backdrop-blur-sm shadow-xl">
-              <Crown className="h-12 w-12 sm:h-16 sm:w-16 md:h-20 md:w-20 text-white" />
+    <div className="flex flex-col gap-4 md:gap-6">
+      {/* Hero Section */}
+      <Card className="bg-gradient-to-br from-emerald-600 via-teal-600 to-emerald-700 dark:from-emerald-700 dark:via-teal-700 dark:to-emerald-800 text-white border-0 shadow-2xl">
+        <CardContent className="p-6 md:p-8">
+          <div className="flex flex-col gap-4">
+            <div className="flex-1">
+              <h1 className="text-3xl md:text-4xl font-bold mb-2 flex items-center gap-3">
+                <Crown className="h-8 w-8" />
+                Abonelik Planları
+              </h1>
+              <p className="text-white/80 text-base md:text-lg mb-4">
+                Size uygun planı seçin ve finansal kontrolünüzü arttırın
+              </p>
+
+              {/* Plan Bilgileri ve Switch */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
+                <div>
+                  <p className="text-white/70 text-xs sm:text-sm mb-1">Mevcut Plan</p>
+                  <p className="text-xl sm:text-2xl font-bold">
+                    {subscription && subscription.planId && subscription.planId !== "free"
+                      ? subscription.planId === "premium-yearly"
+                        ? "Yıllık Premium"
+                        : subscription.planId === "premium-monthly"
+                          ? "Aylık Premium"
+                          : subscription.planId === "pro-yearly"
+                            ? "Yıllık Pro"
+                            : subscription.planId === "pro-monthly"
+                              ? "Aylık Pro"
+                              : "Aktif Plan"
+                      : "Ücretsiz Plan"}
+                  </p>
+                </div>
+                {subscription && subscription.expiresAt && subscription.planId !== "free" && (
+                  <div>
+                    <p className="text-white/70 text-xs sm:text-sm mb-1">Geçerlilik Tarihi</p>
+                    <p className="text-xl sm:text-2xl font-bold">
+                      {new Date(subscription.expiresAt).toLocaleDateString("tr-TR")}
+                    </p>
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* Yearly/Monthly Switch */}
+            <div className="flex items-center justify-start gap-3 sm:gap-4 p-4 bg-white/10 backdrop-blur-sm rounded-xl border border-white/20">
+              <span className={`text-sm sm:text-base font-semibold transition-colors ${!isYearly ? "text-white" : "text-white/60"}`}>
+                Aylık
+              </span>
+              <Switch
+                checked={isYearly}
+                onCheckedChange={setIsYearly}
+                className="data-[state=checked]:bg-white/90 scale-110"
+              />
+              <div className="flex items-center gap-2">
+                <span className={`text-sm sm:text-base font-semibold transition-colors ${isYearly ? "text-white" : "text-white/60"}`}>
+                  Yıllık
+                </span>
+                {isYearly && (
+                  <Badge className="bg-white/20 text-white border-white/30 backdrop-blur-sm px-2 py-0.5 text-xs font-bold">
+                    <Zap className="h-3 w-3 mr-1" />
+                    %20 İndirim
+                  </Badge>
+                )}
+              </div>
             </div>
           </div>
-          <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold">Abonelik Planları</h1>
-          <p className="text-base sm:text-lg md:text-xl lg:text-2xl text-white/90 max-w-2xl mx-auto leading-relaxed px-4">
-            {isPremium
-              ? "Premium üyeliğiniz aktif! İstediğiniz zaman planınızı değiştirebilirsiniz."
-              : "Size uygun planı seçin ve finansal kontrolünüzü arttırın"}
-          </p>
-          {subscription && subscription.plan_id !== "free" && (
-            <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-              <Badge className="bg-white/20 text-white border-white/30 backdrop-blur-sm px-6 py-3 text-lg shadow-lg">
-                <Check className="h-5 w-5 mr-2" />
-                {subscription.plan_id === "premium-yearly"
-                  ? "Yıllık Premium"
-                  : subscription.plan_id === "premium-monthly"
-                    ? "Aylık Premium"
-                    : subscription.plan_id === "pro-yearly"
-                      ? "Yıllık Pro"
-                      : "Aylık Pro"}
-              </Badge>
-              {subscription.expiresAt && (
-                <Badge className="bg-white/15 text-white/90 border-white/20 backdrop-blur-sm px-6 py-3 text-base">
-                  <Crown className="h-4 w-4 mr-2" />
-                  {new Date(subscription.expiresAt).toLocaleDateString("tr-TR")} tarihine kadar geçerli
-                </Badge>
-              )}
-            </div>
-          )}
-        </div>
-      </div>
+        </CardContent>
+      </Card>
 
-      <div className="max-w-6xl mx-auto">
-        <div className="grid md:grid-cols-3 gap-4 sm:gap-6 md:gap-8 items-stretch">
-          {/* Free Plan */}
-          {freePlan && (
-            <PlanCard
-              title="Free"
-              subtitle="Temel özellikler ile başlayın"
-              price={0}
-              period="ay"
-              features={freePlan.features}
-              planId="free"
-              badge={{ text: "Temel", variant: "outline" }}
-            />
-          )}
-
+      {/* Subscription Plans - Centered */}
+      <div className="max-w-5xl mx-auto">
+        <div className="grid md:grid-cols-2 gap-4 sm:gap-6">
           {/* Pro Plan */}
           {proMonthly && proYearly && (
             <PlanCard
               title="Pro"
-              subtitle={isProYearly ? "Yıllık öde, %20 tasarruf et" : "Aylık ödeme ile profesyonel özelliklere erişin"}
-              price={isProYearly ? proYearly.price : proMonthly.price}
-              originalPrice={isProYearly ? proYearly.originalPrice : undefined}
-              period={isProYearly ? "yıl" : "ay"}
-              features={isProYearly ? proYearly.features : proMonthly.features}
-              planId={isProYearly ? "pro-yearly" : "pro-monthly"}
-              showToggle
-              isYearly={isProYearly}
-              onToggleChange={setIsProYearly}
+              subtitle={isYearly ? "Yıllık öde, %20 tasarruf et" : "Aylık ödeme ile profesyonel özelliklere erişin"}
+              price={isYearly ? proYearly.price : proMonthly.price}
+              originalPrice={isYearly ? proYearly.originalPrice : undefined}
+              period={isYearly ? "yıl" : "ay"}
+              features={isYearly ? proYearly.features : proMonthly.features}
+              planId={isYearly ? "pro-yearly" : "pro-monthly"}
+              showToggle={false}
+              isYearly={isYearly}
               monthlyPrice={proMonthly.price}
             />
           )}
@@ -393,23 +408,23 @@ export default function PremiumPage() {
           {premiumMonthly && premiumYearly && (
             <PlanCard
               title="Premium"
-              subtitle={isPremiumYearly ? "Yıllık öde, %20 tasarruf et" : "Aylık ödeme ile sınırsız özelliklere erişin"}
-              price={isPremiumYearly ? premiumYearly.price : premiumMonthly.price}
-              originalPrice={isPremiumYearly ? premiumYearly.originalPrice : undefined}
-              period={isPremiumYearly ? "yıl" : "ay"}
-              features={isPremiumYearly ? premiumYearly.features : premiumMonthly.features}
-              planId={isPremiumYearly ? "premium-yearly" : "premium-monthly"}
+              subtitle={isYearly ? "Yıllık öde, %20 tasarruf et" : "Aylık ödeme ile sınırsız özelliklere erişin"}
+              price={isYearly ? premiumYearly.price : premiumMonthly.price}
+              originalPrice={isYearly ? premiumYearly.originalPrice : undefined}
+              period={isYearly ? "yıl" : "ay"}
+              features={isYearly ? premiumYearly.features : premiumMonthly.features}
+              planId={isYearly ? "premium-yearly" : "premium-monthly"}
               isPopular
-              showToggle
-              isYearly={isPremiumYearly}
-              onToggleChange={setIsPremiumYearly}
+              showToggle={false}
+              isYearly={isYearly}
               monthlyPrice={premiumMonthly.price}
             />
           )}
         </div>
       </div>
 
-      <div className="grid sm:grid-cols-2 md:grid-cols-3 gap-4 sm:gap-6 mb-8">
+      {/* Feature Cards */}
+      <div className="grid sm:grid-cols-2 md:grid-cols-3 gap-4 sm:gap-6">
         <Card className="relative overflow-hidden border-0 bg-gradient-to-br from-emerald-500 to-teal-600 text-white shadow-xl hover:shadow-2xl transition-all hover:scale-105 duration-200">
           <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full blur-2xl"></div>
           <CardHeader className="relative pb-4 sm:pb-6 p-4 sm:p-6">
@@ -436,7 +451,7 @@ export default function PremiumPage() {
           </CardHeader>
         </Card>
 
-        <Card className="relative overflow-hidden border-0 bg-gradient-to-br from-purple-500 to-pink-600 text-white shadow-xl hover:shadow-2xl transition-all hover:scale-105 duration-200 sm:col-span-2 md:col-span-1">
+        <Card className="relative overflow-hidden border-0 bg-gradient-to-br from-purple-500 to-pink-600 text-white shadow-xl hover:shadow-2xl transition-all hover:scale-105 duration-200">
           <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full blur-2xl"></div>
           <CardHeader className="relative pb-4 sm:pb-6 p-4 sm:p-6">
             <div className="p-2 sm:p-3 bg-white/20 rounded-xl w-fit backdrop-blur-sm mb-2 sm:mb-3">
@@ -451,45 +466,45 @@ export default function PremiumPage() {
       </div>
 
       {/* Current Usage for Free Users */}
-      {!isPremium && subscription && currentPlanType === "free" && (
-        <Card className="relative overflow-hidden border-0 bg-gradient-to-br from-amber-500 via-orange-600 to-red-600 dark:from-amber-600 dark:via-orange-700 dark:to-red-700 text-white shadow-2xl">
-          <div className="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full blur-3xl"></div>
-          <div className="absolute bottom-0 left-0 w-64 h-64 bg-orange-500/20 rounded-full blur-3xl"></div>
-          <CardHeader className="relative p-4 sm:p-6">
-            <CardTitle className="flex items-center gap-2 text-white text-xl sm:text-2xl">
-              <TrendingUp className="h-5 w-5 sm:h-6 sm:w-6 flex-shrink-0" />
+      {!isPremium && subscription && subscription.usage && currentPlanType === "free" && (
+        <Card className="relative overflow-hidden border-0 bg-gradient-to-br from-emerald-500 to-teal-600 dark:from-emerald-600 dark:to-teal-700 text-white shadow-xl">
+          <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full blur-2xl"></div>
+          <div className="absolute bottom-0 left-0 w-32 h-32 bg-teal-500/20 rounded-full blur-2xl"></div>
+          <CardHeader className="relative p-3 sm:p-4">
+            <CardTitle className="flex items-center gap-2 text-white text-lg sm:text-xl">
+              <TrendingUp className="h-4 w-4 sm:h-5 sm:w-5 flex-shrink-0" />
               Mevcut Kullanım
             </CardTitle>
-            <CardDescription className="text-white/90 text-sm sm:text-base">Ücretsiz plan kullanım durumunuz</CardDescription>
+            <CardDescription className="text-white/90 text-xs sm:text-sm">Ücretsiz plan kullanım durumunuz</CardDescription>
           </CardHeader>
-          <CardContent className="relative space-y-4 sm:space-y-6 p-4 sm:p-6">
-            <div className="bg-white/10 backdrop-blur-sm rounded-xl p-3 sm:p-5 border border-white/20">
-              <div className="flex items-center justify-between mb-2 sm:mb-3 gap-2">
-                <span className="text-sm sm:text-base font-medium text-white">OCR Analizi</span>
-                <span className="text-sm sm:text-base font-bold text-white whitespace-nowrap">
-                  {subscription.usage.ocrAnalysis.used} / {subscription.usage.ocrAnalysis.limit}
+          <CardContent className="relative space-y-3 p-3 sm:p-4 pt-0">
+            <div className="bg-white/10 backdrop-blur-sm rounded-lg p-2 sm:p-3 border border-white/20">
+              <div className="flex items-center justify-between mb-1.5 sm:mb-2 gap-2">
+                <span className="text-xs sm:text-sm font-medium text-white">OCR Analizi</span>
+                <span className="text-xs sm:text-sm font-bold text-white whitespace-nowrap">
+                  {subscription?.usage?.ocrAnalysis?.used || 0} / {subscription?.usage?.ocrAnalysis?.limit || 0}
                 </span>
               </div>
-              <div className="w-full bg-white/20 rounded-full h-2 sm:h-3 overflow-hidden">
+              <div className="w-full bg-white/20 rounded-full h-1.5 sm:h-2 overflow-hidden">
                 <div
-                  className="bg-white h-2 sm:h-3 rounded-full transition-all shadow-lg"
+                  className="bg-white h-1.5 sm:h-2 rounded-full transition-all shadow-lg"
                   style={{
-                    width: `${(subscription.usage.ocrAnalysis.used / subscription.usage.ocrAnalysis.limit) * 100}%`,
+                    width: `${((subscription?.usage?.ocrAnalysis?.used || 0) / (subscription?.usage?.ocrAnalysis?.limit || 1)) * 100}%`,
                   }}
                 ></div>
               </div>
             </div>
-            <div className="bg-white/10 backdrop-blur-sm rounded-xl p-3 sm:p-5 border border-white/20">
-              <div className="flex items-center justify-between mb-2 sm:mb-3 gap-2">
-                <span className="text-sm sm:text-base font-medium text-white">AI Finansal Sağlık Analizi</span>
-                <Badge className="bg-white/20 text-white border-white/30 backdrop-blur-sm text-xs">
-                  <Crown className="h-3 w-3 mr-1 flex-shrink-0" />
+            <div className="bg-white/10 backdrop-blur-sm rounded-lg p-2 sm:p-3 border border-white/20">
+              <div className="flex items-center justify-between mb-1.5 sm:mb-2 gap-2">
+                <span className="text-xs sm:text-sm font-medium text-white">AI Finansal Sağlık Analizi</span>
+                <Badge className="bg-white/20 text-white border-white/30 backdrop-blur-sm text-[10px] sm:text-xs px-1.5 py-0.5">
+                  <Crown className="h-2.5 w-2.5 sm:h-3 sm:w-3 mr-0.5 sm:mr-1 flex-shrink-0" />
                   <span className="hidden sm:inline">Ücretli Özellik</span>
                   <span className="sm:hidden">Ücretli</span>
                 </Badge>
               </div>
-              <div className="w-full bg-white/20 rounded-full h-2 sm:h-3 overflow-hidden">
-                <div className="bg-white/40 h-2 sm:h-3 rounded-full w-0"></div>
+              <div className="w-full bg-white/20 rounded-full h-1.5 sm:h-2 overflow-hidden">
+                <div className="bg-white/40 h-1.5 sm:h-2 rounded-full w-0"></div>
               </div>
             </div>
           </CardContent>

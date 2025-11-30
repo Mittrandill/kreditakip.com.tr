@@ -396,7 +396,7 @@ export default function PDFOdemePlaniPage() {
           open={showUpgradePrompt}
           onOpenChange={setShowUpgradePrompt}
           feature="ocr"
-          usageInfo={subscription?.usage.ocrAnalysis}
+          usageInfo={subscription?.usage?.ocrAnalysis}
         />
       )}
     </div>

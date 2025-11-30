@@ -8,16 +8,21 @@ import Footer from "@/components/footer"
 import { CheckCircle, X, Star, Crown, Sparkles, ArrowRight, Zap } from "lucide-react"
 import { useRouter } from "next/navigation"
 import { useState } from "react"
+import ModernPaddleCheckout from "@/components/modern-paddle-checkout"
+import { useAuth } from "@/hooks/use-auth"
 
 export default function PricingPage() {
   const router = useRouter()
+  const { user } = useAuth()
   const [billingPeriod, setBillingPeriod] = useState<"monthly" | "yearly">("monthly")
 
   const plans = [
     {
+      id: "free",
+      priceId: null,
       name: "Ücretsiz",
-      monthlyPrice: "0",
-      yearlyPrice: "0",
+      monthlyPrice: 0,
+      yearlyPrice: 0,
       period: "₺",
       description: "Temel özelliklerle başlayın",
       features: ["1 adet OCR analizi", "Temel kredi takibi", "Ödeme hatırlatıcıları"],
@@ -33,9 +38,12 @@ export default function PricingPage() {
       note: "Reklamlar gösterilir",
     },
     {
+      id: billingPeriod === "monthly" ? "pro-monthly" : "pro-yearly",
+      priceId: billingPeriod === "monthly" ? "pri_01kb7r1c749c5ec0demkv56g05" : "pri_01kb7r89wqyhvvzzejybd9meb6",
       name: "Pro",
-      monthlyPrice: "199",
-      yearlyPrice: "1,910",
+      monthlyPrice: 199,
+      yearlyPrice: 1910,
+      originalYearlyPrice: 2388,
       period: billingPeriod === "monthly" ? "₺/ay" : "₺/yıl",
       description: "Profesyonel kullanım için",
       features: [
@@ -55,11 +63,15 @@ export default function PricingPage() {
       color: "from-blue-500 to-indigo-500",
       note: "İşletmeler için ideal",
       savings: billingPeriod === "yearly" ? "478₺ tasarruf" : undefined,
+      discount: billingPeriod === "yearly" ? "%20 İndirim" : undefined,
     },
     {
+      id: billingPeriod === "monthly" ? "premium-monthly" : "premium-yearly",
+      priceId: billingPeriod === "monthly" ? "pri_01kb7rb4ax73c91kg41dzascmd" : "pri_01kb7rczq5dj86fcq63941dn2m",
       name: "Premium",
-      monthlyPrice: "399",
-      yearlyPrice: "3,830",
+      monthlyPrice: 399,
+      yearlyPrice: 3830,
+      originalYearlyPrice: 4788,
       period: billingPeriod === "monthly" ? "₺/ay" : "₺/yıl",
       description: "Tüm özelliklere sınırsız erişim",
       features: [
@@ -78,6 +90,7 @@ export default function PricingPage() {
       color: "from-emerald-500 to-teal-500",
       note: "En popüler seçim",
       savings: billingPeriod === "yearly" ? "958₺ tasarruf" : undefined,
+      discount: billingPeriod === "yearly" ? "%20 İndirim" : undefined,
     },
   ]
 
@@ -105,7 +118,7 @@ export default function PricingPage() {
     {
       question: "Ödeme güvenli mi?",
       answer:
-        "Evet, tüm ödemeler PayTR güvencesi altında AES-256 Şifreleme ile korunur. Kredi kartı bilgileriniz bizimle paylaşılmaz.",
+        "Evet, tüm ödemeler Paddle güvencesi altında AES-256 Şifreleme ile korunur. Kredi kartı bilgileriniz bizimle paylaşılmaz ve güvenle saklanır.",
     },
     {
       question: "Yıllık planlarda indirim var mı?",
@@ -197,10 +210,20 @@ export default function PricingPage() {
                     <CardTitle className="text-3xl text-white mb-3">{plan.name}</CardTitle>
                     <CardDescription className="text-white/60 text-lg mb-6">{plan.description}</CardDescription>
                     <div className="mb-6">
-                      <span className="text-5xl font-bold text-white">
-                        {billingPeriod === "monthly" ? plan.monthlyPrice : plan.yearlyPrice}
-                      </span>
-                      <span className="text-xl text-white/70">{plan.period}</span>
+                      {billingPeriod === "yearly" && plan.originalYearlyPrice && (
+                        <div className="text-lg text-white/40 line-through mb-1">
+                          ₺{plan.originalYearlyPrice.toLocaleString('tr-TR')}
+                        </div>
+                      )}
+                      <div>
+                        <span className="text-5xl font-bold text-white">
+                          {billingPeriod === "monthly"
+                            ? plan.monthlyPrice.toLocaleString('tr-TR')
+                            : plan.yearlyPrice.toLocaleString('tr-TR')
+                          }
+                        </span>
+                        <span className="text-xl text-white/70">{plan.period}</span>
+                      </div>
                       {billingPeriod === "yearly" && plan.savings && (
                         <div className="mt-2">
                           <Badge variant="outline" className="border-emerald-500/50 text-emerald-400">
@@ -232,19 +255,37 @@ export default function PricingPage() {
                       ))}
                     </div>
 
-                    <Button
-                      className={`w-full ${
-                        plan.popular
-                          ? "bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600"
-                          : index === 1
-                            ? "bg-gradient-to-r from-blue-500 to-indigo-500 hover:from-blue-600 hover:to-indigo-600"
-                            : "bg-white/10 hover:bg-white/20 border border-white/20"
-                      } text-white text-lg py-6`}
-                      onClick={() => router.push("/giris")}
-                    >
-                      {plan.cta}
-                      <ArrowRight className="ml-2 h-5 w-5" />
-                    </Button>
+                    {user && plan.priceId ? (
+                      <ModernPaddleCheckout
+                        planId={plan.id}
+                        planName={plan.name}
+                        priceId={plan.priceId}
+                        price={billingPeriod === "monthly" ? plan.monthlyPrice : plan.yearlyPrice}
+                        period={billingPeriod}
+                        features={plan.features}
+                        userEmail={user.email || ""}
+                        userId={user.id}
+                        onSuccess={() => {
+                          router.push("/uygulama/abonelik")
+                        }}
+                        discount={plan.discount}
+                        originalPrice={billingPeriod === "yearly" ? plan.originalYearlyPrice : undefined}
+                      />
+                    ) : (
+                      <Button
+                        className={`w-full ${
+                          plan.popular
+                            ? "bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600"
+                            : index === 1
+                              ? "bg-gradient-to-r from-blue-500 to-indigo-500 hover:from-blue-600 hover:to-indigo-600"
+                              : "bg-white/10 hover:bg-white/20 border border-white/20"
+                        } text-white text-lg py-6`}
+                        onClick={() => router.push(user ? "/uygulama/premium" : "/giris")}
+                      >
+                        {plan.cta}
+                        <ArrowRight className="ml-2 h-5 w-5" />
+                      </Button>
+                    )}
                   </CardContent>
                 </Card>
               ))}

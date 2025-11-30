@@ -401,6 +401,8 @@ export function useSubscriptionV2() {
   const isActive = subscription?.status === "active" || subscription?.status === "trialing" || false
   const isInGracePeriod = subscription?.status === "grace_period" || false
   const requiresPayment = subscription?.requiresPaymentAction || false
+  const canUseOCR = subscription?.usage?.ocrAnalysis?.canUse || false
+  const canUseRiskAnalysis = subscription?.usage?.riskAnalysis?.canUse || false
 
   // Get days until expiration
   const daysUntilExpiration = subscription?.expiresAt ?
@@ -425,6 +427,8 @@ export function useSubscriptionV2() {
     isActive,
     isInGracePeriod,
     requiresPayment,
+    canUseOCR,
+    canUseRiskAnalysis,
     daysUntilExpiration,
     daysUntilGraceEnd,
     refresh,

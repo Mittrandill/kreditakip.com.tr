@@ -85,7 +85,7 @@ export default function FinansalSaglikPage() {
   const { toast } = useToast()
   const router = useRouter()
   const userId = user?.id
-  const { canUseRiskAnalysis } = useSubscriptionV2()
+  const { isPremium: canUseRiskAnalysis } = useSubscriptionV2()
 
   const [financialProfile, setFinancialProfile] = useState<any | null>(null)
   const [credits, setCredits] = useState<Credit[]>([])

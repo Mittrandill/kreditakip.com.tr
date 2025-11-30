@@ -56,7 +56,7 @@ export default function PaddleCheckoutButton({
             token: process.env.NEXT_PUBLIC_PADDLE_CLIENT_TOKEN,
             environment: process.env.NEXT_PUBLIC_PADDLE_ENVIRONMENT || "sandbox",
             eventCallback: (event: any) => {
-              console.log("Paddle event:", event)
+              // Paddle event logged
 
               if (event.name === "checkout.completed") {
                 onSuccess?.()
@@ -93,6 +93,15 @@ export default function PaddleCheckoutButton({
       // Cleanup if needed
     }
   }, [toast, onSuccess, onClose])
+
+  // Auto-open checkout when ready and no children provided
+  useEffect(() => {
+    if (isPaddleReady && !children && !isOpening) {
+      setTimeout(() => {
+        handleOpenCheckout()
+      }, 100)
+    }
+  }, [isPaddleReady, children])
 
   const handleOpenCheckout = () => {
     if (!isPaddleReady || !window.Paddle) {

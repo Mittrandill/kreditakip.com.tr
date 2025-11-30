@@ -221,7 +221,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Update or insert usage record
-    const usageData = {
+    const usageData: any = {
       user_id: userId,
       feature_type: featureType,
       usage_count: newUsed,

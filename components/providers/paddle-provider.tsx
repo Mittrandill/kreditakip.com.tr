@@ -4,7 +4,7 @@ import { createContext, useContext, useEffect, useState } from "react"
 
 declare global {
   interface Window {
-    Paddle: any
+    Paddle?: any
   }
 }
 
@@ -24,7 +24,7 @@ export function PaddleProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     const initializePaddle = async () => {
       try {
-        console.log('Loading Paddle...')
+        // Loading Paddle
 
         // Check if already loaded
         if (window.Paddle) {
@@ -52,18 +52,12 @@ export function PaddleProvider({ children }: { children: React.ReactNode }) {
         document.body.appendChild(script)
 
         function setupPaddle(paddleInstance: any) {
-          console.log('Setting up Paddle...')
+          // Setting up Paddle
 
           // Set environment
           if (process.env.NEXT_PUBLIC_PADDLE_ENVIRONMENT === 'sandbox') {
             paddleInstance.Environment.set('sandbox')
-            console.log('Paddle sandbox mode activated')
           }
-
-          // Initialize Paddle
-          const clientToken = process.env.NEXT_PUBLIC_PADDLE_CLIENT_TOKEN;
-          console.log('Client Token:', clientToken);
-          console.log('Environment:', process.env.NEXT_PUBLIC_PADDLE_ENVIRONMENT);
 
           // Initialize Paddle with token
           paddleInstance.Initialize({
@@ -72,9 +66,7 @@ export function PaddleProvider({ children }: { children: React.ReactNode }) {
               email: '', // Will be set dynamically
             },
             eventCallback: (data: any) => {
-              console.log('Paddle Event:', data)
-              console.log('Event name:', data.name)
-              console.log('Event data:', JSON.stringify(data, null, 2))
+              // Paddle event received
 
               // Store events in window for components to listen
               window.dispatchEvent(new CustomEvent('paddleEvent', { detail: data }))
@@ -83,7 +75,7 @@ export function PaddleProvider({ children }: { children: React.ReactNode }) {
 
           setPaddle(paddleInstance)
           setIsLoaded(true)
-          console.log('Paddle initialized successfully')
+          // Paddle initialized
         }
       } catch (err) {
         console.error('Error initializing Paddle:', err)

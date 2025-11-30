@@ -1,89 +1,97 @@
 import { type NextRequest, NextResponse } from "next/server"
-import { PayTRClient } from "@/lib/paytr-client"
-import { createClient } from "@supabase/supabase-js"
+import { createClient } from "@/lib/supabase/server"
+import { paddleClient } from "@/lib/paddle-client"
 
 export const dynamic = "force-dynamic"
 export const runtime = "nodejs"
 
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
-const supabaseServiceKey = process.env.SERVICE_ROLE_KEY!
-
+/**
+ * Cancel Subscription via Paddle API
+ *
+ * Paddle handles subscriptions differently than PayTR:
+ * - We call Paddle API to cancel the subscription
+ * - Paddle will send webhook events (subscription.canceled)
+ * - Webhook handler updates our database
+ * - User retains access until current period ends
+ */
 export async function POST(request: NextRequest) {
   try {
-    const body = await request.json()
-    const { userId } = body
+    // Get authenticated user
+    const supabase = await createClient()
+    const {
+      data: { user },
+      error: authError,
+    } = await supabase.auth.getUser()
 
-    if (!userId) {
-      console.error("[paytr] User ID missing from request")
-      return NextResponse.json({ error: "User ID required" }, { status: 400 })
+    if (authError || !user) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
     }
 
-    // Service Role Client kullan (authentication bypass)
-    const supabase = createClient(supabaseUrl, supabaseServiceKey, {
-      auth: {
-        autoRefreshToken: false,
-        persistSession: false,
-      },
-    })
-
-    // Kullanıcının aktif abonelik bilgisini al
-    const { data: subscriptions, error: subError } = await supabase
+    // Get user's active subscription
+    const { data: subscription, error: subError } = await supabase
       .from("subscriptions")
-      .select("*")
-      .eq("user_id", userId)
-      .eq("status", "active")
+      .select("*, subscription_plans(name, billing_period)")
+      .eq("user_id", user.id)
+      .in("status", ["active", "trialing", "past_due"])
       .order("created_at", { ascending: false })
+      .maybeSingle()
 
     if (subError) {
-      console.error("[paytr] Error fetching subscription:", subError)
-      return NextResponse.json({ error: "Abonelik sorgulanırken hata oluştu" }, { status: 500 })
+      console.error("[Paddle Cancel] Error fetching subscription:", subError)
+      return NextResponse.json(
+        { error: "Abonelik sorgulanırken hata oluştu" },
+        { status: 500 }
+      )
     }
 
-    if (!subscriptions || subscriptions.length === 0) {
-      return NextResponse.json({ error: "Aktif abonelik bulunamadı" }, { status: 404 })
+    if (!subscription) {
+      return NextResponse.json(
+        { error: "Aktif abonelik bulunamadı" },
+        { status: 404 }
+      )
     }
 
-    const subscription = subscriptions[0] // En son aktif abonelik
+    if (!subscription.paddle_subscription_id) {
+      return NextResponse.json(
+        { error: "Paddle abonelik ID'si bulunamadı" },
+        { status: 400 }
+      )
+    }
 
-    // PayTR'de recurring subscription yoktur, bu yüzden sadece veritabanında iptal ediyoruz
-    // Kullanıcı tekrar ödeme yapana kadar abonelik yenilenmeyecek
-    const paytrClient = new PayTRClient()
-    const cancelResult = await paytrClient.cancelSubscription(subscription.paytr_order_id || subscription.id)
+    // Cancel subscription via Paddle API
+    try {
+      await paddleClient.cancelSubscription(subscription.paddle_subscription_id)
 
-    // Veritabanında aboneliği güncelle - ID ile güncelle
-    const { error: updateError } = await supabase
-      .from("subscriptions")
-      .update({
-        status: "cancelled",
-        updated_at: new Date().toISOString(),
+      console.log(`[Paddle Cancel] Subscription ${subscription.paddle_subscription_id} canceled for user ${user.id}`)
+
+      // Note: Database update will happen via webhook (subscription.canceled event)
+      // This ensures consistency between Paddle and our database
+
+      return NextResponse.json({
+        success: true,
+        message: `Aboneliğiniz başarıyla iptal edildi. ${subscription.subscription_plans?.name} özellikleriniz ${new Date(subscription.expires_at).toLocaleDateString("tr-TR")} tarihine kadar aktif kalacak.`,
+        expiresAt: subscription.expires_at,
+        planName: subscription.subscription_plans?.name,
       })
-      .eq("id", subscription.id)
-      .eq("user_id", userId) // Güvenlik için user_id kontrolü ekle
+    } catch (paddleError: any) {
+      console.error("[Paddle Cancel] Paddle API error:", paddleError)
 
-    if (updateError) {
-      console.error("[paytr] Database update error:", updateError)
-      return NextResponse.json({ error: "Veritabanı güncellenirken hata oluştu" }, { status: 500 })
+      // If Paddle API fails, return error but suggest using management URL
+      return NextResponse.json(
+        {
+          error: "Abonelik iptal edilemedi. Lütfen abonelik yönetim sayfasını kullanın.",
+          managementUrl: subscription.cancel_url,
+        },
+        { status: 500 }
+      )
     }
-
-    // NOT: Usage limits'i hemen düşürmüyoruz
-    // Kullanıcı iptal etse bile expires_at tarihine kadar premium özelliklerden yararlanabilmeli
-    // Limits otomatik olarak subscription status API'sinde kontrol edilecek
-
-    return NextResponse.json({
-      success: true,
-      message:
-        "Abonelik başarıyla iptal edildi. Premium özellikleriniz " +
-        new Date(subscription.expires_at).toLocaleDateString("tr-TR") +
-        " tarihine kadar aktif kalacak.",
-      expiresAt: subscription.expires_at,
-    })
   } catch (error: any) {
-    console.error("[paytr] Cancel subscription error:", error)
+    console.error("[Paddle Cancel] Error:", error)
     return NextResponse.json(
       {
         error: error.message || "Bir hata oluştu",
       },
-      { status: 500 },
+      { status: 500 }
     )
   }
 }
