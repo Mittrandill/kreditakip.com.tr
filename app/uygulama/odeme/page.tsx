@@ -803,53 +803,160 @@ export default function PaymentPage() {
           </DialogHeader>
           <ScrollArea className="h-[400px] pr-4">
             <div className="space-y-4 text-sm">
-              <h3 className="font-semibold text-base">1. Genel Hükümler</h3>
               <p className="text-gray-700 dark:text-gray-300">
-                Bu kullanım koşulları, kreditakip.com.tr platformunu kullanırken uymanız gereken kuralları belirler.
-                Platformu kullanarak bu koşulları kabul etmiş olursunuz.
+                Bu Şartlar, Kredi Takip uygulamasının kullanımına ilişkin kuralları düzenler.
+                <strong> Uygulamaya erişen tüm kullanıcılar bu şartları kabul etmiş sayılır.</strong>
               </p>
 
-              <h3 className="font-semibold text-base">2. Hizmet Tanımı</h3>
-              <p className="text-gray-700 dark:text-gray-300">
-                Kredi Takip, kredi ve finansal yönetim hizmetleri sunan bir SaaS platformudur. Platform üzerinden
-                kredilerinizi takip edebilir, ödeme planlarınızı yönetebilir ve finansal sağlığınızı analiz edebilirsiniz.
-              </p>
+              <h3 className="font-semibold text-base">1. Hizmet Tanımı</h3>
+              <div className="text-gray-700 dark:text-gray-300 space-y-2">
+                <p>
+                  Kredi Takip, kullanıcıların yüklediği kredi dökümanlarını işleyerek dijital planlara dönüştürür ve
+                  kullanıcıya takibi kolaylaştırır.
+                </p>
+                <p>
+                  Ayrıca, kullanıcının tercihiyle, internet bankacılığı şifreleri şifrelenmiş şekilde saklanabilir.
+                </p>
+                <p><strong>Sunulan Hizmetler:</strong></p>
+                <p>• OCR teknolojisi ile döküm analizi</p>
+                <p>• Akıllı ödeme planı oluşturma</p>
+                <p>• Finansal analiz ve raporlama</p>
+                <p>• Güvenli veri saklama</p>
+              </div>
 
-              <h3 className="font-semibold text-base">3. Kullanıcı Sorumlulukları</h3>
-              <ul className="list-disc pl-5 space-y-2 text-gray-700 dark:text-gray-300">
-                <li>Hesap bilgilerinizi güvenli tutmak</li>
-                <li>Doğru ve güncel bilgiler sağlamak</li>
-                <li>Platformu yasal amaçlarla kullanmak</li>
-                <li>Üçüncü şahısların haklarını ihlal etmemek</li>
-              </ul>
+              <h3 className="font-semibold text-base">2. Sorumluluk Reddi</h3>
+              <div className="text-gray-700 dark:text-gray-300 space-y-2">
+                <p>
+                  <strong>
+                    Uygulama, kullanıcıların yüklediği içeriklerin doğruluğundan veya güncelliğinden sorumlu değildir.
+                  </strong>
+                </p>
+                <p>
+                  <strong>
+                    Uygulama, herhangi bir banka, finans kurumu veya kamu kuruluşu ile doğrudan bağlantılı değildir.
+                  </strong>
+                </p>
+                <p>
+                  <strong>
+                    Otomasyon çıktıları yalnızca kullanıcı bilgilendirme amaçlıdır; resmi belge niteliği taşımaz.
+                  </strong>
+                </p>
+                <p className="text-yellow-600 dark:text-yellow-400">
+                  ⚠️ Önemli: Finansal kararlarınızı alırken mutlaka uzman görüşü alın ve resmi belgelerinizi kontrol
+                  edin.
+                </p>
+              </div>
 
-              <h3 className="font-semibold text-base">4. Abonelik ve Ödeme</h3>
-              <p className="text-gray-700 dark:text-gray-300">
-                Premium planlar için ödeme yaparak abonelik oluşturabilirsiniz. Abonelikler otomatik olarak yenilenir.
-                İptal işlemini hesap ayarlarınızdan yapabilirsiniz.
-              </p>
+              <h3 className="font-semibold text-base">2.1. Finansal Danışmanlık Feragatnamesi</h3>
+              <div className="text-gray-700 dark:text-gray-300 space-y-2 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-4">
+                <p className="text-red-600 dark:text-red-300 font-bold">
+                  ⚠️ ÖNEMLİ UYARI: BU BİR FİNANSAL DANIŞMANLIK HİZMETİ DEĞİLDİR
+                </p>
+                <p>
+                  <strong>Kredi Takip,</strong> SPK (Sermaye Piyasası Kurulu) lisanslı bir yatırım danışmanlığı
+                  firması DEĞİLDİR. Uygulamamızda sunulan:
+                </p>
+                <ul className="list-disc pl-5 space-y-1">
+                  <li>AI Finansal Sağlık Özeti</li>
+                  <li>Risk Analizi Raporları</li>
+                  <li>Ödeme Planı Optimizasyonları</li>
+                </ul>
+                <p>
+                  <strong className="text-yellow-600 dark:text-yellow-400">
+                    YALNIZCA BİLGİLENDİRME AMAÇLIDIR ve yatırım tavsiyesi niteliği taşımaz.
+                  </strong>
+                </p>
+                <p>
+                  Finansal kararlarınızı almadan önce <strong>lisanslı bir finansal danışmana</strong> veya
+                  bankanıza danışmanız şiddetle tavsiye edilir.
+                </p>
+              </div>
 
-              <h3 className="font-semibold text-base">5. Gizlilik</h3>
-              <p className="text-gray-700 dark:text-gray-300">
-                Kişisel verileriniz KVKK ve GDPR kapsamında korunmaktadır. Detaylı bilgi için gizlilik politikamızı inceleyebilirsiniz.
-              </p>
+              <h3 className="font-semibold text-base">3. Kullanıcının Yükümlülükleri</h3>
+              <div className="text-gray-700 dark:text-gray-300 space-y-2">
+                <p><strong>Veri Sorumluluğu:</strong></p>
+                <p>• Sisteme yüklenen içerikler (PDF vb.) kullanıcının sorumluluğundadır</p>
+                <p><strong>• Üçüncü kişilere ait verilerin izinsiz yüklenmesi hukuken yasaktır</strong></p>
+                <p>• Yükleyen kişi tüm hukuki sonuçları üstlenir</p>
 
-              <h3 className="font-semibold text-base">6. Hizmet Değişiklikleri</h3>
-              <p className="text-gray-700 dark:text-gray-300">
-                Platform özelliklerini ve fiyatlandırmayı değiştirme hakkımız saklıdır. Önemli değişiklikler için
-                kullanıcılarımızı önceden bilgilendiririz.
-              </p>
+                <p><strong>Hesap Güvenliği:</strong></p>
+                <p>• Kullanıcı hesabının güvenliği kullanıcıya aittir</p>
+                <p>• Güçlü şifre kullanımı zorunludur</p>
+                <p><strong>• Yetkisiz erişim riski oluşması durumunda derhal bildirim yapılmalıdır</strong></p>
+              </div>
 
-              <h3 className="font-semibold text-base">7. Sorumluluk Sınırlaması</h3>
-              <p className="text-gray-700 dark:text-gray-300">
-                Platform "olduğu gibi" sunulmaktadır. Finansal kararlarınızın sorumluluğu size aittir.
-                Platform üzerinden sağlanan bilgiler tavsiye niteliğinde değildir.
-              </p>
+              <h3 className="font-semibold text-base">4. Hesabın Kapatılması</h3>
+              <div className="text-gray-700 dark:text-gray-300 space-y-2">
+                <p><strong>Kullanıcı Tarafından:</strong> Kullanıcı dilerse hesabını istediği zaman silebilir.</p>
+                <p>
+                  <strong>Platform Tarafından:</strong> Kullanım koşullarına aykırı hareket eden kullanıcıların hesabı
+                  uyarı yapılmaksızın askıya alınabilir veya kapatılabilir.
+                </p>
 
-              <h3 className="font-semibold text-base">8. İletişim</h3>
-              <p className="text-gray-700 dark:text-gray-300">
-                Sorularınız için destek@kreditakip.com.tr adresinden bize ulaşabilirsiniz.
-              </p>
+                <p><strong>Hesap Kapatma Sebepleri:</strong></p>
+                <p>• Sahte bilgi kullanımı</p>
+                <p>• Üçüncü kişi verilerinin izinsiz yüklenmesi</p>
+                <p>• Sistem güvenliğini tehdit edici faaliyetler</p>
+                <p>• Yasal olmayan kullanım</p>
+              </div>
+
+              <h3 className="font-semibold text-base">5. Abonelikler ve Ödemeler</h3>
+              <div className="text-gray-700 dark:text-gray-300 space-y-2 bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-200 dark:border-emerald-800 rounded-lg p-4">
+                <p>
+                  <strong>Premium Abonelik:</strong> Kredi Takip Premium özelliklerine aylık veya yıllık abonelik satın alabilirsiniz.
+                </p>
+
+                <p><strong className="text-emerald-700 dark:text-emerald-300">Paddle ile Güvenli Ödeme:</strong></p>
+                <ul className="list-disc pl-5 space-y-1">
+                  <li>Tüm ödemeler Paddle.com güvencesi altında PCI-DSS Level 1 sertifikalı altyapı üzerinden işlenir</li>
+                  <li>Kredi kartı bilgileriniz hiçbir zaman sunucularımızda saklanmaz</li>
+                  <li>Paddle, 135+ ülkede otomatik vergi hesaplaması yapar</li>
+                  <li>Ödemeleriniz SSL/TLS şifrelemesi ile korunur</li>
+                </ul>
+
+                <p><strong>Abonelik Yönetimi:</strong></p>
+                <ul className="list-disc pl-5 space-y-1">
+                  <li>Abonelikleriniz Paddle müşteri portalı üzerinden yönetilir</li>
+                  <li>Ödeme bilgilerinizi güncellemek, plan değiştirmek veya iptal etmek için portalı kullanabilirsiniz</li>
+                  <li>Abonelik durumunuz hakkında otomatik e-posta bildirimleri alırsınız</li>
+                </ul>
+
+                <p><strong>Abonelik İptali:</strong></p>
+                <ul className="list-disc pl-5 space-y-1">
+                  <li>Aboneliğinizi istediğiniz zaman, herhangi bir ceza ödemeden iptal edebilirsiniz</li>
+                  <li>İptal ettiğinizde, mevcut abonelik döneminizin sonuna kadar Premium özelliklere erişiminiz devam eder</li>
+                  <li>İptal Paddle müşteri portalı üzerinden veya destek talebi ile yapılabilir</li>
+                </ul>
+              </div>
+
+              <h3 className="font-semibold text-base">6. Uyuşmazlık</h3>
+              <div className="text-gray-700 dark:text-gray-300 space-y-1">
+                <p>
+                  Taraflar arasında çıkabilecek uyuşmazlıklarda{" "}
+                  <strong>İstanbul Merkez Mahkemeleri ve İcra Daireleri</strong> yetkilidir.
+                </p>
+                <p>• Türk Hukuku uygulanır</p>
+                <p>• Öncelikle dostane çözüm aranır</p>
+                <p>• Arabuluculuk tercih edilir</p>
+              </div>
+
+              <h3 className="font-semibold text-base mt-4">İletişim Bilgileri</h3>
+              <div className="text-gray-700 dark:text-gray-300 space-y-1">
+                <p><strong>Şirket:</strong> Kredi Takip</p>
+                <p><strong>Adres:</strong> Çeşme, İzmir, Turkey</p>
+                <p>
+                  <strong>E-posta:</strong>{" "}
+                  <a href="mailto:info@kreditakip.com.tr" className="text-emerald-600 dark:text-emerald-400 hover:underline">
+                    info@kreditakip.com.tr
+                  </a>
+                </p>
+                <p>
+                  <strong>Telefon:</strong>{" "}
+                  <a href="tel:+905432035309" className="text-emerald-600 dark:text-emerald-400 hover:underline">
+                    0 543 203 53 09
+                  </a>
+                </p>
+              </div>
             </div>
           </ScrollArea>
           <DialogFooter>
@@ -881,52 +988,131 @@ export default function PaymentPage() {
           </DialogHeader>
           <ScrollArea className="h-[400px] pr-4">
             <div className="space-y-4 text-sm">
-              <h3 className="font-semibold text-base">1. İptal Hakkı</h3>
-              <p className="text-gray-700 dark:text-gray-300">
-                Aboneliğinizi istediğiniz zaman iptal edebilirsiniz. İptal işlemi için hesap ayarlarından
-                "Aboneliği İptal Et" seçeneğini kullanabilirsiniz.
-              </p>
+              <h3 className="font-semibold text-base">1. Abonelik İptali</h3>
+              <div className="text-gray-700 dark:text-gray-300 space-y-2">
+                <p className="bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-200 dark:border-emerald-800 rounded-lg p-3">
+                  <strong className="text-emerald-700 dark:text-emerald-300">Herhangi bir Zaman İptal Hakkı:</strong> Kredi Takip aboneliğinizi
+                  istediğiniz zaman, herhangi bir ceza ödemeden iptal edebilirsiniz. İptal işlemi sonrasında, ödenmiş olan
+                  mevcut abonelik döneminizin sonuna kadar Premium özelliklere erişiminiz devam eder.
+                </p>
 
-              <h3 className="font-semibold text-base">2. İptal Sonrası Süreç</h3>
-              <ul className="list-disc pl-5 space-y-2 text-gray-700 dark:text-gray-300">
-                <li>İptal ettiğinizde, mevcut dönem sonuna kadar premium özelliklerden yararlanmaya devam edersiniz</li>
-                <li>Dönem bitiminde aboneliğiniz otomatik olarak sona erer</li>
-                <li>Verileriniz korunur ve ücretsiz plana dönebilirsiniz</li>
-              </ul>
+                <p><strong>İptal Yöntemleri:</strong></p>
+                <ul className="list-disc pl-5 space-y-1">
+                  <li>Paddle müşteri portalı üzerinden otomatik iptal</li>
+                  <li>Hesap ayarlarınızdan abonelik yönetimi</li>
+                  <li>E-posta yoluyla destek talebi (<a href="mailto:info@kreditakip.com.tr" className="text-emerald-600 dark:text-emerald-400 hover:underline">info@kreditakip.com.tr</a>)</li>
+                </ul>
 
-              <h3 className="font-semibold text-base">3. İade Koşulları</h3>
-              <p className="text-gray-700 dark:text-gray-300">
-                İlk 14 gün içinde hiçbir gerekçe göstermeden aboneliğinizi iptal edip ödeme yaptığınız tutarın
-                tamamını geri alabilirsiniz.
-              </p>
+                <p><strong>İptal Süreci:</strong></p>
+                <ul className="list-disc pl-5 space-y-1">
+                  <li>İptal talebi aldığında anında işleme alınır</li>
+                  <li>İptal onayı e-posta ile bildirilir</li>
+                  <li>Mevcut abonelik döneminizin bitiş tarihi belirtilir</li>
+                  <li>Dönem sonunda otomatik olarak ücretsiz plana geçiş yapılır</li>
+                </ul>
+              </div>
 
-              <h3 className="font-semibold text-base">4. İade Süreci</h3>
-              <ul className="list-disc pl-5 space-y-2 text-gray-700 dark:text-gray-300">
-                <li>İade talebi için destek@kreditakip.com.tr adresine e-posta gönderin</li>
-                <li>İade işlemi 5-7 iş günü içinde tamamlanır</li>
-                <li>İade, ödeme yaptığınız kartınıza yapılır</li>
-              </ul>
+              <h3 className="font-semibold text-base">2. İade Politikası</h3>
+              <div className="text-gray-700 dark:text-gray-300 space-y-2">
+                <p className="bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg p-3">
+                  <strong className="text-yellow-700 dark:text-yellow-300">Kullanılmış Hizmetler İade Edilmez:</strong> Kredi Takip'te
+                  kullanılmış hizmetler için iade yapılmaz. Örneğin, analiz edilen kredi dökümanları veya kullanılan AI
+                  özellikleri için iade talep edilemez.
+                </p>
 
-              <h3 className="font-semibold text-base">5. İade Hariç Durumlar</h3>
-              <p className="text-gray-700 dark:text-gray-300">
-                Aşağıdaki durumlarda iade yapılmaz:
-              </p>
-              <ul className="list-disc pl-5 space-y-2 text-gray-700 dark:text-gray-300">
-                <li>14 günlük süre geçtikten sonra</li>
-                <li>Platformu kullanım kurallarını ihlal ettiyseniz</li>
-                <li>Sahte veya hileli işlemler tespit edildiyse</li>
-              </ul>
+                <p><strong>İade Koşulları:</strong></p>
+                <ul className="list-disc pl-5 space-y-1">
+                  <li><strong>İlk Satın Alma İade Hakkı:</strong> İlk aboneliğiniz için 14 gün içinde iade talep edebilirsiniz. Hizmeti kullanmadığınızı kanıtlamanız gerekir.</li>
+                  <li><strong>Yıllık Abonelikler:</strong> Sadece yıllık abonelikler için belirli koşullarda pro-rata iade mümkündür</li>
+                  <li><strong>İade Talebi:</strong> İade talebiniz <a href="mailto:info@kreditakip.com.tr" className="text-emerald-600 dark:text-emerald-400 hover:underline">info@kreditakip.com.tr</a> adresine gönderilmelidir</li>
+                  <li><strong>İşlem Süresi:</strong> İade talepleri en geç 14 iş günü içinde sonuçlandırılır</li>
+                </ul>
 
-              <h3 className="font-semibold text-base">6. Yıllık Abonelikler</h3>
-              <p className="text-gray-700 dark:text-gray-300">
-                Yıllık aboneliklerde, ilk 14 gün sonrası iptal durumunda kullanılmayan ay sayısı için
-                kısmi iade yapılabilir (aylık plan fiyatı üzerinden hesaplanır).
-              </p>
+                <p><strong>İade Süreci:</strong></p>
+                <ol className="list-decimal pl-5 space-y-1">
+                  <li>İade talebi <a href="mailto:info@kreditakip.com.tr" className="text-emerald-600 dark:text-emerald-400 hover:underline">info@kreditakip.com.tr</a> adresine bildirilir</li>
+                  <li>Talebiniz en geç 7 iş günü içinde değerlendirilir</li>
+                  <li>Onaylanan iadeler Paddle üzerinden işlenir</li>
+                  <li>İade, orijinal ödeme yöntemine yapılır</li>
+                  <li>Banka işlemlerine bağlı olarak iade 5-10 iş günü sürebilir</li>
+                </ol>
+              </div>
 
-              <h3 className="font-semibold text-base">7. İletişim</h3>
-              <p className="text-gray-700 dark:text-gray-300">
-                İptal ve iade ile ilgili sorularınız için destek@kreditakip.com.tr adresinden bize ulaşabilirsiniz.
-              </p>
+              <h3 className="font-semibold text-base">3. Özel Durumlar</h3>
+              <div className="text-gray-700 dark:text-gray-300 space-y-2">
+                <p><strong>Teknik Sorunlar:</strong></p>
+                <ul className="list-disc pl-5 space-y-1">
+                  <li>Kredi Takip hizmetinde 48 saatten uzun süren kesinti durumunda</li>
+                  <li>Analiz sonuçlarının sistematik olarak yanlış çıkması durumunda</li>
+                  <li>Veri güvenliği ihlali veya gizlilik sorunu yaşanması halinde</li>
+                </ul>
+
+                <p><strong>Haksız İptal/İade Talepleri:</strong></p>
+                <ul className="list-disc pl-5 space-y-1">
+                  <li>Aylık aboneliklerde iade yapılmaz</li>
+                  <li>Kısmi kullanım durumlarında iade oranı düşürülebilir</li>
+                  <li>Kötüye kullanım veya politikayı ihlal durumunda iptal/iade yapılmaz</li>
+                </ul>
+              </div>
+
+              <h3 className="font-semibold text-base">4. Ödeme Güvenliği ve Otomatik Yenileme</h3>
+              <div className="text-gray-700 dark:text-gray-300 space-y-2">
+                <p><strong>3D Secure Güvenliği:</strong></p>
+                <ul className="list-disc pl-5 space-y-1">
+                  <li>İlk ödemede 3D Secure kart doğrulaması yapılır</li>
+                  <li>Kart bilgileriniz hiçbir zaman sunucularımızda saklanmaz</li>
+                  <li>Tüm ödemeler Paddle'ın PCI-DSS Level 1 sertifikalı altyapısında güvende</li>
+                </ul>
+
+                <p><strong>Otomatik Yenileme:</strong></p>
+                <ul className="list-disc pl-5 space-y-1">
+                  <li>Otomatik yenileme açık kullanıcı onayı ile yapılır</li>
+                  <li>Abonelik yenileme tarihinden önce e-posta ile bilgilendirme yapılır</li>
+                  <li>İstediğiniz zaman aboneliğinizi iptal edebilirsiniz</li>
+                  <li>İptal ettiğinizde mevcut dönem sonuna kadar erişim devam eder</li>
+                </ul>
+              </div>
+
+              <h3 className="font-semibold text-base">5. Paddle'ın Rolü</h3>
+              <div className="text-gray-700 dark:text-gray-300 space-y-2 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-3">
+                <p>
+                  <strong className="text-blue-700 dark:text-blue-300">Ödeme İşlemleri ve İadeler:</strong> Tüm ödeme işlemleri ve iadeler,
+                  resmi ödeme sağlayıcımız olan Paddle tarafından yönetilir. Paddle, Merchant of Record olarak hareket eder
+                  ve tüm finansal işlemlerden yasal olarak sorumludur.
+                </p>
+
+                <ul className="list-disc pl-5 space-y-1">
+                  <li>İade talepleri Paddle politikalarına göre işlenir</li>
+                  <li>Chargeback (geri itiraz) işlemleri Paddle tarafından yönetilir</li>
+                  <li>Ödeme güvenliği ve dolandırıcılık koruması Paddle tarafından sağlanır</li>
+                  <li>Vergi ve yasal uyumluluk Paddle tarafından yönetilir</li>
+                </ul>
+              </div>
+
+              <h3 className="font-semibold text-base mt-4">İletişim Bilgileri</h3>
+              <div className="text-gray-700 dark:text-gray-300 space-y-2">
+                <p><strong>İptal ve İade Talepleri için:</strong></p>
+                <ul className="list-disc pl-5 space-y-1">
+                  <li>
+                    E-posta:{" "}
+                    <a href="mailto:info@kreditakip.com.tr" className="text-emerald-600 dark:text-emerald-400 hover:underline">
+                      info@kreditakip.com.tr
+                    </a>
+                  </li>
+                  <li>
+                    Telefon:{" "}
+                    <a href="tel:+905432035309" className="text-emerald-600 dark:text-emerald-400 hover:underline">
+                      0 543 203 53 09
+                    </a>
+                  </li>
+                  <li>Çalışma Saatleri: Pazartesi - Cuma, 09:00 - 18:00</li>
+                </ul>
+
+                <p className="text-xs text-gray-600 dark:text-gray-400 mt-2">
+                  Taleplerinize en geç 24 saat içinde dönüş yapmayı hedefliyoruz. İade talepleri
+                  karmaşık olabileceğinden, işleyiş süresi 14 iş gününü bulabilir.
+                </p>
+              </div>
             </div>
           </ScrollArea>
           <DialogFooter>
@@ -958,81 +1144,127 @@ export default function PaymentPage() {
           </DialogHeader>
           <ScrollArea className="h-[400px] pr-4">
             <div className="space-y-4 text-sm">
-              <h3 className="font-semibold text-base">1. Veri Sorumlusu</h3>
-              <p className="text-gray-700 dark:text-gray-300">
-                6698 sayılı Kişisel Verilerin Korunması Kanunu ("KVKK") uyarınca, kişisel verileriniz veri sorumlusu
-                olarak Kredi Takip tarafından aşağıda açıklanan kapsamda işlenecektir.
+              <h3 className="font-semibold text-base text-gray-900 dark:text-white">KİŞİSEL VERİLERİN İŞLENMESİNE İLİŞKİN AYDINLATMA METNİ</h3>
+              <p className="text-gray-700 dark:text-gray-300 text-xs">
+                Bu Aydınlatma Metni, 6698 sayılı Kişisel Verilerin Korunması Kanunu ("KVKK") uyarınca, kredi ve finans takibi hizmeti kapsamında kullanıcılarınızdan toplanan kişisel verilerin nasıl işlendiğini, saklandığını, korunduğunu, kimlerle paylaşıldığını ve kullanıcı haklarının neler olduğunu açıklamak amacıyla hazırlanmıştır.
               </p>
 
-              <h3 className="font-semibold text-base">2. Toplanan Kişisel Veriler</h3>
-              <p className="text-gray-700 dark:text-gray-300">
-                Platform üzerinde aşağıdaki kişisel verileriniz toplanabilir:
-              </p>
-              <ul className="list-disc pl-5 space-y-2 text-gray-700 dark:text-gray-300">
-                <li>Kimlik bilgileri (ad, soyad, T.C. kimlik numarası)</li>
-                <li>İletişim bilgileri (e-posta, telefon, adres)</li>
-                <li>Finansal bilgiler (kredi bilgileri, ödeme planları)</li>
-                <li>İşlem güvenliği bilgileri (IP adresi, çerez bilgileri)</li>
-              </ul>
+              <h3 className="font-semibold text-base mt-4">1. Veri Sorumlusu</h3>
+              <div className="text-gray-700 dark:text-gray-300 space-y-1">
+                <p><strong>Veri Sorumlusu:</strong> Kredi Takip (kreditakip.com.tr)</p>
+                <p><strong>E-posta:</strong>{" "}
+                  <a href="mailto:info@kreditakip.com.tr" className="text-emerald-600 dark:text-emerald-400 hover:underline">
+                    info@kreditakip.com.tr
+                  </a>
+                </p>
+                <p><strong>Tel:</strong>{" "}
+                  <a href="tel:+905432035309" className="text-emerald-600 dark:text-emerald-400 hover:underline">
+                    0 543 203 53 09
+                  </a>
+                </p>
+                <p><strong>Adres:</strong> Çeşme / İzmir, Türkiye</p>
+              </div>
 
-              <h3 className="font-semibold text-base">3. Kişisel Verilerin İşlenme Amaçları</h3>
-              <p className="text-gray-700 dark:text-gray-300">
-                Kişisel verileriniz aşağıdaki amaçlarla işlenmektedir:
-              </p>
-              <ul className="list-disc pl-5 space-y-2 text-gray-700 dark:text-gray-300">
-                <li>Üyelik işlemlerinin gerçekleştirilmesi</li>
-                <li>Hizmetlerin sunulması ve geliştirilmesi</li>
-                <li>Ödeme işlemlerinin yürütülmesi</li>
-                <li>Yasal yükümlülüklerin yerine getirilmesi</li>
-                <li>Güvenlik ve fraud önleme</li>
-              </ul>
+              <h3 className="font-semibold text-base mt-4">2. İşlenen Kişisel Veriler & Toplama Yöntemleri</h3>
+              <div className="text-gray-700 dark:text-gray-300 space-y-2">
+                <p className="text-xs">
+                  Aşağıda listelenen veri tipleri, elektronik ortamda (web sitesi, mobil uygulama, e-posta, form, dosya yükleme gibi) ya da fiziken/manuel olarak toplanabilir:
+                </p>
 
-              <h3 className="font-semibold text-base">4. Verilerin Aktarımı</h3>
-              <p className="text-gray-700 dark:text-gray-300">
-                Kişisel verileriniz, yukarıda belirtilen amaçların gerçekleştirilmesi doğrultusunda:
-              </p>
-              <ul className="list-disc pl-5 space-y-2 text-gray-700 dark:text-gray-300">
-                <li>Ödeme hizmet sağlayıcılarına (Paddle)</li>
-                <li>Hukuki yükümlülükler gereği kamu kurum ve kuruluşlarına</li>
-                <li>Teknik altyapı sağlayıcılarına</li>
-              </ul>
-              <p className="text-gray-700 dark:text-gray-300">
-                aktarılabilecektir.
-              </p>
+                <div className="bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded p-2">
+                  <p className="font-semibold text-xs">Kimlik ve iletişim bilgileri:</p>
+                  <p className="text-xs">ad, soyad, e-posta adresi, telefon numarası</p>
+                </div>
 
-              <h3 className="font-semibold text-base">5. Kişisel Veri Toplamanın Yöntemi</h3>
-              <p className="text-gray-700 dark:text-gray-300">
-                Kişisel verileriniz, web sitesi, mobil uygulama, e-posta, telefon ve diğer dijital
-                kanallar aracılığıyla toplanmaktadır.
-              </p>
+                <div className="bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded p-2">
+                  <p className="font-semibold text-xs">Finansal veriler:</p>
+                  <p className="text-xs">Kredi/banka dökümanları (PDF), şifrelenmiş banka bilgileri, ödeme planları, kredi/borç durumu</p>
+                </div>
 
-              <h3 className="font-semibold text-base">6. Haklarınız</h3>
-              <p className="text-gray-700 dark:text-gray-300">
-                KVKK'nın 11. maddesi uyarınca aşağıdaki haklara sahipsiniz:
-              </p>
-              <ul className="list-disc pl-5 space-y-2 text-gray-700 dark:text-gray-300">
-                <li>Kişisel verilerinizin işlenip işlenmediğini öğrenme</li>
-                <li>İşlenmişse buna ilişkin bilgi talep etme</li>
-                <li>İşlenme amacını ve amacına uygun kullanılıp kullanılmadığını öğrenme</li>
-                <li>Yurt içinde veya yurt dışında aktarıldığı 3. kişileri bilme</li>
-                <li>Eksik veya yanlış işlenmişse düzeltilmesini isteme</li>
-                <li>KVKK'nın 7. maddesinde öngörülen şartlar çerçevesinde silinmesini isteme</li>
-                <li>Aktarıldığı 3. kişilere yukarıdaki değişikliklerin bildirilmesini isteme</li>
-                <li>Münhasıran otomatik sistemler ile analiz edilmesine itiraz etme</li>
-                <li>Kanuna aykırı işlenmesi sebebiyle zarara uğramanız halinde zararın giderilmesini talep etme</li>
-              </ul>
+                <div className="bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded p-2">
+                  <p className="font-semibold text-xs">Teknik ve kullanım verileri:</p>
+                  <p className="text-xs">IP adresi, cihaz bilgileri, tarayıcı bilgileri, log kayıtları, kullanım geçmişi</p>
+                </div>
+              </div>
 
-              <h3 className="font-semibold text-base">7. İletişim</h3>
-              <p className="text-gray-700 dark:text-gray-300">
-                Kişisel verileriniz ile ilgili taleplerinizi destek@kreditakip.com.tr adresine
-                yazılı olarak iletebilirsiniz.
-              </p>
+              <h3 className="font-semibold text-base mt-4">3. İşleme Amaçları ve Hukuki Sebepleri</h3>
+              <div className="text-gray-700 dark:text-gray-300 space-y-2 text-xs">
+                <p>Toplanan kişisel veriler, aşağıdaki amaçlarla ve hukuki sebeplere dayanarak işlenmektedir:</p>
 
-              <h3 className="font-semibold text-base">8. Veri Saklama Süresi</h3>
-              <p className="text-gray-700 dark:text-gray-300">
-                Kişisel verileriniz, işleme amacının gerektirdiği süre boyunca ve yasal saklama
-                yükümlülükleri doğrultusunda saklanmaktadır.
-              </p>
+                <div className="space-y-1">
+                  <p>• <strong>Hizmet sunumu:</strong> KVKK m.5/2(c) - Sözleşmenin kurulması ve ifası</p>
+                  <p>• <strong>Destek ve iletişim:</strong> KVKK m.5/2(e) - Hakkın tesis edilmesi/korunması</p>
+                  <p>• <strong>Güvenlik:</strong> KVKK m.5/2(f) - Meşru menfaat</p>
+                  <p>• <strong>Hukuki yükümlülük:</strong> KVKK m.5/2(ç) - Yasal düzenlemeler</p>
+                </div>
+              </div>
+
+              <h3 className="font-semibold text-base mt-4">4. Verilerin Aktarımı ve Yurt Dışı Veri Transferi</h3>
+              <div className="text-gray-700 dark:text-gray-300 space-y-1 text-xs">
+                <p className="font-semibold">Kullanıcı verileri, yurt dışına aktarılmamaktadır.</p>
+                <p>
+                  Teknik altyapı sağlayıcılarımız Türkiye merkezli ya da KVKK uyumlu, güvenliği sağlanmış hizmet sağlayıcılardır. Verilerin aktarımı SSL/TLS gibi güvenli protokollerle şifrelenmiştir.
+                </p>
+              </div>
+
+              <h3 className="font-semibold text-base mt-4">5. Veri Güvenliği ve Saklama Süresi</h3>
+              <div className="text-gray-700 dark:text-gray-300 space-y-1 text-xs">
+                <p>
+                  Verilerin güvenliği için idari, teknik ve fiziksel tedbirler uygulanmaktadır. Finansal ve hassas veriler şifreli biçimde saklanmakta, erişim kontrolleri ile korunmaktadır.
+                </p>
+                <p>
+                  Veriler, işleme amaçlarının sürdüğü süre boyunca ve mevzuatta öngörülen saklama süreleri çerçevesinde muhafaza edilir.
+                </p>
+              </div>
+
+              <h3 className="font-semibold text-base mt-4">6. İlgili Kişinin Hakları</h3>
+              <div className="text-gray-700 dark:text-gray-300 space-y-2">
+                <p className="text-xs"><strong>KVKK'nın 11. maddesi uyarınca</strong> aşağıdaki haklara sahipsiniz:</p>
+                <ul className="list-disc pl-5 space-y-1 text-xs">
+                  <li>Kişisel verilerinizin işlenip işlenmediğini öğrenme</li>
+                  <li>İşlenmişse bilgi talep etme</li>
+                  <li>Eksik veya yanlış işlenmişse düzeltilmesini isteme</li>
+                  <li>Verilerin silinmesini veya anonim hâle getirilmesini isteme</li>
+                  <li>İşlemenin kısıtlanmasını isteme</li>
+                  <li>Otomatik sistemlerle analiz nedeniyle itiraz etme</li>
+                  <li>Hak ihlali durumunda ilgili kuruma şikayette bulunma</li>
+                </ul>
+
+                <p className="text-xs mt-2">
+                  Taleplerinizi kimliğinizi doğrulayarak e-posta veya telefon yoluyla iletebilirsiniz; başvurunuz <strong>30 gün içinde</strong> yazılı olarak yanıtlanacaktır.
+                </p>
+              </div>
+
+              <h3 className="font-semibold text-base mt-4">7. Çerez (Cookie) ve Benzeri Teknolojiler</h3>
+              <div className="text-gray-700 dark:text-gray-300 text-xs">
+                <p>
+                  Web sitemiz ve uygulamalarımız, ziyaretçi deneyimini iyileştirmek, güvenlik ve analiz amaçlı çerez veya benzeri izleme teknolojileri kullanabilir. Detaylı bilgi için Çerez Politikası sayfamızı inceleyebilirsiniz.
+                </p>
+              </div>
+
+              <h3 className="font-semibold text-base mt-4">8. Değişiklik ve Güncellemeler</h3>
+              <div className="text-gray-700 dark:text-gray-300 text-xs">
+                <p>
+                  Bu Aydınlatma Metni, kanun, mevzuat ya da hizmet süreçlerimizde meydana gelecek değişiklikler nedeniyle güncellenebilir. Güncellenen yeni metin, web sitesinde yayınlandığı anda yürürlüğe girer.
+                </p>
+              </div>
+
+              <h3 className="font-semibold text-base mt-4">İletişim</h3>
+              <div className="text-gray-700 dark:text-gray-300 space-y-1 text-xs">
+                <p>Kişisel verilerinizle ilgili sorularınız ve talepleriniz için:</p>
+                <p>
+                  <strong>E-posta:</strong>{" "}
+                  <a href="mailto:info@kreditakip.com.tr" className="text-emerald-600 dark:text-emerald-400 hover:underline">
+                    info@kreditakip.com.tr
+                  </a>
+                </p>
+                <p>
+                  <strong>Tel:</strong>{" "}
+                  <a href="tel:+905432035309" className="text-emerald-600 dark:text-emerald-400 hover:underline">
+                    0 543 203 53 09
+                  </a>
+                </p>
+              </div>
             </div>
           </ScrollArea>
           <DialogFooter>

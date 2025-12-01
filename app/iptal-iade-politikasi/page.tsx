@@ -282,7 +282,7 @@ export default function CancellationRefundPolicyPage() {
 
               <Card className="bg-black/20 border-white/10 backdrop-blur-xl hover:border-emerald-500/30 transition-all duration-300">
                 <CardContent className="p-6">
-                  <h3 className="text-lg font-bold text-white mb-3">Destek</h3>
+                  <h3 className="text-lg font-bold text-white mb-3">Yardım & Destek</h3>
                   <p className="text-white/70 text-sm mb-4">Yardım ve destek alın</p>
                   <a href="mailto:destek@kreditakip.com.tr">
                     <Button
