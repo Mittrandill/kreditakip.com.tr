@@ -142,7 +142,7 @@ Uygulama aşağıdaki cihazlar için optimize edilmiştir:
 
 ## 📞 Destek ve İletişim
 
-- Email: destek@kreditakip.com.tr
+- Email: info@kreditakip.com.tr
 - Telefon: 0 543 203 53 09
 - Web: https://kreditakip.com.tr/iletisim
 

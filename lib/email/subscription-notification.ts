@@ -318,7 +318,7 @@ function generateSubscriptionEmailHTML(data: SubscriptionEmailData): string {
 
         <p class="footer-text">
           Bu e-posta otomatik olarak gönderilmiştir.<br>
-          Herhangi bir sorunuz için destek@kreditakip.com.tr adresinden bize ulaşabilirsiniz.
+          Herhangi bir sorunuz için info@kreditakip.com.tr adresinden bize ulaşabilirsiniz.
         </p>
 
         <div class="copyright">
@@ -726,7 +726,7 @@ function generateRenewalSuccessHTML(data: RenewalNotificationData): string {
 
         <p class="footer-text">
           Bu e-posta otomatik olarak gönderilmiştir.<br>
-          Herhangi bir sorunuz için destek@kreditakip.com.tr adresinden bize ulaşabilirsiniz.
+          Herhangi bir sorunuz için info@kreditakip.com.tr adresinden bize ulaşabilirsiniz.
         </p>
 
         <div class="copyright">
@@ -989,7 +989,7 @@ function generateRenewalFailedHTML(data: {
 
         <p class="footer-text">
           Bu e-posta otomatik olarak gönderilmiştir.<br>
-          Herhangi bir sorunuz için destek@kreditakip.com.tr adresinden bize ulaşabilirsiniz.
+          Herhangi bir sorunuz için info@kreditakip.com.tr adresinden bize ulaşabilirsiniz.
         </p>
 
         <div class="copyright">
@@ -1377,7 +1377,7 @@ function generateUpcomingRenewalHTML(data: UpcomingRenewalData): string {
 
         <p class="footer-text">
           Bu e-posta otomatik olarak gönderilmiştir.<br>
-          Herhangi bir sorunuz için destek@kreditakip.com.tr adresinden bize ulaşabilirsiniz.
+          Herhangi bir sorunuz için info@kreditakip.com.tr adresinden bize ulaşabilirsiniz.
         </p>
 
         <div class="copyright">
@@ -1761,7 +1761,7 @@ function generateRenewalRequestHTML(data: RenewalRequestData): string {
 
         <p class="footer-text">
           Bu e-posta otomatik olarak gönderilmiştir.<br>
-          Herhangi bir sorunuz için destek@kreditakip.com.tr adresinden bize ulaşabilirsiniz.
+          Herhangi bir sorunuz için info@kreditakip.com.tr adresinden bize ulaşabilirsiniz.
         </p>
 
         <div class="copyright">
@@ -2141,7 +2141,7 @@ function generateGracePeriodStartHTML(data: GracePeriodStartData): string {
 
         <p class="footer-text">
           Bu e-posta otomatik olarak gönderilmiştir.<br>
-          Herhangi bir sorunuz için destek@kreditakip.com.tr adresinden bize ulaşabilirsiniz.
+          Herhangi bir sorunuz için info@kreditakip.com.tr adresinden bize ulaşabilirsiniz.
         </p>
 
         <div class="copyright">
@@ -2517,7 +2517,7 @@ function generateGracePeriodEndingHTML(data: GracePeriodEndingData): string {
 
         <p class="footer-text">
           Bu e-posta otomatik olarak gönderilmiştir.<br>
-          Herhangi bir sorunuz için destek@kreditakip.com.tr adresinden bize ulaşabilirsiniz.
+          Herhangi bir sorunuz için info@kreditakip.com.tr adresinden bize ulaşabilirsiniz.
         </p>
 
         <div class="copyright">
@@ -2932,7 +2932,7 @@ function generateManualPaymentReminderHTML(data: ManualPaymentReminderData): str
 
         <p class="footer-text">
           Bu e-posta otomatik olarak gönderilmiştir.<br>
-          Herhangi bir sorunuz için destek@kreditakip.com.tr adresinden bize ulaşabilirsiniz.
+          Herhangi bir sorunuz için info@kreditakip.com.tr adresinden bize ulaşabilirsiniz.
         </p>
 
         <div class="copyright">
@@ -2977,7 +2977,7 @@ HEMEN ÖDEME YAP: ${data.paymentUrl}
 
 ───────────────────────────────────────
 Bu e-posta otomatik sistem tarafından gönderilmiştir.
-Destek: destek@kreditakip.com.tr
+Destek: info@kreditakip.com.tr
 
 © ${new Date().getFullYear()} Kredi Takip - Tüm hakları saklıdır.
   `

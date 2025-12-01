@@ -401,7 +401,7 @@ Bu rehber, KrediTakip uygulaması için Supabase e-posta şablonlarının kurulu
             <div class="footer-team">Destek Ekibi</div>
             <div class="footer-note">
                 Bu e-posta otomatik olarak gönderilmiştir. Lütfen yanıtlamayın.<br>
-                Sorularınız için destek@kreditakip.com.tr adresine yazabilirsiniz.
+                Sorularınız için info@kreditakip.com.tr adresine yazabilirsiniz.
             </div>
             <div class="footer-links">
                 <a href="https://kreditakip.com.tr" class="footer-link">Ana Sayfa</a>
@@ -724,7 +724,7 @@ Bu rehber, KrediTakip uygulaması için Supabase e-posta şablonlarının kurulu
             <div class="footer-team">Destek Ekibi</div>
             <div class="footer-note">
                 Bu e-posta otomatik olarak gönderilmiştir. Lütfen yanıtlamayın.<br>
-                Sorularınız için destek@kreditakip.com.tr adresine yazabilirsiniz.
+                Sorularınız için info@kreditakip.com.tr adresine yazabilirsiniz.
             </div>
             <div class="footer-links">
                 <a href="https://kreditakip.com.tr" class="footer-link">Ana Sayfa</a>

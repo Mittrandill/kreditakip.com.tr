@@ -988,130 +988,111 @@ export default function PaymentPage() {
           </DialogHeader>
           <ScrollArea className="h-[400px] pr-4">
             <div className="space-y-4 text-sm">
-              <h3 className="font-semibold text-base">1. Abonelik İptali</h3>
+              <p className="text-gray-700 dark:text-gray-300">
+                Kredi Takip olarak kullanıcılarımıza adil, şeffaf ve güvenilir bir deneyim sunmayı amaçlıyoruz.
+                Aşağıdaki iptal ve iade koşulları, ödeme sağlayıcımız Paddle tarafından belirlenen uluslararası standartlarla uyumludur.
+              </p>
+
+              <h3 className="font-semibold text-base">1. 14 Günlük İade Hakkı (Cayma Hakkı)</h3>
               <div className="text-gray-700 dark:text-gray-300 space-y-2">
-                <p className="bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-200 dark:border-emerald-800 rounded-lg p-3">
-                  <strong className="text-emerald-700 dark:text-emerald-300">Herhangi bir Zaman İptal Hakkı:</strong> Kredi Takip aboneliğinizi
-                  istediğiniz zaman, herhangi bir ceza ödemeden iptal edebilirsiniz. İptal işlemi sonrasında, ödenmiş olan
-                  mevcut abonelik döneminizin sonuna kadar Premium özelliklere erişiminiz devam eder.
+                <p>
+                  Kullanıcılarımız, satın alma tarihinden itibaren <strong>14 gün içinde</strong> herhangi bir gerekçe göstermeden iade talep etmeye hak kazanır.
                 </p>
 
-                <p><strong>İptal Yöntemleri:</strong></p>
+                <p className="bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-200 dark:border-emerald-800 rounded-lg p-3">
+                  Bu iade politikası, ödeme altyapımız Paddle'ın zorunlu 14 günlük refund policy gerekliliği doğrultusunda uygulanmaktadır.
+                </p>
+
+                <p>
+                  14 günlük süre içinde yapılan tüm iade talepleri, koşulsuz olarak işleme alınır.
+                </p>
+              </div>
+
+              <h3 className="font-semibold text-base">2. İade Süreci Nasıl İşler?</h3>
+              <div className="text-gray-700 dark:text-gray-300 space-y-2">
+                <p>
+                  İade talepleri, ödemenin gerçekleştiği platform olan Paddle üzerinden işlenir ve ödemenin yapıldığı yöntemle kullanıcının hesabına iade edilir.
+                </p>
+
+                <p><strong>İade süreci şu adımlarla ilerler:</strong></p>
                 <ul className="list-disc pl-5 space-y-1">
-                  <li>Paddle müşteri portalı üzerinden otomatik iptal</li>
-                  <li>Hesap ayarlarınızdan abonelik yönetimi</li>
-                  <li>E-posta yoluyla destek talebi (<a href="mailto:info@kreditakip.com.tr" className="text-emerald-600 dark:text-emerald-400 hover:underline">info@kreditakip.com.tr</a>)</li>
+                  <li>Kullanıcı iade talebini iletir</li>
+                  <li>Talep Paddle tarafından doğrulanır</li>
+                  <li>İade, ödeme yöntemine bağlı olarak genellikle 3–10 iş günü içinde tamamlanır</li>
                 </ul>
 
-                <p><strong>İptal Süreci:</strong></p>
+                <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-3 mt-2">
+                  <p><strong>İade talepleri için:</strong></p>
+                  <p className="mt-1">
+                    📩 <a href="mailto:sellers@paddle.com" className="text-emerald-600 dark:text-emerald-400 hover:underline">sellers@paddle.com</a>
+                  </p>
+                  <p className="mt-1">veya</p>
+                  <p className="mt-1">
+                    📩 <a href="mailto:info@kreditakip.com.tr" className="text-emerald-600 dark:text-emerald-400 hover:underline">info@kreditakip.com.tr</a>
+                  </p>
+                </div>
+              </div>
+
+              <h3 className="font-semibold text-base">3. 14 Günlük Süre Sonrası İade Talepleri</h3>
+              <div className="text-gray-700 dark:text-gray-300 space-y-2">
+                <p>
+                  14 günlük yasal/policy süresi dolduktan sonra yapılan iade talepleri Paddle tarafından kabul edilmemektedir.
+                </p>
+
+                <p>
+                  Ancak ürünle ilgili bir teknik sorun yaşanması durumunda, destek ekibimiz çözüm üretmek için kullanıcılarımızla birebir çalışacaktır.
+                </p>
+              </div>
+
+              <h3 className="font-semibold text-base">4. Abonelik İptalleri</h3>
+              <div className="text-gray-700 dark:text-gray-300 space-y-2">
+                <p>
+                  Kredi Takip aboneliğinizi dilediğiniz zaman iptal edebilirsiniz.
+                </p>
+
+                <p><strong>İptal işlemi sonrasında:</strong></p>
                 <ul className="list-disc pl-5 space-y-1">
-                  <li>İptal talebi aldığında anında işleme alınır</li>
-                  <li>İptal onayı e-posta ile bildirilir</li>
-                  <li>Mevcut abonelik döneminizin bitiş tarihi belirtilir</li>
-                  <li>Dönem sonunda otomatik olarak ücretsiz plana geçiş yapılır</li>
+                  <li>Mevcut fatura döneminin sonuna kadar hizmetlerden yararlanmaya devam edersiniz</li>
+                  <li>İptal işlemi ileriye dönük geçerlidir; geçmiş dönemlere ilişkin iadeler Paddle politikaları gereği yapılamamaktadır</li>
                 </ul>
               </div>
 
-              <h3 className="font-semibold text-base">2. İade Politikası</h3>
+              <h3 className="font-semibold text-base">5. Dijital Hizmet Niteliği</h3>
+              <div className="text-gray-700 dark:text-gray-300 space-y-2">
+                <p>
+                  Kredi Takip tamamen dijital bir ürün olduğundan, üyelik aktivasyonuyla birlikte hizmete anında erişim sağlanır.
+                </p>
+
+                <p className="bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-200 dark:border-emerald-800 rounded-lg p-3">
+                  Buna rağmen Paddle'ın global policy'si gereği, dijital ürünlerde dahi 14 günlük koşulsuz iade hakkı sunulmaktadır.
+                </p>
+              </div>
+
+              <h3 className="font-semibold text-base">6. Haksız Kullanım / Kötüniyetli İade Talepleri</h3>
               <div className="text-gray-700 dark:text-gray-300 space-y-2">
                 <p className="bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg p-3">
-                  <strong className="text-yellow-700 dark:text-yellow-300">Kullanılmış Hizmetler İade Edilmez:</strong> Kredi Takip'te
-                  kullanılmış hizmetler için iade yapılmaz. Örneğin, analiz edilen kredi dökümanları veya kullanılan AI
-                  özellikleri için iade talep edilemez.
+                  Nadir durumlarda, sistemin kötüye kullanıldığı tespit edilirse Paddle ek doğrulamalar isteyebilir.
                 </p>
 
-                <p><strong>İade Koşulları:</strong></p>
-                <ul className="list-disc pl-5 space-y-1">
-                  <li><strong>İlk Satın Alma İade Hakkı:</strong> İlk aboneliğiniz için 14 gün içinde iade talep edebilirsiniz. Hizmeti kullanmadığınızı kanıtlamanız gerekir.</li>
-                  <li><strong>Yıllık Abonelikler:</strong> Sadece yıllık abonelikler için belirli koşullarda pro-rata iade mümkündür</li>
-                  <li><strong>İade Talebi:</strong> İade talebiniz <a href="mailto:info@kreditakip.com.tr" className="text-emerald-600 dark:text-emerald-400 hover:underline">info@kreditakip.com.tr</a> adresine gönderilmelidir</li>
-                  <li><strong>İşlem Süresi:</strong> İade talepleri en geç 14 iş günü içinde sonuçlandırılır</li>
-                </ul>
-
-                <p><strong>İade Süreci:</strong></p>
-                <ol className="list-decimal pl-5 space-y-1">
-                  <li>İade talebi <a href="mailto:info@kreditakip.com.tr" className="text-emerald-600 dark:text-emerald-400 hover:underline">info@kreditakip.com.tr</a> adresine bildirilir</li>
-                  <li>Talebiniz en geç 7 iş günü içinde değerlendirilir</li>
-                  <li>Onaylanan iadeler Paddle üzerinden işlenir</li>
-                  <li>İade, orijinal ödeme yöntemine yapılır</li>
-                  <li>Banka işlemlerine bağlı olarak iade 5-10 iş günü sürebilir</li>
-                </ol>
-              </div>
-
-              <h3 className="font-semibold text-base">3. Özel Durumlar</h3>
-              <div className="text-gray-700 dark:text-gray-300 space-y-2">
-                <p><strong>Teknik Sorunlar:</strong></p>
-                <ul className="list-disc pl-5 space-y-1">
-                  <li>Kredi Takip hizmetinde 48 saatten uzun süren kesinti durumunda</li>
-                  <li>Analiz sonuçlarının sistematik olarak yanlış çıkması durumunda</li>
-                  <li>Veri güvenliği ihlali veya gizlilik sorunu yaşanması halinde</li>
-                </ul>
-
-                <p><strong>Haksız İptal/İade Talepleri:</strong></p>
-                <ul className="list-disc pl-5 space-y-1">
-                  <li>Aylık aboneliklerde iade yapılmaz</li>
-                  <li>Kısmi kullanım durumlarında iade oranı düşürülebilir</li>
-                  <li>Kötüye kullanım veya politikayı ihlal durumunda iptal/iade yapılmaz</li>
-                </ul>
-              </div>
-
-              <h3 className="font-semibold text-base">4. Ödeme Güvenliği ve Otomatik Yenileme</h3>
-              <div className="text-gray-700 dark:text-gray-300 space-y-2">
-                <p><strong>3D Secure Güvenliği:</strong></p>
-                <ul className="list-disc pl-5 space-y-1">
-                  <li>İlk ödemede 3D Secure kart doğrulaması yapılır</li>
-                  <li>Kart bilgileriniz hiçbir zaman sunucularımızda saklanmaz</li>
-                  <li>Tüm ödemeler Paddle'ın PCI-DSS Level 1 sertifikalı altyapısında güvende</li>
-                </ul>
-
-                <p><strong>Otomatik Yenileme:</strong></p>
-                <ul className="list-disc pl-5 space-y-1">
-                  <li>Otomatik yenileme açık kullanıcı onayı ile yapılır</li>
-                  <li>Abonelik yenileme tarihinden önce e-posta ile bilgilendirme yapılır</li>
-                  <li>İstediğiniz zaman aboneliğinizi iptal edebilirsiniz</li>
-                  <li>İptal ettiğinizde mevcut dönem sonuna kadar erişim devam eder</li>
-                </ul>
-              </div>
-
-              <h3 className="font-semibold text-base">5. Paddle'ın Rolü</h3>
-              <div className="text-gray-700 dark:text-gray-300 space-y-2 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-3">
                 <p>
-                  <strong className="text-blue-700 dark:text-blue-300">Ödeme İşlemleri ve İadeler:</strong> Tüm ödeme işlemleri ve iadeler,
-                  resmi ödeme sağlayıcımız olan Paddle tarafından yönetilir. Paddle, Merchant of Record olarak hareket eder
-                  ve tüm finansal işlemlerden yasal olarak sorumludur.
+                  Bu tür durumlarda Kredi Takip, kullanıcı hesabını inceleme altına alma veya askıya alma hakkını saklı tutar.
                 </p>
-
-                <ul className="list-disc pl-5 space-y-1">
-                  <li>İade talepleri Paddle politikalarına göre işlenir</li>
-                  <li>Chargeback (geri itiraz) işlemleri Paddle tarafından yönetilir</li>
-                  <li>Ödeme güvenliği ve dolandırıcılık koruması Paddle tarafından sağlanır</li>
-                  <li>Vergi ve yasal uyumluluk Paddle tarafından yönetilir</li>
-                </ul>
               </div>
 
-              <h3 className="font-semibold text-base mt-4">İletişim Bilgileri</h3>
+              <h3 className="font-semibold text-base mt-4">7. İletişim</h3>
               <div className="text-gray-700 dark:text-gray-300 space-y-2">
-                <p><strong>İptal ve İade Talepleri için:</strong></p>
-                <ul className="list-disc pl-5 space-y-1">
-                  <li>
-                    E-posta:{" "}
-                    <a href="mailto:info@kreditakip.com.tr" className="text-emerald-600 dark:text-emerald-400 hover:underline">
-                      info@kreditakip.com.tr
-                    </a>
-                  </li>
-                  <li>
-                    Telefon:{" "}
-                    <a href="tel:+905432035309" className="text-emerald-600 dark:text-emerald-400 hover:underline">
-                      0 543 203 53 09
-                    </a>
-                  </li>
-                  <li>Çalışma Saatleri: Pazartesi - Cuma, 09:00 - 18:00</li>
-                </ul>
-
-                <p className="text-xs text-gray-600 dark:text-gray-400 mt-2">
-                  Taleplerinize en geç 24 saat içinde dönüş yapmayı hedefliyoruz. İade talepleri
-                  karmaşık olabileceğinden, işleyiş süresi 14 iş gününü bulabilir.
+                <p>
+                  İptal ve iade süreçleriyle ilgili tüm sorular için bizimle iletişime geçebilirsiniz:
                 </p>
+
+                <div className="bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-200 dark:border-emerald-800 rounded-lg p-3 space-y-1">
+                  <p>
+                    📩 <a href="mailto:info@kreditakip.com.tr" className="text-emerald-600 dark:text-emerald-400 hover:underline font-semibold">info@kreditakip.com.tr</a>
+                  </p>
+                  <p>
+                    🌐 <a href="https://kreditakip.com.tr" className="text-emerald-600 dark:text-emerald-400 hover:underline font-semibold">kreditakip.com.tr</a>
+                  </p>
+                </div>
               </div>
             </div>
           </ScrollArea>

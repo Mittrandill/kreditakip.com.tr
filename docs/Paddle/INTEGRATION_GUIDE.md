@@ -371,4 +371,4 @@ if (!PaddleClient.verifyWebhookSignature(body, signature, PADDLE_PUBLIC_KEY)) {
 
 ---
 
-Bu kılavuz Paddle abonelik sisteminin başarılı bir şekilde entegre edilmesi için tüm gerekli bilgileri içermektedir. Sorularınız için destek@kreditakip.com.tr adresinden ulaşabilirsiniz.
+Bu kılavuz Paddle abonelik sisteminin başarılı bir şekilde entegre edilmesi için tüm gerekli bilgileri içermektedir. Sorularınız için info@kreditakip.com.tr adresinden ulaşabilirsiniz.

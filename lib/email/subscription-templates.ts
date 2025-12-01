@@ -55,7 +55,7 @@ export const subscriptionEmailTemplates = {
 
             <a href="{{managementUrl}}" class="cta-button">Aboneliği Yönet</a>
 
-            <p>Sorularınız veya yardıma ihtiyacınız olursa <a href="mailto:destek@kreditakip.com.tr">destek@kreditakip.com.tr</a> adresinden bize ulaşabilirsiniz.</p>
+            <p>Sorularınız veya yardıma ihtiyacınız olursa <a href="mailto:info@kreditakip.com.tr">info@kreditakip.com.tr</a> adresinden bize ulaşabilirsiniz.</p>
 
             <div class="footer">
                 <p>Bu e-posta Kreditakip.com.tr tarafından otomatik olarak gönderilmiştir.</p>
@@ -187,7 +187,7 @@ export const subscriptionEmailTemplates = {
 
             <p>Kartınızın geçerlilik süresinin dolmadığını, yeterli bakiye olduğunu ve işlemlere açık olduğundan emin olun.</p>
 
-            <p>Sorularınız için <a href="mailto:destek@kreditakip.com.tr">destek@kreditakip.com.tr</a> adresinden bize ulaşabilirsiniz.</p>
+            <p>Sorularınız için <a href="mailto:info@kreditakip.com.tr">info@kreditakip.com.tr</a> adresinden bize ulaşabilirsiniz.</p>
 
             <div class="footer">
                 <p>Bu e-posta Kreditakip.com.tr tarafından otomatik olarak gönderilmiştir.</p>
@@ -253,7 +253,7 @@ export const subscriptionEmailTemplates = {
 
             <p>Bizi seçtiğiniz için teşekkür ederiz. İleride tekrar görüşmeyi umuyoruz!</p>
 
-            <p>Herhangi bir geri bildiriminiz varsa <a href="mailto:destek@kreditakip.com.tr">destek@kreditakip.com.tr</a> adresinden bizimle paylaşabilirsiniz.</p>
+            <p>Herhangi bir geri bildiriminiz varsa <a href="mailto:info@kreditakip.com.tr">info@kreditakip.com.tr</a> adresinden bizimle paylaşabilirsiniz.</p>
 
             <div class="footer">
                 <p>Bu e-posta Kreditakip.com.tr tarafından otomatik olarak gönderilmiştir.</p>
@@ -310,7 +310,7 @@ export const subscriptionEmailTemplates = {
 
             <a href="{{appUrl}}/uygulama/premium" class="cta-button">Aboneliği Yenile</a>
 
-            <p>Ödeme sorununu çözmek için yardım almak isterseniz <a href="mailto:destek@kreditakip.com.tr">destek@kreditakip.com.tr</a> adresinden bizimle iletişime geçin.</p>
+            <p>Ödeme sorununu çözmek için yardım almak isterseniz <a href="mailto:info@kreditakip.com.tr">info@kreditakip.com.tr</a> adresinden bizimle iletişime geçin.</p>
 
             <p>Bizi yeniden seçtiğinizde mutlu oluruz!</p>
 
@@ -371,7 +371,7 @@ export const subscriptionEmailTemplates = {
 
             <a href="{{appUrl}}/uygulama/abonelik" class="cta-button">Aboneliğimi Görüntüle</a>
 
-            <p>Herhangi bir sorunuz olursa <a href="mailto:destek@kreditakip.com.tr">destek@kreditakip.com.tr</a> adresinden bize ulaşabilirsiniz.</p>
+            <p>Herhangi bir sorunuz olursa <a href="mailto:info@kreditakip.com.tr">info@kreditakip.com.tr</a> adresinden bize ulaşabilirsiniz.</p>
 
             <div class="footer">
                 <p>Bu e-posta Kreditakip.com.tr tarafından otomatik olarak gönderilmiştir.</p>

@@ -48,7 +48,8 @@
       "Bash(for file in supabase/migrations/2025113000000*.sql)",
       "Bash(done)",
       "Bash(mv:*)",
-      "Bash(if exist .next rmdir /s /q .next)"
+      "Bash(if exist .next rmdir /s /q .next)",
+      "Bash(node scripts/check-subscription.js:*)"
     ],
     "deny": [],
     "ask": []
