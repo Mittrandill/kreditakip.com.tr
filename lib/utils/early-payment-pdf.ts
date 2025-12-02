@@ -1,4 +1,5 @@
 import type { jsPDF } from "jspdf"
+import { loadRobotoFont } from "./pdf-fonts"
 
 interface EarlyPaymentData {
   hesaplamaForm: {
@@ -116,6 +117,9 @@ export async function generateEarlyPaymentPDF(data: EarlyPaymentData): Promise<v
   const { jsPDF } = await import("jspdf")
   const doc = new jsPDF()
 
+  // Load Roboto font for Turkish character support
+  await loadRobotoFont(doc)
+
   const { hesaplamaForm, hesaplamaResult, dynamicStats, krediDetay, user } = data
 
   // Load logos
@@ -162,13 +166,13 @@ export async function generateEarlyPaymentPDF(data: EarlyPaymentData): Promise<v
     } catch (error) {
       doc.setTextColor(...COLORS.white)
       doc.setFontSize(24)
-      doc.setFont("helvetica", "bold")
+      doc.setFont("Roboto", "bold")
       doc.text("Kredi Takip", pageWidth / 2, logoY + 5, { align: "center" })
     }
   } else {
     doc.setTextColor(...COLORS.white)
     doc.setFontSize(24)
-    doc.setFont("helvetica", "bold")
+    doc.setFont("Roboto", "bold")
     doc.text("Kredi Takip", pageWidth / 2, logoY + 5, { align: "center" })
   }
 
@@ -176,7 +180,7 @@ export async function generateEarlyPaymentPDF(data: EarlyPaymentData): Promise<v
   const titleY = pageHeight * 0.48
   doc.setTextColor(...COLORS.white)
   doc.setFontSize(36)
-  doc.setFont("helvetica", "bold")
+  doc.setFont("Roboto", "bold")
   doc.text(safeText("ERKEN ODEME"), pageWidth / 2, titleY, { align: "center" })
   doc.setFontSize(36)
   doc.text(safeText("HESAPLAMA"), pageWidth / 2, titleY + 22, { align: "center" })
@@ -191,7 +195,7 @@ export async function generateEarlyPaymentPDF(data: EarlyPaymentData): Promise<v
 
   // Subtitle
   doc.setFontSize(13)
-  doc.setFont("helvetica", "normal")
+  doc.setFont("Roboto", "normal")
   doc.setGState(doc.GState({ opacity: 0.9 }))
   doc.text(safeText("Detayli Tasarruf Analizi"), pageWidth / 2, titleY + 66, { align: "center" })
   doc.setGState(doc.GState({ opacity: 1 }))
@@ -203,7 +207,7 @@ export async function generateEarlyPaymentPDF(data: EarlyPaymentData): Promise<v
   if (user?.email || user?.user_metadata?.full_name) {
     doc.setTextColor(...COLORS.white)
     doc.setFontSize(11)
-    doc.setFont("helvetica", "bold")
+    doc.setFont("Roboto", "bold")
     doc.text(
       safeText(user?.user_metadata?.full_name || user?.email || "Kullanici"),
       pageWidth / 2,
@@ -220,13 +224,13 @@ export async function generateEarlyPaymentPDF(data: EarlyPaymentData): Promise<v
 
   // Report date
   doc.setFontSize(9)
-  doc.setFont("helvetica", "normal")
+  doc.setFont("Roboto", "normal")
   doc.setGState(doc.GState({ opacity: 0.85 }))
   doc.text(safeText("RAPOR TARiHi"), pageWidth / 2, coverCardY + 40, { align: "center" })
   doc.setGState(doc.GState({ opacity: 1 }))
 
   doc.setFontSize(10)
-  doc.setFont("helvetica", "bold")
+  doc.setFont("Roboto", "bold")
   doc.text(formatDate(new Date()), pageWidth / 2, coverCardY + 50, { align: "center" })
 
   // ============ NEW PAGE - CONTENT ============
@@ -251,7 +255,7 @@ export async function generateEarlyPaymentPDF(data: EarlyPaymentData): Promise<v
   // Bank name next to logo
   doc.setTextColor(...COLORS.white)
   doc.setFontSize(10)
-  doc.setFont("helvetica", "bold")
+  doc.setFont("Roboto", "bold")
   const bankName = safeText(krediDetay?.banks?.name || "")
   if (bankName) {
     doc.text(bankName, leftStartX, 8)
@@ -259,12 +263,12 @@ export async function generateEarlyPaymentPDF(data: EarlyPaymentData): Promise<v
 
   // Title below bank info
   doc.setFontSize(8)
-  doc.setFont("helvetica", "normal")
+  doc.setFont("Roboto", "normal")
   doc.text("Erken Odeme Hesaplama", leftStartX, 13)
 
   // Date - right aligned
   doc.setFontSize(7)
-  doc.setFont("helvetica", "normal")
+  doc.setFont("Roboto", "normal")
   doc.text(formatDate(new Date()), pageWidth - margin, 10, { align: "right" })
 
   yPos = 22
@@ -296,13 +300,13 @@ export async function generateEarlyPaymentPDF(data: EarlyPaymentData): Promise<v
 
     // Title (matching positions from pdf-generator)
     doc.setFontSize(5)
-    doc.setFont("helvetica", "normal")
+    doc.setFont("Roboto", "normal")
     doc.setTextColor(...COLORS.gray)
     doc.text(safeText(metric.title).toUpperCase(), x + 2, yPos + 6)
 
     // Value (matching size and position from pdf-generator)
     doc.setFontSize(8)
-    doc.setFont("helvetica", "bold")
+    doc.setFont("Roboto", "bold")
     doc.setTextColor(...COLORS.dark)
     doc.text(safeText(metric.value), x + 2, yPos + 12)
   })
@@ -316,7 +320,7 @@ export async function generateEarlyPaymentPDF(data: EarlyPaymentData): Promise<v
   doc.rect(margin, yPos, 2, 9, "F") // Reduced by 60%
   doc.setTextColor(...COLORS.dark)
   doc.setFontSize(7) // Reduced
-  doc.setFont("helvetica", "bold")
+  doc.setFont("Roboto", "bold")
   doc.text(safeText("DURUM KARSILASTIRMASI"), margin + 6, yPos + 6) // Adjusted position
 
   yPos += 11 // Adjusted spacing
@@ -332,7 +336,7 @@ export async function generateEarlyPaymentPDF(data: EarlyPaymentData): Promise<v
 
   doc.setTextColor(...COLORS.white)
   doc.setFontSize(7) // Increased by 2 points
-  doc.setFont("helvetica", "bold")
+  doc.setFont("Roboto", "bold")
 
   doc.text(safeText("DURUM"), margin + 3, yPos + 7) // Adjusted position
   doc.text(safeText("ANA PARA"), margin + 40, yPos + 7)
@@ -350,12 +354,12 @@ export async function generateEarlyPaymentPDF(data: EarlyPaymentData): Promise<v
   doc.line(margin, yPos + rowHeight, pageWidth - margin, yPos + rowHeight)
 
   doc.setTextColor(...COLORS.dark)
-  doc.setFont("helvetica", "normal")
+  doc.setFont("Roboto", "normal")
   doc.setFontSize(7) // Increased by 2 points
 
   doc.text(safeText("Mevcut"), margin + 3, yPos + 5.5) // Adjusted position
   doc.setTextColor(...COLORS.danger)
-  doc.setFont("helvetica", "bold")
+  doc.setFont("Roboto", "bold")
   doc.text(formatMoney(dynamicStats.remainingDebt), margin + 40, yPos + 5.5)
   doc.setTextColor(...COLORS.warning)
   doc.text(formatMoney(hesaplamaResult.eskiToplamFaiz), margin + 80, yPos + 5.5)
@@ -366,10 +370,10 @@ export async function generateEarlyPaymentPDF(data: EarlyPaymentData): Promise<v
 
   // Row 2 - Yeni
   doc.setTextColor(...COLORS.dark)
-  doc.setFont("helvetica", "normal")
+  doc.setFont("Roboto", "normal")
   doc.text(safeText("Yeni"), margin + 3, yPos + 5.5) // Adjusted position
   doc.setTextColor(...COLORS.success)
-  doc.setFont("helvetica", "bold")
+  doc.setFont("Roboto", "bold")
   doc.text(formatMoney(hesaplamaResult.kalanAnaPara), margin + 40, yPos + 5.5)
   doc.setTextColor(...COLORS.success)
   doc.text(formatMoney(hesaplamaResult.yeniToplamFaiz), margin + 80, yPos + 5.5)
@@ -386,15 +390,15 @@ export async function generateEarlyPaymentPDF(data: EarlyPaymentData): Promise<v
   doc.setFontSize(8)
 
   // Left - Website
-  doc.setFont("helvetica", "bold")
+  doc.setFont("Roboto", "bold")
   doc.text("kreditakip.com.tr", margin, pageHeight - 3)
 
   // Center - Tagline
-  doc.setFont("helvetica", "normal")
+  doc.setFont("Roboto", "normal")
   doc.text("Finansal ozgurluge giden yol", pageWidth / 2, pageHeight - 3, { align: "center" })
 
   // Right - Page number
-  doc.setFont("helvetica", "bold")
+  doc.setFont("Roboto", "bold")
   doc.text("1 / 1", pageWidth - margin, pageHeight - 3, { align: "right" })
 
   doc.save(`erken-odeme-hesaplama-${krediDetay?.credit_code}.pdf`)

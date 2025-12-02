@@ -1,4 +1,5 @@
 import { jsPDF } from "jspdf"
+import { loadRobotoFont } from "./pdf-fonts"
 import { format } from "date-fns"
 import { tr } from "date-fns/locale"
 import type { RiskAnalysis, RiskAnalysisData } from "@/lib/types"
@@ -18,27 +19,10 @@ const COLORS = {
   white: [255, 255, 255] as [number, number, number],
 }
 
-// Turkish character converter
-const removeTurkishChars = (text: string): string => {
-  if (!text) return ""
-  return text
-    .replace(/ğ/g, "g")
-    .replace(/Ğ/g, "G")
-    .replace(/ü/g, "u")
-    .replace(/Ü/g, "U")
-    .replace(/ş/g, "s")
-    .replace(/Ş/g, "S")
-    .replace(/ı/g, "i")
-    .replace(/İ/g, "I")
-    .replace(/ö/g, "o")
-    .replace(/Ö/g, "O")
-    .replace(/ç/g, "c")
-    .replace(/Ç/g, "C")
-}
 
 const safeText = (text: string | number | null | undefined): string => {
   if (text === null || text === undefined) return ""
-  return removeTurkishChars(String(text))
+  return String(text)
 }
 
 const formatCurrency = (amount: number): string => {
@@ -51,8 +35,7 @@ const formatCurrency = (amount: number): string => {
 }
 
 const formatDate = (date: Date): string => {
-  const formatted = format(date, "dd MMMM yyyy", { locale: tr })
-  return removeTurkishChars(formatted)
+  return format(date, "dd MMMM yyyy", { locale: tr })
 }
 
 class FinancialHealthPDFGenerator {
@@ -130,7 +113,7 @@ class FinancialHealthPDFGenerator {
     const titleY = this.pageHeight * 0.42
     this.doc.setTextColor(...COLORS.white)
     this.doc.setFontSize(32)
-    this.doc.setFont("helvetica", "bold")
+    this.doc.setFont("Roboto", "bold")
     this.doc.text(safeText("AI FINANSAL SAGLIK"), this.pageWidth / 2, titleY, { align: "center" })
     this.doc.text(safeText("OZETI RAPORU"), this.pageWidth / 2, titleY + 36, { align: "center" })
 
@@ -160,22 +143,22 @@ class FinancialHealthPDFGenerator {
     // Risk score
     this.doc.setTextColor(...COLORS.white)
     this.doc.setFontSize(48)
-    this.doc.setFont("helvetica", "bold")
+    this.doc.setFont("Roboto", "bold")
     const riskScore = this.analysisData.overallRiskScore?.numericScore || 0
     this.doc.text(`${riskScore}`, this.pageWidth / 2, cardY + 38, { align: "center" })
 
     this.doc.setFontSize(11)
-    this.doc.setFont("helvetica", "normal")
+    this.doc.setFont("Roboto", "normal")
     this.doc.text(safeText("Risk Skoru"), this.pageWidth / 2, cardY + 52, { align: "center" })
 
     this.doc.setFontSize(14)
-    this.doc.setFont("helvetica", "bold")
+    this.doc.setFont("Roboto", "bold")
     const riskLabel = this.analysisData.overallRiskScore?.value || "Bilinmiyor"
     this.doc.text(safeText(riskLabel), this.pageWidth / 2, cardY + 68, { align: "center" })
 
     // Date info
     this.doc.setFontSize(10)
-    this.doc.setFont("helvetica", "normal")
+    this.doc.setFont("Roboto", "normal")
     this.doc.setGState(this.doc.GState({ opacity: 0.9 }))
     this.doc.text(safeText(formatDate(new Date(this.analysis.created_at))), this.pageWidth / 2, this.pageHeight - 30, { align: "center" })
     this.doc.setGState(this.doc.GState({ opacity: 1 }))
@@ -195,7 +178,7 @@ class FinancialHealthPDFGenerator {
 
     this.doc.setTextColor(...COLORS.dark)
     this.doc.setFontSize(11)
-    this.doc.setFont("helvetica", "bold")
+    this.doc.setFont("Roboto", "bold")
     this.doc.text(safeText(title.toUpperCase()), this.margin + 10, this.currentY + 13)
 
     this.currentY += 24
@@ -205,7 +188,7 @@ class FinancialHealthPDFGenerator {
     if (!text || text.trim() === "") return
 
     this.doc.setFontSize(fontSize)
-    this.doc.setFont("helvetica", "normal")
+    this.doc.setFont("Roboto", "normal")
     this.doc.setTextColor(...COLORS.dark)
 
     const maxWidth = this.pageWidth - 2 * this.margin - indent - 8
@@ -233,12 +216,12 @@ class FinancialHealthPDFGenerator {
     this.doc.rect(this.margin, this.currentY, cardWidth, 3, "F")
 
     this.doc.setFontSize(7)
-    this.doc.setFont("helvetica", "normal")
+    this.doc.setFont("Roboto", "normal")
     this.doc.setTextColor(...COLORS.gray)
     this.doc.text(safeText(label).toUpperCase(), this.margin + 4, this.currentY + 13)
 
     this.doc.setFontSize(12)
-    this.doc.setFont("helvetica", "bold")
+    this.doc.setFont("Roboto", "bold")
     this.doc.setTextColor(...COLORS.dark)
     const lines = this.doc.splitTextToSize(safeText(value), cardWidth - 8)
     this.doc.text(lines[0] || "", this.margin + 4, this.currentY + 27)
@@ -253,7 +236,7 @@ class FinancialHealthPDFGenerator {
 
     this.doc.setTextColor(...COLORS.white)
     this.doc.setFontSize(13)
-    this.doc.setFont("helvetica", "bold")
+    this.doc.setFont("Roboto", "bold")
     this.doc.text("GENEL BAKIS VE OZET", this.pageWidth / 2, headerY + 22, { align: "center" })
 
     this.currentY = headerY + 45
@@ -290,7 +273,7 @@ class FinancialHealthPDFGenerator {
 
     this.doc.setTextColor(...COLORS.white)
     this.doc.setFontSize(13)
-    this.doc.setFont("helvetica", "bold")
+    this.doc.setFont("Roboto", "bold")
     this.doc.text("RISK VE POZITIF FAKTORLER", this.pageWidth / 2, headerY + 22, { align: "center" })
 
     this.currentY = headerY + 45
@@ -315,13 +298,13 @@ class FinancialHealthPDFGenerator {
         this.doc.rect(this.margin, cardY, 3, cardHeight, "F")
 
         this.doc.setFontSize(9)
-        this.doc.setFont("helvetica", "bold")
+        this.doc.setFont("Roboto", "bold")
         this.doc.setTextColor(...COLORS.dark)
         const titleLines = this.doc.splitTextToSize(`${index + 1}. ${safeText(factor.factor)}`, this.pageWidth - 2 * this.margin - 20)
         this.doc.text(titleLines[0] || "", this.margin + 10, cardY + 12)
 
         this.doc.setFontSize(8)
-        this.doc.setFont("helvetica", "normal")
+        this.doc.setFont("Roboto", "normal")
         this.doc.setTextColor(...COLORS.gray)
         let textY = cardY + 24
         detailLines.slice(0, 4).forEach((line: string) => {
@@ -355,13 +338,13 @@ class FinancialHealthPDFGenerator {
         this.doc.rect(this.margin, cardY, 3, cardHeight, "F")
 
         this.doc.setFontSize(9)
-        this.doc.setFont("helvetica", "bold")
+        this.doc.setFont("Roboto", "bold")
         this.doc.setTextColor(...COLORS.dark)
         const titleLines = this.doc.splitTextToSize(`${index + 1}. ${safeText(factor.factor)}`, this.pageWidth - 2 * this.margin - 20)
         this.doc.text(titleLines[0] || "", this.margin + 10, cardY + 12)
 
         this.doc.setFontSize(8)
-        this.doc.setFont("helvetica", "normal")
+        this.doc.setFont("Roboto", "normal")
         this.doc.setTextColor(...COLORS.gray)
         let textY = cardY + 24
         detailLines.slice(0, 4).forEach((line: string) => {
@@ -386,7 +369,7 @@ class FinancialHealthPDFGenerator {
 
     this.doc.setTextColor(...COLORS.white)
     this.doc.setFontSize(13)
-    this.doc.setFont("helvetica", "bold")
+    this.doc.setFont("Roboto", "bold")
     this.doc.text("ONERILER VE EYLEM PLANI", this.pageWidth / 2, headerY + 22, { align: "center" })
 
     this.currentY = headerY + 45
@@ -420,17 +403,17 @@ class FinancialHealthPDFGenerator {
         this.doc.roundedRect(this.pageWidth - this.margin - 32, cardY + 6, 27, 9, 2, 2, "F")
         this.doc.setTextColor(...COLORS.white)
         this.doc.setFontSize(7)
-        this.doc.setFont("helvetica", "bold")
+        this.doc.setFont("Roboto", "bold")
         this.doc.text(safeText(rec.priority).toUpperCase(), this.pageWidth - this.margin - 18.5, cardY + 12.5, { align: "center" })
 
         this.doc.setFontSize(9)
-        this.doc.setFont("helvetica", "bold")
+        this.doc.setFont("Roboto", "bold")
         this.doc.setTextColor(...COLORS.dark)
         const titleLines = this.doc.splitTextToSize(`${index + 1}. ${safeText(rec.recommendation)}`, this.pageWidth - 2 * this.margin - 45)
         this.doc.text(titleLines[0] || "", this.margin + 10, cardY + 13)
 
         this.doc.setFontSize(8)
-        this.doc.setFont("helvetica", "normal")
+        this.doc.setFont("Roboto", "normal")
         this.doc.setTextColor(...COLORS.gray)
         let textY = cardY + 25
         detailLines.slice(0, 4).forEach((line: string) => {
@@ -457,13 +440,13 @@ class FinancialHealthPDFGenerator {
       this.doc.setTextColor(...COLORS.white)
       this.doc.setFontSize(7)
 
-      this.doc.setFont("helvetica", "bold")
+      this.doc.setFont("Roboto", "bold")
       this.doc.text("kreditakip.com.tr", this.margin, this.pageHeight - 8)
 
-      this.doc.setFont("helvetica", "normal")
+      this.doc.setFont("Roboto", "normal")
       this.doc.text("AI Finansal Saglik Ozeti", this.pageWidth / 2, this.pageHeight - 8, { align: "center" })
 
-      this.doc.setFont("helvetica", "bold")
+      this.doc.setFont("Roboto", "bold")
       this.doc.text(`${i} / ${pageCount}`, this.pageWidth - this.margin, this.pageHeight - 8, { align: "right" })
     }
   }
@@ -501,7 +484,7 @@ class FinancialHealthPDFGenerator {
 
         this.doc.setTextColor(...COLORS.white)
         this.doc.setFontSize(13)
-        this.doc.setFont("helvetica", "bold")
+        this.doc.setFont("Roboto", "bold")
         this.doc.text("GELECEK PERSPEKTIFI", this.pageWidth / 2, headerY + 22, { align: "center" })
 
         this.currentY = headerY + 45
@@ -536,6 +519,9 @@ export async function generateFinancialHealthPDF(analysis: RiskAnalysis, analysi
       unit: "pt",
       format: "a4",
     })
+
+    // Load Roboto font for Turkish character support
+    await loadRobotoFont(doc)
 
     const generator = new FinancialHealthPDFGenerator(doc, analysis, analysisData)
     await generator.generate()

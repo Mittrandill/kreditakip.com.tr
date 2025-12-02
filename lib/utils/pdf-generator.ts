@@ -1,6 +1,7 @@
 import { jsPDF } from "jspdf"
 import { format } from "date-fns"
 import { tr } from "date-fns/locale"
+import { loadRobotoFont } from "./pdf-fonts"
 
 // Modern renk paleti
 const COLORS = {
@@ -17,27 +18,10 @@ const COLORS = {
   white: [255, 255, 255] as [number, number, number],
 }
 
-// Türkçe karakterleri düzelt
-const removeTurkishChars = (text: string): string => {
-  if (!text) return ""
-  return text
-    .replace(/ğ/g, "g")
-    .replace(/Ğ/g, "G")
-    .replace(/ü/g, "u")
-    .replace(/Ü/g, "U")
-    .replace(/ş/g, "s")
-    .replace(/Ş/g, "S")
-    .replace(/ı/g, "i")
-    .replace(/İ/g, "I")
-    .replace(/ö/g, "o")
-    .replace(/Ö/g, "O")
-    .replace(/ç/g, "c")
-    .replace(/Ç/g, "C")
-}
-
+// Türkçe karakterler artık destekleniyor - sadece null check
 const safeText = (text: string | number | null | undefined): string => {
   if (text === null || text === undefined) return ""
-  return removeTurkishChars(String(text))
+  return String(text)
 }
 
 const formatCurrency = (amount: number): string => {
@@ -50,8 +34,7 @@ const formatCurrency = (amount: number): string => {
 }
 
 const formatDate = (date: Date): string => {
-  const formatted = format(date, "dd MMMM yyyy", { locale: tr })
-  return removeTurkishChars(formatted)
+  return format(date, "dd MMMM yyyy", { locale: tr })
 }
 
 class ModernPDFGenerator {
@@ -84,12 +67,14 @@ class ModernPDFGenerator {
       if (!imagePath) {
         const normalizedName = bankName
           .toLowerCase()
-          .replace(/ğ/g, "g")
-          .replace(/ü/g, "u")
-          .replace(/ş/g, "s")
-          .replace(/ı/g, "i")
-          .replace(/ö/g, "o")
-          .replace(/ç/g, "c")
+          .normalize("NFD")
+          .replace(/[\u0300-\u036f]/g, "") // Remove diacritics
+          .replace(/ğ/gi, "g")
+          .replace(/ı/gi, "i")
+          .replace(/ş/gi, "s")
+          .replace(/ö/gi, "o")
+          .replace(/ü/gi, "u")
+          .replace(/ç/gi, "c")
           .replace(/\s+/g, "-")
           .replace(/[^a-z0-9-]/g, "")
         imagePath = `/bank-icons/${normalizedName}.png`
@@ -137,7 +122,7 @@ class ModernPDFGenerator {
     // Bank initials
     this.doc.setTextColor(...COLORS.primary)
     this.doc.setFontSize(8)
-    this.doc.setFont("helvetica", "bold")
+    this.doc.setFont("Roboto", "bold")
     const initials = bankName
       .split(" ")
       .map((w: string) => w[0])
@@ -204,7 +189,7 @@ class ModernPDFGenerator {
       )
       this.doc.setTextColor(...COLORS.primary)
       this.doc.setFontSize(20)
-      this.doc.setFont("helvetica", "bold")
+      this.doc.setFont("Roboto", "bold")
       this.doc.text("KREDiTAKiP", this.pageWidth / 2, logoY + 3, { align: "center" })
     }
 
@@ -212,7 +197,7 @@ class ModernPDFGenerator {
     const titleY = this.pageHeight * 0.48
     this.doc.setTextColor(...COLORS.white)
     this.doc.setFontSize(36)
-    this.doc.setFont("helvetica", "bold")
+    this.doc.setFont("Roboto", "bold")
     this.doc.text(safeText("KREDİ PORTFÖY"), this.pageWidth / 2, titleY, { align: "center" })
 
     this.doc.setFontSize(36)
@@ -233,7 +218,7 @@ class ModernPDFGenerator {
 
     // Subtitle
     this.doc.setFontSize(13)
-    this.doc.setFont("helvetica", "normal")
+    this.doc.setFont("Roboto", "normal")
     this.doc.setGState(this.doc.GState({ opacity: 0.9 }))
     this.doc.text(safeText("Detaylı Finansal Analiz ve Değerlendirme"), this.pageWidth / 2, titleY + 66, { align: "center" })
     this.doc.setGState(this.doc.GState({ opacity: 1 }))
@@ -289,7 +274,7 @@ class ModernPDFGenerator {
     if (this.data.userData?.fullName || this.data.userData?.name) {
       this.doc.setTextColor(...COLORS.white)
       this.doc.setFontSize(11)
-      this.doc.setFont("helvetica", "bold")
+      this.doc.setFont("Roboto", "bold")
       this.doc.text(
         safeText(this.data.userData?.fullName || this.data.userData?.name),
         this.pageWidth / 2,
@@ -311,13 +296,13 @@ class ModernPDFGenerator {
 
     // Report date with icon
     this.doc.setFontSize(9)
-    this.doc.setFont("helvetica", "normal")
+    this.doc.setFont("Roboto", "normal")
     this.doc.setGState(this.doc.GState({ opacity: 0.85 }))
     this.doc.text(safeText("RAPOR TARiHi"), this.pageWidth / 2, cardY + 40, { align: "center" })
     this.doc.setGState(this.doc.GState({ opacity: 1 }))
 
     this.doc.setFontSize(10)
-    this.doc.setFont("helvetica", "bold")
+    this.doc.setFont("Roboto", "bold")
     this.doc.text(safeText(formatDate(new Date())), this.pageWidth / 2, cardY + 50, { align: "center" })
 
     // Footer section with branding
@@ -336,12 +321,12 @@ class ModernPDFGenerator {
     // Main title
     this.doc.setTextColor(...COLORS.white)
     this.doc.setFontSize(20)
-    this.doc.setFont("helvetica", "bold")
+    this.doc.setFont("Roboto", "bold")
     this.doc.text("KREDI PORTFOY RAPORU", this.margin, 28)
 
     // Subtitle
     this.doc.setFontSize(11)
-    this.doc.setFont("helvetica", "normal")
+    this.doc.setFont("Roboto", "normal")
     this.doc.text("Detayli Finansal Analiz", this.margin, 40)
 
     // Date - right aligned
@@ -352,12 +337,12 @@ class ModernPDFGenerator {
 
     // User full name from profile data
     if (this.data.userData?.fullName) {
-      this.doc.setFont("helvetica", "bold")
+      this.doc.setFont("Roboto", "bold")
       this.doc.setFontSize(10)
       this.doc.text(safeText(this.data.userData.fullName), rightX - 70, 32)
     } else if (this.data.userData?.name) {
       // Fallback to name field
-      this.doc.setFont("helvetica", "bold")
+      this.doc.setFont("Roboto", "bold")
       this.doc.setFontSize(10)
       this.doc.text(safeText(this.data.userData.name), rightX - 70, 32)
     }
@@ -395,20 +380,20 @@ class ModernPDFGenerator {
 
       // Title
       this.doc.setFontSize(7)
-      this.doc.setFont("helvetica", "normal")
+      this.doc.setFont("Roboto", "normal")
       this.doc.setTextColor(...COLORS.gray)
       this.doc.text(safeText(metric.title).toUpperCase(), x + 4, this.currentY + 11)
 
       // Value
       this.doc.setFontSize(12)
-      this.doc.setFont("helvetica", "bold")
+      this.doc.setFont("Roboto", "bold")
       this.doc.setTextColor(...COLORS.dark)
       this.doc.text(safeText(metric.value), x + 4, this.currentY + 23)
 
       // Subtitle
       if (metric.subtitle) {
         this.doc.setFontSize(6)
-        this.doc.setFont("helvetica", "normal")
+        this.doc.setFont("Roboto", "normal")
         this.doc.setTextColor(...COLORS.gray)
         this.doc.text(safeText(metric.subtitle), x + 4, this.currentY + 33)
       }
@@ -441,7 +426,7 @@ class ModernPDFGenerator {
     // Section title with modern styling
     this.doc.setTextColor(...COLORS.dark)
     this.doc.setFontSize(12)
-    this.doc.setFont("helvetica", "bold")
+    this.doc.setFont("Roboto", "bold")
     this.doc.text(safeText(title.toUpperCase()), this.margin + 10, this.currentY + 14)
 
     this.currentY += 27
@@ -476,7 +461,7 @@ class ModernPDFGenerator {
     // Header text
     this.doc.setTextColor(...COLORS.white)
     this.doc.setFontSize(8)
-    this.doc.setFont("helvetica", "bold")
+    this.doc.setFont("Roboto", "bold")
 
     let xPos = this.margin
     headers.forEach((header, i) => {
@@ -511,13 +496,13 @@ class ModernPDFGenerator {
         // Set text color based on content
         if (cell.includes("TL")) {
           this.doc.setTextColor(...COLORS.primary)
-          this.doc.setFont("helvetica", "bold")
+          this.doc.setFont("Roboto", "bold")
         } else if (cell.includes("%")) {
           this.doc.setTextColor(...COLORS.info)
-          this.doc.setFont("helvetica", "normal")
+          this.doc.setFont("Roboto", "normal")
         } else {
           this.doc.setTextColor(...COLORS.dark)
-          this.doc.setFont("helvetica", "normal")
+          this.doc.setFont("Roboto", "normal")
         }
 
         this.doc.setFontSize(8)
@@ -581,7 +566,7 @@ class ModernPDFGenerator {
     // Bank name and credit type
     this.doc.setTextColor(...COLORS.white)
     this.doc.setFontSize(10)
-    this.doc.setFont("helvetica", "bold")
+    this.doc.setFont("Roboto", "bold")
     const creditTypeText = safeText(credit.creditType || "Kredi")
     this.doc.text(`${bankName} - ${creditTypeText}`, this.margin + 28, this.currentY + 15)
 
@@ -622,7 +607,7 @@ class ModernPDFGenerator {
     // Progress percentage text - positioned above progress bar with more space
     this.doc.setTextColor(...COLORS.dark)
     this.doc.setFontSize(8)
-    this.doc.setFont("helvetica", "bold")
+    this.doc.setFont("Roboto", "bold")
     this.doc.text(`%${progressPercentage.toFixed(1)} ODENDI`, progressBarX, progressY - 4)
 
     // Progress bar background
@@ -641,45 +626,45 @@ class ModernPDFGenerator {
     // Row 1 - Kredi Tutari ve Aylik Odeme
     this.doc.setTextColor(...COLORS.gray)
     this.doc.setFontSize(8)
-    this.doc.setFont("helvetica", "normal")
+    this.doc.setFont("Roboto", "normal")
     this.doc.text("KREDI TUTARI", col1X, contentY)
     this.doc.setTextColor(...COLORS.dark)
     this.doc.setFontSize(11)
-    this.doc.setFont("helvetica", "bold")
+    this.doc.setFont("Roboto", "bold")
     this.doc.text(formatCurrency(credit.amount || 0), col1X, contentY + 12)
 
     this.doc.setTextColor(...COLORS.gray)
     this.doc.setFontSize(8)
-    this.doc.setFont("helvetica", "normal")
+    this.doc.setFont("Roboto", "normal")
     this.doc.text("AYLIK ODEME", col2X, contentY)
     this.doc.setTextColor(...COLORS.warning)
     this.doc.setFontSize(11)
-    this.doc.setFont("helvetica", "bold")
+    this.doc.setFont("Roboto", "bold")
     this.doc.text(formatCurrency(credit.monthlyPayment || 0), col2X, contentY + 12)
 
     // Row 2 - Kalan Borc ve Faiz Orani
     const row2Y = contentY + 25
     this.doc.setTextColor(...COLORS.gray)
     this.doc.setFontSize(8)
-    this.doc.setFont("helvetica", "normal")
+    this.doc.setFont("Roboto", "normal")
     this.doc.text("KALAN BORC", col1X, row2Y)
     this.doc.setTextColor(...COLORS.danger)
     this.doc.setFontSize(11)
-    this.doc.setFont("helvetica", "bold")
+    this.doc.setFont("Roboto", "bold")
     this.doc.text(formatCurrency(credit.remainingDebt || 0), col1X, row2Y + 12)
 
     this.doc.setTextColor(...COLORS.gray)
     this.doc.setFontSize(8)
-    this.doc.setFont("helvetica", "normal")
+    this.doc.setFont("Roboto", "normal")
     this.doc.text("FAIZ ORANI", col2X, row2Y)
     this.doc.setTextColor(...COLORS.info)
     this.doc.setFontSize(11)
-    this.doc.setFont("helvetica", "bold")
+    this.doc.setFont("Roboto", "bold")
     this.doc.text(`%${(credit.interestRate || 0).toFixed(2)}`, col2X, row2Y + 12)
 
     this.doc.setTextColor(...COLORS.gray)
     this.doc.setFontSize(7)
-    this.doc.setFont("helvetica", "normal")
+    this.doc.setFont("Roboto", "normal")
     this.doc.text("AYLIK", col2X, row2Y + 22)
 
     this.currentY += cardHeight + 10
@@ -693,7 +678,7 @@ class ModernPDFGenerator {
     this.addGradientRect(0, 0, this.pageWidth, 45, COLORS.primary, COLORS.secondary)
     this.doc.setTextColor(...COLORS.white)
     this.doc.setFontSize(16)
-    this.doc.setFont("helvetica", "bold")
+    this.doc.setFont("Roboto", "bold")
     this.doc.text("RAPOR OZETI VE ANALIZ", this.pageWidth / 2, 28, { align: "center" })
 
     this.currentY = 58
@@ -735,7 +720,7 @@ class ModernPDFGenerator {
     this.doc.rect(this.margin, this.currentY, 4, 18, "F")
     this.doc.setTextColor(...COLORS.dark)
     this.doc.setFontSize(10)
-    this.doc.setFont("helvetica", "bold")
+    this.doc.setFont("Roboto", "bold")
     this.doc.text("GRAFIK ANALIZLER", this.margin + 10, this.currentY + 12)
 
     this.currentY += 26
@@ -904,20 +889,20 @@ class ModernPDFGenerator {
 
       // Title
       this.doc.setFontSize(7)
-      this.doc.setFont("helvetica", "normal")
+      this.doc.setFont("Roboto", "normal")
       this.doc.setTextColor(...COLORS.gray)
       this.doc.text(safeText(metric.title).toUpperCase(), x + 4, this.currentY + 11)
 
       // Value
       this.doc.setFontSize(12)
-      this.doc.setFont("helvetica", "bold")
+      this.doc.setFont("Roboto", "bold")
       this.doc.setTextColor(...COLORS.dark)
       this.doc.text(safeText(metric.value), x + 4, this.currentY + 24)
 
       // Subtitle
       if (metric.subtitle) {
         this.doc.setFontSize(6)
-        this.doc.setFont("helvetica", "normal")
+        this.doc.setFont("Roboto", "normal")
         this.doc.setTextColor(...COLORS.gray)
         this.doc.text(safeText(metric.subtitle), x + 4, this.currentY + 34)
       }
@@ -934,7 +919,7 @@ class ModernPDFGenerator {
     this.doc.rect(this.margin, this.currentY, 4, 18, "F")
     this.doc.setTextColor(...COLORS.dark)
     this.doc.setFontSize(10)
-    this.doc.setFont("helvetica", "bold")
+    this.doc.setFont("Roboto", "bold")
     this.doc.text("FINANSAL ONEMLI NOKTALAR", this.margin + 10, this.currentY + 12)
 
     this.currentY += 24
@@ -996,13 +981,13 @@ class ModernPDFGenerator {
       // Label
       this.doc.setTextColor(...COLORS.gray)
       this.doc.setFontSize(6)
-      this.doc.setFont("helvetica", "normal")
+      this.doc.setFont("Roboto", "normal")
       this.doc.text(safeText(highlight.label).toUpperCase(), x + 8, y + 10)
 
       // Value
       this.doc.setTextColor(...highlight.color)
       this.doc.setFontSize(11)
-      this.doc.setFont("helvetica", "bold")
+      this.doc.setFont("Roboto", "bold")
       this.doc.text(safeText(highlight.value), x + 8, y + 22)
     })
 
@@ -1018,13 +1003,13 @@ class ModernPDFGenerator {
     this.doc.rect(this.margin, this.currentY, 4, 18, "F")
     this.doc.setTextColor(...COLORS.dark)
     this.doc.setFontSize(10)
-    this.doc.setFont("helvetica", "bold")
+    this.doc.setFont("Roboto", "bold")
     this.doc.text("BANKA BAZINDA DETAYLI OZET", this.margin + 10, this.currentY + 12)
 
     // Total bank count
     this.doc.setTextColor(...COLORS.gray)
     this.doc.setFontSize(7)
-    this.doc.setFont("helvetica", "normal")
+    this.doc.setFont("Roboto", "normal")
     this.doc.text(`${bankSummary.length} banka`, this.pageWidth - this.margin - 35, this.currentY + 12)
 
     this.currentY += 24
@@ -1076,7 +1061,7 @@ class ModernPDFGenerator {
         this.doc.roundedRect(x + 8, logoY - 8, 20, 20, 2, 2, "F")
         this.doc.setTextColor(...COLORS.primary)
         this.doc.setFontSize(8)
-        this.doc.setFont("helvetica", "bold")
+        this.doc.setFont("Roboto", "bold")
         const initials = bank.name
           .split(" ")
           .map((w: string) => w[0])
@@ -1089,7 +1074,7 @@ class ModernPDFGenerator {
       // Bank name
       this.doc.setTextColor(...COLORS.dark)
       this.doc.setFontSize(9)
-      this.doc.setFont("helvetica", "bold")
+      this.doc.setFont("Roboto", "bold")
       const bankName = safeText(bank.name).substring(0, 18)
       this.doc.text(bankName, x + 33, logoY + 2)
 
@@ -1107,31 +1092,31 @@ class ModernPDFGenerator {
       // Column 1 - Credit count
       this.doc.setTextColor(...COLORS.gray)
       this.doc.setFontSize(6)
-      this.doc.setFont("helvetica", "normal")
+      this.doc.setFont("Roboto", "normal")
       this.doc.text("KREDI SAYISI", col1X, statY)
       this.doc.setTextColor(...COLORS.primary)
       this.doc.setFontSize(11)
-      this.doc.setFont("helvetica", "bold")
+      this.doc.setFont("Roboto", "bold")
       this.doc.text(`${bank.count} adet`, col1X, statY + 9)
 
       // Column 2 - Total debt
       this.doc.setTextColor(...COLORS.gray)
       this.doc.setFontSize(6)
-      this.doc.setFont("helvetica", "normal")
+      this.doc.setFont("Roboto", "normal")
       this.doc.text("KALAN BORC", col2X, statY)
       this.doc.setTextColor(...COLORS.danger)
       this.doc.setFontSize(8)
-      this.doc.setFont("helvetica", "bold")
+      this.doc.setFont("Roboto", "bold")
       this.doc.text(formatCurrency(bank.amount).substring(0, 10), col2X, statY + 9)
 
       // Column 3 - Interest rate
       this.doc.setTextColor(...COLORS.gray)
       this.doc.setFontSize(6)
-      this.doc.setFont("helvetica", "normal")
+      this.doc.setFont("Roboto", "normal")
       this.doc.text("ORT. FAIZ", col3X, statY)
       this.doc.setTextColor(...COLORS.warning)
       this.doc.setFontSize(10)
-      this.doc.setFont("helvetica", "bold")
+      this.doc.setFont("Roboto", "bold")
       this.doc.text(`%${bank.avgRate.toFixed(1)}`, col3X, statY + 9)
     }
 
@@ -1190,14 +1175,14 @@ class ModernPDFGenerator {
 
     this.doc.setTextColor(...COLORS.dark)
     this.doc.setFontSize(10)
-    this.doc.setFont("helvetica", "bold")
+    this.doc.setFont("Roboto", "bold")
     this.doc.text("Odeme Trendi", x + 10, y + 12)
 
     const data = this.data.chartData?.monthlyPayments || []
     if (data.length === 0) {
       this.doc.setTextColor(...COLORS.gray)
       this.doc.setFontSize(8)
-      this.doc.setFont("helvetica", "normal")
+      this.doc.setFont("Roboto", "normal")
       this.doc.text("Veri bulunamadi", x + width / 2, y + height / 2, { align: "center" })
       return
     }
@@ -1240,14 +1225,14 @@ class ModernPDFGenerator {
 
     this.doc.setTextColor(...COLORS.dark)
     this.doc.setFontSize(10)
-    this.doc.setFont("helvetica", "bold")
+    this.doc.setFont("Roboto", "bold")
     this.doc.text("Borc Dagilimi", x + 10, y + 12)
 
     const data = this.data.chartData?.creditDistribution || []
     if (data.length === 0) {
       this.doc.setTextColor(...COLORS.gray)
       this.doc.setFontSize(8)
-      this.doc.setFont("helvetica", "normal")
+      this.doc.setFont("Roboto", "normal")
       this.doc.text("Veri bulunamadi", x + width / 2, y + height / 2, { align: "center" })
       return
     }
@@ -1269,7 +1254,7 @@ class ModernPDFGenerator {
 
       // Bank name
       this.doc.setFontSize(7)
-      this.doc.setFont("helvetica", "normal")
+      this.doc.setFont("Roboto", "normal")
       this.doc.setTextColor(...COLORS.gray)
       const label = safeText(item.name).substring(0, 15)
       this.doc.text(label, x + 8, barY + 6)
@@ -1284,7 +1269,7 @@ class ModernPDFGenerator {
 
       // Percentage
       this.doc.setFontSize(7)
-      this.doc.setFont("helvetica", "bold")
+      this.doc.setFont("Roboto", "bold")
       this.doc.setTextColor(...colors[index % colors.length])
       this.doc.text(`%${percentage.toFixed(1)}`, x + 12 + maxBarWidth, barY + 6)
     })
@@ -1304,14 +1289,14 @@ class ModernPDFGenerator {
 
     this.doc.setTextColor(...COLORS.dark)
     this.doc.setFontSize(10)
-    this.doc.setFont("helvetica", "bold")
+    this.doc.setFont("Roboto", "bold")
     this.doc.text("Banka Karsilastirmasi", x + 10, y + 12)
 
     const data = this.data.chartData?.bankComparison || []
     if (data.length === 0) {
       this.doc.setTextColor(...COLORS.gray)
       this.doc.setFontSize(8)
-      this.doc.setFont("helvetica", "normal")
+      this.doc.setFont("Roboto", "normal")
       this.doc.text("Veri bulunamadi", x + width / 2, y + height / 2, { align: "center" })
       return
     }
@@ -1329,7 +1314,7 @@ class ModernPDFGenerator {
 
       // Bank name
       this.doc.setFontSize(7)
-      this.doc.setFont("helvetica", "normal")
+      this.doc.setFont("Roboto", "normal")
       this.doc.setTextColor(...COLORS.gray)
       const label = safeText(item.bank).substring(0, 15)
       this.doc.text(label, x + 8, barY + 6)
@@ -1344,7 +1329,7 @@ class ModernPDFGenerator {
 
       // Debt amount
       this.doc.setFontSize(7)
-      this.doc.setFont("helvetica", "bold")
+      this.doc.setFont("Roboto", "bold")
       this.doc.setTextColor(...COLORS.info)
       const debtShort = item.totalDebt >= 1000 ? `${(item.totalDebt / 1000).toFixed(0)}K` : `${item.totalDebt}`
       this.doc.text(debtShort, x + 12 + maxBarWidth, barY + 6)
@@ -1365,14 +1350,14 @@ class ModernPDFGenerator {
 
     this.doc.setTextColor(...COLORS.dark)
     this.doc.setFontSize(10)
-    this.doc.setFont("helvetica", "bold")
+    this.doc.setFont("Roboto", "bold")
     this.doc.text("Faiz Oranlari Analizi", x + 10, y + 12)
 
     const data = this.data.chartData?.interestAnalysis || []
     if (data.length === 0) {
       this.doc.setTextColor(...COLORS.gray)
       this.doc.setFontSize(8)
-      this.doc.setFont("helvetica", "normal")
+      this.doc.setFont("Roboto", "normal")
       this.doc.text("Veri bulunamadi", x + width / 2, y + height / 2, { align: "center" })
       return
     }
@@ -1393,7 +1378,7 @@ class ModernPDFGenerator {
 
       // Bank name
       this.doc.setFontSize(7)
-      this.doc.setFont("helvetica", "normal")
+      this.doc.setFont("Roboto", "normal")
       this.doc.setTextColor(...COLORS.gray)
       const label = safeText(item.bank).substring(0, 12)
       this.doc.text(label, x + 8, barY + 6)
@@ -1409,7 +1394,7 @@ class ModernPDFGenerator {
 
       // Rate value
       this.doc.setFontSize(7)
-      this.doc.setFont("helvetica", "bold")
+      this.doc.setFont("Roboto", "bold")
       this.doc.setTextColor(...barColor)
       this.doc.text(`%${item.rate.toFixed(1)}`, x + 12 + maxBarWidth, barY + 6)
     })
@@ -1417,7 +1402,7 @@ class ModernPDFGenerator {
     // Average line indicator
     this.doc.setFontSize(6)
     this.doc.setTextColor(...COLORS.warning)
-    this.doc.setFont("helvetica", "normal")
+    this.doc.setFont("Roboto", "normal")
     this.doc.text(`Ort: %${avgRate.toFixed(1)}`, x + 10, y + height - 5)
   }
 
@@ -1435,14 +1420,14 @@ class ModernPDFGenerator {
 
     this.doc.setTextColor(...COLORS.dark)
     this.doc.setFontSize(10)
-    this.doc.setFont("helvetica", "bold")
+    this.doc.setFont("Roboto", "bold")
     this.doc.text("Odeme Ilerleme Durumu Takibi", x + 10, y + 12)
 
     const credits = this.data.credits || []
     if (credits.length === 0) {
       this.doc.setTextColor(...COLORS.gray)
       this.doc.setFontSize(8)
-      this.doc.setFont("helvetica", "normal")
+      this.doc.setFont("Roboto", "normal")
       this.doc.text("Veri bulunamadi", x + width / 2, y + height / 2, { align: "center" })
       return
     }
@@ -1473,7 +1458,7 @@ class ModernPDFGenerator {
       // Bank name and credit type
       this.doc.setTextColor(...COLORS.gray)
       this.doc.setFontSize(7)
-      this.doc.setFont("helvetica", "normal")
+      this.doc.setFont("Roboto", "normal")
       const label = `${safeText(credit.bankName || "").substring(0, 14)} - ${safeText(credit.creditType || "").substring(0, 10)}`
       this.doc.text(label, x + 8, barY + 7)
 
@@ -1491,7 +1476,7 @@ class ModernPDFGenerator {
       // Percentage text
       this.doc.setTextColor(...fillColor)
       this.doc.setFontSize(8)
-      this.doc.setFont("helvetica", "bold")
+      this.doc.setFont("Roboto", "bold")
       this.doc.text(`%${progressPercentage.toFixed(0)}`, x + 115 + barWidth, barY + 7)
     }
   }
@@ -1512,7 +1497,7 @@ class ModernPDFGenerator {
 
     this.doc.setTextColor(...COLORS.dark)
     this.doc.setFontSize(10)
-    this.doc.setFont("helvetica", "bold")
+    this.doc.setFont("Roboto", "bold")
     this.doc.text(title, x + 10, y + 12)
 
     const colors = [COLORS.primary, COLORS.info, COLORS.warning, COLORS.success, COLORS.danger]
@@ -1531,7 +1516,7 @@ class ModernPDFGenerator {
 
       // Bank name
       this.doc.setFontSize(7)
-      this.doc.setFont("helvetica", "normal")
+      this.doc.setFont("Roboto", "normal")
       this.doc.setTextColor(...COLORS.gray)
       const label = safeText(item.name).substring(0, 15)
       this.doc.text(label, x + 8, barY + 6)
@@ -1546,7 +1531,7 @@ class ModernPDFGenerator {
 
       // Percentage text
       this.doc.setFontSize(7)
-      this.doc.setFont("helvetica", "bold")
+      this.doc.setFont("Roboto", "bold")
       this.doc.setTextColor(...colors[index % colors.length])
       this.doc.text(`%${percentage.toFixed(1)}`, x + 12 + maxBarWidth, barY + 6)
     })
@@ -1568,7 +1553,7 @@ class ModernPDFGenerator {
 
     this.doc.setTextColor(...COLORS.dark)
     this.doc.setFontSize(10)
-    this.doc.setFont("helvetica", "bold")
+    this.doc.setFont("Roboto", "bold")
     this.doc.text(title, x + 10, y + 12)
 
     // Sort credits by interest rate
@@ -1590,7 +1575,7 @@ class ModernPDFGenerator {
       // Bank name
       this.doc.setTextColor(...COLORS.gray)
       this.doc.setFontSize(7)
-      this.doc.setFont("helvetica", "normal")
+      this.doc.setFont("Roboto", "normal")
       const bankName = safeText(credit.bankName || "Diger").substring(0, 12)
       this.doc.text(bankName, x + 8, barY + 6)
 
@@ -1606,14 +1591,14 @@ class ModernPDFGenerator {
       // Rate value
       this.doc.setTextColor(...barColor)
       this.doc.setFontSize(7)
-      this.doc.setFont("helvetica", "bold")
+      this.doc.setFont("Roboto", "bold")
       this.doc.text(`%${rate.toFixed(1)}`, x + 12 + maxBarWidth, barY + 6)
     })
 
     // Average indicator at bottom
     this.doc.setFontSize(6)
     this.doc.setTextColor(...COLORS.warning)
-    this.doc.setFont("helvetica", "normal")
+    this.doc.setFont("Roboto", "normal")
     this.doc.text(`Ortalama: %${avgRate.toFixed(1)}`, x + 10, y + height - 5)
   }
 
@@ -1640,7 +1625,7 @@ class ModernPDFGenerator {
 
     this.doc.setTextColor(...COLORS.dark)
     this.doc.setFontSize(10)
-    this.doc.setFont("helvetica", "bold")
+    this.doc.setFont("Roboto", "bold")
     this.doc.text(title, x + 10, y + 12)
 
     // Progress bars with modern styling
@@ -1670,7 +1655,7 @@ class ModernPDFGenerator {
       // Bank name and credit type
       this.doc.setTextColor(...COLORS.gray)
       this.doc.setFontSize(7)
-      this.doc.setFont("helvetica", "normal")
+      this.doc.setFont("Roboto", "normal")
       const label = `${safeText(credit.bankName || "").substring(0, 14)} - ${safeText(credit.creditType || "").substring(0, 10)}`
       this.doc.text(label, x + 8, barY + 7)
 
@@ -1687,7 +1672,7 @@ class ModernPDFGenerator {
       // Percentage text with badge style
       this.doc.setTextColor(...fillColor)
       this.doc.setFontSize(8)
-      this.doc.setFont("helvetica", "bold")
+      this.doc.setFont("Roboto", "bold")
       this.doc.text(`%${progressPercentage.toFixed(0)}`, x + 115 + barWidth, barY + 7)
     }
   }
@@ -1707,15 +1692,15 @@ class ModernPDFGenerator {
       this.doc.setFontSize(7)
 
       // Left - Website
-      this.doc.setFont("helvetica", "bold")
+      this.doc.setFont("Roboto", "bold")
       this.doc.text("kreditakip.com.tr", this.margin, this.pageHeight - 8)
 
       // Center - Tagline
-      this.doc.setFont("helvetica", "normal")
+      this.doc.setFont("Roboto", "normal")
       this.doc.text("Finansal ozgurluge giden yol", this.pageWidth / 2, this.pageHeight - 8, { align: "center" })
 
       // Right - Page number
-      this.doc.setFont("helvetica", "bold")
+      this.doc.setFont("Roboto", "bold")
       this.doc.text(`${i} / ${pageCount}`, this.pageWidth - this.margin, this.pageHeight - 8, { align: "right" })
     }
   }
@@ -1790,6 +1775,9 @@ class ModernPDFGenerator {
 
   public async generate() {
     try {
+      // Load Roboto font for Turkish character support
+      await loadRobotoFont(this.doc)
+
       // Add modern cover page
       await this.addCoverPage()
 

@@ -1,5 +1,6 @@
 import type { jsPDF } from "jspdf"
 import type { PaymentPlan } from "@/lib/types"
+import { loadRobotoFont } from "./pdf-fonts"
 
 interface PaymentPlanData {
   odemePlani: PaymentPlan[]
@@ -18,21 +19,10 @@ interface PaymentPlanData {
   } | null
 }
 
+// Türkçe karakterler artık destekleniyor - sadece null check
 const safeText = (text: string | number | null | undefined): string => {
   if (text === null || text === undefined) return ""
   return String(text)
-    .replace(/ğ/g, "g")
-    .replace(/Ğ/g, "G")
-    .replace(/ü/g, "u")
-    .replace(/Ü/g, "U")
-    .replace(/ş/g, "s")
-    .replace(/Ş/g, "S")
-    .replace(/ı/g, "i")
-    .replace(/İ/g, "I")
-    .replace(/ö/g, "o")
-    .replace(/Ö/g, "O")
-    .replace(/ç/g, "c")
-    .replace(/Ç/g, "C")
 }
 
 const formatMoney = (amount: number): string => {
@@ -115,6 +105,9 @@ export async function generatePaymentPlanPDF(data: PaymentPlanData): Promise<voi
   const { jsPDF } = await import("jspdf")
   const doc = new jsPDF()
 
+  // Load Roboto font for Turkish character support
+  await loadRobotoFont(doc)
+
   const { odemePlani, krediDetay, user } = data
 
   // Load logos
@@ -163,13 +156,13 @@ export async function generatePaymentPlanPDF(data: PaymentPlanData): Promise<voi
     } catch (error) {
       doc.setTextColor(...COLORS.white)
       doc.setFontSize(24)
-      doc.setFont("helvetica", "bold")
+      doc.setFont("Roboto", "bold")
       doc.text("Kredi Takip", pageWidth / 2, logoY + 5, { align: "center" })
     }
   } else {
     doc.setTextColor(...COLORS.white)
     doc.setFontSize(24)
-    doc.setFont("helvetica", "bold")
+    doc.setFont("Roboto", "bold")
     doc.text("Kredi Takip", pageWidth / 2, logoY + 5, { align: "center" })
   }
 
@@ -177,7 +170,7 @@ export async function generatePaymentPlanPDF(data: PaymentPlanData): Promise<voi
   const titleY = pageHeight * 0.48
   doc.setTextColor(...COLORS.white)
   doc.setFontSize(36)
-  doc.setFont("helvetica", "bold")
+  doc.setFont("Roboto", "bold")
   doc.text(safeText("ODEME PLANI"), pageWidth / 2, titleY, { align: "center" })
   doc.setFontSize(36)
   doc.text(safeText("RAPORU"), pageWidth / 2, titleY + 22, { align: "center" })
@@ -192,7 +185,7 @@ export async function generatePaymentPlanPDF(data: PaymentPlanData): Promise<voi
 
   // Subtitle
   doc.setFontSize(13)
-  doc.setFont("helvetica", "normal")
+  doc.setFont("Roboto", "normal")
   doc.setGState(doc.GState({ opacity: 0.9 }))
   doc.text(safeText("Taksit ve Odeme Takip Detaylari"), pageWidth / 2, titleY + 66, { align: "center" })
   doc.setGState(doc.GState({ opacity: 1 }))
@@ -204,7 +197,7 @@ export async function generatePaymentPlanPDF(data: PaymentPlanData): Promise<voi
   if (user?.email || user?.user_metadata?.full_name) {
     doc.setTextColor(...COLORS.white)
     doc.setFontSize(11)
-    doc.setFont("helvetica", "bold")
+    doc.setFont("Roboto", "bold")
     doc.text(
       safeText(user?.user_metadata?.full_name || user?.email || "Kullanici"),
       pageWidth / 2,
@@ -221,13 +214,13 @@ export async function generatePaymentPlanPDF(data: PaymentPlanData): Promise<voi
 
   // Report date
   doc.setFontSize(9)
-  doc.setFont("helvetica", "normal")
+  doc.setFont("Roboto", "normal")
   doc.setGState(doc.GState({ opacity: 0.85 }))
   doc.text(safeText("RAPOR TARiHi"), pageWidth / 2, coverCardY + 40, { align: "center" })
   doc.setGState(doc.GState({ opacity: 1 }))
 
   doc.setFontSize(10)
-  doc.setFont("helvetica", "bold")
+  doc.setFont("Roboto", "bold")
   doc.text(formatDate(new Date()), pageWidth / 2, coverCardY + 50, { align: "center" })
 
   // ============ NEW PAGE - CONTENT ============
@@ -252,7 +245,7 @@ export async function generatePaymentPlanPDF(data: PaymentPlanData): Promise<voi
   // Bank name next to logo
   doc.setTextColor(...COLORS.white)
   doc.setFontSize(10)
-  doc.setFont("helvetica", "bold")
+  doc.setFont("Roboto", "bold")
   const bankName = safeText(krediDetay?.banks?.name || "")
   if (bankName) {
     doc.text(bankName, leftStartX, 8)
@@ -260,12 +253,12 @@ export async function generatePaymentPlanPDF(data: PaymentPlanData): Promise<voi
 
   // Title below bank info
   doc.setFontSize(8)
-  doc.setFont("helvetica", "normal")
+  doc.setFont("Roboto", "normal")
   doc.text("Odeme Plani", leftStartX, 13)
 
   // Date - right aligned
   doc.setFontSize(7)
-  doc.setFont("helvetica", "normal")
+  doc.setFont("Roboto", "normal")
   doc.text(formatDate(new Date()), pageWidth - margin, 10, { align: "right" })
 
   yPos = 22
@@ -302,20 +295,20 @@ export async function generatePaymentPlanPDF(data: PaymentPlanData): Promise<voi
 
     // Title (matching positions from pdf-generator)
     doc.setFontSize(5)
-    doc.setFont("helvetica", "normal")
+    doc.setFont("Roboto", "normal")
     doc.setTextColor(...COLORS.gray)
     doc.text(safeText(metric.title).toUpperCase(), x + 2, yPos + 6)
 
     // Value (matching size and position from pdf-generator)
     doc.setFontSize(8)
-    doc.setFont("helvetica", "bold")
+    doc.setFont("Roboto", "bold")
     doc.setTextColor(...COLORS.dark)
     doc.text(safeText(metric.value), x + 2, yPos + 12)
 
     // Subtitle if exists
     if (metric.subtitle) {
       doc.setFontSize(4)
-      doc.setFont("helvetica", "normal")
+      doc.setFont("Roboto", "normal")
       doc.setTextColor(...COLORS.gray)
       doc.text(safeText(metric.subtitle), x + 2, yPos + 15)
     }
@@ -330,7 +323,7 @@ export async function generatePaymentPlanPDF(data: PaymentPlanData): Promise<voi
   doc.rect(margin, yPos, 2, 9, "F") // Reduced by 60%
   doc.setTextColor(...COLORS.dark)
   doc.setFontSize(7) // Reduced
-  doc.setFont("helvetica", "bold")
+  doc.setFont("Roboto", "bold")
   doc.text(safeText("TAKSIT DETAYLARI"), margin + 6, yPos + 6) // Adjusted position
 
   yPos += 11 // Adjusted spacing
@@ -342,7 +335,7 @@ export async function generatePaymentPlanPDF(data: PaymentPlanData): Promise<voi
 
   doc.setTextColor(...COLORS.white)
   doc.setFontSize(7) // Increased by 2 points
-  doc.setFont("helvetica", "bold")
+  doc.setFont("Roboto", "bold")
 
   const headers = [
     { text: "No", x: margin + 3 },
@@ -362,7 +355,7 @@ export async function generatePaymentPlanPDF(data: PaymentPlanData): Promise<voi
 
   // Table Rows (matching pdf-generator row heights)
   const rowHeight = 8 // Reduced by 60% from 20
-  doc.setFont("helvetica", "normal")
+  doc.setFont("Roboto", "normal")
   doc.setFontSize(7) // Increased by 2 points
 
   odemePlani.forEach((plan, index) => {
@@ -375,13 +368,13 @@ export async function generatePaymentPlanPDF(data: PaymentPlanData): Promise<voi
       doc.setFillColor(...COLORS.secondary)
       doc.rect(margin, yPos, pageWidth - 2 * margin, headerHeight, "F")
       doc.setTextColor(...COLORS.white)
-      doc.setFont("helvetica", "bold")
+      doc.setFont("Roboto", "bold")
       doc.setFontSize(7)
       headers.forEach((header) => {
         doc.text(safeText(header.text).toUpperCase(), header.x, yPos + 7)
       })
       yPos += headerHeight
-      doc.setFont("helvetica", "normal")
+      doc.setFont("Roboto", "normal")
       doc.setFontSize(7)
     }
 
@@ -406,7 +399,7 @@ export async function generatePaymentPlanPDF(data: PaymentPlanData): Promise<voi
 
     // Row content (adjusted positions for smaller rows)
     doc.setTextColor(...COLORS.dark)
-    doc.setFont("helvetica", "normal")
+    doc.setFont("Roboto", "normal")
     doc.text(safeText(plan.installment_number), margin + 3, yPos + 5.5) // Adjusted position
     doc.text(safeText(new Date(plan.due_date).toLocaleDateString("tr-TR")), margin + 12, yPos + 5.5)
     doc.text(formatMoney(plan.principal_amount), margin + 40, yPos + 5.5)
@@ -415,7 +408,7 @@ export async function generatePaymentPlanPDF(data: PaymentPlanData): Promise<voi
     doc.text(formatMoney(plan.remaining_debt), margin + 115, yPos + 5.5)
 
     doc.setTextColor(...statusColor)
-    doc.setFont("helvetica", "bold")
+    doc.setFont("Roboto", "bold")
     doc.text(safeText(getStatusBadgeText(plan.status)), margin + 140, yPos + 5.5)
 
     yPos += rowHeight
@@ -433,15 +426,15 @@ export async function generatePaymentPlanPDF(data: PaymentPlanData): Promise<voi
     doc.setFontSize(8)
 
     // Left - Website
-    doc.setFont("helvetica", "bold")
+    doc.setFont("Roboto", "bold")
     doc.text("kreditakip.com.tr", margin, pageHeight - 3)
 
     // Center - Tagline
-    doc.setFont("helvetica", "normal")
+    doc.setFont("Roboto", "normal")
     doc.text("Finansal ozgurluge giden yol", pageWidth / 2, pageHeight - 3, { align: "center" })
 
     // Right - Page number
-    doc.setFont("helvetica", "bold")
+    doc.setFont("Roboto", "bold")
     doc.text(`${i} / ${pageCount}`, pageWidth - margin, pageHeight - 3, { align: "right" })
   }
 
