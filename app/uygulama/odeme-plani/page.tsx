@@ -1753,7 +1753,7 @@ function ReminderSettings({ payments }: { payments: PaymentWithCredit[] }) {
 
 export default function OdemePlaniPage() {
   const { user } = useAuth()
-  const { isPremium, loading: subscriptionLoading } = useSubscriptionV2() // Check premium status
+  const { isPremium, loading: subscriptionLoading, subscription } = useSubscriptionV2() // Check premium status
   const router = useRouter() // Router for redirect
   const [allPayments, setAllPayments] = useState<PaymentWithCredit[]>([])
   const [credits, setCredits] = useState<Credit[]>([])
@@ -1763,9 +1763,18 @@ export default function OdemePlaniPage() {
 
   useEffect(() => {
     if (!subscriptionLoading && !isPremium) {
+      // Debug: Log subscription details
+      console.log("🔍 Premium Access Denied - Debug Info:", {
+        isPremium,
+        subscription: {
+          planId: subscription?.planId,
+          planType: subscription?.planType,
+          status: subscription?.status,
+        }
+      })
       router.push("/uygulama/premium")
     }
-  }, [isPremium, subscriptionLoading, router])
+  }, [isPremium, subscriptionLoading, router, subscription])
 
   useEffect(() => {
     const loadUserData = async () => {

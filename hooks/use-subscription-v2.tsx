@@ -77,11 +77,17 @@ export function useSubscriptionV2() {
       }
 
       if (subData) {
+        // Derive planType from plan_id if plan_type is not available in the view
+        // This ensures both "pro" and "premium" plans are treated as premium
+        const derivedPlanType =
+          subData.plan_type ||
+          (subData.plan_id && (subData.plan_id.includes("premium") || subData.plan_id.includes("pro")) ? "premium" : "free")
+
         // Map view data to subscription interface
         const mappedSubscription: Subscription = {
           id: subData.id,
           planId: subData.plan_id,
-          planType: subData.plan_type || "free", // Use plan_type from database directly
+          planType: derivedPlanType,
           status: subData.effective_status || subData.status,
           startDate: subData.start_date,
           expiresAt: subData.expires_at,
@@ -397,13 +403,18 @@ export function useSubscriptionV2() {
   }, [user, subscription, toast, refresh])
 
   // Computed properties
-  const isPremium =
+  const hasPremiumPlan =
     subscription?.planType === "premium" ||
     subscription?.planId?.includes("premium") ||
     subscription?.planId?.includes("pro") ||
     false
+
   const isActive = subscription?.status === "active" || subscription?.status === "trialing" || false
   const isInGracePeriod = subscription?.status === "grace_period" || false
+
+  // isPremium: Has premium/pro plan AND subscription is active/trialing/grace_period
+  const isPremium = hasPremiumPlan && (isActive || isInGracePeriod)
+
   const requiresPayment = subscription?.requiresPaymentAction || false
   const canUseOCR = subscription?.usage?.ocrAnalysis?.canUse || false
   const canUseRiskAnalysis = subscription?.usage?.riskAnalysis?.canUse || false
