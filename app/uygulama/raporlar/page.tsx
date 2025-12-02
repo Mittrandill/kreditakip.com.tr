@@ -48,7 +48,7 @@ const CHART_COLORS = ["#10B981", "#14B8A6", "#06B6D4", "#3B82F6", "#8B5CF6", "#E
 
 export default function RaporlarPage() {
   const { user, loading: authLoading } = useAuth()
-  const { isPremium, loading: subscriptionLoading } = useSubscriptionV2()
+  const { isPremium, loading: subscriptionLoading, subscription } = useSubscriptionV2()
   const router = useRouter()
   const [credits, setCredits] = useState<PopulatedCredit[]>([])
   const [payments, setPayments] = useState<PaymentWithCredit[]>([])
@@ -57,12 +57,17 @@ export default function RaporlarPage() {
   const [selectedBank, setSelectedBank] = useState<string>("all")
   const [activeTab, setActiveTab] = useState("overview")
   const [selectedYear, setSelectedYear] = useState<number>(new Date().getFullYear())
+  const [hasCheckedAccess, setHasCheckedAccess] = useState(false)
 
   useEffect(() => {
-    if (!subscriptionLoading && !isPremium && !authLoading) {
-      router.push("/uygulama/premium")
+    // Only check once after subscription loading is complete AND subscription data is available
+    if (!subscriptionLoading && !authLoading && !hasCheckedAccess && subscription) {
+      setHasCheckedAccess(true)
+      if (!isPremium) {
+        router.push("/uygulama/premium")
+      }
     }
-  }, [isPremium, subscriptionLoading, authLoading, router])
+  }, [isPremium, subscriptionLoading, authLoading, hasCheckedAccess, subscription, router])
 
   useEffect(() => {
     const fetchData = async () => {

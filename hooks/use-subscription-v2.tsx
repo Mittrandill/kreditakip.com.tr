@@ -60,35 +60,30 @@ export function useSubscriptionV2() {
     setError(null)
 
     try {
-      const supabase = createClient(
-        process.env.NEXT_PUBLIC_SUPABASE_URL!,
-        process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-      )
+      // Use API endpoint instead of direct Supabase view query
+      // This is more reliable as it handles the view internally
+      const response = await fetch('/api/subscription/status')
 
-      // Get subscription data from the view
-      const { data: subData, error: subError } = await supabase
-        .from("subscription_status_view")
-        .select("*")
-        .eq("user_id", user.id)
-        .single()
-
-      if (subError && subError.code !== "PGRST116") {
-        throw subError
+      if (!response.ok) {
+        throw new Error('Failed to fetch subscription')
       }
 
+      const apiData = await response.json()
+      const subData = apiData?.subscription
+
       if (subData) {
-        // Derive planType from plan_id if plan_type is not available in the view
+        // Derive planType from plan_id if plan_type is not available
         // This ensures both "pro" and "premium" plans are treated as premium
         const derivedPlanType =
           subData.plan_type ||
           (subData.plan_id && (subData.plan_id.includes("premium") || subData.plan_id.includes("pro")) ? "premium" : "free")
 
-        // Map view data to subscription interface
+        // Map API data to subscription interface
         const mappedSubscription: Subscription = {
           id: subData.id,
           planId: subData.plan_id,
           planType: derivedPlanType,
-          status: subData.effective_status || subData.status,
+          status: subData.status,
           startDate: subData.start_date,
           expiresAt: subData.expires_at,
           canceledAt: subData.canceled_at,
@@ -96,9 +91,27 @@ export function useSubscriptionV2() {
           gracePeriodEndsAt: subData.grace_period_ends_at,
           requiresPaymentAction: subData.requires_payment_action || false,
           paddleSubscriptionId: subData.paddle_subscription_id,
-          usage: subData.usage ? {
-            ocrAnalysis: subData.usage.ocrAnalysis || { limit: 0, used: 0, savedCredits: 0, resetAt: null, canUse: false },
-            riskAnalysis: subData.usage.riskAnalysis || { limit: 0, used: 0, savedCredits: 0, resetAt: null, canUse: false },
+          usage: apiData?.usage ? {
+            ocrAnalysis: (() => {
+              const ocr = apiData.usage.find((u: any) => u.feature_type === 'ocr_analysis')
+              return {
+                limit: ocr?.limit_count ?? 1,
+                used: ocr?.used_count ?? 0,
+                savedCredits: ocr?.saved_credits_count ?? 0,
+                resetAt: ocr?.reset_at ?? null,
+                canUse: ocr?.limit_count === -1 || (ocr?.used_count ?? 0) < (ocr?.limit_count ?? 1)
+              }
+            })(),
+            riskAnalysis: (() => {
+              const risk = apiData.usage.find((u: any) => u.feature_type === 'risk_analysis')
+              return {
+                limit: risk?.limit_count ?? 0,
+                used: risk?.used_count ?? 0,
+                savedCredits: risk?.saved_credits_count ?? 0,
+                resetAt: risk?.reset_at ?? null,
+                canUse: risk?.limit_count === -1 || (risk?.used_count ?? 0) < (risk?.limit_count ?? 0)
+              }
+            })(),
           } : undefined,
         }
 

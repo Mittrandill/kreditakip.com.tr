@@ -1759,22 +1759,18 @@ export default function OdemePlaniPage() {
   const [credits, setCredits] = useState<Credit[]>([])
   const [loading, setLoading] = useState(true)
   const [selectedTab, setSelectedTab] = useState("takvim")
+  const [hasCheckedAccess, setHasCheckedAccess] = useState(false)
   const { toast } = useToast()
 
   useEffect(() => {
-    if (!subscriptionLoading && !isPremium) {
-      // Debug: Log subscription details
-      console.log("🔍 Premium Access Denied - Debug Info:", {
-        isPremium,
-        subscription: {
-          planId: subscription?.planId,
-          planType: subscription?.planType,
-          status: subscription?.status,
-        }
-      })
-      router.push("/uygulama/premium")
+    // Only check once after subscription loading is complete AND subscription data is available
+    if (!subscriptionLoading && !hasCheckedAccess && subscription) {
+      setHasCheckedAccess(true)
+      if (!isPremium) {
+        router.push("/uygulama/premium")
+      }
     }
-  }, [isPremium, subscriptionLoading, router, subscription])
+  }, [isPremium, subscriptionLoading, hasCheckedAccess, subscription, router])
 
   useEffect(() => {
     const loadUserData = async () => {
