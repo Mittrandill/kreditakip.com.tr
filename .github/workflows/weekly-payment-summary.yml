@@ -1,0 +1,31 @@
+name: Weekly Payment Summary Email
+
+on:
+  schedule:
+    # Run every Monday at 09:00 UTC (12:00 Turkey time)
+    - cron: '0 9 * * 1'
+  workflow_dispatch: # Allow manual trigger for testing
+
+jobs:
+  send-weekly-summary:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Send Weekly Payment Summary Emails
+        run: |
+          curl -X POST \
+            -H "Authorization: Bearer ${{ secrets.CRON_SECRET }}" \
+            -H "Content-Type: application/json" \
+            -f \
+            https://kreditakip.com.tr/api/email/weekly-summary
+
+      - name: Log completion
+        if: success()
+        run: echo "Weekly payment summary emails sent successfully"
+
+      - name: Log failure
+        if: failure()
+        run: echo "Failed to send weekly payment summary emails"

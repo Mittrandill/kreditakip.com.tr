@@ -1,0 +1,31 @@
+name: Monthly Payment Summary Email
+
+on:
+  schedule:
+    # Run on the 1st of every month at 09:00 UTC (12:00 Turkey time)
+    - cron: '0 9 1 * *'
+  workflow_dispatch: # Allow manual trigger for testing
+
+jobs:
+  send-monthly-summary:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Send Monthly Payment Summary Emails
+        run: |
+          curl -X POST \
+            -H "Authorization: Bearer ${{ secrets.CRON_SECRET }}" \
+            -H "Content-Type: application/json" \
+            -f \
+            https://kreditakip.com.tr/api/email/monthly-summary
+
+      - name: Log completion
+        if: success()
+        run: echo "Monthly payment summary emails sent successfully"
+
+      - name: Log failure
+        if: failure()
+        run: echo "Failed to send monthly payment summary emails"
