@@ -74,7 +74,6 @@ export async function middleware(request: NextRequest) {
     const error = request.nextUrl.searchParams.get("error")
 
     if (error) {
-      console.error("OAuth error in middleware:", error)
       return NextResponse.redirect(new URL("/giris", request.url))
     }
 
@@ -91,7 +90,7 @@ export async function middleware(request: NextRequest) {
 export const config = {
   matcher: [
     "/auth/callback",
-    "/api/((?!cron).*)", // Exclude /api/cron/* routes from middleware
+    "/api/((?!cron|email).*)", // Exclude /api/cron/* and /api/email/* routes from middleware
     "/uygulama/:path*"
   ],
 }
