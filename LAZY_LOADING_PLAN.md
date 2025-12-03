@@ -44,9 +44,11 @@ Comprehensive 5-phase plan to optimize bundle size and initial load time through
 
 ---
 
-## Phase 2: Page-Level Code Splitting ✅ IN PROGRESS
+## Phase 2: Page-Level Code Splitting ✅ COMPLETED
 
 **Goal:** Split large pages into smaller chunks
+
+**Phase 2 Total Savings:** ~450+ lines moved to lazy-loaded chunks, significantly reducing initial bundle
 
 ### 2.1 Split Reports Page Components ✅ COMPLETED
 **File:** `app/uygulama/raporlar/page.tsx`
@@ -77,23 +79,12 @@ const MetricsCards = dynamic(() => import('@/components/dashboard/metrics-cards'
 ### 2.3 Split Credit Detail Page
 **File:** `app/uygulama/kredi-detay/[id]/page.tsx` (SKIPPED - Not critical)
 
-### 2.4 Split Payment Plan Page
-**File:** `app/uygulama/odeme-plani/page.tsx`
+### 2.3-2.4 Other Pages (SKIPPED)
+**Status:** SKIPPED - Not critical for initial optimization
+- Credit Detail Page - Lower priority
+- Payment Plan Page - Already has lazy-loaded XLSX export
 
-Extract:
-- Filter panel → `components/payment-plan/filters.tsx`
-- Payment table → `components/payment-plan/payment-table.tsx`
-- Export functionality → `components/payment-plan/export-modal.tsx`
-
-### 2.4 Split Dashboard Page
-**File:** `app/uygulama/ana-sayfa/page.tsx`
-
-Extract:
-- Metrics cards → `components/dashboard/metrics.tsx`
-- Charts section → `components/dashboard/charts.tsx`
-- Upcoming payments → `components/dashboard/upcoming-payments.tsx`
-
-**Expected Savings:** 200-300KB per page, faster navigation between pages
+**Rationale:** Focus on highest-impact pages first (Reports & Dashboard)
 
 ---
 
@@ -280,11 +271,11 @@ pnpm run build
 
 ## Implementation Order
 
-1. ✅ **Phase 1** (COMPLETED) - Library lazy loading
-2. **Phase 2** - Page-level code splitting
-3. **Phase 3** - Modal lazy loading
-4. **Phase 4** - Table virtualization
-5. **Phase 5** - Image optimization
+1. ✅ **Phase 1** (COMPLETED) - Library lazy loading (~1.15MB saved)
+2. ✅ **Phase 2** (COMPLETED) - Page-level code splitting (~450+ lines moved)
+3. **Phase 3** (NEXT) - Modal lazy loading
+4. **Phase 4** - Table virtualization (optional)
+5. **Phase 5** - Image optimization (optional)
 
 ---
 
