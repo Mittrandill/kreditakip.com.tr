@@ -700,12 +700,12 @@ export default function SubscriptionPage() {
 
                   {/* Timeline - Elegant Single Card */}
                   {subscription?.startDate && subscription?.expiresAt && subscription.status === "active" && (
-                    <Card className="bg-white via-emerald-50/30 to-white dark:from-black/40 dark:via-emerald-950/20 dark:to-black/40 border border-gray-200 dark:border-gray-900/30 overflow-hidden shadow-lg">
+                    <Card className="bg-white dark:bg-black/20 border border-gray-200 dark:border-white/10 overflow-hidden shadow-lg">
                       <CardHeader className="pb-4">
-                        <CardTitle className="flex items-center gap-2 text-emerald-900 dark:text-emerald-100">
+                        <CardTitle className="flex items-center gap-2 text-gray-900 dark:text-white">
                           Abonelik Dönemi
                         </CardTitle>
-                        <CardDescription className="dark:text-emerald-200/60">
+                        <CardDescription className="text-gray-600 dark:text-gray-400">
                           {Math.ceil((new Date(subscription.expiresAt).getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24))} gün sonra yenilenecek
                         </CardDescription>
                       </CardHeader>

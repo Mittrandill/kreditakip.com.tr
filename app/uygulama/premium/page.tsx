@@ -241,7 +241,7 @@ export default function PremiumPage() {
 
           {/* Toggle Switch */}
           {showToggle && (
-            <div className="flex items-center justify-center gap-2 sm:gap-3 p-3 sm:p-4 bg-white/50 dark:bg-black/20 rounded-xl border border-gray-200 dark:border-gray-800">
+            <div className="flex items-center justify-center gap-2 sm:gap-3 p-3 sm:p-4 bg-white/50 dark:bg-black/30 rounded-xl border border-gray-200 dark:border-white/10">
               <span
                 className={`text-xs sm:text-sm font-medium transition-colors ${!isYearly ? "text-emerald-600 dark:text-emerald-400" : "text-gray-500"}`}
               >
@@ -377,7 +377,7 @@ export default function PremiumPage() {
 
             {/* Yearly/Monthly Switch - Right Side */}
             <div className="flex flex-col gap-2">
-              <p className="text-sm font-medium text-white-900 dark:text-white text-center">
+              <p className="text-sm font-medium text-white text-center">
                 Yıllık Alın, %20 İndirimden Faydalanın!
               </p>
               <div className="flex items-center gap-3">
