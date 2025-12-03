@@ -51,7 +51,8 @@
       "Bash(if exist .next rmdir /s /q .next)",
       "Bash(node scripts/check-subscription.js:*)",
       "Bash(cat:*)",
-      "Bash(pnpm remove:*)"
+      "Bash(pnpm remove:*)",
+      "Bash(claude mcp add:*)"
     ],
     "deny": [],
     "ask": []
