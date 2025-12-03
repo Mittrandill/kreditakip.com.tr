@@ -57,8 +57,8 @@ Her iki workflow da manuel olarak test edilebilir:
 3. ✅ Başarı/hata logları
 
 ### API Endpoint'leri:
-- Monthly: `POST https://kreditakip.com.tr/api/email/monthly-summary`
-- Weekly: `POST https://kreditakip.com.tr/api/email/weekly-summary`
+- Monthly: `POST https://www.kreditakip.com.tr/api/email/monthly-summary`
+- Weekly: `POST https://www.kreditakip.com.tr/api/email/weekly-summary`
 
 ### Authorization:
 Her istek `Authorization: Bearer ${CRON_SECRET}` header'ı ile korunur.
@@ -81,7 +81,7 @@ Kullanıcılar bu e-postaları **Ayarlar** sayfasından açıp kapatabilir:
   ```bash
   curl -X POST \
     -H "Authorization: Bearer YOUR_CRON_SECRET" \
-    https://kreditakip.com.tr/api/email/monthly-summary
+    https://www.kreditakip.com.tr/api/email/monthly-summary
   ```
 - Supabase'de `email_monthly_summary` veya `email_weekly_summary` field'larını kontrol edin
 - Email service (Resend) API key'inin doğru olduğundan emin olun

@@ -20,7 +20,7 @@ jobs:
             -H "Authorization: Bearer ${{ secrets.CRON_SECRET }}" \
             -H "Content-Type: application/json" \
             -f \
-            https://kreditakip.com.tr/api/email/weekly-summary
+            https://www.kreditakip.com.tr/api/email/weekly-summary
 
       - name: Log completion
         if: success()

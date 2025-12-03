@@ -118,7 +118,7 @@ export const paymentSummaryEmailTemplates = {
             <p class="info-text">💡 <strong>Hatırlatma:</strong> Ödemelerinizi zamanında yaparak gecikme faizlerinden kaçının ve kredi skorunuzu koruyun.</p>
 
             <center>
-                <a href="https://kreditakip.com.tr/uygulama/odeme-plani" class="cta-button">Ödeme Planını Görüntüle</a>
+                <a href="https://www.kreditakip.com.tr/uygulama/odeme-plani" class="cta-button">Ödeme Planını Görüntüle</a>
             </center>
         </div>
 
@@ -240,7 +240,7 @@ export const paymentSummaryEmailTemplates = {
             `}
 
             <center>
-                <a href="https://kreditakip.com.tr/uygulama/odeme-plani" class="cta-button">Ödeme Planını Görüntüle</a>
+                <a href="https://www.kreditakip.com.tr/uygulama/odeme-plani" class="cta-button">Ödeme Planını Görüntüle</a>
             </center>
         </div>
 
