@@ -19,19 +19,12 @@ import { formatCurrency, formatPercent, formatDate } from "@/lib/format"
 import dynamic from "next/dynamic"
 import PDFReportModal from "@/components/pdf-report-modal"
 
-import { DonutChart, AreaChart as ApexAreaChart, BarChart as ApexBarChart, LineChart as ApexLineChart, RadialBarChart } from "@/components/charts"
-// Dynamic import for Recharts components to reduce initial bundle size
-const BarChart = dynamic(() => import("recharts").then((mod) => ({ default: mod.BarChart })), { ssr: false })
-const Bar = dynamic(() => import("recharts").then((mod) => ({ default: mod.Bar })), { ssr: false })
-const XAxis = dynamic(() => import("recharts").then((mod) => ({ default: mod.XAxis })), { ssr: false })
-const YAxis = dynamic(() => import("recharts").then((mod) => ({ default: mod.YAxis })), { ssr: false })
-const CartesianGrid = dynamic(() => import("recharts").then((mod) => ({ default: mod.CartesianGrid })), { ssr: false })
-const Tooltip = dynamic(() => import("recharts").then((mod) => ({ default: mod.Tooltip })), { ssr: false })
-const ResponsiveContainer = dynamic(() => import("recharts").then((mod) => ({ default: mod.ResponsiveContainer })), { ssr: false })
-const Area = dynamic(() => import("recharts").then((mod) => ({ default: mod.Area })), { ssr: false })
-const AreaChart = dynamic(() => import("recharts").then((mod) => ({ default: mod.AreaChart })), { ssr: false })
-const Line = dynamic(() => import("recharts").then((mod) => ({ default: mod.Line })), { ssr: false })
-const LineChart = dynamic(() => import("recharts").then((mod) => ({ default: mod.LineChart })), { ssr: false })
+import { BarChart, Bar, LineChart, Line, AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "@/lib/chart-loader"
+
+// Lazy load tab components for better performance
+const OverviewTab = dynamic(() => import('@/components/reports/overview-tab'), {
+  loading: () => <div className="p-6 text-center">Yükleniyor...</div>
+})
 
 interface PopulatedCredit extends Credit {
   banks: Pick<Bank, "id" | "name" | "logo_url"> | null
@@ -50,6 +43,7 @@ export default function RaporlarPage() {
   const { user, loading: authLoading } = useAuth()
   const { isPremium, loading: subscriptionLoading, subscription } = useSubscriptionV2()
   const router = useRouter()
+
   const [credits, setCredits] = useState<PopulatedCredit[]>([])
   const [payments, setPayments] = useState<PaymentWithCredit[]>([])
   const [loading, setLoading] = useState(true)
@@ -381,9 +375,18 @@ export default function RaporlarPage() {
 
       {/* Tab Content - Genel Bakış */}
       {activeTab === "overview" && (
-        <div className="grid grid-cols-1 gap-6">
-          {/* Widget Cards Row - Meaningful Metrics */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        <OverviewTab
+          filteredCredits={filteredCredits}
+          bankDebtData={bankDebtData}
+          uniqueBanks={uniqueBanks}
+          totalDebt={totalDebt}
+          typeData={typeData}
+          bankInterestData={bankInterestData}
+          avgProgress={avgProgress}
+        />
+      )}
+
+      {/* Overview tab now lazy loaded - old code removed for better performance */}
         {/* Widget 1: Banka Dağılımı - Bar Chart */}
         <Card className="bg-white dark:bg-black/20 border border-gray-200 dark:border-0 overflow-hidden">
           <CardContent className="p-6">

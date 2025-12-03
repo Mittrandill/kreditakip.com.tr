@@ -1,7 +1,7 @@
-import { jsPDF } from "jspdf"
 import { format } from "date-fns"
 import { tr } from "date-fns/locale"
 import { loadRobotoFont } from "./pdf-fonts"
+import type { jsPDF } from "jspdf"
 
 // Modern renk paleti
 const COLORS = {
@@ -1889,6 +1889,9 @@ class ModernPDFGenerator {
 
 export async function generatePDFReport(data: any): Promise<void> {
   try {
+    // Lazy load jsPDF library only when PDF generation is triggered
+    const { jsPDF } = await import("jspdf")
+
     const doc = new jsPDF({
       orientation: "portrait",
       unit: "pt",
@@ -1916,6 +1919,9 @@ export async function generateCreditReport(data: {
   dynamicStats?: any
 }): Promise<void> {
   try {
+    // Lazy load jsPDF library only when PDF generation is triggered
+    const { jsPDF } = await import("jspdf")
+
     const doc = new jsPDF({
       orientation: "portrait",
       unit: "pt",

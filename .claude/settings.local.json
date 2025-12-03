@@ -49,7 +49,9 @@
       "Bash(done)",
       "Bash(mv:*)",
       "Bash(if exist .next rmdir /s /q .next)",
-      "Bash(node scripts/check-subscription.js:*)"
+      "Bash(node scripts/check-subscription.js:*)",
+      "Bash(cat:*)",
+      "Bash(pnpm remove:*)"
     ],
     "deny": [],
     "ask": []

@@ -36,20 +36,7 @@ import {
   PieChart,
 } from "lucide-react"
 import { AdBanner } from "@/components/ad-banner"
-import { DonutChart, LineChart } from "@/components/charts"
-
-// Dynamic imports for charts
-const BarChart = dynamic(() => import("recharts").then((mod) => ({ default: mod.BarChart })), { ssr: false })
-const Bar = dynamic(() => import("recharts").then((mod) => ({ default: mod.Bar })), { ssr: false })
-const RechartsLineChart = dynamic(() => import("recharts").then((mod) => ({ default: mod.LineChart })), { ssr: false })
-const RechartsLine = dynamic(() => import("recharts").then((mod) => ({ default: mod.Line })), { ssr: false })
-const XAxis = dynamic(() => import("recharts").then((mod) => ({ default: mod.XAxis })), { ssr: false })
-const YAxis = dynamic(() => import("recharts").then((mod) => ({ default: mod.YAxis })), { ssr: false })
-const CartesianGrid = dynamic(() => import("recharts").then((mod) => ({ default: mod.CartesianGrid })), { ssr: false })
-const Tooltip = dynamic(() => import("recharts").then((mod) => ({ default: mod.Tooltip })), { ssr: false })
-const ResponsiveContainer = dynamic(() => import("recharts").then((mod) => ({ default: mod.ResponsiveContainer })), { ssr: false })
-const Area = dynamic(() => import("recharts").then((mod) => ({ default: mod.Area })), { ssr: false })
-const AreaChart = dynamic(() => import("recharts").then((mod) => ({ default: mod.AreaChart })), { ssr: false })
+import { AreaChart, Area, BarChart, Bar, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "@/lib/chart-loader"
 
 // Kredi verisi için genişletilmiş tip (ilişkili tablolarla)
 interface PopulatedCredit extends Credit {
@@ -90,6 +77,7 @@ const defaultBarChartData = [
 
 export default function DashboardPage() {
   const { user, profile, loading: authLoading } = useAuth()
+
   const [credits, setCredits] = useState<any[]>([])
   const [upcomingPayments, setUpcomingPayments] = useState<any[]>([])
   const [loadingData, setLoadingData] = useState(true)
@@ -542,7 +530,7 @@ export default function DashboardPage() {
               </div>
               <div className="h-24">
                 <ResponsiveContainer width="100%" height="100%">
-                  <RechartsLineChart data={
+                  <LineChart data={
                     monthlyPaymentPeriod === 'monthly'
                       ? [
                           { a: monthlyPayment * 0.95, b: monthlyPayment * 0.85, c: monthlyPayment * 0.90 },
@@ -561,10 +549,10 @@ export default function DashboardPage() {
                           { a: monthlyPayment * 12 * 1.02, b: monthlyPayment * 12 * 0.96, c: monthlyPayment * 12 }
                         ]
                   }>
-                    <RechartsLine type="monotone" dataKey="a" stroke="#14B8A6" strokeWidth={2} dot={false} />
-                    <RechartsLine type="monotone" dataKey="b" stroke="#F59E0B" strokeWidth={2} dot={false} />
-                    <RechartsLine type="monotone" dataKey="c" stroke="#3B82F6" strokeWidth={2} dot={false} />
-                  </RechartsLineChart>
+                    <Line type="monotone" dataKey="a" stroke="#14B8A6" strokeWidth={2} dot={false} />
+                    <Line type="monotone" dataKey="b" stroke="#F59E0B" strokeWidth={2} dot={false} />
+                    <Line type="monotone" dataKey="c" stroke="#3B82F6" strokeWidth={2} dot={false} />
+                  </LineChart>
                 </ResponsiveContainer>
               </div>
             </CardContent>
@@ -614,7 +602,7 @@ export default function DashboardPage() {
                 formatter={(value: any) => formatCurrency(value)}
               />
               <Area type="monotone" dataKey="odeme" stroke="#14B8A6" strokeWidth={2} fillOpacity={1} fill="url(#colorOdeme)" />
-              <RechartsLine type="monotone" dataKey="hedef" stroke="#F59E0B" strokeWidth={2} strokeDasharray="5 5" dot={false} />
+              <Line type="monotone" dataKey="hedef" stroke="#F59E0B" strokeWidth={2} strokeDasharray="5 5" dot={false} />
             </AreaChart>
           </ResponsiveContainer>
         </CardContent>

@@ -32,7 +32,6 @@ import type { Credit, PaymentPlan } from "@/lib/types"
 import { updatePaymentPlan, createPaymentHistory } from "@/lib/api/payments"
 import BankLogo from "@/components/bank-logo"
 import { useToast } from "@/components/ui/use-toast"
-import * as XLSX from "xlsx"
 import { LoadingSpinner } from "@/components/loading-screen"
 
 interface PaymentWithCredit extends PaymentPlan {
@@ -699,7 +698,10 @@ function PaymentsList({
     }).length,
   }
 
-  const exportToExcel = () => {
+  const exportToExcel = async () => {
+    // Lazy load XLSX library only when export is triggered
+    const XLSX = await import("xlsx")
+
     const data = filteredPayments.map((payment) => ({
       Banka: payment.credits.banks.name,
       "Taksit No": payment.installment_number,
@@ -1878,8 +1880,10 @@ export default function OdemePlaniPage() {
               </div>
             </div>
             <Button
-              onClick={() => {
-                // PDF export functionality
+              onClick={async () => {
+                // Lazy load XLSX library only when export is triggered
+                const XLSX = await import("xlsx")
+
                 const data = allPayments.map((payment) => ({
                   Banka: payment.credits.banks.name,
                   "Taksit No": payment.installment_number,
