@@ -68,7 +68,7 @@ export function InvoiceUploadButton({
       })
 
       if (!updateResponse.ok) {
-        console.warn("[invoice-upload] Failed to update invoice number, continuing with upload")
+        // Failed to update invoice number, continuing with upload
       }
 
       // 3. Upload PDF
@@ -97,7 +97,7 @@ export function InvoiceUploadButton({
         const updatedInvoice = verifiedInvoices?.find((inv: any) => inv.id === pendingInvoice.id)
 
         if (!updatedInvoice?.file_url) {
-          console.warn("[invoice-upload] Warning: file_url not found in verification, but proceeding")
+          // Warning: file_url not found in verification, but proceeding
         }
       }
 

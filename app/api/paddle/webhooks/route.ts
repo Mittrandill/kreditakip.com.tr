@@ -18,9 +18,6 @@ export async function POST(request: NextRequest) {
     const headersList = headers()
     const signature = headersList.get("paddle_signature") || ""
 
-    console.log("[Paddle Webhook] Received webhook")
-    console.log("[Paddle Webhook] Signature present:", !!signature)
-
     // Verify webhook signature
     if (!signature) {
       console.error("[Paddle Webhook] Missing signature")
@@ -32,14 +29,10 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Invalid signature" }, { status: 401 })
     }
 
-    console.log("[Paddle Webhook] Signature verified successfully")
-
     // Parse the event data
     const event = JSON.parse(body)
     const eventType = event.event_type
     const eventData = event.data
-
-    console.log(`[Paddle Webhook] Processing event: ${eventType}`)
 
     // Initialize Supabase admin client
     const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
@@ -102,7 +95,8 @@ export async function POST(request: NextRequest) {
         break
 
       default:
-        console.log(`[Paddle Webhook] Unhandled event type: ${eventType}`)
+        // Unhandled event type
+        break
     }
 
     // Mark event as processed
@@ -284,7 +278,7 @@ async function handleSubscriptionCreated(
       })
   }
 
-  console.log(`[Paddle] Subscription created for user ${userId}, plan: ${planId}`)
+  // Subscription created
 }
 
 async function handleSubscriptionActivated(
@@ -308,7 +302,7 @@ async function handleSubscriptionActivated(
     })
     .eq("paddle_subscription_id", paddleSubscriptionId)
 
-  console.log(`[Paddle] Subscription ${paddleSubscriptionId} activated`)
+  // Subscription activated
 }
 
 async function handleSubscriptionUpdated(
@@ -359,7 +353,7 @@ async function handleSubscriptionUpdated(
     .update(updateData)
     .eq("paddle_subscription_id", paddleSubscriptionId)
 
-  console.log(`[Paddle] Subscription ${paddleSubscriptionId} updated to ${status}`)
+  // Subscription status updated
 }
 
 async function handleSubscriptionCanceled(
@@ -378,7 +372,7 @@ async function handleSubscriptionCanceled(
     })
     .eq("paddle_subscription_id", paddleSubscriptionId)
 
-  console.log(`[Paddle] Subscription ${paddleSubscriptionId} canceled`)
+  // Subscription canceled
 }
 
 async function handlePaymentSucceeded(
@@ -474,7 +468,7 @@ async function handlePaymentSucceeded(
     })
   }
 
-  console.log(`[Paddle] Payment succeeded for subscription ${subscription_id}`)
+  // Payment succeeded
 }
 
 async function handlePaymentFailed(
@@ -564,7 +558,7 @@ async function handlePaymentFailed(
     })
   }
 
-  console.log(`[Paddle] Payment failed for subscription ${subscription_id}, attempt ${attempt_number}`)
+  // Payment failed
 }
 
 async function handleSubscriptionPaused(
@@ -582,7 +576,7 @@ async function handleSubscriptionPaused(
     })
     .eq("paddle_subscription_id", paddleSubscriptionId)
 
-  console.log(`[Paddle] Subscription ${paddleSubscriptionId} paused`)
+  // Subscription paused
 }
 
 async function handleSubscriptionResumed(
@@ -600,7 +594,7 @@ async function handleSubscriptionResumed(
     })
     .eq("paddle_subscription_id", paddleSubscriptionId)
 
-  console.log(`[Paddle] Subscription ${paddleSubscriptionId} resumed`)
+  // Subscription resumed
 }
 
 async function handleOneTimePaymentSucceeded(
@@ -608,7 +602,7 @@ async function handleOneTimePaymentSucceeded(
   data: any
 ) {
   // Handle one-time payments if applicable
-  console.log(`[Paddle] One-time payment succeeded: ${data.id}`)
+  // One-time payment succeeded
 }
 
 async function handlePaymentRefunded(
@@ -616,5 +610,5 @@ async function handlePaymentRefunded(
   data: any
 ) {
   // Handle refunds if applicable
-  console.log(`[Paddle] Payment refunded: ${data.id}`)
+  // Payment refunded
 }

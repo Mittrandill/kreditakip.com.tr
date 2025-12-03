@@ -21,7 +21,6 @@ export async function sendEmail({ to, subject, template, data, html, text }: Ema
   try {
     // Check if running in a browser environment
     if (typeof window !== 'undefined') {
-      console.warn('sendEmail cannot be called from browser')
       return { success: false, error: 'Cannot send email from browser' }
     }
 
