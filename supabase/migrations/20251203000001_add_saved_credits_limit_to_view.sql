@@ -76,14 +76,14 @@ SELECT
             u.feature_type,
             jsonb_build_object(
                 'limit', COALESCE(u.limit_count, -1),
-                'used', COALESCE(u.used_count, 0),
+                'used', COALESCE(u.usage_count, 0),
                 'savedCredits', COALESCE(u.saved_credits_count, 0),
                 'savedCreditsLimit', COALESCE(u.saved_credits_limit, 1),
                 'resetAt', u.reset_at,
                 'canUse', CASE
                     WHEN u.limit_count = -1 THEN true
                     WHEN u.limit_count IS NULL THEN false
-                    ELSE u.used_count < u.limit_count
+                    ELSE u.usage_count < u.limit_count
                 END
             )
         ) FILTER (WHERE u.feature_type IS NOT NULL),

@@ -11,6 +11,7 @@ export interface Usage {
     limit: number
     used: number
     savedCredits: number
+    savedCreditsLimit: number
     resetAt: string | null
     canUse: boolean
   }
@@ -143,7 +144,7 @@ export function useSubscriptionV2() {
           expiresAt: "2099-12-31",
           requiresPaymentAction: false,
           usage: {
-            ocrAnalysis: { limit: 1, used: 0, savedCredits: 0, resetAt: null, canUse: true },
+            ocrAnalysis: { limit: 1, used: 0, savedCredits: 0, savedCreditsLimit: 1, resetAt: null, canUse: true },
             riskAnalysis: { limit: 0, used: 0, savedCredits: 0, resetAt: null, canUse: false },
           },
         })
