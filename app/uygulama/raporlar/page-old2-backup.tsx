@@ -121,7 +121,7 @@ export default function RaporlarPage() {
         </Button>
       </div>
 
-      {/* Pie Charts Row - Karciz Style */}
+      {/* Pie Charts Row -  */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {/* Bank Distribution */}
         <Card className="border-gray-200 dark:border-gray-800">
@@ -236,7 +236,7 @@ export default function RaporlarPage() {
         </Card>
       </div>
 
-      {/* Credits Table - Karciz Style */}
+      {/* Credits Table -  */}
       <Card className="border-gray-200 dark:border-gray-800">
         <CardHeader className="border-b border-gray-100 dark:border-gray-800 pb-4">
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">

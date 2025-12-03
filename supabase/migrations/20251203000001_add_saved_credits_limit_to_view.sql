@@ -1,10 +1,10 @@
 -- Add saved_credits_limit to subscription_status_view
--- First add the column to usage_tracking table if it doesn't exist
-ALTER TABLE usage_tracking
+-- First add the column to subscription_usage table if it doesn't exist
+ALTER TABLE subscription_usage
 ADD COLUMN IF NOT EXISTS saved_credits_limit INTEGER DEFAULT 1;
 
 -- Update existing records based on limit_count
-UPDATE usage_tracking
+UPDATE subscription_usage
 SET saved_credits_limit = CASE
   WHEN feature_type = 'ocr_analysis' AND limit_count = 999999 THEN 999999  -- Premium: unlimited
   WHEN feature_type = 'ocr_analysis' AND limit_count >= 10 THEN 10         -- Pro: 10
@@ -92,7 +92,7 @@ SELECT
 
 FROM public.subscriptions s
 LEFT JOIN public.subscription_plans sp ON s.plan_id = sp.id
-LEFT JOIN public.usage_tracking u ON s.user_id = u.user_id
+LEFT JOIN public.subscription_usage u ON s.user_id = u.user_id
 WHERE s.deleted_at IS NULL
 GROUP BY
     s.id,
@@ -129,4 +129,4 @@ GRANT SELECT ON public.subscription_status_view TO authenticated;
 
 -- Add comment
 COMMENT ON VIEW public.subscription_status_view IS 'Comprehensive view of subscription status including savedCreditsLimit (1 for free, 10 for pro, unlimited for premium)';
-COMMENT ON COLUMN usage_tracking.saved_credits_limit IS 'Maximum number of credits that can be saved from OCR analysis';
+COMMENT ON COLUMN subscription_usage.saved_credits_limit IS 'Maximum number of credits that can be saved from OCR analysis';
