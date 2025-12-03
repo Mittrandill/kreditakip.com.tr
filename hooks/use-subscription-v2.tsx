@@ -97,20 +97,21 @@ export function useSubscriptionV2() {
               const ocr = apiData.usage.find((u: any) => u.feature_type === 'ocr_analysis')
               return {
                 limit: ocr?.limit_count ?? 1,
-                used: ocr?.used_count ?? 0,
+                used: ocr?.usage_count ?? 0,
                 savedCredits: ocr?.saved_credits_count ?? 0,
+                savedCreditsLimit: ocr?.saved_credits_limit ?? 1,
                 resetAt: ocr?.reset_at ?? null,
-                canUse: ocr?.limit_count === -1 || (ocr?.used_count ?? 0) < (ocr?.limit_count ?? 1)
+                canUse: ocr?.limit_count === -1 || (ocr?.usage_count ?? 0) < (ocr?.limit_count ?? 1)
               }
             })(),
             riskAnalysis: (() => {
               const risk = apiData.usage.find((u: any) => u.feature_type === 'risk_analysis')
               return {
                 limit: risk?.limit_count ?? 0,
-                used: risk?.used_count ?? 0,
+                used: risk?.usage_count ?? 0,
                 savedCredits: risk?.saved_credits_count ?? 0,
                 resetAt: risk?.reset_at ?? null,
-                canUse: risk?.limit_count === -1 || (risk?.used_count ?? 0) < (risk?.limit_count ?? 0)
+                canUse: risk?.limit_count === -1 || (risk?.usage_count ?? 0) < (risk?.limit_count ?? 0)
               }
             })(),
           } : undefined,
