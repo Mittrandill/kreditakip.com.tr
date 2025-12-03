@@ -39,6 +39,8 @@ export const paymentSummaryEmailTemplates = {
     <style>
         body { font-family: 'Poppins', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; margin: 0; padding: 0; background-color: #f8fafc; }
         .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+        .logo-section { text-align: center; margin-bottom: 20px; padding: 20px; }
+        .logo { max-width: 180px; height: auto; }
         .header { background: linear-gradient(135deg, #065f46 0%, #047857 100%); padding: 30px; text-align: center; border-radius: 12px 12px 0 0; }
         .header h1 { color: white; margin: 0; font-size: 28px; font-weight: 700; }
         .header p { color: #d1fae5; margin: 10px 0 0 0; font-size: 16px; }
@@ -64,6 +66,9 @@ export const paymentSummaryEmailTemplates = {
 </head>
 <body>
     <div class="container">
+        <div class="logo-section">
+            <img src="https://kreditakip.com.tr/images/logo-green.png" alt="Kredi Takip" class="logo" />
+        </div>
         <div class="header">
             <h1>📅 ${data.month} ${data.year} Ödeme Planı</h1>
             <p>Bu ay yapmanız gereken ödemeler</p>
@@ -141,6 +146,8 @@ export const paymentSummaryEmailTemplates = {
     <style>
         body { font-family: 'Poppins', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; margin: 0; padding: 0; background-color: #f8fafc; }
         .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+        .logo-section { text-align: center; margin-bottom: 20px; padding: 20px; }
+        .logo { max-width: 180px; height: auto; }
         .header { background: linear-gradient(135deg, #065f46 0%, #047857 100%); padding: 30px; text-align: center; border-radius: 12px 12px 0 0; }
         .header h1 { color: white; margin: 0; font-size: 28px; font-weight: 700; }
         .header p { color: #d1fae5; margin: 10px 0 0 0; font-size: 16px; }
@@ -168,6 +175,9 @@ export const paymentSummaryEmailTemplates = {
 </head>
 <body>
     <div class="container">
+        <div class="logo-section">
+            <img src="https://kreditakip.com.tr/images/logo-green.png" alt="Kredi Takip" class="logo" />
+        </div>
         <div class="header">
             <h1>📆 Haftalık Ödeme Hatırlatıcısı</h1>
             <p>${data.weekStart} - ${data.weekEnd}</p>
