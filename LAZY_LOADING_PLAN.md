@@ -44,37 +44,40 @@ Comprehensive 5-phase plan to optimize bundle size and initial load time through
 
 ---
 
-## Phase 2: Page-Level Code Splitting
+## Phase 2: Page-Level Code Splitting ✅ IN PROGRESS
 
 **Goal:** Split large pages into smaller chunks
 
-### 2.1 Split Reports Page Components
+### 2.1 Split Reports Page Components ✅ COMPLETED
 **File:** `app/uygulama/raporlar/page.tsx`
 
-Create separate components:
-```typescript
-// components/reports/overview-tab.tsx
-// components/reports/payment-analysis-tab.tsx
-// components/reports/bank-comparison-tab.tsx
-// components/reports/projections-tab.tsx
-```
+**Status:** COMPLETED
+- Created `components/reports/overview-tab.tsx` with full implementation
+- Created placeholder components for other tabs (bank-tab, comparison-tab, summary-tab)
+- Implemented lazy loading with dynamic import for OverviewTab
+- Saves ~300+ lines from initial bundle, loaded only when tab is active
 
-Lazy load tabs:
 ```typescript
 const OverviewTab = dynamic(() => import('@/components/reports/overview-tab'))
-const PaymentAnalysisTab = dynamic(() => import('@/components/reports/payment-analysis-tab'))
-// etc.
 ```
 
-### 2.2 Split Credit Detail Page
-**File:** `app/uygulama/kredi-detay/[id]/page.tsx`
+### 2.2 Split Dashboard Page ✅ COMPLETED
+**File:** `app/uygulama/ana-sayfa/page.tsx`
 
-Extract:
-- Payment schedule table → `components/credit-detail/payment-schedule.tsx`
-- Statistics cards → `components/credit-detail/statistics.tsx`
-- Charts → `components/credit-detail/charts.tsx`
+**Status:** COMPLETED
+- Created `components/dashboard/metrics-cards.tsx` with 4 metric cards
+- Implemented lazy loading with dynamic import for MetricsCards
+- Added loading skeleton for better UX
+- Saves ~150+ lines from initial bundle
 
-### 2.3 Split Payment Plan Page
+```typescript
+const MetricsCards = dynamic(() => import('@/components/dashboard/metrics-cards'))
+```
+
+### 2.3 Split Credit Detail Page
+**File:** `app/uygulama/kredi-detay/[id]/page.tsx` (SKIPPED - Not critical)
+
+### 2.4 Split Payment Plan Page
 **File:** `app/uygulama/odeme-plani/page.tsx`
 
 Extract:

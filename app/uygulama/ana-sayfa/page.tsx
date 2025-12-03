@@ -38,6 +38,11 @@ import {
 import { AdBanner } from "@/components/ad-banner"
 import { AreaChart, Area, BarChart, Bar, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "@/lib/chart-loader"
 
+// Lazy load dashboard components for better performance
+const MetricsCards = dynamic(() => import('@/components/dashboard/metrics-cards'), {
+  loading: () => <div className="grid grid-cols-1 sm:grid-cols-2 gap-4"><div className="h-40 bg-gray-100 dark:bg-gray-800 animate-pulse rounded-lg"></div><div className="h-40 bg-gray-100 dark:bg-gray-800 animate-pulse rounded-lg"></div><div className="h-40 bg-gray-100 dark:bg-gray-800 animate-pulse rounded-lg"></div><div className="h-40 bg-gray-100 dark:bg-gray-800 animate-pulse rounded-lg"></div></div>
+})
+
 // Kredi verisi için genişletilmiş tip (ilişkili tablolarla)
 interface PopulatedCredit extends Credit {
   banks: Pick<Bank, "id" | "name" | "logo_url" | "contact_phone" | "contact_email" | "website"> | null
@@ -320,9 +325,15 @@ export default function DashboardPage() {
           </CardContent>
         </Card>
 
-        {/* 4 Metric Cards - Karciz Style (Exact Match) */}
+        {/* 4 Metric Cards - Now Lazy Loaded */}
+        <MetricsCards
+          totalCredits={totalCredits}
+          monthlyPayment={monthlyPayment}
+          averageInterestRate={averageInterestRate}
+          upcomingPaymentCount={upcomingPaymentCount}
+        />
+        {/* OLD CODE KEPT FOR REFERENCE - Can be removed after testing
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          {/* Card 1: Aktif Kredi - Line Chart */}
           <Card className="bg-white dark:bg-black/20 border border-gray-200 dark:border-0 overflow-hidden">
             <CardContent className="p-6">
               <div className="flex items-start justify-between mb-4">
