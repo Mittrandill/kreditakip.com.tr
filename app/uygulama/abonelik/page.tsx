@@ -800,8 +800,8 @@ export default function SubscriptionPage() {
                             <h3 className="text-3xl font-bold text-gray-900 dark:text-white mb-1">
                               {subscription?.usage?.ocrAnalysis?.limit === 999999 ? "∞" : subscription?.usage?.ocrAnalysis?.limit || 1}
                             </h3>
-                            <p className="text-sm text-emerald-600 dark:text-emerald-400">OCR Kredi Dökümü</p>
-                            <p className="text-xs text-gray-500 dark:text-gray-500 mt-1">
+                            <p className="text-sm text-emerald-600 dark:text-emerald-400">Analiz Edilen OCR Kredi Dökümü</p>
+                            <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
                               {subscription?.usage?.ocrAnalysis?.used || 0} kullanıldı
                             </p>
                           </div>
@@ -816,6 +816,30 @@ export default function SubscriptionPage() {
                       </CardContent>
                     </Card>
 
+                    {/* OCR Saved Credits Card - NEW */}
+                    <Card className="bg-white dark:bg-black/20 border border-gray-200 dark:border-white/10 overflow-hidden">
+                      <CardContent className="p-4 sm:p-6">
+                        <div className="flex items-start justify-between mb-4">
+                          <div>
+                            <h3 className="text-3xl font-bold text-gray-900 dark:text-white mb-1">
+                              {subscription?.usage?.ocrAnalysis?.savedCreditsLimit === 999999 ? "∞" : subscription?.usage?.ocrAnalysis?.savedCreditsLimit || 1}
+                            </h3>
+                            <p className="text-sm text-teal-600 dark:text-teal-400">Kayıt Edilen OCR Kredi Dökümü</p>
+                            <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                              {subscription?.usage?.ocrAnalysis?.savedCredits || 0} kayıt edildi
+                            </p>
+                          </div>
+                          <FileText className="h-6 w-6 text-teal-600 dark:text-teal-400" />
+                        </div>
+                        {subscription?.usage?.ocrAnalysis?.savedCreditsLimit !== 999999 && (
+                          <Progress
+                            value={((subscription?.usage?.ocrAnalysis?.savedCredits || 0) / (subscription?.usage?.ocrAnalysis?.savedCreditsLimit || 1)) * 100}
+                            className="h-2"
+                          />
+                        )}
+                      </CardContent>
+                    </Card>
+
                     {/* Risk Analysis Card */}
                     <Card className="bg-white dark:bg-black/20 border border-gray-200 dark:border-white/10 overflow-hidden">
                       <CardContent className="p-4 sm:p-6">
@@ -824,8 +848,8 @@ export default function SubscriptionPage() {
                             <h3 className="text-3xl font-bold text-gray-900 dark:text-white mb-1">
                               {subscription?.usage?.riskAnalysis?.limit === 999999 ? "∞" : subscription?.usage?.riskAnalysis?.limit || 0}
                             </h3>
-                            <p className="text-sm text-blue-600 dark:text-blue-400">Risk Analizi</p>
-                            <p className="text-xs text-gray-500 dark:text-gray-500 mt-1">
+                            <p className="text-sm text-blue-600 dark:text-blue-400">AI Finansal Sağlık Analizi</p>
+                            <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
                               {subscription?.usage?.riskAnalysis?.used || 0} kullanıldı
                             </p>
                           </div>
