@@ -274,7 +274,7 @@ export default function DashboardPage() {
     <div className="flex flex-col gap-4 md:gap-6">
       <AdBanner position="top" />
 
-      {/* Hero Card - Karciz Style */}
+      {/* Hero Card -  */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <Card className="bg-gradient-to-br from-emerald-600 via-teal-600 to-emerald-700 dark:from-emerald-700 dark:via-teal-700 dark:to-emerald-800 text-white border-0 shadow-2xl overflow-hidden">
           <CardContent className="p-6 md:p-8">
@@ -569,6 +569,7 @@ export default function DashboardPage() {
             </CardContent>
           </Card>
         </div>
+        */}
       </div>
 
       {/* Monthly Payment Trend Chart - Karciz Style */}
@@ -619,7 +620,7 @@ export default function DashboardPage() {
         </CardContent>
       </Card>
 
-      {/* Latest Payments & Quick Stats - Karciz Style */}
+      {/* Latest Payments & Quick Stats -  */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <Card className="bg-white dark:bg-black/20 border border-gray-200 dark:border-0 overflow-hidden lg:col-span-2">
           <CardHeader className="border-b border-gray-100 dark:border-white/5 pb-4">
