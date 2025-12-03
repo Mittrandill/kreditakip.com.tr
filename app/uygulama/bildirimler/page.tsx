@@ -38,6 +38,7 @@ import {
 import { toast } from "sonner"
 import { formatDistanceToNow, format } from "date-fns"
 import { tr } from "date-fns/locale"
+import BankLogo from "@/components/bank-logo"
 
 const ITEMS_PER_PAGE = 10
 
@@ -56,41 +57,60 @@ interface Notification {
   type: string
   is_read: boolean
   created_at: string
+  credit_id?: string
+  credits?: {
+    banks?: {
+      name: string
+      logo_url?: string
+    }
+  }
 }
 
-const typeConfig = {
-  info: {
-    icon: Info,
-    color: "text-blue-600 dark:text-blue-400",
-    bgColor: "bg-blue-50 dark:bg-blue-900/30",
-    badgeClass:
-      "bg-gradient-to-r from-blue-600 to-indigo-700 text-white border-transparent hover:from-blue-700 hover:to-indigo-800",
-    label: "Bilgi",
-  },
-  warning: {
-    icon: AlertTriangle,
-    color: "text-orange-600 dark:text-orange-400",
-    bgColor: "bg-orange-50 dark:bg-orange-900/30",
-    badgeClass:
-      "bg-gradient-to-r from-orange-600 to-red-700 text-white border-transparent hover:from-orange-700 hover:to-red-800",
-    label: "Uyarı",
-  },
-  error: {
-    icon: AlertCircle,
-    color: "text-red-600 dark:text-red-400",
-    bgColor: "bg-red-50 dark:bg-red-900/30",
-    badgeClass:
-      "bg-gradient-to-r from-red-600 to-rose-700 text-white border-transparent hover:from-red-700 hover:to-rose-800",
-    label: "Hata",
-  },
-  success: {
-    icon: CheckCircle,
-    color: "text-green-600 dark:text-green-400",
-    bgColor: "bg-green-50 dark:bg-green-900/30",
-    badgeClass:
-      "bg-gradient-to-r from-emerald-600 to-teal-700 text-white border-transparent hover:from-emerald-700 hover:to-teal-800",
-    label: "Başarılı",
-  },
+// Bildirim başlığından konuyu çıkaran fonksiyon
+const getSubjectFromTitle = (title: string): string => {
+  // "Ödeme Hatırlatması - 3 Gün Kaldı" -> "Ödeme Hatırlatması"
+  // "Gecikmiş Ödeme Bildirimi" -> "Gecikmiş Ödeme"
+  const parts = title.split(" - ")
+  return parts[0].trim()
+}
+
+// Konu bazlı stil konfigürasyonu
+const getSubjectConfig = (subject: string) => {
+  const lowerSubject = subject.toLowerCase()
+
+  if (lowerSubject.includes("hatırlatma") || lowerSubject.includes("hatırlatması")) {
+    return {
+      bgColor: "bg-blue-600",
+      label: "Hatırlatma"
+    }
+  }
+
+  if (lowerSubject.includes("gecikmiş") || lowerSubject.includes("gecikmis")) {
+    return {
+      bgColor: "bg-red-600",
+      label: "Gecikmiş Ödeme"
+    }
+  }
+
+  if (lowerSubject.includes("başarı") || lowerSubject.includes("başarılı")) {
+    return {
+      bgColor: "bg-green-600",
+      label: "Başarılı"
+    }
+  }
+
+  if (lowerSubject.includes("uyarı")) {
+    return {
+      bgColor: "bg-orange-600",
+      label: "Uyarı"
+    }
+  }
+
+  // Varsayılan
+  return {
+    bgColor: "bg-gray-600",
+    label: subject
+  }
 }
 
 export default function BildirimlerPage() {
@@ -399,10 +419,8 @@ export default function BildirimlerPage() {
                   </TableHeader>
                   <TableBody>
                     {paginatedNotifications.map((notification, index) => {
-                      // Fall back to "info" styling if notification.type is undefined or not found in typeConfig
-                      const typeKey = (notification.type as keyof typeof typeConfig) ?? "info"
-                      const config = typeConfig[typeKey] ?? typeConfig.info
-                      const Icon = config.icon
+                      const subject = getSubjectFromTitle(notification.title)
+                      const config = getSubjectConfig(subject)
 
                       return (
                         <TableRow
@@ -414,10 +432,21 @@ export default function BildirimlerPage() {
                         >
                           <TableCell>
                             <div className="flex items-center gap-2">
-                              <div className={`p-1.5 rounded-lg ${config.bgColor}`}>
-                                <Icon className={`h-4 w-4 ${config.color}`} />
-                              </div>
-                              <Badge className={config.badgeClass}>{config.label}</Badge>
+                              {notification.credit_id && notification.credits?.banks ? (
+                                <BankLogo
+                                  bankName={notification.credits.banks.name}
+                                  logoUrl={notification.credits.banks.logo_url}
+                                  size="sm"
+                                  className="ring-1 ring-gray-200 dark:ring-gray-700"
+                                />
+                              ) : (
+                                <div className="w-8 h-8 rounded-lg bg-gray-100 dark:bg-gray-800 flex items-center justify-center">
+                                  <Bell className="h-4 w-4 text-gray-600 dark:text-gray-400" />
+                                </div>
+                              )}
+                              <Badge className={`${config.bgColor} text-white border-transparent`}>
+                                {config.label}
+                              </Badge>
                             </div>
                           </TableCell>
 

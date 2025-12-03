@@ -849,9 +849,6 @@ export default function Header({ pageTitle }: HeaderProps) {
                 ) : (
                   <div className="divide-y divide-gray-100 dark:divide-gray-800">
                     {notifications.map((notification) => {
-                      const config = typeConfig[notification.type as keyof typeof typeConfig] || typeConfig.info
-                      const Icon = config.icon
-
                       return (
                         <div
                           key={notification.id}
@@ -866,11 +863,18 @@ export default function Header({ pageTitle }: HeaderProps) {
                           onClick={() => handleHeaderNotificationClick(notification)}
                         >
                           <div className="flex items-start gap-3">
-                            <div
-                              className={`p-2 rounded-lg ${config.color} flex-shrink-0 bg-white dark:bg-gray-800 shadow-sm`}
-                            >
-                              <Icon className="h-4 w-4" />
-                            </div>
+                            {notification.credit_id && notification.credits?.banks ? (
+                              <BankLogo
+                                bankName={notification.credits.banks.name}
+                                logoUrl={notification.credits.banks.logo_url}
+                                size="sm"
+                                className="flex-shrink-0 ring-1 ring-gray-200 dark:ring-gray-700"
+                              />
+                            ) : (
+                              <div className="w-8 h-8 rounded-lg bg-emerald-100 dark:bg-emerald-900 flex items-center justify-center flex-shrink-0">
+                                <Bell className="h-4 w-4 text-emerald-600 dark:text-emerald-400" />
+                              </div>
+                            )}
 
                             <div className="flex-1 min-w-0">
                               <div className="flex items-start justify-between gap-2 mb-1">
