@@ -255,7 +255,10 @@ async function handleSubscriptionCreated(
     .single()
 
   if (newSubscription) {
-    // Initialize OCR usage
+    // Initialize OCR usage with saved_credits_limit
+    const ocrLimit = planId === "free" ? 1 : (planId.includes("premium") ? 999999 : 10)
+    const savedCreditsLimit = planId === "free" ? 1 : (planId.includes("premium") ? 999999 : 10)
+
     await supabase
       .from("subscription_usage")
       .upsert({
@@ -263,7 +266,8 @@ async function handleSubscriptionCreated(
         subscription_id: newSubscription.id,
         feature_type: "ocr_analysis",
         usage_count: 0,
-        limit_count: planId === "free" ? 1 : (planId.includes("premium") ? 999999 : 10),
+        limit_count: ocrLimit,
+        saved_credits_limit: savedCreditsLimit,
         reset_at: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
       })
 
