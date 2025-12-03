@@ -1420,15 +1420,56 @@ export default function AyarlarPage() {
                       Bildirim Ayarları
                     </CardTitle>
                     <CardDescription className="dark:text-white/60">
-                      Detaylı bildirim tercihlerinizi yönetin
+                      E-posta bildirimleri ve hatırlatıcılarınızı yönetin
                     </CardDescription>
                   </CardHeader>
                   <CardContent className="space-y-4">
+                    {/* Aylık Ödeme Özeti */}
+                    <div className="flex items-center justify-between p-4 border rounded-lg dark:border-white/10 dark:bg-black/10">
+                      <div className="space-y-0.5">
+                        <Label htmlFor="email-monthly" className="text-base font-medium dark:text-white">
+                          Aylık Ödeme Özeti
+                        </Label>
+                        <p className="text-sm text-gray-500 dark:text-white/60">
+                          Her ayın 1'inde o ayki ödemelerinizin özeti e-posta olarak gönderilsin
+                        </p>
+                      </div>
+                      <Switch
+                        id="email-monthly"
+                        checked={profileData.email_monthly_summary ?? true}
+                        onCheckedChange={(checked) => {
+                          setProfileData({ ...profileData, email_monthly_summary: checked })
+                        }}
+                      />
+                    </div>
+
+                    {/* Haftalık Ödeme Özeti */}
+                    <div className="flex items-center justify-between p-4 border rounded-lg dark:border-white/10 dark:bg-black/10">
+                      <div className="space-y-0.5">
+                        <Label htmlFor="email-weekly" className="text-base font-medium dark:text-white">
+                          Haftalık Ödeme Hatırlatıcısı
+                        </Label>
+                        <p className="text-sm text-gray-500 dark:text-white/60">
+                          Her Pazartesi o haftaki ödemeleriniz e-posta olarak gönderilsin
+                        </p>
+                      </div>
+                      <Switch
+                        id="email-weekly"
+                        checked={profileData.email_weekly_summary ?? true}
+                        onCheckedChange={(checked) => {
+                          setProfileData({ ...profileData, email_weekly_summary: checked })
+                        }}
+                      />
+                    </div>
+
+                    <Separator className="dark:bg-white/10" />
+
+                    {/* Gelişmiş Bildirim Ayarları */}
                     <div className="flex items-center justify-between p-4 border rounded-lg dark:border-white/10 dark:bg-black/10">
                       <div>
                         <p className="font-medium dark:text-white">Gelişmiş Bildirim Ayarları</p>
                         <p className="text-sm text-gray-500 dark:text-white/60">
-                          E-posta hatırlatıcıları, zaman ayarları ve test fonksiyonları
+                          Ödeme hatırlatıcıları, zaman ayarları ve test fonksiyonları
                         </p>
                       </div>
                       <Button onClick={() => router.push("/uygulama/odeme-plani?tab=hatirlatici")}>
