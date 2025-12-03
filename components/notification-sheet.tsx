@@ -19,35 +19,19 @@ import { tr } from "date-fns/locale"
 const typeConfig = {
   info: {
     icon: Info,
-    color: "text-blue-600 dark:text-blue-400",
-    bgColor: "bg-blue-50 dark:bg-blue-900/30",
-    badgeClass:
-      "bg-gradient-to-r from-blue-600 to-indigo-700 text-white border-transparent hover:from-blue-700 hover:to-indigo-800",
-    label: "Bilgi",
+    bgColor: "bg-blue-600",
   },
   warning: {
     icon: AlertTriangle,
-    color: "text-orange-600 dark:text-orange-400",
-    bgColor: "bg-orange-50 dark:bg-orange-900/30",
-    badgeClass:
-      "bg-gradient-to-r from-orange-600 to-red-700 text-white border-transparent hover:from-orange-700 hover:to-red-800",
-    label: "Uyarı",
+    bgColor: "bg-orange-600",
   },
   error: {
     icon: AlertCircle,
-    color: "text-red-600 dark:text-red-400",
-    bgColor: "bg-red-50 dark:bg-red-900/30",
-    badgeClass:
-      "bg-gradient-to-r from-red-600 to-rose-700 text-white border-transparent hover:from-red-700 hover:to-rose-800",
-    label: "Hata",
+    bgColor: "bg-red-600",
   },
   success: {
     icon: CheckCircle,
-    color: "text-green-600 dark:text-green-400",
-    bgColor: "bg-green-50 dark:bg-green-900/30",
-    badgeClass:
-      "bg-gradient-to-r from-emerald-600 to-teal-700 text-white border-transparent hover:from-emerald-700 hover:to-teal-800",
-    label: "Başarılı",
+    bgColor: "bg-green-600",
   },
 }
 
@@ -71,8 +55,8 @@ export function NotificationSheet({ notification, open, onOpenChange, onDelete }
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
           <div className="flex items-center gap-3 mb-2">
-            <div className={`p-2.5 rounded-xl ${config.bgColor}`}>
-              <Icon className={`h-6 w-6 ${config.color}`} />
+            <div className={`${config.bgColor} p-2.5 rounded-xl`}>
+              <Icon className="h-6 w-6 text-white" />
             </div>
             <div className="flex-1">
               <DialogTitle className="text-xl font-bold">{notification.title}</DialogTitle>
@@ -80,7 +64,6 @@ export function NotificationSheet({ notification, open, onOpenChange, onDelete }
                 {format(new Date(notification.created_at), "d MMMM yyyy, HH:mm", { locale: tr })}
               </DialogDescription>
             </div>
-            <Badge className={config.badgeClass}>{config.label}</Badge>
           </div>
         </DialogHeader>
 

@@ -36,12 +36,19 @@ import {
   PieChart,
 } from "lucide-react"
 import { AdBanner } from "@/components/ad-banner"
-import { AreaChart, Area, BarChart, Bar, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "@/lib/chart-loader"
 
-// Lazy load dashboard components for better performance
-const MetricsCards = dynamic(() => import('@/components/dashboard/metrics-cards'), {
-  loading: () => <div className="grid grid-cols-1 sm:grid-cols-2 gap-4"><div className="h-40 bg-gray-100 dark:bg-gray-800 animate-pulse rounded-lg"></div><div className="h-40 bg-gray-100 dark:bg-gray-800 animate-pulse rounded-lg"></div><div className="h-40 bg-gray-100 dark:bg-gray-800 animate-pulse rounded-lg"></div><div className="h-40 bg-gray-100 dark:bg-gray-800 animate-pulse rounded-lg"></div></div>
-})
+// Dynamic imports for charts
+const BarChart = dynamic(() => import("recharts").then((mod) => ({ default: mod.BarChart })), { ssr: false })
+const Bar = dynamic(() => import("recharts").then((mod) => ({ default: mod.Bar })), { ssr: false })
+const RechartsLineChart = dynamic(() => import("recharts").then((mod) => ({ default: mod.LineChart })), { ssr: false })
+const RechartsLine = dynamic(() => import("recharts").then((mod) => ({ default: mod.Line })), { ssr: false })
+const XAxis = dynamic(() => import("recharts").then((mod) => ({ default: mod.XAxis })), { ssr: false })
+const YAxis = dynamic(() => import("recharts").then((mod) => ({ default: mod.YAxis })), { ssr: false })
+const CartesianGrid = dynamic(() => import("recharts").then((mod) => ({ default: mod.CartesianGrid })), { ssr: false })
+const Tooltip = dynamic(() => import("recharts").then((mod) => ({ default: mod.Tooltip })), { ssr: false })
+const ResponsiveContainer = dynamic(() => import("recharts").then((mod) => ({ default: mod.ResponsiveContainer })), { ssr: false })
+const Area = dynamic(() => import("recharts").then((mod) => ({ default: mod.Area })), { ssr: false })
+const AreaChart = dynamic(() => import("recharts").then((mod) => ({ default: mod.AreaChart })), { ssr: false })
 
 // Kredi verisi için genişletilmiş tip (ilişkili tablolarla)
 interface PopulatedCredit extends Credit {
@@ -82,7 +89,6 @@ const defaultBarChartData = [
 
 export default function DashboardPage() {
   const { user, profile, loading: authLoading } = useAuth()
-
   const [credits, setCredits] = useState<any[]>([])
   const [upcomingPayments, setUpcomingPayments] = useState<any[]>([])
   const [loadingData, setLoadingData] = useState(true)
@@ -274,7 +280,7 @@ export default function DashboardPage() {
     <div className="flex flex-col gap-4 md:gap-6">
       <AdBanner position="top" />
 
-      {/* Hero Card -  */}
+      {/* Hero Card - Karciz Style */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <Card className="bg-gradient-to-br from-emerald-600 via-teal-600 to-emerald-700 dark:from-emerald-700 dark:via-teal-700 dark:to-emerald-800 text-white border-0 shadow-2xl overflow-hidden">
           <CardContent className="p-6 md:p-8">
@@ -325,13 +331,244 @@ export default function DashboardPage() {
           </CardContent>
         </Card>
 
-        {/* 4 Metric Cards - Now Lazy Loaded */}
-        <MetricsCards
-          totalCredits={totalCredits}
-          monthlyPayment={monthlyPayment}
-          averageInterestRate={averageInterestRate}
-          upcomingPaymentCount={upcomingPaymentCount}
-        />
+        {/* 4 Metric Cards - Karciz Style (Exact Match) */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          {/* Card 1: Aktif Kredi - Line Chart */}
+          <Card className="bg-white dark:bg-black/20 border border-gray-200 dark:border-0 overflow-hidden">
+            <CardContent className="p-6">
+              <div className="flex items-start justify-between mb-4">
+                <div className="min-w-0 flex-1">
+                  <h3 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white mb-1 truncate">{totalCredits}</h3>
+                  <p className="text-xs sm:text-sm text-emerald-600 dark:text-emerald-400">Aktif Kredi</p>
+                </div>
+                <select className="text-[10px] sm:text-xs bg-gray-50 dark:bg-gray-800 text-gray-700 dark:text-gray-300 border border-gray-200 dark:border-gray-700 rounded px-1.5 sm:px-2 py-1 cursor-pointer focus:outline-none focus:ring-2 focus:ring-emerald-500 flex-shrink-0">
+                  <option>Bu Hafta ▼</option>
+                  <option>Bu Ay</option>
+                  <option>Bu Yıl</option>
+                </select>
+              </div>
+              <div className="h-24">
+                <ResponsiveContainer width="100%" height="100%">
+                  <AreaChart data={[
+                    { val: 3 }, { val: 4 }, { val: 3 }, { val: 5 }, { val: 4 }, { val: 6 }, { val: 5 }, { val: totalCredits }
+                  ]}>
+                    <defs>
+                      <linearGradient id="cardGradient1" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="5%" stopColor="#14B8A6" stopOpacity={0.3} />
+                        <stop offset="95%" stopColor="#14B8A6" stopOpacity={0} />
+                      </linearGradient>
+                    </defs>
+                    <Area type="monotone" dataKey="val" stroke="#14B8A6" strokeWidth={2} fill="url(#cardGradient1)" />
+                  </AreaChart>
+                </ResponsiveContainer>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Card 2: Bu Ayki Ödeme - Bar Chart */}
+          <Card className="bg-white dark:bg-black/20 border border-gray-200 dark:border-0 overflow-hidden">
+            <CardContent className="p-6">
+              <div className="flex items-start justify-between mb-4">
+                <div className="min-w-0 flex-1">
+                  <h3 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white mb-1 truncate">+{Math.round((totalPaidDebt / totalAmount) * 100) || 0}%</h3>
+                  <p className="text-xs sm:text-sm text-emerald-600 dark:text-emerald-400">İlerleme</p>
+                </div>
+                <select className="text-[10px] sm:text-xs bg-gray-50 dark:bg-gray-800 text-gray-700 dark:text-gray-300 border border-gray-200 dark:border-gray-700 rounded px-1.5 sm:px-2 py-1 cursor-pointer focus:outline-none focus:ring-2 focus:ring-emerald-500 flex-shrink-0">
+                  <option>Günlük ▼</option>
+                  <option>Haftalık</option>
+                  <option>Aylık</option>
+                </select>
+              </div>
+              <div className="h-24 flex items-end gap-1">
+                {[40, 65, 45, 80, 55, 70, 50, 85, 60, 75, 65, 90].map((height, i) => (
+                  <div
+                    key={i}
+                    className="flex-1 bg-emerald-500 rounded-sm"
+                    style={{ height: `${height}%` }}
+                  />
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Card 3: Kalan Ödemeler - Donut Chart */}
+          <Card className="bg-white dark:bg-black/20 border border-gray-200 dark:border-0 overflow-hidden">
+            <CardContent className="p-6">
+              <div className="flex items-start justify-between mb-4">
+                <div className="min-w-0 flex-1">
+                  <h3 className="text-xl sm:text-2xl md:text-3xl font-bold text-gray-900 dark:text-white mb-1 truncate">
+                    {formatCurrency((() => {
+                      const now = new Date()
+                      const filtered = upcomingPayments.filter(p => {
+                        const paymentDate = new Date(p.due_date)
+                        if (paymentFilter === 'week') {
+                          const weekLater = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000)
+                          return paymentDate >= now && paymentDate <= weekLater
+                        } else {
+                          const monthLater = new Date(now.getFullYear(), now.getMonth() + 1, now.getDate())
+                          return paymentDate >= now && paymentDate <= monthLater
+                        }
+                      })
+                      return filtered.reduce((sum, p) => sum + p.total_payment, 0)
+                    })())}
+                  </h3>
+                  <p className="text-xs sm:text-sm text-emerald-600 dark:text-emerald-400">Kalan Ödeme</p>
+                </div>
+                <select
+                  className="text-[10px] sm:text-xs bg-gray-50 dark:bg-gray-800 text-gray-700 dark:text-gray-300 border border-gray-200 dark:border-gray-700 rounded px-1.5 sm:px-2 py-1 cursor-pointer focus:outline-none focus:ring-2 focus:ring-emerald-500 flex-shrink-0"
+                  value={paymentFilter}
+                  onChange={(e) => setPaymentFilter(e.target.value as 'week' | 'month')}
+                >
+                  <option value="week">Bu Hafta ▼</option>
+                  <option value="month">Bu Ay</option>
+                </select>
+              </div>
+              <div className="flex items-center gap-4">
+                <div className="w-24 h-24">
+                  <svg viewBox="0 0 100 100" className="transform -rotate-90">
+                    {(() => {
+                      const now = new Date()
+                      const filtered = upcomingPayments.filter(p => {
+                        const paymentDate = new Date(p.due_date)
+                        if (paymentFilter === 'week') {
+                          const weekLater = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000)
+                          return paymentDate >= now && paymentDate <= weekLater
+                        } else {
+                          const monthLater = new Date(now.getFullYear(), now.getMonth() + 1, now.getDate())
+                          return paymentDate >= now && paymentDate <= monthLater
+                        }
+                      })
+
+                      // Banka bazında grupla
+                      const bankPayments = filtered.reduce((acc, p) => {
+                        const bankName = p.credits?.banks?.name || 'Diğer'
+                        acc[bankName] = (acc[bankName] || 0) + p.total_payment
+                        return acc
+                      }, {} as Record<string, number>)
+
+                      const entries = Object.entries(bankPayments).slice(0, 4)
+                      const total = entries.reduce((sum, [, amount]) => sum + (amount as number), 0) || 1
+                      const colors = ['#10B981', '#14B8A6', '#06B6D4', '#3B82F6']
+                      let currentOffset = 0
+
+                      return (
+                        <>
+                          <circle cx="50" cy="50" r="40" fill="none" stroke="currentColor" strokeWidth="12" className="text-gray-200 dark:text-gray-800" />
+                          {entries.map(([bank, amount], index) => {
+                            const percentage = (amount as number) / total
+                            const dashLength = percentage * 251
+                            const circle = (
+                              <circle
+                                key={bank}
+                                cx="50"
+                                cy="50"
+                                r="40"
+                                fill="none"
+                                stroke={colors[index]}
+                                strokeWidth="12"
+                                strokeDasharray={`${dashLength} 251`}
+                                strokeDashoffset={currentOffset}
+                                strokeLinecap="round"
+                              />
+                            )
+                            currentOffset -= dashLength
+                            return circle
+                          })}
+                        </>
+                      )
+                    })()}
+                  </svg>
+                </div>
+                <div className="flex-1 space-y-2">
+                  {(() => {
+                    const now = new Date()
+                    const filtered = upcomingPayments.filter(p => {
+                      const paymentDate = new Date(p.due_date)
+                      if (paymentFilter === 'week') {
+                        const weekLater = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000)
+                        return paymentDate >= now && paymentDate <= weekLater
+                      } else {
+                        const monthLater = new Date(now.getFullYear(), now.getMonth() + 1, now.getDate())
+                        return paymentDate >= now && paymentDate <= monthLater
+                      }
+                    })
+
+                    const bankPayments = filtered.reduce((acc, p) => {
+                      const bankName = p.credits?.banks?.name || 'Diğer'
+                      acc[bankName] = (acc[bankName] || 0) + p.total_payment
+                      return acc
+                    }, {} as Record<string, number>)
+
+                    const colors = ['#10B981', '#14B8A6', '#06B6D4', '#3B82F6']
+
+                    return Object.entries(bankPayments).slice(0, 4).map(([bank, amount], index) => (
+                      <div key={bank} className="flex items-center justify-between gap-2">
+                        <div className="flex items-center gap-2 flex-1 min-w-0">
+                          <div className="w-2 h-2 rounded-full flex-shrink-0" style={{ backgroundColor: colors[index] }} />
+                          <span className="text-xs text-gray-600 dark:text-gray-400 truncate">{bank}</span>
+                        </div>
+                        <span className="text-xs font-semibold text-gray-900 dark:text-white">
+                          {formatCurrency(amount as number)}
+                        </span>
+                      </div>
+                    ))
+                  })()}
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Card 4: Toplam Ödenen - Multi Line Chart */}
+          <Card className="bg-white dark:bg-black/20 border border-gray-200 dark:border-0 overflow-hidden">
+            <CardContent className="p-6">
+              <div className="flex items-start justify-between mb-4">
+                <div className="min-w-0 flex-1">
+                  <h3 className="text-xl sm:text-2xl md:text-3xl font-bold text-gray-900 dark:text-white mb-1 truncate">
+                    {formatCurrency(monthlyPaymentPeriod === 'monthly' ? monthlyPayment : monthlyPayment * 12)}
+                  </h3>
+                  <p className="text-xs sm:text-sm text-emerald-600 dark:text-emerald-400">
+                    {monthlyPaymentPeriod === 'monthly' ? 'Aylık Ort. Ödeme' : 'Yıllık Ort. Ödeme'}
+                  </p>
+                </div>
+                <select
+                  className="text-[10px] sm:text-xs bg-gray-50 dark:bg-gray-800 text-gray-700 dark:text-gray-300 border border-gray-200 dark:border-gray-700 rounded px-1.5 sm:px-2 py-1 cursor-pointer focus:outline-none focus:ring-2 focus:ring-emerald-500 flex-shrink-0"
+                  value={monthlyPaymentPeriod}
+                  onChange={(e) => setMonthlyPaymentPeriod(e.target.value as 'monthly' | 'yearly')}
+                >
+                  <option value="monthly">Aylık ▼</option>
+                  <option value="yearly">Yıllık</option>
+                </select>
+              </div>
+              <div className="h-24">
+                <ResponsiveContainer width="100%" height="100%">
+                  <RechartsLineChart data={
+                    monthlyPaymentPeriod === 'monthly'
+                      ? [
+                          { a: monthlyPayment * 0.95, b: monthlyPayment * 0.85, c: monthlyPayment * 0.90 },
+                          { a: monthlyPayment * 0.98, b: monthlyPayment * 0.88, c: monthlyPayment * 0.93 },
+                          { a: monthlyPayment * 0.92, b: monthlyPayment * 0.95, c: monthlyPayment * 0.88 },
+                          { a: monthlyPayment, b: monthlyPayment * 0.90, c: monthlyPayment * 0.97 },
+                          { a: monthlyPayment * 0.97, b: monthlyPayment * 0.93, c: monthlyPayment * 0.95 },
+                          { a: monthlyPayment * 1.02, b: monthlyPayment * 0.96, c: monthlyPayment }
+                        ]
+                      : [
+                          { a: monthlyPayment * 12 * 0.95, b: monthlyPayment * 12 * 0.85, c: monthlyPayment * 12 * 0.90 },
+                          { a: monthlyPayment * 12 * 0.98, b: monthlyPayment * 12 * 0.88, c: monthlyPayment * 12 * 0.93 },
+                          { a: monthlyPayment * 12 * 0.92, b: monthlyPayment * 12 * 0.95, c: monthlyPayment * 12 * 0.88 },
+                          { a: monthlyPayment * 12, b: monthlyPayment * 12 * 0.90, c: monthlyPayment * 12 * 0.97 },
+                          { a: monthlyPayment * 12 * 0.97, b: monthlyPayment * 12 * 0.93, c: monthlyPayment * 12 * 0.95 },
+                          { a: monthlyPayment * 12 * 1.02, b: monthlyPayment * 12 * 0.96, c: monthlyPayment * 12 }
+                        ]
+                  }>
+                    <RechartsLine type="monotone" dataKey="a" stroke="#14B8A6" strokeWidth={2} dot={false} />
+                    <RechartsLine type="monotone" dataKey="b" stroke="#F59E0B" strokeWidth={2} dot={false} />
+                    <RechartsLine type="monotone" dataKey="c" stroke="#3B82F6" strokeWidth={2} dot={false} />
+                  </RechartsLineChart>
+                </ResponsiveContainer>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
       </div>
 
       {/* Monthly Payment Trend Chart - Karciz Style */}
@@ -376,13 +613,13 @@ export default function DashboardPage() {
                 formatter={(value: any) => formatCurrency(value)}
               />
               <Area type="monotone" dataKey="odeme" stroke="#14B8A6" strokeWidth={2} fillOpacity={1} fill="url(#colorOdeme)" />
-              <Line type="monotone" dataKey="hedef" stroke="#F59E0B" strokeWidth={2} strokeDasharray="5 5" dot={false} />
+              <RechartsLine type="monotone" dataKey="hedef" stroke="#F59E0B" strokeWidth={2} strokeDasharray="5 5" dot={false} />
             </AreaChart>
           </ResponsiveContainer>
         </CardContent>
       </Card>
 
-      {/* Latest Payments & Quick Stats -  */}
+      {/* Latest Payments & Quick Stats - Karciz Style */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <Card className="bg-white dark:bg-black/20 border border-gray-200 dark:border-0 overflow-hidden lg:col-span-2">
           <CardHeader className="border-b border-gray-100 dark:border-white/5 pb-4">

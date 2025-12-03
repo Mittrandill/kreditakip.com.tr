@@ -66,51 +66,24 @@ interface Notification {
   }
 }
 
-// Bildirim başlığından konuyu çıkaran fonksiyon
-const getSubjectFromTitle = (title: string): string => {
-  // "Ödeme Hatırlatması - 3 Gün Kaldı" -> "Ödeme Hatırlatması"
-  // "Gecikmiş Ödeme Bildirimi" -> "Gecikmiş Ödeme"
-  const parts = title.split(" - ")
-  return parts[0].trim()
-}
-
-// Konu bazlı stil konfigürasyonu
-const getSubjectConfig = (subject: string) => {
-  const lowerSubject = subject.toLowerCase()
-
-  if (lowerSubject.includes("hatırlatma") || lowerSubject.includes("hatırlatması")) {
-    return {
-      bgColor: "bg-blue-600",
-      label: "Hatırlatma"
-    }
-  }
-
-  if (lowerSubject.includes("gecikmiş") || lowerSubject.includes("gecikmis")) {
-    return {
-      bgColor: "bg-red-600",
-      label: "Gecikmiş Ödeme"
-    }
-  }
-
-  if (lowerSubject.includes("başarı") || lowerSubject.includes("başarılı")) {
-    return {
-      bgColor: "bg-green-600",
-      label: "Başarılı"
-    }
-  }
-
-  if (lowerSubject.includes("uyarı")) {
-    return {
-      bgColor: "bg-orange-600",
-      label: "Uyarı"
-    }
-  }
-
-  // Varsayılan
-  return {
-    bgColor: "bg-gray-600",
-    label: subject
-  }
+// Tip bazlı stil konfigürasyonu
+const typeConfig = {
+  info: {
+    icon: Info,
+    bgColor: "bg-blue-600",
+  },
+  warning: {
+    icon: AlertTriangle,
+    bgColor: "bg-orange-600",
+  },
+  error: {
+    icon: AlertCircle,
+    bgColor: "bg-red-600",
+  },
+  success: {
+    icon: CheckCircle,
+    bgColor: "bg-green-600",
+  },
 }
 
 export default function BildirimlerPage() {
@@ -419,8 +392,9 @@ export default function BildirimlerPage() {
                   </TableHeader>
                   <TableBody>
                     {paginatedNotifications.map((notification, index) => {
-                      const subject = getSubjectFromTitle(notification.title)
-                      const config = getSubjectConfig(subject)
+                      const typeKey = (notification.type as keyof typeof typeConfig) ?? "info"
+                      const config = typeConfig[typeKey] ?? typeConfig.info
+                      const Icon = config.icon
 
                       return (
                         <TableRow
@@ -431,28 +405,26 @@ export default function BildirimlerPage() {
                           } ${!notification.is_read ? "bg-blue-50/30 dark:bg-blue-900/20" : ""}`}
                         >
                           <TableCell>
+                            <div className="flex items-center justify-center">
+                              <div className={`${config.bgColor} p-2 rounded-lg`}>
+                                <Icon className="h-4 w-4 text-white" />
+                              </div>
+                            </div>
+                          </TableCell>
+
+                          <TableCell className="font-medium text-gray-900 dark:text-white max-w-48">
                             <div className="flex items-center gap-2">
                               {notification.credit_id && notification.credits?.banks ? (
                                 <BankLogo
                                   bankName={notification.credits.banks.name}
                                   logoUrl={notification.credits.banks.logo_url}
                                   size="sm"
-                                  className="ring-1 ring-gray-200 dark:ring-gray-700"
+                                  className="flex-shrink-0"
                                 />
-                              ) : (
-                                <div className="w-8 h-8 rounded-lg bg-gray-100 dark:bg-gray-800 flex items-center justify-center">
-                                  <Bell className="h-4 w-4 text-gray-600 dark:text-gray-400" />
-                                </div>
-                              )}
-                              <Badge className={`${config.bgColor} text-white border-transparent`}>
-                                {config.label}
-                              </Badge>
-                            </div>
-                          </TableCell>
-
-                          <TableCell className="font-medium text-gray-900 dark:text-white max-w-48">
-                            <div className="truncate" title={notification.title}>
-                              {notification.title}
+                              ) : null}
+                              <div className="truncate" title={notification.title}>
+                                {notification.title}
+                              </div>
                             </div>
                           </TableCell>
 
