@@ -14,18 +14,55 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Send Monthly Payment Summary Emails
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10
+
+      - name: Get pnpm store directory
+        id: pnpm-cache
+        shell: bash
         run: |
-          curl -X POST \
-            -H "Authorization: Bearer ${{ secrets.CRON_SECRET }}" \
-            -H "Content-Type: application/json" \
-            -f \
-            https://www.kreditakip.com.tr/api/email/monthly-summary
+          echo "STORE_PATH=$(pnpm store path)" >> $GITHUB_OUTPUT
 
-      - name: Log completion
-        if: success()
-        run: echo "Monthly payment summary emails sent successfully"
+      - name: Setup pnpm cache
+        uses: actions/cache@v4
+        with:
+          path: ${{ steps.pnpm-cache.outputs.STORE_PATH }}
+          key: ${{ runner.os }}-pnpm-store-${{ hashFiles('**/pnpm-lock.yaml') }}
+          restore-keys: |
+            ${{ runner.os }}-pnpm-store-
 
-      - name: Log failure
-        if: failure()
-        run: echo "Failed to send monthly payment summary emails"
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Send Monthly Payment Summary Emails
+        env:
+          NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
+          SERVICE_ROLE_KEY: ${{ secrets.SERVICE_ROLE_KEY }}
+          MAILERSEND_API_KEY: ${{ secrets.MAILERSEND_API_KEY }}
+        run: |
+          echo "📂 Current working directory: $(pwd)"
+          echo "📋 Listing scripts directory:"
+          ls -la scripts/
+          echo "🔍 Verifying script file exists:"
+          if [ -f "scripts/send-monthly-payment-summary.js" ]; then
+            echo "✅ Script file found"
+          else
+            echo "❌ Script file not found"
+            exit 1
+          fi
+          echo "🚀 Running monthly payment summary script..."
+          node scripts/send-monthly-payment-summary.js
+
+      - name: Workflow Summary
+        if: always()
+        run: |
+          echo "📊 Monthly Payment Summary Workflow"
+          echo "====================================="
+          echo "Workflow completed at: $(date)"

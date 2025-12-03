@@ -1,0 +1,295 @@
+const { MailerSend, EmailParams, Sender, Recipient } = require("mailersend")
+const { createClient } = require("@supabase/supabase-js")
+
+const mailerSend = new MailerSend({
+  apiKey: process.env.MAILERSEND_API_KEY,
+})
+
+const supabase = createClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL,
+  process.env.SERVICE_ROLE_KEY,
+  {
+    auth: {
+      autoRefreshToken: false,
+      persistSession: false,
+    },
+  }
+)
+
+// Email template helper
+function generateWeeklyEmailTemplate(data) {
+  const { customerName, weekStart, weekEnd, payments, totalAmount } = data
+
+  return {
+    subject: `Bu Hafta (${weekStart} - ${weekEnd}) - Ödeme Hatırlatıcısı`,
+    html: `
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        body { font-family: 'Poppins', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; margin: 0; padding: 0; background-color: #0f172a; color: #ffffff; }
+        .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+        .header { background: linear-gradient(135deg, #10b981 0%, #14b8a6 50%, #0d9488 100%); padding: 48px 40px; text-align: center; border-radius: 12px 12px 0 0; }
+        .logo { max-width: 203px; height: auto; margin-bottom: 20px; filter: brightness(0) invert(1); }
+        .header h1 { color: white; margin: 0; font-size: 28px; font-weight: 700; }
+        .header p { color: rgba(255, 255, 255, 0.9); margin: 10px 0 0 0; font-size: 16px; }
+        .content { background: #1e293b; padding: 40px; border-radius: 0 0 12px 12px; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25); border: 1px solid #334155; }
+        .summary-box { background: linear-gradient(145deg, #334155 0%, #475569 100%); padding: 20px; border-radius: 8px; margin: 20px 0; border-left: 4px solid #10b981; }
+        .summary-box h3 { margin: 0 0 10px 0; color: #ffffff; font-size: 16px; }
+        .summary-box .total { font-size: 32px; font-weight: 700; color: #ffffff; margin: 0; }
+        .payment-table { width: 100%; border-collapse: collapse; margin: 20px 0; }
+        .payment-table thead { background: #334155; }
+        .payment-table th { padding: 12px; text-align: left; font-size: 12px; font-weight: 600; color: #94a3b8; text-transform: uppercase; }
+        .payment-table td { padding: 16px 12px; border-bottom: 1px solid #334155; }
+        .payment-table tr:last-child td { border-bottom: none; }
+        .bank-cell { display: flex; align-items: center; gap: 12px; }
+        .bank-name { font-weight: 600; color: #ffffff; font-size: 14px; }
+        .installment-badge { background: #334155; color: #94a3b8; padding: 4px 8px; border-radius: 4px; font-size: 12px; font-weight: 600; }
+        .amount { font-weight: 700; color: #ffffff; font-size: 16px; }
+        .due-date { color: #94a3b8; font-size: 13px; }
+        .footer { text-align: center; padding: 40px; background: #0f172a; border-top: 1px solid #334155; margin-top: 0; color: #64748b; font-size: 14px; }
+        .footer-logo { width: 108px; height: auto; margin-bottom: 20px; opacity: 0.8; }
+        .footer-text { font-size: 12px; color: #64748b; margin-bottom: 16px; }
+        .copyright { font-size: 11px; color: #475569; border-top: 1px solid #334155; padding-top: 20px; }
+        .cta-button { display: inline-block; background: linear-gradient(135deg, #10b981 0%, #0d9488 100%); color: white !important; padding: 12px 24px; border-radius: 8px; text-decoration: none; font-weight: 600; margin-top: 20px; }
+        .info-text { color: #94a3b8; font-size: 14px; line-height: 1.6; }
+        .warning-box { background: linear-gradient(145deg, #334155 0%, #475569 100%); border: 1px solid #475569; padding: 15px; border-radius: 8px; margin: 20px 0; }
+        .warning-box p { margin: 0; color: #fbbf24; font-size: 14px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <img src="https://oymjjceuiotxfbpwsdym.supabase.co/storage/v1/object/public/Logo/logo-white.png" alt="Kredi Takip" class="logo">
+            <h1>📆 Haftalık Ödeme Hatırlatıcısı</h1>
+            <p>${weekStart} - ${weekEnd}</p>
+        </div>
+        <div class="content">
+            <p>Merhaba <strong>${customerName}</strong>,</p>
+
+            ${payments.length > 0 ? `
+            <p class="info-text">Bu hafta yapmanız gereken <strong>${payments.length} ödeme</strong> bulunmaktadır. Ödemelerinizi zamanında yaparak gecikme faizlerinden kaçınabilirsiniz.</p>
+
+            <table class="payment-table">
+                <thead>
+                    <tr>
+                        <th>Banka</th>
+                        <th style="text-align: center;">Taksit</th>
+                        <th style="text-align: right;">Tutar</th>
+                        <th style="text-align: right;">Vade Tarihi</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    ${payments.map(payment => `
+                    <tr>
+                        <td>
+                            <div class="bank-cell">
+                                <span class="bank-name">${payment.bankName}</span>
+                            </div>
+                        </td>
+                        <td style="text-align: center;">
+                            <span class="installment-badge">${payment.installmentNumber}/${payment.totalInstallments}</span>
+                        </td>
+                        <td style="text-align: right;">
+                            <span class="amount">${payment.amount.toLocaleString('tr-TR')} ₺</span>
+                        </td>
+                        <td style="text-align: right;">
+                            <span class="due-date">${new Date(payment.dueDate).toLocaleDateString('tr-TR', { day: 'numeric', month: 'long', weekday: 'long' })}</span>
+                        </td>
+                    </tr>
+                    `).join('')}
+                </tbody>
+            </table>
+
+            <div class="summary-box">
+                <h3>💰 Bu Haftanın Toplam Ödemesi</h3>
+                <p class="total">${totalAmount.toLocaleString('tr-TR')} ₺</p>
+            </div>
+
+            <div class="warning-box">
+                <p>⏰ <strong>Önemli:</strong> Ödemelerinizi vade tarihinde yapmayı unutmayın!</p>
+            </div>
+            ` : `
+            <p class="info-text">🎉 Harika haber! Bu hafta yapmanız gereken ödeme bulunmamaktadır.</p>
+            `}
+
+            <center>
+                <a href="https://www.kreditakip.com.tr/uygulama/odeme-plani" class="cta-button">Ödeme Planını Görüntüle</a>
+            </center>
+        </div>
+
+        <div class="footer">
+            <img src="https://oymjjceuiotxfbpwsdym.supabase.co/storage/v1/object/public/Logo/logo-white.png" alt="Kredi Takip" class="footer-logo">
+
+            <p class="footer-text">
+                Bu e-posta otomatik olarak gönderilmiştir.<br>
+                E-posta bildirimlerini almak istemiyorsanız, ayarlar sayfasından kapatabilirsiniz.
+            </p>
+
+            <div class="copyright">
+                © 2025 kreditakip.com.tr • Tüm hakları saklıdır
+            </div>
+        </div>
+    </div>
+</body>
+</html>
+    `,
+  }
+}
+
+async function sendWeeklyPaymentSummary() {
+  try {
+    console.log("🚀 Weekly payment summary workflow started")
+
+    if (!process.env.MAILERSEND_API_KEY) {
+      throw new Error("MAILERSEND_API_KEY not configured")
+    }
+
+    if (!process.env.NEXT_PUBLIC_SUPABASE_URL) {
+      throw new Error("NEXT_PUBLIC_SUPABASE_URL not configured")
+    }
+
+    if (!process.env.SERVICE_ROLE_KEY) {
+      throw new Error("SERVICE_ROLE_KEY not configured")
+    }
+
+    // Get current week (Monday to Sunday)
+    const now = new Date()
+    const dayOfWeek = now.getDay()
+
+    // Calculate Monday of this week
+    const monday = new Date(now)
+    monday.setDate(now.getDate() - (dayOfWeek === 0 ? 6 : dayOfWeek - 1))
+    monday.setHours(0, 0, 0, 0)
+
+    // Calculate Sunday of this week
+    const sunday = new Date(monday)
+    sunday.setDate(monday.getDate() + 6)
+    sunday.setHours(23, 59, 59, 999)
+
+    const weekStart = monday.toLocaleDateString("tr-TR", { day: "numeric", month: "long" })
+    const weekEnd = sunday.toLocaleDateString("tr-TR", { day: "numeric", month: "long" })
+
+    const weekStartDate = monday.toISOString().split("T")[0]
+    const weekEndDate = sunday.toISOString().split("T")[0]
+
+    console.log(`📅 Processing week: ${weekStart} - ${weekEnd}`)
+
+    // Get all users who have email_weekly_summary enabled
+    const { data: users, error: usersError } = await supabase
+      .from("profiles")
+      .select("id, email, first_name, last_name, email_weekly_summary")
+      .eq("email_weekly_summary", true)
+      .not("email", "is", null)
+
+    if (usersError) {
+      console.error("Error fetching users:", usersError)
+      throw usersError
+    }
+
+    if (!users || users.length === 0) {
+      console.log("📭 No users with email_weekly_summary enabled")
+      return
+    }
+
+    console.log(`👥 Found ${users.length} users with weekly summary enabled`)
+
+    let totalSent = 0
+    let totalFailed = 0
+
+    for (const user of users) {
+      try {
+        // Get all payments for this user in the current week
+        const { data: payments, error: paymentsError } = await supabase
+          .from("payment_plans")
+          .select(
+            `
+            id,
+            installment_number,
+            total_installments,
+            total_payment,
+            due_date,
+            credits!inner (
+              id,
+              user_id,
+              banks (
+                name,
+                logo_url
+              )
+            )
+          `
+          )
+          .eq("credits.user_id", user.id)
+          .eq("status", "pending")
+          .gte("due_date", weekStartDate)
+          .lte("due_date", weekEndDate)
+          .order("due_date", { ascending: true })
+
+        if (paymentsError) {
+          console.error(`Error fetching payments for user ${user.id}:`, paymentsError)
+          continue
+        }
+
+        // Format payment data (even if empty, we still send the email)
+        const paymentItems = payments?.map((payment) => ({
+          bankName: payment.credits?.banks?.name || "Bilinmeyen Banka",
+          installmentNumber: payment.installment_number,
+          totalInstallments: payment.total_installments,
+          amount: payment.total_payment,
+          dueDate: payment.due_date,
+        })) || []
+
+        const totalAmount = paymentItems.reduce((sum, payment) => sum + payment.amount, 0)
+
+        // Generate email data
+        const customerName = `${user.first_name || ""} ${user.last_name || ""}`.trim() || "Değerli Kullanıcı"
+        const emailData = {
+          customerName,
+          weekStart,
+          weekEnd,
+          payments: paymentItems,
+          totalAmount,
+        }
+
+        const { subject, html } = generateWeeklyEmailTemplate(emailData)
+
+        // Send email
+        const sentFrom = new Sender("bildirim@kreditakip.com.tr", "Kredi Takip")
+        const recipients = [new Recipient(user.email, customerName)]
+
+        const emailParams = new EmailParams()
+          .setFrom(sentFrom)
+          .setTo(recipients)
+          .setSubject(subject)
+          .setHtml(html)
+
+        const response = await mailerSend.email.send(emailParams)
+
+        if (response.statusCode === 202) {
+          totalSent++
+          console.log(`✅ Email sent to ${user.email} (${paymentItems.length} payments)`)
+        } else {
+          totalFailed++
+          console.error(`❌ Email failed for ${user.email}:`, response.statusCode)
+        }
+      } catch (error) {
+        totalFailed++
+        console.error(`❌ Error processing user ${user.id}:`, error)
+      }
+    }
+
+    console.log("\n📊 Weekly Payment Summary - Results")
+    console.log("=====================================")
+    console.log(`✅ Successfully sent: ${totalSent}`)
+    console.log(`❌ Failed: ${totalFailed}`)
+    console.log(`📧 Total processed: ${users.length}`)
+    console.log("🎉 Workflow completed successfully")
+  } catch (error) {
+    console.error("❌ Weekly summary workflow failed:", error)
+    process.exit(1)
+  }
+}
+
+sendWeeklyPaymentSummary()
