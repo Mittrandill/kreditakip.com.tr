@@ -47,6 +47,8 @@ function getBankLogoUrl(bankName) {
     "Dünya Katılım Bankası": "dunya-katilim-bankasi.png",
     "Enpara.com": "enpara-bank.png",
     "Enpara": "enpara-bank.png",
+    "Enpara Bank": "enpara-bank.png",
+    "Enpara Bank A.Ş.": "enpara-bank.png",
     "QNB Enpara": "enpara-bank.png",
     Fibabanka: "fibabanka.png",
     "Fibabanka A.Ş.": "fibabanka.png",
