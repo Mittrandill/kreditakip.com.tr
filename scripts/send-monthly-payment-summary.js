@@ -151,7 +151,7 @@ function generateMonthlyEmailTemplate(data) {
         .payment-table tr:last-child td { border-bottom: none; }
         .bank-cell { display: flex; align-items: center; gap: 12px; }
         .bank-logo { width: 40px; height: 40px; object-fit: contain; border-radius: 6px; }
-        .bank-name { font-weight: 600; color: #ffffff; font-size: 14px; }
+        .bank-name { font-weight: 600; color: #ffffff; font-size: 14px; margin-left: 12px; }
         .installment-badge { background: #334155; color: #94a3b8; padding: 4px 8px; border-radius: 4px; font-size: 12px; font-weight: 600; }
         .amount { font-weight: 700; color: #ffffff; font-size: 16px; }
         .due-date { color: #94a3b8; font-size: 13px; }
