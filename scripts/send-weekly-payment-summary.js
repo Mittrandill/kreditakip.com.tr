@@ -46,6 +46,8 @@ function getBankLogoUrl(bankName) {
     "Diler Yatırım Bankası": "diler-yatirim-bankasi.png",
     "Dünya Katılım Bankası": "dunya-katilim-bankasi.png",
     "Enpara.com": "enpara-bank.png",
+    "Enpara": "enpara-bank.png",
+    "QNB Enpara": "enpara-bank.png",
     Fibabanka: "fibabanka.png",
     "Fibabanka A.Ş.": "fibabanka.png",
     "Golden Global Yatırım Bankası": "golden-global-yatirim-bankasi.png",
@@ -145,9 +147,9 @@ function generateWeeklyEmailTemplate(data) {
         .payment-table th { padding: 12px; text-align: left; font-size: 12px; font-weight: 600; color: #94a3b8; text-transform: uppercase; }
         .payment-table td { padding: 16px 12px; border-bottom: 1px solid #334155; }
         .payment-table tr:last-child td { border-bottom: none; }
-        .bank-cell { display: flex; align-items: center; gap: 12px; }
-        .bank-logo { width: 32px; height: 32px; object-fit: contain; border-radius: 6px; background: white; padding: 4px; }
-        .bank-name { font-weight: 600; color: #ffffff; font-size: 14px; }
+        .bank-cell { display: flex; align-items: center; gap: 8px; }
+        .bank-logo { width: 32px; height: 32px; object-fit: contain; }
+        .bank-name { font-weight: 600; color: #ffffff; font-size: 14px; margin-left: 4px; }
         .installment-badge { background: #334155; color: #94a3b8; padding: 4px 8px; border-radius: 4px; font-size: 12px; font-weight: 600; }
         .amount { font-weight: 700; color: #ffffff; font-size: 16px; }
         .due-date { color: #94a3b8; font-size: 13px; }
