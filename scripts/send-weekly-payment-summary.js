@@ -30,7 +30,8 @@ function generateWeeklyEmailTemplate(data) {
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <style>
         body { font-family: 'Poppins', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; margin: 0; padding: 0; background-color: #0f172a; color: #ffffff; }
-        .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+        .container { max-width: 600px; margin: 0 auto; padding: 20px; background-color: #0f172a; }
+        .greeting { color: #ffffff; }
         .header { background: linear-gradient(135deg, #10b981 0%, #14b8a6 50%, #0d9488 100%); padding: 48px 40px; text-align: center; border-radius: 12px 12px 0 0; }
         .logo { max-width: 203px; height: auto; margin-bottom: 20px; filter: brightness(0) invert(1); }
         .header h1 { color: white; margin: 0; font-size: 28px; font-weight: 700; }
@@ -68,7 +69,7 @@ function generateWeeklyEmailTemplate(data) {
             <p>${weekStart} - ${weekEnd}</p>
         </div>
         <div class="content">
-            <p>Merhaba <strong>${customerName}</strong>,</p>
+            <p class="greeting">Merhaba <strong>${customerName}</strong>,</p>
 
             ${payments.length > 0 ? `
             <p class="info-text">Bu hafta yapmanız gereken <strong>${payments.length} ödeme</strong> bulunmaktadır. Ödemelerinizi zamanında yaparak gecikme faizlerinden kaçınabilirsiniz.</p>
