@@ -208,12 +208,12 @@ async function sendWeeklyPaymentSummary() {
             `
             id,
             installment_number,
-            total_installments,
             total_payment,
             due_date,
             credits!inner (
               id,
               user_id,
+              installments,
               banks (
                 name,
                 logo_url
@@ -236,7 +236,7 @@ async function sendWeeklyPaymentSummary() {
         const paymentItems = payments?.map((payment) => ({
           bankName: payment.credits?.banks?.name || "Bilinmeyen Banka",
           installmentNumber: payment.installment_number,
-          totalInstallments: payment.total_installments,
+          totalInstallments: payment.credits?.installments || 0,
           amount: payment.total_payment,
           dueDate: payment.due_date,
         })) || []
