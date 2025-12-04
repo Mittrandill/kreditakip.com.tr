@@ -193,10 +193,10 @@ async function sendMonthlyPaymentSummary() {
             installment_number,
             total_payment,
             due_date,
+            credit_id,
             credits!inner (
               id,
               user_id,
-              installments,
               banks (
                 name,
                 logo_url
@@ -215,11 +215,24 @@ async function sendMonthlyPaymentSummary() {
           continue
         }
 
+        // Get total installments for each credit_id
+        const creditIds = [...new Set(payments?.map((p) => p.credit_id) || [])]
+        const totalInstallmentsMap = {}
+
+        for (const creditId of creditIds) {
+          const { count } = await supabase
+            .from("payment_plans")
+            .select("*", { count: "exact", head: true })
+            .eq("credit_id", creditId)
+
+          totalInstallmentsMap[creditId] = count || 0
+        }
+
         // Format payment data
         const paymentItems = payments?.map((payment) => ({
           bankName: payment.credits?.banks?.name || "Bilinmeyen Banka",
           installmentNumber: payment.installment_number,
-          totalInstallments: payment.credits?.installments || 0,
+          totalInstallments: totalInstallmentsMap[payment.credit_id] || 0,
           amount: payment.total_payment,
           dueDate: payment.due_date,
         })) || []
