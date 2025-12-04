@@ -16,6 +16,105 @@ const supabase = createClient(
   }
 )
 
+// Bank logo URL helper
+function getBankLogoUrl(bankName) {
+  const bankMappings = {
+    Adabank: "adabank.png",
+    "Adabank A.Ş.": "adabank.png",
+    Akbank: "akbank.png",
+    "Akbank T.A.Ş.": "akbank.png",
+    "Aktif Yatırım Bankası": "aktif-yatirim-bankasi.png",
+    "Aktif Yatırım Bankası A.Ş.": "aktif-yatirim-bankasi.png",
+    "Albaraka Türk": "albaraka-turk-katilim-bankasi.png",
+    "Albaraka Türk Katılım Bankası A.Ş.": "albaraka-turk-katilim-bankasi.png",
+    Alternatifbank: "alternatif-bank.png",
+    "Alternatifbank A.Ş.": "alternatif-bank.png",
+    Anadolubank: "anadolubank.png",
+    "Anadolubank A.Ş.": "anadolubank.png",
+    "Bank Mellat": "bank-mellat.png",
+    "Bankpozitif Kredi ve Kalkınma Bankası": "bankpozitif-kredi-ve-kalkinma-bankasi.png",
+    "Birleşik Fon Bankası": "birlesik-fon-bankasi.png",
+    "Burgan Bank": "burgan-bank.png",
+    "Burgan Bank A.Ş.": "burgan-bank.png",
+    Citibank: "citibank.png",
+    "Citibank A.Ş.": "citibank.png",
+    "Colendi Bank": "colendi-bank.png",
+    DenizBank: "denizbank.png",
+    "DenizBank A.Ş.": "denizbank.png",
+    "Deutsche Bank": "deutsche-bank.png",
+    "Deutsche Bank A.Ş.": "deutsche-bank.png",
+    "Diler Yatırım Bankası": "diler-yatirim-bankasi.png",
+    "Dünya Katılım Bankası": "dunya-katilim-bankasi.png",
+    "Enpara.com": "enpara-bank.png",
+    Fibabanka: "fibabanka.png",
+    "Fibabanka A.Ş.": "fibabanka.png",
+    "Golden Global Yatırım Bankası": "golden-global-yatirim-bankasi.png",
+    "GSD Yatırım Bankası": "gsd-yatirim-bankasi.png",
+    "Habib Bank Limited": "habib-bank-limited.png",
+    "Hayat Finans Katılım Bankası": "hayat-finans-katilim-bankasi.png",
+    HSBC: "hsbc-bank.png",
+    "HSBC Bank A.Ş.": "hsbc-bank.png",
+    "ICBC Turkey Bank": "icbc-turkey-bank.png",
+    "İller Bankası": "iller-bankasi.png",
+    ING: "ing-bank.png",
+    "ING Bank A.Ş.": "ing-bank.png",
+    "Intesa Sanpaolo": "intesa-sanpaolo.png",
+    "İstanbul Takas ve Saklama Bankası": "istanbul-takas-ve-saklama-bankasi.png",
+    "JPMorgan Chase Bank": "jpmorgan-chase-bank.png",
+    "Kuveyt Türk": "kuveyt-turk-katilim-bankasi.png",
+    "Kuveyt Türk Katılım Bankası A.Ş.": "kuveyt-turk-katilim-bankasi.png",
+    "Merrill Lynch Yatırım Bank": "merrill-lynch-yatirim-bank.png",
+    "MUFG Bank Turkey": "mufg-bank-turkey.png",
+    "Nurol Yatırım Bankası": "nurol-yatirim-bankasi.png",
+    Odeabank: "odeabank.png",
+    "Odeabank A.Ş.": "odeabank.png",
+    "PASHA Yatırım Bankası": "pasha-yatirim-bankasi.png",
+    "QNB Finansbank": "qnb-finansbank.png",
+    "QNB Finansbank A.Ş.": "qnb-finansbank.png",
+    Rabobank: "rabobank.png",
+    "Rabobank A.Ş.": "rabobank.png",
+    Şekerbank: "sekerbank.png",
+    "Şekerbank T.A.Ş.": "sekerbank.png",
+    "Societe Generale": "societe-generale.png",
+    "Standard Chartered Yatırım Bankası Türk": "standard-chartered-yatirim-bankasi-turk.png",
+    TEB: "turkiye-ekonomi-bankasi.png",
+    "Türk Eximbank": "turk-eximbank.png",
+    "Türk Ticaret Bankası": "turk-ticaret-bankasi.png",
+    "Turkish Bank": "turkish-bank.png",
+    "Turkish Bank A.Ş.": "turkish-bank.png",
+    "Türkiye Ekonomi Bankası A.Ş.": "turkiye-ekonomi-bankasi.png",
+    "Türkiye Emlak Katılım Bankası": "turkiye-emlak-katilim-bankasi.png",
+    "Türkiye Finans": "turkiye-finans-katilim-bankasi.png",
+    "Türkiye Finans Katılım Bankası A.Ş.": "turkiye-finans-katilim-bankasi.png",
+    Garanti: "turkiye-garanti-bankasi.png",
+    "Garanti BBVA": "turkiye-garanti-bankasi.png",
+    "Türkiye Garanti Bankası": "turkiye-garanti-bankasi.png",
+    "Türkiye Garanti Bankası A.Ş.": "turkiye-garanti-bankasi.png",
+    Halkbank: "turkiye-halk-bankasi.png",
+    "Türkiye Halk Bankası A.Ş.": "turkiye-halk-bankasi.png",
+    "İş Bankası": "turkiye-is-bankasi.png",
+    "Türkiye İş Bankası": "turkiye-is-bankasi.png",
+    "Türkiye İş Bankası A.Ş.": "turkiye-is-bankasi.png",
+    "Türkiye Kalkınma ve Yatırım Bankası": "turkiye-kalkinma-ve-yatirim-bankasi.png",
+    "Türkiye Sınai Kalkınma Bankası": "turkiye-sinai-kalkinma-bankasi.png",
+    "Vakıf Katılım": "vakif-katilim-bankasi.png",
+    "Vakıf Katılım Bankası A.Ş.": "vakif-katilim-bankasi.png",
+    VakıfBank: "vakifbank.png",
+    "Türkiye Vakıflar Bankası": "vakifbank.png",
+    "Türkiye Vakıflar Bankası T.A.O.": "vakifbank.png",
+    "Yapı Kredi": "yapi-kredi-bankasi.png",
+    "Yapı Kredi Bankası": "yapi-kredi-bankasi.png",
+    "Yapı ve Kredi Bankası A.Ş.": "yapi-kredi-bankasi.png",
+    "Ziraat Bankası": "ziraat-bankasi.png",
+    "T.C. Ziraat Bankası A.Ş.": "ziraat-bankasi.png",
+    "Ziraat Katılım": "ziraat-katilim-bankasi.png",
+    "Ziraat Katılım Bankası A.Ş.": "ziraat-katilim-bankasi.png"
+  }
+
+  const logoFileName = bankMappings[bankName] || "default-bank.png"
+  return `https://kreditakip.com.tr/bank-icons/${logoFileName}`
+}
+
 // Email template helper
 function generateMonthlyEmailTemplate(data) {
   const { customerName, month, year, payments, totalAmount } = data
@@ -30,7 +129,8 @@ function generateMonthlyEmailTemplate(data) {
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <style>
         body { font-family: 'Poppins', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; margin: 0; padding: 0; background-color: #0f172a; color: #ffffff; }
-        .container { max-width: 600px; margin: 0 auto; padding: 20px; background-color: #0f172a; }
+        .wrapper { width: 100%; background-color: #0f172a; padding: 20px 0; }
+        .container { max-width: 600px; margin: 0 auto; }
         .greeting { color: #ffffff; }
         .header { background: linear-gradient(135deg, #10b981 0%, #14b8a6 50%, #0d9488 100%); padding: 48px 40px; text-align: center; border-radius: 12px 12px 0 0; }
         .logo { max-width: 203px; height: auto; margin-bottom: 20px; filter: brightness(0) invert(1); }
@@ -60,7 +160,8 @@ function generateMonthlyEmailTemplate(data) {
     </style>
 </head>
 <body>
-    <div class="container">
+    <div class="wrapper">
+      <div class="container">
         <div class="header">
             <img src="https://oymjjceuiotxfbpwsdym.supabase.co/storage/v1/object/public/Logo/logo-white.png" alt="Kredi Takip" class="logo">
             <h1>📅 ${month} ${year} Ödeme Planı</h1>
@@ -85,7 +186,7 @@ function generateMonthlyEmailTemplate(data) {
                     <tr>
                         <td>
                             <div class="bank-cell">
-                                ${payment.bankLogo ? `<img src="${payment.bankLogo}" alt="${payment.bankName}" class="bank-logo" onerror="this.style.display='none'">` : ''}
+                                <img src="${getBankLogoUrl(payment.bankName)}" alt="${payment.bankName}" class="bank-logo" onerror="this.style.display='none'">
                                 <span class="bank-name">${payment.bankName}</span>
                             </div>
                         </td>
@@ -127,6 +228,7 @@ function generateMonthlyEmailTemplate(data) {
                 © 2025 kreditakip.com.tr • Tüm hakları saklıdır
             </div>
         </div>
+      </div>
     </div>
 </body>
 </html>
