@@ -45,6 +45,7 @@ function generateMonthlyEmailTemplate(data) {
         .payment-table td { padding: 16px 12px; border-bottom: 1px solid #334155; }
         .payment-table tr:last-child td { border-bottom: none; }
         .bank-cell { display: flex; align-items: center; gap: 12px; }
+        .bank-logo { width: 32px; height: 32px; object-fit: contain; border-radius: 6px; background: white; padding: 4px; }
         .bank-name { font-weight: 600; color: #ffffff; font-size: 14px; }
         .installment-badge { background: #334155; color: #94a3b8; padding: 4px 8px; border-radius: 4px; font-size: 12px; font-weight: 600; }
         .amount { font-weight: 700; color: #ffffff; font-size: 16px; }
@@ -83,6 +84,7 @@ function generateMonthlyEmailTemplate(data) {
                     <tr>
                         <td>
                             <div class="bank-cell">
+                                ${payment.bankLogo ? `<img src="${payment.bankLogo}" alt="${payment.bankName}" class="bank-logo" onerror="this.style.display='none'">` : ''}
                                 <span class="bank-name">${payment.bankName}</span>
                             </div>
                         </td>
@@ -231,6 +233,7 @@ async function sendMonthlyPaymentSummary() {
         // Format payment data
         const paymentItems = payments?.map((payment) => ({
           bankName: payment.credits?.banks?.name || "Bilinmeyen Banka",
+          bankLogo: payment.credits?.banks?.logo_url || null,
           installmentNumber: payment.installment_number,
           totalInstallments: totalInstallmentsMap[payment.credit_id] || 0,
           amount: payment.total_payment,
