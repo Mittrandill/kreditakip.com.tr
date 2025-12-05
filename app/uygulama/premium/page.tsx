@@ -376,20 +376,23 @@ export default function PremiumPage() {
   
 
             {/* Yearly/Monthly Switch - Right Side */}
-            <div className="flex flex-col gap-2">
-              <p className="text-sm font-medium text-white text-center">
-                Yıllık Alın, %20 İndirimden Faydalanın!
-              </p>
-              <div className="flex items-center gap-3">
-                <span className={`text-sm font-semibold transition-colors ${!isYearly ? "text-white" : "text-white/60"}`}>
+            <div className="flex flex-col items-center gap-3 p-4 bg-white/10 backdrop-blur-sm rounded-2xl border border-white/20">
+              <div className="flex items-center gap-2">
+                <Zap className="h-4 w-4 text-amber-300" />
+                <p className="text-sm font-medium text-white/90">
+                  Yıllık alın, <span className="text-amber-300 font-bold">%20 tasarruf</span> edin
+                </p>
+              </div>
+              <div className="flex items-center gap-4 bg-white/10 rounded-full px-4 py-2">
+                <span className={`text-sm font-medium transition-all ${!isYearly ? "text-white" : "text-white/50"}`}>
                   Aylık
                 </span>
                 <Switch
                   checked={isYearly}
                   onCheckedChange={setIsYearly}
-                  className="data-[state=checked]:bg-white/90"
+                  className="data-[state=checked]:bg-amber-400 data-[state=unchecked]:bg-white/30"
                 />
-                <span className={`text-sm font-semibold transition-colors ${isYearly ? "text-white" : "text-white/60"}`}>
+                <span className={`text-sm font-medium transition-all ${isYearly ? "text-white" : "text-white/50"}`}>
                   Yıllık
                 </span>
               </div>

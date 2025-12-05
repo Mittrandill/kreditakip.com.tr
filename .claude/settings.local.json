@@ -52,9 +52,16 @@
       "Bash(node scripts/check-subscription.js:*)",
       "Bash(cat:*)",
       "Bash(pnpm remove:*)",
-      "Bash(claude mcp add:*)"
+      "Bash(claude mcp add:*)",
+      "Bash(grep:*)",
+      "mcp__supabase__list_tables",
+      "Bash(ls:*)"
     ],
     "deny": [],
     "ask": []
-  }
+  },
+  "enableAllProjectMcpServers": true,
+  "enabledMcpjsonServers": [
+    "supabase"
+  ]
 }

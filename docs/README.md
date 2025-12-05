@@ -1,57 +1,67 @@
 # Kredi Takip - Documentation
 
-This folder contains all project documentation, guides, and reference materials.
+Bu klasör proje dokümantasyonu, kılavuzlar ve referans materyalleri içerir.
 
-## Structure
+## Klasör Yapısı
 
 ```
 docs/
-├── README.md                           # This file
-├── DOCUMENTATION.md                    # General project documentation
-├── paytr/                              # PayTR payment integration docs
-│   ├── 1. ADIM.pdf                    # PayTR Direct API Step 1
-│   ├── 2. ADIM.pdf                    # PayTR Direct API Step 2
-│   ├── Paytr Kart Saklama.pdf         # PayTR Card Storage (CAPI)
-│   ├── LOCAL_TESTING_PAYTR.md         # Local testing guide with ngrok
-│   ├── PAYTR_DIRECT_API_INTEGRATION.md
-│   ├── PAYTR_DIRECT_API_MIGRATION_SUMMARY.md
-│   ├── PAYTR_DIRECT_CLIENT_EXAMPLE.tsx
-│   ├── PAYTR_DIRECT_TESTING_GUIDE.md
-│   ├── PAYTR_MIGRATION_GUIDE.md
-│   ├── PAYMENT_FORM_USAGE.md
-│   └── Other PayTR PDF documentation
-├── security/                           # Security documentation
-│   ├── SECURITY_IMPROVEMENTS.md       # Security improvement guidelines
-│   ├── TRUTHFUL_SECURITY_CLAIMS.md    # Security claims and compliance
-│   └── SECURITY_CHECKLIST.md          # Security checklist
-└── database/                           # Database documentation
-    └── [Database migration docs]
+├── README.md                    # Bu dosya
+├── DOCUMENTATION.md             # Genel proje dokümantasyonu
+├── UYGULAMA-DOKUMANTASYONU.md   # Türkçe uygulama dokümantasyonu
+├── PADDLE_INTEGRATION.md        # Paddle ödeme entegrasyonu
+├── LAZY_LOADING_PLAN.md         # Performans optimizasyon planı
+├── Paddle/                      # Paddle referans dokümanları
+│   ├── What is Paddle.md       # Paddle nedir
+│   ├── Paddle.js reference.md  # Paddle.js API referansı
+│   └── INTEGRATION_GUIDE.md    # Entegrasyon rehberi
+└── security/                    # Güvenlik dokümanları
+    ├── SECURITY_CHECKLIST.md   # Güvenlik kontrol listesi
+    ├── SECURITY_IMPROVEMENTS.md # Güvenlik iyileştirmeleri
+    └── TRUTHFUL_SECURITY_CLAIMS.md # Güvenlik beyanları
 ```
 
-## Quick Links
+## Hızlı Bağlantılar
 
-### PayTR Integration
-- [Local Testing Guide](./paytr/LOCAL_TESTING_PAYTR.md) - How to test PayTR webhooks locally with ngrok
-- [Direct API Integration](./paytr/PAYTR_DIRECT_API_INTEGRATION.md) - PayTR Direct API implementation
-- [Payment Form Usage](./paytr/PAYMENT_FORM_USAGE.md) - How to use the payment form component
-- [Migration Summary](./paytr/PAYTR_DIRECT_API_MIGRATION_SUMMARY.md) - Migration from iframe to Direct API
+### Ödeme Sistemi (Paddle)
+- [Paddle Entegrasyonu](./PADDLE_INTEGRATION.md) - Paddle ödeme sistemi kurulumu ve kullanımı
+- [Paddle.js Referansı](./Paddle/Paddle.js%20reference.md) - Paddle.js API referansı
+- [Entegrasyon Rehberi](./Paddle/INTEGRATION_GUIDE.md) - Adım adım entegrasyon
 
-### Security
-- [Security Checklist](./security/SECURITY_CHECKLIST.md) - Security audit checklist
-- [Security Improvements](./security/SECURITY_IMPROVEMENTS.md) - Implemented security improvements
-- [Security Claims](./security/TRUTHFUL_SECURITY_CLAIMS.md) - Truthful security documentation
+### Güvenlik
+- [Güvenlik Kontrol Listesi](./security/SECURITY_CHECKLIST.md) - Güvenlik denetim listesi
+- [Güvenlik İyileştirmeleri](./security/SECURITY_IMPROVEMENTS.md) - Uygulanan güvenlik önlemleri
 
-### Database
-Database migration scripts are located in `/database-scripts/migrations/`
+### Performans
+- [Lazy Loading Planı](./LAZY_LOADING_PLAN.md) - Bundle optimizasyonu ve code splitting
 
-## Development Workflow
+### Veritabanı
+Veritabanı migration dosyaları: `/supabase/migrations/`
 
-1. **Local Testing**: Use ngrok for PayTR webhook testing (see [LOCAL_TESTING_PAYTR.md](./paytr/LOCAL_TESTING_PAYTR.md))
-2. **Security**: Review security checklist before deployment
-3. **Database Changes**: Add migrations to `/database-scripts/migrations/`
+## Ödeme Sistemi
 
-## Important Notes
+Uygulama **Paddle** ödeme sistemini kullanmaktadır:
+- PCI-DSS uyumlu (kart bilgisi sunucuya ulaşmaz)
+- Otomatik vergi hesaplama (KDV, GST vb.)
+- Abonelik yönetimi (dunning, retry, grace period)
+- Müşteri portalı (self-service)
+- Webhook bildirimleri
 
-- All PayTR credentials must be kept in `.env.local` (never commit)
-- Card data never touches our server (PCI-DSS compliance)
-- Use test mode for development: `PAYTR_TEST_MODE=1`
+### Abonelik Planları
+- **Free**: Ücretsiz, sınırlı özellikler
+- **Pro Monthly**: 199 TRY/ay
+- **Pro Yearly**: 1.910 TRY/yıl (%20 indirim)
+- **Premium Monthly**: 399 TRY/ay
+- **Premium Yearly**: 3.830 TRY/yıl (%20 indirim)
+
+## Geliştirme Ortamı
+
+1. **Environment Variables**: `.env.local` dosyasında tanımlanmalı
+2. **Veritabanı**: Supabase (PostgreSQL)
+3. **Webhook**: Paddle webhooks için `/api/paddle/webhooks`
+
+## Önemli Notlar
+
+- Paddle credentials `.env.local` dosyasında saklanmalı (asla commit edilmemeli)
+- Sandbox modda test için: `NEXT_PUBLIC_PADDLE_ENVIRONMENT=sandbox`
+- Production için: `NEXT_PUBLIC_PADDLE_ENVIRONMENT=production`
