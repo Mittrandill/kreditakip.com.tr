@@ -1,7 +1,6 @@
 import { type NextRequest, NextResponse } from "next/server"
 import { headers } from "next/headers"
-import crypto from "crypto"
-import { PaddleClient, paddleClient } from "@/lib/paddle-client"
+import { PaddleClient } from "@/lib/paddle-client"
 import { createClient } from "@supabase/supabase-js"
 import { sendEmail } from "@/lib/email"
 
@@ -71,12 +70,18 @@ export async function POST(request: NextRequest) {
         await handleSubscriptionCanceled(supabase, eventData)
         break
 
-      case "subscription.payment_succeeded":
-        await handlePaymentSucceeded(supabase, eventData)
-        break
+      case "subscription.payment_succeeded": // Deprecated in v2 but kept for compatibility
+      case "transaction.completed": // Standard v2 payment success event
+        if (eventData.subscription_id) {
+            await handlePaymentSucceeded(supabase, eventData)
+        }
+        break;
 
       case "subscription.payment_failed":
-        await handlePaymentFailed(supabase, eventData)
+      case "transaction.failed":
+        if (eventData.subscription_id) {
+             await handlePaymentFailed(supabase, eventData)
+        }
         break
 
       case "subscription.paused":
@@ -85,14 +90,6 @@ export async function POST(request: NextRequest) {
 
       case "subscription.resumed":
         await handleSubscriptionResumed(supabase, eventData)
-        break
-
-      case "payment.succeeded":
-        await handleOneTimePaymentSucceeded(supabase, eventData)
-        break
-
-      case "payment.refunded":
-        await handlePaymentRefunded(supabase, eventData)
         break
 
       default:
@@ -125,28 +122,46 @@ async function handleSubscriptionCreated(
     customer_id: paddleCustomerId,
     items,
     status,
-    current_period_start,
-    current_period_end,
+    current_billing_period,
     custom_data,
-    management_urls,
-    currency,
+    currency_code,
   } = data
 
-  // Extract user and plan info from custom_data or passthrough
-  let userId = custom_data?.user_id
-  let planId = custom_data?.plan_id
+  const currentPeriodStart = current_billing_period?.starts_at
+  const currentPeriodEnd = current_billing_period?.ends_at
 
-  // Try to get from passthrough if not in custom_data
-  if (!userId || !planId) {
-    const passthrough = PaddleClient.parsePassthrough(data.passthrough)
-    if (passthrough) {
-      userId = userId || passthrough.userId
-      planId = planId || passthrough.planId
+  // Extract user and plan info
+  let userId = custom_data?.userId || custom_data?.user_id
+  let planId = custom_data?.planId || custom_data?.plan_id
+
+  // If custom_data is missing, try to find user by customer_id in our DB
+  if (!userId) {
+    const { data: customer } = await supabase
+        .from("paddle_customers")
+        .select("user_id")
+        .eq("paddle_customer_id", paddleCustomerId)
+        .single()
+    
+    if (customer) {
+        userId = customer.user_id
     }
   }
 
+  // If planId is missing, try to infer from price_id
+  if (!planId && items && items.length > 0) {
+      const priceId = items[0].price?.id
+      if (priceId) {
+          const { data: plan } = await supabase
+              .from("subscription_plans")
+              .select("id")
+              .eq("paddle_price_id", priceId)
+              .single()
+          if (plan) planId = plan.id
+      }
+  }
+
   if (!userId || !planId) {
-    console.error("[Paddle] Missing user_id or plan_id", { custom_data, passthrough: data.passthrough })
+    console.error("[Paddle] Missing user_id or plan_id for subscription creation", { paddleSubscriptionId, userId, planId })
     return
   }
 
@@ -162,18 +177,19 @@ async function handleSubscriptionCreated(
     return
   }
 
-  // Create/update Paddle customer record
-  await supabase.from("paddle_customers").upsert({
-    user_id: userId,
-    paddle_customer_id: paddleCustomerId,
-    email: data.customer?.email || data.customer_email,
-    name: data.customer?.name,
-    country: data.customer?.country,
-    updated_at: new Date().toISOString(),
-  })
+  // Create/update Paddle customer record if needed
+  // We assume user is already linked via paddle_customers if we found userId above, 
+  // or will be linked now if custom_data had userId.
+  if (userId && paddleCustomerId) {
+      await supabase.from("paddle_customers").upsert({
+        user_id: userId,
+        paddle_customer_id: paddleCustomerId,
+        updated_at: new Date().toISOString(),
+      }, { onConflict: 'user_id' })
+  }
 
   // Calculate subscription end date based on billing period
-  let endDate = new Date(current_period_end)
+  let endDate = new Date(currentPeriodEnd)
   if (plan.billing_period === "lifetime") {
     endDate = new Date("2099-12-31")
   }
@@ -186,19 +202,17 @@ async function handleSubscriptionCreated(
     status: status === "trialing" ? "trialing" : "active",
     paddle_subscription_id: paddleSubscriptionId,
     paddle_customer_id: paddleCustomerId,
-    paddle_plan_id: items[0]?.price?.id,
-    start_date: current_period_start,
+    paddle_plan_id: items[0]?.price?.id, // Storing price ID
+    start_date: currentPeriodStart,
     expires_at: endDate.toISOString(),
     end_date: endDate.toISOString(),
     updated_at: new Date().toISOString(),
     status_updated_at: new Date().toISOString(),
-    cancel_url: management_urls?.cancel,
-    update_url: management_urls?.update_payment,
     paddle_subscription_data: data,
     deleted_at: null, // Ensure subscription is active
   }
 
-  // Check if this is an upgrade from existing subscription
+  // Deactivate old subscription if exists
   const { data: existingSubscription } = await supabase
     .from("subscriptions")
     .select("id, status")
@@ -208,7 +222,6 @@ async function handleSubscriptionCreated(
     .maybeSingle()
 
   if (existingSubscription) {
-    // Deactivate old subscription
     await supabase
       .from("subscriptions")
       .update({
@@ -250,7 +263,7 @@ async function handleSubscriptionCreated(
     .single()
 
   if (newSubscription) {
-    // Initialize OCR usage with saved_credits_limit
+    // Initialize OCR usage
     const ocrLimit = planId === "free" ? 1 : (planId.includes("premium") ? 999999 : 10)
     const savedCreditsLimit = planId === "free" ? 1 : (planId.includes("premium") ? 999999 : 10)
 
@@ -278,8 +291,6 @@ async function handleSubscriptionCreated(
         reset_at: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
       })
   }
-
-  // Subscription created
 }
 
 async function handleSubscriptionActivated(
@@ -289,8 +300,6 @@ async function handleSubscriptionActivated(
   const {
     id: paddleSubscriptionId,
     status,
-    current_period_start,
-    current_period_end,
   } = data
 
   // Update subscription status to active
@@ -302,8 +311,6 @@ async function handleSubscriptionActivated(
       paddle_subscription_data: data,
     })
     .eq("paddle_subscription_id", paddleSubscriptionId)
-
-  // Subscription activated
 }
 
 async function handleSubscriptionUpdated(
@@ -313,25 +320,30 @@ async function handleSubscriptionUpdated(
   const {
     id: paddleSubscriptionId,
     status,
-    current_period_start,
-    current_period_end,
-    pause_date,
+    current_billing_period,
+    paused_at,
     canceled_at,
-    management_urls,
+    items,
   } = data
 
-  // Update subscription in database
+  const currentPeriodStart = current_billing_period?.starts_at
+  const currentPeriodEnd = current_billing_period?.ends_at
+
   const updateData: any = {
     status_updated_at: new Date().toISOString(),
     paddle_subscription_data: data,
   }
 
-  if (current_period_start) updateData.start_date = current_period_start
-  if (current_period_end) updateData.expires_at = current_period_end
-  if (pause_date) updateData.paused_at = pause_date
+  if (currentPeriodStart) updateData.start_date = currentPeriodStart
+  if (currentPeriodEnd) updateData.expires_at = currentPeriodEnd
+  if (paused_at) updateData.paused_at = paused_at
   if (canceled_at) updateData.canceled_at = canceled_at
-  if (management_urls?.cancel) updateData.cancel_url = management_urls.cancel
-  if (management_urls?.update_payment) updateData.update_url = management_urls.update_payment
+  
+  // If items changed, update plan_id reference? 
+  // Ideally handled, but simple logic for now:
+  if (items && items.length > 0) {
+      updateData.paddle_plan_id = items[0].price?.id
+  }
 
   // Map Paddle status to our status
   switch (status) {
@@ -353,8 +365,6 @@ async function handleSubscriptionUpdated(
     .from("subscriptions")
     .update(updateData)
     .eq("paddle_subscription_id", paddleSubscriptionId)
-
-  // Subscription status updated
 }
 
 async function handleSubscriptionCanceled(
@@ -367,27 +377,32 @@ async function handleSubscriptionCanceled(
     .from("subscriptions")
     .update({
       status: "canceled",
-      canceled_at: canceled_at,
+      canceled_at: canceled_at || new Date().toISOString(),
       updated_at: new Date().toISOString(),
       paddle_subscription_data: data,
     })
     .eq("paddle_subscription_id", paddleSubscriptionId)
-
-  // Subscription canceled
 }
 
 async function handlePaymentSucceeded(
   supabase: any,
   data: any
 ) {
+  // Handles 'transaction.completed' (Paddle v2) or 'subscription.payment_succeeded' (Classic/legacy)
   const {
     subscription_id,
-    currency,
-    total,
+    currency_code,
+    details, // details.totals.total (string)
     items,
     billing_period,
-    next_billed_at
+    id: transactionId
   } = data
+
+  if (!subscription_id) return
+
+  // Paddle Billing v2: details.totals.total is a string representing minor units (e.g. "1000" for $10.00)
+  const totalStr = details?.totals?.total || "0"
+  const totalAmount = parseInt(totalStr) / 100
 
   // Update subscription
   const updateData: any = {
@@ -398,11 +413,6 @@ async function handlePaymentSucceeded(
     grace_period_started_at: null,
     grace_period_ends_at: null,
     suspended_at: null,
-  }
-
-  if (next_billed_at) {
-    updateData.expires_at = next_billed_at
-    updateData.end_date = next_billed_at
   }
 
   await supabase
@@ -426,26 +436,26 @@ async function handlePaymentSucceeded(
     await supabase.from("invoices").insert({
       user_id: subscription.user_id,
       subscription_id: subscription.id,
-      invoice_number: `INV-${Date.now()}-${subscription_id.slice(-8)}`,
+      invoice_number: `INV-${Date.now()}-${subscription_id.slice(-6)}`,
       invoice_date: new Date().toISOString().split('T')[0],
-      amount: total / 100, // Convert from cents
-      currency: currency.toUpperCase(),
+      amount: totalAmount,
+      currency: currency_code?.toUpperCase(),
       status: "paid",
       payment_date: new Date().toISOString(),
       payment_provider: "paddle",
-      paddle_transaction_id: data.id,
-      description: `${subscription.subscription_plans?.name} Plan - ${billing_period?.frequency} ${billing_period?.interval}`,
+      paddle_transaction_id: transactionId,
+      description: `${subscription.subscription_plans?.name || 'Abonelik'} - Yenileme`,
     })
 
     // Create payment transaction record
     await supabase.from("payment_transactions").insert({
       user_id: subscription.user_id,
       subscription_id: subscription.id,
-      amount: (total / 100).toString(),
-      currency: currency.toUpperCase(),
+      amount: totalAmount.toString(),
+      currency: currency_code?.toUpperCase(),
       status: "completed",
       payment_method: "paddle",
-      paddle_transaction_id: data.id,
+      paddle_transaction_id: transactionId,
       plan_id: subscription.plan_id,
     })
 
@@ -457,19 +467,15 @@ async function handlePaymentSucceeded(
       data: {
         customerName: subscription.users.first_name || "Değerli Müşterimiz",
         planName: subscription.subscription_plans?.name || "Premium Plan",
-        amount: (total / 100).toFixed(2),
-        currency: currency.toUpperCase(),
+        amount: totalAmount.toFixed(2),
+        currency: currency_code?.toUpperCase(),
         billingPeriod: billing_period?.frequency === 1 ?
           (billing_period?.interval === "month" ? "Aylık" : "Yıllık") :
-          `${billing_period?.frequency} ${billing_period?.interval}`,
-        nextBillingDate: next_billed_at ?
-          new Date(next_billed_at).toLocaleDateString("tr-TR") :
-          null,
+          "Dönemlik",
+        nextBillingDate: null, 
       },
     })
   }
-
-  // Payment succeeded
 }
 
 async function handlePaymentFailed(
@@ -478,11 +484,15 @@ async function handlePaymentFailed(
 ) {
   const {
     subscription_id,
-    currency,
-    total,
-    attempt_number,
-    next_payment_date
+    currency_code,
+    details,
+    id: transactionId
   } = data
+
+  if (!subscription_id) return
+
+  const totalStr = details?.totals?.total || "0"
+  const totalAmount = parseInt(totalStr) / 100
 
   // Update subscription status to past_due and start grace period
   const updateData: any = {
@@ -515,8 +525,7 @@ async function handlePaymentFailed(
     .select(`
       *,
       subscription_plans(name, billing_period, price),
-      users!inner(email, first_name, last_name),
-      paddle_customers(email)
+      users!inner(email, first_name, last_name)
     `)
     .eq("paddle_subscription_id", subscription_id)
     .single()
@@ -526,13 +535,13 @@ async function handlePaymentFailed(
     await supabase.from("payment_transactions").insert({
       user_id: subscription.user_id,
       subscription_id: subscription.id,
-      amount: (total / 100).toString(),
-      currency: currency.toUpperCase(),
+      amount: totalAmount.toString(),
+      currency: currency_code?.toUpperCase(),
       status: "failed",
       payment_method: "paddle",
-      paddle_transaction_id: data.id,
+      paddle_transaction_id: transactionId,
       plan_id: subscription.plan_id,
-      error_message: `Payment failed on attempt ${attempt_number}`,
+      error_message: `Payment failed`,
     })
 
     // Send payment failed email
@@ -543,12 +552,10 @@ async function handlePaymentFailed(
       data: {
         customerName: subscription.users.first_name || "Değerli Müşterimiz",
         planName: subscription.subscription_plans?.name || "Premium Plan",
-        amount: (total / 100).toFixed(2),
-        currency: currency.toUpperCase(),
-        attemptNumber: attempt_number,
-        nextPaymentDate: next_payment_date ?
-          new Date(next_payment_date).toLocaleDateString("tr-TR") :
-          updateData.grace_period_ends_at ?
+        amount: totalAmount.toFixed(2),
+        currency: currency_code?.toUpperCase(),
+        attemptNumber: 1,
+        nextPaymentDate: updateData.grace_period_ends_at ?
           new Date(updateData.grace_period_ends_at).toLocaleDateString("tr-TR") :
           null,
         gracePeriodEnds: updateData.grace_period_ends_at ?
@@ -558,8 +565,6 @@ async function handlePaymentFailed(
       },
     })
   }
-
-  // Payment failed
 }
 
 async function handleSubscriptionPaused(
@@ -576,8 +581,6 @@ async function handleSubscriptionPaused(
       updated_at: new Date().toISOString(),
     })
     .eq("paddle_subscription_id", paddleSubscriptionId)
-
-  // Subscription paused
 }
 
 async function handleSubscriptionResumed(
@@ -594,22 +597,4 @@ async function handleSubscriptionResumed(
       updated_at: new Date().toISOString(),
     })
     .eq("paddle_subscription_id", paddleSubscriptionId)
-
-  // Subscription resumed
-}
-
-async function handleOneTimePaymentSucceeded(
-  supabase: any,
-  data: any
-) {
-  // Handle one-time payments if applicable
-  // One-time payment succeeded
-}
-
-async function handlePaymentRefunded(
-  supabase: any,
-  data: any
-) {
-  // Handle refunds if applicable
-  // Payment refunded
 }
