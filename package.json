@@ -73,7 +73,7 @@
     "jspdf": "^3.0.4",
     "lucide-react": "^0.454.0",
     "mailersend": "latest",
-    "next": "14.2.33",
+    "next": "^14.2.35",
     "next-themes": "latest",
     "node-mailjet": "latest",
     "react": "^18",
