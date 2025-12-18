@@ -144,7 +144,7 @@ export default function AdvancedCharts({ credits, payments, filters }: AdvancedC
                   <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                 ))}
               </Pie>
-              <Tooltip formatter={(value: number | undefined) => formatCurrency(value || 0)} />
+              <Tooltip formatter={(value: any) => formatCurrency(value || 0)} />
             </RechartsPieChart>
           </ResponsiveContainer>
         </CardContent>
@@ -164,7 +164,7 @@ export default function AdvancedCharts({ credits, payments, filters }: AdvancedC
               <CartesianGrid strokeDasharray="3 3" />
               <XAxis dataKey="name" />
               <YAxis tickFormatter={(value) => formatCurrency(value)} />
-              <Tooltip formatter={(value: number | undefined) => formatCurrency(value || 0)} />
+              <Tooltip formatter={(value: any) => formatCurrency(value || 0)} />
               <Line
                 type="monotone"
                 dataKey="amount"
@@ -191,7 +191,7 @@ export default function AdvancedCharts({ credits, payments, filters }: AdvancedC
               <CartesianGrid strokeDasharray="3 3" />
               <XAxis dataKey="name" />
               <YAxis tickFormatter={(value) => formatCurrency(value)} />
-              <Tooltip formatter={(value: number | undefined) => formatCurrency(value || 0)} />
+              <Tooltip formatter={(value: any) => formatCurrency(value || 0)} />
               <Bar dataKey="value" fill="#8884d8" />
             </BarChart>
           </ResponsiveContainer>
@@ -213,7 +213,7 @@ export default function AdvancedCharts({ credits, payments, filters }: AdvancedC
                 <CartesianGrid strokeDasharray="3 3" />
                 <XAxis dataKey="name" />
                 <YAxis tickFormatter={(value) => `%${value}`} />
-                <Tooltip formatter={(value: number | undefined) => `%${value || 0}`} />
+                <Tooltip formatter={(value: any) => `%${value || 0}`} />
                 <Bar dataKey="rate" fill="#ff7300" />
               </BarChart>
             </ResponsiveContainer>

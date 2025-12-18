@@ -49,7 +49,7 @@ import { signOut } from "@/lib/auth"
 import { useToast } from "@/hooks/use-toast"
 import { usePathname } from "next/navigation"
 import Image from "next/image"
-import { useState, useEffect, useRef, useMemo } from "react"
+import { useState, useEffect, useRef, useMemo, useCallback } from "react"
 import { useUserTheme } from "@/components/user-theme-provider"
 import { getNotifications, markNotificationAsRead } from "@/lib/api/notifications"
 import { formatDistanceToNow } from "date-fns"
@@ -320,7 +320,7 @@ export default function Header({ pageTitle }: HeaderProps) {
     return { title: "Dashboard", description: "", parent: null }
   }, [pathname, pageTitle])
 
-  const loadHeaderNotifications = async () => {
+  const loadHeaderNotifications = useCallback(async () => {
     if (!user?.id) {
       return
     }
@@ -336,7 +336,7 @@ export default function Header({ pageTitle }: HeaderProps) {
       setNotifications([])
       setUnreadCount(0)
     }
-  }
+  }, [user?.id])
 
   const handleHeaderNotificationClick = async (notification: any) => {
     setSelectedNotification(notification)
@@ -381,7 +381,7 @@ export default function Header({ pageTitle }: HeaderProps) {
       const interval = setInterval(loadHeaderNotifications, 30000)
       return () => clearInterval(interval)
     }
-  }, [user?.id, loading])
+  }, [user?.id, loading, loadHeaderNotifications])
 
   const handleSignOut = async () => {
     try {
