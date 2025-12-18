@@ -8,15 +8,16 @@ import { sendEmail } from "@/lib/email"
 export const dynamic = "force-dynamic"
 export const runtime = "nodejs"
 
-// Paddle public key for signature verification
-const PADDLE_PUBLIC_KEY = process.env.PADDLE_PUBLIC_KEY || ""
+// Paddle secret key for signature verification (Paddle Billing v2)
+const PADDLE_WEBHOOK_SECRET_KEY = process.env.PADDLE_WEBHOOK_SECRET_KEY || ""
 
 export async function POST(request: NextRequest) {
   try {
     // Get the raw body and signature
     const body = await request.text()
     const headersList = headers()
-    const signature = headersList.get("paddle_signature") || ""
+    // Paddle Billing uses 'paddle-signature', falling back to 'paddle_signature' just in case
+    const signature = headersList.get("paddle-signature") || headersList.get("paddle_signature") || ""
 
     // Verify webhook signature
     if (!signature) {
@@ -24,7 +25,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Missing signature" }, { status: 401 })
     }
 
-    if (!PaddleClient.verifyWebhookSignature(body, signature, PADDLE_PUBLIC_KEY)) {
+    if (!PaddleClient.verifyWebhookSignature(body, signature, PADDLE_WEBHOOK_SECRET_KEY)) {
       console.error("[Paddle Webhook] Invalid signature")
       return NextResponse.json({ error: "Invalid signature" }, { status: 401 })
     }

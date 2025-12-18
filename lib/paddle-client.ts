@@ -235,17 +235,35 @@ export class PaddleClient {
   }
 
   /**
-   * Verify webhook signature
+   * Verify webhook signature for Paddle Billing (v2)
    */
   static verifyWebhookSignature(
     payload: string,
     signature: string,
-    publicKey: string
+    secretKey: string
   ): boolean {
     try {
-      const verifier = crypto.createVerify("sha256")
-      verifier.update(payload)
-      return verifier.verify(publicKey, signature, "base64")
+      if (!signature || !secretKey) return false
+
+      // Parse signature header: ts=123456789;h1=abcdef...
+      const components = signature.split(";")
+      const tsPart = components.find((c) => c.startsWith("ts="))
+      const h1Part = components.find((c) => c.startsWith("h1="))
+
+      if (!tsPart || !h1Part) return false
+
+      const ts = tsPart.split("=")[1]
+      const h1 = h1Part.split("=")[1]
+
+      // Prevent replay attacks (check if timestamp is too old, e.g., > 5 mins)
+      // const eventTime = parseInt(ts, 10);
+      // if (Date.now() / 1000 - eventTime > 300) return false;
+
+      // Compute HMAC
+      const signedPayload = `${ts}:${payload}`
+      const hmac = crypto.createHmac("sha256", secretKey).update(signedPayload).digest("hex")
+
+      return hmac === h1
     } catch (error) {
       console.error("[Paddle] Webhook signature verification failed:", error)
       return false
