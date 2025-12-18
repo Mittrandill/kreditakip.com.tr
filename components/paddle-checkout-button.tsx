@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect, ReactNode } from "react"
+import { useState, useEffect, ReactNode, useCallback } from "react"
 import { Button } from "@/components/ui/button"
 import { Loader2, CreditCard } from "lucide-react"
 import { useToast } from "@/hooks/use-toast"
@@ -94,16 +94,7 @@ export default function PaddleCheckoutButton({
     }
   }, [toast, onSuccess, onClose])
 
-  // Auto-open checkout when ready and no children provided
-  useEffect(() => {
-    if (isPaddleReady && !children && !isOpening) {
-      setTimeout(() => {
-        handleOpenCheckout()
-      }, 100)
-    }
-  }, [isPaddleReady, children])
-
-  const handleOpenCheckout = () => {
+  const handleOpenCheckout = useCallback(() => {
     if (!isPaddleReady || !window.Paddle) {
       toast({
         title: "Hata",
@@ -156,7 +147,16 @@ export default function PaddleCheckoutButton({
     } finally {
       setIsOpening(false)
     }
-  }
+  }, [isPaddleReady, priceId, userId, planId, userEmail, toast])
+
+  // Auto-open checkout when ready and no children provided
+  useEffect(() => {
+    if (isPaddleReady && !children && !isOpening) {
+      setTimeout(() => {
+        handleOpenCheckout()
+      }, 100)
+    }
+  }, [isPaddleReady, children, isOpening, handleOpenCheckout])
 
   if (children) {
     return (
