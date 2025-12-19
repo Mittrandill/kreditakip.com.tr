@@ -51,9 +51,16 @@ export default function PaddleCheckoutButton({
     script.async = true
     script.onload = () => {
       if (window.Paddle) {
+        const paddleToken = process.env.NEXT_PUBLIC_PADDLE_CLIENT_TOKEN
+        
+        if (!paddleToken) {
+          console.warn("[Paddle] NEXT_PUBLIC_PADDLE_CLIENT_TOKEN is missing. Paddle cannot be initialized.")
+          return
+        }
+
         try {
           window.Paddle.Initialize({
-            token: process.env.NEXT_PUBLIC_PADDLE_CLIENT_TOKEN,
+            token: paddleToken,
             environment: process.env.NEXT_PUBLIC_PADDLE_ENVIRONMENT || "sandbox",
             eventCallback: (event: any) => {
               // Paddle event logged
