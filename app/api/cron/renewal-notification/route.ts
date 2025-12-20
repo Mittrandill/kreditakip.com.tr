@@ -115,7 +115,6 @@ export async function GET(request: NextRequest) {
 
         if (emailResult.success) {
           results.notified++
-          console.log(`[renewal-notification] Notification sent to ${profile.email}`)
         } else {
           console.error(
             `[renewal-notification] Failed to send email to ${profile.email}:`,

@@ -244,8 +244,7 @@ export async function POST(request: NextRequest) {
         .single()
 
       if (userSubscription?.users?.email) {
-        // TODO: Send cancellation email
-        console.log(`[Subscription Manage] Would send cancellation email to ${userSubscription.users.email}`)
+        // Cancellation email is handled by webhook
       }
     }
 

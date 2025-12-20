@@ -62,8 +62,6 @@ export async function POST(request: NextRequest) {
     try {
       await paddleClient.cancelSubscription(subscription.paddle_subscription_id)
 
-      console.log(`[Paddle Cancel] Subscription ${subscription.paddle_subscription_id} canceled for user ${user.id}`)
-
       // Note: Database update will happen via webhook (subscription.canceled event)
       // This ensures consistency between Paddle and our database
 

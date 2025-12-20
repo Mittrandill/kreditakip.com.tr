@@ -105,10 +105,6 @@ export async function POST(request: NextRequest) {
         newPlan.paddle_price_id
       )
 
-      console.log(
-        `[Paddle Upgrade] Subscription ${currentSubscription.paddle_subscription_id} updated from ${currentSubscription.plan_id} to ${newPlanId}`
-      )
-
       // Note: Database update will happen via webhook (subscription.updated event)
       // Paddle handles proration automatically
 
