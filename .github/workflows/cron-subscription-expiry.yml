@@ -1,0 +1,40 @@
+name: Subscription Expiry Check
+
+# Günlük saat 02:00 UTC'de çalışır (Türkiye saati 05:00)
+on:
+  schedule:
+    - cron: "0 2 * * *"  # Her gün saat 02:00 UTC
+  workflow_dispatch:  # Manuel çalıştırma için
+
+jobs:
+  check-expired-subscriptions:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check Expired Subscriptions
+        run: |
+          response=$(curl -X POST \
+            -H "Authorization: Bearer ${{ secrets.CRON_SECRET }}" \
+            -H "Content-Type: application/json" \
+            -w "\n%{http_code}" \
+            -s \
+            "${{ secrets.APP_URL }}/api/cron/subscription-expiry-check")
+
+          http_code=$(echo "$response" | tail -n1)
+          body=$(echo "$response" | sed '$d')
+
+          echo "HTTP Status: $http_code"
+          echo "Response: $body"
+
+          if [ "$http_code" -ne 200 ]; then
+            echo "❌ Cron job failed with status $http_code"
+            exit 1
+          fi
+
+          echo "✅ Cron job completed successfully"
+
+      - name: Notify on Failure
+        if: failure()
+        run: |
+          echo "❌ Subscription expiry check failed!"
+          echo "Check the logs above for details"

@@ -1,0 +1,90 @@
+name: Subscription Reminder
+
+# Günlük saat 09:00 UTC'de çalışır (Türkiye saati 12:00)
+on:
+  schedule:
+    - cron: "0 9 * * *"  # Her gün saat 09:00 UTC
+  workflow_dispatch:  # Manuel çalıştırma için
+
+jobs:
+  send-subscription-reminders:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Send 7-Day Reminders
+        run: |
+          echo "📧 Sending 7-day expiry reminders..."
+          response=$(curl -X POST \
+            -H "Authorization: Bearer ${{ secrets.CRON_SECRET }}" \
+            -H "Content-Type: application/json" \
+            -d '{"days": 7}' \
+            -w "\n%{http_code}" \
+            -s \
+            "${{ secrets.APP_URL }}/api/cron/subscription-reminder")
+
+          http_code=$(echo "$response" | tail -n1)
+          body=$(echo "$response" | sed '$d')
+
+          echo "HTTP Status: $http_code"
+          echo "Response: $body"
+
+          if [ "$http_code" -ne 200 ]; then
+            echo "❌ 7-day reminder job failed with status $http_code"
+            exit 1
+          fi
+
+          echo "✅ 7-day reminders sent successfully"
+
+      - name: Send 3-Day Reminders
+        run: |
+          echo "📧 Sending 3-day expiry reminders..."
+          response=$(curl -X POST \
+            -H "Authorization: Bearer ${{ secrets.CRON_SECRET }}" \
+            -H "Content-Type: application/json" \
+            -d '{"days": 3}' \
+            -w "\n%{http_code}" \
+            -s \
+            "${{ secrets.APP_URL }}/api/cron/subscription-reminder")
+
+          http_code=$(echo "$response" | tail -n1)
+          body=$(echo "$response" | sed '$d')
+
+          echo "HTTP Status: $http_code"
+          echo "Response: $body"
+
+          if [ "$http_code" -ne 200 ]; then
+            echo "❌ 3-day reminder job failed with status $http_code"
+            exit 1
+          fi
+
+          echo "✅ 3-day reminders sent successfully"
+
+      - name: Send 1-Day Reminders
+        run: |
+          echo "📧 Sending 1-day expiry reminders..."
+          response=$(curl -X POST \
+            -H "Authorization: Bearer ${{ secrets.CRON_SECRET }}" \
+            -H "Content-Type: application/json" \
+            -d '{"days": 1}' \
+            -w "\n%{http_code}" \
+            -s \
+            "${{ secrets.APP_URL }}/api/cron/subscription-reminder")
+
+          http_code=$(echo "$response" | tail -n1)
+          body=$(echo "$response" | sed '$d')
+
+          echo "HTTP Status: $http_code"
+          echo "Response: $body"
+
+          if [ "$http_code" -ne 200 ]; then
+            echo "❌ 1-day reminder job failed with status $http_code"
+            exit 1
+          fi
+
+          echo "✅ 1-day reminders sent successfully"
+
+      - name: Notify on Failure
+        if: failure()
+        run: |
+          echo "❌ Subscription reminder job failed!"
+          echo "Check the logs above for details"

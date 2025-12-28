@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Alert, AlertDescription } from "@/components/ui/alert"
-import { Loader2, CreditCard, Lock, AlertTriangle } from "lucide-react"
+import { Loader2, CreditCard, Lock } from "lucide-react"
 import { useToast } from "@/hooks/use-toast"
 
 interface PayTRCardFormProps {
@@ -184,13 +184,6 @@ export default function PayTRCardForm({
           <AlertDescription className="text-xs">
             <strong>Güvenli Ödeme:</strong> Kart bilgileriniz şifrelenir ve güvenli PayTR altyapısı üzerinden işlenir.
             Bilgileriniz saklanmaz.
-          </AlertDescription>
-        </Alert>
-
-        <Alert variant="destructive" className="mb-4">
-          <AlertTriangle className="h-4 w-4" />
-          <AlertDescription className="text-xs">
-            <strong>Test Modu:</strong> Test kartı: 9792 0303 9444 0796 | CVV: 000 | Son Kullanma: 12/30 | 3D Şifre: a
           </AlertDescription>
         </Alert>
 

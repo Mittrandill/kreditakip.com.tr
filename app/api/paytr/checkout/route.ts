@@ -65,7 +65,6 @@ export async function POST(request: NextRequest) {
       .maybeSingle()
 
     if (existingSub) {
-      console.log("[PayTR Checkout] User already has active subscription:", existingSub)
       // Allow upgrade/downgrade
     }
 

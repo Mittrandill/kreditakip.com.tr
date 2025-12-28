@@ -62,9 +62,8 @@
       "Bash(pnpm run build:*)",
       "Bash(npx supabase:*)",
       "Bash(psql:*)",
-      "Bash(start chrome \"https://undeaf-shaneka-fernless.ngrok-free.dev/test-paytr\")",
       "WebFetch(domain:raw.githubusercontent.com)",
-      "Bash(start chrome \"https://undeaf-shaneka-fernless.ngrok-free.dev/uygulama/odeme\")"
+      "Bash(exit 0)"
     ],
     "deny": [],
     "ask": []

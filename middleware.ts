@@ -2,11 +2,7 @@ import { type NextRequest, NextResponse } from "next/server"
 import { createServerClient } from "@supabase/ssr"
 
 export async function middleware(request: NextRequest) {
-  let response = NextResponse.next({
-    request: {
-      headers: request.headers,
-    },
-  })
+  let response = NextResponse.next()
 
   const supabase = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -33,8 +29,8 @@ export async function middleware(request: NextRequest) {
   // SECURITY FIX: Add security headers
   const headers = response.headers
 
-  // Prevent clickjacking attacks
-  headers.set("X-Frame-Options", "DENY")
+  // Prevent clickjacking attacks (SAMEORIGIN for PayTR 3D Secure iframe)
+  headers.set("X-Frame-Options", "SAMEORIGIN")
 
   // Prevent MIME type sniffing
   headers.set("X-Content-Type-Options", "nosniff")
@@ -45,17 +41,18 @@ export async function middleware(request: NextRequest) {
   // Control referrer information
   headers.set("Referrer-Policy", "strict-origin-when-cross-origin")
 
-  // Content Security Policy - Paddle ve Vercel için gerekli domain'ler
+  // Content Security Policy - PayTR, Paddle ve Vercel için gerekli domain'ler
   headers.set(
     "Content-Security-Policy",
     [
       "default-src 'self'",
-      "script-src 'self' 'unsafe-eval' 'unsafe-inline' https://cdn.paddle.com https://va.vercel-scripts.com https://pagead2.googlesyndication.com https://googleads.g.doubleclick.net https://www.google.com https://adservice.google.com",
-      "style-src 'self' 'unsafe-inline' https://cdn.paddle.com",
+      "script-src 'self' 'unsafe-eval' 'unsafe-inline' https://cdn.paddle.com https://va.vercel-scripts.com https://pagead2.googlesyndication.com https://googleads.g.doubleclick.net https://www.google.com https://adservice.google.com https://www.paytr.com https://*.paytr.com",
+      "style-src 'self' 'unsafe-inline' https://cdn.paddle.com https://www.paytr.com https://*.paytr.com",
       "img-src 'self' data: https:",
       "font-src 'self' data:",
-      "connect-src 'self' https://*.supabase.co https://api.paddle.com https://sandbox-api.paddle.com https://o120955.ingest.sentry.io https://generativelanguage.googleapis.com https://cdn.paddle.com https://va.vercel-scripts.com https://pagead2.googlesyndication.com",
-      "frame-src 'self' https://checkout.paddle.com https://sandbox-checkout.paddle.com https://sandbox-checkout-service.paddle.com https://googleads.g.doubleclick.net https://tpc.googlesyndication.com https://www.google.com",
+      "connect-src 'self' https://*.supabase.co https://api.paddle.com https://sandbox-api.paddle.com https://o120955.ingest.sentry.io https://generativelanguage.googleapis.com https://cdn.paddle.com https://va.vercel-scripts.com https://pagead2.googlesyndication.com https://www.paytr.com https://*.paytr.com",
+      "frame-src 'self' https://checkout.paddle.com https://sandbox-checkout.paddle.com https://sandbox-checkout-service.paddle.com https://googleads.g.doubleclick.net https://tpc.googlesyndication.com https://www.google.com https://www.paytr.com https://*.paytr.com",
+      "form-action 'self' https://www.paytr.com https://*.paytr.com",
       "frame-ancestors 'none'",
     ].join('; ') + ';',
   )
@@ -89,8 +86,12 @@ export async function middleware(request: NextRequest) {
 
 export const config = {
   matcher: [
-    "/auth/callback",
-    "/api/((?!cron|email).*)", // Exclude /api/cron/* and /api/email/* routes from middleware
-    "/uygulama/:path*"
+    /*
+     * Match all request paths except for the ones starting with:
+     * - _next/static (static files)
+     * - _next/image (image optimization files)
+     * - favicon.ico (favicon file)
+     */
+    "/((?!_next/static|_next/image|favicon.ico).*)",
   ],
 }

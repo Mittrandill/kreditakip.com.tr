@@ -232,20 +232,6 @@ export class PayTRClient {
       cvv: cardCvv,
     })
 
-    console.log("[PayTR] API URL:", this.apiUrl)
-    console.log("[PayTR] Request params:", {
-      merchant_id: this.merchantId,
-      merchant_oid: orderId,
-      email,
-      payment_amount: paymentAmount,
-      currency,
-      test_mode: testMode,
-      payment_type: paymentType,
-      card_number_masked: cardNumber.replace(/\d(?=\d{4})/g, "*"),
-    })
-    console.log("[PayTR] Full request body:", requestBody.toString())
-    console.log("[PayTR] Generated paytr_token:", paytrToken)
-
     try {
       // Make request to PayTR Direkt API
       const response = await fetch(this.apiUrl, {
@@ -256,25 +242,45 @@ export class PayTRClient {
         body: requestBody.toString(),
       })
 
-      console.log("[PayTR] Response status:", response.status)
-      console.log("[PayTR] Response headers:", Object.fromEntries(response.headers))
-
       // Get response as text first
       const responseText = await response.text()
-      console.log("[PayTR] Raw response (first 200 chars):", responseText.substring(0, 200))
 
       // Check if HTML (3D Secure page) or JSON
       if (responseText.trim().startsWith('<!')) {
         // PayTR returned 3D Secure HTML page directly
-        console.log("[PayTR] Received 3D Secure HTML page")
 
-        // Create a data URL to display the HTML in new window/iframe
-        const base64Html = Buffer.from(responseText).toString('base64')
-        const dataUrl = `data:text/html;base64,${base64Html}`
+        // Store HTML in our endpoint and get a URL
+        try {
+          const appUrl = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000"
+          const storeResponse = await fetch(`${appUrl}/api/paytr/3d-secure`, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({ html: responseText }),
+          })
 
-        return {
-          status: "success",
-          redirect_url: dataUrl,
+          const storeData = await storeResponse.json()
+
+          if (!storeData.success || !storeData.url) {
+            console.error("[PayTR] Failed to store 3D Secure HTML:", storeData)
+            return {
+              status: "failed",
+              reason: "Failed to prepare 3D Secure page",
+            }
+          }
+
+          // Return the full URL to the 3D Secure page
+          return {
+            status: "success",
+            redirect_url: `${appUrl}${storeData.url}`,
+          }
+        } catch (error: any) {
+          console.error("[PayTR] Error storing 3D Secure HTML:", error)
+          return {
+            status: "failed",
+            reason: "Failed to prepare 3D Secure page",
+          }
         }
       }
 
