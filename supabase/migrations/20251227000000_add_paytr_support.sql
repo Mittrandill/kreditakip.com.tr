@@ -5,6 +5,7 @@
 
 -- Add PayTR-specific columns to subscriptions table
 ALTER TABLE subscriptions
+ADD COLUMN IF NOT EXISTS payment_provider VARCHAR(50) DEFAULT 'paddle',
 ADD COLUMN IF NOT EXISTS paytr_order_id VARCHAR(255),
 ADD COLUMN IF NOT EXISTS paytr_transaction_id VARCHAR(255),
 ADD COLUMN IF NOT EXISTS paytr_payment_date TIMESTAMP WITH TIME ZONE,
@@ -44,6 +45,7 @@ CREATE INDEX IF NOT EXISTS idx_paytr_webhooks_order_id
 
 -- Add PayTR columns to payment_transactions
 ALTER TABLE payment_transactions
+ADD COLUMN IF NOT EXISTS payment_provider VARCHAR(50) DEFAULT 'paddle',
 ADD COLUMN IF NOT EXISTS paytr_order_id VARCHAR(255),
 ADD COLUMN IF NOT EXISTS paytr_transaction_id VARCHAR(255),
 ADD COLUMN IF NOT EXISTS paytr_payment_type VARCHAR(50);
@@ -53,6 +55,7 @@ CREATE INDEX IF NOT EXISTS idx_payment_transactions_paytr_order_id
 
 -- Add PayTR columns to invoices
 ALTER TABLE invoices
+ADD COLUMN IF NOT EXISTS payment_provider VARCHAR(50) DEFAULT 'paddle',
 ADD COLUMN IF NOT EXISTS paytr_order_id VARCHAR(255),
 ADD COLUMN IF NOT EXISTS paytr_transaction_id VARCHAR(255);
 
@@ -65,14 +68,15 @@ SET payment_provider = 'paddle'
 WHERE payment_provider IS NULL
   AND (paddle_subscription_id IS NOT NULL OR paddle_customer_id IS NOT NULL);
 
--- Ensure payment_provider constraint exists
+-- Add check constraint for payment_provider on subscriptions
 DO $$
 BEGIN
   IF NOT EXISTS (
     SELECT 1 FROM pg_constraint
     WHERE conname = 'check_payment_provider'
+      AND conrelid = 'subscriptions'::regclass
   ) THEN
-    ALTER TABLE subscription_plans
+    ALTER TABLE subscriptions
     ADD CONSTRAINT check_payment_provider
       CHECK (payment_provider IN ('paddle', 'paytr'));
   END IF;
