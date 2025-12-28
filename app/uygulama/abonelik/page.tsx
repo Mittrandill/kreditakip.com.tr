@@ -52,7 +52,7 @@ import {
   AlertTriangle,
   Info,
 } from "lucide-react"
-import { useRouter } from "next/navigation"
+import { useRouter, useSearchParams } from "next/navigation"
 import { useAuth } from "@/hooks/use-auth"
 import { useSubscriptionV2 } from "@/hooks/use-subscription-v2"
 import { useToast } from "@/hooks/use-toast"
@@ -87,6 +87,7 @@ interface Invoice {
 
 export default function SubscriptionPage() {
   const router = useRouter()
+  const searchParams = useSearchParams()
   const { toast } = useToast()
   const { user } = useAuth()
   const { subscription, loading, isPremium, refresh, cancelSubscription: cancelSubscriptionHook } = useSubscriptionV2()
@@ -111,6 +112,44 @@ export default function SubscriptionPage() {
   const [subscriptionData, setSubscriptionData] = useState<any>(null)
   const [pendingPaymentData, setPendingPaymentData] = useState<any>(null)
   const [loadingSubscription, setLoadingSubscription] = useState(true)
+
+  // Handle payment success message
+  useEffect(() => {
+    const paymentStatus = searchParams.get("payment")
+    const orderId = searchParams.get("order_id")
+
+    if (paymentStatus === "success") {
+      toast({
+        title: "Ödeme Başarılı!",
+        description: orderId
+          ? `Siparişiniz (#${orderId}) başarıyla tamamlandı. Aboneliğiniz aktif edildi.`
+          : "Aboneliğiniz başarıyla aktif edildi.",
+        duration: 5000,
+      })
+
+      // Refresh subscription data
+      refresh()
+
+      // Clean up URL
+      const url = new URL(window.location.href)
+      url.searchParams.delete("payment")
+      url.searchParams.delete("order_id")
+      url.searchParams.delete("type")
+      router.replace(url.pathname + url.search)
+    } else if (paymentStatus === "failed") {
+      toast({
+        title: "Ödeme Başarısız",
+        description: "Ödeme işlemi tamamlanamadı. Lütfen tekrar deneyin.",
+        variant: "destructive",
+        duration: 5000,
+      })
+
+      // Clean up URL
+      const url = new URL(window.location.href)
+      url.searchParams.delete("payment")
+      router.replace(url.pathname + url.search)
+    }
+  }, [searchParams, toast, refresh, router])
 
   useEffect(() => {
     fetchPaymentData()

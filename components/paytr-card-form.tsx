@@ -15,6 +15,7 @@ interface PayTRCardFormProps {
   price: number
   userId: string
   userEmail: string
+  termsAccepted?: boolean
   onSuccess?: () => void
   onError?: (error: string) => void
 }
@@ -25,6 +26,7 @@ export default function PayTRCardForm({
   price,
   userId,
   userEmail,
+  termsAccepted = true,
   onSuccess,
   onError,
 }: PayTRCardFormProps) {
@@ -240,11 +242,16 @@ export default function PayTRCardForm({
             </div>
           </div>
 
-          <Button type="submit" className="w-full" disabled={loading}>
+          <Button type="submit" className="w-full" disabled={loading || !termsAccepted}>
             {loading ? (
               <>
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                 İşleniyor...
+              </>
+            ) : !termsAccepted ? (
+              <>
+                <Lock className="mr-2 h-4 w-4" />
+                Koşulları Kabul Edin
               </>
             ) : (
               <>

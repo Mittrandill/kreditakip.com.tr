@@ -662,39 +662,41 @@ export default function PaymentPage() {
                     </div>
                   </div>
 
-                  {/* PayTR Card Form */}
-                  {(!termsAccepted || !privacyAccepted || !kvkkAccepted) ? (
-                    <Alert variant="destructive">
+                  {/* PayTR Card Form - Always visible */}
+                  <PayTRCardForm
+                    planId={selectedPlan.id}
+                    planName={selectedPlan.name}
+                    price={selectedPlan.price}
+                    userId={user?.id || ''}
+                    userEmail={billingInfo.email}
+                    termsAccepted={termsAccepted && privacyAccepted && kvkkAccepted}
+                    onSuccess={() => {
+                      toast({
+                        title: "Ödeme Başarılı!",
+                        description: "Aboneliğiniz başarıyla oluşturuldu.",
+                      })
+                      refreshSubscription()
+                      setTimeout(() => {
+                        router.push('/uygulama/abonelik')
+                      }, 1000)
+                    }}
+                    onError={(error) => {
+                      toast({
+                        title: "Ödeme Hatası",
+                        description: error,
+                        variant: "destructive",
+                      })
+                    }}
+                  />
+
+                  {/* Warning when terms not accepted */}
+                  {(!termsAccepted || !privacyAccepted || !kvkkAccepted) && (
+                    <Alert variant="destructive" className="mt-4">
                       <AlertCircle className="h-4 w-4" />
                       <AlertDescription>
-                        Lütfen tüm koşulları okuyup kabul edin.
+                        Ödeme yapmak için lütfen yukarıdaki tüm koşulları okuyup kabul edin.
                       </AlertDescription>
                     </Alert>
-                  ) : (
-                    <PayTRCardForm
-                      planId={selectedPlan.id}
-                      planName={selectedPlan.name}
-                      price={selectedPlan.price}
-                      userId={user?.id || ''}
-                      userEmail={billingInfo.email}
-                      onSuccess={() => {
-                        toast({
-                          title: "Ödeme Başarılı!",
-                          description: "Aboneliğiniz başarıyla oluşturuldu.",
-                        })
-                        refreshSubscription()
-                        setTimeout(() => {
-                          router.push('/uygulama/abonelik')
-                        }, 1000)
-                      }}
-                      onError={(error) => {
-                        toast({
-                          title: "Ödeme Hatası",
-                          description: error,
-                          variant: "destructive",
-                        })
-                      }}
-                    />
                   )}
 
                   <div className="flex items-center justify-center text-xs text-gray-500 dark:text-gray-400 gap-2 pt-2">
