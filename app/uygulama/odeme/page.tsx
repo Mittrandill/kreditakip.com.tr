@@ -21,7 +21,7 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { LoadingSpinner } from "@/components/loading-screen"
 import { cn } from "@/lib/utils"
-import PaddleCheckout from "@/components/paddle-checkout-button"
+import PayTRCardForm from "@/components/paytr-card-form"
 
 export default function PaymentPage() {
   const router = useRouter()
@@ -302,7 +302,7 @@ export default function PaymentPage() {
                     Fatura Bilgileri
                   </CardTitle>
                   <CardDescription>
-                    Fatura bilgilerinizi girin. Bir sonraki adımda Paddle üzerinden güvenli ödeme yapacaksınız.
+                    Fatura bilgilerinizi girin. Bir sonraki adımda PayTR üzerinden güvenli ödeme yapacaksınız.
                   </CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-4">
@@ -545,9 +545,9 @@ export default function PaymentPage() {
                   <div className="flex items-start gap-3">
                     <CheckCircle2 className="h-5 w-5 text-emerald-600 dark:text-emerald-400 mt-0.5" />
                     <div>
-                      <p className="font-medium text-gray-900 dark:text-white">Paddle Güvencesi</p>
+                      <p className="font-medium text-gray-900 dark:text-white">PayTR Güvencesi</p>
                       <p className="text-sm text-gray-600 dark:text-white/60">
-                        Sertifikalı güvenli ödeme altyapısı
+                        3D Secure ile güvenli ödeme
                       </p>
                     </div>
                   </div>
@@ -576,23 +576,17 @@ export default function PaymentPage() {
                 <CardHeader>
                   <CardTitle>Güvenli Ödeme</CardTitle>
                   <CardDescription>
-                    Ödemeleriniz Paddle'ın PCI-DSS sertifikalı altyapısında güvenli bir şekilde işlenir.
+                    Ödemeleriniz PayTR'nin 3D Secure güvenli altyapısında işlenir.
                   </CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-6">
-                  {/* Paddle Logo and Info */}
+                  {/* PayTR Logo and Info */}
                   <div className="flex flex-col items-center justify-center py-6 border-b">
                     <div className="bg-gradient-to-r from-emerald-600 to-teal-600 px-8 py-4 rounded-lg mb-4">
-                      <Image
-                        src="/paddle-logo-white.svg"
-                        alt="Paddle"
-                        width={120}
-                        height={40}
-                        className="h-10 w-auto"
-                      />
+                      <div className="text-white text-2xl font-bold">PayTR</div>
                     </div>
                     <p className="text-center text-sm text-gray-600 dark:text-gray-400">
-                      Paddle ile güvenli ödemeye geçmek için aşağıdaki koşulları kabul edin ve "Ödemeye Geç" butonuna tıklayın.
+                      PayTR ile 3D Secure güvenli ödeme yapmak için aşağıdaki koşulları kabul edin ve kart bilgilerinizi girin.
                     </p>
                   </div>
 
@@ -668,14 +662,21 @@ export default function PaymentPage() {
                     </div>
                   </div>
 
-                  {/* Payment Button */}
-                  {showCheckout ? (
-                    <PaddleCheckout
+                  {/* PayTR Card Form */}
+                  {(!termsAccepted || !privacyAccepted || !kvkkAccepted) ? (
+                    <Alert variant="destructive">
+                      <AlertCircle className="h-4 w-4" />
+                      <AlertDescription>
+                        Lütfen tüm koşulları okuyup kabul edin.
+                      </AlertDescription>
+                    </Alert>
+                  ) : (
+                    <PayTRCardForm
                       planId={selectedPlan.id}
                       planName={selectedPlan.name}
-                      priceId={selectedPlan.paddlePriceId || ''}
+                      price={selectedPlan.price}
+                      userId={user?.id || ''}
                       userEmail={billingInfo.email}
-                      userId={user?.id}
                       onSuccess={() => {
                         toast({
                           title: "Ödeme Başarılı!",
@@ -686,29 +687,14 @@ export default function PaymentPage() {
                           router.push('/uygulama/abonelik')
                         }, 1000)
                       }}
-                      onClose={() => {
-                        setShowCheckout(false)
+                      onError={(error) => {
+                        toast({
+                          title: "Ödeme Hatası",
+                          description: error,
+                          variant: "destructive",
+                        })
                       }}
                     />
-                  ) : (
-                    <Button
-                      onClick={() => {
-                        if (!termsAccepted || !privacyAccepted || !kvkkAccepted) {
-                          toast({
-                            title: "Dikkat",
-                            description: "Lütfen tüm koşulları okuyup kabul edin.",
-                            variant: "destructive",
-                          })
-                          return
-                        }
-                        setShowCheckout(true)
-                      }}
-                      disabled={!termsAccepted || !privacyAccepted || !kvkkAccepted}
-                      className="w-full bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 h-12 text-base font-semibold"
-                    >
-                      <CreditCard className="mr-2 h-5 w-5" />
-                      Ödemeye Geç
-                    </Button>
                   )}
 
                   <div className="flex items-center justify-center text-xs text-gray-500 dark:text-gray-400 gap-2 pt-2">
@@ -782,8 +768,8 @@ export default function PaymentPage() {
                 </CardHeader>
                 <CardContent>
                   <CardDescription>
-                    Ödemeleriniz Paddle'ın PCI-DSS sertifikalı altyapısında güvenli bir şekilde işlenir.
-                    Kart bilgileriniz hiçbir zaman sunucularımıza gelmez.
+                    Ödemeleriniz PayTR'nin 3D Secure güvenli altyapısında işlenir.
+                    Kart bilgileriniz şifrelenerek PayTR'ye gönderilir ve sunucularımızda saklanmaz.
                   </CardDescription>
                 </CardContent>
               </Card>

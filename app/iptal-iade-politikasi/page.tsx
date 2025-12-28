@@ -54,7 +54,7 @@ export default function CancellationRefundPolicyPage() {
                   </p>
 
                   <p className="bg-emerald-500/10 border border-emerald-500/30 rounded-lg p-4">
-                    Bu iade politikası, ödeme altyapımız Paddle'ın zorunlu 14 günlük refund policy gerekliliği doğrultusunda uygulanmaktadır.
+                    Bu iade politikası, PayTR ödeme sistemimiz ve Türk Tüketici Hakları Yönetmeliği doğrultusunda uygulanmaktadır.
                   </p>
 
                   <p>
@@ -71,26 +71,23 @@ export default function CancellationRefundPolicyPage() {
                 </h2>
                 <div className="text-white/80 leading-relaxed space-y-3">
                   <p>
-                    İade talepleri, ödemenin gerçekleştiği platform olan Paddle üzerinden işlenir ve ödemenin yapıldığı yöntemle kullanıcının hesabına iade edilir.
+                    İade talepleri, destek ekibimiz tarafından işlenir ve ödemenin yapıldığı kredi kartına iade edilir.
                   </p>
 
                   <p><strong>İade süreci şu adımlarla ilerler:</strong></p>
                   <ul className="list-disc pl-6 space-y-2">
-                    <li>Kullanıcı iade talebini iletir</li>
-                    <li>Talep Paddle tarafından doğrulanır</li>
-                    <li>İade, ödeme yöntemine bağlı olarak genellikle 3–10 iş günü içinde tamamlanır</li>
+                    <li>Kullanıcı iade talebini info@kreditakip.com.tr adresine iletir</li>
+                    <li>Talep ekibimiz tarafından doğrulanır ve PayTR üzerinden iade işlemi başlatılır</li>
+                    <li>İade, bankanıza bağlı olarak genellikle 5–10 iş günü içinde hesabınıza yansır</li>
                   </ul>
 
                   <div className="bg-blue-500/10 border border-blue-500/30 rounded-lg p-4 mt-4">
                     <p><strong>İade talepleri için:</strong></p>
                     <p className="mt-2">
-                      📩 <a href="mailto:sellers@paddle.com" className="text-emerald-400 hover:underline">sellers@paddle.com</a>
-                    </p>
-                    <p className="mt-1">
-                      veya
-                    </p>
-                    <p className="mt-1">
                       📩 <a href="mailto:info@kreditakip.com.tr" className="text-emerald-400 hover:underline">info@kreditakip.com.tr</a>
+                    </p>
+                    <p className="mt-2 text-sm text-white/70">
+                      İade talebinizde lütfen sipariş numaranızı ve kayıtlı e-posta adresinizi belirtin.
                     </p>
                   </div>
                 </div>
@@ -104,7 +101,7 @@ export default function CancellationRefundPolicyPage() {
                 </h2>
                 <div className="text-white/80 leading-relaxed space-y-3">
                   <p>
-                    14 günlük yasal/policy süresi dolduktan sonra yapılan iade talepleri Paddle tarafından kabul edilmemektedir.
+                    14 günlük yasal süre dolduktan sonra yapılan iade talepleri değerlendirilmemektedir.
                   </p>
 
                   <p>
@@ -126,8 +123,9 @@ export default function CancellationRefundPolicyPage() {
 
                   <p><strong>İptal işlemi sonrasında:</strong></p>
                   <ul className="list-disc pl-6 space-y-2">
-                    <li>Mevcut fatura döneminin sonuna kadar hizmetlerden yararlanmaya devam edersiniz</li>
-                    <li>İptal işlemi ileriye dönük geçerlidir; geçmiş dönemlere ilişkin iadeler Paddle politikaları gereği yapılamamaktadır</li>
+                    <li>Mevcut abonelik sürenizin sonuna kadar hizmetlerden yararlanmaya devam edersiniz</li>
+                    <li>İptal işlemi ileriye dönük geçerlidir; geçmiş dönemlere ilişkin iadeler yapılamamaktadır (14 günlük süre hariç)</li>
+                    <li>PayTR abonelikleri otomatik yenilenmez - süre dolmadan manuel olarak yenilemeniz gerekir</li>
                   </ul>
                 </div>
               </div>
@@ -144,7 +142,7 @@ export default function CancellationRefundPolicyPage() {
                   </p>
 
                   <p className="bg-emerald-500/10 border border-emerald-500/30 rounded-lg p-4">
-                    Buna rağmen Paddle'ın global policy'si gereği, dijital ürünlerde dahi 14 günlük koşulsuz iade hakkı sunulmaktadır.
+                    Türk Tüketici Hakları Yönetmeliği gereği, dijital ürünlerde 14 günlük koşulsuz iade hakkı sunulmaktadır.
                   </p>
                 </div>
               </div>
@@ -157,7 +155,7 @@ export default function CancellationRefundPolicyPage() {
                 </h2>
                 <div className="text-white/80 leading-relaxed space-y-3">
                   <p className="bg-yellow-500/10 border border-yellow-500/30 rounded-lg p-4">
-                    Nadir durumlarda, sistemin kötüye kullanıldığı tespit edilirse Paddle ek doğrulamalar isteyebilir.
+                    Nadir durumlarda, sistemin kötüye kullanıldığı tespit edilirse ek doğrulamalar istenebilir.
                   </p>
 
                   <p>
@@ -197,10 +195,10 @@ export default function CancellationRefundPolicyPage() {
                 Önemli Bilgilendirme
               </h3>
               <p className="text-white/80 leading-relaxed">
-                Bu politika, Kredi Takip ve Paddle arasındaki resmi anlaşmaya dayanır. Politika değişiklikleri,
-                kullanıcılarımıza e-posta ve uygulama içi bildirimler ile duyurulur. Devam eden abonelikler,
-                değişikliklerden önceki şartlara tabidir. Politikamız KVKK, GDPR ve ilgili tüm yerel yasalara
-                uygundur.
+                Bu politika, Kredi Takip'in PayTR ödeme sistemi kullanarak sunduğu hizmetlere ilişkindir.
+                Politika değişiklikleri, kullanıcılarımıza e-posta ve uygulama içi bildirimler ile duyurulur.
+                Devam eden abonelikler, değişikliklerden önceki şartlara tabidir. Politikamız KVKK,
+                Türk Tüketici Hakları Yönetmeliği ve ilgili tüm yerel yasalara uygundur.
               </p>
             </div>
 

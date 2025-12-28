@@ -1,0 +1,71 @@
+name: PayTR Subscription Management
+
+on:
+  schedule:
+    # Run daily at 9:00 AM UTC (12:00 PM Turkey time)
+    - cron: '0 9 * * *'
+  workflow_dispatch: # Allow manual trigger
+
+jobs:
+  send-renewal-reminders:
+    name: Send Subscription Renewal Reminders
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: |
+          npm install mailersend @supabase/supabase-js
+
+      - name: Send renewal reminders
+        env:
+          MAILERSEND_API_KEY: ${{ secrets.MAILERSEND_API_KEY }}
+          NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
+          SERVICE_ROLE_KEY: ${{ secrets.SERVICE_ROLE_KEY }}
+          NEXT_PUBLIC_APP_URL: ${{ secrets.NEXT_PUBLIC_APP_URL }}
+        run: node scripts/send-subscription-reminders.js
+
+  downgrade-expired-subscriptions:
+    name: Downgrade Expired Subscriptions
+    runs-on: ubuntu-latest
+    needs: send-renewal-reminders # Run after reminders
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: |
+          npm install mailersend @supabase/supabase-js
+
+      - name: Downgrade expired subscriptions
+        env:
+          MAILERSEND_API_KEY: ${{ secrets.MAILERSEND_API_KEY }}
+          NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
+          SERVICE_ROLE_KEY: ${{ secrets.SERVICE_ROLE_KEY }}
+          NEXT_PUBLIC_APP_URL: ${{ secrets.NEXT_PUBLIC_APP_URL }}
+        run: node scripts/downgrade-expired-subscriptions.js
+
+      - name: Create summary
+        if: always()
+        run: |
+          echo "## PayTR Subscription Management" >> $GITHUB_STEP_SUMMARY
+          echo "✅ Workflow completed at $(date)" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### Jobs Executed" >> $GITHUB_STEP_SUMMARY
+          echo "1. Renewal reminders sent" >> $GITHUB_STEP_SUMMARY
+          echo "2. Expired subscriptions downgraded" >> $GITHUB_STEP_SUMMARY

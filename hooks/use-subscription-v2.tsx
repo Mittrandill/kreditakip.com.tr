@@ -36,6 +36,7 @@ export interface Subscription {
   gracePeriodEndsAt?: string
   requiresPaymentAction: boolean
   paddleSubscriptionId?: string
+  paymentProvider?: "paddle" | "paytr"
   cancelUrl?: string
   updateUrl?: string
   usage?: Usage
@@ -92,6 +93,7 @@ export function useSubscriptionV2() {
           gracePeriodEndsAt: subData.grace_period_ends_at,
           requiresPaymentAction: subData.requires_payment_action || false,
           paddleSubscriptionId: subData.paddle_subscription_id,
+          paymentProvider: subData.payment_provider || "paddle",
           usage: apiData?.usage ? {
             ocrAnalysis: (() => {
               const ocr = apiData.usage.find((u: any) => u.feature_type === 'ocr_analysis')
@@ -444,6 +446,10 @@ export function useSubscriptionV2() {
     Math.ceil((new Date(subscription.gracePeriodEndsAt).getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24)) :
     null
 
+  // Payment provider flags
+  const isPayTRSubscription = subscription?.paymentProvider === "paytr"
+  const isPaddleSubscription = subscription?.paymentProvider === "paddle"
+
   // Auto-refresh on mount and when user changes
   useEffect(() => {
     refresh()
@@ -461,6 +467,8 @@ export function useSubscriptionV2() {
     canUseRiskAnalysis,
     daysUntilExpiration,
     daysUntilGraceEnd,
+    isPayTRSubscription,
+    isPaddleSubscription,
     refresh,
     trackUsage,
     createCheckout,

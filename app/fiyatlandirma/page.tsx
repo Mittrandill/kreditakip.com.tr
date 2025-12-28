@@ -8,7 +8,6 @@ import Footer from "@/components/footer"
 import { CheckCircle, X, Star, Crown, Sparkles, ArrowRight, Zap } from "lucide-react"
 import { useRouter } from "next/navigation"
 import { useState } from "react"
-import ModernPaddleCheckout from "@/components/modern-paddle-checkout"
 import { useAuth } from "@/hooks/use-auth"
 
 export default function PricingPage() {
@@ -118,7 +117,7 @@ export default function PricingPage() {
     {
       question: "Ödeme güvenli mi?",
       answer:
-        "Evet, tüm ödemeler Paddle güvencesi altında AES-256 Şifreleme ile korunur. Kredi kartı bilgileriniz bizimle paylaşılmaz ve güvenle saklanır.",
+        "Evet, tüm ödemeler PayTR'nin 3D Secure güvenli altyapısı üzerinden gerçekleştirilir. Kredi kartı bilgileriniz sunucularımızda saklanmaz ve her ödeme 3D doğrulama ile korunur.",
     },
     {
       question: "Yıllık planlarda indirim var mı?",
@@ -255,37 +254,19 @@ export default function PricingPage() {
                       ))}
                     </div>
 
-                    {user && plan.priceId ? (
-                      <ModernPaddleCheckout
-                        planId={plan.id}
-                        planName={plan.name}
-                        priceId={plan.priceId}
-                        price={billingPeriod === "monthly" ? plan.monthlyPrice : plan.yearlyPrice}
-                        period={billingPeriod}
-                        features={plan.features}
-                        userEmail={user.email || ""}
-                        userId={user.id}
-                        onSuccess={() => {
-                          router.push("/uygulama/abonelik")
-                        }}
-                        discount={plan.discount}
-                        originalPrice={billingPeriod === "yearly" ? plan.originalYearlyPrice : undefined}
-                      />
-                    ) : (
-                      <Button
-                        className={`w-full ${
-                          plan.popular
-                            ? "bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600"
-                            : index === 1
-                              ? "bg-gradient-to-r from-blue-500 to-indigo-500 hover:from-blue-600 hover:to-indigo-600"
-                              : "bg-white/10 hover:bg-white/20 border border-white/20"
-                        } text-white text-lg py-6`}
-                        onClick={() => router.push(user ? "/uygulama/premium" : "/giris")}
-                      >
-                        {plan.cta}
-                        <ArrowRight className="ml-2 h-5 w-5" />
-                      </Button>
-                    )}
+                    <Button
+                      className={`w-full ${
+                        plan.popular
+                          ? "bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600"
+                          : index === 1
+                            ? "bg-gradient-to-r from-blue-500 to-indigo-500 hover:from-blue-600 hover:to-indigo-600"
+                            : "bg-white/10 hover:bg-white/20 border border-white/20"
+                      } text-white text-lg py-6`}
+                      onClick={() => router.push(user ? "/uygulama/odeme" : "/giris")}
+                    >
+                      {plan.cta}
+                      <ArrowRight className="ml-2 h-5 w-5" />
+                    </Button>
                   </CardContent>
                 </Card>
               ))}

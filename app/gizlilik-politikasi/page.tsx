@@ -113,18 +113,18 @@ export default function PrivacyPolicyPage() {
                 <h2 className="text-2xl font-bold text-white mb-4">5. Ödeme Bilgileri ve Abonelikler</h2>
                 <div className="text-white/80 leading-relaxed space-y-3 bg-emerald-500/10 border border-emerald-500/30 rounded-lg p-6">
                   <p>
-                    <strong className="text-emerald-200">Ödeme Güvenliği:</strong> Tüm ödemeleriniz Paddle.com güvencesi altında
-                    PCI-DSS sertifikalı altyapı üzerinden işlenir. Kredi Takip olarak kredi kartı bilgilerinizi hiçbir şekilde görmüyor veya sunucularımızda saklamıyoruz.
+                    <strong className="text-emerald-200">Ödeme Güvenliği:</strong> Tüm ödemeleriniz PayTR güvencesi altında
+                    3D Secure doğrulama ile güvenli bir şekilde işlenir. Kredi Takip olarak kredi kartı bilgilerinizi hiçbir şekilde görmüyor veya sunucularımızda saklamıyoruz.
                   </p>
 
                   <p>
-                    <strong>Paddle ile Ödeme İşlemleri:</strong>
+                    <strong>PayTR ile Ödeme İşlemleri:</strong>
                   </p>
                   <ul className="list-disc pl-6 space-y-2">
-                    <li>Kredi kartı bilgileriniz doğrudan ve güvenli bir şekilde Paddle'ya iletilir</li>
+                    <li>Kredi kartı bilgileriniz doğrudan ve güvenli bir şekilde PayTR'ye iletilir</li>
                     <li>Sunucularımızda kredi kartı numarası, CVV veya son kullanma tarihi saklanmaz</li>
-                    <li>Tüm ödeme işlemleri PCI-DSS Level 1 standardına uygun şekilde gerçekleşir</li>
-                    <li>Paddle, 135+ ülkede vergi hesaplamasını otomatik olarak yapar</li>
+                    <li>Her ödeme işlemi 3D Secure doğrulama ile korunur</li>
+                    <li>PayTR, Türkiye'nin güvenilir ödeme altyapısıdır</li>
                     <li>Ödemeleriniz SSL/TLS şifrelemesi ile korunur</li>
                   </ul>
 
@@ -132,35 +132,36 @@ export default function PrivacyPolicyPage() {
                     <strong>Abonelik Yönetimi:</strong>
                   </p>
                   <ul className="list-disc pl-6 space-y-2">
-                    <li>Abonelikleriniz Paddle'ın müşteri portalı üzerinden yönetilir</li>
-                    <li>Ödeme bilgilerinizi güncellemek, plan değiştirmek veya iptal etmek için güvenli portalı kullanabilirsiniz</li>
-                    <li>Ödeme hatırlatmaları ve dunning (başarısız ödeme takibi) otomatik olarak Paddle tarafından yönetilir</li>
+                    <li>Abonelikleriniz hesap ayarlarınız üzerinden yönetilir</li>
+                    <li>Plan değiştirmek veya iptal etmek için abonelik sayfasını kullanabilirsiniz</li>
+                    <li>PayTR abonelikleri otomatik yenilenmez - süre dolmadan manuel olarak yenilemeniz gerekir</li>
+                    <li>Yenileme hatırlatmaları 7, 3 ve 1 gün önce e-posta ile gönderilir</li>
                     <li>Abonelik durumunuz hakkında e-posta bildirimleri alırsınız</li>
                   </ul>
 
                   <p className="text-yellow-200 bg-yellow-500/10 border border-yellow-500/30 rounded p-3">
                     <strong>🔒 Güvenlik Notu:</strong> Tam kart numaranız, CVV kodunuz veya diğer hassas ödeme bilgileriniz
-                    hiçbir zaman sunucularımızda saklanmaz. Bu bilgiler sadece Paddle'ın güvenli altyapısında işlenir.
+                    hiçbir zaman sunucularımızda saklanmaz. Her ödeme için kart bilgilerinizi yeniden girmeniz gerekir ve bu bilgiler sadece PayTR'nin güvenli altyapısında işlenir.
                   </p>
 
                   <p>
                     <strong>Fatura ve Ödeme Geçmişi:</strong>
                   </p>
                   <ul className="list-disc pl-6 space-y-2">
-                    <li>Fatura bilgileriniz (ad, adres, vergi/TC no) yasal zorunluluk gereği saklanır</li>
-                    <li>Ödeme geçmişiniz Paddle dashboard'ında ve hesabınızda görüntülenir</li>
-                    <li>Faturalarınız Paddle tarafından otomatik olarak oluşturulur ve e-posta ile gönderilir</li>
+                    <li>Fatura bilgileriniz (ad, adres, TC/Vergi no) yasal zorunluluk gereği saklanır</li>
+                    <li>Ödeme geçmişiniz abonelik sayfanızda görüntülenir</li>
+                    <li>Faturalarınız sistem tarafından otomatik olarak oluşturulur ve e-posta ile gönderilir</li>
                     <li>Tüm finansal kayıtlar muhasebe ve yasal uyumluluk amaçlı tutulur</li>
                   </ul>
 
                   <p>
-                    <strong>Üçüncü Taraf Ödeme Sağlayıcı:</strong>
+                    <strong>Ödeme Sağlayıcı:</strong>
                   </p>
                   <ul className="list-disc pl-6 space-y-2">
-                    <li>Paddle, resmi ödeme sağlayıcımız ve Merchant of Record'dur</li>
-                    <li>Paddle, tüm finansal işlemlerden, vergi uyumluluğundan ve düzenlemelerden sorumludur</li>
-                    <li>Ödeme iadeleri ve chargeback'ler Paddle politikalarına göre yönetilir</li>
-                    <li>Destek için: <a href="https://paddle.com/support/" target="_blank" className="text-emerald-400 hover:underline">Paddle Support</a></li>
+                    <li>PayTR, resmi ödeme sağlayıcımızdır</li>
+                    <li>PayTR, 3D Secure ile tüm ödeme işlemlerini güvenli şekilde gerçekleştirir</li>
+                    <li>Ödeme iadeleri PayTR üzerinden işleme alınır</li>
+                    <li>Destek için: <a href="mailto:info@kreditakip.com.tr" className="text-emerald-400 hover:underline">info@kreditakip.com.tr</a></li>
                   </ul>
                 </div>
               </div>

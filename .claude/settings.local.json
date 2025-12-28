@@ -55,7 +55,16 @@
       "Bash(claude mcp add:*)",
       "Bash(grep:*)",
       "mcp__supabase__list_tables",
-      "Bash(ls:*)"
+      "Bash(ls:*)",
+      "Bash(git reset:*)",
+      "Bash(node scripts/update-live-paddle-plans.js:*)",
+      "Bash(node scripts/test-paddle-live-config.js:*)",
+      "Bash(pnpm run build:*)",
+      "Bash(npx supabase:*)",
+      "Bash(psql:*)",
+      "Bash(start chrome \"https://undeaf-shaneka-fernless.ngrok-free.dev/test-paytr\")",
+      "WebFetch(domain:raw.githubusercontent.com)",
+      "Bash(start chrome \"https://undeaf-shaneka-fernless.ngrok-free.dev/uygulama/odeme\")"
     ],
     "deny": [],
     "ask": []

@@ -180,12 +180,12 @@ export default function TermsOfServicePage() {
                   </p>
 
                   <p>
-                    <strong className="text-emerald-200">Paddle ile Güvenli Ödeme:</strong>
+                    <strong className="text-emerald-200">PayTR ile Güvenli Ödeme:</strong>
                   </p>
                   <ul className="list-disc pl-6 space-y-2">
-                    <li>Tüm ödemeler Paddle.com güvencesi altında PCI-DSS Level 1 sertifikalı altyapı üzerinden işlenir</li>
+                    <li>Tüm ödemeler PayTR güvencesi altında 3D Secure altyapısı üzerinden işlenir</li>
                     <li>Kredi kartı bilgileriniz hiçbir zaman sunucularımızda saklanmaz</li>
-                    <li>Paddle, 135+ ülkede otomatik vergi hesaplaması yapar</li>
+                    <li>Her ödeme 3D doğrulama ile korunur</li>
                     <li>Ödemeleriniz SSL/TLS şifrelemesi ile korunur</li>
                   </ul>
 
@@ -193,15 +193,16 @@ export default function TermsOfServicePage() {
                     <strong>Abonelik Yönetimi:</strong>
                   </p>
                   <ul className="list-disc pl-6 space-y-2">
-                    <li>Abonelikleriniz Paddle müşteri portalı üzerinden yönetilir</li>
-                    <li>Ödeme bilgilerinizi güncellemek, plan değiştirmek veya iptal etmek için portalı kullanabilirsiniz</li>
+                    <li>Abonelikleriniz hesap ayarlarınız üzerinden yönetilir</li>
+                    <li>Plan değiştirmek veya iptal etmek için abonelik sayfasını kullanabilirsiniz</li>
                     <li>Abonelik durumunuz hakkında otomatik e-posta bildirimleri alırsınız</li>
-                    <li>Ödeme hatırlatmaları ve başarısız ödeme takibi (dunning) otomatik olarak yönetilir</li>
+                    <li>PayTR abonelikleri otomatik yenilenmez - süre dolmadan manuel olarak yenilemeniz gerekir</li>
+                    <li>Yenileme hatırlatmaları abonelik bitiminden 7, 3 ve 1 gün önce e-posta ile gönderilir</li>
                   </ul>
 
                   <p className="text-blue-200 bg-blue-500/10 border border-blue-500/30 rounded p-3">
-                    <strong>📦 Merchant of Record:</strong> Paddle, resmi ödeme sağlayıcımız ve Merchant of Record'dur.
-                    Tüm finansal işlemlerden, vergi uyumluluğundan ve düzenlemelerden Paddle sorumludur.
+                    <strong>📦 Ödeme Sistemi:</strong> PayTR, resmi ödeme sağlayıcımızdır.
+                    Tüm ödeme işlemleri 3D Secure ile korunur ve güvenli şekilde işlenir.
                   </p>
 
                   <p>
@@ -209,8 +210,8 @@ export default function TermsOfServicePage() {
                   </p>
                   <ul className="list-disc pl-6 space-y-2">
                     <li>Aboneliğinizi istediğiniz zaman, herhangi bir ceza ödemeden iptal edebilirsiniz</li>
-                    <li>İptal ettiğinizde, mevcut abonelik döneminizin sonuna kadar Premium özelliklere erişiminiz devam eder</li>
-                    <li>İptal Paddle müşteri portalı üzerinden veya destek talebi ile yapılabilir</li>
+                    <li>İptal ettiğinizde, mevcut abonelik sürenizin sonuna kadar Premium özelliklere erişiminiz devam eder</li>
+                    <li>İptal hesap ayarlarınız üzerinden veya info@kreditakip.com.tr adresine destek talebi ile yapılabilir</li>
                     <li>İptal onayı e-posta ile bildirilir</li>
                   </ul>
 
@@ -218,10 +219,10 @@ export default function TermsOfServicePage() {
                     <strong>Faturalandırma:</strong>
                   </p>
                   <ul className="list-disc pl-6 space-y-2">
-                    <li>Faturalarınız Paddle tarafından otomatik olarak oluşturulur</li>
+                    <li>Faturalarınız sistem tarafından otomatik olarak oluşturulur</li>
                     <li>Faturalar e-posta adresinize gönderilir</li>
-                    <li>Ödeme geçmişiniz Paddle dashboard'ında görüntülenebilir</li>
-                    <li>Faturalarınızda vergi detayları otomatik olarak hesaplanır</li>
+                    <li>Ödeme geçmişiniz abonelik sayfanızda görüntülenebilir</li>
+                    <li>Faturalarınızda KDV detayları otomatik olarak hesaplanır</li>
                   </ul>
 
                   <p>
@@ -282,19 +283,19 @@ export default function TermsOfServicePage() {
                     <strong>Biz Kimiz:</strong> Bu web sitesi ve Kredi Takip hizmetleri Kredi Takip tarafından işletilmektedir.
                   </p>
                   <p>
-                    <strong>Ödeme İşlemcisi:</strong> Tüm ödeme işlemleri Paddle.com (Merchant of Record) tarafından işlenir.
-                    Paddle, tüm ödeme işlemlerinden, vergi uyumluluğundan ve yasal düzenlemelerden sorumludur.
+                    <strong>Ödeme İşlemcisi:</strong> Tüm ödeme işlemleri PayTR tarafından güvenli bir şekilde işlenir.
+                    PayTR, 3D Secure doğrulama ile tüm ödemelerinizi korur.
                   </p>
                   <div className="bg-emerald-500/10 border border-emerald-500/30 rounded-lg p-4 mt-4">
                     <p className="text-sm">
-                      <strong>Ödeme Onayı:</strong> Satın alma yaparak, Paddle'ın{" "}
+                      <strong>Ödeme Onayı:</strong> Satın alma yaparak, PayTR'nin{" "}
                       <a
-                        href="https://paddle.com/legal/buyer-terms/"
+                        href="https://www.paytr.com/Kullanim-Sozlesmesi"
                         target="_blank"
                         rel="noopener noreferrer"
                         className="text-emerald-400 hover:underline"
                       >
-                        Buyer Terms &amp; Privacy Policy
+                        Kullanım Koşulları ve Gizlilik Politikası
                       </a>{" "}
                       koşullarını kabul etmiş olursunuz.
                     </p>
