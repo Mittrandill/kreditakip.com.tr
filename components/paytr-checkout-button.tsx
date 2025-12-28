@@ -12,6 +12,13 @@ import {
 import { Loader2, CreditCard } from "lucide-react"
 import { useToast } from "@/hooks/use-toast"
 
+// PayTR global type declarations
+declare global {
+  interface Window {
+    iFrameResize?: any
+  }
+}
+
 interface PayTRCheckoutButtonProps {
   planId: string
   planName: string
