@@ -671,14 +671,8 @@ export default function PaymentPage() {
                     userEmail={billingInfo.email}
                     termsAccepted={termsAccepted && privacyAccepted && kvkkAccepted}
                     onSuccess={() => {
-                      toast({
-                        title: "Ödeme Başarılı!",
-                        description: "Aboneliğiniz başarıyla oluşturuldu.",
-                      })
                       refreshSubscription()
-                      setTimeout(() => {
-                        router.push('/uygulama/abonelik')
-                      }, 1000)
+                      router.push('/uygulama/odeme/basarili')
                     }}
                     onError={(error) => {
                       toast({

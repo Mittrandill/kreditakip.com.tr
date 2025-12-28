@@ -7,7 +7,7 @@ export const runtime = "nodejs"
  * GET /api/paytr/success
  *
  * Success redirect after PayTR payment
- * Redirects user to subscription page with success message
+ * Redirects user to success page
  */
 export async function GET(request: NextRequest) {
   const searchParams = request.nextUrl.searchParams
@@ -16,9 +16,8 @@ export async function GET(request: NextRequest) {
 
   const appUrl = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000"
 
-  // Redirect to subscription page with success parameters
-  const redirectUrl = new URL("/uygulama/abonelik", appUrl)
-  redirectUrl.searchParams.set("payment", "success")
+  // Redirect to success page with parameters
+  const redirectUrl = new URL("/uygulama/odeme/basarili", appUrl)
 
   if (orderId) {
     redirectUrl.searchParams.set("order_id", orderId)
