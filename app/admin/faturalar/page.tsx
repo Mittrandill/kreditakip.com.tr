@@ -264,7 +264,7 @@ export default async function InvoicesManagement() {
                       </td>
                       <td className="py-4 px-4">
                         <Badge className="bg-amber-500/20 text-amber-400 border-amber-500/20">
-                          {sub.plan_type === "premium" ? "Premium" : "Ücretsiz"}
+                          {sub.plan_type === "premium" ? "Premium" : sub.plan_type === "pro" ? "Pro" : "Ücretsiz"}
                         </Badge>
                       </td>
                       <td className="py-4 px-4">

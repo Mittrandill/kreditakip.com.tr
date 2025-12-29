@@ -27,7 +27,7 @@ export interface Usage {
 export interface Subscription {
   id: string
   planId: string
-  planType: "free" | "premium"
+  planType: "free" | "pro" | "premium"
   status: "active" | "trialing" | "canceled" | "expired" | "past_due" | "paused" | "grace_period" | "suspended"
   startDate: string
   expiresAt: string
@@ -75,10 +75,10 @@ export function useSubscriptionV2() {
 
       if (subData) {
         // Derive planType from plan_id if plan_type is not available
-        // This ensures both "pro" and "premium" plans are treated as premium
-        const derivedPlanType =
+        const derivedPlanType: "free" | "pro" | "premium" =
           subData.plan_type ||
-          (subData.plan_id && (subData.plan_id.includes("premium") || subData.plan_id.includes("pro")) ? "premium" : "free")
+          (subData.plan_id && subData.plan_id.includes("pro") ? "pro" :
+           subData.plan_id && subData.plan_id.includes("premium") ? "premium" : "free")
 
         // Map API data to subscription interface
         const mappedSubscription: Subscription = {
@@ -422,6 +422,7 @@ export function useSubscriptionV2() {
   // Computed properties
   const hasPremiumPlan =
     subscription?.planType === "premium" ||
+    subscription?.planType === "pro" ||
     subscription?.planId?.includes("premium") ||
     subscription?.planId?.includes("pro") ||
     false

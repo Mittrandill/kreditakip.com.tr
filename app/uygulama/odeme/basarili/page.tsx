@@ -94,7 +94,11 @@ export default function PaymentSuccessPage() {
             Tebrikler! 🎉
           </h1>
           <p className="text-xl md:text-2xl text-gray-700 dark:text-white/70">
-            Premium üyeliğiniz başarıyla aktif edildi
+            {subscription?.planType === "pro"
+              ? "Pro"
+              : subscription?.planType === "premium"
+              ? "Premium"
+              : ""} üyeliğiniz başarıyla aktif edildi
           </p>
         </div>
 
@@ -105,20 +109,24 @@ export default function PaymentSuccessPage() {
               <Sparkles className="h-5 w-5 text-emerald-600" />
               Abonelik Detayları
             </CardTitle>
-            <CardDescription>Premium üyelik bilgileriniz</CardDescription>
+            <CardDescription>
+              {subscription?.planType === "pro" ? "Pro" : "Premium"} üyelik bilgileriniz
+            </CardDescription>
           </CardHeader>
           <CardContent className="pt-6 space-y-4">
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-1">
                 <p className="text-sm text-gray-500 dark:text-white/60">Plan</p>
                 <p className="font-semibold text-emerald-600 dark:text-emerald-400">
-                  {subscription?.planType === "premium"
-                    ? subscription?.planId === "premium-yearly"
-                      ? "Premium Yıllık"
+                  {subscription?.planId === "pro-monthly"
+                    ? "Pro Aylık"
+                    : subscription?.planId === "pro-yearly"
+                      ? "Pro Yıllık"
                       : subscription?.planId === "premium-monthly"
                         ? "Premium Aylık"
-                        : "Premium"
-                    : "Free"}
+                        : subscription?.planId === "premium-yearly"
+                          ? "Premium Yıllık"
+                          : "Free"}
                 </p>
               </div>
               <div className="space-y-1">
@@ -155,8 +163,9 @@ export default function PaymentSuccessPage() {
               <p className="text-sm text-emerald-800 dark:text-emerald-200 flex items-start gap-2">
                 <CheckCircle2 className="h-5 w-5 mt-0.5 flex-shrink-0" />
                 <span>
-                  Artık tüm premium özelliklere sınırsız erişiminiz var! Sınırsız OCR analizi, AI Finansal Sağlık Özeti ve
-                  daha fazlası sizleri bekliyor.
+                  {subscription?.planType === "pro"
+                    ? "Artık Pro özelliklere erişiminiz var! 10 OCR analizi, 5 AI Finansal Sağlık Özeti ve daha fazlası sizleri bekliyor."
+                    : "Artık tüm premium özelliklere sınırsız erişiminiz var! Sınırsız OCR analizi, AI Finansal Sağlık Özeti ve daha fazlası sizleri bekliyor."}
                 </span>
               </p>
             </div>
