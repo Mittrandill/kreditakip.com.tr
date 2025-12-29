@@ -7,23 +7,5 @@
     "app/api/cron/**/*.ts": {
       "maxDuration": 60
     }
-  },
-  "crons": [
-    {
-      "path": "/api/cron/subscription-expiry-check",
-      "schedule": "0 2 * * *"
-    },
-    {
-      "path": "/api/cron/grace-period-handler",
-      "schedule": "0 3 * * *"
-    },
-    {
-      "path": "/api/cron/renewal-notification",
-      "schedule": "0 9 * * *"
-    },
-    {
-      "path": "/api/cron/webhook-cleanup",
-      "schedule": "0 4 * * 0"
-    }
-  ]
+  }
 }

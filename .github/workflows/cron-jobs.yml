@@ -1,0 +1,121 @@
+name: Scheduled Cron Jobs
+
+on:
+  schedule:
+    # Subscription expiry check - Her gün 02:00 UTC
+    - cron: '0 2 * * *'
+    # Grace period handler - Her gün 03:00 UTC
+    - cron: '0 3 * * *'
+    # Renewal notification - Her gün 09:00 UTC
+    - cron: '0 9 * * *'
+    # Webhook cleanup - Her pazar 04:00 UTC
+    - cron: '0 4 * * 0'
+
+  # Manuel tetikleme için
+  workflow_dispatch:
+    inputs:
+      job:
+        description: 'Which cron job to run'
+        required: true
+        type: choice
+        options:
+          - subscription-expiry-check
+          - grace-period-handler
+          - renewal-notification
+          - webhook-cleanup
+          - all
+
+jobs:
+  # Her saat için ayrı job tanımla
+  subscription-expiry-check:
+    name: Subscription Expiry Check
+    runs-on: ubuntu-latest
+    # Sadece 02:00'de veya manuel tetiklemede çalış
+    if: github.event.schedule == '0 2 * * *' || github.event_name == 'workflow_dispatch' && (github.event.inputs.job == 'subscription-expiry-check' || github.event.inputs.job == 'all')
+    steps:
+      - name: Call subscription expiry check endpoint
+        run: |
+          response=$(curl -s -w "\n%{http_code}" -X POST \
+            -H "Authorization: Bearer ${{ secrets.CRON_SECRET }}" \
+            -H "Content-Type: application/json" \
+            "${{ secrets.PRODUCTION_URL }}/api/cron/subscription-expiry-check")
+
+          http_code=$(echo "$response" | tail -n1)
+          body=$(echo "$response" | sed '$d')
+
+          echo "Response body: $body"
+          echo "HTTP status: $http_code"
+
+          if [ "$http_code" -ne 200 ]; then
+            echo "Error: Cron job failed with status $http_code"
+            exit 1
+          fi
+
+  grace-period-handler:
+    name: Grace Period Handler
+    runs-on: ubuntu-latest
+    if: github.event.schedule == '0 3 * * *' || github.event_name == 'workflow_dispatch' && (github.event.inputs.job == 'grace-period-handler' || github.event.inputs.job == 'all')
+    steps:
+      - name: Call grace period handler endpoint
+        run: |
+          response=$(curl -s -w "\n%{http_code}" -X POST \
+            -H "Authorization: Bearer ${{ secrets.CRON_SECRET }}" \
+            -H "Content-Type: application/json" \
+            "${{ secrets.PRODUCTION_URL }}/api/cron/grace-period-handler")
+
+          http_code=$(echo "$response" | tail -n1)
+          body=$(echo "$response" | sed '$d')
+
+          echo "Response body: $body"
+          echo "HTTP status: $http_code"
+
+          if [ "$http_code" -ne 200 ]; then
+            echo "Error: Cron job failed with status $http_code"
+            exit 1
+          fi
+
+  renewal-notification:
+    name: Renewal Notification
+    runs-on: ubuntu-latest
+    if: github.event.schedule == '0 9 * * *' || github.event_name == 'workflow_dispatch' && (github.event.inputs.job == 'renewal-notification' || github.event.inputs.job == 'all')
+    steps:
+      - name: Call renewal notification endpoint
+        run: |
+          response=$(curl -s -w "\n%{http_code}" -X POST \
+            -H "Authorization: Bearer ${{ secrets.CRON_SECRET }}" \
+            -H "Content-Type: application/json" \
+            "${{ secrets.PRODUCTION_URL }}/api/cron/renewal-notification")
+
+          http_code=$(echo "$response" | tail -n1)
+          body=$(echo "$response" | sed '$d')
+
+          echo "Response body: $body"
+          echo "HTTP status: $http_code"
+
+          if [ "$http_code" -ne 200 ]; then
+            echo "Error: Cron job failed with status $http_code"
+            exit 1
+          fi
+
+  webhook-cleanup:
+    name: Webhook Cleanup
+    runs-on: ubuntu-latest
+    if: github.event.schedule == '0 4 * * 0' || github.event_name == 'workflow_dispatch' && (github.event.inputs.job == 'webhook-cleanup' || github.event.inputs.job == 'all')
+    steps:
+      - name: Call webhook cleanup endpoint
+        run: |
+          response=$(curl -s -w "\n%{http_code}" -X POST \
+            -H "Authorization: Bearer ${{ secrets.CRON_SECRET }}" \
+            -H "Content-Type: application/json" \
+            "${{ secrets.PRODUCTION_URL }}/api/cron/webhook-cleanup")
+
+          http_code=$(echo "$response" | tail -n1)
+          body=$(echo "$response" | sed '$d')
+
+          echo "Response body: $body"
+          echo "HTTP status: $http_code"
+
+          if [ "$http_code" -ne 200 ]; then
+            echo "Error: Cron job failed with status $http_code"
+            exit 1
+          fi
