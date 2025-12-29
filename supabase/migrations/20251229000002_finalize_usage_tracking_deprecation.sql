@@ -67,15 +67,18 @@ COMMENT ON TABLE usage_tracking_final_backup IS
 -- KULLANIM DIŞI BIRAKMA PROSEDÜRÜ
 -- =============================================================================
 
--- Adım 1: Senkronizasyon tetikleyicisini devre dışı bırak
-ALTER TABLE usage_tracking DISABLE TRIGGER trigger_sync_usage_tracking;
+DO $$
+BEGIN
+  -- Adım 1: Senkronizasyon tetikleyicisini devre dışı bırak
+  ALTER TABLE usage_tracking DISABLE TRIGGER trigger_sync_usage_tracking;
 
-RAISE NOTICE '✅ Senkronizasyon tetikleyicisi devre dışı bırakıldı';
+  RAISE NOTICE '✅ Senkronizasyon tetikleyicisi devre dışı bırakıldı';
 
--- Adım 2: Tabloyu yeniden adlandır
-ALTER TABLE usage_tracking RENAME TO _deprecated_usage_tracking_20251229;
+  -- Adım 2: Tabloyu yeniden adlandır
+  ALTER TABLE usage_tracking RENAME TO _deprecated_usage_tracking_20251229;
 
-RAISE NOTICE '✅ Tablo _deprecated_usage_tracking_20251229 olarak yeniden adlandırıldı';
+  RAISE NOTICE '✅ Tablo _deprecated_usage_tracking_20251229 olarak yeniden adlandırıldı';
+END $$;
 
 -- Adım 3: Kullanımdan kaldırma uyarısı ekle
 DO $$
