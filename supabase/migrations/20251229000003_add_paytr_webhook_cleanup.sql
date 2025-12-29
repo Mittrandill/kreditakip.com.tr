@@ -50,8 +50,7 @@ CREATE INDEX IF NOT EXISTS idx_paytr_webhooks_cleanup
   WHERE processed = TRUE;
 
 COMMENT ON INDEX idx_paytr_webhooks_cleanup IS
-  'Eski işlenmiş PayTR webhook''larının temizliğini optimize eder. ' ||
-  '90+ gün önceki processed=true kayıtları hızlı bulur.';
+  'Eski işlenmiş PayTR webhooklarının temizliğini optimize eder. 90+ gün önceki processed=true kayıtları hızlı bulur.';
 
 -- PayTR webhook temizlik fonksiyonu (geliştirilmiş versiyon)
 CREATE OR REPLACE FUNCTION cleanup_old_paytr_webhooks()
@@ -116,9 +115,7 @@ $$ LANGUAGE plpgsql SECURITY DEFINER;
 
 -- Fonksiyon açıklaması
 COMMENT ON FUNCTION cleanup_old_paytr_webhooks IS
-  'PayTR webhook_events tablosundan 90 günden eski işlenmiş kayıtları otomatik siler. ' ||
-  'Haftalık cron job olarak çalıştırılmalı. ' ||
-  'Sadece processed=true olan kayıtları siler, işlenmemiş webhook''lar korunur.';
+  'PayTR webhook_events tablosundan 90 günden eski işlenmiş kayıtları otomatik siler. Haftalık cron job olarak çalıştırılmalı. Sadece processed=true olan kayıtları siler, işlenmemiş webhooklar korunur.';
 
 -- =============================================================================
 -- PADDLE WEBHOOK TEMİZLİĞİ
@@ -130,8 +127,7 @@ CREATE INDEX IF NOT EXISTS idx_paddle_webhooks_cleanup
   WHERE processed = TRUE;
 
 COMMENT ON INDEX idx_paddle_webhooks_cleanup IS
-  'Eski işlenmiş Paddle webhook''larının temizliğini optimize eder. ' ||
-  '90+ gün önceki processed=true kayıtları hızlı bulur.';
+  'Eski işlenmiş Paddle webhooklarının temizliğini optimize eder. 90+ gün önceki processed=true kayıtları hızlı bulur.';
 
 -- Paddle webhook temizlik fonksiyonu (geliştirilmiş versiyon)
 CREATE OR REPLACE FUNCTION cleanup_old_paddle_webhooks()
@@ -196,9 +192,7 @@ $$ LANGUAGE plpgsql SECURITY DEFINER;
 
 -- Fonksiyon açıklaması
 COMMENT ON FUNCTION cleanup_old_paddle_webhooks IS
-  'Paddle webhook_events tablosundan 90 günden eski işlenmiş kayıtları otomatik siler. ' ||
-  'Haftalık cron job olarak çalıştırılmalı. ' ||
-  'Sadece processed=true olan kayıtları siler, işlenmemiş webhook''lar korunur.';
+  'Paddle webhook_events tablosundan 90 günden eski işlenmiş kayıtları otomatik siler. Haftalık cron job olarak çalıştırılmalı. Sadece processed=true olan kayıtları siler, işlenmemiş webhooklar korunur.';
 
 -- =============================================================================
 -- İLK ZAMANLAMA
@@ -292,8 +286,7 @@ END;
 $$ LANGUAGE plpgsql;
 
 COMMENT ON FUNCTION test_webhook_cleanup IS
-  'Test amaçlı tüm webhook temizlik fonksiyonlarını çalıştırır. ' ||
-  'Kullanım: SELECT * FROM test_webhook_cleanup();';
+  'Test amaçlı tüm webhook temizlik fonksiyonlarını çalıştırır. Kullanım: SELECT * FROM test_webhook_cleanup();';
 
 -- =============================================================================
 -- GERİ ALMA SCRİPTİ
