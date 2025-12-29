@@ -29,7 +29,7 @@ export async function GET(request: Request) {
         supabase.from("subscriptions").select("*").eq("user_id", user.id),
         supabase.from("risk_analyses").select("*").eq("user_id", user.id),
         supabase.from("financial_profiles").select("*").eq("user_id", user.id),
-        supabase.from("usage_tracking").select("*").eq("user_id", user.id),
+        supabase.from("subscription_usage").select("*").eq("user_id", user.id),
       ])
 
     // KVKK uyumlu veri export formatı
@@ -61,7 +61,7 @@ export async function GET(request: Request) {
         riskAnalyses: riskAnalyses.data || [],
       },
       usageData: {
-        tracking: usage.data || [],
+        subscriptionUsage: usage.data || [],
       },
       metadata: {
         totalRecords: {
@@ -71,7 +71,7 @@ export async function GET(request: Request) {
           subscriptions: subscriptions.data?.length || 0,
           riskAnalyses: riskAnalyses.data?.length || 0,
           financialProfiles: financialProfiles.data?.length || 0,
-          usageTracking: usage.data?.length || 0,
+          subscriptionUsage: usage.data?.length || 0,
         },
       },
     }

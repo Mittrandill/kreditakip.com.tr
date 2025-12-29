@@ -542,7 +542,7 @@ export default function AyarlarPage() {
         { data: riskAnalyses },
         { data: refinancingAnalyses },
         { data: subscription },
-        { data: usageTracking },
+        { data: subscriptionUsage },
       ] = await Promise.all([
         supabase.from("credits").select("*").eq("user_id", user.id),
         supabase.from("credit_cards").select("*").eq("user_id", user.id),
@@ -551,7 +551,7 @@ export default function AyarlarPage() {
         supabase.from("risk_analyses").select("*").eq("user_id", user.id),
         supabase.from("refinancing_analyses").select("*").eq("user_id", user.id),
         supabase.from("subscriptions").select("*").eq("user_id", user.id),
-        supabase.from("usage_tracking").select("*").eq("user_id", user.id),
+        supabase.from("subscription_usage").select("*").eq("user_id", user.id),
       ])
 
       const exportData = {
@@ -570,7 +570,7 @@ export default function AyarlarPage() {
         riskAnalyses: riskAnalyses || [],
         refinancingAnalyses: refinancingAnalyses || [],
         subscription: subscription || [],
-        usageTracking: usageTracking || [],
+        subscriptionUsage: subscriptionUsage || [],
         statistics: {
           totalCredits: credits?.length || 0,
           totalCreditCards: creditCards?.length || 0,

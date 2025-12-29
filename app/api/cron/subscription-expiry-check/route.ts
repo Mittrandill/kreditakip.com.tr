@@ -102,21 +102,27 @@ async function handler(request: NextRequest) {
 
         // Reset usage limits to free tier
         // Free tier: OCR unlimited (-1), Risk Analysis 0
-        const { error: usageError } = await supabase.from("usage_tracking").upsert(
+        const { error: usageError } = await supabase.from("subscription_usage").upsert(
           [
             {
               user_id: subscription.user_id,
+              subscription_id: subscription.id,
               feature_type: "ocr_analysis",
               limit_count: -1, // unlimited for free
-              used_count: 0,
+              usage_count: 0, // changed from used_count
+              saved_credits_count: 0,
+              saved_credits_limit: 1,
               reset_at: null,
               updated_at: now.toISOString(),
             },
             {
               user_id: subscription.user_id,
+              subscription_id: subscription.id,
               feature_type: "risk_analysis",
               limit_count: 0, // no risk analysis for free
-              used_count: 0,
+              usage_count: 0, // changed from used_count
+              saved_credits_count: 0,
+              saved_credits_limit: 0,
               reset_at: null,
               updated_at: now.toISOString(),
             },

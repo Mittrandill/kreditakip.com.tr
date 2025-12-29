@@ -172,9 +172,10 @@ export async function GET(request: NextRequest) {
 
           // Reset usage limits to free tier
           await supabase
-            .from("usage_tracking")
+            .from("subscription_usage")
             .update({
               limit_count: 0,
+              usage_count: 0, // Reset usage as well
               updated_at: now.toISOString(),
             })
             .eq("user_id", sub.user_id)

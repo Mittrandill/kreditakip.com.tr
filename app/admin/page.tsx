@@ -65,12 +65,12 @@ export default async function AdminDashboard() {
 
   // Get usage statistics
   const { data: usageStats } = await supabase
-    .from("usage_tracking")
-    .select("feature_type, used_count, saved_credits_count")
+    .from("subscription_usage")
+    .select("feature_type, usage_count, saved_credits_count")
 
   const totalOcrAnalyses = usageStats
     ?.filter(u => u.feature_type === 'ocr_analysis')
-    .reduce((sum, u) => sum + (u.used_count || 0), 0) || 0
+    .reduce((sum, u) => sum + (u.usage_count || 0), 0) || 0
 
   const totalSavedCredits = usageStats
     ?.filter(u => u.feature_type === 'ocr_analysis')
@@ -78,7 +78,7 @@ export default async function AdminDashboard() {
 
   const totalRiskAnalyses = usageStats
     ?.filter(u => u.feature_type === 'risk_analysis')
-    .reduce((sum, u) => sum + (u.used_count || 0), 0) || 0
+    .reduce((sum, u) => sum + (u.usage_count || 0), 0) || 0
 
   // Get premium vs free users
   const { count: premiumUsers } = await supabase
