@@ -1,4 +1,4 @@
-// Email templates for Paddle subscription events
+// Email templates for subscription events (PayTR)
 
 export const subscriptionEmailTemplates = {
   // New subscription created

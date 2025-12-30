@@ -12,7 +12,6 @@ export const runtime = "nodejs"
  *
  * İşlevler:
  * - 90 günden eski PayTR webhook'larını siler
- * - 90 günden eski Paddle webhook'larını siler
  * - Sadece işlenmiş (processed=true) kayıtları siler
  * - cleanup_jobs tablosunda takip edilir
  */
@@ -46,31 +45,17 @@ async function handler(request: NextRequest) {
       console.error("[webhook-cleanup] PayTR temizlik hatası:", paytrError)
     }
 
-    // Paddle webhook temizliği
-    const { data: paddleDeleted, error: paddleError } = await supabase
-      .rpc('cleanup_old_paddle_webhooks')
-
-    if (paddleError) {
-      console.error("[webhook-cleanup] Paddle temizlik hatası:", paddleError)
-    }
-
-    // Sonuçları topla
-    const totalDeleted = (paytrDeleted || 0) + (paddleDeleted || 0)
-    const hasErrors = paytrError || paddleError
-
     return NextResponse.json({
-      success: !hasErrors,
-      message: hasErrors
-        ? "Webhook temizliği kısmen tamamlandı (bazı hatalar var)"
+      success: !paytrError,
+      message: paytrError
+        ? "Webhook temizliği başarısız oldu"
         : "Webhook temizliği başarıyla tamamlandı",
       deleted: {
         paytr: paytrDeleted || 0,
-        paddle: paddleDeleted || 0,
-        total: totalDeleted,
+        total: paytrDeleted || 0,
       },
       errors: {
         paytr: paytrError ? paytrError.message : null,
-        paddle: paddleError ? paddleError.message : null,
       },
     })
   } catch (error: any) {

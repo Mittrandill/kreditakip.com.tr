@@ -38,8 +38,7 @@ export async function GET(request: NextRequest) {
           id,
           name,
           price,
-          currency,
-          paddle_price_id
+          currency
         )
       `)
       .eq("user_id", userId)

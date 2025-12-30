@@ -35,10 +35,10 @@ export interface Subscription {
   gracePeriodStartedAt?: string
   gracePeriodEndsAt?: string
   requiresPaymentAction: boolean
-  paddleSubscriptionId?: string
-  paymentProvider?: "paddle" | "paytr"
-  cancelUrl?: string
-  updateUrl?: string
+  // paddleSubscriptionId?: string // REMOVED: Paddle integration removed
+  paymentProvider?: "paytr" // Only PayTR supported now
+  // cancelUrl?: string // REMOVED: Paddle-specific
+  // updateUrl?: string // REMOVED: Paddle-specific
   usage?: Usage
 }
 
@@ -92,8 +92,8 @@ export function useSubscriptionV2() {
           gracePeriodStartedAt: subData.grace_period_started_at,
           gracePeriodEndsAt: subData.grace_period_ends_at,
           requiresPaymentAction: subData.requires_payment_action || false,
-          paddleSubscriptionId: subData.paddle_subscription_id,
-          paymentProvider: subData.payment_provider || "paddle",
+          // paddleSubscriptionId: subData.paddle_subscription_id, // REMOVED: Paddle integration removed
+          paymentProvider: subData.payment_provider || "paytr",
           usage: apiData?.usage ? {
             ocrAnalysis: (() => {
               const ocr = apiData.usage.find((u: any) => u.feature_type === 'ocr_analysis')
@@ -119,21 +119,8 @@ export function useSubscriptionV2() {
           } : undefined,
         }
 
-        // Get management URLs if subscription has Paddle ID
-        if (subData.paddle_subscription_id) {
-          try {
-            const response = await fetch(`/api/subscription/manage?userId=${user.id}`)
-            if (response.ok) {
-              const data = await response.json()
-              if (data.managementUrls) {
-                mappedSubscription.cancelUrl = data.managementUrls.cancel
-                mappedSubscription.updateUrl = data.managementUrls.update_payment
-              }
-            }
-          } catch (err) {
-            console.error("Failed to fetch management URLs:", err)
-          }
-        }
+        // REMOVED: Paddle management URLs functionality
+        // PayTR subscriptions are managed through the payment page
 
         setSubscription(mappedSubscription)
       } else {
@@ -266,158 +253,36 @@ export function useSubscriptionV2() {
     }
   }, [user, toast])
 
-  // Cancel subscription
+  // REMOVED: Cancel subscription - PayTR subscriptions don't support cancel API
+  // Users need to contact support or stop renewing
   const cancelSubscription = useCallback(async () => {
-    if (!user || !subscription?.paddleSubscriptionId) {
-      toast({
-        title: "Hata",
-        description: "İptal edilecek abonelik bulunamadı",
-        variant: "destructive",
-      })
-      return false
-    }
+    toast({
+      title: "PayTR Abonelikleri",
+      description: "PayTR aboneliklerini iptal etmek için lütfen destek ile iletişime geçin.",
+      variant: "default",
+    })
+    return false
+  }, [toast])
 
-    try {
-      const response = await fetch("/api/subscription/manage", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          userId: user.id,
-          action: "cancel",
-          subscriptionId: subscription.paddleSubscriptionId,
-          options: {
-            effectiveFrom: "next_billing_period",
-          },
-        }),
-      })
-
-      const data = await response.json()
-
-      if (!response.ok || !data.success) {
-        throw new Error(data.error || "Failed to cancel subscription")
-      }
-
-      toast({
-        title: "Abonelik İptal Edildi",
-        description: "Aboneliğiniz sonraki fatura döneminde iptal edilecektir.",
-      })
-
-      await refresh()
-      return true
-    } catch (err: any) {
-      console.error("Error canceling subscription:", err)
-      toast({
-        title: "Hata",
-        description: err.message || "Abonelik iptal edilemedi",
-        variant: "destructive",
-      })
-      return false
-    }
-  }, [user, subscription, toast, refresh])
-
-  // Pause subscription
+  // REMOVED: Pause subscription - PayTR doesn't support pause/resume
   const pauseSubscription = useCallback(async (resumeDate?: string) => {
-    if (!user || !subscription?.paddleSubscriptionId) {
-      toast({
-        title: "Hata",
-        description: "Duraklatılacak abonelik bulunamadı",
-        variant: "destructive",
-      })
-      return false
-    }
+    toast({
+      title: "Özellik Desteklenmiyor",
+      description: "PayTR abonelikleri duraklatma özelliğini desteklemiyor.",
+      variant: "default",
+    })
+    return false
+  }, [toast])
 
-    try {
-      const response = await fetch("/api/subscription/manage", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          userId: user.id,
-          action: "pause",
-          subscriptionId: subscription.paddleSubscriptionId,
-          options: {
-            mode: "fixed",
-            resumeDate,
-          },
-        }),
-      })
-
-      const data = await response.json()
-
-      if (!response.ok || !data.success) {
-        throw new Error(data.error || "Failed to pause subscription")
-      }
-
-      toast({
-        title: "Abonelik Duraklatıldı",
-        description: resumeDate ?
-          `Aboneliğiniz ${new Date(resumeDate).toLocaleDateString("tr-TR")} tarihinde otomatik devam edecek.` :
-          "Aboneliğiniz duraklatıldı.",
-      })
-
-      await refresh()
-      return true
-    } catch (err: any) {
-      console.error("Error pausing subscription:", err)
-      toast({
-        title: "Hata",
-        description: err.message || "Abonelik duraklatılamadı",
-        variant: "destructive",
-      })
-      return false
-    }
-  }, [user, subscription, toast, refresh])
-
-  // Resume subscription
+  // REMOVED: Resume subscription - PayTR doesn't support pause/resume
   const resumeSubscription = useCallback(async () => {
-    if (!user || !subscription?.paddleSubscriptionId) {
-      toast({
-        title: "Hata",
-        description: "Devam ettirilecek abonelik bulunamadı",
-        variant: "destructive",
-      })
-      return false
-    }
-
-    try {
-      const response = await fetch("/api/subscription/manage", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          userId: user.id,
-          action: "resume",
-          subscriptionId: subscription.paddleSubscriptionId,
-        }),
-      })
-
-      const data = await response.json()
-
-      if (!response.ok || !data.success) {
-        throw new Error(data.error || "Failed to resume subscription")
-      }
-
-      toast({
-        title: "Abonelik Devam Etti",
-        description: "Aboneliğiniz başarıyla devam ettirildi.",
-      })
-
-      await refresh()
-      return true
-    } catch (err: any) {
-      console.error("Error resuming subscription:", err)
-      toast({
-        title: "Hata",
-        description: err.message || "Abonelik devam ettirilemedi",
-        variant: "destructive",
-      })
-      return false
-    }
-  }, [user, subscription, toast, refresh])
+    toast({
+      title: "Özellik Desteklenmiyor",
+      description: "PayTR abonelikleri devam ettirme özelliğini desteklemiyor.",
+      variant: "default",
+    })
+    return false
+  }, [toast])
 
   // Computed properties
   const hasPremiumPlan =
@@ -449,7 +314,7 @@ export function useSubscriptionV2() {
 
   // Payment provider flags
   const isPayTRSubscription = subscription?.paymentProvider === "paytr"
-  const isPaddleSubscription = subscription?.paymentProvider === "paddle"
+  // const isPaddleSubscription = subscription?.paymentProvider === "paddle" // REMOVED: Paddle integration removed
 
   // Auto-refresh on mount and when user changes
   useEffect(() => {
@@ -469,12 +334,12 @@ export function useSubscriptionV2() {
     daysUntilExpiration,
     daysUntilGraceEnd,
     isPayTRSubscription,
-    isPaddleSubscription,
+    // isPaddleSubscription, // REMOVED: Paddle integration removed
     refresh,
     trackUsage,
     createCheckout,
-    cancelSubscription,
-    pauseSubscription,
-    resumeSubscription,
+    cancelSubscription, // Note: Now shows message for PayTR
+    pauseSubscription, // Note: Now shows message for PayTR
+    resumeSubscription, // Note: Now shows message for PayTR
   }
 }

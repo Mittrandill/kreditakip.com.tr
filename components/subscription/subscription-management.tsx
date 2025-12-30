@@ -13,10 +13,10 @@ interface Subscription {
   id: string
   status: "active" | "canceled" | "paused" | "past_due"
   plan_id: string
-  paddle_subscription_id: string
+  // paddle_subscription_id: string // REMOVED: Paddle integration removed
   ends_at: string
-  cancel_url?: string
-  update_url?: string
+  // cancel_url?: string // REMOVED: Paddle-specific
+  // update_url?: string // REMOVED: Paddle-specific
   plan_name?: string
   amount?: number
   currency?: string
@@ -51,27 +51,23 @@ export function SubscriptionManagement() {
   }
 
   const handleManageSubscription = () => {
-    if (subscription?.update_url) {
-      window.open(subscription.update_url, "_blank")
-    } else {
-      toast({
-        title: "Hata",
-        description: "Yönetim URL'si bulunamadı",
-        variant: "destructive",
-      })
-    }
+    // REMOVED: Paddle management URLs
+    // PayTR subscriptions are managed through support
+    toast({
+      title: "Abonelik Yönetimi",
+      description: "Aboneliğinizi yönetmek için lütfen info@kreditakip.com.tr adresine e-posta gönderin.",
+      variant: "default",
+    })
   }
 
   const handleCancelSubscription = () => {
-    if (subscription?.cancel_url) {
-      window.open(subscription.cancel_url, "_blank")
-    } else {
-      toast({
-        title: "Hata",
-        description: "İptal URL'si bulunamadı",
-        variant: "destructive",
-      })
-    }
+    // REMOVED: Paddle cancel URLs
+    // PayTR subscriptions are managed through support
+    toast({
+      title: "Abonelik İptali",
+      description: "Aboneliğinizi iptal etmek için lütfen info@kreditakip.com.tr adresine e-posta gönderin.",
+      variant: "default",
+    })
   }
 
   const getStatusColor = (status: string) => {
@@ -173,7 +169,7 @@ export function SubscriptionManagement() {
             </div>
             <div>
               <p className="text-sm text-muted-foreground">Abonelik ID</p>
-              <p className="font-medium text-sm">{subscription.paddle_subscription_id}</p>
+              <p className="font-medium text-sm">{subscription.id}</p>
             </div>
           </div>
 
@@ -202,7 +198,7 @@ export function SubscriptionManagement() {
         <CardHeader>
           <CardTitle>Abonelik İşlemleri</CardTitle>
           <CardDescription>
-            Aboneliğinizi Paddle üzerinden yönetin
+            Abonelik değişiklikleri için destek ekibimizle iletişime geçin
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
@@ -215,7 +211,6 @@ export function SubscriptionManagement() {
               >
                 <CreditCard className="h-4 w-4 mr-2" />
                 Ödeme Bilgilerini Güncelle
-                <ExternalLink className="h-4 w-4 ml-2" />
               </Button>
 
               <Button
@@ -230,7 +225,6 @@ export function SubscriptionManagement() {
                   <X className="h-4 w-4 mr-2" />
                 )}
                 Aboneliği İptal Et
-                <ExternalLink className="h-4 w-4 ml-2" />
               </Button>
             </>
           )}
@@ -251,13 +245,12 @@ export function SubscriptionManagement() {
             >
               <RefreshCw className="h-4 w-4 mr-2" />
               Ödeme Bilgilerini Güncelle
-              <ExternalLink className="h-4 w-4 ml-2" />
             </Button>
           )}
 
           <div className="pt-4 border-t">
             <p className="text-sm text-muted-foreground text-center">
-              Abonelik yönetimi Paddle'ın güvenli portalı üzerinden yapılır.
+              Abonelik değişiklikleri için destek ekibimizle iletişime geçin: info@kreditakip.com.tr
             </p>
           </div>
         </CardContent>

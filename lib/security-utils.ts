@@ -280,7 +280,7 @@ export async function logSecurityEvent(
 
 /**
  * Get user's recent payment activity for fraud detection
- * Updated for Paddle - uses payment_transactions table
+ * Uses payment_transactions table
  */
 export async function getUserPaymentActivity(
   supabase: any,
@@ -326,7 +326,7 @@ export async function detectSuspiciousActivity(
     reasons.push("Multiple failed payment attempts in last 24 hours")
   }
 
-  // Check for multiple different users from same IP (Paddle transactions)
+  // Check for multiple different users from same IP (payment transactions)
   const { count: usersFromSameIp } = await supabase
     .from("payment_transactions")
     .select("user_id", { count: "exact", head: true })

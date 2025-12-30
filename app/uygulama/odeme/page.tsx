@@ -889,26 +889,26 @@ export default function PaymentPage() {
                   <strong>Premium Abonelik:</strong> Kredi Takip Premium özelliklerine aylık veya yıllık abonelik satın alabilirsiniz.
                 </p>
 
-                <p><strong className="text-emerald-700 dark:text-emerald-300">Paddle ile Güvenli Ödeme:</strong></p>
+                <p><strong className="text-emerald-700 dark:text-emerald-300">PayTR ile Güvenli Ödeme:</strong></p>
                 <ul className="list-disc pl-5 space-y-1">
-                  <li>Tüm ödemeler Paddle.com güvencesi altında PCI-DSS Level 1 sertifikalı altyapı üzerinden işlenir</li>
+                  <li>Tüm ödemeler PayTR güvencesi altında PCI-DSS uyumlu altyapı üzerinden işlenir</li>
                   <li>Kredi kartı bilgileriniz hiçbir zaman sunucularımızda saklanmaz</li>
-                  <li>Paddle, 135+ ülkede otomatik vergi hesaplaması yapar</li>
+                  <li>3D Secure ile güvenli ödeme</li>
                   <li>Ödemeleriniz SSL/TLS şifrelemesi ile korunur</li>
                 </ul>
 
                 <p><strong>Abonelik Yönetimi:</strong></p>
                 <ul className="list-disc pl-5 space-y-1">
-                  <li>Abonelikleriniz Paddle müşteri portalı üzerinden yönetilir</li>
-                  <li>Ödeme bilgilerinizi güncellemek, plan değiştirmek veya iptal etmek için portalı kullanabilirsiniz</li>
+                  <li>Abonelik durumunuzu uygulama içinden takip edebilirsiniz</li>
                   <li>Abonelik durumunuz hakkında otomatik e-posta bildirimleri alırsınız</li>
+                  <li>Abonelik yönetimi için destek ekibimizle iletişime geçebilirsiniz</li>
                 </ul>
 
                 <p><strong>Abonelik İptali:</strong></p>
                 <ul className="list-disc pl-5 space-y-1">
-                  <li>Aboneliğinizi istediğiniz zaman, herhangi bir ceza ödemeden iptal edebilirsiniz</li>
-                  <li>İptal ettiğinizde, mevcut abonelik döneminizin sonuna kadar Premium özelliklere erişiminiz devam eder</li>
-                  <li>İptal Paddle müşteri portalı üzerinden veya destek talebi ile yapılabilir</li>
+                  <li>Aboneliğinizi istediğiniz zaman iptal etmek için destek ekibimizle iletişime geçebilirsiniz</li>
+                  <li>İptal işlemleri için info@kreditakip.com.tr adresine e-posta gönderebilirsiniz</li>
+                  <li>Mevcut dönem sonuna kadar Premium özelliklere erişiminiz devam eder</li>
                 </ul>
               </div>
 
@@ -983,35 +983,34 @@ export default function PaymentPage() {
                 </p>
 
                 <p className="bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-200 dark:border-emerald-800 rounded-lg p-3">
-                  Bu iade politikası, ödeme altyapımız Paddle'ın zorunlu 14 günlük refund policy gerekliliği doğrultusunda uygulanmaktadır.
+                  Bu iade politikası, 6502 sayılı Tüketicinin Korunması Hakkında Kanun gereği dijital hizmetler için uygulanmaktadır.
                 </p>
 
                 <p>
-                  14 günlük süre içinde yapılan tüm iade talepleri, koşulsuz olarak işleme alınır.
+                  14 günlük süre içinde yapılan tüm iade talepleri değerlendirilir ve uygun bulunanlar işleme alınır.
                 </p>
               </div>
 
               <h3 className="font-semibold text-base">2. İade Süreci Nasıl İşler?</h3>
               <div className="text-gray-700 dark:text-gray-300 space-y-2">
                 <p>
-                  İade talepleri, ödemenin gerçekleştiği platform olan Paddle üzerinden işlenir ve ödemenin yapıldığı yöntemle kullanıcının hesabına iade edilir.
+                  İade talepleri, destek ekibimiz tarafından değerlendirilir ve ödemenin yapıldığı yöntemle kullanıcının hesabına iade edilir.
                 </p>
 
                 <p><strong>İade süreci şu adımlarla ilerler:</strong></p>
                 <ul className="list-disc pl-5 space-y-1">
                   <li>Kullanıcı iade talebini iletir</li>
-                  <li>Talep Paddle tarafından doğrulanır</li>
+                  <li>Talep destek ekibimiz tarafından değerlendirilir</li>
                   <li>İade, ödeme yöntemine bağlı olarak genellikle 3–10 iş günü içinde tamamlanır</li>
                 </ul>
 
                 <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-3 mt-2">
                   <p><strong>İade talepleri için:</strong></p>
                   <p className="mt-1">
-                    📩 <a href="mailto:sellers@paddle.com" className="text-emerald-600 dark:text-emerald-400 hover:underline">sellers@paddle.com</a>
-                  </p>
-                  <p className="mt-1">veya</p>
-                  <p className="mt-1">
                     📩 <a href="mailto:info@kreditakip.com.tr" className="text-emerald-600 dark:text-emerald-400 hover:underline">info@kreditakip.com.tr</a>
+                  </p>
+                  <p className="mt-1">
+                    📞 <a href="tel:+905432035309" className="text-emerald-600 dark:text-emerald-400 hover:underline">0 543 203 53 09</a>
                   </p>
                 </div>
               </div>
@@ -1019,7 +1018,7 @@ export default function PaymentPage() {
               <h3 className="font-semibold text-base">3. 14 Günlük Süre Sonrası İade Talepleri</h3>
               <div className="text-gray-700 dark:text-gray-300 space-y-2">
                 <p>
-                  14 günlük yasal/policy süresi dolduktan sonra yapılan iade talepleri Paddle tarafından kabul edilmemektedir.
+                  14 günlük yasal süre dolduktan sonra yapılan iade talepleri değerlendirilir ancak kabul edilmeyebilir.
                 </p>
 
                 <p>
@@ -1030,13 +1029,13 @@ export default function PaymentPage() {
               <h3 className="font-semibold text-base">4. Abonelik İptalleri</h3>
               <div className="text-gray-700 dark:text-gray-300 space-y-2">
                 <p>
-                  Kredi Takip aboneliğinizi dilediğiniz zaman iptal edebilirsiniz.
+                  Kredi Takip aboneliğinizi dilediğiniz zaman destek ekibimizle iletişime geçerek iptal edebilirsiniz.
                 </p>
 
                 <p><strong>İptal işlemi sonrasında:</strong></p>
                 <ul className="list-disc pl-5 space-y-1">
                   <li>Mevcut fatura döneminin sonuna kadar hizmetlerden yararlanmaya devam edersiniz</li>
-                  <li>İptal işlemi ileriye dönük geçerlidir; geçmiş dönemlere ilişkin iadeler Paddle politikaları gereği yapılamamaktadır</li>
+                  <li>İptal işlemi ileriye dönük geçerlidir; geçmiş dönemlere ilişkin iadeler yapılmaz</li>
                 </ul>
               </div>
 
@@ -1047,14 +1046,14 @@ export default function PaymentPage() {
                 </p>
 
                 <p className="bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-200 dark:border-emerald-800 rounded-lg p-3">
-                  Buna rağmen Paddle'ın global policy'si gereği, dijital ürünlerde dahi 14 günlük koşulsuz iade hakkı sunulmaktadır.
+                  6502 sayılı Tüketicinin Korunması Hakkında Kanun gereği, dijital ürünlerde 14 günlük cayma hakkı sunulmaktadır.
                 </p>
               </div>
 
               <h3 className="font-semibold text-base">6. Haksız Kullanım / Kötüniyetli İade Talepleri</h3>
               <div className="text-gray-700 dark:text-gray-300 space-y-2">
                 <p className="bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg p-3">
-                  Nadir durumlarda, sistemin kötüye kullanıldığı tespit edilirse Paddle ek doğrulamalar isteyebilir.
+                  Nadir durumlarda, sistemin kötüye kullanıldığı tespit edilirse ek doğrulamalar istenebilir.
                 </p>
 
                 <p>

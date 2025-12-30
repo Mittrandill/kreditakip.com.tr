@@ -64,8 +64,6 @@ export async function GET(request: NextRequest) {
       discount: plan.metadata?.discount,
       currency: plan.currency,
       billingInterval: plan.billing_interval,
-      paddleProductId: plan.paddle_product_id,
-      paddlePriceId: plan.paddle_price_id,
     }))
 
     // Update cache
