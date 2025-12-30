@@ -1,14 +1,15 @@
 import { checkAdminAccess } from "@/lib/admin-check"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { FileText, FolderOpen, Eye, TrendingUp, Users, Receipt, CreditCard, DollarSign, ShieldAlert, Scan, Activity, Zap, Save } from "lucide-react"
-import { createSupabaseServer } from "@/lib/supabase-server"
+import { createSupabaseAdmin } from "@/lib/supabase-server"
 import Link from "next/link"
 import { AdminLayoutWrapper } from "@/components/admin-layout-wrapper"
 
 export default async function AdminDashboard() {
   const { session } = await checkAdminAccess()
 
-  const supabase = await createSupabaseServer()
+  // Use admin client to bypass RLS and see all data
+  const supabase = createSupabaseAdmin()
 
   // Get user statistics from profiles
   const { count: totalUsers } = await supabase
@@ -25,15 +26,20 @@ export default async function AdminDashboard() {
     .from("invoices")
     .select("*", { count: "exact", head: true })
 
-  const { count: paidInvoices } = await supabase
+  const { count: readyInvoices } = await supabase
     .from("invoices")
     .select("*", { count: "exact", head: true })
-    .eq("status", "paid")
+    .eq("status", "ready")
+
+  const { count: preparingInvoices } = await supabase
+    .from("invoices")
+    .select("*", { count: "exact", head: true })
+    .eq("status", "preparing")
 
   const { data: revenueData } = await supabase
     .from("invoices")
     .select("amount")
-    .eq("status", "paid")
+    .in("status", ["ready", "paid"])
 
   const totalRevenue = revenueData?.reduce((sum, inv) => sum + Number(inv.amount), 0) || 0
 
@@ -64,9 +70,13 @@ export default async function AdminDashboard() {
   const totalViews = viewsData?.reduce((sum, post) => sum + (post.views || 0), 0) || 0
 
   // Get usage statistics
-  const { data: usageStats } = await supabase
+  const { data: usageStats, error: usageError } = await supabase
     .from("subscription_usage")
     .select("feature_type, usage_count, saved_credits_count")
+
+  if (usageError) {
+    console.error("[admin/dashboard] Error fetching usage stats:", usageError)
+  }
 
   const totalOcrAnalyses = usageStats
     ?.filter(u => u.feature_type === 'ocr_analysis')
@@ -80,14 +90,54 @@ export default async function AdminDashboard() {
     ?.filter(u => u.feature_type === 'risk_analysis')
     .reduce((sum, u) => sum + (u.usage_count || 0), 0) || 0
 
-  // Get premium vs free users
+  // Get plan type breakdown
   const { count: premiumUsers } = await supabase
     .from("subscriptions")
     .select("*", { count: "exact", head: true })
     .eq("status", "active")
     .eq("plan_type", "premium")
 
-  const freeUsers = (totalUsers || 0) - (premiumUsers || 0)
+  const { count: proUsers } = await supabase
+    .from("subscriptions")
+    .select("*", { count: "exact", head: true })
+    .eq("status", "active")
+    .eq("plan_type", "pro")
+
+  const { count: freeUsers } = await supabase
+    .from("subscriptions")
+    .select("*", { count: "exact", head: true })
+    .eq("status", "active")
+    .eq("plan_type", "free")
+
+  // Get total credits count
+  const { count: totalCreditsCount } = await supabase
+    .from("credits")
+    .select("*", { count: "exact", head: true })
+    .is("deleted_at", null)
+
+  // Get payment plans count
+  const { count: totalPaymentPlans } = await supabase
+    .from("payment_plans")
+    .select("*", { count: "exact", head: true })
+    .is("deleted_at", null)
+
+  const { count: pendingPaymentPlans } = await supabase
+    .from("payment_plans")
+    .select("*", { count: "exact", head: true })
+    .eq("status", "pending")
+    .is("deleted_at", null)
+
+  // Get notifications count
+  const { count: totalNotifications } = await supabase
+    .from("notifications")
+    .select("*", { count: "exact", head: true })
+    .is("deleted_at", null)
+
+  const { count: unreadNotifications } = await supabase
+    .from("notifications")
+    .select("*", { count: "exact", head: true })
+    .eq("is_read", false)
+    .is("deleted_at", null)
 
   return (
     <AdminLayoutWrapper userEmail={session.user.email || ""}>
@@ -141,7 +191,7 @@ export default async function AdminDashboard() {
             </CardHeader>
             <CardContent>
               <div className="text-3xl font-bold text-white">{totalInvoices || 0}</div>
-              <p className="text-xs text-white/60 mt-1">{paidInvoices || 0} ödendi</p>
+              <p className="text-xs text-white/60 mt-1">{readyInvoices || 0} hazır, {preparingInvoices || 0} bekliyor</p>
             </CardContent>
           </Card>
         </div>
@@ -197,6 +247,56 @@ export default async function AdminDashboard() {
         </div>
       </div>
 
+      {/* Credit & Payment Statistics */}
+      <div>
+        <h2 className="text-xl font-semibold text-white mb-4">Kredi ve Ödeme Takibi</h2>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+          <Card className="bg-black/20 border-white/10 backdrop-blur-xl">
+            <CardHeader className="flex flex-row items-center justify-between pb-2">
+              <CardTitle className="text-sm font-medium text-white/80">Toplam Kredi</CardTitle>
+              <CreditCard className="h-4 w-4 text-purple-400" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-3xl font-bold text-white">{totalCreditsCount?.toLocaleString() || 0}</div>
+              <p className="text-xs text-white/60 mt-1">Sisteme kayıtlı</p>
+            </CardContent>
+          </Card>
+
+          <Card className="bg-black/20 border-white/10 backdrop-blur-xl">
+            <CardHeader className="flex flex-row items-center justify-between pb-2">
+              <CardTitle className="text-sm font-medium text-white/80">Ödeme Planları</CardTitle>
+              <Receipt className="h-4 w-4 text-teal-400" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-3xl font-bold text-white">{totalPaymentPlans?.toLocaleString() || 0}</div>
+              <p className="text-xs text-white/60 mt-1">{pendingPaymentPlans || 0} beklemede</p>
+            </CardContent>
+          </Card>
+
+          <Card className="bg-black/20 border-white/10 backdrop-blur-xl">
+            <CardHeader className="flex flex-row items-center justify-between pb-2">
+              <CardTitle className="text-sm font-medium text-white/80">Bildirimler</CardTitle>
+              <Activity className="h-4 w-4 text-yellow-400" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-3xl font-bold text-white">{totalNotifications?.toLocaleString() || 0}</div>
+              <p className="text-xs text-white/60 mt-1">{unreadNotifications || 0} okunmadı</p>
+            </CardContent>
+          </Card>
+
+          <Card className="bg-black/20 border-white/10 backdrop-blur-xl">
+            <CardHeader className="flex flex-row items-center justify-between pb-2">
+              <CardTitle className="text-sm font-medium text-white/80">Bankalar</CardTitle>
+              <TrendingUp className="h-4 w-4 text-emerald-400" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-3xl font-bold text-white">55</div>
+              <p className="text-xs text-white/60 mt-1">Entegre edilmiş</p>
+            </CardContent>
+          </Card>
+        </div>
+      </div>
+
       {/* Usage Statistics */}
       <div>
         <h2 className="text-xl font-semibold text-white mb-4">Kullanım İstatistikleri</h2>
@@ -214,34 +314,34 @@ export default async function AdminDashboard() {
 
           <Card className="bg-black/20 border-white/10 backdrop-blur-xl">
             <CardHeader className="flex flex-row items-center justify-between pb-2">
-              <CardTitle className="text-sm font-medium text-white/80">Kaydedilen Kredi</CardTitle>
+              <CardTitle className="text-sm font-medium text-white/80">OCR'dan Kaydedilen</CardTitle>
               <Save className="h-4 w-4 text-emerald-400" />
             </CardHeader>
             <CardContent>
               <div className="text-3xl font-bold text-white">{totalSavedCredits.toLocaleString()}</div>
-              <p className="text-xs text-white/60 mt-1">Sisteme kaydedildi</p>
+              <p className="text-xs text-white/60 mt-1">PDF'den otomatik</p>
             </CardContent>
           </Card>
 
           <Card className="bg-black/20 border-white/10 backdrop-blur-xl">
             <CardHeader className="flex flex-row items-center justify-between pb-2">
               <CardTitle className="text-sm font-medium text-white/80">Risk Analizi</CardTitle>
-              <Activity className="h-4 w-4 text-orange-400" />
+              <ShieldAlert className="h-4 w-4 text-orange-400" />
             </CardHeader>
             <CardContent>
               <div className="text-3xl font-bold text-white">{totalRiskAnalyses.toLocaleString()}</div>
-              <p className="text-xs text-white/60 mt-1">Finansal sağlık analizi</p>
+              <p className="text-xs text-white/60 mt-1">Finansal sağlık raporu</p>
             </CardContent>
           </Card>
 
           <Card className="bg-black/20 border-white/10 backdrop-blur-xl">
             <CardHeader className="flex flex-row items-center justify-between pb-2">
-              <CardTitle className="text-sm font-medium text-white/80">Free / Premium</CardTitle>
+              <CardTitle className="text-sm font-medium text-white/80">Plan Dağılımı</CardTitle>
               <Zap className="h-4 w-4 text-yellow-400" />
             </CardHeader>
             <CardContent>
-              <div className="text-3xl font-bold text-white">{freeUsers} / {premiumUsers}</div>
-              <p className="text-xs text-white/60 mt-1">Kullanıcı dağılımı</p>
+              <div className="text-3xl font-bold text-white">{freeUsers || 0} / {proUsers || 0} / {premiumUsers || 0}</div>
+              <p className="text-xs text-white/60 mt-1">Free / Pro / Premium</p>
             </CardContent>
           </Card>
         </div>
@@ -268,15 +368,15 @@ export default async function AdminDashboard() {
             </Link>
 
             <Link
-              href="/admin/faturalar/yeni"
+              href="/admin/faturalar"
               className="flex items-center gap-4 p-4 bg-gradient-to-r from-yellow-500/10 to-orange-500/10 border border-yellow-500/20 rounded-lg hover:border-yellow-500/40 transition-all"
             >
               <div className="w-12 h-12 bg-yellow-500/20 rounded-full flex items-center justify-center">
                 <Receipt className="h-6 w-6 text-yellow-400" />
               </div>
               <div>
-                <h3 className="font-semibold text-white">Fatura Oluştur</h3>
-                <p className="text-sm text-white/60">Yeni fatura ekle</p>
+                <h3 className="font-semibold text-white">Faturalar</h3>
+                <p className="text-sm text-white/60">Faturaları yönet</p>
               </div>
             </Link>
 

@@ -11,14 +11,14 @@ import {
   DollarSign,
   Activity
 } from "lucide-react"
-import { createSupabaseServer } from "@/lib/supabase-server"
+import { createSupabaseAdmin } from "@/lib/supabase-server"
 import { AdminLayoutWrapper } from "@/components/admin-layout-wrapper"
 import { Badge } from "@/components/ui/badge"
 
 export default async function PaymentRiskMonitoring() {
   const { session } = await checkAdminAccess()
 
-  const supabase = await createSupabaseServer()
+  const supabase = createSupabaseAdmin()
 
   // Get total payments count
   const { count: totalPayments } = await supabase
@@ -99,19 +99,19 @@ export default async function PaymentRiskMonitoring() {
       <div className="space-y-6">
         {/* Header */}
         <div>
-          <h1 className="text-3xl font-bold">Ödeme Risk Takip Paneli</h1>
-          <p className="text-muted-foreground mt-2">
+          <h1 className="text-3xl font-bold text-white">Ödeme Risk Takip Paneli</h1>
+          <p className="text-white/60 mt-2">
             PayTR Non3D ödemeleri için risk metrikleri ve güvenlik takibi
           </p>
         </div>
 
         {/* Risk Level Banner */}
-        <Card className="border-2">
+        <Card className="bg-black/20 border-white/10 backdrop-blur-xl border-2">
           <CardHeader>
             <div className="flex items-center justify-between">
               <div>
-                <CardTitle className="text-2xl">Genel Risk Durumu</CardTitle>
-                <CardDescription>Sistem genelinde risk değerlendirmesi</CardDescription>
+                <CardTitle className="text-2xl text-white">Genel Risk Durumu</CardTitle>
+                <CardDescription className="text-white/60">Sistem genelinde risk değerlendirmesi</CardDescription>
               </div>
               <Badge className={`${riskLevel.color} text-white text-lg px-4 py-2`}>
                 {riskLevel.text}
@@ -123,14 +123,14 @@ export default async function PaymentRiskMonitoring() {
         {/* Key Metrics Grid */}
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
           {/* Chargeback Rate */}
-          <Card>
+          <Card className="bg-black/20 border-white/10 backdrop-blur-xl">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Chargeback Oranı</CardTitle>
-              <AlertTriangle className={`h-4 w-4 ${chargebackRate > 0.5 ? 'text-red-500' : 'text-green-500'}`} />
+              <CardTitle className="text-sm font-medium text-white/80">Chargeback Oranı</CardTitle>
+              <AlertTriangle className={`h-4 w-4 ${chargebackRate > 0.5 ? 'text-red-400' : 'text-green-400'}`} />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">{chargebackRate.toFixed(2)}%</div>
-              <p className="text-xs text-muted-foreground">
+              <div className="text-2xl font-bold text-white">{chargebackRate.toFixed(2)}%</div>
+              <p className="text-xs text-white/60">
                 {chargebackCount} / {totalPayments || 0} işlem
               </p>
               <div className="mt-2">
@@ -142,14 +142,14 @@ export default async function PaymentRiskMonitoring() {
           </Card>
 
           {/* Success Rate */}
-          <Card>
+          <Card className="bg-black/20 border-white/10 backdrop-blur-xl">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Başarı Oranı</CardTitle>
-              <CheckCircle className={`h-4 w-4 ${successRate > 90 ? 'text-green-500' : 'text-orange-500'}`} />
+              <CardTitle className="text-sm font-medium text-white/80">Başarı Oranı</CardTitle>
+              <CheckCircle className={`h-4 w-4 ${successRate > 90 ? 'text-green-400' : 'text-orange-400'}`} />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">{successRate.toFixed(1)}%</div>
-              <p className="text-xs text-muted-foreground">
+              <div className="text-2xl font-bold text-white">{successRate.toFixed(1)}%</div>
+              <p className="text-xs text-white/60">
                 {successfulPayments || 0} başarılı / {totalPayments || 0} toplam
               </p>
               <div className="mt-2">
@@ -161,14 +161,14 @@ export default async function PaymentRiskMonitoring() {
           </Card>
 
           {/* Failed Payments */}
-          <Card>
+          <Card className="bg-black/20 border-white/10 backdrop-blur-xl">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Başarısız Ödemeler</CardTitle>
-              <XCircle className="h-4 w-4 text-red-500" />
+              <CardTitle className="text-sm font-medium text-white/80">Başarısız Ödemeler</CardTitle>
+              <XCircle className="h-4 w-4 text-red-400" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">{failedPayments || 0}</div>
-              <p className="text-xs text-muted-foreground">
+              <div className="text-2xl font-bold text-white">{failedPayments || 0}</div>
+              <p className="text-xs text-white/60">
                 Son 30 gün içinde
               </p>
               <div className="mt-2">
@@ -180,14 +180,14 @@ export default async function PaymentRiskMonitoring() {
           </Card>
 
           {/* Inactive User Payments */}
-          <Card>
+          <Card className="bg-black/20 border-white/10 backdrop-blur-xl">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Pasif Kullanıcı Ödemeleri</CardTitle>
-              <UserX className="h-4 w-4 text-orange-500" />
+              <CardTitle className="text-sm font-medium text-white/80">Pasif Kullanıcı Ödemeleri</CardTitle>
+              <UserX className="h-4 w-4 text-orange-400" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">{inactiveUserPaymentCount}</div>
-              <p className="text-xs text-muted-foreground">
+              <div className="text-2xl font-bold text-white">{inactiveUserPaymentCount}</div>
+              <p className="text-xs text-white/60">
                 30+ gün giriş yapmayan kullanıcılar
               </p>
               <div className="mt-2">
@@ -202,42 +202,42 @@ export default async function PaymentRiskMonitoring() {
         {/* Additional Metrics */}
         <div className="grid gap-4 md:grid-cols-3">
           {/* Total Revenue */}
-          <Card>
+          <Card className="bg-black/20 border-white/10 backdrop-blur-xl">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Toplam Gelir (Recurring)</CardTitle>
-              <DollarSign className="h-4 w-4 text-green-500" />
+              <CardTitle className="text-sm font-medium text-white/80">Toplam Gelir (Recurring)</CardTitle>
+              <DollarSign className="h-4 w-4 text-green-400" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">{totalRevenue.toFixed(2)} TL</div>
-              <p className="text-xs text-muted-foreground">
+              <div className="text-2xl font-bold text-white">{totalRevenue.toFixed(2)} TL</div>
+              <p className="text-xs text-white/60">
                 Otomatik yenileme ödemeleri
               </p>
             </CardContent>
           </Card>
 
           {/* Active Saved Cards */}
-          <Card>
+          <Card className="bg-black/20 border-white/10 backdrop-blur-xl">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Kayıtlı Kart Sayısı</CardTitle>
-              <CreditCard className="h-4 w-4 text-blue-500" />
+              <CardTitle className="text-sm font-medium text-white/80">Kayıtlı Kart Sayısı</CardTitle>
+              <CreditCard className="h-4 w-4 text-blue-400" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">{activeSavedCards || 0}</div>
-              <p className="text-xs text-muted-foreground">
+              <div className="text-2xl font-bold text-white">{activeSavedCards || 0}</div>
+              <p className="text-xs text-white/60">
                 Aktif kayıtlı kartlar
               </p>
             </CardContent>
           </Card>
 
           {/* Fraud Attempts */}
-          <Card>
+          <Card className="bg-black/20 border-white/10 backdrop-blur-xl">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Şüpheli İşlem</CardTitle>
-              <AlertCircle className="h-4 w-4 text-purple-500" />
+              <CardTitle className="text-sm font-medium text-white/80">Şüpheli İşlem</CardTitle>
+              <AlertCircle className="h-4 w-4 text-purple-400" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">0</div>
-              <p className="text-xs text-muted-foreground">
+              <div className="text-2xl font-bold text-white">0</div>
+              <p className="text-xs text-white/60">
                 Fraud tespiti aktif
               </p>
               <div className="mt-2">
@@ -250,25 +250,25 @@ export default async function PaymentRiskMonitoring() {
         </div>
 
         {/* Recent Failed Payments Table */}
-        <Card>
+        <Card className="bg-black/20 border-white/10 backdrop-blur-xl">
           <CardHeader>
-            <CardTitle>Son Başarısız Ödemeler</CardTitle>
-            <CardDescription>Detaylı inceleme gerektirebilir</CardDescription>
+            <CardTitle className="text-white">Son Başarısız Ödemeler</CardTitle>
+            <CardDescription className="text-white/60">Detaylı inceleme gerektirebilir</CardDescription>
           </CardHeader>
           <CardContent>
             {recentFailedPayments && recentFailedPayments.length > 0 ? (
               <div className="space-y-4">
                 {recentFailedPayments.map((payment: any) => (
-                  <div key={payment.id} className="flex items-center justify-between border-b pb-4 last:border-0">
+                  <div key={payment.id} className="flex items-center justify-between border-b border-white/10 pb-4 last:border-0">
                     <div>
-                      <p className="font-medium">
+                      <p className="font-medium text-white">
                         {payment.profiles?.first_name} {payment.profiles?.last_name}
                       </p>
-                      <p className="text-sm text-muted-foreground">{payment.profiles?.email}</p>
+                      <p className="text-sm text-white/60">{payment.profiles?.email}</p>
                     </div>
                     <div className="text-right">
-                      <p className="font-medium">{payment.amount} {payment.currency}</p>
-                      <p className="text-sm text-muted-foreground">
+                      <p className="font-medium text-white">{payment.amount} {payment.currency}</p>
+                      <p className="text-sm text-white/60">
                         {new Date(payment.created_at).toLocaleDateString('tr-TR')}
                       </p>
                     </div>
@@ -277,8 +277,8 @@ export default async function PaymentRiskMonitoring() {
                 ))}
               </div>
             ) : (
-              <div className="text-center py-8 text-muted-foreground">
-                <CheckCircle className="h-12 w-12 mx-auto mb-4 text-green-500" />
+              <div className="text-center py-8 text-white/60">
+                <CheckCircle className="h-12 w-12 mx-auto mb-4 text-green-400" />
                 <p>Başarısız ödeme bulunmuyor</p>
               </div>
             )}
@@ -286,52 +286,52 @@ export default async function PaymentRiskMonitoring() {
         </Card>
 
         {/* Risk Monitoring Checklist */}
-        <Card>
+        <Card className="bg-black/20 border-white/10 backdrop-blur-xl">
           <CardHeader>
-            <CardTitle>Risk İzleme Kontrol Listesi</CardTitle>
-            <CardDescription>PayTR Non3D güvenlik önlemleri</CardDescription>
+            <CardTitle className="text-white">Risk İzleme Kontrol Listesi</CardTitle>
+            <CardDescription className="text-white/60">PayTR Non3D güvenlik önlemleri</CardDescription>
           </CardHeader>
           <CardContent>
             <div className="space-y-3">
               <div className="flex items-center gap-3">
-                <CheckCircle className="h-5 w-5 text-green-500" />
-                <span>✅ İlk ödeme 3D Secure ile yapılıyor</span>
+                <CheckCircle className="h-5 w-5 text-green-400" />
+                <span className="text-white">✅ İlk ödeme 3D Secure ile yapılıyor</span>
               </div>
               <div className="flex items-center gap-3">
-                <CheckCircle className="h-5 w-5 text-green-500" />
-                <span>✅ Kullanıcı onayı açık şekilde alınıyor</span>
+                <CheckCircle className="h-5 w-5 text-green-400" />
+                <span className="text-white">✅ Kullanıcı onayı açık şekilde alınıyor</span>
               </div>
               <div className="flex items-center gap-3">
-                <CheckCircle className="h-5 w-5 text-green-500" />
-                <span>✅ 3 gün önceden email bildirimi gönderiliyor</span>
+                <CheckCircle className="h-5 w-5 text-green-400" />
+                <span className="text-white">✅ 3 gün önceden email bildirimi gönderiliyor</span>
               </div>
               <div className="flex items-center gap-3">
-                <CheckCircle className="h-5 w-5 text-green-500" />
-                <span>✅ Kart bilgileri PayTR güvenli altyapısında</span>
+                <CheckCircle className="h-5 w-5 text-green-400" />
+                <span className="text-white">✅ Kart bilgileri PayTR güvenli altyapısında</span>
               </div>
               <div className="flex items-center gap-3">
-                <CheckCircle className="h-5 w-5 text-green-500" />
-                <span>✅ PCI-DSS uyumlu (sunucuda kart bilgisi yok)</span>
+                <CheckCircle className="h-5 w-5 text-green-400" />
+                <span className="text-white">✅ PCI-DSS uyumlu (sunucuda kart bilgisi yok)</span>
               </div>
               <div className="flex items-center gap-3">
-                <Activity className="h-5 w-5 text-blue-500" />
-                <span>📊 Chargeback oranı izleniyor</span>
+                <Activity className="h-5 w-5 text-blue-400" />
+                <span className="text-white">📊 Chargeback oranı izleniyor</span>
               </div>
               <div className="flex items-center gap-3">
-                <Activity className="h-5 w-5 text-blue-500" />
-                <span>📊 Başarı oranı takip ediliyor</span>
+                <Activity className="h-5 w-5 text-blue-400" />
+                <span className="text-white">📊 Başarı oranı takip ediliyor</span>
               </div>
               <div className="flex items-center gap-3">
-                <AlertCircle className="h-5 w-5 text-orange-500" />
-                <span>🚧 Fraud detection sistemi (TODO)</span>
+                <AlertCircle className="h-5 w-5 text-orange-400" />
+                <span className="text-white">🚧 Fraud detection sistemi (TODO)</span>
               </div>
               <div className="flex items-center gap-3">
-                <AlertCircle className="h-5 w-5 text-orange-500" />
-                <span>🚧 IP adresi logging (TODO)</span>
+                <AlertCircle className="h-5 w-5 text-orange-400" />
+                <span className="text-white">🚧 IP adresi logging (TODO)</span>
               </div>
               <div className="flex items-center gap-3">
-                <AlertCircle className="h-5 w-5 text-orange-500" />
-                <span>🚧 Device fingerprinting (TODO)</span>
+                <AlertCircle className="h-5 w-5 text-orange-400" />
+                <span className="text-white">🚧 Device fingerprinting (TODO)</span>
               </div>
             </div>
           </CardContent>

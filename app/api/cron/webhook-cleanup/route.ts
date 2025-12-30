@@ -38,16 +38,12 @@ async function handler(request: NextRequest) {
       }
     )
 
-    console.log("[webhook-cleanup] Temizlik başlatılıyor...")
-
     // PayTR webhook temizliği
     const { data: paytrDeleted, error: paytrError } = await supabase
       .rpc('cleanup_old_paytr_webhooks')
 
     if (paytrError) {
       console.error("[webhook-cleanup] PayTR temizlik hatası:", paytrError)
-    } else {
-      console.log(`[webhook-cleanup] PayTR: ${paytrDeleted || 0} kayıt silindi`)
     }
 
     // Paddle webhook temizliği
@@ -56,16 +52,11 @@ async function handler(request: NextRequest) {
 
     if (paddleError) {
       console.error("[webhook-cleanup] Paddle temizlik hatası:", paddleError)
-    } else {
-      console.log(`[webhook-cleanup] Paddle: ${paddleDeleted || 0} kayıt silindi`)
     }
 
     // Sonuçları topla
     const totalDeleted = (paytrDeleted || 0) + (paddleDeleted || 0)
     const hasErrors = paytrError || paddleError
-
-    // Başarı mesajı
-    console.log(`[webhook-cleanup] Temizlik tamamlandı: Toplam ${totalDeleted} kayıt silindi`)
 
     return NextResponse.json({
       success: !hasErrors,

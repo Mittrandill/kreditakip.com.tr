@@ -18,12 +18,6 @@ export async function POST(request: NextRequest) {
     const params = new URLSearchParams(body)
     const callbackData = PayTRClient.parseCallback(params)
 
-    console.log("[PayTR Renewal Callback] Received:", {
-      order_id: callbackData.merchant_oid,
-      status: callbackData.status,
-      amount: callbackData.total_amount,
-    })
-
     // Verify signature
     const paytrClient = new PayTRClient()
     if (!paytrClient.verifyCallback(callbackData)) {
@@ -148,8 +142,6 @@ async function handleRenewalSuccess(supabase: any, data: any) {
       return
     }
 
-    console.log("[PayTR] Subscription renewed:", subscription.id)
-
     // Create invoice for renewal
     await supabase.from("invoices").insert({
       user_id: subscription.user_id,
@@ -189,8 +181,6 @@ async function handleRenewalSuccess(supabase: any, data: any) {
         subscription_reference: subscription.id,
       })
       .eq("id", pending.id)
-
-    console.log("[PayTR] Renewal processed successfully")
   } catch (error: any) {
     console.error("[PayTR] Error handling renewal success:", error)
   }
@@ -201,12 +191,6 @@ async function handleRenewalSuccess(supabase: any, data: any) {
  */
 async function handleRenewalFailure(supabase: any, data: any) {
   try {
-    console.log("[PayTR] Renewal failed:", {
-      order_id: data.merchant_oid,
-      reason_code: data.failed_reason_code,
-      reason_msg: data.failed_reason_msg,
-    })
-
     // Update pending renewal
     await supabase
       .from("pending_subscriptions")
