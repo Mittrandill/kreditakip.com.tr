@@ -6,7 +6,7 @@ export const dynamic = "force-dynamic"
 // GET - List published blog posts (public)
 export async function GET(request: NextRequest) {
   try {
-    const supabase = createSupabaseServer()
+    const supabase = await createSupabaseServer()
 
     // Get query parameters
     const searchParams = request.nextUrl.searchParams

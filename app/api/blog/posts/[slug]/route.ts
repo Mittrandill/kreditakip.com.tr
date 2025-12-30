@@ -6,7 +6,7 @@ export const dynamic = "force-dynamic"
 // GET - Get single published blog post by slug (public)
 export async function GET(request: NextRequest, { params }: { params: { slug: string } }) {
   try {
-    const supabase = createSupabaseServer()
+    const supabase = await createSupabaseServer()
 
     const { data: post, error } = await supabase
       .from("blog_posts")

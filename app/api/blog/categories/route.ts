@@ -6,7 +6,7 @@ import { NextResponse } from "next/server"
 // GET - List all blog categories (public)
 export async function GET() {
   try {
-    const supabase = createSupabaseServer()
+    const supabase = await createSupabaseServer()
 
     const { data: categories, error } = await supabase
       .from("blog_categories")
