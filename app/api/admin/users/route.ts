@@ -5,7 +5,7 @@ import { NextResponse } from "next/server"
 
 export async function GET() {
   try {
-    const supabase = createSupabaseServer()
+    const supabase = await createSupabaseServer()
 
     // Check if user is admin
     const {

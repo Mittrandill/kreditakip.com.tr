@@ -6,7 +6,7 @@ import { NextRequest, NextResponse } from "next/server"
 // GET - List all blog posts (admin only)
 export async function GET(request: NextRequest) {
   try {
-    const supabase = createSupabaseServer()
+    const supabase = await createSupabaseServer()
 
     // Check authentication and admin status
     const {
@@ -71,7 +71,7 @@ export async function GET(request: NextRequest) {
 // POST - Create new blog post (admin only)
 export async function POST(request: NextRequest) {
   try {
-    const supabase = createSupabaseServer()
+    const supabase = await createSupabaseServer()
 
     // Check authentication and admin status
     const {

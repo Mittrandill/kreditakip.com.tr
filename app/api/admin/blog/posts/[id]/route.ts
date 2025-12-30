@@ -6,7 +6,7 @@ export const dynamic = "force-dynamic"
 // GET - Get single blog post (admin only)
 export async function GET(request: NextRequest, { params }: { params: { id: string } }) {
   try {
-    const supabase = createSupabaseServer()
+    const supabase = await createSupabaseServer()
 
     // Check authentication and admin status
     const {
@@ -53,7 +53,7 @@ export async function GET(request: NextRequest, { params }: { params: { id: stri
 // PUT - Update blog post (admin only)
 export async function PUT(request: NextRequest, { params }: { params: { id: string } }) {
   try {
-    const supabase = createSupabaseServer()
+    const supabase = await createSupabaseServer()
 
     // Check authentication and admin status
     const {
@@ -143,7 +143,7 @@ export async function PUT(request: NextRequest, { params }: { params: { id: stri
 // DELETE - Delete blog post (admin only)
 export async function DELETE(request: NextRequest, { params }: { params: { id: string } }) {
   try {
-    const supabase = createSupabaseServer()
+    const supabase = await createSupabaseServer()
 
     // Check authentication and admin status
     const {

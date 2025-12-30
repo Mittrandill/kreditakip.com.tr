@@ -6,7 +6,7 @@ export const dynamic = "force-dynamic"
 // GET - List all blog categories (admin only)
 export async function GET(request: NextRequest) {
   try {
-    const supabase = createSupabaseServer()
+    const supabase = await createSupabaseServer()
 
     // Check authentication and admin status
     const {
@@ -44,7 +44,7 @@ export async function GET(request: NextRequest) {
 // POST - Create new blog category (admin only)
 export async function POST(request: NextRequest) {
   try {
-    const supabase = createSupabaseServer()
+    const supabase = await createSupabaseServer()
 
     // Check authentication and admin status
     const {
