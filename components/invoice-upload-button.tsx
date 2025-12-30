@@ -41,8 +41,20 @@ export function InvoiceUploadButton({
       })
 
       if (!uploadResponse.ok) {
-        const errorData = await uploadResponse.json()
-        throw new Error(errorData.error || "PDF yüklenirken hata oluştu")
+        // Try to parse as JSON, fallback to text if it fails
+        const contentType = uploadResponse.headers.get("content-type")
+        let errorMessage = "PDF yüklenirken hata oluştu"
+
+        if (contentType?.includes("application/json")) {
+          const errorData = await uploadResponse.json()
+          errorMessage = errorData.error || errorData.details || errorMessage
+        } else {
+          const errorText = await uploadResponse.text()
+          console.error("Non-JSON error response:", errorText)
+          errorMessage = `Server error (${uploadResponse.status})`
+        }
+
+        throw new Error(errorMessage)
       }
 
       toast.success("Fatura başarıyla yüklendi!")

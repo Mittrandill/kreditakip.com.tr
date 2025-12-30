@@ -14,6 +14,18 @@ export async function POST(request: NextRequest) {
   if (adminCheck) return adminCheck
 
   try {
+    // Validate environment variables
+    if (!supabaseUrl || !supabaseServiceKey) {
+      console.error("[invoice-upload] Missing environment variables:", {
+        hasUrl: !!supabaseUrl,
+        hasKey: !!supabaseServiceKey
+      })
+      return NextResponse.json(
+        { error: "Server configuration error" },
+        { status: 500 }
+      )
+    }
+
     const supabase = createClient(supabaseUrl, supabaseServiceKey)
 
     const formData = await request.formData()
@@ -74,8 +86,21 @@ export async function POST(request: NextRequest) {
       })
 
     if (error) {
-      console.error("Error uploading file:", error)
-      return NextResponse.json({ error: "Failed to upload file" }, { status: 500 })
+      console.error("[invoice-upload] Storage upload error:", error)
+      console.error("[invoice-upload] Error details:", {
+        message: error.message,
+        statusCode: error.statusCode,
+        error: error.error,
+        bucket: "invoices",
+        fileName
+      })
+      return NextResponse.json(
+        {
+          error: "Failed to upload file to storage",
+          details: error.message
+        },
+        { status: 500 }
+      )
     }
 
     // Get public URL
