@@ -69,7 +69,9 @@
       "Bash(node scripts/apply-migrations.js:*)",
       "Bash(gh secret list:*)",
       "mcp__supabase__list_storage_buckets",
-      "Bash(if exist \"C:\\\\Users\\\\akint\\\\Desktop\\\\kreditakip.com.tr\\\\.next\" rmdir /s /q \"C:\\\\Users\\\\akint\\\\Desktop\\\\kreditakip.com.tr\\\\.next\")"
+      "Bash(if exist \"C:\\\\Users\\\\akint\\\\Desktop\\\\kreditakip.com.tr\\\\.next\" rmdir /s /q \"C:\\\\Users\\\\akint\\\\Desktop\\\\kreditakip.com.tr\\\\.next\")",
+      "Bash(del:*)",
+      "mcp__supabase__list_migrations"
     ],
     "deny": [],
     "ask": []

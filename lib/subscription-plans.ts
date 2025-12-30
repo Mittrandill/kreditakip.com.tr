@@ -13,8 +13,6 @@ export interface SubscriptionPlan {
   discount?: string
   currency?: string
   billingInterval?: number
-  paddleProductId?: string
-  paddlePriceId?: string
 }
 
 // Fallback plans in case API fails (same as database defaults)
@@ -39,8 +37,6 @@ export const FALLBACK_PLANS: SubscriptionPlan[] = [
     price: 199,
     period: "monthly",
     periodLabel: "Aylık",
-    paddleProductId: "pro_01kcrgadnmnknkz1c32yd50t5t",
-    paddlePriceId: "pri_01kcrgqgnatmmafk81qb9skdv2",
     features: [
       "10 adet OCR kredi döküm analizi",
       "5 adet AI Finansal Sağlık Analizi",
@@ -58,8 +54,6 @@ export const FALLBACK_PLANS: SubscriptionPlan[] = [
     period: "yearly",
     periodLabel: "Yıllık",
     discount: "%20 İndirim",
-    paddleProductId: "pro_01kcrgadnmnknkz1c32yd50t5t",
-    paddlePriceId: "pri_01kcrgrk0481d1wgrxw1gspqfq",
     features: [
       "10 adet OCR kredi döküm analizi (aylık)",
       "5 adet AI Finansal Sağlık Analizi (aylık)",
@@ -77,8 +71,6 @@ export const FALLBACK_PLANS: SubscriptionPlan[] = [
     period: "monthly",
     periodLabel: "Aylık",
     popular: true,
-    paddleProductId: "pro_01kcrga40mwkf0t80drbe06rbd",
-    paddlePriceId: "pri_01kcrgn0119qmdrgdy92phf840",
     features: [
       "Sınırsız OCR kredi döküm analizi",
       "Sınırsız AI Finansal Sağlık Analizi",
@@ -98,8 +90,6 @@ export const FALLBACK_PLANS: SubscriptionPlan[] = [
     periodLabel: "Yıllık",
     discount: "%20 İndirim",
     popular: true,
-    paddleProductId: "pro_01kcrga40mwkf0t80drbe06rbd",
-    paddlePriceId: "pri_01kcrgdk1qex8pbyc2g47fv5dg",
     features: [
       "Sınırsız OCR kredi döküm analizi",
       "Sınırsız AI Finansal Sağlık Analizi",

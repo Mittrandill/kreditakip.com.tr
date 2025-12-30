@@ -18,12 +18,6 @@ export async function POST(request: NextRequest) {
     const params = new URLSearchParams(body)
     const callbackData = PayTRClient.parseCallback(params)
 
-    console.log("[PayTR Callback] Received:", {
-      order_id: callbackData.merchant_oid,
-      status: callbackData.status,
-      amount: callbackData.total_amount,
-    })
-
     // Verify signature
     const paytrClient = new PayTRClient()
     if (!paytrClient.verifyCallback(callbackData)) {
@@ -98,7 +92,6 @@ async function handlePaymentSuccess(supabase: any, data: any) {
 
     // Idempotency check - Aynı ödeme birden fazla işlenmesin
     if (pending.status === "completed") {
-      console.log("[PayTR] Order already processed, skipping:", data.merchant_oid)
       return
     }
 
@@ -190,8 +183,6 @@ async function handlePaymentSuccess(supabase: any, data: any) {
       return
     }
 
-    console.log("[PayTR] Subscription created:", newSub.id)
-
     // Initialize usage tracking
     await initializeUsageTracking(supabase, pending.user_id, newSub.id, pending.plan_id)
 
@@ -234,8 +225,6 @@ async function handlePaymentSuccess(supabase: any, data: any) {
         subscription_reference: newSub.id,
       })
       .eq("id", pending.id)
-
-    console.log("[PayTR] Payment processed successfully")
   } catch (error: any) {
     console.error("[PayTR] Error handling payment success:", error)
   }
@@ -246,12 +235,6 @@ async function handlePaymentSuccess(supabase: any, data: any) {
  */
 async function handlePaymentFailure(supabase: any, data: any) {
   try {
-    console.log("[PayTR] Payment failed:", {
-      order_id: data.merchant_oid,
-      reason_code: data.failed_reason_code,
-      reason_msg: data.failed_reason_msg,
-    })
-
     // Update pending subscription
     await supabase
       .from("pending_subscriptions")
@@ -317,6 +300,4 @@ async function initializeUsageTracking(
       reset_at: resetAt.toISOString(),
     },
   ])
-
-  console.log("[PayTR] Usage tracking initialized")
 }
