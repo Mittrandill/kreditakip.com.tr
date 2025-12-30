@@ -24,13 +24,40 @@ export async function POST(request: NextRequest) {
 
     // Get request body
     const body = await request.json()
-    const { planId, userId, userEmail, cardNumber, cardExpiry, cardCvv, cardHolderName } = body
+    const { planId, userId, userEmail, cardNumber, cardExpiry, cardCvv, cardHolderName, billingInfo } = body
 
     if (!planId || !userId || !userEmail) {
       return NextResponse.json(
         { error: "Missing required fields: planId, userId, userEmail" },
         { status: 400 }
       )
+    }
+
+    // Save billing info if provided
+    if (billingInfo) {
+      try {
+        await supabase.from("billing_info").upsert(
+          {
+            user_id: userId,
+            full_name: billingInfo.fullName,
+            email: billingInfo.email,
+            phone: billingInfo.phone,
+            address: billingInfo.address,
+            city: billingInfo.city,
+            district: billingInfo.district,
+            postal_code: billingInfo.zipCode,
+            country: "Turkey",
+            tax_number: billingInfo.taxNumber || null,
+            tax_office: billingInfo.taxOffice || null,
+            identity_number: billingInfo.identityNumber,
+            updated_at: new Date().toISOString(),
+          },
+          { onConflict: "user_id" }
+        )
+      } catch (error) {
+        console.error("[PayTR Checkout] Failed to save billing info:", error)
+        // Continue with payment even if billing info fails
+      }
     }
 
     // Direkt API requires card details

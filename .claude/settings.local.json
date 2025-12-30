@@ -63,7 +63,13 @@
       "Bash(npx supabase:*)",
       "Bash(psql:*)",
       "WebFetch(domain:raw.githubusercontent.com)",
-      "Bash(exit 0)"
+      "Bash(exit 0)",
+      "mcp__supabase__apply_migration",
+      "mcp__supabase__execute_sql",
+      "Bash(node scripts/apply-migrations.js:*)",
+      "Bash(gh secret list:*)",
+      "mcp__supabase__list_storage_buckets",
+      "Bash(if exist \"C:\\\\Users\\\\akint\\\\Desktop\\\\kreditakip.com.tr\\\\.next\" rmdir /s /q \"C:\\\\Users\\\\akint\\\\Desktop\\\\kreditakip.com.tr\\\\.next\")"
     ],
     "deny": [],
     "ask": []

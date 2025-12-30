@@ -18,7 +18,7 @@ import { Badge } from "@/components/ui/badge"
 export default async function PaymentRiskMonitoring() {
   const { session } = await checkAdminAccess()
 
-  const supabase = createSupabaseServer()
+  const supabase = await createSupabaseServer()
 
   // Get total payments count
   const { count: totalPayments } = await supabase

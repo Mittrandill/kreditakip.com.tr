@@ -770,18 +770,18 @@ export default function SubscriptionPage() {
                           </div>
                         </div>
 
-                        {/* Info Box - Auto Renewal */}
+                        {/* Info Box - Manual Renewal */}
                         <div className="p-4 bg-white-20 dark:bg-white-900/30 rounded-xl border border-gray-700/20 dark:border-emerald-800">
                           <div className="flex items-start gap-3">
-                            <div className="p-2 bg-emerald-500 rounded-lg">
-                              <Zap className="h-4 w-4 text-white" />
+                            <div className="p-2 bg-amber-500 rounded-lg">
+                              <Clock className="h-4 w-4 text-white" />
                             </div>
                             <div className="flex-1">
                               <p className="text-sm font-medium text-emerald-900 dark:text-emerald-100">
-                                Otomatik Yenileme Aktif
+                                Manuel Yenileme
                               </p>
                               <p className="text-xs text-emerald-700 dark:text-emerald-300 mt-1">
-                                Aboneliğiniz {new Date(subscription.expiresAt).toLocaleDateString("tr-TR")} tarihinde otomatik olarak yenilenecektir
+                                Aboneliğiniz {new Date(subscription.expiresAt).toLocaleDateString("tr-TR")} tarihinde sona erecektir. Yenilemek için manuel olarak ödeme yapmanız gerekmektedir
                               </p>
                             </div>
                           </div>

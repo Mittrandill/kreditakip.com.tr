@@ -843,7 +843,7 @@ export default function KrediDetayPage() {
       })
 
       toast({
-        title: "Basarili",
+        title: "Başarılı",
         description: "Odeme plani basariyla indirildi.",
       })
     } catch (error) {
@@ -1242,7 +1242,7 @@ export default function KrediDetayPage() {
       doc.save(`odeme-plani-${krediDetay?.credit_code}.pdf`)
 
       toast({
-        title: "Basarili",
+        title: "Başarılı",
         description: "Odeme plani basariyla indirildi.",
       })
     } catch (error) {
@@ -1480,7 +1480,7 @@ export default function KrediDetayPage() {
       setKrediDetay(updatedCreditData)
 
       toast({
-        title: "Odeme Basarili",
+        title: "Odeme Başarılı",
         description: `${formatCurrency(odemeForm.odemeTutari)} tutarinda odeme basariyla gerceklestirildi.`,
       })
 

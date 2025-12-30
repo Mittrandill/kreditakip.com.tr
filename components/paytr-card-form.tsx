@@ -9,12 +9,26 @@ import { Alert, AlertDescription } from "@/components/ui/alert"
 import { Loader2, CreditCard, Lock } from "lucide-react"
 import { useToast } from "@/hooks/use-toast"
 
+interface BillingInfo {
+  fullName: string
+  email: string
+  phone: string
+  address: string
+  city: string
+  district: string
+  zipCode: string
+  identityNumber: string
+  taxOffice?: string
+  taxNumber?: string
+}
+
 interface PayTRCardFormProps {
   planId: string
   planName: string
   price: number
   userId: string
   userEmail: string
+  billingInfo?: BillingInfo
   termsAccepted?: boolean
   onSuccess?: () => void
   onError?: (error: string) => void
@@ -26,6 +40,7 @@ export default function PayTRCardForm({
   price,
   userId,
   userEmail,
+  billingInfo,
   termsAccepted = true,
   onSuccess,
   onError,
@@ -134,6 +149,7 @@ export default function PayTRCardForm({
           cardExpiry,
           cardCvv,
           cardHolderName,
+          billingInfo,
         }),
       })
 

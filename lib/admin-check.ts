@@ -4,7 +4,7 @@ import { NextRequest, NextResponse } from "next/server"
 import { createClient } from "@supabase/supabase-js"
 
 export async function checkAdminAccess() {
-  const supabase = createSupabaseServer()
+  const supabase = await createSupabaseServer()
 
   const {
     data: { session },
@@ -41,20 +41,15 @@ export async function checkAdminAccess() {
  */
 export async function checkAdminAPI(request: NextRequest): Promise<NextResponse | null> {
   try {
-    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
-    const supabaseServiceKey = process.env.SERVICE_ROLE_KEY!
-    const supabase = createClient(supabaseUrl, supabaseServiceKey)
+    // Create Supabase client that can read from cookies
+    const supabase = await createSupabaseServer()
 
-    // Get session from request cookies
-    const authHeader = request.headers.get("authorization")
-    const cookieHeader = request.headers.get("cookie")
+    // Get session from cookies
+    const {
+      data: { session },
+    } = await supabase.auth.getSession()
 
-    // Try to get user from auth header or cookies
-    const { data: { user }, error: userError } = await supabase.auth.getUser(
-      authHeader?.replace('Bearer ', '') || undefined
-    )
-
-    if (userError || !user) {
+    if (!session) {
       return NextResponse.json(
         { error: "Unauthorized - Authentication required" },
         { status: 401 }
@@ -65,7 +60,7 @@ export async function checkAdminAPI(request: NextRequest): Promise<NextResponse 
     const { data: profile, error: profileError } = await supabase
       .from("profiles")
       .select("is_admin")
-      .eq("id", user.id)
+      .eq("id", session.user.id)
       .single()
 
     if (profileError) {

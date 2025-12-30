@@ -6,22 +6,12 @@ import { Upload, Loader2 } from "lucide-react"
 import { toast } from "sonner"
 
 interface InvoiceUploadButtonProps {
-  iyzicoPaymentId: string
-  subscriptionId: string
-  userId: string
-  amount: number
-  currency: string
-  userEmail: string
+  invoiceId: string
   onSuccess?: () => void
 }
 
 export function InvoiceUploadButton({
-  iyzicoPaymentId,
-  subscriptionId,
-  userId,
-  amount,
-  currency,
-  userEmail,
+  invoiceId,
   onSuccess,
 }: InvoiceUploadButtonProps) {
   const [loading, setLoading] = useState(false)
@@ -40,41 +30,10 @@ export function InvoiceUploadButton({
     setLoading(true)
 
     try {
-      // 1. Find invoice by payment_id (matches iyzico_payment_id)
-      const findResponse = await fetch(`/api/admin/invoices?paymentId=${iyzicoPaymentId}`)
-
-      if (!findResponse.ok) {
-        throw new Error("Fatura kaydı bulunamadı")
-      }
-
-      const { invoices } = await findResponse.json()
-      const pendingInvoice = invoices?.[0] // Should be only one invoice per payment
-
-      if (!pendingInvoice) {
-        throw new Error("Bu ödeme için fatura bulunamadı. Lütfen sayfayı yenileyin ve tekrar deneyin.")
-      }
-
-      // 2. Update invoice number from filename if needed
-      const invoiceNumber = file.name.replace(/\.pdf$/i, "")
-
-      const updateResponse = await fetch(`/api/admin/invoices/${pendingInvoice.id}`, {
-        method: "PATCH",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          invoice_number: invoiceNumber,
-        }),
-      })
-
-      if (!updateResponse.ok) {
-        // Failed to update invoice number, continuing with upload
-      }
-
-      // 3. Upload PDF
+      // Upload PDF
       const formData = new FormData()
       formData.append("file", file)
-      formData.append("invoiceId", pendingInvoice.id)
+      formData.append("invoiceId", invoiceId)
 
       const uploadResponse = await fetch("/api/admin/invoices/upload", {
         method: "POST",
@@ -82,23 +41,8 @@ export function InvoiceUploadButton({
       })
 
       if (!uploadResponse.ok) {
-        throw new Error("PDF yüklenirken hata oluştu")
-      }
-
-      const uploadResult = await uploadResponse.json()
-
-      // Wait 300ms to ensure database commit completes
-      await new Promise(resolve => setTimeout(resolve, 300))
-
-      // Verify the invoice was updated correctly by re-fetching
-      const verifyResponse = await fetch(`/api/admin/invoices?subscriptionId=${subscriptionId}`)
-      if (verifyResponse.ok) {
-        const { invoices: verifiedInvoices } = await verifyResponse.json()
-        const updatedInvoice = verifiedInvoices?.find((inv: any) => inv.id === pendingInvoice.id)
-
-        if (!updatedInvoice?.file_url) {
-          // Warning: file_url not found in verification, but proceeding
-        }
+        const errorData = await uploadResponse.json()
+        throw new Error(errorData.error || "PDF yüklenirken hata oluştu")
       }
 
       toast.success("Fatura başarıyla yüklendi!")

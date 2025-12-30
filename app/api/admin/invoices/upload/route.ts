@@ -45,8 +45,27 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "File size must be less than 10MB" }, { status: 400 })
     }
 
+    // Extract invoice number from PDF filename (remove .pdf extension)
+    const invoiceNumberFromFile = file.name.replace(/\.pdf$/i, "")
+
+    // Clean filename for storage (remove Turkish characters and special chars)
+    const cleanFileName = invoiceNumberFromFile
+      .replace(/ğ/g, "g")
+      .replace(/Ğ/g, "G")
+      .replace(/ü/g, "u")
+      .replace(/Ü/g, "U")
+      .replace(/ş/g, "s")
+      .replace(/Ş/g, "S")
+      .replace(/ı/g, "i")
+      .replace(/İ/g, "I")
+      .replace(/ö/g, "o")
+      .replace(/Ö/g, "O")
+      .replace(/ç/g, "c")
+      .replace(/Ç/g, "C")
+      .replace(/[^a-zA-Z0-9-_]/g, "_") // Replace any other special chars with underscore
+
     // Upload to Supabase Storage
-    const fileName = `${invoice.user_id}/${invoice.invoice_number}-${Date.now()}.pdf`
+    const fileName = `${invoice.user_id}/${cleanFileName}-${Date.now()}.pdf`
     const { data, error } = await supabase.storage
       .from("invoices")
       .upload(fileName, file, {
@@ -64,16 +83,14 @@ export async function POST(request: NextRequest) {
       data: { publicUrl },
     } = supabase.storage.from("invoices").getPublicUrl(fileName)
 
-    // Update invoice with file URL and mark as ready
-
+    // Update invoice with file URL, invoice number from filename, and mark as ready
     const { data: updatedInvoice, error: updateError } = await supabase
       .from("invoices")
       .update({
+        invoice_number: invoiceNumberFromFile, // PDF dosya adını fatura numarası yap
         file_url: publicUrl,
         file_name: file.name,
         status: "ready", // Fatura hazır - kullanıcı indirebilir
-        payment_date: new Date().toISOString(),
-        updated_at: new Date().toISOString(),
       })
       .eq("id", invoiceId)
       .select()
@@ -81,7 +98,11 @@ export async function POST(request: NextRequest) {
 
     if (updateError) {
       console.error("[invoice-upload] Error updating invoice:", updateError)
-      return NextResponse.json({ error: "Failed to update invoice" }, { status: 500 })
+      console.error("[invoice-upload] Full error details:", JSON.stringify(updateError, null, 2))
+      return NextResponse.json({
+        error: "Failed to update invoice",
+        details: updateError.message
+      }, { status: 500 })
     }
 
     // Revalidate the invoices page to clear Next.js cache

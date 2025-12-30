@@ -7,6 +7,7 @@ import { FileText, DollarSign, CheckCircle, Clock, XCircle } from "lucide-react"
 import Link from "next/link"
 import { AdminLayoutWrapper } from "@/components/admin-layout-wrapper"
 import { InvoiceUploadButton } from "@/components/invoice-upload-button"
+import { InvoicesTabs } from "@/components/admin/invoices-tabs"
 
 // Disable caching for this page
 export const revalidate = 0
@@ -26,40 +27,10 @@ export default async function InvoicesManagement() {
   } else {
   }
 
-  // Get successful payment transactions (without joins to avoid FK errors)
-  // Use transaction id as payment_id since payment_id column doesn't exist
-  const { data: rawTransactions, error: transactionsError } = await supabase
-    .from("payment_transactions")
-    .select("id, subscription_id, amount, currency, status, user_id, iyzico_payment_id")
-    .eq("status", "completed")
-    .order("created_at", { ascending: false })
-
-  if (transactionsError) {
-    console.error("[admin/faturalar] Error fetching transactions:", transactionsError)
-  } else {
-  }
-
-  // Get subscriptions separately
-  const subscriptionIds = [...new Set(rawTransactions?.map(t => t.subscription_id).filter(Boolean) || [])]
-  let subscriptionsData: Array<{id: string, user_id: string, plan_type: string, status: string, created_at?: string}> = []
-  if (subscriptionIds.length > 0) {
-    const { data, error: subsError } = await supabase
-      .from("subscriptions")
-      .select("id, user_id, plan_type, status, created_at")
-      .in("id", subscriptionIds)
-
-    if (subsError) {
-      console.error("[admin/faturalar] Error fetching subscriptions:", subsError)
-    } else {
-      subscriptionsData = data || []
-    }
-  }
+  // Get unique user IDs from invoices
+  const userIds = [...new Set(invoices?.map(inv => inv.user_id).filter(Boolean) || [])]
 
   // Get profiles separately
-  const userIds = [...new Set([
-    ...(rawTransactions?.map(t => t.user_id).filter(Boolean) || []),
-    ...(subscriptionsData?.map((s) => s.user_id).filter(Boolean) || [])
-  ])]
   let profilesData: Array<{id: string, first_name: string | null, last_name: string | null, email: string | null}> = []
   if (userIds.length > 0) {
     const { data, error: profilesError } = await supabase
@@ -74,65 +45,14 @@ export default async function InvoicesManagement() {
     }
   }
 
-  // Create maps for manual join
-  const subscriptionsMap = new Map(subscriptionsData?.map((s) => [s.id, s]) || [])
+  // Create profile map for easy lookup
   const profilesMap = new Map(profilesData?.map((p) => [p.id, p]) || [])
 
-  // Manually join the data
-  const allTransactions = rawTransactions?.map(tx => {
-    const subscription = subscriptionsMap.get(tx.subscription_id)
-    const profile = profilesMap.get(subscription?.user_id || tx.user_id)
-    return {
-      ...tx,
-      subscriptions: subscription ? {
-        ...subscription,
-        profiles: profile
-      } : null
-    }
-  })
-
-
-  // Enrich invoices with user info from profilesMap
+  // Enrich invoices with user info
   const safeInvoices = (invoices || []).map((inv) => ({
     ...inv,
     profiles: profilesMap.get(inv.user_id)
   }))
-
-  // Create map using payment_id (which matches iyzico_payment_id in transactions)
-  const invoicesByPaymentId = new Map()
-  safeInvoices.forEach((inv) => {
-    if (inv.payment_id) {
-      invoicesByPaymentId.set(inv.payment_id, inv)
-    }
-  })
-
-
-  // Filter payments that need invoice PDFs
-  // Match: payment_transactions.iyzico_payment_id === invoices.payment_id
-  const pendingInvoiceUsers = (allTransactions || [])
-    .filter((tx) => {
-      const invoice = invoicesByPaymentId.get(tx.iyzico_payment_id)
-      const hasValidPDF = invoice?.file_url && invoice.file_url.trim().length > 0
-
-      const userEmail = tx.subscriptions?.profiles?.email || 'unknown'
-
-      return !hasValidPDF // Show if no invoice or no PDF
-    })
-    .map((tx) => ({
-      id: tx.subscription_id,
-      user_id: tx.subscriptions?.user_id || tx.user_id,
-      plan_type: tx.subscriptions?.plan_type,
-      status: tx.subscriptions?.status,
-      created_at: tx.subscriptions?.created_at,
-      profiles: tx.subscriptions?.profiles,
-      transaction: {
-        transaction_id: tx.id,
-        iyzico_payment_id: tx.iyzico_payment_id,
-        subscription_id: tx.subscription_id,
-        amount: tx.amount,
-        currency: tx.currency,
-      },
-    }))
 
 
   // Get invoice statistics
@@ -229,187 +149,8 @@ export default async function InvoicesManagement() {
         </Card>
       </div>
 
-      {/* Pending Invoice Users */}
-      {pendingInvoiceUsers.length > 0 && (
-        <Card className="bg-black/20 border-white/10 backdrop-blur-xl border-2 border-yellow-500/30">
-          <CardHeader>
-            <CardTitle className="text-white flex items-center gap-2">
-              <Clock className="h-5 w-5 text-yellow-400" />
-              Faturası Eksik Kullanıcılar ({pendingInvoiceUsers.length})
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="overflow-x-auto">
-              <table className="w-full">
-                <thead>
-                  <tr className="border-b border-white/10">
-                    <th className="text-left py-3 px-4 text-white/80 font-semibold">Kullanıcı</th>
-                    <th className="text-left py-3 px-4 text-white/80 font-semibold">Plan</th>
-                    <th className="text-left py-3 px-4 text-white/80 font-semibold">Tutar</th>
-                    <th className="text-left py-3 px-4 text-white/80 font-semibold">Abonelik Durumu</th>
-                    <th className="text-left py-3 px-4 text-white/80 font-semibold">Abonelik Tarihi</th>
-                    <th className="text-left py-3 px-4 text-white/80 font-semibold">İşlemler</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {pendingInvoiceUsers.map((sub) => (
-                    <tr key={sub.id} className="border-b border-white/5 hover:bg-white/5 transition-colors">
-                      <td className="py-4 px-4">
-                        <div>
-                          <p className="text-white font-medium">
-                            {[sub.profiles?.first_name, sub.profiles?.last_name].filter(Boolean).join(" ") || "-"}
-                          </p>
-                          <p className="text-white/60 text-sm">{sub.profiles?.email}</p>
-                        </div>
-                      </td>
-                      <td className="py-4 px-4">
-                        <Badge className="bg-amber-500/20 text-amber-400 border-amber-500/20">
-                          {sub.plan_type === "premium" ? "Premium" : sub.plan_type === "pro" ? "Pro" : "Ücretsiz"}
-                        </Badge>
-                      </td>
-                      <td className="py-4 px-4">
-                        {sub.transaction ? (
-                          <div className="text-white font-semibold">
-                            {Number(sub.transaction.amount).toFixed(2)} {sub.transaction.currency}
-                          </div>
-                        ) : (
-                          <span className="text-white/40 text-sm">-</span>
-                        )}
-                      </td>
-                      <td className="py-4 px-4">
-                        {sub.status === "active" ? (
-                          <Badge className="bg-emerald-500/20 text-emerald-400 border-emerald-500/20">
-                            Aktif
-                          </Badge>
-                        ) : sub.status === "cancelled" ? (
-                          <Badge className="bg-red-500/20 text-red-400 border-red-500/20">
-                            İptal Edildi
-                          </Badge>
-                        ) : (
-                          <Badge className="bg-yellow-500/20 text-yellow-400 border-yellow-500/20">
-                            Süresi Doldu
-                          </Badge>
-                        )}
-                      </td>
-                      <td className="py-4 px-4 text-white/80">
-                        {sub.created_at ? new Date(sub.created_at).toLocaleDateString("tr-TR") : "-"}
-                      </td>
-                      <td className="py-4 px-4">
-                        <InvoiceUploadButton
-                          iyzicoPaymentId={sub.transaction?.iyzico_payment_id || ""}
-                          subscriptionId={sub.id}
-                          userId={sub.user_id}
-                          amount={sub.transaction?.amount || 0}
-                          currency={sub.transaction?.currency || "TRY"}
-                          userEmail={sub.profiles?.email || ""}
-                        />
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          </CardContent>
-        </Card>
-      )}
-
-      {/* Invoices Table */}
-      <Card className="bg-black/20 border-white/10 backdrop-blur-xl">
-        <CardHeader>
-          <CardTitle className="text-white">Tüm Faturalar</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="overflow-x-auto">
-            <table className="w-full">
-              <thead>
-                <tr className="border-b border-white/10">
-                  <th className="text-left py-3 px-4 text-white/80 font-semibold">Fatura No</th>
-                  <th className="text-left py-3 px-4 text-white/80 font-semibold">Kullanıcı</th>
-                  <th className="text-left py-3 px-4 text-white/80 font-semibold">Tarih</th>
-                  <th className="text-left py-3 px-4 text-white/80 font-semibold">Vade</th>
-                  <th className="text-left py-3 px-4 text-white/80 font-semibold">Tutar</th>
-                  <th className="text-left py-3 px-4 text-white/80 font-semibold">Durum</th>
-                  <th className="text-left py-3 px-4 text-white/80 font-semibold">Açıklama</th>
-                  <th className="text-left py-3 px-4 text-white/80 font-semibold">İşlemler</th>
-                </tr>
-              </thead>
-              <tbody>
-                {safeInvoices.map((invoice) => (
-                  <tr key={invoice.id} className="border-b border-white/5 hover:bg-white/5 transition-colors">
-                    <td className="py-4 px-4 text-white font-mono">{invoice.invoice_number}</td>
-                    <td className="py-4 px-4">
-                      <div>
-                        <p className="text-white font-medium">
-                          {[invoice.profiles?.first_name, invoice.profiles?.last_name].filter(Boolean).join(" ") || "-"}
-                        </p>
-                        <p className="text-white/60 text-sm">{invoice.profiles?.email}</p>
-                      </div>
-                    </td>
-                    <td className="py-4 px-4 text-white/80">
-                      {new Date(invoice.invoice_date).toLocaleDateString("tr-TR")}
-                    </td>
-                    <td className="py-4 px-4 text-white/80">
-                      {invoice.due_date ? new Date(invoice.due_date).toLocaleDateString("tr-TR") : "-"}
-                    </td>
-                    <td className="py-4 px-4 text-white font-semibold">
-                      {Number(invoice.amount).toFixed(2)} {invoice.currency}
-                    </td>
-                    <td className="py-4 px-4">
-                      {invoice.status === "paid" ? (
-                        <Badge className="bg-emerald-500/20 text-emerald-400 border-emerald-500/20">
-                          Ödendi
-                        </Badge>
-                      ) : invoice.status === "pending" ? (
-                        <Badge className="bg-yellow-500/20 text-yellow-400 border-yellow-500/20">
-                          Bekliyor
-                        </Badge>
-                      ) : invoice.status === "overdue" ? (
-                        <Badge className="bg-red-500/20 text-red-400 border-red-500/20">
-                          Gecikmiş
-                        </Badge>
-                      ) : (
-                        <Badge className="bg-gray-500/20 text-gray-400 border-gray-500/20">
-                          İptal
-                        </Badge>
-                      )}
-                    </td>
-                    <td className="py-4 px-4 text-white/80">{invoice.description || "-"}</td>
-                    <td className="py-4 px-4">
-                      <div className="flex items-center gap-2">
-                        <Link
-                          href={`/admin/faturalar/${invoice.id}`}
-                          className="text-emerald-400 hover:text-emerald-300 transition-colors font-medium"
-                        >
-                          Düzenle
-                        </Link>
-                        {invoice.file_url ? (
-                          <a
-                            href={invoice.file_url}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="text-teal-400 hover:text-teal-300 transition-colors"
-                          >
-                            PDF
-                          </a>
-                        ) : (
-                          <span className="text-yellow-400 text-sm">PDF Yok</span>
-                        )}
-                      </div>
-                    </td>
-                  </tr>
-                ))}
-                {safeInvoices.length === 0 ? (
-                  <tr>
-                    <td colSpan={8} className="py-8 text-center text-white/60">
-                      Henüz fatura bulunmuyor
-                    </td>
-                  </tr>
-                ) : null}
-              </tbody>
-            </table>
-          </div>
-        </CardContent>
-      </Card>
+      {/* Invoices Tabs */}
+      <InvoicesTabs invoices={safeInvoices} />
       </div>
     </AdminLayoutWrapper>
   )

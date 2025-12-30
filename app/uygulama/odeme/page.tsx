@@ -669,6 +669,7 @@ export default function PaymentPage() {
                     price={selectedPlan.price}
                     userId={user?.id || ''}
                     userEmail={billingInfo.email}
+                    billingInfo={billingInfo}
                     termsAccepted={termsAccepted && privacyAccepted && kvkkAccepted}
                     onSuccess={() => {
                       refreshSubscription()

@@ -144,15 +144,26 @@ async function handlePaymentSuccess(supabase: any, data: any) {
     const nextReminderDate = new Date(expiresAt)
     nextReminderDate.setDate(nextReminderDate.getDate() - 7)
 
-    // Deactivate old subscriptions
+    // Deactivate old subscriptions (mark as deleted to prevent duplicates in view)
     await supabase
       .from("subscriptions")
       .update({
         status: "canceled",
         canceled_at: new Date().toISOString(),
+        deleted_at: new Date().toISOString(),
       })
       .eq("user_id", pending.user_id)
       .in("status", ["active", "trialing"])
+
+    // Determine plan type based on plan_id
+    let planType = "free"
+    if (pending.plan_id !== "free") {
+      if (pending.plan_id.includes("pro-")) {
+        planType = "pro"
+      } else if (pending.plan_id.includes("premium-")) {
+        planType = "premium"
+      }
+    }
 
     // Create new subscription
     const { data: newSub, error: subError } = await supabase
@@ -160,7 +171,7 @@ async function handlePaymentSuccess(supabase: any, data: any) {
       .insert({
         user_id: pending.user_id,
         plan_id: pending.plan_id,
-        plan_type: pending.plan_id === "free" ? "free" : "premium",
+        plan_type: planType,
         status: "active",
         start_date: startDate.toISOString(),
         expires_at: expiresAt.toISOString(),
@@ -184,7 +195,7 @@ async function handlePaymentSuccess(supabase: any, data: any) {
     // Initialize usage tracking
     await initializeUsageTracking(supabase, pending.user_id, newSub.id, pending.plan_id)
 
-    // Create invoice
+    // Create invoice (preparing status until admin uploads PDF)
     await supabase.from("invoices").insert({
       user_id: pending.user_id,
       subscription_id: newSub.id,
@@ -192,8 +203,8 @@ async function handlePaymentSuccess(supabase: any, data: any) {
       invoice_date: new Date().toISOString().split("T")[0],
       amount: parseFloat(data.total_amount) / 100,
       currency: "TRY",
-      status: "paid",
-      payment_date: new Date().toISOString(),
+      status: "preparing",
+      payment_id: data.merchant_oid, // Used to match with payment transaction
       payment_provider: "paytr",
       paytr_order_id: data.merchant_oid,
       paytr_transaction_id: data.merchant_oid,

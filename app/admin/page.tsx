@@ -8,7 +8,7 @@ import { AdminLayoutWrapper } from "@/components/admin-layout-wrapper"
 export default async function AdminDashboard() {
   const { session } = await checkAdminAccess()
 
-  const supabase = createSupabaseServer()
+  const supabase = await createSupabaseServer()
 
   // Get user statistics from profiles
   const { count: totalUsers } = await supabase
