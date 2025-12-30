@@ -18,7 +18,7 @@ interface PageProps {
 }
 
 export default async function BlogPostPage({ params }: PageProps) {
-  const supabase = createSupabaseServer()
+  const supabase = await createSupabaseServer()
 
   // Fetch the blog post
   const { data: post } = await supabase

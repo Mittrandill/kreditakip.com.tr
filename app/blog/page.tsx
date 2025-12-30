@@ -10,7 +10,7 @@ import { createSupabaseServer } from "@/lib/supabase-server"
 export const revalidate = 60 // Revalidate every 60 seconds
 
 export default async function BlogPage() {
-  const supabase = createSupabaseServer()
+  const supabase = await createSupabaseServer()
 
   // Fetch published blog posts with categories
   const { data: blogPosts } = await supabase
