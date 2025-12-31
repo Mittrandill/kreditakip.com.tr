@@ -277,8 +277,14 @@ async function initializeUsageTracking(
   const resetAt = new Date()
   resetAt.setDate(resetAt.getDate() + 30)
 
-  // Create usage tracking records
-  await supabase.from("subscription_usage").upsert([
+  // Delete old usage tracking records to ensure clean state
+  await supabase
+    .from("subscription_usage")
+    .delete()
+    .eq("user_id", userId)
+
+  // Create new usage tracking records for the new subscription
+  await supabase.from("subscription_usage").insert([
     {
       user_id: userId,
       subscription_id: subscriptionId,
