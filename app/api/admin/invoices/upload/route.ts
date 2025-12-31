@@ -86,12 +86,12 @@ export async function POST(request: NextRequest) {
       })
 
     if (error) {
-      console.error("[invoice-upload] Storage upload error:", error)
-      console.error("[invoice-upload] Error details:", {
+      console.error("[invoice-upload] Storage upload error:", {
         message: error.message,
-        error: error.error,
+        name: error.name,
         bucket: "invoices",
-        fileName
+        fileName,
+        fullError: error
       })
       return NextResponse.json(
         {
