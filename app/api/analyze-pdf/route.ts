@@ -535,28 +535,9 @@ export async function POST(request: Request) {
       )
     }
 
-    // OCR analizi sayısını artır (istatistik için) ve limit kontrolü yap
-    const { data: canProceed, error: incrementError } = await supabase.rpc("increment_usage", {
-      p_user_id: user.id,
-      p_feature_type: "ocr_analysis",
-    })
-
-    if (incrementError) {
-      console.error("[OCR] Usage increment error:", incrementError)
-      return Response.json({
-        error: "Kullanım takibi sırasında hata oluştu",
-        debugError: incrementError.message
-      }, { status: 500 })
-    }
-
-    // Eğer increment_usage FALSE döndürdüyse, limit dolmuş demektir
-    if (canProceed === false) {
-      return Response.json({
-        error: "OCR analiz limitiniz dolmuş. Premium üyelik ile sınırsız analiz yapabilirsiniz.",
-        limitExceeded: true,
-        upgradeMessage: "Sadece 199₺/ay ile sınırsız OCR analizi yapın!",
-      }, { status: 403 })
-    }
+    // OCR analizi yapmak serbest (tüm kullanıcılar için sınırsız)
+    // Limit kontrolü sadece kredi KAYDETME işleminde yapılacak (increment_saved_credits ile)
+    // Bu sayede kullanıcılar analiz yapabilir, ama kaydetme sınırlıdır
 
     return Response.json({
       success: true,
