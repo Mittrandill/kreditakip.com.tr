@@ -148,7 +148,27 @@ function cleanAndParseJSON(text: string) {
 const ULTRA_ADVANCED_PROMPT = `Sen uzman bir kredi analisti ve PDF okuyucususun. PDF'teki verileri OLDUĞU GİBİ çıkar.
 
 ÖNEMLİ: SEN SADECE "GÖZ" GÖREV İNDESİN - HESAP YAPMA, DÖNÜŞTÜRME YAPMA!
-🎯 TEMEL KURALLAR:1. FAİZ ORANI (interestRate) - EN ÖNEMLİ!   - PDF'te "Aylık Akdi Faiz Oranı", "Aylık Faiz" veya "Kredi Faiz Oranı" ibarelerini ara   - Faiz oranını PDF'te NASIL görüyorsan TAM OLARAK öyle yaz   - ASLA nokta/virgül değiştirmeye çalışma, ASLA hesaplama yapma   - Örnekler:     * PDF'te "% 5,23" görüyorsan → "5,23" yaz     * PDF'te "5.23%" görüyorsan → "5.23" yaz     * PDF'te "%1,29" görüyorsan → "1,29" yaz   - Yıllık faiz görsen bile STRING olarak çıkar, biz hesaplarız2. TUTARLAR (loanAmount, totalPayback, fees, monthlyPayment, taksit tutarları):   - PDF'te göründüğü gibi yaz (virgül/nokta dahil)   - Örnekler:     * "100.000,50" → "100.000,50"     * "100000.50" → "100000.50"     * "5.432,12" → "5.432,12"3. KREDİ TÜRÜ (planName):   - "Konut Kredisi", "Mortgage", "Ev Kredisi" → "Konut Kredisi"   - "Taşıt Kredisi", "Araç Kredisi" → "Taşıt Kredisi"   - "İhtiyaç Kredisi", "Tüketici Kredisi" → "İhtiyaç Kredisi"   - "Ticari Kredi", "İşletme Kredisi", "KOBİ Kredisi" → "Ticari Kredi"   - Eğer kesin değilsen "İhtiyaç Kredisi" yaz4. TAKSİT LİSTESİ (installments):   - Her taksit satırını oku   - Taksit tutarını olduğu gibi yaz   - Vade tarihi: YYYY-MM-DD formatında   - Ödeme durumu (isPaid):     * "Tahsil Tarihi" dolu ise → true     * "Tahsil Referans No" varsa → true     * Boşsa → null5. DEĞİŞKEN FAİZ:   - "TLREF", "değişken faiz", "endeksli" kelimelerini ara   - Varsa isVariableRate: true   - variableRateInfo'ya formülü yaz (örn: "TLREF + 10,00%")⚡ YASAKLAR:❌ Sayıları dönüştürme❌ Virgül/nokta değiştirme❌ Hesaplama yapma❌ Yuvarlama yapma✅ SADECE GÖRDÜĞÜNÜ YAZ!Şimdi bu PDF'yi analiz et ve JSON çıktısı ver.`
+🎯 TEMEL KURALLAR:
+
+0. BANKA ADI (bankName) - LOGO TANIMA:
+   - Önce PDF'te yazılı banka adını ara
+   - Eğer YAZILI banka adı YOKSA, BANKA LOGOSUNU analiz et
+   - Logo örnekleri:
+     * Türkiye İş Bankası: Kırmızı logo, "İşbank" veya "iş" yazısı
+     * Garanti BBVA: Yeşil logo, "Garanti BBVA" yazısı
+     * Yapı Kredi: Mavi sarı logo, "Yapı Kredi" yazısı
+     * Akbank: Kırmızı beyaz logo, "Akbank" yazısı
+     * Ziraat Bankası: Yeşil logo, başak sembolu
+     * Halkbank: Mavi logo
+     * VakıfBank: Turuncu logo
+     * QNB Finansbank: Mor logo
+     * Denizbank: Yeşil logo
+     * TEB: Mor logo
+     * ING: Turuncu logo
+   - Logo görürsen ama yazı görmezsen, logodan banka adını TAHMİN ET
+   - Emin değilsen null bırak
+
+1. FAİZ ORANI (interestRate) - EN ÖNEMLİ!   - PDF'te "Aylık Akdi Faiz Oranı", "Aylık Faiz" veya "Kredi Faiz Oranı" ibarelerini ara   - Faiz oranını PDF'te NASIL görüyorsan TAM OLARAK öyle yaz   - ASLA nokta/virgül değiştirmeye çalışma, ASLA hesaplama yapma   - Örnekler:     * PDF'te "% 5,23" görüyorsan → "5,23" yaz     * PDF'te "5.23%" görüyorsan → "5.23" yaz     * PDF'te "%1,29" görüyorsan → "1,29" yaz   - Yıllık faiz görsen bile STRING olarak çıkar, biz hesaplarız2. TUTARLAR (loanAmount, totalPayback, fees, monthlyPayment, taksit tutarları):   - PDF'te göründüğü gibi yaz (virgül/nokta dahil)   - Örnekler:     * "100.000,50" → "100.000,50"     * "100000.50" → "100000.50"     * "5.432,12" → "5.432,12"3. KREDİ TÜRÜ (planName):   - "Konut Kredisi", "Mortgage", "Ev Kredisi" → "Konut Kredisi"   - "Taşıt Kredisi", "Araç Kredisi" → "Taşıt Kredisi"   - "İhtiyaç Kredisi", "Tüketici Kredisi" → "İhtiyaç Kredisi"   - "Ticari Kredi", "İşletme Kredisi", "KOBİ Kredisi" → "Ticari Kredi"   - Eğer kesin değilsen "İhtiyaç Kredisi" yaz4. TAKSİT LİSTESİ (installments):   - Her taksit satırını oku   - Taksit tutarını olduğu gibi yaz   - Vade tarihi: YYYY-MM-DD formatında   - Ödeme durumu (isPaid):     * "Tahsil Tarihi" dolu ise → true     * "Tahsil Referans No" varsa → true     * Boşsa → null5. DEĞİŞKEN FAİZ:   - "TLREF", "değişken faiz", "endeksli" kelimelerini ara   - Varsa isVariableRate: true   - variableRateInfo'ya formülü yaz (örn: "TLREF + 10,00%")⚡ YASAKLAR:❌ Sayıları dönüştürme❌ Virgül/nokta değiştirme❌ Hesaplama yapma❌ Yuvarlama yapma✅ SADECE GÖRDÜĞÜNÜ YAZ!Şimdi bu PDF'yi analiz et ve JSON çıktısı ver.`
 
 export async function POST(request: Request) {
   const startTime = Date.now()
@@ -224,45 +244,92 @@ export async function POST(request: Request) {
     const fileBuffer = await file.arrayBuffer()
     const base64Data = Buffer.from(fileBuffer).toString("base64")
 
-    const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY)
-    const model = genAI.getGenerativeModel({
-      model: "gemini-2.5-pro",
-      generationConfig: {
-        temperature: 0.1,
-        responseMimeType: "application/json",
-        responseSchema: paymentPlanSchema,
-        maxOutputTokens: 8192,
-      },
-    })
+    // Dynamic model selection with automatic fallback for deprecated models
+    // Priority order: Latest preview → Stable latest → Previous generations
+    const MODEL_PRIORITY = [
+      process.env.GEMINI_MODEL || "gemini-3-flash-preview", // ENV or latest preview
+      "gemini-3-flash-preview",  // Gemini 3 Flash Preview (latest, fastest)
+      "gemini-3-flash",          // Gemini 3 Flash Stable
+      "gemini-2.5-flash",        // Gemini 2.5 Flash
+      "gemini-2.0-flash-exp",    // Gemini 2.0 Flash Experimental
+      "gemini-1.5-flash-002",    // Gemini 1.5 Flash Stable
+      "gemini-1.5-flash",        // Gemini 1.5 Flash (legacy fallback)
+      "gemini-1.5-pro-002",      // Gemini 1.5 Pro (slower but more accurate)
+    ]
 
-    // Retry mechanism for 503 errors
+    const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY)
+
+    // Retry mechanism with model fallback
     let result
-    let retryCount = 0
+    let modelIndex = 0
     const maxRetries = 3
 
-    while (retryCount < maxRetries) {
+    while (modelIndex < MODEL_PRIORITY.length) {
+      const currentModel = MODEL_PRIORITY[modelIndex]
+
       try {
-        result = await model.generateContent([
-          ULTRA_ADVANCED_PROMPT,
-          {
-            inlineData: {
-              data: base64Data,
-              mimeType: "application/pdf",
-            },
+        const model = genAI.getGenerativeModel({
+          model: currentModel,
+          generationConfig: {
+            temperature: 0.1,
+            responseMimeType: "application/json",
+            responseSchema: paymentPlanSchema,
+            maxOutputTokens: 8192,
           },
-        ])
-        break // Success, exit retry loop
-      } catch (error: any) {
-        retryCount++
-        if (error.message?.includes("503") || error.message?.includes("overloaded")) {
-          if (retryCount >= maxRetries) {
-            throw new Error("Gemini servisi şu anda aşırı yüklü. Lütfen birkaç dakika sonra tekrar deneyin.")
+        })
+
+        let retryCount = 0
+        while (retryCount < maxRetries) {
+          try {
+            result = await model.generateContent([
+              ULTRA_ADVANCED_PROMPT,
+              {
+                inlineData: {
+                  data: base64Data,
+                  mimeType: "application/pdf",
+                },
+              },
+            ])
+
+            // Success! Log if we used a fallback model
+            if (modelIndex > 0) {
+              console.warn(`[OCR] Used fallback model: ${currentModel} (primary model may be deprecated)`)
+            }
+
+            break // Success, exit retry loop
+          } catch (error: any) {
+            retryCount++
+
+            // Handle 503 overload errors with exponential backoff
+            if (error.message?.includes("503") || error.message?.includes("overloaded")) {
+              if (retryCount >= maxRetries) {
+                throw new Error("503_OVERLOAD") // Will trigger model fallback
+              }
+              // Exponential backoff: wait 2s, 4s, 8s
+              await new Promise(resolve => setTimeout(resolve, Math.pow(2, retryCount) * 1000))
+            } else {
+              throw error // Re-throw non-503 errors immediately
+            }
           }
-          // Exponential backoff: wait 2s, 4s, 8s
-          await new Promise(resolve => setTimeout(resolve, Math.pow(2, retryCount) * 1000))
-        } else {
-          throw error // Re-throw non-503 errors immediately
         }
+
+        if (result) break // Got result, exit model loop
+
+      } catch (error: any) {
+        // Model not found, deprecated, or failed after retries
+        const isModelError =
+          error.message?.includes("model") ||
+          error.message?.includes("not found") ||
+          error.message?.includes("deprecated") ||
+          error.message === "503_OVERLOAD"
+
+        if (isModelError && modelIndex < MODEL_PRIORITY.length - 1) {
+          console.warn(`[OCR] Model ${currentModel} failed, trying fallback...`, error.message)
+          modelIndex++ // Try next model in priority list
+          continue
+        }
+
+        throw error // No more fallbacks, throw error
       }
     }
 
@@ -535,9 +602,14 @@ export async function POST(request: Request) {
       )
     }
 
-    // OCR analizi yapmak serbest (tüm kullanıcılar için sınırsız)
-    // Limit kontrolü sadece kredi KAYDETME işleminde yapılacak (increment_saved_credits ile)
-    // Bu sayede kullanıcılar analiz yapabilir, ama kaydetme sınırlıdır
+    // OCR analizi sayısını istatistik için takip et (limit kontrolü YOK)
+    // track_ocr_analysis: Sadece usage_count artırır, limit kontrolü yapmaz
+    await supabase.rpc("track_ocr_analysis", {
+      p_user_id: user.id,
+      p_feature_type: "ocr_analysis",
+    })
+    // Sonucu ignore ediyoruz - hata olsa bile analiz devam eder
+    // Asıl limit kontrolü kredi KAYDETME sırasında yapılır (increment_saved_credits)
 
     return Response.json({
       success: true,
