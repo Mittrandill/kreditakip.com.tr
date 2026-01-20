@@ -245,14 +245,16 @@ export async function POST(request: Request) {
     const base64Data = Buffer.from(fileBuffer).toString("base64")
 
     // Dynamic model selection with automatic fallback for deprecated models
-    // Priority order: Latest experimental → Stable Flash → Stable Pro
+    // Priority order: Latest preview → Stable latest → Previous generations
     const MODEL_PRIORITY = [
-      process.env.GEMINI_MODEL || "gemini-2.0-flash-exp", // ENV or latest experimental
-      "gemini-2.0-flash-exp",    // Latest Flash experimental (fastest, cheapest)
-      "gemini-1.5-flash-002",    // Stable Flash version
-      "gemini-1.5-flash",        // Fallback Flash
-      "gemini-1.5-pro-002",      // Stable Pro (accurate but slower/expensive)
-      "gemini-1.5-pro",          // Final fallback
+      process.env.GEMINI_MODEL || "gemini-3-flash-preview", // ENV or latest preview
+      "gemini-3-flash-preview",  // Gemini 3 Flash Preview (latest, fastest)
+      "gemini-3-flash",          // Gemini 3 Flash Stable
+      "gemini-2.5-flash",        // Gemini 2.5 Flash
+      "gemini-2.0-flash-exp",    // Gemini 2.0 Flash Experimental
+      "gemini-1.5-flash-002",    // Gemini 1.5 Flash Stable
+      "gemini-1.5-flash",        // Gemini 1.5 Flash (legacy fallback)
+      "gemini-1.5-pro-002",      // Gemini 1.5 Pro (slower but more accurate)
     ]
 
     const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY)
