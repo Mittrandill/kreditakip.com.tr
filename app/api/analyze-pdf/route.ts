@@ -535,9 +535,14 @@ export async function POST(request: Request) {
       )
     }
 
-    // OCR analizi yapmak serbest (tüm kullanıcılar için sınırsız)
-    // Limit kontrolü sadece kredi KAYDETME işleminde yapılacak (increment_saved_credits ile)
-    // Bu sayede kullanıcılar analiz yapabilir, ama kaydetme sınırlıdır
+    // OCR analizi sayısını istatistik için takip et (limit kontrolü YOK)
+    // track_ocr_analysis: Sadece usage_count artırır, limit kontrolü yapmaz
+    await supabase.rpc("track_ocr_analysis", {
+      p_user_id: user.id,
+      p_feature_type: "ocr_analysis",
+    })
+    // Sonucu ignore ediyoruz - hata olsa bile analiz devam eder
+    // Asıl limit kontrolü kredi KAYDETME sırasında yapılır (increment_saved_credits)
 
     return Response.json({
       success: true,
