@@ -180,10 +180,19 @@ Critical environment variables (see `.env.example`):
 ### OCR & AI Features
 
 - **PDF Analysis**: Upload bank statements, extract payment schedules via Gemini AI
+  - **Model**: Dynamically configurable via `GEMINI_MODEL` environment variable
+  - **Default**: `gemini-2.0-flash-exp` (latest Flash model - fastest and cheapest)
+  - **Alternatives**: `gemini-1.5-flash-002` (stable), `gemini-1.5-pro-002` (most accurate)
+  - **Logo Recognition**: AI can identify banks from logos when text is not available
+  - **Vision Capability**: Full PDF visual analysis including logos, tables, and formatting
 - **Financial Health Analysis**: AI-generated risk assessment based on user's financial data
-- **Usage Tracking**: OCR and AI analysis counts tracked per subscription tier
+- **Usage Tracking**: Two separate metrics tracked per subscription tier
+  - `usage_count`: Number of OCR analyses performed (unlimited for all users, statistics only)
+  - `saved_credits_count`: Number of credits saved to database (limited by plan)
 - API endpoint: `/api/analyze-pdf` for OCR processing
 - API endpoint: `/api/risk-analysis` for financial health
+- RPC function: `track_ocr_analysis()` - tracks usage without enforcing limits
+- RPC function: `increment_saved_credits()` - enforces saved credit limits
 
 ### Cron Jobs
 
