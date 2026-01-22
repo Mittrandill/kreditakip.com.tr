@@ -539,17 +539,42 @@ export async function POST(request: Request) {
       }
 
       if (paymentPlan.installments.length > 0) {
-        paymentPlan.loanTerm = paymentPlan.installments.length
+        // Toplam geri ödemeyi hesapla
         paymentPlan.totalPayback = paymentPlan.installments.reduce(
           (sum: number, inst: any) => sum + (inst.amount || 0),
           0,
         )
-        if (paymentPlan.installments.length > 0 && paymentPlan.totalPayback > 0) {
-          paymentPlan.monthlyPayment = Number.parseFloat(
-            (paymentPlan.totalPayback / paymentPlan.installments.length).toFixed(2),
-          )
+
+        // Gerçek vadeyi tarihlere göre hesapla
+        if (paymentPlan.installments.length > 1) {
+          const firstDate = new Date(paymentPlan.installments[0].dueDate)
+          const lastDate = new Date(paymentPlan.installments[paymentPlan.installments.length - 1].dueDate)
+
+          // İlk ve son taksit arası ay farkı
+          const monthsDiff = (lastDate.getFullYear() - firstDate.getFullYear()) * 12 +
+                           (lastDate.getMonth() - firstDate.getMonth())
+
+          // Taksitler arası ortalama süre (aylık mı, yıllık mı?)
+          const avgIntervalMonths = monthsDiff / (paymentPlan.installments.length - 1)
+
+          // Toplam vade = ilk taksitten son taksit + 1 taksit süresi sonrasına kadar
+          // Örnek: 30 taksit, yılda 1 = 29 yıl arası + 1 yıl = 30 yıl = 360 ay
+          const totalMonths = monthsDiff + avgIntervalMonths
+
+          paymentPlan.loanTerm = Math.round(totalMonths)
+
+          // Aylık ortalama maliyet = Toplam geri ödeme / Gerçek vade (ay)
+          if (totalMonths > 0 && paymentPlan.totalPayback > 0) {
+            paymentPlan.monthlyPayment = Number.parseFloat(
+              (paymentPlan.totalPayback / totalMonths).toFixed(2),
+            )
+          } else {
+            paymentPlan.monthlyPayment = null
+          }
         } else {
-          paymentPlan.monthlyPayment = null
+          // Tek taksit varsa
+          paymentPlan.loanTerm = 1
+          paymentPlan.monthlyPayment = paymentPlan.totalPayback
         }
       }
 

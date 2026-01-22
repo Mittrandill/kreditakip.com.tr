@@ -339,7 +339,8 @@ export default function PDFAnalysisPage() {
       // 3. Toplam tutarları hesapla
       const totalPayback = paymentPlan.installments.reduce((sum, inst) => sum + inst.amount, 0)
       const loanAmount = paymentPlan.loanAmount || totalPayback * 0.8
-      const monthlyPayment = totalPayback / paymentPlan.installments.length
+      // API'den gelen monthlyPayment kullan (tarihe dayalı hesaplanmış)
+      const monthlyPayment = paymentPlan.monthlyPayment || (totalPayback / paymentPlan.installments.length)
 
       // 4. Krediyi kaydet
       const creditData = {

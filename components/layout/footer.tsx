@@ -295,9 +295,9 @@ export default function Footer() {
           <div className="flex flex-wrap justify-center items-center gap-8">
             {[
               { icon: Shield, text: "AES-256 Şifreleme" },
-              { icon: Award, text: "SOC 2 Type II Sertifikalı" },
+              { icon: Award, text: "PCI DSS Güvenli Ödeme" },
               { icon: CheckCircle, text: "KVKK Uyumlu" },
-              { icon: Scan, text: "SOC 2 Type 2 Sertifikalı" },
+           
             ].map((trust, index) => (
               <div key={index} className="flex items-center space-x-3 group">
                 <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-emerald-500/20 group-hover:bg-emerald-500/30 transition-colors">

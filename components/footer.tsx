@@ -90,7 +90,7 @@ export default function Footer() {
               </div>
               <div className="flex items-center gap-3 text-sm text-white/60">
                 <Award className="w-4 h-4 text-teal-400" />
-                <span>SOC 2 Type 2 Sertifikalı</span>
+                <span>PCI DSS Güvenli Ödeme</span>
               </div>
               <div className="flex items-center gap-3 text-sm text-white/60">
                 <Users className="w-4 h-4 text-emerald-400" />

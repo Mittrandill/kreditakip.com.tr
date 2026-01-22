@@ -71,7 +71,10 @@
       "mcp__supabase__list_storage_buckets",
       "Bash(if exist \"C:\\\\Users\\\\akint\\\\Desktop\\\\kreditakip.com.tr\\\\.next\" rmdir /s /q \"C:\\\\Users\\\\akint\\\\Desktop\\\\kreditakip.com.tr\\\\.next\")",
       "Bash(del:*)",
-      "mcp__supabase__list_migrations"
+      "mcp__supabase__list_migrations",
+      "mcp__supabase__get_logs",
+      "Bash(pnpm build:*)",
+      "Bash(pnpm lint:*)"
     ],
     "deny": [],
     "ask": []
