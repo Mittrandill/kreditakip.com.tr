@@ -2,9 +2,33 @@ import { type NextRequest, NextResponse } from "next/server"
 
 export const dynamic = "force-dynamic"
 import { createClient } from "@supabase/supabase-js"
+import { rateLimit, getClientIp, RateLimits } from "@/lib/rate-limit"
 
 export async function POST(request: NextRequest) {
   try {
+    // SECURITY FIX: Rate limiting to prevent spam
+    const clientIp = getClientIp(request.headers)
+    const rateLimitResult = rateLimit({
+      identifier: `newsletter:${clientIp}`,
+      ...RateLimits.CONTACT_FORM // 5 requests per 15 minutes
+    })
+
+    if (!rateLimitResult.success) {
+      return NextResponse.json(
+        {
+          error: "Çok fazla istek gönderdiniz. Lütfen daha sonra tekrar deneyin.",
+          retryAfter: rateLimitResult.reset
+        },
+        {
+          status: 429,
+          headers: {
+            'Retry-After': rateLimitResult.reset.toString(),
+            'X-RateLimit-Limit': rateLimitResult.limit.toString(),
+            'X-RateLimit-Remaining': rateLimitResult.remaining.toString(),
+          }
+        }
+      )
+    }
 
     const MAILJET_API_KEY = process.env.MAILJET_API_KEY
     const MAILJET_SECRET_KEY = process.env.MAILJET_SECRET_KEY
@@ -32,6 +56,11 @@ export async function POST(request: NextRequest) {
     // Validation
     if (!email) {
       return NextResponse.json({ error: "E-posta adresi gereklidir" }, { status: 400 })
+    }
+
+    // SECURITY: Length validation
+    if (email.length > 255) {
+      return NextResponse.json({ error: "E-posta adresi çok uzun" }, { status: 400 })
     }
 
     // Email validation

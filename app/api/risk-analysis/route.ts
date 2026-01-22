@@ -4,7 +4,9 @@ export const maxDuration = 60 // Vercel Hobby plan için maksimum süre
 export const dynamic = "force-dynamic"
 import type { FinancialProfile, RiskAnalysisData } from "@/lib/types"
 import { createClient } from "@supabase/supabase-js"
+import { createServerClient } from "@/lib/supabase/server"
 import { GoogleGenerativeAI, SchemaType } from "@google/generative-ai"
+import { rateLimit, RateLimits } from "@/lib/rate-limit"
 
 const CHART_COLORS = ["#10B981", "#3B82F6", "#F59E0B", "#EF4444", "#8B5CF6", "#06B6D4", "#F97316", "#84CC16"]
 
@@ -96,12 +98,34 @@ const riskAnalysisSchema = {
 
 export async function POST(request: NextRequest) {
   try {
-    const { userId } = await request.json()
+    // SECURITY FIX: Use authenticated user instead of request body
+    const supabase = await createServerClient()
+    const {
+      data: { user },
+      error: authError,
+    } = await supabase.auth.getUser()
 
-    if (!userId) {
-      return NextResponse.json({ error: "Kullanıcı ID gereklidir" }, { status: 400 })
+    if (authError || !user) {
+      return NextResponse.json({ error: "Oturum açmanız gerekiyor" }, { status: 401 })
     }
 
+    const userId = user.id
+
+    // Rate limiting - AI analysis is expensive
+    const rateLimitResult = rateLimit({
+      identifier: `risk-analysis:${userId}`,
+      ...RateLimits.EXPENSIVE
+    })
+
+    if (!rateLimitResult.success) {
+      return NextResponse.json(
+        {
+          error: "Çok fazla analiz talebi. Lütfen daha sonra tekrar deneyin.",
+          retryAfter: rateLimitResult.reset
+        },
+        { status: 429 }
+      )
+    }
 
     const supabaseAdmin = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.SERVICE_ROLE_KEY!, {
       auth: {
@@ -109,17 +133,6 @@ export async function POST(request: NextRequest) {
         persistSession: false,
       },
     })
-
-    const { data: profile, error: profileError } = await supabaseAdmin
-      .from("profiles")
-      .select("email")
-      .eq("id", userId)
-      .single()
-
-    if (profileError || !profile) {
-      console.error("[v0] User verification failed:", profileError)
-      return NextResponse.json({ error: "Kullanıcı bulunamadı" }, { status: 404 })
-    }
 
 
     const { data: subscription } = await supabaseAdmin
