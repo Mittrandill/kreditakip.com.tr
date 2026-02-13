@@ -50,7 +50,7 @@ export async function middleware(request: NextRequest) {
       "style-src 'self' 'unsafe-inline' https://www.paytr.com https://*.paytr.com",
       "img-src 'self' data: https:",
       "font-src 'self' data:",
-      "connect-src 'self' https://*.supabase.co https://o120955.ingest.sentry.io https://generativelanguage.googleapis.com https://va.vercel-scripts.com https://pagead2.googlesyndication.com https://www.paytr.com https://*.paytr.com",
+      "connect-src 'self' https://*.supabase.co https://o120955.ingest.sentry.io https://generativelanguage.googleapis.com https://va.vercel-scripts.com https://pagead2.googlesyndication.com https://*.google https://*.google.com https://www.paytr.com https://*.paytr.com",
       "frame-src 'self' https://googleads.g.doubleclick.net https://tpc.googlesyndication.com https://www.google.com https://www.paytr.com https://*.paytr.com",
       "form-action 'self' https://www.paytr.com https://*.paytr.com",
       "frame-ancestors 'none'",

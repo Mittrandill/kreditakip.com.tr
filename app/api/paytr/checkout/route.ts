@@ -112,6 +112,14 @@ export async function POST(request: NextRequest) {
     // Create PayTR client
     const paytrClient = new PayTRClient()
 
+    // Debug: Log PayTR configuration
+    console.log("[PayTR Checkout] Configuration:", {
+      merchantId: paytrClient.getMerchantId(),
+      testMode: paytrClient.isTest(),
+      appUrl,
+      userIp,
+    })
+
     // Prepare basket (PayTR requires price in kuruş - multiply by 100)
     const priceInKurus = Math.round(plan.price * 100)
 
@@ -123,6 +131,12 @@ export async function POST(request: NextRequest) {
         ? "Yıllık"
         : "Abonelik"
     const productName = `${plan.name} ${billingPeriodText} Üyelik - Kredi Takip Premium Hizmet`
+
+    console.log("[PayTR Checkout] Basket:", {
+      productName,
+      priceInKurus,
+      orderId,
+    })
 
     // Create payment request (Direkt API with card details)
     const paymentRequest = await paytrClient.createPaymentRequest({
@@ -150,9 +164,17 @@ export async function POST(request: NextRequest) {
     })
 
     if (paymentRequest.status !== "success" || !paymentRequest.redirect_url) {
-      console.error("[PayTR Checkout] Payment request failed:", paymentRequest.reason)
+      console.error("[PayTR Checkout] Payment request failed:", {
+        status: paymentRequest.status,
+        reason: paymentRequest.reason,
+        orderId,
+        merchantId: paytrClient.getMerchantId(),
+      })
       return NextResponse.json(
-        { error: paymentRequest.reason || "Failed to create payment" },
+        {
+          error: paymentRequest.reason || "Failed to create payment",
+          details: "Lütfen PayTR mağaza ayarlarınızı kontrol edin"
+        },
         { status: 500 }
       )
     }
