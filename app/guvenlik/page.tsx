@@ -25,11 +25,7 @@ export default function SecurityPage() {
       title: "TLS 1.3 Şifreleme",
       description: "Tüm veri iletişimi güncel TLS 1.3 protokolü ile şifrelenir",
     },
-    {
-      icon: Server,
-      title: "Supabase Altyapısı",
-      description: "SOC 2 Type 2 sertifikalı Supabase veri merkezinde barındırılır (AWS US-East)",
-    },
+
     {
       icon: Eye,
       title: "Gizlilik Odaklı",
@@ -57,11 +53,6 @@ export default function SecurityPage() {
       icon: FileCheck,
       title: "KVKK Uyumlu",
       description: "Kişisel Verilerin Korunması Kanunu'na tam uyum",
-    },
-    {
-      icon: Shield,
-      title: "Supabase Altyapısı",
-      description: "SOC 2 Type 2 sertifikalı veri merkezi üzerinde çalışır",
     },
     {
       icon: Award,

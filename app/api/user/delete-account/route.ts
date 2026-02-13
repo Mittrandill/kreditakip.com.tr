@@ -30,16 +30,33 @@ export async function DELETE(request: Request) {
 
     // Tüm ilişkili verileri sil (foreign key cascade ile bazıları otomatik silinebilir)
     await Promise.allSettled([
+      // Kredi ve ödeme verileri
       supabaseAdmin.from("credits").delete().eq("user_id", user.id),
+      supabaseAdmin.from("credit_cards").delete().eq("user_id", user.id),
+      supabaseAdmin.from("accounts").delete().eq("user_id", user.id),
+      supabaseAdmin.from("payment_plans").delete().eq("user_id", user.id),
       supabaseAdmin.from("bank_accounts").delete().eq("user_id", user.id),
       supabaseAdmin.from("payments").delete().eq("user_id", user.id),
+      supabaseAdmin.from("payment_history").delete().eq("user_id", user.id),
+
+      // Abonelik ve ödeme verileri
       supabaseAdmin.from("payment_transactions").delete().eq("user_id", user.id),
       supabaseAdmin.from("pending_subscriptions").delete().eq("user_id", user.id),
       supabaseAdmin.from("subscriptions").delete().eq("user_id", user.id),
-      supabaseAdmin.from("risk_analyses").delete().eq("user_id", user.id),
-      supabaseAdmin.from("financial_profiles").delete().eq("user_id", user.id),
       supabaseAdmin.from("subscription_usage").delete().eq("user_id", user.id),
       supabaseAdmin.from("billing_info").delete().eq("user_id", user.id),
+      supabaseAdmin.from("invoices").delete().eq("user_id", user.id),
+
+      // Analiz ve güvenlik verileri
+      supabaseAdmin.from("risk_analyses").delete().eq("user_id", user.id),
+      supabaseAdmin.from("refinancing_analyses").delete().eq("user_id", user.id),
+      supabaseAdmin.from("banking_credentials").delete().eq("user_id", user.id),
+
+      // Finansal profil ve bildirimler
+      supabaseAdmin.from("financial_profiles").delete().eq("user_id", user.id),
+      supabaseAdmin.from("notifications").delete().eq("user_id", user.id),
+
+      // Son olarak profil
       supabaseAdmin.from("profiles").delete().eq("id", user.id),
     ])
 

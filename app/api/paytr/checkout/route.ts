@@ -115,6 +115,15 @@ export async function POST(request: NextRequest) {
     // Prepare basket (PayTR requires price in kuruş - multiply by 100)
     const priceInKurus = Math.round(plan.price * 100)
 
+    // Create descriptive product name for PayTR
+    const billingPeriodText =
+      plan.billing_period === "month"
+        ? "Aylık"
+        : plan.billing_period === "year"
+        ? "Yıllık"
+        : "Abonelik"
+    const productName = `${plan.name} ${billingPeriodText} Üyelik - Kredi Takip Premium Hizmet`
+
     // Create payment request (Direkt API with card details)
     const paymentRequest = await paytrClient.createPaymentRequest({
       userId,
@@ -125,7 +134,7 @@ export async function POST(request: NextRequest) {
       userIp,
       basket: [
         {
-          name: plan.name,
+          name: productName,
           price: priceInKurus,
           quantity: 1,
         },

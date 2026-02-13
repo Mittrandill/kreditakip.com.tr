@@ -10,7 +10,7 @@ import { Label } from "@/components/ui/label"
 import { Checkbox } from "@/components/ui/checkbox"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Eye, EyeOff, Shield, Zap, Users, CheckCircle, Mail, Phone, AlertCircle } from "lucide-react"
-import { signUp, signInWithGoogle } from "@/lib/auth"
+import { signUp, signInWithGoogle, signInWithApple } from "@/lib/auth"
 import { useToast } from "@/hooks/use-toast"
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 import Header from "@/components/layout/header"
@@ -152,6 +152,26 @@ export default function RegisterPage() {
         variant: "destructive",
         title: "Google Kayıt Hatası",
         description: err.message || "Google ile kayıt olurken bir hata oluştu.",
+      })
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
+  const handleAppleSignUp = async () => {
+    setIsLoading(true)
+    setError(null)
+
+    try {
+      await signInWithApple()
+      // Redirect will be handled by OAuth flow
+    } catch (err: any) {
+      console.error("Apple sign-up error:", err)
+      setError(err.message || "Apple ile kayıt olurken bir hata oluştu.")
+      toast({
+        variant: "destructive",
+        title: "Apple Kayıt Hatası",
+        description: err.message || "Apple ile kayıt olurken bir hata oluştu.",
       })
     } finally {
       setIsLoading(false)
@@ -400,6 +420,20 @@ export default function RegisterPage() {
                           />
                         </svg>
                         {isLoading ? "Yönlendiriliyor..." : "Google ile Kayıt Ol"}
+                      </Button>
+
+                      <Button
+                        type="button"
+                        onClick={handleAppleSignUp}
+                        disabled={isLoading}
+                        variant="outline"
+                        size="lg"
+                        className="w-full bg-transparent border-white/20 text-white hover:bg-white/10 hover:border-transparent hover:text-white disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200"
+                      >
+                        <svg className="mr-3 h-5 w-5" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                          <path d="M17.05 20.28c-.98.95-2.05.8-3.08.35-1.09-.46-2.09-.48-3.24 0-1.44.62-2.2.44-3.06-.35C2.79 15.25 3.51 7.59 9.05 7.31c1.35.07 2.29.74 3.08.8 1.18-.24 2.31-.93 3.57-.84 1.51.12 2.65.72 3.4 1.8-3.12 1.87-2.38 5.98.48 7.13-.57 1.5-1.31 2.99-2.54 4.09l.01-.01zM12.03 7.25c-.15-2.23 1.66-4.07 3.74-4.25.29 2.58-2.34 4.5-3.74 4.25z" />
+                        </svg>
+                        {isLoading ? "Yönlendiriliyor..." : "Apple ile Kayıt Ol"}
                       </Button>
 
                       {/* Login Link */}

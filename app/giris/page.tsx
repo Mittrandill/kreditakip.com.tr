@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { FileText, Scan, ArrowRight, TrendingUp, Shield, Eye, EyeOff, AlertCircle } from "lucide-react"
-import { signIn, signInWithGoogle } from "@/lib/auth"
+import { signIn, signInWithGoogle, signInWithApple } from "@/lib/auth"
 import { useToast } from "@/hooks/use-toast"
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 import { Checkbox } from "@/components/ui/checkbox"
@@ -150,6 +150,31 @@ export default function LoginPage() {
     }
   }
 
+  const handleAppleSignIn = async () => {
+    setIsLoading(true)
+    setError(null)
+
+    try {
+      await signInWithApple()
+      // OAuth akışı callback sayfasında işlenecek
+      toast({
+        title: "Yönlendiriliyor...",
+        description: "Apple ile giriş için yönlendiriliyorsunuz.",
+      })
+    } catch (err: any) {
+      console.error("Apple sign-in error:", err)
+      const errorMessage = err?.message || "Apple ile giriş yapılırken bir hata oluştu. Lütfen tekrar deneyin."
+      setError(errorMessage)
+      toast({
+        variant: "destructive",
+        title: "Apple Giriş Hatası",
+        description: errorMessage,
+        duration: 6000,
+      })
+      setIsLoading(false)
+    }
+  }
+
   return (
     <div className="min-h-screen w-full bg-[#151515] text-white font-sans flex flex-col">
       <div className="absolute inset-0 -z-0">
@@ -282,6 +307,19 @@ export default function LoginPage() {
                         />
                       </svg>
                       {isLoading ? "Yönlendiriliyor..." : "Google ile Giriş Yap"}
+                    </Button>
+
+                    <Button
+                      onClick={handleAppleSignIn}
+                      disabled={isLoading}
+                      variant="outline"
+                      size="lg"
+                      className="w-full bg-transparent border-white/20 text-white hover:bg-white/10 hover:border-transparent hover:text-white dark:bg-transparent dark:border-white/20 dark:text-white dark:hover:bg-white/10 dark:hover:border-transparent dark:hover:text-white disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200"
+                    >
+                      <svg className="mr-3 h-5 w-5" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                        <path d="M17.05 20.28c-.98.95-2.05.8-3.08.35-1.09-.46-2.09-.48-3.24 0-1.44.62-2.2.44-3.06-.35C2.79 15.25 3.51 7.59 9.05 7.31c1.35.07 2.29.74 3.08.8 1.18-.24 2.31-.93 3.57-.84 1.51.12 2.65.72 3.4 1.8-3.12 1.87-2.38 5.98.48 7.13-.57 1.5-1.31 2.99-2.54 4.09l.01-.01zM12.03 7.25c-.15-2.23 1.66-4.07 3.74-4.25.29 2.58-2.34 4.5-3.74 4.25z" />
+                      </svg>
+                      {isLoading ? "Yönlendiriliyor..." : "Apple ile Giriş Yap"}
                     </Button>
 
                     <div className="text-center pt-4">

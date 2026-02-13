@@ -81,6 +81,29 @@ export async function signInWithGoogle() {
   }
 }
 
+export async function signInWithApple() {
+  try {
+    // Development için local URL kullan, production için origin
+    const isDev = window.location.hostname === "localhost"
+    const redirectUrl = isDev ? `http://localhost:3001/auth/callback` : `${window.location.origin}/auth/callback`
+
+    const { data, error } = await supabase.auth.signInWithOAuth({
+      provider: "apple",
+      options: {
+        redirectTo: redirectUrl,
+      },
+    })
+
+    if (error) {
+      throw error
+    }
+
+    return data
+  } catch (error) {
+    throw error
+  }
+}
+
 export async function signOut() {
   try {
     // Clear profile cache
