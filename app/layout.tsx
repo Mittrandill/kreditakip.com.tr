@@ -1,7 +1,6 @@
 import type React from "react"
 import type { Metadata, Viewport } from "next"
 import { Poppins } from "next/font/google"
-import Script from "next/script"
 import "./globals.css"
 import { cn } from "@/lib/utils"
 import { CookieConsent } from "@/components/cookie-consent"
@@ -122,15 +121,6 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="tr" suppressHydrationWarning>
-      <head>
-        <meta name="google-adsense-account" content="ca-pub-4179040772577706" />
-        <Script
-          async
-          src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-4179040772577706"
-          crossOrigin="anonymous"
-          strategy="afterInteractive"
-        />
-      </head>
       <body className={cn("font-sans antialiased", poppins.variable)}>
         {children}
         <CookieConsent />

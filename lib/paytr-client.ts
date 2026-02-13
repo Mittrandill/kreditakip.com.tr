@@ -233,6 +233,15 @@ export class PayTRClient {
     })
 
     try {
+      // Debug log - Request parameters
+      console.log("[PayTR Client] Request to:", this.apiUrl)
+      console.log("[PayTR Client] Test Mode:", testMode)
+      console.log("[PayTR Client] Merchant ID:", this.merchantId)
+      console.log("[PayTR Client] Order ID:", orderId)
+      console.log("[PayTR Client] Amount:", paymentAmount)
+      console.log("[PayTR Client] Basket:", userBasket)
+      console.log("[PayTR Client] User IP:", userIp)
+
       // Make request to PayTR Direkt API
       const response = await fetch(this.apiUrl, {
         method: "POST",
@@ -244,6 +253,8 @@ export class PayTRClient {
 
       // Get response as text first
       const responseText = await response.text()
+      console.log("[PayTR Client] Response status:", response.status)
+      console.log("[PayTR Client] Response (first 500 chars):", responseText.substring(0, 500))
 
       // Check if HTML (3D Secure page) or JSON
       if (responseText.trim().startsWith('<!')) {
