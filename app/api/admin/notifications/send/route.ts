@@ -2,6 +2,7 @@ import { createServerClient } from "@/lib/supabase/server"
 import { createSupabaseAdmin } from "@/lib/supabase-server"
 import { checkAdminAPI } from "@/lib/admin-check"
 import { logAdminAction, AdminActionTypes } from "@/lib/admin/activity-log"
+import { logger } from "@/lib/utils/logger"
 import { NextRequest, NextResponse } from "next/server"
 
 export const dynamic = "force-dynamic"
@@ -69,11 +70,19 @@ export async function POST(request: NextRequest) {
     }
 
     if (targetUserIds.length === 0) {
+      logger.warn("No target users found for notification", { target, planType })
       return NextResponse.json(
         { error: "Hedef kullanıcı bulunamadı" },
         { status: 400 }
       )
     }
+
+    logger.info("Sending notifications", {
+      target,
+      planType,
+      userCount: targetUserIds.length,
+      title,
+    })
 
     // Create notifications for all target users
     const notifications = targetUserIds.map((userId) => ({
@@ -89,9 +98,19 @@ export async function POST(request: NextRequest) {
       .insert(notifications)
 
     if (insertError) {
-      console.error("Error creating notifications:", insertError)
+      logger.error("Failed to create notifications", insertError, {
+        target,
+        planType,
+        userCount: targetUserIds.length,
+        errorCode: insertError.code,
+        errorDetails: insertError.details,
+      })
       return NextResponse.json(
-        { error: "Bildirimler oluşturulamadı" },
+        {
+          error: "Bildirimler oluşturulamadı",
+          details: insertError.message,
+          code: insertError.code,
+        },
         { status: 500 }
       )
     }
@@ -105,13 +124,20 @@ export async function POST(request: NextRequest) {
       metadata: { target, planType, userCount: targetUserIds.length, title, message },
     })
 
+    logger.info("Notifications sent successfully", {
+      target,
+      userCount: targetUserIds.length,
+      title,
+      adminId,
+    })
+
     return NextResponse.json({
       success: true,
       message: `${targetUserIds.length} kullanıcıya bildirim başarıyla gönderildi`,
       count: targetUserIds.length,
     })
   } catch (error) {
-    console.error("Error in POST /api/admin/notifications/send:", error)
+    logger.error("Error in POST /api/admin/notifications/send", error)
     return NextResponse.json(
       { error: "Internal server error" },
       { status: 500 }
