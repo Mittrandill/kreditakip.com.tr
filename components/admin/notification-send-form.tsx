@@ -6,7 +6,6 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 import { Label } from "@/components/ui/label"
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Send, Users, AlertCircle } from "lucide-react"
 import { toast } from "sonner"
@@ -104,49 +103,40 @@ export function NotificationSendForm({ planCounts }: NotificationSendFormProps) 
         {/* Target Selection */}
         <div className="space-y-3">
           <Label className="text-white">Hedef Kullanıcılar</Label>
-          <RadioGroup value={target} onValueChange={(value: any) => setTarget(value)}>
-            <div className="flex items-center space-x-2 bg-black/20 p-3 rounded-lg border border-white/10">
-              <RadioGroupItem value="all" id="all" />
-              <label
-                htmlFor="all"
-                className="flex-1 cursor-pointer flex items-center justify-between"
-              >
-                <span className="text-white">Tüm Kullanıcılar</span>
-                <span className="text-white/60 text-sm">
-                  {planCounts.all} kullanıcı
-                </span>
-              </label>
-            </div>
-
-            <div className="flex items-center space-x-2 bg-black/20 p-3 rounded-lg border border-white/10">
-              <RadioGroupItem value="plan" id="plan" />
-              <label
-                htmlFor="plan"
-                className="flex-1 cursor-pointer flex items-center justify-between"
-              >
-                <span className="text-white">Plan Bazlı</span>
-                <Users className="h-4 w-4 text-white/60" />
-              </label>
-            </div>
-          </RadioGroup>
+          <Select value={target} onValueChange={(value: any) => setTarget(value)}>
+            <SelectTrigger className="bg-black/20 border-white/10 text-white">
+              <SelectValue placeholder="Hedef seçin" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">
+                Tüm Kullanıcılar ({planCounts.all} kullanıcı)
+              </SelectItem>
+              <SelectItem value="plan">
+                Plan Bazlı Gönder
+              </SelectItem>
+            </SelectContent>
+          </Select>
 
           {target === "plan" && (
-            <Select value={planType} onValueChange={setPlanType}>
-              <SelectTrigger className="bg-black/20 border-white/10 text-white">
-                <SelectValue placeholder="Plan seçin" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="premium">
-                  Premium ({planCounts.premium} kullanıcı)
-                </SelectItem>
-                <SelectItem value="pro">
-                  Pro ({planCounts.pro} kullanıcı)
-                </SelectItem>
-                <SelectItem value="free">
-                  Free ({planCounts.free} kullanıcı)
-                </SelectItem>
-              </SelectContent>
-            </Select>
+            <div className="space-y-2">
+              <Label className="text-white">Plan Seçin</Label>
+              <Select value={planType} onValueChange={setPlanType}>
+                <SelectTrigger className="bg-black/20 border-white/10 text-white">
+                  <SelectValue placeholder="Plan seçin" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="premium">
+                    Premium ({planCounts.premium} kullanıcı)
+                  </SelectItem>
+                  <SelectItem value="pro">
+                    Pro ({planCounts.pro} kullanıcı)
+                  </SelectItem>
+                  <SelectItem value="free">
+                    Free ({planCounts.free} kullanıcı)
+                  </SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
           )}
         </div>
 
