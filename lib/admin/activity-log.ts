@@ -1,4 +1,4 @@
-import { createServiceRoleClient } from "@/lib/supabase-server"
+import { createSupabaseAdmin } from "@/lib/supabase-server"
 
 export interface LogAdminActionParams {
   adminId: string
@@ -16,7 +16,7 @@ export interface LogAdminActionParams {
  */
 export async function logAdminAction(params: LogAdminActionParams) {
   try {
-    const supabase = createServiceRoleClient()
+    const supabase = createSupabaseAdmin()
 
     const { error } = await supabase.from("admin_action_logs").insert({
       admin_id: params.adminId,

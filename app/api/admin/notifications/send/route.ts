@@ -1,5 +1,5 @@
 import { createServerClient } from "@/lib/supabase/server"
-import { createServiceRoleClient } from "@/lib/supabase-server"
+import { createSupabaseAdmin } from "@/lib/supabase-server"
 import { checkAdminAPI } from "@/lib/admin-check"
 import { logAdminAction, AdminActionTypes } from "@/lib/admin/activity-log"
 import { NextRequest, NextResponse } from "next/server"
@@ -37,7 +37,7 @@ export async function POST(request: NextRequest) {
     const { data: { user: adminUser } } = await serverClient.auth.getUser()
     const adminId = adminUser?.id || ""
 
-    const supabase = createServiceRoleClient()
+    const supabase = createSupabaseAdmin()
 
     // Determine target users
     let targetUserIds: string[] = []
