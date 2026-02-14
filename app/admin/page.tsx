@@ -4,6 +4,7 @@ import { FileText, FolderOpen, Eye, TrendingUp, Users, Receipt, CreditCard, Doll
 import { createSupabaseAdmin } from "@/lib/supabase-server"
 import Link from "next/link"
 import { AdminLayoutWrapper } from "@/components/admin-layout-wrapper"
+import { AnalyticsCharts } from "@/components/admin/analytics-charts"
 
 export default async function AdminDashboard() {
   const { session } = await checkAdminAccess()
@@ -138,6 +139,65 @@ export default async function AdminDashboard() {
     .select("*", { count: "exact", head: true })
     .eq("is_read", false)
     .is("deleted_at", null)
+
+  // Prepare chart data - Last 12 months
+  const months = []
+  const monthNames = ["Oca", "Şub", "Mar", "Nis", "May", "Haz", "Tem", "Ağu", "Eyl", "Eki", "Kas", "Ara"]
+
+  for (let i = 11; i >= 0; i--) {
+    const date = new Date()
+    date.setMonth(date.getMonth() - i)
+    months.push({
+      month: monthNames[date.getMonth()],
+      year: date.getFullYear(),
+      startDate: new Date(date.getFullYear(), date.getMonth(), 1).toISOString(),
+      endDate: new Date(date.getFullYear(), date.getMonth() + 1, 0, 23, 59, 59).toISOString(),
+    })
+  }
+
+  // Revenue data by month
+  const { data: allInvoices } = await supabase
+    .from("invoices")
+    .select("amount, created_at")
+    .in("status", ["ready", "paid"])
+
+  const revenueChartData = months.map((m) => {
+    const monthRevenue = allInvoices
+      ?.filter((inv) => {
+        const invDate = new Date(inv.created_at)
+        return invDate >= new Date(m.startDate) && invDate <= new Date(m.endDate)
+      })
+      .reduce((sum, inv) => sum + Number(inv.amount), 0) || 0
+
+    return {
+      month: m.month,
+      revenue: monthRevenue,
+    }
+  })
+
+  // User growth data by month
+  const { data: allProfiles } = await supabase
+    .from("profiles")
+    .select("created_at")
+    .order("created_at", { ascending: true })
+
+  const userGrowthData = months.map((m) => {
+    const usersUntilMonth = allProfiles
+      ?.filter((profile) => new Date(profile.created_at) <= new Date(m.endDate))
+      .length || 0
+
+    return {
+      month: m.month,
+      users: usersUntilMonth,
+    }
+  })
+
+  // Plan distribution
+  const planDistribution = [
+    { name: "Premium", value: premiumUsers || 0, color: "#a855f7" },
+    { name: "Pro", value: proUsers || 0, color: "#3b82f6" },
+    { name: "Free", value: freeUsers || 0, color: "#6b7280" },
+  ].filter((item) => item.value > 0)
 
   return (
     <AdminLayoutWrapper userEmail={session.user.email || ""}>
@@ -347,6 +407,13 @@ export default async function AdminDashboard() {
         </div>
       </div>
 
+      {/* Analytics Charts */}
+      <AnalyticsCharts
+        revenueData={revenueChartData}
+        userGrowthData={userGrowthData}
+        planDistribution={planDistribution}
+      />
+
       {/* Quick Actions */}
       <Card className="bg-black/20 border-white/10 backdrop-blur-xl">
         <CardHeader>
@@ -356,10 +423,10 @@ export default async function AdminDashboard() {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
             <Link
               href="/admin/kullanicilar"
-              className="flex items-center gap-4 p-4 bg-gradient-to-r from-purple-500/10 to-pink-500/10 border border-purple-500/20 rounded-lg hover:border-purple-500/40 transition-all"
+              className="flex items-center gap-4 p-4 bg-black/20 border border-white/10 rounded-lg hover:border-white/20 transition-all backdrop-blur-xl"
             >
-              <div className="w-12 h-12 bg-purple-500/20 rounded-full flex items-center justify-center">
-                <Users className="h-6 w-6 text-purple-400" />
+              <div className="w-12 h-12 bg-black/40 border border-white/10 rounded-full flex items-center justify-center">
+                <Users className="h-6 w-6 text-white/60" />
               </div>
               <div>
                 <h3 className="font-semibold text-white">Kullanıcılar</h3>
@@ -369,10 +436,10 @@ export default async function AdminDashboard() {
 
             <Link
               href="/admin/faturalar"
-              className="flex items-center gap-4 p-4 bg-gradient-to-r from-yellow-500/10 to-orange-500/10 border border-yellow-500/20 rounded-lg hover:border-yellow-500/40 transition-all"
+              className="flex items-center gap-4 p-4 bg-black/20 border border-white/10 rounded-lg hover:border-white/20 transition-all backdrop-blur-xl"
             >
-              <div className="w-12 h-12 bg-yellow-500/20 rounded-full flex items-center justify-center">
-                <Receipt className="h-6 w-6 text-yellow-400" />
+              <div className="w-12 h-12 bg-black/40 border border-white/10 rounded-full flex items-center justify-center">
+                <Receipt className="h-6 w-6 text-white/60" />
               </div>
               <div>
                 <h3 className="font-semibold text-white">Faturalar</h3>
@@ -382,10 +449,10 @@ export default async function AdminDashboard() {
 
             <Link
               href="/admin/odeme-risk-takip"
-              className="flex items-center gap-4 p-4 bg-gradient-to-r from-red-500/10 to-orange-500/10 border border-red-500/20 rounded-lg hover:border-red-500/40 transition-all"
+              className="flex items-center gap-4 p-4 bg-black/20 border border-white/10 rounded-lg hover:border-white/20 transition-all backdrop-blur-xl"
             >
-              <div className="w-12 h-12 bg-red-500/20 rounded-full flex items-center justify-center">
-                <ShieldAlert className="h-6 w-6 text-red-400" />
+              <div className="w-12 h-12 bg-black/40 border border-white/10 rounded-full flex items-center justify-center">
+                <ShieldAlert className="h-6 w-6 text-white/60" />
               </div>
               <div>
                 <h3 className="font-semibold text-white">Risk Takip</h3>
@@ -395,10 +462,10 @@ export default async function AdminDashboard() {
 
             <Link
               href="/admin/blog/posts/new"
-              className="flex items-center gap-4 p-4 bg-gradient-to-r from-emerald-500/10 to-teal-500/10 border border-emerald-500/20 rounded-lg hover:border-emerald-500/40 transition-all"
+              className="flex items-center gap-4 p-4 bg-black/20 border border-white/10 rounded-lg hover:border-white/20 transition-all backdrop-blur-xl"
             >
-              <div className="w-12 h-12 bg-emerald-500/20 rounded-full flex items-center justify-center">
-                <FileText className="h-6 w-6 text-emerald-400" />
+              <div className="w-12 h-12 bg-black/40 border border-white/10 rounded-full flex items-center justify-center">
+                <FileText className="h-6 w-6 text-white/60" />
               </div>
               <div>
                 <h3 className="font-semibold text-white">Yeni Blog Yazısı</h3>
@@ -408,10 +475,10 @@ export default async function AdminDashboard() {
 
             <Link
               href="/admin/blog/categories"
-              className="flex items-center gap-4 p-4 bg-gradient-to-r from-teal-500/10 to-emerald-500/10 border border-teal-500/20 rounded-lg hover:border-teal-500/40 transition-all"
+              className="flex items-center gap-4 p-4 bg-black/20 border border-white/10 rounded-lg hover:border-white/20 transition-all backdrop-blur-xl"
             >
-              <div className="w-12 h-12 bg-teal-500/20 rounded-full flex items-center justify-center">
-                <FolderOpen className="h-6 w-6 text-teal-400" />
+              <div className="w-12 h-12 bg-black/40 border border-white/10 rounded-full flex items-center justify-center">
+                <FolderOpen className="h-6 w-6 text-white/60" />
               </div>
               <div>
                 <h3 className="font-semibold text-white">Kategoriler</h3>

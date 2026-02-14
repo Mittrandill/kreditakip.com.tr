@@ -1,5 +1,5 @@
 import Link from "next/link"
-import { LayoutDashboard, FileText, FolderOpen, Users, Receipt, Home } from "lucide-react"
+import { LayoutDashboard, FileText, FolderOpen, Users, Receipt, Home, CreditCard, Activity, Bell } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { AdminLogoutButton } from "@/components/admin-logout-button"
 import { Toaster } from "sonner"
@@ -59,6 +59,36 @@ export function AdminLayoutWrapper({ children, userEmail }: AdminLayoutWrapperPr
                 >
                   <Receipt className="mr-2 h-4 w-4" />
                   Faturalar
+                </Button>
+              </Link>
+
+              <Link href="/admin/abonelikler">
+                <Button
+                  variant="ghost"
+                  className="w-full justify-start text-white/80 hover:text-white hover:bg-white/10"
+                >
+                  <CreditCard className="mr-2 h-4 w-4" />
+                  Abonelikler
+                </Button>
+              </Link>
+
+              <Link href="/admin/loglar">
+                <Button
+                  variant="ghost"
+                  className="w-full justify-start text-white/80 hover:text-white hover:bg-white/10"
+                >
+                  <Activity className="mr-2 h-4 w-4" />
+                  İşlem Logları
+                </Button>
+              </Link>
+
+              <Link href="/admin/bildirimler">
+                <Button
+                  variant="ghost"
+                  className="w-full justify-start text-white/80 hover:text-white hover:bg-white/10"
+                >
+                  <Bell className="mr-2 h-4 w-4" />
+                  Bildirimler
                 </Button>
               </Link>
             </div>

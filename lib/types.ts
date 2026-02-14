@@ -771,3 +771,24 @@ export type BankingCredential = {
   bank_name?: string
   bank_logo_url?: string | null
 }
+
+// Admin Subscription Management Types
+export interface AdminSubscriptionAction {
+  action: "create" | "update" | "extend" | "cancel"
+  userId: string
+  subscriptionId?: string
+  planId?: string
+  expiresAt?: string
+  status?: string
+  notes?: string
+}
+
+export type SubscriptionStatus =
+  | "active"
+  | "cancelled"
+  | "canceled"
+  | "expired"
+  | "suspended"
+  | "past_due"
+  | "paused"
+  | "trialing"
