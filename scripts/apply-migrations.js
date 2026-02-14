@@ -105,6 +105,9 @@ async function main() {
   const migrations = [
     '20260113000001_fix_pro_plan_support.sql',
     '20260113000002_create_billing_info_table.sql',
+    '20260214000001_add_admin_create_subscription_rpc.sql',
+    '20260214000002_add_admin_update_subscription_rpc.sql',
+    '20260214000003_add_admin_extend_subscription_rpc.sql',
   ];
 
   let successCount = 0;

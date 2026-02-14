@@ -773,15 +773,7 @@ export type BankingCredential = {
 }
 
 // Admin Subscription Management Types
-export interface AdminSubscriptionAction {
-  action: "create" | "update" | "extend" | "cancel"
-  userId: string
-  subscriptionId?: string
-  planId?: string
-  expiresAt?: string
-  status?: string
-  notes?: string
-}
+// Note: AdminSubscriptionAction type moved to @/lib/schemas/admin-subscription.schema.ts for runtime validation
 
 export type SubscriptionStatus =
   | "active"
