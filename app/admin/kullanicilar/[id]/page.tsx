@@ -7,7 +7,6 @@ import { ArrowLeft, User, Mail, Phone, MapPin, Building2, FileText, CreditCard, 
 import Link from "next/link"
 import { AdminLayoutWrapper } from "@/components/admin-layout-wrapper"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { SubscriptionManager } from "@/components/admin/subscription-manager"
 
 interface PageProps {
   params: {
@@ -35,32 +34,6 @@ export default async function UserDetailPage({ params }: PageProps) {
     `)
     .eq("id", userId)
     .single()
-
-  // Get active subscription with plan details
-  const { data: subscription } = await supabase
-    .from("subscriptions")
-    .select(`
-      *,
-      subscription_plans (*)
-    `)
-    .eq("user_id", userId)
-    .is("deleted_at", null)
-    .order("created_at", { ascending: false })
-    .limit(1)
-    .maybeSingle()
-
-  // Get subscription usage data
-  const { data: usage } = await supabase
-    .from("subscription_usage")
-    .select("*")
-    .eq("user_id", userId)
-
-  // Get all active plans (for dropdown in subscription manager)
-  const { data: availablePlans } = await supabase
-    .from("subscription_plans")
-    .select("*")
-    .eq("is_active", true)
-    .order("sort_order", { ascending: true })
 
   // Get billing info
   const { data: billingInfo } = await supabase
@@ -194,11 +167,8 @@ export default async function UserDetailPage({ params }: PageProps) {
         </div>
 
         {/* Tabs */}
-        <Tabs defaultValue="subscription" className="space-y-6">
+        <Tabs defaultValue="billing" className="space-y-6">
           <TabsList className="bg-black/20 border border-white/10">
-            <TabsTrigger value="subscription" className="data-[state=active]:bg-emerald-500/20">
-              Abonelik Yönetimi
-            </TabsTrigger>
             <TabsTrigger value="billing" className="data-[state=active]:bg-emerald-500/20">
               Fatura Bilgileri
             </TabsTrigger>
@@ -206,16 +176,6 @@ export default async function UserDetailPage({ params }: PageProps) {
               İşlemler
             </TabsTrigger>
           </TabsList>
-
-          {/* Subscription Management Tab */}
-          <TabsContent value="subscription" className="space-y-6">
-            <SubscriptionManager
-              userId={userId}
-              currentSubscription={subscription}
-              usage={usage || []}
-              availablePlans={availablePlans || []}
-            />
-          </TabsContent>
 
           {/* Billing Info Tab */}
           <TabsContent value="billing" className="space-y-6">
