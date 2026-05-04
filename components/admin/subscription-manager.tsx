@@ -5,13 +5,6 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select"
-import {
   AlertDialog,
   AlertDialogAction,
   AlertDialogCancel,
@@ -21,25 +14,66 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog"
-import { Calendar } from "@/components/ui/calendar"
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover"
 import { toast } from "sonner"
 import {
-  Calendar as CalendarIcon,
   CreditCard,
-  Clock,
   TrendingUp,
   Ban,
   Plus,
-  RefreshCw,
+  Infinity,
 } from "lucide-react"
-import { format, addMonths, addYears } from "date-fns"
+import { format } from "date-fns"
 import { tr } from "date-fns/locale"
 import { useRouter } from "next/navigation"
+
+// Predefined admin packages
+const ADMIN_PACKAGES = [
+  {
+    id: "pro-1m",
+    label: "1 Ay Pro",
+    planId: "pro-monthly",
+    planType: "pro",
+    durationLabel: "1 ay",
+    color: "bg-blue-500/20 hover:bg-blue-500/30 border-blue-500/30 text-blue-300",
+    getExpiresAt: () => { const d = new Date(); d.setMonth(d.getMonth() + 1); return d },
+  },
+  {
+    id: "premium-1m",
+    label: "1 Ay Premium",
+    planId: "premium-monthly",
+    planType: "premium",
+    durationLabel: "1 ay",
+    color: "bg-emerald-500/20 hover:bg-emerald-500/30 border-emerald-500/30 text-emerald-300",
+    getExpiresAt: () => { const d = new Date(); d.setMonth(d.getMonth() + 1); return d },
+  },
+  {
+    id: "pro-1y",
+    label: "1 Yıl Pro",
+    planId: "pro-yearly",
+    planType: "pro",
+    durationLabel: "1 yıl",
+    color: "bg-blue-500/20 hover:bg-blue-500/30 border-blue-500/30 text-blue-300",
+    getExpiresAt: () => { const d = new Date(); d.setFullYear(d.getFullYear() + 1); return d },
+  },
+  {
+    id: "premium-1y",
+    label: "1 Yıl Premium",
+    planId: "premium-yearly",
+    planType: "premium",
+    durationLabel: "1 yıl",
+    color: "bg-emerald-500/20 hover:bg-emerald-500/30 border-emerald-500/30 text-emerald-300",
+    getExpiresAt: () => { const d = new Date(); d.setFullYear(d.getFullYear() + 1); return d },
+  },
+  {
+    id: "premium-unlimited",
+    label: "Sınırsız Premium",
+    planId: "premium-yearly",
+    planType: "premium",
+    durationLabel: "sınırsız",
+    color: "bg-purple-500/20 hover:bg-purple-500/30 border-purple-500/30 text-purple-300",
+    getExpiresAt: () => { const d = new Date(); d.setFullYear(d.getFullYear() + 50); return d },
+  },
+]
 
 interface SubscriptionManagerProps {
   userId: string
@@ -52,177 +86,72 @@ export function SubscriptionManager({
   userId,
   currentSubscription,
   usage,
-  availablePlans,
 }: SubscriptionManagerProps) {
   const router = useRouter()
   const [isLoading, setIsLoading] = useState(false)
-  const [selectedPlan, setSelectedPlan] = useState<string>("")
-  const [newExpiresAt, setNewExpiresAt] = useState<Date | null>(null)
+  const [selectedPackage, setSelectedPackage] = useState<string>("")
   const [showCancelDialog, setShowCancelDialog] = useState(false)
   const [showCreateDialog, setShowCreateDialog] = useState(false)
-  const [showExtendDialog, setShowExtendDialog] = useState(false)
-  const [showChangePlanDialog, setShowChangePlanDialog] = useState(false)
 
-  // Get usage statistics
   const ocrUsage = usage?.find((u) => u.feature_type === "ocr_analysis")
   const riskUsage = usage?.find((u) => u.feature_type === "risk_analysis")
-  const savedCreditsUsage = usage?.find((u) => u.feature_type === "saved_credits")
 
-  // Check if subscription is manual (admin-created) - null or explicitly admin_override
   const isManualSubscription =
     !currentSubscription?.payment_provider ||
     currentSubscription?.payment_provider === null
 
-  // Get status badge color
   const getStatusBadge = (status: string) => {
     switch (status) {
       case "active":
-        return (
-          <Badge className="bg-emerald-500/20 text-emerald-400 border-emerald-500/20">
-            Aktif
-          </Badge>
-        )
+        return <Badge className="bg-emerald-500/20 text-emerald-400 border-emerald-500/20">Aktif</Badge>
       case "cancelled":
       case "canceled":
-        return (
-          <Badge className="bg-red-500/20 text-red-400 border-red-500/20">
-            İptal Edildi
-          </Badge>
-        )
+        return <Badge className="bg-red-500/20 text-red-400 border-red-500/20">İptal Edildi</Badge>
       case "expired":
-        return (
-          <Badge className="bg-yellow-500/20 text-yellow-400 border-yellow-500/20">
-            Süresi Doldu
-          </Badge>
-        )
+        return <Badge className="bg-yellow-500/20 text-yellow-400 border-yellow-500/20">Süresi Doldu</Badge>
       default:
-        return (
-          <Badge className="bg-gray-500/20 text-gray-400 border-gray-500/20">
-            {status}
-          </Badge>
-        )
+        return <Badge className="bg-gray-500/20 text-gray-400 border-gray-500/20">{status}</Badge>
     }
   }
 
-  // Calculate days remaining
   const getDaysRemaining = (expiresAt: string) => {
-    const now = new Date()
-    const expires = new Date(expiresAt)
-    const diff = expires.getTime() - now.getTime()
-    const days = Math.ceil(diff / (1000 * 60 * 60 * 24))
-    return days
+    const diff = new Date(expiresAt).getTime() - Date.now()
+    return Math.ceil(diff / (1000 * 60 * 60 * 24))
   }
 
-  // Handle plan change
-  const handlePlanChange = async () => {
-    if (!selectedPlan || !currentSubscription) {
-      toast.error("Lütfen bir plan seçin")
-      return
-    }
-
-    setIsLoading(true)
-    try {
-      const response = await fetch("/api/admin/subscriptions", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          action: "update",
-          userId,
-          subscriptionId: currentSubscription.id,
-          planId: selectedPlan,
-        }),
-      })
-
-      const data = await response.json()
-
-      if (!response.ok) {
-        throw new Error(data.error || "Plan değiştirilemedi")
-      }
-
-      toast.success("Plan başarıyla değiştirildi")
-      setShowChangePlanDialog(false)
-      setSelectedPlan("")
-      router.refresh()
-    } catch (error: any) {
-      console.error("Error changing plan:", error)
-      toast.error(error.message || "Plan değiştirilirken bir hata oluştu")
-    } finally {
-      setIsLoading(false)
-    }
+  const isUnlimited = (expiresAt: string) => {
+    return new Date(expiresAt).getFullYear() >= 2070
   }
 
-  // Handle extend subscription
-  const handleExtend = async () => {
-    if (!newExpiresAt || !currentSubscription) {
-      toast.error("Lütfen yeni bitiş tarihini seçin")
-      return
-    }
-
-    setIsLoading(true)
-    try {
-      const response = await fetch("/api/admin/subscriptions", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          action: "extend",
-          userId,
-          subscriptionId: currentSubscription.id,
-          expiresAt: newExpiresAt.toISOString(),
-        }),
-      })
-
-      const data = await response.json()
-
-      if (!response.ok) {
-        throw new Error(data.error || "Süre uzatılamadı")
-      }
-
-      toast.success("Abonelik süresi başarıyla uzatıldı")
-      setShowExtendDialog(false)
-      setNewExpiresAt(null)
-      router.refresh()
-    } catch (error: any) {
-      console.error("Error extending subscription:", error)
-      toast.error(error.message || "Süre uzatılırken bir hata oluştu")
-    } finally {
-      setIsLoading(false)
-    }
-  }
-
-  // Handle create new subscription (manual - admin override)
   const handleCreate = async () => {
-    if (!selectedPlan) {
-      toast.error("Lütfen bir plan seçin")
+    if (!selectedPackage) {
+      toast.error("Lütfen bir paket seçin")
       return
     }
 
+    const pkg = ADMIN_PACKAGES.find((p) => p.id === selectedPackage)
+    if (!pkg) return
+
     setIsLoading(true)
     try {
-      // Manuel abonelikler için 1 yıl süre ver
-      const expiresDate = new Date()
-      expiresDate.setFullYear(expiresDate.getFullYear() + 1)
-
+      const expiresAt = pkg.getExpiresAt()
       const response = await fetch("/api/admin/subscriptions", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           action: "create",
           userId,
-          planId: selectedPlan,
-          expiresAt: expiresDate.toISOString(),
+          planId: pkg.planId,
+          expiresAt: expiresAt.toISOString(),
         }),
       })
 
       const data = await response.json()
+      if (!response.ok) throw new Error(data.error || "Abonelik oluşturulamadı")
 
-      if (!response.ok) {
-        throw new Error(data.error || "Abonelik oluşturulamadı")
-      }
-
-      toast.success("Manuel abonelik başarıyla oluşturuldu (1 yıl süreyle)")
+      toast.success(`${pkg.label} abonelik başarıyla verildi`)
       setShowCreateDialog(false)
-      setSelectedPlan("")
-      setNewExpiresAt(null)
+      setSelectedPackage("")
       router.refresh()
     } catch (error: any) {
       console.error("Error creating subscription:", error)
@@ -232,10 +161,60 @@ export function SubscriptionManager({
     }
   }
 
-  // Handle cancel subscription
+  const handleChangePackage = async () => {
+    if (!selectedPackage || !currentSubscription) {
+      toast.error("Lütfen bir paket seçin")
+      return
+    }
+
+    const pkg = ADMIN_PACKAGES.find((p) => p.id === selectedPackage)
+    if (!pkg) return
+
+    setIsLoading(true)
+    try {
+      const expiresAt = pkg.getExpiresAt()
+
+      // Update plan type + limits
+      const updateResponse = await fetch("/api/admin/subscriptions", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          action: "update",
+          userId,
+          subscriptionId: currentSubscription.id,
+          planId: pkg.planId,
+        }),
+      })
+      const updateData = await updateResponse.json()
+      if (!updateResponse.ok) throw new Error(updateData.error || "Plan güncellenemedi")
+
+      // Extend expiry to match the new package duration
+      const extendResponse = await fetch("/api/admin/subscriptions", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          action: "extend",
+          userId,
+          subscriptionId: currentSubscription.id,
+          expiresAt: expiresAt.toISOString(),
+        }),
+      })
+      const extendData = await extendResponse.json()
+      if (!extendResponse.ok) throw new Error(extendData.error || "Süre güncellenemedi")
+
+      toast.success(`${pkg.label} paketi başarıyla uygulandı`)
+      setSelectedPackage("")
+      router.refresh()
+    } catch (error: any) {
+      console.error("Error changing package:", error)
+      toast.error(error.message || "Paket değiştirilirken bir hata oluştu")
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
   const handleCancel = async () => {
     if (!currentSubscription) return
-
     setIsLoading(true)
     try {
       const response = await fetch("/api/admin/subscriptions", {
@@ -249,10 +228,7 @@ export function SubscriptionManager({
       })
 
       const data = await response.json()
-
-      if (!response.ok) {
-        throw new Error(data.error || "Abonelik iptal edilemedi")
-      }
+      if (!response.ok) throw new Error(data.error || "Abonelik iptal edilemedi")
 
       toast.success("Abonelik başarıyla iptal edildi")
       setShowCancelDialog(false)
@@ -265,45 +241,20 @@ export function SubscriptionManager({
     }
   }
 
-  // Quick extend actions
-  const handleQuickExtend = (months: number) => {
-    const currentExpires = currentSubscription?.expires_at
-      ? new Date(currentSubscription.expires_at)
-      : new Date()
-    const newDate = addMonths(currentExpires, months)
-    setNewExpiresAt(newDate)
-  }
-
-  const handleQuickExtendYear = () => {
-    const currentExpires = currentSubscription?.expires_at
-      ? new Date(currentSubscription.expires_at)
-      : new Date()
-    const newDate = addYears(currentExpires, 1)
-    setNewExpiresAt(newDate)
-  }
-
   return (
     <div className="space-y-6">
       {/* Current Subscription */}
       <Card
         className={`backdrop-blur-xl ${
-          isManualSubscription
-            ? "bg-black/20 border-purple-500/30"
-            : "bg-black/20 border-white/10"
+          isManualSubscription ? "bg-black/20 border-purple-500/30" : "bg-black/20 border-white/10"
         }`}
       >
         <CardHeader>
           <CardTitle className="text-white flex items-center gap-2">
             {isManualSubscription ? (
-              <>
-                <span className="text-purple-400">⚡</span>
-                <span>Manuel Premium Abonelik</span>
-              </>
+              <><span className="text-purple-400">⚡</span><span>Manuel Abonelik</span></>
             ) : (
-              <>
-                <CreditCard className="h-5 w-5 text-white/60" />
-                <span>Mevcut Abonelik</span>
-              </>
+              <><CreditCard className="h-5 w-5 text-white/60" /><span>Mevcut Abonelik</span></>
             )}
           </CardTitle>
         </CardHeader>
@@ -314,14 +265,9 @@ export function SubscriptionManager({
                 <div>
                   <p className="text-white/60 text-sm mb-1">Plan</p>
                   <p className="text-white font-semibold text-lg">
-                    {currentSubscription.plan_type === "premium"
-                      ? "Premium"
-                      : currentSubscription.plan_type === "pro"
-                      ? "Pro"
+                    {currentSubscription.plan_type === "premium" ? "Premium"
+                      : currentSubscription.plan_type === "pro" ? "Pro"
                       : "Ücretsiz"}
-                  </p>
-                  <p className="text-white/40 text-xs mt-1">
-                    {currentSubscription.billing_period === "monthly" ? "Aylık" : "Yıllık"}
                   </p>
                 </div>
 
@@ -339,19 +285,24 @@ export function SubscriptionManager({
 
                 <div>
                   <p className="text-white/60 text-sm mb-1">Bitiş Tarihi</p>
-                  <p className="text-white font-medium">
-                    {format(new Date(currentSubscription.expires_at), "dd MMMM yyyy", { locale: tr })}
-                  </p>
-                  {currentSubscription.status === "active" && (
+                  {isUnlimited(currentSubscription.expires_at) ? (
+                    <div className="flex items-center gap-1 text-purple-400 font-medium">
+                      <Infinity className="h-4 w-4" />
+                      <span>Sınırsız</span>
+                    </div>
+                  ) : (
                     <>
-                      {getDaysRemaining(currentSubscription.expires_at) > 0 ? (
-                        <p className="text-emerald-400 text-xs mt-1">
-                          ⏱️ {getDaysRemaining(currentSubscription.expires_at)} gün kaldı
-                        </p>
-                      ) : (
-                        <p className="text-red-400 text-xs mt-1">
-                          ⚠️ Süresi doldu
-                        </p>
+                      <p className="text-white font-medium">
+                        {format(new Date(currentSubscription.expires_at), "dd MMMM yyyy", { locale: tr })}
+                      </p>
+                      {currentSubscription.status === "active" && (
+                        getDaysRemaining(currentSubscription.expires_at) > 0 ? (
+                          <p className="text-emerald-400 text-xs mt-1">
+                            ⏱️ {getDaysRemaining(currentSubscription.expires_at)} gün kaldı
+                          </p>
+                        ) : (
+                          <p className="text-red-400 text-xs mt-1">⚠️ Süresi doldu</p>
+                        )
                       )}
                     </>
                   )}
@@ -361,7 +312,7 @@ export function SubscriptionManager({
                   <p className="text-white/60 text-sm mb-1">Abonelik Tipi</p>
                   {isManualSubscription ? (
                     <Badge className="bg-purple-500/20 text-purple-400 border-purple-500/20">
-                      ⚡ Manuel (Admin Tarafından Verildi)
+                      ⚡ Manuel (Admin)
                     </Badge>
                   ) : (
                     <Badge className="bg-blue-500/20 text-blue-400 border-blue-500/20">
@@ -378,36 +329,22 @@ export function SubscriptionManager({
                     <TrendingUp className="h-4 w-4 text-white/60" />
                     Kullanım İstatistikleri
                   </h3>
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div className="bg-black/30 p-4 rounded-lg border border-white/10">
                       <p className="text-white/60 text-xs mb-1">OCR Analizi</p>
                       <p className="text-white font-bold text-xl">
                         {ocrUsage?.usage_count || 0}
                         <span className="text-white/40 text-sm font-normal">
-                          {" "}
-                          / {ocrUsage?.usage_limit === -1 ? "∞" : ocrUsage?.usage_limit || 0}
+                          {" "}/ {ocrUsage?.limit_count === -1 ? "∞" : ocrUsage?.limit_count || 0}
                         </span>
                       </p>
                     </div>
-
                     <div className="bg-black/30 p-4 rounded-lg border border-white/10">
                       <p className="text-white/60 text-xs mb-1">Risk Analizi</p>
                       <p className="text-white font-bold text-xl">
                         {riskUsage?.usage_count || 0}
                         <span className="text-white/40 text-sm font-normal">
-                          {" "}
-                          / {riskUsage?.usage_limit || 0}
-                        </span>
-                      </p>
-                    </div>
-
-                    <div className="bg-black/30 p-4 rounded-lg border border-white/10">
-                      <p className="text-white/60 text-xs mb-1">Kayıtlı Kredi</p>
-                      <p className="text-white font-bold text-xl">
-                        {savedCreditsUsage?.usage_count || 0}
-                        <span className="text-white/40 text-sm font-normal">
-                          {" "}
-                          / {savedCreditsUsage?.usage_limit || 0}
+                          {" "}/ {riskUsage?.limit_count || 0}
                         </span>
                       </p>
                     </div>
@@ -417,22 +354,18 @@ export function SubscriptionManager({
             </div>
           ) : (
             <div className="text-center py-12">
-              <div className="bg-black/20 border border-purple-500/30 rounded-lg p-8 max-w-md mx-auto backdrop-blur-xl">
-                <div className="bg-black/40 border border-white/10 rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-4">
-                  <CreditCard className="h-8 w-8 text-white/40" />
-                </div>
-                <h3 className="text-white font-semibold text-lg mb-2">
-                  Aktif Abonelik Yok
-                </h3>
+              <div className="bg-black/20 border border-purple-500/30 rounded-lg p-8 max-w-md mx-auto">
+                <CreditCard className="h-8 w-8 text-white/40 mx-auto mb-4" />
+                <h3 className="text-white font-semibold text-lg mb-2">Aktif Abonelik Yok</h3>
                 <p className="text-white/60 mb-6 text-sm">
-                  Bu kullanıcıya manuel olarak premium abonelik verebilirsiniz
+                  Bu kullanıcıya manuel olarak abonelik verebilirsiniz
                 </p>
                 <Button
                   onClick={() => setShowCreateDialog(true)}
                   className="bg-purple-500/20 hover:bg-purple-500/30 text-purple-300 border border-purple-500/30"
                 >
                   <Plus className="mr-2 h-4 w-4" />
-                  Manuel Premium Ver
+                  Abonelik Ver
                 </Button>
               </div>
             </div>
@@ -440,107 +373,39 @@ export function SubscriptionManager({
         </CardContent>
       </Card>
 
-      {/* Management Actions */}
+      {/* Package Change (only if subscription exists) */}
       {currentSubscription && (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          {/* Change Plan */}
-          <Card className="bg-black/20 border-white/10 backdrop-blur-xl">
-            <CardHeader>
-              <CardTitle className="text-white text-lg">Plan Değiştir</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <Select value={selectedPlan} onValueChange={setSelectedPlan}>
-                <SelectTrigger className="bg-black/20 border-white/10 text-white">
-                  <SelectValue placeholder="Plan seçin" />
-                </SelectTrigger>
-                <SelectContent>
-                  {availablePlans?.map((plan) => (
-                    <SelectItem key={plan.id} value={plan.id}>
-                      {plan.name} ({plan.billing_period === "monthly" ? "Aylık" : "Yıllık"}) -{" "}
-                      {plan.price} ₺
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              <Button
-                onClick={() => setShowChangePlanDialog(true)}
-                disabled={!selectedPlan || isLoading}
-                className="w-full bg-blue-500/20 hover:bg-blue-500/30 text-blue-300 border border-blue-500/30"
-              >
-                <RefreshCw className="mr-2 h-4 w-4" />
-                Planı Değiştir
-              </Button>
-            </CardContent>
-          </Card>
-
-          {/* Extend Subscription */}
-          <Card className="bg-black/20 border-white/10 backdrop-blur-xl">
-            <CardHeader>
-              <CardTitle className="text-white text-lg">Süre Uzat</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="flex gap-2">
-                <Button
-                  size="sm"
-                  variant="outline"
-                  onClick={() => handleQuickExtend(1)}
-                  className="flex-1 bg-black/20 border-white/10 text-white hover:bg-white/10"
+        <Card className="bg-black/20 border-white/10 backdrop-blur-xl">
+          <CardHeader>
+            <CardTitle className="text-white text-lg">Paket Değiştir</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <p className="text-white/60 text-sm">Yeni paket seçin — plan tipi ve bitiş tarihi güncellenir:</p>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              {ADMIN_PACKAGES.map((pkg) => (
+                <button
+                  key={pkg.id}
+                  onClick={() => setSelectedPackage(selectedPackage === pkg.id ? "" : pkg.id)}
+                  className={`flex items-center justify-between px-4 py-3 rounded-lg border transition-all text-sm font-medium ${
+                    selectedPackage === pkg.id
+                      ? pkg.color + " ring-2 ring-white/20"
+                      : "bg-black/20 border-white/10 text-white/70 hover:bg-white/5"
+                  }`}
                 >
-                  +1 Ay
-                </Button>
-                <Button
-                  size="sm"
-                  variant="outline"
-                  onClick={() => handleQuickExtend(3)}
-                  className="flex-1 bg-black/20 border-white/10 text-white hover:bg-white/10"
-                >
-                  +3 Ay
-                </Button>
-                <Button
-                  size="sm"
-                  variant="outline"
-                  onClick={handleQuickExtendYear}
-                  className="flex-1 bg-black/20 border-white/10 text-white hover:bg-white/10"
-                >
-                  +1 Yıl
-                </Button>
-              </div>
-
-              <Popover>
-                <PopoverTrigger asChild>
-                  <Button
-                    variant="outline"
-                    className="w-full justify-start text-left font-normal bg-black/20 border-white/10 text-white hover:bg-white/10"
-                  >
-                    <CalendarIcon className="mr-2 h-4 w-4" />
-                    {newExpiresAt ? (
-                      format(newExpiresAt, "PPP", { locale: tr })
-                    ) : (
-                      <span>Tarih seçin</span>
-                    )}
-                  </Button>
-                </PopoverTrigger>
-                <PopoverContent className="w-auto p-0">
-                  <Calendar
-                    mode="single"
-                    selected={newExpiresAt || undefined}
-                    onSelect={(date) => setNewExpiresAt(date || null)}
-                    initialFocus
-                  />
-                </PopoverContent>
-              </Popover>
-
-              <Button
-                onClick={() => setShowExtendDialog(true)}
-                disabled={!newExpiresAt || isLoading}
-                className="w-full bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-300 border border-emerald-500/30"
-              >
-                <Clock className="mr-2 h-4 w-4" />
-                Süreyi Uzat
-              </Button>
-            </CardContent>
-          </Card>
-        </div>
+                  <span>{pkg.label}</span>
+                  {pkg.id === "premium-unlimited" && <Infinity className="h-4 w-4 ml-2 opacity-70" />}
+                </button>
+              ))}
+            </div>
+            <Button
+              onClick={handleChangePackage}
+              disabled={!selectedPackage || isLoading}
+              className="w-full bg-blue-500/20 hover:bg-blue-500/30 text-blue-300 border border-blue-500/30"
+            >
+              {isLoading ? "İşleniyor..." : "Paketi Uygula"}
+            </Button>
+          </CardContent>
+        </Card>
       )}
 
       {/* Cancel Subscription */}
@@ -551,8 +416,7 @@ export function SubscriptionManager({
               <div>
                 <h3 className="text-white font-semibold mb-1">Aboneliği İptal Et</h3>
                 <p className="text-white/60 text-sm">
-                  Bu işlem geri alınamaz. Abonelik iptal edilecek ve kullanıcı ücretsiz plana
-                  geçecektir.
+                  Abonelik iptal edilecek ve kullanıcı ücretsiz plana geçecektir.
                 </p>
               </div>
               <Button
@@ -568,128 +432,61 @@ export function SubscriptionManager({
         </Card>
       )}
 
-      {/* Confirmation Dialogs */}
-      <AlertDialog open={showChangePlanDialog} onOpenChange={setShowChangePlanDialog}>
-        <AlertDialogContent className="bg-black/95 border-white/10">
-          <AlertDialogHeader>
-            <AlertDialogTitle className="text-white">Plan Değiştir</AlertDialogTitle>
-            <AlertDialogDescription className="text-white/60">
-              Bu kullanıcının planını değiştirmek istediğinizden emin misiniz? Yeni plan
-              limitleri hemen uygulanacaktır.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel className="bg-black/20 border-white/10 text-white">
-              İptal
-            </AlertDialogCancel>
-            <AlertDialogAction
-              onClick={handlePlanChange}
-              disabled={isLoading}
-              className="bg-blue-500/20 hover:bg-blue-500/30 text-blue-300 border border-blue-500/30"
-            >
-              {isLoading ? "İşleniyor..." : "Onayla"}
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
-
-      <AlertDialog open={showExtendDialog} onOpenChange={setShowExtendDialog}>
-        <AlertDialogContent className="bg-black/95 border-white/10">
-          <AlertDialogHeader>
-            <AlertDialogTitle className="text-white">Süre Uzat</AlertDialogTitle>
-            <AlertDialogDescription className="text-white/60">
-              Abonelik bitiş tarihini{" "}
-              <span className="text-emerald-400 font-semibold">
-                {newExpiresAt && format(newExpiresAt, "PPP", { locale: tr })}
-              </span>{" "}
-              olarak güncellemek istediğinizden emin misiniz?
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel className="bg-black/20 border-white/10 text-white">
-              İptal
-            </AlertDialogCancel>
-            <AlertDialogAction
-              onClick={handleExtend}
-              disabled={isLoading}
-              className="bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-300 border border-emerald-500/30"
-            >
-              {isLoading ? "İşleniyor..." : "Onayla"}
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
-
+      {/* Create Dialog */}
       <AlertDialog open={showCreateDialog} onOpenChange={setShowCreateDialog}>
         <AlertDialogContent className="bg-black/95 border-white/10">
           <AlertDialogHeader>
             <AlertDialogTitle className="text-white flex items-center gap-2">
-              ⚡ Manuel Premium Abonelik Ver
+              ⚡ Manuel Abonelik Ver
             </AlertDialogTitle>
             <AlertDialogDescription className="text-white/60">
-              Bu kullanıcıya manuel olarak premium abonelik vereceksiniz. Ödeme gerektirmez ve 1 yıl süreyle geçerli olacaktır.
+              Paket seçin ve onaylayın. Ödeme gerektirmez.
             </AlertDialogDescription>
           </AlertDialogHeader>
 
-          <div className="space-y-4">
-            <div>
-              <label className="text-white text-sm mb-2 block font-medium">
-                Premium Plan Seçin
-              </label>
-              <Select value={selectedPlan} onValueChange={setSelectedPlan}>
-                <SelectTrigger className="bg-black/20 border-white/10 text-white hover:border-purple-500/30 transition-colors">
-                  <SelectValue placeholder="Pro veya Premium seçin" />
-                </SelectTrigger>
-                <SelectContent>
-                  {availablePlans
-                    ?.filter((plan) => plan.id.includes("pro") || plan.id.includes("premium"))
-                    .map((plan) => (
-                      <SelectItem key={plan.id} value={plan.id}>
-                        {plan.name} - {plan.description || "Premium özellikler"}
-                      </SelectItem>
-                    ))}
-                </SelectContent>
-              </Select>
-              <p className="text-white/40 text-xs mt-2">
-                💡 Manuel abonelikler otomatik olarak 1 yıl süreyle verilir
-              </p>
-            </div>
-
-            <div className="bg-black/40 border border-purple-500/30 rounded-lg p-4">
-              <h4 className="text-white/80 font-medium text-sm mb-2">
-                Manuel Abonelik Özellikleri
-              </h4>
-              <ul className="text-white/60 text-xs space-y-1">
-                <li>• 1 yıl süreyle geçerli</li>
-                <li>• Ödeme gerektirmez</li>
-                <li>• Tüm premium özellikler dahil</li>
-                <li>• İstediğiniz zaman uzatabilir veya iptal edebilirsiniz</li>
-              </ul>
-            </div>
+          <div className="grid grid-cols-1 gap-2 py-2">
+            {ADMIN_PACKAGES.map((pkg) => (
+              <button
+                key={pkg.id}
+                onClick={() => setSelectedPackage(selectedPackage === pkg.id ? "" : pkg.id)}
+                className={`flex items-center justify-between px-4 py-3 rounded-lg border transition-all text-sm font-medium ${
+                  selectedPackage === pkg.id
+                    ? pkg.color + " ring-2 ring-white/20"
+                    : "bg-black/20 border-white/10 text-white/70 hover:bg-white/5"
+                }`}
+              >
+                <span>{pkg.label}</span>
+                <span className="text-xs opacity-60">{pkg.durationLabel}</span>
+              </button>
+            ))}
           </div>
 
           <AlertDialogFooter>
-            <AlertDialogCancel className="bg-black/20 border-white/10 text-white">
+            <AlertDialogCancel
+              className="bg-black/20 border-white/10 text-white"
+              onClick={() => setSelectedPackage("")}
+            >
               İptal
             </AlertDialogCancel>
             <AlertDialogAction
               onClick={handleCreate}
-              disabled={isLoading || !selectedPlan}
+              disabled={isLoading || !selectedPackage}
               className="bg-purple-500/20 hover:bg-purple-500/30 text-purple-300 border border-purple-500/30"
             >
-              {isLoading ? "İşleniyor..." : "Manuel Abonelik Ver"}
+              {isLoading ? "İşleniyor..." : "Abonelik Ver"}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
 
+      {/* Cancel Dialog */}
       <AlertDialog open={showCancelDialog} onOpenChange={setShowCancelDialog}>
         <AlertDialogContent className="bg-black/95 border-white/10">
           <AlertDialogHeader>
             <AlertDialogTitle className="text-white">Aboneliği İptal Et</AlertDialogTitle>
             <AlertDialogDescription className="text-white/60">
-              Bu kullanıcının aboneliğini iptal etmek istediğinizden emin misiniz? Bu işlem
-              geri alınamaz ve kullanıcı hemen ücretsiz plana geçecektir.
+              Bu kullanıcının aboneliğini iptal etmek istediğinizden emin misiniz?
+              Kullanıcı hemen ücretsiz plana geçecektir.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
