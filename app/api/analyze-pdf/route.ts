@@ -209,7 +209,29 @@ export async function POST(request: Request) {
       )
     }
 
-    // Free kullanıcılar sınırsız analiz yapabilir, sadece kaydetme sınırlı
+    // Monthly OCR limit check: Pro=10/month, Premium=unlimited(-1), Free=unlimited(-1)
+    // check_ocr_monthly_reset also auto-resets usage_count if the 30-day period has passed
+    const { data: ocrState } = await supabase.rpc("check_ocr_monthly_reset", {
+      p_user_id: user.id,
+    })
+    if (ocrState && ocrState.length > 0) {
+      const ocr = ocrState[0]
+      if (ocr.limit_count !== -1 && ocr.usage_count >= ocr.limit_count) {
+        const resetDate = ocr.reset_at
+          ? new Date(ocr.reset_at).toLocaleDateString("tr-TR", { day: "numeric", month: "long" })
+          : "bir sonraki dönemde"
+        return Response.json(
+          {
+            error: `Aylık PDF analiz limitinize ulaştınız (${ocr.limit_count} analiz/ay). Yeni dönem ${resetDate} tarihinde başlar. Premium'a geçerek sınırsız analiz yapabilirsiniz.`,
+            limitReached: true,
+            limit: ocr.limit_count,
+            used: ocr.usage_count,
+            resetAt: ocr.reset_at,
+          },
+          { status: 403 }
+        )
+      }
+    }
 
     if (!process.env.GEMINI_API_KEY) {
       return Response.json({ error: "Google API anahtarı bulunamadı" }, { status: 500 })

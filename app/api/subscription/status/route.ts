@@ -110,7 +110,11 @@ export async function GET(request: NextRequest) {
       }
     }
 
-    // Get usage tracking
+    // Apply monthly OCR reset if the 30-day period has passed, then fetch usage
+    // check_ocr_monthly_reset resets usage_count=0 and sets new reset_at when overdue
+    await supabase.rpc("check_ocr_monthly_reset", { p_user_id: userId })
+
+    // Get usage tracking (after potential reset above)
     const { data: usage, error: usageError } = await supabase.from("subscription_usage").select("*").eq("user_id", userId)
 
 
