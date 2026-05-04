@@ -73,7 +73,7 @@ export async function POST(request: NextRequest) {
     // Get admin user ID for logging
     const serverClient = await createServerClient()
     const { data: { user: adminUser } } = await serverClient.auth.getUser()
-    const adminId = adminUser?.id || ""
+    const adminId = adminUser?.id || null
 
     // Handle different actions
     switch (body.action) {
@@ -217,16 +217,18 @@ export async function POST(request: NextRequest) {
         }
 
         // Manual logging for cancel (not using RPC)
-        const { logAdminAction, AdminActionTypes } = await import("@/lib/admin/activity-log")
-        await logAdminAction({
-          adminId,
-          actionType: AdminActionTypes.SUBSCRIPTION_CANCEL,
-          targetType: "subscription",
-          targetId: body.subscriptionId,
-          targetUserId: body.userId,
-          description: `Abonelik iptal edildi`,
-          metadata: { subscriptionId: body.subscriptionId },
-        })
+        if (adminId) {
+          const { logAdminAction, AdminActionTypes } = await import("@/lib/admin/activity-log")
+          await logAdminAction({
+            adminId,
+            actionType: AdminActionTypes.SUBSCRIPTION_CANCEL,
+            targetType: "subscription",
+            targetId: body.subscriptionId,
+            targetUserId: body.userId,
+            description: `Abonelik iptal edildi`,
+            metadata: { subscriptionId: body.subscriptionId },
+          })
+        }
 
         logger.security("Admin cancelled user subscription", {
           subscriptionId: body.subscriptionId,
