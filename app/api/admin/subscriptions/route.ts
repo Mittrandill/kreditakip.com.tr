@@ -73,7 +73,7 @@ export async function POST(request: NextRequest) {
     // Get admin user ID for logging
     const serverClient = await createServerClient()
     const { data: { user: adminUser } } = await serverClient.auth.getUser()
-    const adminId = adminUser?.id || ""
+    const adminId = adminUser?.id || null
 
     // Handle different actions
     switch (body.action) {
