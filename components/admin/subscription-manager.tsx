@@ -198,9 +198,9 @@ export function SubscriptionManager({
 
     setIsLoading(true)
     try {
-      // Manuel abonelikler için 1 yıl süre ver
+      // Manuel abonelikler için 1 ay süre ver
       const expiresDate = new Date()
-      expiresDate.setFullYear(expiresDate.getFullYear() + 1)
+      expiresDate.setMonth(expiresDate.getMonth() + 1)
 
       const response = await fetch("/api/admin/subscriptions", {
         method: "POST",
@@ -219,7 +219,7 @@ export function SubscriptionManager({
         throw new Error(data.error || "Abonelik oluşturulamadı")
       }
 
-      toast.success("Manuel abonelik başarıyla oluşturuldu (1 yıl süreyle)")
+      toast.success("Manuel abonelik başarıyla oluşturuldu (1 ay süreyle)")
       setShowCreateDialog(false)
       setSelectedPlan("")
       setNewExpiresAt(null)
@@ -660,7 +660,7 @@ export function SubscriptionManager({
                 Manuel Abonelik Özellikleri
               </h4>
               <ul className="text-white/60 text-xs space-y-1">
-                <li>• 1 yıl süreyle geçerli</li>
+                <li>• 1 ay süreyle geçerli</li>
                 <li>• Ödeme gerektirmez</li>
                 <li>• Tüm premium özellikler dahil</li>
                 <li>• İstediğiniz zaman uzatabilir veya iptal edebilirsiniz</li>

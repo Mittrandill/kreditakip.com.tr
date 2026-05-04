@@ -5,14 +5,13 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge"
 import Header from "@/components/layout/header"
 import Footer from "@/components/footer"
-import { CheckCircle, X, Star, Crown, Sparkles, ArrowRight, Zap } from "lucide-react"
-import { useRouter } from "next/navigation"
+import { CheckCircle, X, Star, Crown, Sparkles, ArrowRight, Zap, Phone, MessageCircle } from "lucide-react"
 import { useState } from "react"
-import { useAuth } from "@/hooks/use-auth"
+
+const CONTACT_PHONE = "+90 543 203 53 09"
+const CONTACT_PHONE_CLEAN = "905432035309"
 
 export default function PricingPage() {
-  const router = useRouter()
-  const { user } = useAuth()
   const [billingPeriod, setBillingPeriod] = useState<"monthly" | "yearly">("monthly")
 
   const plans = [
@@ -105,9 +104,9 @@ export default function PricingPage() {
         "Pro plan aylık 10 OCR ve 5 AI analiz limiti ile profesyonel kullanım için uygundur. Premium plan sınırsız OCR ve AI analiz sunar, tüm gelecek özelliklere erişim sağlar.",
     },
     {
-      question: "Premium üyelik nasıl iptal edilir?",
+      question: "Abonelik nasıl satın alınır?",
       answer:
-        "Hesap ayarlarınızdan istediğiniz zaman üyeliğinizi iptal edebilirsiniz. İptal sonrası mevcut dönem sonuna kadar Premium özelliklerden yararlanmaya devam edersiniz.",
+        "+90 543 203 53 09 numaralı telefonu arayarak veya WhatsApp üzerinden yazarak kolayca abonelik satın alabilirsiniz. Ekibimiz size en uygun planı belirleyerek aktivasyonu gerçekleştirir.",
     },
     {
       question: "Finansal sağlık analizi nedir?",
@@ -115,9 +114,9 @@ export default function PricingPage() {
         "Finansal sağlık analizi, AI ile finansal durumunuzu detaylı olarak değerlendiren, borç/gelir oranınızı ve ödeme kapasitesini analiz eden premium özelliğimizdir.",
     },
     {
-      question: "Ödeme güvenli mi?",
+      question: "Abonelik için nasıl iletişime geçebilirim?",
       answer:
-        "Evet, tüm ödemeler PayTR'nin 3D Secure güvenli altyapısı üzerinden gerçekleştirilir. Kredi kartı bilgileriniz sunucularımızda saklanmaz ve her ödeme 3D doğrulama ile korunur.",
+        "+90 543 203 53 09 numaralı telefonu arayabilir veya WhatsApp üzerinden mesaj gönderebilirsiniz. Çalışma saatlerimiz içinde size en kısa sürede dönüş yapılır.",
     },
     {
       question: "Yıllık planlarda indirim var mı?",
@@ -254,19 +253,38 @@ export default function PricingPage() {
                       ))}
                     </div>
 
-                    <Button
-                      className={`w-full ${
-                        plan.popular
-                          ? "bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600"
-                          : index === 1
-                            ? "bg-gradient-to-r from-blue-500 to-indigo-500 hover:from-blue-600 hover:to-indigo-600"
-                            : "bg-white/10 hover:bg-white/20 border border-white/20"
-                      } text-white text-lg py-6`}
-                      onClick={() => router.push(user ? "/uygulama/odeme" : "/giris")}
-                    >
-                      {plan.cta}
-                      <ArrowRight className="ml-2 h-5 w-5" />
-                    </Button>
+                    {plan.id === "free" ? (
+                      <a
+                        href="/kayit-ol"
+                        className="flex items-center justify-center w-full bg-white/10 hover:bg-white/20 border border-white/20 text-white text-lg py-4 rounded-md transition-colors"
+                      >
+                        {plan.cta}
+                        <ArrowRight className="ml-2 h-5 w-5" />
+                      </a>
+                    ) : (
+                      <div className="space-y-3">
+                        <a
+                          href={`tel:${CONTACT_PHONE_CLEAN}`}
+                          className={`flex items-center justify-center gap-2 w-full text-white text-base py-4 rounded-md transition-colors ${
+                            plan.popular
+                              ? "bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600"
+                              : "bg-gradient-to-r from-blue-500 to-indigo-500 hover:from-blue-600 hover:to-indigo-600"
+                          }`}
+                        >
+                          <Phone className="h-5 w-5" />
+                          {CONTACT_PHONE}
+                        </a>
+                        <a
+                          href={`https://wa.me/${CONTACT_PHONE_CLEAN}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="flex items-center justify-center gap-2 w-full bg-green-500/20 hover:bg-green-500/30 border border-green-500/30 text-green-300 text-sm py-3 rounded-md transition-colors"
+                        >
+                          <MessageCircle className="h-4 w-4" />
+                          WhatsApp ile yazın
+                        </a>
+                      </div>
+                    )}
                   </CardContent>
                 </Card>
               ))}
@@ -360,25 +378,23 @@ export default function PricingPage() {
                   Hemen <span className="text-emerald-400">Başlayın</span>
                 </h2>
                 <p className="text-xl text-white/80 mb-8 max-w-2xl mx-auto">
-                  Ücretsiz hesap oluşturun ve kredi yönetiminizi bir sonraki seviyeye taşıyın
+                  Ücretsiz başlayın veya Pro/Premium için bizimle iletişime geçin
                 </p>
                 <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                  <Button
-                    size="lg"
-                    className="bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600 text-white px-8 py-6 text-lg"
-                    onClick={() => router.push("/giris")}
+                  <a
+                    href="/kayit-ol"
+                    className="inline-flex items-center justify-center bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600 text-white px-8 py-4 text-lg rounded-md transition-colors"
                   >
                     <Crown className="mr-2 h-5 w-5" />
                     Ücretsiz Başla
-                  </Button>
-                  <Button
-                    size="lg"
-                    variant="outline"
-                    className="bg-transparent border-white/20 text-white hover:bg-white/10 hover:border-transparent hover:text-white px-8 py-6 text-lg"
-                    onClick={() => router.push("/iletisim")}
+                  </a>
+                  <a
+                    href="tel:905432035309"
+                    className="inline-flex items-center justify-center bg-transparent border border-white/20 text-white hover:bg-white/10 px-8 py-4 text-lg rounded-md transition-colors"
                   >
-                    Daha Fazla Bilgi
-                  </Button>
+                    <Phone className="mr-2 h-5 w-5" />
+                    +90 543 203 53 09
+                  </a>
                 </div>
               </div>
             </div>

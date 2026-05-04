@@ -13,7 +13,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog"
-import { Crown, Check, Sparkles, TrendingUp, X, Shield, BarChart3, Zap, AlertCircle } from "lucide-react"
+import { Crown, Check, Sparkles, TrendingUp, X, Shield, BarChart3, Zap, AlertCircle, Phone, MessageCircle } from "lucide-react"
 import { useSubscriptionV2 } from "@/hooks/use-subscription-v2"
 import { useRouter, useSearchParams } from "next/navigation"
 import { useToast } from "@/hooks/use-toast"
@@ -302,28 +302,24 @@ export default function PremiumPage() {
               Mevcut Planınız
             </Button>
           ) : (
-            <Button
-              onClick={() => handlePlanSelect(planId)}
-              disabled={isProcessing || !planId}
-              className={`w-full shadow-lg hover:shadow-xl transition-all mt-auto ${
-                title === "Free"
-                  ? "bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white"
-                  : "bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white"
-              }`}
-              size="lg"
-            >
-              {isProcessing ? (
-                <>
-                  <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-2"></div>
-                  İşleniyor...
-                </>
-              ) : (
-                <>
-                  <Crown className="h-5 w-5 mr-2" />
-                  {currentPlanType === "free" ? `${title} Al (${price}₺)` : `${title} Planına Geç`}
-                </>
-              )}
-            </Button>
+            <div className="mt-auto space-y-2">
+              <a
+                href="tel:905432035309"
+                className="flex items-center justify-center gap-2 w-full bg-emerald-500/20 hover:bg-emerald-500/30 border border-emerald-500/30 text-emerald-300 rounded-lg py-3 text-sm font-semibold transition-colors"
+              >
+                <Phone className="h-4 w-4" />
+                +90 543 203 53 09
+              </a>
+              <a
+                href="https://wa.me/905432035309"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center justify-center gap-2 w-full bg-green-500/10 hover:bg-green-500/20 border border-green-500/20 text-green-400 rounded-lg py-2 text-xs font-medium transition-colors"
+              >
+                <MessageCircle className="h-3.5 w-3.5" />
+                WhatsApp ile yazın
+              </a>
+            </div>
           )}
         </CardContent>
       </Card>
