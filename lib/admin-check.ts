@@ -1,9 +1,18 @@
 import { createSupabaseServer } from "@/lib/supabase-server"
 import { redirect } from "next/navigation"
 import { NextRequest, NextResponse } from "next/server"
-import { createClient } from "@supabase/supabase-js"
 
-export async function checkAdminAccess() {
+type AdminCheckOptions = {
+  /**
+   * When true (default) the admin must have completed TOTP MFA this session
+   * (AAL2). Set to false only on the MFA enrollment/challenge pages themselves
+   * to avoid redirect loops.
+   */
+  requireMFA?: boolean
+}
+
+export async function checkAdminAccess(options: AdminCheckOptions = {}) {
+  const { requireMFA = true } = options
   const supabase = await createSupabaseServer()
 
   const {
@@ -29,6 +38,21 @@ export async function checkAdminAccess() {
     // Don't sign out here - causes issues in server component
     // Just redirect to admin login
     redirect("/admin/giris")
+  }
+
+  // SECURITY: Enforce TOTP MFA (AAL2) for the admin panel.
+  if (requireMFA) {
+    const { data: aal } = await supabase.auth.mfa.getAuthenticatorAssuranceLevel()
+
+    // No verified factor at all -> admin must enroll a TOTP authenticator.
+    if (aal?.nextLevel !== "aal2") {
+      redirect("/admin/mfa-setup")
+    }
+
+    // Has a verified factor but this session is still AAL1 -> must enter code.
+    if (aal.currentLevel !== "aal2") {
+      redirect("/admin/mfa")
+    }
   }
 
   return { session, profile }
@@ -74,6 +98,15 @@ export async function checkAdminAPI(request: NextRequest): Promise<NextResponse 
     if (!profile?.is_admin) {
       return NextResponse.json(
         { error: "Forbidden - Admin access required" },
+        { status: 403 }
+      )
+    }
+
+    // SECURITY: Require completed TOTP MFA (AAL2) for admin API access.
+    const { data: aal } = await supabase.auth.mfa.getAuthenticatorAssuranceLevel()
+    if (aal?.currentLevel !== "aal2") {
+      return NextResponse.json(
+        { error: "MFA required", code: "mfa_required" },
         { status: 403 }
       )
     }
