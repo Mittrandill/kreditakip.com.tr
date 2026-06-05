@@ -54,8 +54,18 @@ export default function AdminLoginPage() {
         throw new Error("Bu hesabın admin yetkisi bulunmuyor")
       }
 
-      // Redirect to admin dashboard
-      router.push("/admin")
+      // SECURITY: Route based on TOTP MFA state (AAL).
+      const { data: aal } = await supabase.auth.mfa.getAuthenticatorAssuranceLevel()
+
+      if (aal?.nextLevel !== "aal2") {
+        // No verified authenticator yet -> enroll one
+        router.push("/admin/mfa-setup")
+      } else if (aal.currentLevel !== "aal2") {
+        // Has authenticator but needs to enter a code this session
+        router.push("/admin/mfa")
+      } else {
+        router.push("/admin")
+      }
       router.refresh()
     } catch (err) {
       console.error("Login error:", err)
