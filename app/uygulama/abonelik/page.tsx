@@ -1056,7 +1056,7 @@ export default function SubscriptionPage() {
                                     <Button
                                       variant="outline"
                                       size="sm"
-                                      onClick={() => window.open(invoice.file_url!, "_blank")}
+                                      onClick={() => window.open(`/api/invoices/${invoice.id}/download`, "_blank")}
                                       className="dark:bg-black/20 dark:text-white dark:border-white/10 dark:hover:bg-white/10"
                                     >
                                       <Download className="h-4 w-4 mr-2" />
