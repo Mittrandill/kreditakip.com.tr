@@ -281,7 +281,7 @@ export default function InvoiceDetailPage() {
                       <span className="text-sm">{invoice.file_name || "Fatura.pdf"}</span>
                     </div>
                     <a
-                      href={invoice.file_url}
+                      href={`/api/invoices/${invoice.id}/download`}
                       target="_blank"
                       rel="noopener noreferrer"
                       className="block"

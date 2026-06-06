@@ -92,7 +92,7 @@ export function InvoicesTabs({ invoices }: InvoicesTabsProps) {
         <div className="flex items-center gap-2">
           {invoice.file_url ? (
             <a
-              href={invoice.file_url}
+              href={`/api/invoices/${invoice.id}/download`}
               target="_blank"
               rel="noopener noreferrer"
               className="text-teal-400 hover:text-teal-300 transition-colors font-medium"

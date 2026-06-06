@@ -408,7 +408,7 @@ export default async function UserDetailPage({ params }: PageProps) {
                             <td className="py-4 px-4">
                               {invoice.file_url ? (
                                 <a
-                                  href={invoice.file_url}
+                                  href={`/api/invoices/${invoice.id}/download`}
                                   target="_blank"
                                   rel="noopener noreferrer"
                                   className="text-teal-400 hover:text-teal-300 transition-colors"
