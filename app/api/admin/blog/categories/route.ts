@@ -1,4 +1,5 @@
 import { createSupabaseServer } from "@/lib/supabase-server"
+import { checkAdminAPI } from "@/lib/admin-check"
 import { type NextRequest, NextResponse } from "next/server"
 
 export const dynamic = "force-dynamic"
@@ -6,23 +7,11 @@ export const dynamic = "force-dynamic"
 // GET - List all blog categories (admin only)
 export async function GET(request: NextRequest) {
   try {
+    // Admin + MFA (AAL2) check
+    const adminCheck = await checkAdminAPI(request)
+    if (adminCheck) return adminCheck
+
     const supabase = await createSupabaseServer()
-
-    // Check authentication and admin status
-    const {
-      data: { session },
-    } = await supabase.auth.getSession()
-
-    if (!session) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
-    }
-
-    // Check if user is admin
-    const { data: profile } = await supabase.from("profiles").select("is_admin").eq("id", session.user.id).single()
-
-    if (!profile?.is_admin) {
-      return NextResponse.json({ error: "Forbidden - Admin access required" }, { status: 403 })
-    }
 
     const { data: categories, error } = await supabase
       .from("blog_categories")
@@ -44,23 +33,11 @@ export async function GET(request: NextRequest) {
 // POST - Create new blog category (admin only)
 export async function POST(request: NextRequest) {
   try {
+    // Admin + MFA (AAL2) check
+    const adminCheck = await checkAdminAPI(request)
+    if (adminCheck) return adminCheck
+
     const supabase = await createSupabaseServer()
-
-    // Check authentication and admin status
-    const {
-      data: { session },
-    } = await supabase.auth.getSession()
-
-    if (!session) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
-    }
-
-    // Check if user is admin
-    const { data: profile } = await supabase.from("profiles").select("is_admin").eq("id", session.user.id).single()
-
-    if (!profile?.is_admin) {
-      return NextResponse.json({ error: "Forbidden - Admin access required" }, { status: 403 })
-    }
 
     const body = await request.json()
     const { name, slug, description } = body

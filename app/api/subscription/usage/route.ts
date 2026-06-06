@@ -1,22 +1,25 @@
 import { NextRequest, NextResponse } from "next/server"
 import { createClient } from "@supabase/supabase-js"
+import { createServerClient } from "@/lib/supabase/server"
 
 export const dynamic = "force-dynamic"
 export const runtime = "nodejs"
 
-// GET: Get current usage for a user
+// GET: Get current usage for the authenticated user
 export async function GET(request: NextRequest) {
   try {
-    const searchParams = request.nextUrl.searchParams
-    const userId = searchParams.get("userId")
-    const featureType = searchParams.get("featureType")
+    // SECURITY: derive the user from the session, never from a query param
+    const authClient = await createServerClient()
+    const {
+      data: { user },
+    } = await authClient.auth.getUser()
 
-    if (!userId) {
-      return NextResponse.json(
-        { error: "User ID is required" },
-        { status: 400 }
-      )
+    if (!user) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
     }
+
+    const userId = user.id
+    const featureType = request.nextUrl.searchParams.get("featureType")
 
     // Initialize Supabase admin client
     const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
@@ -147,14 +150,25 @@ export async function GET(request: NextRequest) {
   }
 }
 
-// POST: Increment usage counter
+// POST: Increment usage counter for the authenticated user
 export async function POST(request: NextRequest) {
   try {
-    const { userId, featureType, amount = 1, saveCredit = false } = await request.json()
+    // SECURITY: derive the user from the session, never from the body
+    const authClient = await createServerClient()
+    const {
+      data: { user },
+    } = await authClient.auth.getUser()
 
-    if (!userId || !featureType) {
+    if (!user) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
+    }
+
+    const userId = user.id
+    const { featureType, amount = 1, saveCredit = false } = await request.json()
+
+    if (!featureType) {
       return NextResponse.json(
-        { error: "User ID and feature type are required" },
+        { error: "Feature type is required" },
         { status: 400 }
       )
     }
@@ -198,20 +212,35 @@ export async function POST(request: NextRequest) {
     // Calculate limits
     const planId = subscription?.plan_id || "free"
     let limit = 0
+    let savedLimit = 1
 
     if (planId === "free") {
       limit = featureType === "ocr_analysis" ? 1 : 0
+      savedLimit = 1
     } else if (planId?.includes("pro")) {
       limit = featureType === "ocr_analysis" ? 10 : 5
+      savedLimit = 10
     } else if (planId?.includes("premium")) {
       limit = 999999
+      savedLimit = 999999
     }
 
     const currentUsed = currentUsage?.usage_count || 0
+    const currentSaved = currentUsage?.saved_credits_count || 0
     const newUsed = saveCredit ? currentUsed : currentUsed + amount
 
-    // Check if exceeding limit
-    if (!saveCredit && newUsed > limit) {
+    // Check limits before mutating
+    if (saveCredit) {
+      // SECURITY: enforce saved-credit limit (previously unchecked)
+      if (currentSaved + amount > savedLimit) {
+        return NextResponse.json({
+          success: false,
+          error: "Saved credit limit exceeded",
+          currentSaved,
+          savedLimit,
+        })
+      }
+    } else if (newUsed > limit) {
       return NextResponse.json({
         success: false,
         error: "Usage limit exceeded",
@@ -228,9 +257,8 @@ export async function POST(request: NextRequest) {
       limit_count: limit,
       reset_at: currentUsage?.reset_at || new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
       updated_at: new Date().toISOString(),
-      saved_credits_count: saveCredit ?
-        (currentUsage?.saved_credits_count || 0) + amount :
-        (currentUsage?.saved_credits_count || 0),
+      saved_credits_count: saveCredit ? currentSaved + amount : currentSaved,
+      saved_credits_limit: savedLimit,
     }
 
     if (currentUsage) {

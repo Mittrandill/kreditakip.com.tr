@@ -1,30 +1,16 @@
 import { createSupabaseServer } from "@/lib/supabase-server"
+import { checkAdminAPI } from "@/lib/admin-check"
+import { type NextRequest, NextResponse } from "next/server"
 
 export const dynamic = "force-dynamic"
-import { NextResponse } from "next/server"
 
-export async function GET() {
+export async function GET(request: NextRequest) {
   try {
+    // Admin + MFA (AAL2) check
+    const adminCheck = await checkAdminAPI(request)
+    if (adminCheck) return adminCheck
+
     const supabase = await createSupabaseServer()
-
-    // Check if user is admin
-    const {
-      data: { session },
-    } = await supabase.auth.getSession()
-
-    if (!session) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
-    }
-
-    const { data: profile } = await supabase
-      .from("profiles")
-      .select("is_admin")
-      .eq("id", session.user.id)
-      .single()
-
-    if (!profile?.is_admin) {
-      return NextResponse.json({ error: "Forbidden" }, { status: 403 })
-    }
 
     // Get all users
     const { data: users, error } = await supabase

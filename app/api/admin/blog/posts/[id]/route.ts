@@ -1,4 +1,5 @@
 import { createSupabaseServer } from "@/lib/supabase-server"
+import { checkAdminAPI } from "@/lib/admin-check"
 import { NextRequest, NextResponse } from "next/server"
 
 export const dynamic = "force-dynamic"
@@ -6,27 +7,11 @@ export const dynamic = "force-dynamic"
 // GET - Get single blog post (admin only)
 export async function GET(request: NextRequest, { params }: { params: { id: string } }) {
   try {
+    // Admin + MFA (AAL2) check
+    const adminCheck = await checkAdminAPI(request)
+    if (adminCheck) return adminCheck
+
     const supabase = await createSupabaseServer()
-
-    // Check authentication and admin status
-    const {
-      data: { session },
-    } = await supabase.auth.getSession()
-
-    if (!session) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
-    }
-
-    // Check if user is admin
-    const { data: profile } = await supabase
-      .from("profiles")
-      .select("is_admin")
-      .eq("id", session.user.id)
-      .single()
-
-    if (!profile?.is_admin) {
-      return NextResponse.json({ error: "Forbidden - Admin access required" }, { status: 403 })
-    }
 
     const { data: post, error } = await supabase
       .from("blog_posts")
@@ -53,27 +38,11 @@ export async function GET(request: NextRequest, { params }: { params: { id: stri
 // PUT - Update blog post (admin only)
 export async function PUT(request: NextRequest, { params }: { params: { id: string } }) {
   try {
+    // Admin + MFA (AAL2) check
+    const adminCheck = await checkAdminAPI(request)
+    if (adminCheck) return adminCheck
+
     const supabase = await createSupabaseServer()
-
-    // Check authentication and admin status
-    const {
-      data: { session },
-    } = await supabase.auth.getSession()
-
-    if (!session) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
-    }
-
-    // Check if user is admin
-    const { data: profile } = await supabase
-      .from("profiles")
-      .select("is_admin")
-      .eq("id", session.user.id)
-      .single()
-
-    if (!profile?.is_admin) {
-      return NextResponse.json({ error: "Forbidden - Admin access required" }, { status: 403 })
-    }
 
     const body = await request.json()
     const {
@@ -143,27 +112,11 @@ export async function PUT(request: NextRequest, { params }: { params: { id: stri
 // DELETE - Delete blog post (admin only)
 export async function DELETE(request: NextRequest, { params }: { params: { id: string } }) {
   try {
+    // Admin + MFA (AAL2) check
+    const adminCheck = await checkAdminAPI(request)
+    if (adminCheck) return adminCheck
+
     const supabase = await createSupabaseServer()
-
-    // Check authentication and admin status
-    const {
-      data: { session },
-    } = await supabase.auth.getSession()
-
-    if (!session) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
-    }
-
-    // Check if user is admin
-    const { data: profile } = await supabase
-      .from("profiles")
-      .select("is_admin")
-      .eq("id", session.user.id)
-      .single()
-
-    if (!profile?.is_admin) {
-      return NextResponse.json({ error: "Forbidden - Admin access required" }, { status: 403 })
-    }
 
     const { error } = await supabase
       .from("blog_posts")
