@@ -1,0 +1,64 @@
+import crypto from "crypto"
+
+export const SHOPIER_CHECKOUT_URLS: Record<string, string> = {
+  "premium-yearly": "https://www.shopier.com/kreditakip/47811718",
+  "premium-monthly": "https://www.shopier.com/kreditakip/47811704",
+  "pro-yearly": "https://www.shopier.com/kreditakip/47811692",
+  "pro-monthly": "https://www.shopier.com/kreditakip/47811671",
+}
+
+// Maps Shopier product ID (from URL slug) to our internal plan ID
+export const SHOPIER_PRODUCT_PLAN_MAP: Record<string, string> = {
+  "47811718": "premium-yearly",
+  "47811704": "premium-monthly",
+  "47811692": "pro-yearly",
+  "47811671": "pro-monthly",
+}
+
+export interface ShopierOSBPayload {
+  email: string
+  orderid: string
+  currency: string
+  price: string
+  buyername: string
+  buyersurname: string
+  productcount: number
+  productid: string
+  productlist: unknown[]
+  customernote?: string
+  istest: boolean
+}
+
+/**
+ * Verifies Shopier OSB notification authenticity.
+ * Hash: HMAC-SHA256(encodedPayload + OSB_USERNAME, key=OSB_PASSWORD)
+ */
+export function verifyShopierOSB(encodedPayload: string, receivedHash: string): boolean {
+  const username = process.env.SHOPIER_OSB_USERNAME!
+  const password = process.env.SHOPIER_OSB_PASSWORD!
+
+  const expectedHash = crypto
+    .createHmac("sha256", password)
+    .update(encodedPayload + username)
+    .digest("hex")
+
+  try {
+    return crypto.timingSafeEqual(Buffer.from(expectedHash, "hex"), Buffer.from(receivedHash, "hex"))
+  } catch {
+    return false
+  }
+}
+
+export function decodeShopierPayload(encodedPayload: string): ShopierOSBPayload {
+  const decoded = Buffer.from(encodedPayload, "base64").toString("utf8")
+  return JSON.parse(decoded)
+}
+
+export function getPlanIdFromProductId(productId: string): string | null {
+  // productId may come as number or string; normalize to string
+  return SHOPIER_PRODUCT_PLAN_MAP[String(productId)] ?? null
+}
+
+export function getCheckoutUrl(planId: string): string | null {
+  return SHOPIER_CHECKOUT_URLS[planId] ?? null
+}

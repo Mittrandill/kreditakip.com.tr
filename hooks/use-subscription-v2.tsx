@@ -27,7 +27,7 @@ export interface Usage {
 export interface Subscription {
   id: string
   planId: string
-  planType: "free" | "pro" | "premium"
+  planType: "free" | "pro" | "premium" | "trial"
   status: "active" | "trialing" | "canceled" | "expired" | "past_due" | "paused" | "grace_period" | "suspended"
   startDate: string
   expiresAt: string
@@ -35,10 +35,8 @@ export interface Subscription {
   gracePeriodStartedAt?: string
   gracePeriodEndsAt?: string
   requiresPaymentAction: boolean
-  // paddleSubscriptionId?: string // REMOVED: Paddle integration removed
-  paymentProvider?: "paytr" // Only PayTR supported now
-  // cancelUrl?: string // REMOVED: Paddle-specific
-  // updateUrl?: string // REMOVED: Paddle-specific
+  paymentProvider?: "paytr" | "shopier"
+  trial?: boolean
   usage?: Usage
 }
 
@@ -74,8 +72,8 @@ export function useSubscriptionV2() {
       const subData = apiData?.subscription
 
       if (subData) {
-        // Derive planType from plan_id if plan_type is not available
-        const derivedPlanType: "free" | "pro" | "premium" =
+        const derivedPlanType: "free" | "pro" | "premium" | "trial" =
+          subData.plan_type === "trial" ? "trial" :
           subData.plan_type ||
           (subData.plan_id && subData.plan_id.includes("pro") ? "pro" :
            subData.plan_id && subData.plan_id.includes("premium") ? "premium" : "free")
@@ -93,7 +91,8 @@ export function useSubscriptionV2() {
           gracePeriodEndsAt: subData.grace_period_ends_at,
           requiresPaymentAction: subData.requires_payment_action || false,
           // paddleSubscriptionId: subData.paddle_subscription_id, // REMOVED: Paddle integration removed
-          paymentProvider: subData.payment_provider || "paytr",
+          paymentProvider: subData.payment_provider || undefined,
+          trial: subData.trial || false,
           usage: apiData?.usage ? {
             ocrAnalysis: (() => {
               const ocr = apiData.usage.find((u: any) => u.feature_type === 'ocr_analysis')
@@ -208,7 +207,7 @@ export function useSubscriptionV2() {
     }
   }, [user, toast, router, refresh])
 
-  // Create checkout session
+  // Open Shopier checkout for given plan
   const createCheckout = useCallback(async (planId: string) => {
     if (!user) {
       toast({
@@ -219,66 +218,41 @@ export function useSubscriptionV2() {
       return null
     }
 
-    try {
-      const response = await fetch("/api/subscription/create-checkout", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          planId,
-          userId: user.id,
-          userEmail: user.email,
-          userName: user.user_metadata?.full_name || user.user_metadata?.name || "",
-        }),
-      })
+    // Dynamically import to avoid bundling server-only URLs in all clients
+    const { SHOPIER_CHECKOUT_URLS } = await import("@/lib/shopier-client")
+    const url = SHOPIER_CHECKOUT_URLS[planId]
 
-      const data = await response.json()
-
-      if (!response.ok || !data.success) {
-        throw new Error(data.error || "Failed to create checkout")
-      }
-
-      // Redirect to checkout
-      window.location.href = data.checkoutUrl
-      return data.checkoutUrl
-    } catch (err: any) {
-      console.error("Error creating checkout:", err)
-      toast({
-        title: "Hata",
-        description: err.message || "Ödeme sayfası oluşturulamadı",
-        variant: "destructive",
-      })
+    if (!url) {
+      toast({ title: "Hata", description: "Geçersiz plan seçimi.", variant: "destructive" })
       return null
     }
+
+    window.open(url, "_blank", "noopener,noreferrer")
+    return url
   }, [user, toast])
 
-  // REMOVED: Cancel subscription - PayTR subscriptions don't support cancel API
-  // Users need to contact support or stop renewing
   const cancelSubscription = useCallback(async () => {
     toast({
-      title: "PayTR Abonelikleri",
-      description: "PayTR aboneliklerini iptal etmek için lütfen destek ile iletişime geçin.",
+      title: "Abonelik İptali",
+      description: "Aboneliğinizi iptal etmek için lütfen info@kreditakip.com.tr adresine yazın.",
       variant: "default",
     })
     return false
   }, [toast])
 
-  // REMOVED: Pause subscription - PayTR doesn't support pause/resume
-  const pauseSubscription = useCallback(async (resumeDate?: string) => {
+  const pauseSubscription = useCallback(async (_resumeDate?: string) => {
     toast({
       title: "Özellik Desteklenmiyor",
-      description: "PayTR abonelikleri duraklatma özelliğini desteklemiyor.",
+      description: "Abonelik duraklatma özelliği şu an desteklenmiyor.",
       variant: "default",
     })
     return false
   }, [toast])
 
-  // REMOVED: Resume subscription - PayTR doesn't support pause/resume
   const resumeSubscription = useCallback(async () => {
     toast({
       title: "Özellik Desteklenmiyor",
-      description: "PayTR abonelikleri devam ettirme özelliğini desteklemiyor.",
+      description: "Abonelik devam ettirme özelliği şu an desteklenmiyor.",
       variant: "default",
     })
     return false
@@ -312,9 +286,8 @@ export function useSubscriptionV2() {
     Math.ceil((new Date(subscription.gracePeriodEndsAt).getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24)) :
     null
 
-  // Payment provider flags
   const isPayTRSubscription = subscription?.paymentProvider === "paytr"
-  // const isPaddleSubscription = subscription?.paymentProvider === "paddle" // REMOVED: Paddle integration removed
+  const isShopierSubscription = subscription?.paymentProvider === "shopier"
 
   // Auto-refresh on mount and when user changes
   useEffect(() => {
@@ -334,7 +307,7 @@ export function useSubscriptionV2() {
     daysUntilExpiration,
     daysUntilGraceEnd,
     isPayTRSubscription,
-    // isPaddleSubscription, // REMOVED: Paddle integration removed
+    isShopierSubscription,
     refresh,
     trackUsage,
     createCheckout,

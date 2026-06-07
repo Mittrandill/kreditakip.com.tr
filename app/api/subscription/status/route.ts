@@ -42,7 +42,7 @@ export async function GET(request: NextRequest) {
         )
       `)
       .eq("user_id", userId)
-      .in("status", ["active", "canceled", "paused", "past_due"])
+      .in("status", ["active", "trialing", "canceled", "paused", "past_due"])
       .order("created_at", { ascending: false })
       .limit(1)
       .maybeSingle()
@@ -111,16 +111,62 @@ export async function GET(request: NextRequest) {
     }
 
     // Get usage tracking
-    const { data: usage, error: usageError } = await supabase.from("subscription_usage").select("*").eq("user_id", userId)
+    const { data: usage } = await supabase.from("subscription_usage").select("*").eq("user_id", userId)
 
+    // Trial period: 7 days for new users with no active paid subscription
+    let trialSubscription = null
+    if (!subscription || subscription.status === "expired") {
+      const accountCreatedAt = new Date(user.created_at)
+      const trialEndsAt = new Date(accountCreatedAt)
+      trialEndsAt.setDate(trialEndsAt.getDate() + 7)
+      const now = new Date()
 
-    const response = {
-      subscription,
-      usage,
+      if (now < trialEndsAt) {
+        trialSubscription = {
+          id: "trial",
+          user_id: userId,
+          plan_id: "trial",
+          plan_type: "trial",
+          status: "trialing",
+          start_date: accountCreatedAt.toISOString(),
+          expires_at: trialEndsAt.toISOString(),
+          payment_provider: null,
+          trial: true,
+        }
+      }
     }
 
+    const activeSubscription = subscription ?? trialSubscription
 
-    return NextResponse.json(response)
+    // Build trial usage if no usage records and trial is active
+    let effectiveUsage = usage
+    if (trialSubscription && (!usage || usage.length === 0)) {
+      const resetAt = new Date(trialSubscription.expires_at)
+      effectiveUsage = [
+        {
+          user_id: userId,
+          subscription_id: "trial",
+          feature_type: "ocr_analysis",
+          usage_count: 0,
+          limit_count: 2,
+          saved_credits_count: 0,
+          saved_credits_limit: 2,
+          reset_at: resetAt.toISOString(),
+        },
+        {
+          user_id: userId,
+          subscription_id: "trial",
+          feature_type: "risk_analysis",
+          usage_count: 0,
+          limit_count: 1,
+          saved_credits_count: 0,
+          saved_credits_limit: 0,
+          reset_at: resetAt.toISOString(),
+        },
+      ]
+    }
+
+    return NextResponse.json({ subscription: activeSubscription, usage: effectiveUsage })
   } catch (error) {
     console.error("[v0] Subscription status error:", error)
     return NextResponse.json({ error: "Internal server error" }, { status: 500 })

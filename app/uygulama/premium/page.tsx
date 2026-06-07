@@ -13,11 +13,12 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog"
-import { Crown, Check, Sparkles, TrendingUp, X, Shield, BarChart3, Zap, AlertCircle, Phone, MessageCircle } from "lucide-react"
+import { Crown, Check, Sparkles, TrendingUp, Shield, BarChart3, Zap, AlertCircle, ExternalLink } from "lucide-react"
 import { useSubscriptionV2 } from "@/hooks/use-subscription-v2"
 import { useRouter, useSearchParams } from "next/navigation"
 import { useToast } from "@/hooks/use-toast"
 import { fetchPlans, calculateSavings, type SubscriptionPlan } from "@/lib/subscription-plans"
+import { SHOPIER_CHECKOUT_URLS } from "@/lib/shopier-client"
 import { LoadingSpinner } from "@/components/loading-screen"
 
 export default function PremiumPage() {
@@ -88,20 +89,22 @@ export default function PremiumPage() {
   const handlePlanSelect = async (planId: string) => {
     const currentPlanId = subscription?.planId
 
-    // Aynı plan kontrolü
-    if (currentPlanId === planId) {
+    if (currentPlanId === planId) return
+
+    // Aktif ücretli aboneliği varsa -> plan değişikliği onayı
+    if (currentPlanId && currentPlanId !== "free" && subscription?.status === "active") {
+      setTargetPlanId(planId)
+      setShowConfirmDialog(true)
       return
     }
 
-    // Free kullanıcı -> Ödeme sayfasına yönlendir
-    if (!currentPlanId || currentPlanId === "free") {
+    // Free veya trial kullanıcı -> Shopier ödeme sayfasına yönlendir
+    const shopierUrl = SHOPIER_CHECKOUT_URLS[planId]
+    if (shopierUrl) {
+      window.open(shopierUrl, "_blank", "noopener,noreferrer")
+    } else {
       router.push(`/uygulama/odeme?plan=${planId}`)
-      return
     }
-
-    // Ücretli kullanıcı -> Plan değişikliği onayı iste
-    setTargetPlanId(planId)
-    setShowConfirmDialog(true)
   }
 
   const confirmPlanChange = async () => {
@@ -302,24 +305,14 @@ export default function PremiumPage() {
               Mevcut Planınız
             </Button>
           ) : (
-            <div className="mt-auto space-y-2">
-              <a
-                href="tel:905432035309"
-                className="flex items-center justify-center gap-2 w-full bg-emerald-500/20 hover:bg-emerald-500/30 border border-emerald-500/30 text-emerald-300 rounded-lg py-3 text-sm font-semibold transition-colors"
-              >
-                <Phone className="h-4 w-4" />
-                +90 543 203 53 09
-              </a>
-              <a
-                href="https://wa.me/905432035309"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="flex items-center justify-center gap-2 w-full bg-green-500/10 hover:bg-green-500/20 border border-green-500/20 text-green-400 rounded-lg py-2 text-xs font-medium transition-colors"
-              >
-                <MessageCircle className="h-3.5 w-3.5" />
-                WhatsApp ile yazın
-              </a>
-            </div>
+            <Button
+              className="w-full bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white shadow-lg mt-auto"
+              size="lg"
+              onClick={() => handlePlanSelect(planId)}
+            >
+              <ExternalLink className="h-5 w-5 mr-2" />
+              Satın Al
+            </Button>
           )}
         </CardContent>
       </Card>
