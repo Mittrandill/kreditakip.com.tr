@@ -58,27 +58,30 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   const supabase: any = makeClient()
 
-  // Read raw body ONCE, log it, then parse.
+  // Shopier sends multipart/form-data (NOT urlencoded). request.formData()
+  // handles both multipart and urlencoded; fall back to raw text otherwise.
+  let res: string | null = null
+  let receivedHash: string | null = null
   let rawText = ""
+  const contentType = request.headers.get("content-type") || ""
+
   try {
-    rawText = await request.text()
-  } catch {
-    console.error("[Shopier OSB] Failed to read body")
+    if (contentType.includes("multipart/form-data") || contentType.includes("x-www-form-urlencoded")) {
+      const fd = await request.formData()
+      res = fd.get("res")?.toString() ?? null
+      receivedHash = fd.get("hash")?.toString() ?? null
+      rawText = `res=${res ?? ""}&hash=${receivedHash ?? ""}`
+    } else {
+      rawText = await request.text()
+      const params = new URLSearchParams(rawText)
+      res = params.get("res")
+      receivedHash = params.get("hash")
+    }
+  } catch (e) {
+    console.error("[Shopier OSB] Failed to parse body:", e)
   }
 
   await logRequest(supabase, request, "POST", rawText)
-
-  // Parse form-encoded body (application/x-www-form-urlencoded)
-  let res: string | null = null
-  let receivedHash: string | null = null
-  try {
-    const params = new URLSearchParams(rawText)
-    res = params.get("res")
-    receivedHash = params.get("hash")
-  } catch {
-    console.error("[Shopier OSB] Failed to parse body")
-    return new Response("success", { status: 200 })
-  }
 
   if (!res || !receivedHash) {
     console.error("[Shopier OSB] Missing res or hash field")

@@ -35,18 +35,23 @@ export interface ShopierOSBPayload {
  * Hash: HMAC-SHA256(encodedPayload + OSB_USERNAME, key=OSB_PASSWORD)
  */
 export function verifyShopierOSB(encodedPayload: string, receivedHash: string): boolean {
-  const username = process.env.SHOPIER_OSB_USERNAME!
-  const password = process.env.SHOPIER_OSB_PASSWORD!
-
-  const expectedHash = crypto
-    .createHmac("sha256", password)
-    .update(encodedPayload + username)
-    .digest("hex")
-
   try {
+    const username = process.env.SHOPIER_OSB_USERNAME
+    const password = process.env.SHOPIER_OSB_PASSWORD
+
+    if (!username || !password) {
+      console.error("[Shopier] Missing SHOPIER_OSB_USERNAME/PASSWORD env vars")
+      return false
+    }
+
+    const expectedHash = crypto
+      .createHmac("sha256", password)
+      .update(encodedPayload + username)
+      .digest("hex")
+
     const a = new Uint8Array(Buffer.from(expectedHash, "hex"))
     const b = new Uint8Array(Buffer.from(receivedHash, "hex"))
-    return a.length === b.length && crypto.timingSafeEqual(a, b)
+    return a.length === b.length && a.length > 0 && crypto.timingSafeEqual(a, b)
   } catch {
     return false
   }
