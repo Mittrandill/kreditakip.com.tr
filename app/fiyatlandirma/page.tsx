@@ -5,11 +5,15 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge"
 import Header from "@/components/layout/header"
 import Footer from "@/components/footer"
-import { CheckCircle, X, Star, Crown, Sparkles, ArrowRight, Zap, Phone, MessageCircle } from "lucide-react"
+import { CheckCircle, X, Star, Crown, Sparkles, ArrowRight, Zap, ExternalLink } from "lucide-react"
 import { useState } from "react"
 
-const CONTACT_PHONE = "+90 543 203 53 09"
-const CONTACT_PHONE_CLEAN = "905432035309"
+const SHOPIER_URLS: Record<string, string> = {
+  "pro-monthly":     "https://www.shopier.com/kreditakip/47811671",
+  "pro-yearly":      "https://www.shopier.com/kreditakip/47811692",
+  "premium-monthly": "https://www.shopier.com/kreditakip/47811704",
+  "premium-yearly":  "https://www.shopier.com/kreditakip/47811718",
+}
 
 export default function PricingPage() {
   const [billingPeriod, setBillingPeriod] = useState<"monthly" | "yearly">("monthly")
@@ -106,7 +110,7 @@ export default function PricingPage() {
     {
       question: "Abonelik nasıl satın alınır?",
       answer:
-        "+90 543 203 53 09 numaralı telefonu arayarak veya WhatsApp üzerinden yazarak kolayca abonelik satın alabilirsiniz. Ekibimiz size en uygun planı belirleyerek aktivasyonu gerçekleştirir.",
+        "Fiyatlandırma sayfasında istediğiniz planın 'Satın Al' butonuna tıklayın, Shopier güvenli ödeme sayfasına yönlendirileceksiniz. Ödeme tamamlandıktan sonra aboneliğiniz otomatik olarak aktif edilir.",
     },
     {
       question: "Finansal sağlık analizi nedir?",
@@ -114,9 +118,9 @@ export default function PricingPage() {
         "Finansal sağlık analizi, AI ile finansal durumunuzu detaylı olarak değerlendiren, borç/gelir oranınızı ve ödeme kapasitesini analiz eden premium özelliğimizdir.",
     },
     {
-      question: "Abonelik için nasıl iletişime geçebilirim?",
+      question: "Ödeme güvenli mi?",
       answer:
-        "+90 543 203 53 09 numaralı telefonu arayabilir veya WhatsApp üzerinden mesaj gönderebilirsiniz. Çalışma saatlerimiz içinde size en kısa sürede dönüş yapılır.",
+        "Tüm ödemeler Shopier güvenli altyapısı üzerinden gerçekleştirilmektedir. Kart bilgileriniz hiçbir zaman sistemimizde saklanmaz.",
     },
     {
       question: "Yıllık planlarda indirim var mı?",
@@ -262,28 +266,19 @@ export default function PricingPage() {
                         <ArrowRight className="ml-2 h-5 w-5" />
                       </a>
                     ) : (
-                      <div className="space-y-3">
-                        <a
-                          href={`tel:${CONTACT_PHONE_CLEAN}`}
-                          className={`flex items-center justify-center gap-2 w-full text-white text-base py-4 rounded-md transition-colors ${
-                            plan.popular
-                              ? "bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600"
-                              : "bg-gradient-to-r from-blue-500 to-indigo-500 hover:from-blue-600 hover:to-indigo-600"
-                          }`}
-                        >
-                          <Phone className="h-5 w-5" />
-                          {CONTACT_PHONE}
-                        </a>
-                        <a
-                          href={`https://wa.me/${CONTACT_PHONE_CLEAN}`}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="flex items-center justify-center gap-2 w-full bg-green-500/20 hover:bg-green-500/30 border border-green-500/30 text-green-300 text-sm py-3 rounded-md transition-colors"
-                        >
-                          <MessageCircle className="h-4 w-4" />
-                          WhatsApp ile yazın
-                        </a>
-                      </div>
+                      <a
+                        href={SHOPIER_URLS[plan.id] ?? "#"}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className={`flex items-center justify-center gap-2 w-full text-white text-base py-4 rounded-md transition-colors ${
+                          plan.popular
+                            ? "bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600"
+                            : "bg-gradient-to-r from-blue-500 to-indigo-500 hover:from-blue-600 hover:to-indigo-600"
+                        }`}
+                      >
+                        <ExternalLink className="h-5 w-5" />
+                        {plan.cta}
+                      </a>
                     )}
                   </CardContent>
                 </Card>
@@ -378,7 +373,7 @@ export default function PricingPage() {
                   Hemen <span className="text-emerald-400">Başlayın</span>
                 </h2>
                 <p className="text-xl text-white/80 mb-8 max-w-2xl mx-auto">
-                  Ücretsiz başlayın veya Pro/Premium için bizimle iletişime geçin
+                  Ücretsiz başlayın veya hemen Pro/Premium'a geçin
                 </p>
                 <div className="flex flex-col sm:flex-row gap-4 justify-center">
                   <a
@@ -389,11 +384,13 @@ export default function PricingPage() {
                     Ücretsiz Başla
                   </a>
                   <a
-                    href="tel:905432035309"
+                    href={SHOPIER_URLS["premium-monthly"]}
+                    target="_blank"
+                    rel="noopener noreferrer"
                     className="inline-flex items-center justify-center bg-transparent border border-white/20 text-white hover:bg-white/10 px-8 py-4 text-lg rounded-md transition-colors"
                   >
-                    <Phone className="mr-2 h-5 w-5" />
-                    +90 543 203 53 09
+                    <ExternalLink className="mr-2 h-5 w-5" />
+                    Premium'a Geç
                   </a>
                 </div>
               </div>
