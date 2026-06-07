@@ -43,7 +43,9 @@ export function verifyShopierOSB(encodedPayload: string, receivedHash: string): 
     .digest("hex")
 
   try {
-    return crypto.timingSafeEqual(Buffer.from(expectedHash, "hex"), Buffer.from(receivedHash, "hex"))
+    const a = new Uint8Array(Buffer.from(expectedHash, "hex"))
+    const b = new Uint8Array(Buffer.from(receivedHash, "hex"))
+    return a.length === b.length && crypto.timingSafeEqual(a, b)
   } catch {
     return false
   }
