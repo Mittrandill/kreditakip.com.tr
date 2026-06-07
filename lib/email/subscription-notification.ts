@@ -67,6 +67,160 @@ export async function sendNewSubscriptionNotification(data: SubscriptionEmailDat
   }
 }
 
+/**
+ * Abonelik aktivasyon maili - MÜŞTERİYE gönderilir.
+ * Ödeme alındı + abonelik başlatıldı bildirimi.
+ */
+export async function sendSubscriptionWelcomeNotification(data: SubscriptionEmailData) {
+  try {
+    const MAILJET_API_KEY = process.env.MAILJET_API_KEY
+    const MAILJET_SECRET_KEY = process.env.MAILJET_SECRET_KEY
+
+    if (!MAILJET_API_KEY || !MAILJET_SECRET_KEY) {
+      console.error("[welcome-email] Mailjet credentials missing")
+      return { success: false, error: "Mailjet credentials missing" }
+    }
+
+    const emailData = {
+      Messages: [
+        {
+          From: { Email: "info@kreditakip.com.tr", Name: "Kredi Takip" },
+          To: [{ Email: data.userEmail, Name: data.userName || data.userEmail }],
+          Subject: `Aboneliğiniz Başladı - ${data.planName}`,
+          HTMLPart: generateWelcomeEmailHTML(data),
+          TextPart: generateWelcomeEmailText(data),
+        },
+      ],
+    }
+
+    const auth = Buffer.from(`${MAILJET_API_KEY}:${MAILJET_SECRET_KEY}`).toString("base64")
+
+    const response = await fetch("https://api.mailjet.com/v3.1/send", {
+      method: "POST",
+      headers: { "Content-Type": "application/json", Authorization: `Basic ${auth}` },
+      body: JSON.stringify(emailData),
+    })
+
+    if (!response.ok) {
+      const errorText = await response.text()
+      console.error("[welcome-email] Mailjet error:", errorText)
+      return { success: false, error: errorText }
+    }
+
+    return { success: true, result: await response.json() }
+  } catch (error: any) {
+    console.error("[welcome-email] Error:", error)
+    return { success: false, error: error.message }
+  }
+}
+
+function generateWelcomeEmailHTML(data: SubscriptionEmailData): string {
+  const fmt = (d: string) => new Date(d).toLocaleDateString("tr-TR", { day: "2-digit", month: "short", year: "numeric" })
+  return `
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Aboneliğiniz Başladı</title>
+  <style>
+    *{margin:0;padding:0;box-sizing:border-box}
+    body{font-family:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;background-color:#0f172a;color:#fff;line-height:1.6;-webkit-font-smoothing:antialiased}
+    .wrapper{width:100%;background-color:#0f172a;padding:60px 0}
+    .main{max-width:600px;margin:0 auto;background-color:#1e293b;border-radius:16px;overflow:hidden;box-shadow:0 25px 50px -12px rgba(0,0,0,.25);border:1px solid #334155}
+    .header{background:linear-gradient(135deg,#10b981 0%,#14b8a6 50%,#0d9488 100%);padding:48px 40px;text-align:center}
+    .logo{max-width:200px;height:auto;margin-bottom:20px;filter:brightness(0) invert(1)}
+    .header-title{font-size:28px;font-weight:700;color:#fff;margin:0}
+    .header-subtitle{font-size:16px;color:rgba(255,255,255,.9);margin-top:8px}
+    .content{padding:48px 40px}
+    .greeting{font-size:18px;color:#fff;margin-bottom:24px}
+    .greeting strong{font-weight:600}
+    .intro{color:#cbd5e1;font-size:15px;margin-bottom:28px}
+    .payment-card{background:linear-gradient(145deg,#334155 0%,#475569 100%);border:1px solid #475569;border-radius:12px;padding:32px;margin-bottom:28px;position:relative}
+    .payment-card::before{content:'';position:absolute;top:0;left:0;right:0;height:4px;background:#10b981}
+    .plan-section{margin-bottom:8px;padding-bottom:20px;border-bottom:1px solid #475569;text-align:center}
+    .plan-name{font-size:22px;color:#fff;font-weight:700}
+    .amount-section{text-align:center;margin:28px 0}
+    .amount{font-size:42px;font-weight:800;color:#fff}
+    .amount small{font-size:16px;color:#94a3b8;font-weight:500}
+    .info-grid{display:flex;gap:16px;margin-top:8px}
+    .info-item{flex:1;padding:16px;background:#475569;border-radius:8px;text-align:center}
+    .info-label{font-size:12px;color:#94a3b8;text-transform:uppercase;margin-bottom:8px}
+    .info-value{font-size:16px;color:#fff;font-weight:700}
+    .cta-button{display:inline-block;padding:16px 40px;background:linear-gradient(135deg,#10b981 0%,#0d9488 100%);color:#fff!important;text-decoration:none;border-radius:12px;font-weight:600;margin-top:8px;font-size:15px}
+    .footer{padding:40px;background:#0f172a;border-top:1px solid #334155;text-align:center}
+    .footer-logo{width:120px;height:auto;margin-bottom:20px;opacity:.8}
+    .footer-text{font-size:12px;color:#64748b;margin-bottom:16px}
+    .copyright{font-size:11px;color:#475569;border-top:1px solid #334155;padding-top:20px}
+    @media screen and (max-width:600px){.header,.content,.footer{padding:32px 24px}.payment-card{padding:24px}.info-grid{flex-direction:column}.amount{font-size:32px}}
+  </style>
+</head>
+<body>
+  <div class="wrapper">
+    <div class="main">
+      <div class="header">
+        <img src="https://oymjjceuiotxfbpwsdym.supabase.co/storage/v1/object/public/Logo/logo-white.png" alt="Kredi Takip" class="logo">
+        <h1 class="header-title">Aboneliğiniz Başladı 🎉</h1>
+        <p class="header-subtitle">Ödemeniz başarıyla alındı</p>
+      </div>
+      <div class="content">
+        <p class="greeting">Merhaba <strong>${data.userName || "değerli üyemiz"}</strong>,</p>
+        <p class="intro">Ödemeniz başarıyla alındı ve <strong>${data.planName}</strong> aboneliğiniz aktif edildi. Tüm premium özelliklere artık erişebilirsiniz!</p>
+        <div class="payment-card">
+          <div class="plan-section">
+            <div class="plan-name">${data.planName}</div>
+          </div>
+          <div class="amount-section">
+            <div class="amount">${data.amount.toFixed(2)} <small>${data.currency}</small></div>
+          </div>
+          <div class="info-grid">
+            <div class="info-item">
+              <div class="info-label">Başlangıç</div>
+              <div class="info-value">${fmt(data.startDate)}</div>
+            </div>
+            <div class="info-item">
+              <div class="info-label">Geçerlilik</div>
+              <div class="info-value">${fmt(data.expiresAt)}</div>
+            </div>
+          </div>
+        </div>
+        <div style="text-align:center">
+          <a href="https://www.kreditakip.com.tr/uygulama/ana-sayfa" class="cta-button">Uygulamaya Git</a>
+        </div>
+      </div>
+      <div class="footer">
+        <img src="https://oymjjceuiotxfbpwsdym.supabase.co/storage/v1/object/public/Logo/logo-white.png" alt="Kredi Takip" class="footer-logo">
+        <p class="footer-text">Bu e-posta otomatik olarak gönderilmiştir.<br>Herhangi bir sorunuz için info@kreditakip.com.tr adresinden bize ulaşabilirsiniz.</p>
+        <div class="copyright">© ${new Date().getFullYear()} kreditakip.com.tr • Tüm hakları saklıdır</div>
+      </div>
+    </div>
+  </div>
+</body>
+</html>
+  `
+}
+
+function generateWelcomeEmailText(data: SubscriptionEmailData): string {
+  const fmt = (d: string) => new Date(d).toLocaleDateString("tr-TR")
+  return `
+Aboneliğiniz Başladı
+
+Merhaba ${data.userName || "değerli üyemiz"},
+
+Ödemeniz başarıyla alındı ve ${data.planName} aboneliğiniz aktif edildi. Tüm premium özelliklere artık erişebilirsiniz!
+
+Plan: ${data.planName}
+Tutar: ${data.amount.toFixed(2)} ${data.currency}
+Başlangıç: ${fmt(data.startDate)}
+Geçerlilik: ${fmt(data.expiresAt)}
+
+Uygulamaya gidin: https://www.kreditakip.com.tr/uygulama/ana-sayfa
+
+---
+© ${new Date().getFullYear()} Kredi Takip
+  `
+}
+
 function generateSubscriptionEmailHTML(data: SubscriptionEmailData): string {
   return `
 <!DOCTYPE html>

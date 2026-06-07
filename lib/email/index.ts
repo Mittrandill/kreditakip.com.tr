@@ -1,6 +1,7 @@
 // Email utilities - export all email functions
 export {
   sendNewSubscriptionNotification,
+  sendSubscriptionWelcomeNotification,
   sendRenewalSuccessNotification,
   sendRenewalFailedNotification,
   sendUpcomingRenewalNotification,

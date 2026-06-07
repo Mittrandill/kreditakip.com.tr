@@ -1,6 +1,7 @@
 import { type NextRequest } from "next/server"
 import { createClient } from "@supabase/supabase-js"
 import { verifyShopierOSB, decodeShopierPayload, getPlanIdFromProductId } from "@/lib/shopier-client"
+import { sendSubscriptionWelcomeNotification, sendNewSubscriptionNotification } from "@/lib/email/subscription-notification"
 
 export const dynamic = "force-dynamic"
 export const runtime = "nodejs"
@@ -10,6 +11,13 @@ const PLAN_LIMITS: Record<string, { ocr: number; risk: number }> = {
   "pro-yearly":      { ocr: 10,     risk: 5 },
   "premium-monthly": { ocr: 999999, risk: 999999 },
   "premium-yearly":  { ocr: 999999, risk: 999999 },
+}
+
+const PLAN_LABELS: Record<string, string> = {
+  "pro-monthly":     "Pro Aylık",
+  "pro-yearly":      "Pro Yıllık",
+  "premium-monthly": "Premium Aylık",
+  "premium-yearly":  "Premium Yıllık",
 }
 
 function getPlanType(planId: string): "pro" | "premium" {
@@ -294,4 +302,25 @@ async function processOrder(supabase: any, payload: ReturnType<typeof decodeShop
   })
 
   console.log("[Shopier OSB] Subscription activated:", { userId, planId, orderid })
+
+  // Send notification emails (non-blocking — failure must not break activation)
+  try {
+    const planLabel = PLAN_LABELS[planId] ?? planId
+    const buyerName = [payload.buyername, payload.buyersurname].filter(Boolean).join(" ").trim()
+    const emailData = {
+      userName: buyerName,
+      userEmail: email,
+      planName: planLabel,
+      amount: parseFloat(price),
+      currency: "TRY",
+      startDate: startDate.toISOString(),
+      expiresAt: expiresAt.toISOString(),
+    }
+    // Customer welcome/activation email
+    await sendSubscriptionWelcomeNotification(emailData)
+    // Admin notification
+    await sendNewSubscriptionNotification(emailData)
+  } catch (mailErr) {
+    console.error("[Shopier OSB] Failed to send notification emails:", mailErr)
+  }
 }
