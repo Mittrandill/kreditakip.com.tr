@@ -39,23 +39,46 @@ export async function POST(request: NextRequest) {
     return new Response("success", { status: 200 })
   }
 
+  const supabase: any = createClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.SERVICE_ROLE_KEY!,
+    { auth: { autoRefreshToken: false, persistSession: false } }
+  )
+
   if (!res || !receivedHash) {
     console.error("[Shopier OSB] Missing res or hash field")
     return new Response("success", { status: 200 })
   }
 
-  // Signature verification
-  if (!verifyShopierOSB(res, receivedHash)) {
-    console.error("[Shopier OSB] Invalid signature — possible fraud attempt")
-    return new Response("success", { status: 200 })
-  }
+  // Signature verification — on failure, record for diagnosis instead of
+  // silently dropping (this is how a real paid order can vanish if the
+  // OSB username/password env vars are wrong).
+  const sigValid = verifyShopierOSB(res, receivedHash)
 
-  // Decode payload
-  let payload
+  // Decode payload (attempt even if signature failed, for diagnostics)
+  let payload: ReturnType<typeof decodeShopierPayload> | null = null
   try {
     payload = decodeShopierPayload(res)
   } catch {
     console.error("[Shopier OSB] Failed to decode payload")
+  }
+
+  if (!sigValid) {
+    console.error("[Shopier OSB] INVALID SIGNATURE — check SHOPIER_OSB_USERNAME/PASSWORD env vars")
+    await supabase.from("shopier_unmatched_orders").insert({
+      order_id: payload ? String(payload.orderid) : "unknown",
+      buyer_email: payload?.email ?? "unknown",
+      product_id: payload ? String(payload.productid) : "unknown",
+      plan_id: null,
+      amount: payload ? parseFloat(payload.price) : null,
+      raw_payload: payload,
+      raw_body: res,
+      reason: "invalid_signature",
+    }).catch((e: any) => console.error("[Shopier OSB] Failed to log invalid-sig order:", e))
+    return new Response("success", { status: 200 })
+  }
+
+  if (!payload) {
     return new Response("success", { status: 200 })
   }
 
@@ -65,12 +88,6 @@ export async function POST(request: NextRequest) {
     console.log("[Shopier OSB] Test notification received — responding success, skipping DB")
     return new Response("success", { status: 200 })
   }
-
-  const supabase: any = createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.SERVICE_ROLE_KEY!,
-    { auth: { autoRefreshToken: false, persistSession: false } }
-  )
 
   try {
     await processOrder(supabase, payload)
@@ -107,9 +124,10 @@ async function processOrder(supabase: any, payload: ReturnType<typeof decodeShop
       order_id: String(orderid),
       buyer_email: email,
       product_id: String(productid),
-      plan_id: "unknown",
+      plan_id: null,
       amount: parseFloat(price),
       raw_payload: payload,
+      reason: "unknown_product",
     })
     return
   }
@@ -125,12 +143,13 @@ async function processOrder(supabase: any, payload: ReturnType<typeof decodeShop
   if (!user) {
     console.error("[Shopier OSB] No user found for email:", email, "order:", orderid)
     await supabase.from("shopier_unmatched_orders").insert({
-      order_id: orderid,
+      order_id: String(orderid),
       buyer_email: email,
       product_id: String(productid),
       plan_id: planId,
       amount: parseFloat(price),
       raw_payload: payload,
+      reason: "user_not_found",
     })
     return
   }
