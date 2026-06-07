@@ -99,7 +99,18 @@ async function processOrder(supabase: any, payload: ReturnType<typeof decodeShop
   // Map product to plan
   const planId = getPlanIdFromProductId(String(productid))
   if (!planId) {
-    console.error("[Shopier OSB] Unknown product ID:", productid)
+    // Don't lose the payment — record it so admin can match manually.
+    // Shopier's OSB productid may differ from the product URL slug, so log
+    // the full payload here to discover the real productid → plan mapping.
+    console.error("[Shopier OSB] Unknown product ID:", productid, "full payload:", JSON.stringify(payload))
+    await supabase.from("shopier_unmatched_orders").insert({
+      order_id: String(orderid),
+      buyer_email: email,
+      product_id: String(productid),
+      plan_id: "unknown",
+      amount: parseFloat(price),
+      raw_payload: payload,
+    })
     return
   }
 
