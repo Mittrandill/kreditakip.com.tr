@@ -17,16 +17,17 @@ export const SHOPIER_PRODUCT_PLAN_MAP: Record<string, string> = {
 
 export interface ShopierOSBPayload {
   email: string
-  orderid: string
-  currency: string
+  orderid: string | number
+  currency: string | number  // 0=TL, 1=USD, 2=EUR
   price: string
   buyername: string
   buyersurname: string
   productcount: number
-  productid: string
+  productid: string | number
   productlist: unknown[]
+  chartdetails?: unknown
   customernote?: string
-  istest: boolean
+  istest: 0 | 1  // 0=canlı, 1=test
 }
 
 /**
