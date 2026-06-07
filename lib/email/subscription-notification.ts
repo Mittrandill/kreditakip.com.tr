@@ -12,6 +12,19 @@ interface SubscriptionEmailData {
   expiresAt: string
 }
 
+/**
+ * HTML-escape attacker-controlled fields (buyer name, email) before placing
+ * them in email HTML, to prevent HTML injection / phishing in the rendered mail.
+ */
+function esc(s: unknown): string {
+  return String(s ?? "")
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#39;")
+}
+
 export async function sendNewSubscriptionNotification(data: SubscriptionEmailData) {
   try {
     const MAILJET_API_KEY = process.env.MAILJET_API_KEY
@@ -164,11 +177,11 @@ function generateWelcomeEmailHTML(data: SubscriptionEmailData): string {
         <p class="header-subtitle">Ödemeniz başarıyla alındı</p>
       </div>
       <div class="content">
-        <p class="greeting">Merhaba <strong>${data.userName || "değerli üyemiz"}</strong>,</p>
-        <p class="intro">Ödemeniz başarıyla alındı ve <strong>${data.planName}</strong> aboneliğiniz aktif edildi. Tüm premium özelliklere artık erişebilirsiniz!</p>
+        <p class="greeting">Merhaba <strong>${esc(data.userName) || "değerli üyemiz"}</strong>,</p>
+        <p class="intro">Ödemeniz başarıyla alındı ve <strong>${esc(data.planName)}</strong> aboneliğiniz aktif edildi. Tüm premium özelliklere artık erişebilirsiniz!</p>
         <div class="payment-card">
           <div class="plan-section">
-            <div class="plan-name">${data.planName}</div>
+            <div class="plan-name">${esc(data.planName)}</div>
           </div>
           <div class="amount-section">
             <div class="amount">${data.amount.toFixed(2)} <small>${data.currency}</small></div>
@@ -436,21 +449,21 @@ function generateSubscriptionEmailHTML(data: SubscriptionEmailData): string {
 
         <div class="payment-card">
           <div class="plan-section">
-            <div class="plan-name">${data.planName}</div>
+            <div class="plan-name">${esc(data.planName)}</div>
           </div>
 
           <div class="amount-section">
-            <div class="amount">${data.amount.toFixed(2)} ${data.currency}</div>
+            <div class="amount">${data.amount.toFixed(2)} ${esc(data.currency)}</div>
           </div>
 
           <div class="info-grid">
             <div class="info-item">
               <div class="info-label">Kullanıcı</div>
-              <div class="info-value">${data.userName}</div>
+              <div class="info-value">${esc(data.userName)}</div>
             </div>
             <div class="info-item">
               <div class="info-label">E-posta</div>
-              <div class="info-value">${data.userEmail}</div>
+              <div class="info-value">${esc(data.userEmail)}</div>
             </div>
           </div>
 

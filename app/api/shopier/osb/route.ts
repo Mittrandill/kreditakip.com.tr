@@ -306,7 +306,13 @@ async function processOrder(supabase: any, payload: ReturnType<typeof decodeShop
   // Send notification emails (non-blocking — failure must not break activation)
   try {
     const planLabel = PLAN_LABELS[planId] ?? planId
-    const buyerName = [payload.buyername, payload.buyersurname].filter(Boolean).join(" ").trim()
+    // Buyer name comes from Shopier (attacker-controllable); trim + length-cap.
+    // HTML-escaping happens in the email template layer (see esc() there).
+    const buyerName = [payload.buyername, payload.buyersurname]
+      .filter(Boolean)
+      .join(" ")
+      .trim()
+      .slice(0, 100)
     const emailData = {
       userName: buyerName,
       userEmail: email,
