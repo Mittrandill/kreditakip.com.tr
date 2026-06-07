@@ -16,6 +16,37 @@ function getPlanType(planId: string): "pro" | "premium" {
   return planId.startsWith("premium") ? "premium" : "pro"
 }
 
+function makeClient() {
+  return createClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.SERVICE_ROLE_KEY!,
+    { auth: { autoRefreshToken: false, persistSession: false } }
+  )
+}
+
+// Log every incoming request so we can confirm Shopier is actually hitting us
+async function logRequest(supabase: any, request: NextRequest, method: string, rawBody: string) {
+  try {
+    await supabase.from("shopier_osb_log").insert({
+      method,
+      content_type: request.headers.get("content-type"),
+      raw_body: rawBody?.slice(0, 5000) ?? null,
+      query_string: request.nextUrl.search || null,
+      user_agent: request.headers.get("user-agent"),
+      source_ip: request.headers.get("x-forwarded-for") || request.headers.get("x-real-ip"),
+    })
+  } catch (e) {
+    console.error("[Shopier OSB] Failed to write debug log:", e)
+  }
+}
+
+// Shopier may probe the URL with a GET; log it so we see any contact at all.
+export async function GET(request: NextRequest) {
+  const supabase: any = makeClient()
+  await logRequest(supabase, request, "GET", "")
+  return new Response("success", { status: 200 })
+}
+
 /**
  * POST /api/shopier/osb
  *
@@ -25,25 +56,29 @@ function getPlanType(planId: string): "pro" | "premium" {
  * Must respond with HTTP 200 body "success".
  */
 export async function POST(request: NextRequest) {
+  const supabase: any = makeClient()
+
+  // Read raw body ONCE, log it, then parse.
+  let rawText = ""
+  try {
+    rawText = await request.text()
+  } catch {
+    console.error("[Shopier OSB] Failed to read body")
+  }
+
+  await logRequest(supabase, request, "POST", rawText)
+
   // Parse form-encoded body (application/x-www-form-urlencoded)
   let res: string | null = null
   let receivedHash: string | null = null
-
   try {
-    const text = await request.text()
-    const params = new URLSearchParams(text)
+    const params = new URLSearchParams(rawText)
     res = params.get("res")
     receivedHash = params.get("hash")
   } catch {
     console.error("[Shopier OSB] Failed to parse body")
     return new Response("success", { status: 200 })
   }
-
-  const supabase: any = createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.SERVICE_ROLE_KEY!,
-    { auth: { autoRefreshToken: false, persistSession: false } }
-  )
 
   if (!res || !receivedHash) {
     console.error("[Shopier OSB] Missing res or hash field")
