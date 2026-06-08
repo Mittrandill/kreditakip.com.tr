@@ -411,13 +411,17 @@ export function SubscriptionOperations({ users: initialUsers }: { users: UserRow
                             <span className="text-white/60 text-xs font-medium uppercase tracking-wide">
                               Mevcut Abonelik
                             </span>
-                            {exSub.payment_provider ? (
-                              <Badge className="bg-blue-500/20 text-blue-400 border-blue-500/20 text-xs ml-auto">
-                                💳 {exSub.payment_provider}
+                            {exSub.plan_type === "free" || !exSub.plan_type ? null : exSub.payment_provider === "shopier" ? (
+                              <Badge className="bg-emerald-500/20 text-emerald-400 border-emerald-500/20 text-xs ml-auto">
+                                Shopier
+                              </Badge>
+                            ) : exSub.payment_provider ? (
+                              <Badge className="bg-white/10 text-white/60 border-white/10 text-xs ml-auto capitalize">
+                                {exSub.payment_provider}
                               </Badge>
                             ) : (
-                              <Badge className="bg-purple-500/20 text-purple-400 border-purple-500/20 text-xs ml-auto">
-                                ⚡ Manuel
+                              <Badge className="bg-purple-500/20 text-purple-300 border-purple-500/20 text-xs ml-auto">
+                                Manuel
                               </Badge>
                             )}
                           </div>

@@ -2,6 +2,8 @@ import { checkAdminAccess } from "@/lib/admin-check"
 import { createSupabaseAdmin } from "@/lib/supabase-server"
 import { AdminLayoutWrapper } from "@/components/admin-layout-wrapper"
 import { SubscriptionOperations } from "@/components/admin/subscription-operations"
+import { StatCard } from "@/components/admin/stat-card"
+import { Users, Crown, Zap, UserCircle } from "lucide-react"
 
 export default async function SubscriptionOperationsPage() {
   const { session } = await checkAdminAccess()
@@ -17,17 +19,29 @@ export default async function SubscriptionOperationsPage() {
     `)
     .order("created_at", { ascending: false })
 
+  const rows = (users as any[]) || []
+  const activeOf = (u: any) => (u.subscriptions || []).find((s: any) => s.status === "active")
+  const premiumCount = rows.filter((u) => activeOf(u)?.plan_type === "premium").length
+  const proCount = rows.filter((u) => activeOf(u)?.plan_type === "pro").length
+  const freeCount = rows.length - premiumCount - proCount
+
   return (
     <AdminLayoutWrapper userEmail={session.user.email || ""}>
       <div className="space-y-8">
         <div>
-          <h1 className="text-4xl font-bold mb-2">Abonelik İşlemleri</h1>
-          <p className="text-white/60">
-            Kullanıcıların aboneliklerini görüntüleyin ve yönetin
-          </p>
+          <p className="text-xs font-semibold uppercase tracking-[0.18em] text-emerald-400/80">Abonelik</p>
+          <h1 className="mt-2 text-3xl lg:text-4xl font-bold tracking-tight text-white">Abonelik İşlemleri</h1>
+          <p className="mt-2 text-sm text-white/50">Kullanıcı aboneliklerini görüntüleyin, plan atayın veya iptal edin.</p>
         </div>
 
-        <SubscriptionOperations users={(users as any) || []} />
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+          <StatCard label="Toplam Kullanıcı" value={rows.length} hint="Kayıtlı" icon={Users} accent="emerald" />
+          <StatCard label="Premium" value={premiumCount} hint="Aktif premium" icon={Crown} accent="purple" />
+          <StatCard label="Pro" value={proCount} hint="Aktif pro" icon={Zap} accent="blue" />
+          <StatCard label="Ücretsiz" value={freeCount} hint="Free / trial" icon={UserCircle} accent="slate" />
+        </div>
+
+        <SubscriptionOperations users={rows} />
       </div>
     </AdminLayoutWrapper>
   )
