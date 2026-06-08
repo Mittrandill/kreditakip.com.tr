@@ -75,13 +75,13 @@ export default async function InvoicesManagement() {
     .select("*", { count: "exact", head: true })
     .eq("status", "overdue")
 
-  // Calculate total revenue
+  // Revenue from ACTUAL completed payments, not invoice PDF status
   const { data: revenueData } = await supabase
-    .from("invoices")
+    .from("payment_transactions")
     .select("amount")
-    .eq("status", "ready") // Sadece hazır faturalar gelir olarak sayılır
+    .eq("status", "completed")
 
-  const totalRevenue = revenueData?.reduce((sum, inv) => sum + Number(inv.amount), 0) || 0
+  const totalRevenue = revenueData?.reduce((sum, t) => sum + Number(t.amount), 0) || 0
 
   return (
     <AdminLayoutWrapper userEmail={session.user.email || ""}>

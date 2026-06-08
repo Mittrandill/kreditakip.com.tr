@@ -102,17 +102,14 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // Get public URL
-    const {
-      data: { publicUrl },
-    } = supabase.storage.from("invoices").getPublicUrl(fileName)
-
-    // Update invoice with file URL, invoice number from filename, and mark as ready
+    // Store the RAW storage path (bucket is private). The download endpoint
+    // issues a short-lived signed URL from this path. (It also still supports
+    // legacy public URLs for older invoices.)
     const { data: updatedInvoice, error: updateError } = await supabase
       .from("invoices")
       .update({
         invoice_number: invoiceNumberFromFile, // PDF dosya adını fatura numarası yap
-        file_url: publicUrl,
+        file_url: fileName,
         file_name: file.name,
         status: "ready", // Fatura hazır - kullanıcı indirebilir
       })
@@ -132,7 +129,7 @@ export async function POST(request: NextRequest) {
     // Revalidate the invoices page to clear Next.js cache
     revalidatePath("/admin/faturalar")
 
-    return NextResponse.json({ url: publicUrl, path: data.path, invoice: updatedInvoice })
+    return NextResponse.json({ path: data.path, invoice: updatedInvoice })
   } catch (error) {
     console.error("Error in POST /api/admin/invoices/upload:", error)
     return NextResponse.json({ error: "Internal server error" }, { status: 500 })

@@ -37,12 +37,15 @@ export default async function AdminDashboard() {
     .select("*", { count: "exact", head: true })
     .eq("status", "preparing")
 
+  // Revenue is computed from ACTUAL completed payments (payment_transactions),
+  // not invoice PDF status. Shopier/PayTR payments land here as 'completed'
+  // regardless of whether an invoice PDF has been uploaded yet.
   const { data: revenueData } = await supabase
-    .from("invoices")
+    .from("payment_transactions")
     .select("amount")
-    .in("status", ["ready", "paid"])
+    .eq("status", "completed")
 
-  const totalRevenue = revenueData?.reduce((sum, inv) => sum + Number(inv.amount), 0) || 0
+  const totalRevenue = revenueData?.reduce((sum, t) => sum + Number(t.amount), 0) || 0
 
   // Get blog statistics
   const { count: totalPosts } = await supabase
@@ -155,19 +158,19 @@ export default async function AdminDashboard() {
     })
   }
 
-  // Revenue data by month
-  const { data: allInvoices } = await supabase
-    .from("invoices")
+  // Monthly revenue from completed payments
+  const { data: allPayments } = await supabase
+    .from("payment_transactions")
     .select("amount, created_at")
-    .in("status", ["ready", "paid"])
+    .eq("status", "completed")
 
   const revenueChartData = months.map((m) => {
-    const monthRevenue = allInvoices
-      ?.filter((inv) => {
-        const invDate = new Date(inv.created_at)
-        return invDate >= new Date(m.startDate) && invDate <= new Date(m.endDate)
+    const monthRevenue = allPayments
+      ?.filter((t) => {
+        const tDate = new Date(t.created_at)
+        return tDate >= new Date(m.startDate) && tDate <= new Date(m.endDate)
       })
-      .reduce((sum, inv) => sum + Number(inv.amount), 0) || 0
+      .reduce((sum, t) => sum + Number(t.amount), 0) || 0
 
     return {
       month: m.month,
