@@ -41,18 +41,18 @@ export async function middleware(request: NextRequest) {
   // Control referrer information
   headers.set("Referrer-Policy", "strict-origin-when-cross-origin")
 
-  // Content Security Policy - PayTR ve Vercel için gerekli domain'ler
+  // Content Security Policy
   headers.set(
     "Content-Security-Policy",
     [
       "default-src 'self'",
-      "script-src 'self' 'unsafe-eval' 'unsafe-inline' https://va.vercel-scripts.com https://www.paytr.com https://*.paytr.com",
-      "style-src 'self' 'unsafe-inline' https://www.paytr.com https://*.paytr.com",
+      "script-src 'self' 'unsafe-eval' 'unsafe-inline' https://va.vercel-scripts.com",
+      "style-src 'self' 'unsafe-inline'",
       "img-src 'self' data: https:",
       "font-src 'self' data:",
-      "connect-src 'self' https://*.supabase.co https://o120955.ingest.sentry.io https://generativelanguage.googleapis.com https://va.vercel-scripts.com https://www.paytr.com https://*.paytr.com",
-      "frame-src 'self' https://www.paytr.com https://*.paytr.com",
-      "form-action 'self' https://www.paytr.com https://*.paytr.com",
+      "connect-src 'self' https://*.supabase.co https://o120955.ingest.sentry.io https://generativelanguage.googleapis.com https://va.vercel-scripts.com",
+      "frame-src 'self'",
+      "form-action 'self'",
       "frame-ancestors 'none'",
     ].join('; ') + ';',
   )
