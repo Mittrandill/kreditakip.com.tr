@@ -1,10 +1,10 @@
 import { checkAdminAccess } from "@/lib/admin-check"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { FileText, FolderOpen, Eye, TrendingUp, Users, Receipt, CreditCard, DollarSign, ShieldAlert, Scan, Activity, Zap, Save } from "lucide-react"
+import { FileText, FolderOpen, Eye, TrendingUp, Users, Receipt, CreditCard, DollarSign, ShieldAlert, Scan, Activity, Zap, Save, ArrowUpRight } from "lucide-react"
 import { createSupabaseAdmin } from "@/lib/supabase-server"
 import Link from "next/link"
 import { AdminLayoutWrapper } from "@/components/admin-layout-wrapper"
 import { AnalyticsCharts } from "@/components/admin/analytics-charts"
+import { StatCard, SectionTitle } from "@/components/admin/stat-card"
 
 export default async function AdminDashboard() {
   const { session } = await checkAdminAccess()
@@ -202,311 +202,113 @@ export default async function AdminDashboard() {
     { name: "Free", value: freeUsers || 0, color: "#6b7280" },
   ].filter((item) => item.value > 0)
 
+  const quickActions = [
+    { href: "/admin/kullanicilar", label: "Kullanıcılar", desc: "Kullanıcıları görüntüle", icon: Users },
+    { href: "/admin/faturalar", label: "Faturalar", desc: "Faturaları yönet", icon: Receipt },
+    { href: "/admin/odeme-risk-takip", label: "Risk Takip", desc: "Ödeme güvenliği", icon: ShieldAlert },
+    { href: "/admin/blog/posts/new", label: "Yeni Yazı", desc: "Blog yazısı oluştur", icon: FileText },
+    { href: "/admin/blog/categories", label: "Kategoriler", desc: "Kategori yönet", icon: FolderOpen },
+  ]
+
   return (
     <AdminLayoutWrapper userEmail={session.user.email || ""}>
-      <div className="space-y-8">
-      <div>
-        <h1 className="text-4xl font-bold mb-2">Admin Dashboard</h1>
-        <p className="text-white/60">Platform yönetimi ve istatistikler</p>
-      </div>
-
-      {/* User & Subscription Statistics */}
-      <div>
-        <h2 className="text-xl font-semibold text-white mb-4">Kullanıcı ve Abonelikler</h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-          <Card className="bg-black/20 border-white/10 backdrop-blur-xl">
-            <CardHeader className="flex flex-row items-center justify-between pb-2">
-              <CardTitle className="text-sm font-medium text-white/80">Toplam Kullanıcı</CardTitle>
-              <Users className="h-4 w-4 text-emerald-400" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-3xl font-bold text-white">{totalUsers || 0}</div>
-              <p className="text-xs text-white/60 mt-1">Kayıtlı Kullanıcı</p>
-            </CardContent>
-          </Card>
-
-          <Card className="bg-black/20 border-white/10 backdrop-blur-xl">
-            <CardHeader className="flex flex-row items-center justify-between pb-2">
-              <CardTitle className="text-sm font-medium text-white/80">Aktif Abonelik</CardTitle>
-              <CreditCard className="h-4 w-4 text-teal-400" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-3xl font-bold text-white">{activeSubscriptions || 0}</div>
-              <p className="text-xs text-white/60 mt-1">Ödeme yapan kullanıcı</p>
-            </CardContent>
-          </Card>
-
-          <Card className="bg-black/20 border-white/10 backdrop-blur-xl">
-            <CardHeader className="flex flex-row items-center justify-between pb-2">
-              <CardTitle className="text-sm font-medium text-white/80">Toplam Gelir</CardTitle>
-              <DollarSign className="h-4 w-4 text-purple-400" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-3xl font-bold text-white">{totalRevenue.toLocaleString("tr-TR")} ₺</div>
-              <p className="text-xs text-white/60 mt-1">Tahsil edilen</p>
-            </CardContent>
-          </Card>
-
-          <Card className="bg-black/20 border-white/10 backdrop-blur-xl">
-            <CardHeader className="flex flex-row items-center justify-between pb-2">
-              <CardTitle className="text-sm font-medium text-white/80">Faturalar</CardTitle>
-              <Receipt className="h-4 w-4 text-yellow-400" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-3xl font-bold text-white">{totalInvoices || 0}</div>
-              <p className="text-xs text-white/60 mt-1">{readyInvoices || 0} hazır, {preparingInvoices || 0} bekliyor</p>
-            </CardContent>
-          </Card>
-        </div>
-      </div>
-
-      {/* Blog Statistics */}
-      <div>
-        <h2 className="text-xl font-semibold text-white mb-4">Blog İstatistikleri</h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-          <Card className="bg-black/20 border-white/10 backdrop-blur-xl">
-            <CardHeader className="flex flex-row items-center justify-between pb-2">
-              <CardTitle className="text-sm font-medium text-white/80">Toplam Yazı</CardTitle>
-              <FileText className="h-4 w-4 text-emerald-400" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-3xl font-bold text-white">{totalPosts || 0}</div>
-              <p className="text-xs text-white/60 mt-1">Tüm blog yazıları</p>
-            </CardContent>
-          </Card>
-
-          <Card className="bg-black/20 border-white/10 backdrop-blur-xl">
-            <CardHeader className="flex flex-row items-center justify-between pb-2">
-              <CardTitle className="text-sm font-medium text-white/80">Yayında</CardTitle>
-              <TrendingUp className="h-4 w-4 text-teal-400" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-3xl font-bold text-white">{publishedPosts || 0}</div>
-              <p className="text-xs text-white/60 mt-1">Yayınlanmış yazılar</p>
-            </CardContent>
-          </Card>
-
-          <Card className="bg-black/20 border-white/10 backdrop-blur-xl">
-            <CardHeader className="flex flex-row items-center justify-between pb-2">
-              <CardTitle className="text-sm font-medium text-white/80">Taslak</CardTitle>
-              <FileText className="h-4 w-4 text-yellow-400" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-3xl font-bold text-white">{draftPosts || 0}</div>
-              <p className="text-xs text-white/60 mt-1">Taslak yazılar</p>
-            </CardContent>
-          </Card>
-
-          <Card className="bg-black/20 border-white/10 backdrop-blur-xl">
-            <CardHeader className="flex flex-row items-center justify-between pb-2">
-              <CardTitle className="text-sm font-medium text-white/80">Toplam Görüntüleme</CardTitle>
-              <Eye className="h-4 w-4 text-purple-400" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-3xl font-bold text-white">{totalViews.toLocaleString()}</div>
-              <p className="text-xs text-white/60 mt-1">Tüm yazıların görüntülenme sayısı</p>
-            </CardContent>
-          </Card>
-        </div>
-      </div>
-
-      {/* Credit & Payment Statistics */}
-      <div>
-        <h2 className="text-xl font-semibold text-white mb-4">Kredi ve Ödeme Takibi</h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-          <Card className="bg-black/20 border-white/10 backdrop-blur-xl">
-            <CardHeader className="flex flex-row items-center justify-between pb-2">
-              <CardTitle className="text-sm font-medium text-white/80">Toplam Kredi</CardTitle>
-              <CreditCard className="h-4 w-4 text-purple-400" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-3xl font-bold text-white">{totalCreditsCount?.toLocaleString() || 0}</div>
-              <p className="text-xs text-white/60 mt-1">Sisteme kayıtlı</p>
-            </CardContent>
-          </Card>
-
-          <Card className="bg-black/20 border-white/10 backdrop-blur-xl">
-            <CardHeader className="flex flex-row items-center justify-between pb-2">
-              <CardTitle className="text-sm font-medium text-white/80">Ödeme Planları</CardTitle>
-              <Receipt className="h-4 w-4 text-teal-400" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-3xl font-bold text-white">{totalPaymentPlans?.toLocaleString() || 0}</div>
-              <p className="text-xs text-white/60 mt-1">{pendingPaymentPlans || 0} beklemede</p>
-            </CardContent>
-          </Card>
-
-          <Card className="bg-black/20 border-white/10 backdrop-blur-xl">
-            <CardHeader className="flex flex-row items-center justify-between pb-2">
-              <CardTitle className="text-sm font-medium text-white/80">Bildirimler</CardTitle>
-              <Activity className="h-4 w-4 text-yellow-400" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-3xl font-bold text-white">{totalNotifications?.toLocaleString() || 0}</div>
-              <p className="text-xs text-white/60 mt-1">{unreadNotifications || 0} okunmadı</p>
-            </CardContent>
-          </Card>
-
-          <Card className="bg-black/20 border-white/10 backdrop-blur-xl">
-            <CardHeader className="flex flex-row items-center justify-between pb-2">
-              <CardTitle className="text-sm font-medium text-white/80">Bankalar</CardTitle>
-              <TrendingUp className="h-4 w-4 text-emerald-400" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-3xl font-bold text-white">55</div>
-              <p className="text-xs text-white/60 mt-1">Entegre edilmiş</p>
-            </CardContent>
-          </Card>
-        </div>
-      </div>
-
-      {/* Usage Statistics */}
-      <div>
-        <h2 className="text-xl font-semibold text-white mb-4">Kullanım İstatistikleri</h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-          <Card className="bg-black/20 border-white/10 backdrop-blur-xl">
-            <CardHeader className="flex flex-row items-center justify-between pb-2">
-              <CardTitle className="text-sm font-medium text-white/80">OCR Analizi</CardTitle>
-              <Scan className="h-4 w-4 text-blue-400" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-3xl font-bold text-white">{totalOcrAnalyses.toLocaleString()}</div>
-              <p className="text-xs text-white/60 mt-1">Toplam PDF analizi</p>
-            </CardContent>
-          </Card>
-
-          <Card className="bg-black/20 border-white/10 backdrop-blur-xl">
-            <CardHeader className="flex flex-row items-center justify-between pb-2">
-              <CardTitle className="text-sm font-medium text-white/80">OCR'dan Kaydedilen</CardTitle>
-              <Save className="h-4 w-4 text-emerald-400" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-3xl font-bold text-white">{totalSavedCredits.toLocaleString()}</div>
-              <p className="text-xs text-white/60 mt-1">PDF'den otomatik</p>
-            </CardContent>
-          </Card>
-
-          <Card className="bg-black/20 border-white/10 backdrop-blur-xl">
-            <CardHeader className="flex flex-row items-center justify-between pb-2">
-              <CardTitle className="text-sm font-medium text-white/80">Risk Analizi</CardTitle>
-              <ShieldAlert className="h-4 w-4 text-orange-400" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-3xl font-bold text-white">{totalRiskAnalyses.toLocaleString()}</div>
-              <p className="text-xs text-white/60 mt-1">Finansal sağlık raporu</p>
-            </CardContent>
-          </Card>
-
-          <Card className="bg-black/20 border-white/10 backdrop-blur-xl">
-            <CardHeader className="flex flex-row items-center justify-between pb-2">
-              <CardTitle className="text-sm font-medium text-white/80">Plan Dağılımı</CardTitle>
-              <Zap className="h-4 w-4 text-yellow-400" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-3xl font-bold text-white">{freeUsers || 0} / {proUsers || 0} / {premiumUsers || 0}</div>
-              <p className="text-xs text-white/60 mt-1">Free / Pro / Premium</p>
-            </CardContent>
-          </Card>
-        </div>
-      </div>
-
-      {/* Analytics Charts */}
-      <AnalyticsCharts
-        revenueData={revenueChartData}
-        userGrowthData={userGrowthData}
-        planDistribution={planDistribution}
-      />
-
-      {/* Quick Actions */}
-      <Card className="bg-black/20 border-white/10 backdrop-blur-xl">
-        <CardHeader>
-          <CardTitle className="text-white">Hızlı İşlemler</CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
-            <Link
-              href="/admin/kullanicilar"
-              className="flex items-center gap-4 p-4 bg-black/20 border border-white/10 rounded-lg hover:border-white/20 transition-all backdrop-blur-xl"
-            >
-              <div className="w-12 h-12 bg-black/40 border border-white/10 rounded-full flex items-center justify-center">
-                <Users className="h-6 w-6 text-white/60" />
-              </div>
-              <div>
-                <h3 className="font-semibold text-white">Kullanıcılar</h3>
-                <p className="text-sm text-white/60">Kullanıcıları görüntüle</p>
-              </div>
-            </Link>
-
-            <Link
-              href="/admin/faturalar"
-              className="flex items-center gap-4 p-4 bg-black/20 border border-white/10 rounded-lg hover:border-white/20 transition-all backdrop-blur-xl"
-            >
-              <div className="w-12 h-12 bg-black/40 border border-white/10 rounded-full flex items-center justify-center">
-                <Receipt className="h-6 w-6 text-white/60" />
-              </div>
-              <div>
-                <h3 className="font-semibold text-white">Faturalar</h3>
-                <p className="text-sm text-white/60">Faturaları yönet</p>
-              </div>
-            </Link>
-
-            <Link
-              href="/admin/odeme-risk-takip"
-              className="flex items-center gap-4 p-4 bg-black/20 border border-white/10 rounded-lg hover:border-white/20 transition-all backdrop-blur-xl"
-            >
-              <div className="w-12 h-12 bg-black/40 border border-white/10 rounded-full flex items-center justify-center">
-                <ShieldAlert className="h-6 w-6 text-white/60" />
-              </div>
-              <div>
-                <h3 className="font-semibold text-white">Risk Takip</h3>
-                <p className="text-sm text-white/60">Ödeme güvenliği</p>
-              </div>
-            </Link>
-
-            <Link
-              href="/admin/blog/posts/new"
-              className="flex items-center gap-4 p-4 bg-black/20 border border-white/10 rounded-lg hover:border-white/20 transition-all backdrop-blur-xl"
-            >
-              <div className="w-12 h-12 bg-black/40 border border-white/10 rounded-full flex items-center justify-center">
-                <FileText className="h-6 w-6 text-white/60" />
-              </div>
-              <div>
-                <h3 className="font-semibold text-white">Yeni Blog Yazısı</h3>
-                <p className="text-sm text-white/60">Blog yazısı oluştur</p>
-              </div>
-            </Link>
-
-            <Link
-              href="/admin/blog/categories"
-              className="flex items-center gap-4 p-4 bg-black/20 border border-white/10 rounded-lg hover:border-white/20 transition-all backdrop-blur-xl"
-            >
-              <div className="w-12 h-12 bg-black/40 border border-white/10 rounded-full flex items-center justify-center">
-                <FolderOpen className="h-6 w-6 text-white/60" />
-              </div>
-              <div>
-                <h3 className="font-semibold text-white">Kategoriler</h3>
-                <p className="text-sm text-white/60">Kategori yönet</p>
-              </div>
-            </Link>
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Category Stats */}
-      <Card className="bg-black/20 border-white/10 backdrop-blur-xl">
-        <CardHeader>
-          <CardTitle className="text-white">Kategoriler</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="flex items-center justify-between">
+      <div className="space-y-10">
+        {/* Hero header */}
+        <div className="relative overflow-hidden rounded-3xl border border-white/[0.07] bg-gradient-to-br from-emerald-950/40 via-[#0d1210] to-[#0a0c0b] p-7 lg:p-9">
+          <div className="pointer-events-none absolute -right-10 -top-16 h-64 w-64 rounded-full bg-emerald-500/10 blur-3xl" />
+          <div className="relative flex flex-col gap-6 md:flex-row md:items-end md:justify-between">
             <div>
-              <p className="text-2xl font-bold text-white">{totalCategories || 0}</p>
-              <p className="text-sm text-white/60">Toplam kategori</p>
+              <p className="text-xs font-semibold uppercase tracking-[0.18em] text-emerald-400/80">Genel Bakış</p>
+              <h1 className="mt-2 text-3xl lg:text-4xl font-bold tracking-tight text-white">Yönetim Paneli</h1>
+              <p className="mt-2 text-sm text-white/50">Platform metrikleri, gelir ve içerik durumu tek bakışta.</p>
             </div>
-            <FolderOpen className="h-8 w-8 text-emerald-400" />
+            <div className="flex items-center gap-8">
+              <div>
+                <p className="text-[11px] font-medium uppercase tracking-wider text-white/40">Toplam Gelir</p>
+                <p className="mt-1 text-2xl font-bold text-emerald-400 tabular-nums">{totalRevenue.toLocaleString("tr-TR")} ₺</p>
+              </div>
+              <div className="h-10 w-px bg-white/10" />
+              <div>
+                <p className="text-[11px] font-medium uppercase tracking-wider text-white/40">Aktif Üye</p>
+                <p className="mt-1 text-2xl font-bold text-white tabular-nums">{activeSubscriptions || 0}</p>
+              </div>
+            </div>
           </div>
-        </CardContent>
-      </Card>
+        </div>
+
+        {/* User & Subscription */}
+        <section>
+          <SectionTitle hint="kullanıcı & abonelik">Kullanıcılar ve Abonelikler</SectionTitle>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            <StatCard label="Toplam Kullanıcı" value={totalUsers || 0} hint="Kayıtlı kullanıcı" icon={Users} accent="emerald" />
+            <StatCard label="Aktif Abonelik" value={activeSubscriptions || 0} hint="Ödeme yapan kullanıcı" icon={CreditCard} accent="teal" />
+            <StatCard label="Toplam Gelir" value={`${totalRevenue.toLocaleString("tr-TR")} ₺`} hint="Tamamlanan ödemeler" icon={DollarSign} accent="emerald" />
+            <StatCard label="Faturalar" value={totalInvoices || 0} hint={`${readyInvoices || 0} hazır · ${preparingInvoices || 0} bekliyor`} icon={Receipt} accent="amber" />
+          </div>
+        </section>
+
+        {/* Plan distribution */}
+        <section>
+          <SectionTitle hint="plan dağılımı">Planlar</SectionTitle>
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            <StatCard label="Free Üye" value={freeUsers || 0} hint="Ücretsiz plan" icon={Users} accent="slate" />
+            <StatCard label="Pro Üye" value={proUsers || 0} hint="Pro abonelik" icon={Zap} accent="blue" />
+            <StatCard label="Premium Üye" value={premiumUsers || 0} hint="Premium abonelik" icon={TrendingUp} accent="purple" />
+          </div>
+        </section>
+
+        {/* Usage */}
+        <section>
+          <SectionTitle hint="özellik kullanımı">Kullanım İstatistikleri</SectionTitle>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            <StatCard label="OCR Analizi" value={totalOcrAnalyses.toLocaleString()} hint="Toplam PDF analizi" icon={Scan} accent="blue" />
+            <StatCard label="Kaydedilen Kredi" value={totalSavedCredits.toLocaleString()} hint="OCR'dan kaydedilen" icon={Save} accent="emerald" />
+            <StatCard label="Risk Analizi" value={totalRiskAnalyses.toLocaleString()} hint="Finansal sağlık raporu" icon={ShieldAlert} accent="rose" />
+            <StatCard label="Toplam Kredi" value={totalCreditsCount?.toLocaleString() || 0} hint="Sisteme kayıtlı" icon={CreditCard} accent="purple" />
+          </div>
+        </section>
+
+        {/* Content */}
+        <section>
+          <SectionTitle hint="blog & bildirim">İçerik</SectionTitle>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            <StatCard label="Blog Yazıları" value={totalPosts || 0} hint={`${publishedPosts || 0} yayında · ${draftPosts || 0} taslak`} icon={FileText} accent="emerald" />
+            <StatCard label="Görüntüleme" value={totalViews.toLocaleString()} hint="Tüm yazılar" icon={Eye} accent="teal" />
+            <StatCard label="Kategoriler" value={totalCategories || 0} hint="Toplam kategori" icon={FolderOpen} accent="amber" />
+            <StatCard label="Bildirimler" value={totalNotifications?.toLocaleString() || 0} hint={`${unreadNotifications || 0} okunmadı`} icon={Activity} accent="blue" />
+          </div>
+        </section>
+
+        {/* Charts */}
+        <AnalyticsCharts
+          revenueData={revenueChartData}
+          userGrowthData={userGrowthData}
+          planDistribution={planDistribution}
+        />
+
+        {/* Quick actions */}
+        <section>
+          <SectionTitle hint="kısayollar">Hızlı İşlemler</SectionTitle>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
+            {quickActions.map((action) => {
+              const Icon = action.icon
+              return (
+                <Link
+                  key={action.href}
+                  href={action.href}
+                  className="group relative overflow-hidden rounded-2xl border border-white/[0.07] bg-white/[0.02] p-5 transition-all duration-300 hover:bg-white/[0.04] hover:-translate-y-0.5"
+                >
+                  <ArrowUpRight className="absolute right-4 top-4 h-4 w-4 text-white/20 transition-all group-hover:text-emerald-400 group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
+                  <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-emerald-500/10 text-emerald-400 transition-colors group-hover:bg-emerald-500/20">
+                    <Icon className="h-5 w-5" />
+                  </div>
+                  <h3 className="mt-4 font-semibold text-white">{action.label}</h3>
+                  <p className="mt-0.5 text-xs text-white/45">{action.desc}</p>
+                </Link>
+              )
+            })}
+          </div>
+        </section>
       </div>
     </AdminLayoutWrapper>
   )

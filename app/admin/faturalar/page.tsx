@@ -1,13 +1,9 @@
 import { checkAdminAccess } from "@/lib/admin-check"
 import { createSupabaseAdmin } from "@/lib/supabase-server"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
-import { Button } from "@/components/ui/button"
 import { FileText, DollarSign, CheckCircle, Clock, XCircle } from "lucide-react"
-import Link from "next/link"
 import { AdminLayoutWrapper } from "@/components/admin-layout-wrapper"
-import { InvoiceUploadButton } from "@/components/invoice-upload-button"
 import { InvoicesTabs } from "@/components/admin/invoices-tabs"
+import { StatCard } from "@/components/admin/stat-card"
 
 // Disable caching for this page
 export const revalidate = 0
@@ -87,70 +83,22 @@ export default async function InvoicesManagement() {
     <AdminLayoutWrapper userEmail={session.user.email || ""}>
       <div className="space-y-8">
         <div>
-          <h1 className="text-4xl font-bold mb-2">Fatura Yönetimi</h1>
-          <p className="text-white/60">Tüm faturaları görüntüleyin ve yönetin</p>
+          <p className="text-xs font-semibold uppercase tracking-[0.18em] text-emerald-400/80">Finans</p>
+          <h1 className="mt-2 text-3xl lg:text-4xl font-bold tracking-tight text-white">Fatura Yönetimi</h1>
+          <p className="mt-2 text-sm text-white/50">Tüm faturaları görüntüleyin, PDF yükleyin ve durumlarını yönetin.</p>
         </div>
 
-      {/* Statistics */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6">
-        <Card className="bg-black/20 border-white/10 backdrop-blur-xl">
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium text-white/80">Toplam Fatura</CardTitle>
-            <FileText className="h-4 w-4 text-emerald-400" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-3xl font-bold text-white">{totalInvoices || 0}</div>
-            <p className="text-xs text-white/60 mt-1">Tüm faturalar</p>
-          </CardContent>
-        </Card>
+        {/* Statistics */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
+          <StatCard label="Toplam Fatura" value={totalInvoices || 0} hint="Tüm faturalar" icon={FileText} accent="emerald" />
+          <StatCard label="Hazır" value={paidInvoices || 0} hint="PDF yüklendi" icon={CheckCircle} accent="teal" />
+          <StatCard label="Hazırlanıyor" value={pendingInvoices || 0} hint="PDF bekleniyor" icon={Clock} accent="amber" />
+          <StatCard label="Gecikmiş" value={overdueInvoices || 0} hint="Gecikmiş ödemeler" icon={XCircle} accent="rose" />
+          <StatCard label="Toplam Gelir" value={`${totalRevenue.toLocaleString("tr-TR")} ₺`} hint="Tamamlanan ödemeler" icon={DollarSign} accent="purple" />
+        </div>
 
-        <Card className="bg-black/20 border-white/10 backdrop-blur-xl">
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium text-white/80">Hazır</CardTitle>
-            <CheckCircle className="h-4 w-4 text-teal-400" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-3xl font-bold text-white">{paidInvoices || 0}</div>
-            <p className="text-xs text-white/60 mt-1">Fatura hazır (PDF yüklendi)</p>
-          </CardContent>
-        </Card>
-
-        <Card className="bg-black/20 border-white/10 backdrop-blur-xl">
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium text-white/80">Hazırlanıyor</CardTitle>
-            <Clock className="h-4 w-4 text-yellow-400" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-3xl font-bold text-white">{pendingInvoices || 0}</div>
-            <p className="text-xs text-white/60 mt-1">Fatura hazırlanıyor</p>
-          </CardContent>
-        </Card>
-
-        <Card className="bg-black/20 border-white/10 backdrop-blur-xl">
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium text-white/80">Gecikmiş</CardTitle>
-            <XCircle className="h-4 w-4 text-red-400" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-3xl font-bold text-white">{overdueInvoices || 0}</div>
-            <p className="text-xs text-white/60 mt-1">Gecikmiş ödemeler</p>
-          </CardContent>
-        </Card>
-
-        <Card className="bg-black/20 border-white/10 backdrop-blur-xl">
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium text-white/80">Toplam Gelir</CardTitle>
-            <DollarSign className="h-4 w-4 text-purple-400" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-3xl font-bold text-white">{totalRevenue.toLocaleString("tr-TR")} ₺</div>
-            <p className="text-xs text-white/60 mt-1">Tahsil edilen</p>
-          </CardContent>
-        </Card>
-      </div>
-
-      {/* Invoices Tabs */}
-      <InvoicesTabs invoices={safeInvoices} />
+        {/* Invoices Tabs */}
+        <InvoicesTabs invoices={safeInvoices} />
       </div>
     </AdminLayoutWrapper>
   )
