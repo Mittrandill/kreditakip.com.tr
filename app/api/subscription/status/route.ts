@@ -111,62 +111,67 @@ export async function GET(request: NextRequest) {
     }
 
     // Get usage tracking
-    const { data: usage } = await supabase.from("subscription_usage").select("*").eq("user_id", userId)
+    let { data: usage } = await supabase.from("subscription_usage").select("*").eq("user_id", userId)
 
-    // Trial period: 7 days for new users with no active paid subscription
-    let trialSubscription = null
-    if (!subscription || subscription.status === "expired") {
+    // 7-day trial for free-plan users. The trial limits (2 saved credits + 1 risk
+    // analysis) are written to subscription_usage by initialize_new_user() at signup.
+    // Here we (a) present the subscription as "trial" during the window, and
+    // (b) downgrade usage limits to free tier once the window has passed.
+    let responseSubscription: any = subscription
+    const isFreePlan =
+      !subscription ||
+      subscription.plan_id === "free" ||
+      subscription.plan_type === "free"
+
+    if (isFreePlan) {
       const accountCreatedAt = new Date(user.created_at)
       const trialEndsAt = new Date(accountCreatedAt)
       trialEndsAt.setDate(trialEndsAt.getDate() + 7)
-      const now = new Date()
+      const inTrial = new Date() < trialEndsAt
 
-      if (now < trialEndsAt) {
-        trialSubscription = {
-          id: "trial",
-          user_id: userId,
-          plan_id: "trial",
+      if (inTrial) {
+        // Cosmetic: present as trial. Enforcement comes from DB usage limits.
+        responseSubscription = {
+          ...(subscription ?? { id: "trial", user_id: userId, plan_id: "free" }),
           plan_type: "trial",
           status: "trialing",
-          start_date: accountCreatedAt.toISOString(),
           expires_at: trialEndsAt.toISOString(),
-          payment_provider: null,
           trial: true,
+        }
+      } else {
+        // Trial window passed → ensure DB usage is at free-tier limits
+        // (free: OCR 1 saved credit, risk analysis disabled).
+        const ocr = usage?.find((u: any) => u.feature_type === "ocr_analysis")
+        const risk = usage?.find((u: any) => u.feature_type === "risk_analysis")
+        let changed = false
+
+        if (ocr && (ocr.saved_credits_limit ?? 0) > 1) {
+          await supabase
+            .from("subscription_usage")
+            .update({ saved_credits_limit: 1, updated_at: new Date().toISOString() })
+            .eq("user_id", userId)
+            .eq("feature_type", "ocr_analysis")
+          changed = true
+        }
+        if (risk && (risk.limit_count ?? 0) > 0) {
+          await supabase
+            .from("subscription_usage")
+            .update({ limit_count: 0, updated_at: new Date().toISOString() })
+            .eq("user_id", userId)
+            .eq("feature_type", "risk_analysis")
+          changed = true
+        }
+        if (changed) {
+          const { data: refreshed } = await supabase
+            .from("subscription_usage")
+            .select("*")
+            .eq("user_id", userId)
+          usage = refreshed ?? usage
         }
       }
     }
 
-    const activeSubscription = subscription ?? trialSubscription
-
-    // Build trial usage if no usage records and trial is active
-    let effectiveUsage = usage
-    if (trialSubscription && (!usage || usage.length === 0)) {
-      const resetAt = new Date(trialSubscription.expires_at)
-      effectiveUsage = [
-        {
-          user_id: userId,
-          subscription_id: "trial",
-          feature_type: "ocr_analysis",
-          usage_count: 0,
-          limit_count: 2,
-          saved_credits_count: 0,
-          saved_credits_limit: 2,
-          reset_at: resetAt.toISOString(),
-        },
-        {
-          user_id: userId,
-          subscription_id: "trial",
-          feature_type: "risk_analysis",
-          usage_count: 0,
-          limit_count: 1,
-          saved_credits_count: 0,
-          saved_credits_limit: 0,
-          reset_at: resetAt.toISOString(),
-        },
-      ]
-    }
-
-    return NextResponse.json({ subscription: activeSubscription, usage: effectiveUsage })
+    return NextResponse.json({ subscription: responseSubscription, usage })
   } catch (error) {
     console.error("[v0] Subscription status error:", error)
     return NextResponse.json({ error: "Internal server error" }, { status: 500 })
