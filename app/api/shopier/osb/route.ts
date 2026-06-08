@@ -32,34 +32,11 @@ function makeClient() {
   )
 }
 
-// Log every incoming request so we can confirm Shopier is actually hitting us
-async function logRequest(supabase: any, request: NextRequest, method: string, rawBody: string) {
-  try {
-    await supabase.from("shopier_osb_log").insert({
-      method,
-      content_type: request.headers.get("content-type"),
-      raw_body: rawBody?.slice(0, 5000) ?? null,
-      query_string: request.nextUrl.search || null,
-      user_agent: request.headers.get("user-agent"),
-      source_ip: request.headers.get("x-forwarded-for") || request.headers.get("x-real-ip"),
-    })
-  } catch (e) {
-    console.error("[Shopier OSB] Failed to write debug log:", e)
-  }
-}
-
-// Shopier may probe the URL with a GET; log it so we see any contact at all.
-export async function GET(request: NextRequest) {
-  const supabase: any = makeClient()
-  await logRequest(supabase, request, "GET", "")
-  return new Response("success", { status: 200 })
-}
-
 /**
  * POST /api/shopier/osb
  *
  * Shopier Otomatik Sipariş Bildirimi (OSB) handler.
- * Shopier sends form-encoded body: res=<base64>&hash=<hmac-sha256>
+ * Shopier sends multipart/form-data: res=<base64>&hash=<hmac-sha256>
  * Hash: HMAC-SHA256(res + OSB_USERNAME, key=OSB_PASSWORD)
  * Must respond with HTTP 200 body "success".
  */
@@ -70,7 +47,6 @@ export async function POST(request: NextRequest) {
   // handles both multipart and urlencoded; fall back to raw text otherwise.
   let res: string | null = null
   let receivedHash: string | null = null
-  let rawText = ""
   const contentType = request.headers.get("content-type") || ""
 
   try {
@@ -78,9 +54,8 @@ export async function POST(request: NextRequest) {
       const fd = await request.formData()
       res = fd.get("res")?.toString() ?? null
       receivedHash = fd.get("hash")?.toString() ?? null
-      rawText = `res=${res ?? ""}&hash=${receivedHash ?? ""}`
     } else {
-      rawText = await request.text()
+      const rawText = await request.text()
       const params = new URLSearchParams(rawText)
       res = params.get("res")
       receivedHash = params.get("hash")
@@ -88,8 +63,6 @@ export async function POST(request: NextRequest) {
   } catch (e) {
     console.error("[Shopier OSB] Failed to parse body:", e)
   }
-
-  await logRequest(supabase, request, "POST", rawText)
 
   if (!res || !receivedHash) {
     console.error("[Shopier OSB] Missing res or hash field")

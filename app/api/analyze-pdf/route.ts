@@ -209,7 +209,24 @@ export async function POST(request: Request) {
       )
     }
 
-    // Free kullanıcılar sınırsız analiz yapabilir, sadece kaydetme sınırlı
+    // Günlük analiz limiti: free/trial kullanıcılar günde max 3 analiz (kötüye
+    // kullanım önlemi). Pro/Premium sınırsız. Kayıt limiti (1) ayrı, değişmez.
+    // Burada SADECE kontrol edilir; sayaç ancak analiz BAŞARILI olunca artırılır
+    // (başarısız analiz hakkı yakmaz).
+    const { data: dailyCheck } = await supabase.rpc("check_daily_ocr_limit", {
+      p_user_id: user.id,
+    })
+
+    if (dailyCheck && dailyCheck.allowed === false) {
+      return Response.json(
+        {
+          error: `Günlük analiz hakkınız doldu (${dailyCheck.limit}/${dailyCheck.limit}). Yarın tekrar deneyebilir veya Pro/Premium'a geçerek sınırsız analiz yapabilirsiniz.`,
+          dailyLimitReached: true,
+          limit: dailyCheck.limit,
+        },
+        { status: 429 },
+      )
+    }
 
     if (!process.env.GEMINI_API_KEY) {
       return Response.json({ error: "Google API anahtarı bulunamadı" }, { status: 500 })
@@ -627,14 +644,16 @@ export async function POST(request: Request) {
       )
     }
 
-    // OCR analizi sayısını istatistik için takip et (limit kontrolü YOK)
-    // track_ocr_analysis: Sadece usage_count artırır, limit kontrolü yapmaz
+    // OCR analizi sayısını istatistik için takip et (kümülatif usage_count)
     await supabase.rpc("track_ocr_analysis", {
       p_user_id: user.id,
       p_feature_type: "ocr_analysis",
     })
-    // Sonucu ignore ediyoruz - hata olsa bile analiz devam eder
-    // Asıl limit kontrolü kredi KAYDETME sırasında yapılır (increment_saved_credits)
+
+    // Günlük sayacı SADECE başarılı analizde artır (free/trial günlük 3 limiti için).
+    // Hata durumunda buraya gelinmez, böylece başarısız deneme hakkı yakmaz.
+    await supabase.rpc("increment_daily_ocr", { p_user_id: user.id })
+    // Asıl kayıt limiti kredi KAYDETME sırasında (increment_saved_credits)
 
     return Response.json({
       success: true,
