@@ -10,6 +10,7 @@ interface SubscriptionEmailData {
   currency: string
   startDate: string
   expiresAt: string
+  passwordSetupUrl?: string // set for auto-created accounts (Shopier buyer with no account)
 }
 
 /**
@@ -197,9 +198,20 @@ function generateWelcomeEmailHTML(data: SubscriptionEmailData): string {
             </div>
           </div>
         </div>
+        ${data.passwordSetupUrl ? `
+        <div class="info-note" style="background:#1e40af;border-left:4px solid #3b82f6;border-radius:8px;padding:20px;margin:0 0 24px;color:#dbeafe;font-size:14px;text-align:center">
+          <strong>Hesabınız oluşturuldu!</strong><br>
+          Satın alımınız için <strong>${esc(data.userEmail)}</strong> adresiyle bir hesap açtık.
+          Giriş yapabilmek için aşağıdaki butondan şifrenizi belirleyin.
+        </div>
+        <div style="text-align:center">
+          <a href="${data.passwordSetupUrl}" class="cta-button">Şifremi Belirle ve Giriş Yap</a>
+        </div>
+        ` : `
         <div style="text-align:center">
           <a href="https://www.kreditakip.com.tr/uygulama/ana-sayfa" class="cta-button">Uygulamaya Git</a>
         </div>
+        `}
       </div>
       <div class="footer">
         <img src="https://oymjjceuiotxfbpwsdym.supabase.co/storage/v1/object/public/Logo/logo-white.png" alt="Kredi Takip" class="footer-logo">
@@ -226,9 +238,12 @@ Plan: ${data.planName}
 Tutar: ${data.amount.toFixed(2)} ${data.currency}
 Başlangıç: ${fmt(data.startDate)}
 Geçerlilik: ${fmt(data.expiresAt)}
-
+${data.passwordSetupUrl ? `
+Hesabınız oluşturuldu! Satın alımınız için ${data.userEmail} adresiyle bir hesap açtık.
+Şifrenizi belirleyip giriş yapmak için: ${data.passwordSetupUrl}
+` : `
 Uygulamaya gidin: https://www.kreditakip.com.tr/uygulama/ana-sayfa
-
+`}
 ---
 © ${new Date().getFullYear()} Kredi Takip
   `

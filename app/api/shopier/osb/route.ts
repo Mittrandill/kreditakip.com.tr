@@ -151,6 +151,13 @@ async function processOrder(supabase: any, payload: ReturnType<typeof decodeShop
     return
   }
 
+  // Buyer name (Shopier, attacker-controllable) — trim + length-cap
+  const buyerName = [payload.buyername, payload.buyersurname]
+    .filter(Boolean)
+    .join(" ")
+    .trim()
+    .slice(0, 100)
+
   // Find user by email
   const { data: { users }, error: usersError } = await supabase.auth.admin.listUsers()
   if (usersError) {
@@ -158,19 +165,39 @@ async function processOrder(supabase: any, payload: ReturnType<typeof decodeShop
     return
   }
 
-  const user = users.find((u: any) => u.email?.toLowerCase() === email.toLowerCase())
+  let user = users.find((u: any) => u.email?.toLowerCase() === email.toLowerCase())
+  let isNewUser = false
+
+  // No account yet → auto-create one so the buyer isn't left without access.
   if (!user) {
-    console.error("[Shopier OSB] No user found for email:", email, "order:", orderid)
-    await supabase.from("shopier_unmatched_orders").insert({
-      order_id: String(orderid),
-      buyer_email: email,
-      product_id: String(productid),
-      plan_id: planId,
-      amount: parseFloat(price),
-      raw_payload: payload,
-      reason: "user_not_found",
+    const { data: created, error: createErr } = await supabase.auth.admin.createUser({
+      email,
+      email_confirm: true,
+      user_metadata: { full_name: buyerName, source: "shopier" },
     })
-    return
+
+    if (createErr || !created?.user) {
+      // Could be a race (email created meanwhile) — re-fetch and retry match.
+      const { data: { users: retry } } = await supabase.auth.admin.listUsers()
+      user = retry.find((u: any) => u.email?.toLowerCase() === email.toLowerCase())
+      if (!user) {
+        console.error("[Shopier OSB] Failed to auto-create user:", email, createErr)
+        await supabase.from("shopier_unmatched_orders").insert({
+          order_id: String(orderid),
+          buyer_email: email,
+          product_id: String(productid),
+          plan_id: planId,
+          amount: parseFloat(price),
+          raw_payload: payload,
+          reason: "user_creation_failed",
+        })
+        return
+      }
+    } else {
+      user = created.user
+      isNewUser = true
+      console.log("[Shopier OSB] Auto-created account for:", email)
+    }
   }
 
   const userId = user.id
@@ -276,16 +303,26 @@ async function processOrder(supabase: any, payload: ReturnType<typeof decodeShop
 
   console.log("[Shopier OSB] Subscription activated:", { userId, planId, orderid })
 
+  // For auto-created accounts, generate a password-setup (recovery) link so the
+  // buyer can set a password and log in.
+  let passwordSetupUrl: string | undefined
+  if (isNewUser) {
+    try {
+      const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://www.kreditakip.com.tr"
+      const { data: linkData } = await supabase.auth.admin.generateLink({
+        type: "recovery",
+        email,
+        options: { redirectTo: `${siteUrl}/yeni-sifre` },
+      })
+      passwordSetupUrl = linkData?.properties?.action_link
+    } catch (linkErr) {
+      console.error("[Shopier OSB] Failed to generate password setup link:", linkErr)
+    }
+  }
+
   // Send notification emails (non-blocking — failure must not break activation)
   try {
     const planLabel = PLAN_LABELS[planId] ?? planId
-    // Buyer name comes from Shopier (attacker-controllable); trim + length-cap.
-    // HTML-escaping happens in the email template layer (see esc() there).
-    const buyerName = [payload.buyername, payload.buyersurname]
-      .filter(Boolean)
-      .join(" ")
-      .trim()
-      .slice(0, 100)
     const emailData = {
       userName: buyerName,
       userEmail: email,
@@ -294,8 +331,9 @@ async function processOrder(supabase: any, payload: ReturnType<typeof decodeShop
       currency: "TRY",
       startDate: startDate.toISOString(),
       expiresAt: expiresAt.toISOString(),
+      passwordSetupUrl, // present only for newly auto-created accounts
     }
-    // Customer welcome/activation email
+    // Customer welcome/activation email (includes "set your password" CTA if new)
     await sendSubscriptionWelcomeNotification(emailData)
     // Admin notification
     await sendNewSubscriptionNotification(emailData)
