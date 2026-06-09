@@ -9,45 +9,70 @@ export default async function SubscriptionsManagement() {
   const { session } = await checkAdminAccess()
   const supabase = createSupabaseAdmin()
 
-  // Get all subscriptions with user and plan info
-  const { data: subscriptions, error: subsError } = await supabase
-    .from("subscriptions")
-    .select(`
-      *,
-      profiles:user_id (
-        first_name,
-        last_name,
-        email
-      ),
-      subscription_plans (
-        name,
-        billing_period,
-        price
-      )
-    `)
-    .in("status", ["active", "cancelled", "expired"])
+  // User-based view: every registered user appears exactly once, showing their
+  // CURRENT subscription (active if present, otherwise the most recent record).
+  // This keeps the count consistent with the users/dashboard pages and hides
+  // stale historical rows (e.g. an old cancelled plan left over from an upgrade).
+  const { data: profiles, error: profilesError } = await supabase
+    .from("profiles")
+    .select("id, first_name, last_name, email, created_at")
     .order("created_at", { ascending: false })
 
-  if (subsError) {
-    console.error("Error fetching subscriptions:", subsError)
-  }
-
-  // Get statistics
-  const { count: totalSubscriptions } = await supabase
+  const { data: allSubs, error: subsError } = await supabase
     .from("subscriptions")
-    .select("*", { count: "exact", head: true })
-    .in("status", ["active", "cancelled", "expired"])
+    .select("*")
+    .order("created_at", { ascending: false })
 
-  const { count: activeSubscriptions } = await supabase
-    .from("subscriptions")
-    .select("*", { count: "exact", head: true })
-    .eq("status", "active")
+  if (profilesError) console.error("Error fetching profiles:", profilesError)
+  if (subsError) console.error("Error fetching subscriptions:", subsError)
 
-  const { count: manualSubscriptions } = await supabase
-    .from("subscriptions")
-    .select("*", { count: "exact", head: true })
-    .eq("status", "active")
-    .is("payment_provider", null)
+  // Pick the current subscription per user: prefer active, else latest by created_at.
+  const subsByUser = new Map<string, any[]>()
+  ;(allSubs || []).forEach((s) => {
+    const list = subsByUser.get(s.user_id) || []
+    list.push(s)
+    subsByUser.set(s.user_id, list)
+  })
+
+  const subscriptions = (profiles || []).map((p) => {
+    const userSubs = subsByUser.get(p.id) || []
+    const current =
+      userSubs.find((s) => s.status === "active") || userSubs[0] || null
+    const profileRef = {
+      first_name: p.first_name,
+      last_name: p.last_name,
+      email: p.email,
+    }
+    if (current) {
+      return { ...current, profiles: profileRef }
+    }
+    // No subscription record at all → implicit free user
+    return {
+      id: `free-${p.id}`,
+      user_id: p.id,
+      plan_type: "free",
+      status: "free",
+      payment_provider: null,
+      start_date: p.created_at,
+      expires_at: null,
+      profiles: profileRef,
+    }
+  })
+
+  // An "active" row whose expiry date has passed isn't truly active anymore
+  // (downgrade cron just hasn't processed it yet). Unlimited grants use year >= 2070.
+  const isTrulyActive = (s: any) =>
+    s.status === "active" &&
+    (!s.expires_at ||
+      new Date(s.expires_at).getFullYear() >= 2070 ||
+      new Date(s.expires_at) >= new Date())
+
+  // User-based statistics (consistent with other admin pages)
+  const totalSubscriptions = subscriptions.length
+  const activeSubscriptions = subscriptions.filter(isTrulyActive).length
+  const manualSubscriptions = subscriptions.filter(
+    (s) => isTrulyActive(s) && !s.payment_provider
+  ).length
 
   return (
     <AdminLayoutWrapper userEmail={session.user.email || ""}>
@@ -59,8 +84,8 @@ export default async function SubscriptionsManagement() {
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-          <StatCard label="Toplam Abonelik" value={totalSubscriptions || 0} hint="Tüm abonelikler" icon={Layers} accent="emerald" />
-          <StatCard label="Aktif" value={activeSubscriptions || 0} hint="Aktif kullanıcı" icon={CreditCard} accent="teal" />
+          <StatCard label="Toplam Kullanıcı" value={totalSubscriptions || 0} hint="Kayıtlı kullanıcı" icon={Layers} accent="emerald" />
+          <StatCard label="Aktif Abonelik" value={activeSubscriptions || 0} hint="Ödeme yapan / aktif" icon={CreditCard} accent="teal" />
           <StatCard label="Manuel" value={manualSubscriptions || 0} hint="Admin tarafından verildi" icon={UserCog} accent="purple" />
         </div>
 

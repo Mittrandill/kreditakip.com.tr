@@ -60,6 +60,18 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
       logger.error("Failed to fetch subscription usage", usageError, { userId })
     }
 
+    // Total credits saved to the database (active, not soft-deleted). Combined with
+    // the OCR-saved count this lets us derive how many were added manually.
+    const { count: totalCredits, error: creditsError } = await supabase
+      .from("credits")
+      .select("*", { count: "exact", head: true })
+      .eq("user_id", userId)
+      .is("deleted_at", null)
+
+    if (creditsError) {
+      logger.error("Failed to fetch credits count", creditsError, { userId })
+    }
+
     // Get all active plans (for dropdown)
     const { data: availablePlans, error: plansError } = await supabase
       .from("subscription_plans")
@@ -80,6 +92,7 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
     return NextResponse.json({
       subscription,
       usage: usage || [],
+      totalCredits: totalCredits || 0,
       availablePlans: availablePlans || [],
     })
   } catch (error) {

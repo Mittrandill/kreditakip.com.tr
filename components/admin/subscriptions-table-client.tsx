@@ -21,6 +21,18 @@ interface SubscriptionsTableClientProps {
   subscriptions: any[]
 }
 
+// Unlimited manual grants use a far-future date (year >= 2070).
+const isUnlimited = (value: string | null | undefined) =>
+  !!value && new Date(value).getFullYear() >= 2070
+
+// An "active" row whose expiry date has already passed is effectively expired —
+// the downgrade cron just hasn't processed it yet (or the user hasn't re-fetched).
+const isExpiredByDate = (sub: any) =>
+  sub.status === "active" &&
+  sub.expires_at &&
+  !isUnlimited(sub.expires_at) &&
+  new Date(sub.expires_at) < new Date()
+
 export function SubscriptionsTableClient({
   subscriptions,
 }: SubscriptionsTableClientProps) {
@@ -57,8 +69,12 @@ export function SubscriptionsTableClient({
       filtered = filtered.filter((sub) => sub.plan_type === planFilter)
     }
 
-    // Status filter
-    if (statusFilter !== "all") {
+    // Status filter (date-expired "active" rows count as expired, not active)
+    if (statusFilter === "active") {
+      filtered = filtered.filter((sub) => sub.status === "active" && !isExpiredByDate(sub))
+    } else if (statusFilter === "expired") {
+      filtered = filtered.filter((sub) => sub.status === "expired" || isExpiredByDate(sub))
+    } else if (statusFilter !== "all") {
       filtered = filtered.filter((sub) => sub.status === statusFilter)
     }
 
@@ -89,6 +105,9 @@ export function SubscriptionsTableClient({
     premium: "Premium",
   }
 
+  const fmtDate = (value: string | null | undefined) =>
+    value ? format(new Date(value), "dd MMM yyyy", { locale: tr }) : "—"
+
   // Export to CSV
   const exportToCSV = () => {
     const headers = [
@@ -107,12 +126,16 @@ export function SubscriptionsTableClient({
           .filter(Boolean)
           .join(" ") || "-"
       const status =
-        sub.status === "active"
+        isExpiredByDate(sub)
+          ? "Süresi Doldu"
+          : sub.status === "active"
           ? "Aktif"
           : sub.status === "cancelled"
           ? "İptal"
           : sub.status === "expired"
           ? "Süresi Doldu"
+          : sub.status === "free"
+          ? "Ücretsiz"
           : sub.status
       const type = !sub.payment_provider || sub.payment_provider === null ? "Manuel" : "Ödeme"
       const plan = planNames[sub.plan_type] || sub.plan_type
@@ -123,8 +146,8 @@ export function SubscriptionsTableClient({
         plan,
         status,
         type,
-        format(new Date(sub.start_date), "dd.MM.yyyy", { locale: tr }),
-        format(new Date(sub.expires_at), "dd.MM.yyyy", { locale: tr }),
+        sub.start_date ? format(new Date(sub.start_date), "dd.MM.yyyy", { locale: tr }) : "-",
+        sub.expires_at ? format(new Date(sub.expires_at), "dd.MM.yyyy", { locale: tr }) : "-",
         sub.payment_provider || "Manuel",
       ]
     })
@@ -157,11 +180,11 @@ export function SubscriptionsTableClient({
       <CardHeader>
         <CardTitle className="text-white flex items-center justify-between">
           <div className="flex items-center gap-4">
-            <span>Tüm Abonelikler</span>
+            <span>Tüm Kullanıcılar</span>
             <span className="text-sm font-normal text-white/60">
               {filteredSubscriptions.length === subscriptions.length
-                ? `${filteredSubscriptions.length} abonelik`
-                : `${filteredSubscriptions.length} / ${subscriptions.length} abonelik`}
+                ? `${filteredSubscriptions.length} kullanıcı`
+                : `${filteredSubscriptions.length} / ${subscriptions.length} kullanıcı`}
             </span>
           </div>
           <Button
@@ -215,6 +238,7 @@ export function SubscriptionsTableClient({
               <SelectItem value="active">Aktif</SelectItem>
               <SelectItem value="cancelled">İptal Edildi</SelectItem>
               <SelectItem value="expired">Süresi Doldu</SelectItem>
+              <SelectItem value="free">Ücretsiz</SelectItem>
             </SelectContent>
           </Select>
 
@@ -304,7 +328,11 @@ export function SubscriptionsTableClient({
                       {planNames[sub.plan_type] || sub.plan_type}
                     </td>
                     <td className="py-4 px-4">
-                      {sub.status === "active" ? (
+                      {isExpiredByDate(sub) ? (
+                        <Badge className="bg-yellow-500/20 text-yellow-400 border-yellow-500/20">
+                          Süresi Doldu
+                        </Badge>
+                      ) : sub.status === "active" ? (
                         <Badge className="bg-emerald-500/20 text-emerald-400 border-emerald-500/20">
                           Aktif
                         </Badge>
@@ -316,6 +344,10 @@ export function SubscriptionsTableClient({
                         <Badge className="bg-yellow-500/20 text-yellow-400 border-yellow-500/20">
                           Süresi Doldu
                         </Badge>
+                      ) : sub.status === "free" ? (
+                        <Badge className="bg-gray-500/20 text-gray-400 border-gray-500/20">
+                          Ücretsiz
+                        </Badge>
                       ) : (
                         <Badge className="bg-gray-500/20 text-gray-400 border-gray-500/20">
                           {sub.status}
@@ -323,7 +355,9 @@ export function SubscriptionsTableClient({
                       )}
                     </td>
                     <td className="py-4 px-4">
-                      {isManual ? (
+                      {sub.status === "free" ? (
+                        <span className="text-white/40 text-sm">—</span>
+                      ) : isManual ? (
                         <Badge className="bg-purple-500/20 text-purple-400 border-purple-500/20">
                           Manuel
                         </Badge>
@@ -334,14 +368,10 @@ export function SubscriptionsTableClient({
                       )}
                     </td>
                     <td className="py-4 px-4 text-white/80 text-sm">
-                      {format(new Date(sub.start_date), "dd MMM yyyy", {
-                        locale: tr,
-                      })}
+                      {fmtDate(sub.start_date)}
                     </td>
                     <td className="py-4 px-4 text-white/80 text-sm">
-                      {format(new Date(sub.expires_at), "dd MMM yyyy", {
-                        locale: tr,
-                      })}
+                      {fmtDate(sub.expires_at)}
                     </td>
                     <td className="py-4 px-4">
                       <Link
@@ -375,7 +405,7 @@ export function SubscriptionsTableClient({
           <div className="flex items-center justify-between pt-4 border-t border-white/10">
             <div className="text-sm text-white/60">
               {startIndex + 1}-{Math.min(endIndex, filteredSubscriptions.length)}{" "}
-              arası, toplam {filteredSubscriptions.length} abonelik
+              arası, toplam {filteredSubscriptions.length} kullanıcı
             </div>
             <div className="flex items-center gap-2">
               <Button

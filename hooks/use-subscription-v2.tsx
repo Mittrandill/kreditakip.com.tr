@@ -269,8 +269,14 @@ export function useSubscriptionV2() {
   const isActive = subscription?.status === "active" || subscription?.status === "trialing" || false
   const isInGracePeriod = subscription?.status === "grace_period" || false
 
-  // isPremium: Has premium/pro plan AND subscription is active/trialing/grace_period
-  const isPremium = hasPremiumPlan && (isActive || isInGracePeriod)
+  // Date-based cutoff: a subscription whose expiry date has passed is treated as
+  // expired even if its status row hasn't been flipped yet (e.g. user hasn't
+  // re-fetched /status since expiry). This guarantees access ends on the date.
+  const isExpiredByDate =
+    !!subscription?.expiresAt && new Date(subscription.expiresAt).getTime() < Date.now()
+
+  // isPremium: Has premium/pro plan AND active/trialing/grace AND not past expiry date
+  const isPremium = hasPremiumPlan && (isActive || isInGracePeriod) && !isExpiredByDate
 
   const requiresPayment = subscription?.requiresPaymentAction || false
   const canUseOCR = subscription?.usage?.ocrAnalysis?.canUse || false

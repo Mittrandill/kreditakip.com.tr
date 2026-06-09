@@ -20,7 +20,15 @@ export default async function SubscriptionOperationsPage() {
     .order("created_at", { ascending: false })
 
   const rows = (users as any[]) || []
-  const activeOf = (u: any) => (u.subscriptions || []).find((s: any) => s.status === "active")
+  // Active = status active AND expiry not passed (unlimited grants use year >= 2070).
+  const activeOf = (u: any) =>
+    (u.subscriptions || []).find(
+      (s: any) =>
+        s.status === "active" &&
+        (!s.expires_at ||
+          new Date(s.expires_at).getFullYear() >= 2070 ||
+          new Date(s.expires_at) >= new Date())
+    )
   const premiumCount = rows.filter((u) => activeOf(u)?.plan_type === "premium").length
   const proCount = rows.filter((u) => activeOf(u)?.plan_type === "pro").length
   const freeCount = rows.length - premiumCount - proCount

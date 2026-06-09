@@ -143,17 +143,22 @@ export function useSubscription() {
     fetchSubscription()
   }, [user?.id])
 
-  // Pro check: plan_id includes "pro" and active
+  // Date-based cutoff: once the expiry date passes, access ends regardless of
+  // whether the status row still says "active".
+  const isExpiredByDate =
+    !!subscription?.expiresAt && new Date(subscription.expiresAt) < new Date()
+
+  // Pro check: plan_id includes "pro", active/cancelled, and not past expiry date
   const isPro =
     subscription?.plan_id?.includes("pro") &&
-    (subscription?.status === "active" ||
-      (subscription?.status === "cancelled" && subscription?.expiresAt && new Date(subscription.expiresAt) > new Date()))
+    !isExpiredByDate &&
+    (subscription?.status === "active" || subscription?.status === "cancelled")
 
-  // Premium check: active OR (cancelled but not expired yet)
+  // Premium check: premium plan, active/cancelled, and not past expiry date
   const isPremium =
     subscription?.planType === "premium" &&
-    (subscription?.status === "active" ||
-      (subscription?.status === "cancelled" && subscription?.expiresAt && new Date(subscription.expiresAt) > new Date()))
+    !isExpiredByDate &&
+    (subscription?.status === "active" || subscription?.status === "cancelled")
 
   // OCR: Analiz sınırsız, kaydetme sınırlı (saved count kontrolü)
   const canUseOCR =

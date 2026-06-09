@@ -1,9 +1,6 @@
 "use client"
 
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import {
-  LineChart,
-  Line,
   AreaChart,
   Area,
   PieChart,
@@ -14,9 +11,8 @@ import {
   CartesianGrid,
   Tooltip,
   ResponsiveContainer,
-  Legend,
 } from "recharts"
-import { TrendingUp, Users, PieChartIcon } from "lucide-react"
+import { TrendingUp, Users, PieChart as PieChartIcon } from "lucide-react"
 
 interface AnalyticsChartsProps {
   revenueData: { month: string; revenue: number }[]
@@ -24,146 +20,229 @@ interface AnalyticsChartsProps {
   planDistribution: { name: string; value: number; color: string }[]
 }
 
+// Theme palette — emerald/teal led, matching the admin dashboard accents.
+const COLORS = {
+  emerald: "#10b981",
+  teal: "#2dd4bf",
+  grid: "rgba(255,255,255,0.06)",
+  axis: "rgba(255,255,255,0.35)",
+}
+
+function ChartCard({
+  title,
+  icon: Icon,
+  iconClass,
+  children,
+}: {
+  title: string
+  icon: typeof TrendingUp
+  iconClass: string
+  children: React.ReactNode
+}) {
+  return (
+    <div className="relative overflow-hidden rounded-3xl border border-white/[0.07] bg-gradient-to-b from-white/[0.03] to-transparent p-5 lg:p-6">
+      <div className="mb-5 flex items-center gap-2.5">
+        <div className={`flex h-9 w-9 items-center justify-center rounded-xl ${iconClass}`}>
+          <Icon className="h-4 w-4" />
+        </div>
+        <h3 className="text-sm font-semibold text-white/90">{title}</h3>
+      </div>
+      {children}
+    </div>
+  )
+}
+
+function ChartTooltip({
+  active,
+  payload,
+  label,
+  formatter,
+}: any) {
+  if (!active || !payload?.length) return null
+  return (
+    <div className="rounded-xl border border-white/10 bg-[#0d1210]/95 px-3 py-2 shadow-xl backdrop-blur-sm">
+      {label && <p className="mb-1 text-[11px] font-medium text-white/50">{label}</p>}
+      {payload.map((entry: any, i: number) => (
+        <p key={i} className="text-sm font-semibold tabular-nums" style={{ color: entry.color || entry.payload?.color || "#fff" }}>
+          {formatter ? formatter(entry.value, entry.payload) : entry.value}
+        </p>
+      ))}
+    </div>
+  )
+}
+
 export function AnalyticsCharts({
   revenueData,
   userGrowthData,
   planDistribution,
 }: AnalyticsChartsProps) {
+  const totalPlanUsers = planDistribution.reduce((sum, p) => sum + p.value, 0)
+
   return (
-    <div className="space-y-6">
+    <div className="space-y-5">
       {/* Revenue Chart */}
-      <Card className="bg-black/20 border-white/10 backdrop-blur-xl">
-        <CardHeader>
-          <CardTitle className="text-white flex items-center gap-2">
-            <TrendingUp className="h-5 w-5 text-white/60" />
-            Gelir Trendi (Son 12 Ay)
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <ResponsiveContainer width="100%" height={300}>
-            <LineChart data={revenueData}>
-              <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.1)" />
+      <ChartCard
+        title="Gelir Trendi (Son 12 Ay)"
+        icon={TrendingUp}
+        iconClass="bg-emerald-500/15 text-emerald-400"
+      >
+        <ResponsiveContainer width="100%" height={300}>
+          <AreaChart data={revenueData} margin={{ top: 5, right: 8, left: -8, bottom: 0 }}>
+            <defs>
+              <linearGradient id="revenueGradient" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stopColor={COLORS.emerald} stopOpacity={0.35} />
+                <stop offset="100%" stopColor={COLORS.emerald} stopOpacity={0} />
+              </linearGradient>
+            </defs>
+            <CartesianGrid strokeDasharray="4 4" stroke={COLORS.grid} vertical={false} />
+            <XAxis
+              dataKey="month"
+              stroke={COLORS.axis}
+              tickLine={false}
+              axisLine={false}
+              style={{ fontSize: "11px" }}
+              dy={8}
+            />
+            <YAxis
+              stroke={COLORS.axis}
+              tickLine={false}
+              axisLine={false}
+              style={{ fontSize: "11px" }}
+              tickFormatter={(v) => (v >= 1000 ? `${(v / 1000).toFixed(0)}b ₺` : `${v} ₺`)}
+              width={56}
+            />
+            <Tooltip
+              cursor={{ stroke: COLORS.emerald, strokeOpacity: 0.2, strokeWidth: 1 }}
+              content={
+                <ChartTooltip
+                  formatter={(v: number) => `${v.toLocaleString("tr-TR")} ₺`}
+                />
+              }
+            />
+            <Area
+              type="monotone"
+              dataKey="revenue"
+              stroke={COLORS.emerald}
+              strokeWidth={2.5}
+              fill="url(#revenueGradient)"
+              dot={false}
+              activeDot={{ r: 5, fill: COLORS.emerald, stroke: "#0a0c0b", strokeWidth: 2 }}
+            />
+          </AreaChart>
+        </ResponsiveContainer>
+      </ChartCard>
+
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
+        {/* User Growth Chart */}
+        <ChartCard
+          title="Kullanıcı Büyümesi"
+          icon={Users}
+          iconClass="bg-teal-500/15 text-teal-300"
+        >
+          <ResponsiveContainer width="100%" height={250}>
+            <AreaChart data={userGrowthData} margin={{ top: 5, right: 8, left: -16, bottom: 0 }}>
+              <defs>
+                <linearGradient id="userGradient" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%" stopColor={COLORS.teal} stopOpacity={0.35} />
+                  <stop offset="100%" stopColor={COLORS.teal} stopOpacity={0} />
+                </linearGradient>
+              </defs>
+              <CartesianGrid strokeDasharray="4 4" stroke={COLORS.grid} vertical={false} />
               <XAxis
                 dataKey="month"
-                stroke="rgba(255,255,255,0.6)"
-                style={{ fontSize: "12px" }}
+                stroke={COLORS.axis}
+                tickLine={false}
+                axisLine={false}
+                style={{ fontSize: "11px" }}
+                dy={8}
               />
               <YAxis
-                stroke="rgba(255,255,255,0.6)"
-                style={{ fontSize: "12px" }}
-                tickFormatter={(value) => `${value.toLocaleString()} ₺`}
+                stroke={COLORS.axis}
+                tickLine={false}
+                axisLine={false}
+                style={{ fontSize: "11px" }}
+                width={40}
+                allowDecimals={false}
               />
               <Tooltip
-                contentStyle={{
-                  backgroundColor: "rgba(0,0,0,0.9)",
-                  border: "1px solid rgba(255,255,255,0.1)",
-                  borderRadius: "8px",
-                  color: "#fff",
-                }}
-                formatter={(value: any) => [`${value.toLocaleString()} ₺`, "Gelir"]}
+                cursor={{ stroke: COLORS.teal, strokeOpacity: 0.2, strokeWidth: 1 }}
+                content={
+                  <ChartTooltip formatter={(v: number) => `${v.toLocaleString("tr-TR")} kullanıcı`} />
+                }
               />
-              <Line
+              <Area
                 type="monotone"
-                dataKey="revenue"
-                stroke="#10b981"
-                strokeWidth={2}
-                dot={{ fill: "#10b981", r: 4 }}
-                activeDot={{ r: 6 }}
+                dataKey="users"
+                stroke={COLORS.teal}
+                strokeWidth={2.5}
+                fill="url(#userGradient)"
+                dot={false}
+                activeDot={{ r: 5, fill: COLORS.teal, stroke: "#0a0c0b", strokeWidth: 2 }}
               />
-            </LineChart>
+            </AreaChart>
           </ResponsiveContainer>
-        </CardContent>
-      </Card>
+        </ChartCard>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* User Growth Chart */}
-        <Card className="bg-black/20 border-white/10 backdrop-blur-xl">
-          <CardHeader>
-            <CardTitle className="text-white flex items-center gap-2">
-              <Users className="h-5 w-5 text-white/60" />
-              Kullanıcı Büyümesi
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <ResponsiveContainer width="100%" height={250}>
-              <AreaChart data={userGrowthData}>
-                <CartesianGrid
-                  strokeDasharray="3 3"
-                  stroke="rgba(255,255,255,0.1)"
-                />
-                <XAxis
-                  dataKey="month"
-                  stroke="rgba(255,255,255,0.6)"
-                  style={{ fontSize: "12px" }}
-                />
-                <YAxis
-                  stroke="rgba(255,255,255,0.6)"
-                  style={{ fontSize: "12px" }}
-                />
-                <Tooltip
-                  contentStyle={{
-                    backgroundColor: "rgba(0,0,0,0.9)",
-                    border: "1px solid rgba(255,255,255,0.1)",
-                    borderRadius: "8px",
-                    color: "#fff",
-                  }}
-                  formatter={(value: any) => [value, "Kullanıcı"]}
-                />
-                <Area
-                  type="monotone"
-                  dataKey="users"
-                  stroke="#14b8a6"
-                  fill="rgba(20, 184, 166, 0.2)"
-                  strokeWidth={2}
-                />
-              </AreaChart>
-            </ResponsiveContainer>
-          </CardContent>
-        </Card>
-
-        {/* Plan Distribution Chart */}
-        <Card className="bg-black/20 border-white/10 backdrop-blur-xl">
-          <CardHeader>
-            <CardTitle className="text-white flex items-center gap-2">
-              <PieChartIcon className="h-5 w-5 text-white/60" />
-              Plan Dağılımı
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <ResponsiveContainer width="100%" height={250}>
-              <PieChart>
-                <Pie
-                  data={planDistribution}
-                  cx="50%"
-                  cy="50%"
-                  labelLine={false}
-                  label={({ name, percent }) =>
-                    `${name}: ${((percent as number) * 100).toFixed(0)}%`
-                  }
-                  outerRadius={80}
-                  fill="#8884d8"
-                  dataKey="value"
-                >
-                  {planDistribution.map((entry, index) => (
-                    <Cell key={`cell-${index}`} fill={entry.color} />
-                  ))}
-                </Pie>
-                <Tooltip
-                  contentStyle={{
-                    backgroundColor: "rgba(0,0,0,0.9)",
-                    border: "1px solid rgba(255,255,255,0.1)",
-                    borderRadius: "8px",
-                    color: "#fff",
-                  }}
-                />
-                <Legend
-                  wrapperStyle={{ color: "#fff" }}
-                  iconType="circle"
-                />
-              </PieChart>
-            </ResponsiveContainer>
-          </CardContent>
-        </Card>
+        {/* Plan Distribution Donut */}
+        <ChartCard
+          title="Plan Dağılımı"
+          icon={PieChartIcon}
+          iconClass="bg-purple-500/15 text-purple-300"
+        >
+          {totalPlanUsers === 0 ? (
+            <div className="flex h-[250px] items-center justify-center text-sm text-white/40">
+              Henüz veri yok
+            </div>
+          ) : (
+            <div className="flex flex-col sm:flex-row items-center gap-6">
+              <div className="relative">
+                <ResponsiveContainer width={180} height={180}>
+                  <PieChart>
+                    <Pie
+                      data={planDistribution}
+                      cx="50%"
+                      cy="50%"
+                      innerRadius={56}
+                      outerRadius={82}
+                      paddingAngle={3}
+                      cornerRadius={5}
+                      dataKey="value"
+                      stroke="none"
+                    >
+                      {planDistribution.map((entry, index) => (
+                        <Cell key={`cell-${index}`} fill={entry.color} />
+                      ))}
+                    </Pie>
+                    <Tooltip
+                      content={
+                        <ChartTooltip
+                          formatter={(v: number, p: any) => `${p.name}: ${v} kullanıcı`}
+                        />
+                      }
+                    />
+                  </PieChart>
+                </ResponsiveContainer>
+                <div className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center">
+                  <span className="text-2xl font-bold text-white tabular-nums">{totalPlanUsers}</span>
+                  <span className="text-[11px] text-white/40">aktif üye</span>
+                </div>
+              </div>
+              <div className="flex-1 space-y-2.5 w-full">
+                {planDistribution.map((entry) => {
+                  const pct = totalPlanUsers ? Math.round((entry.value / totalPlanUsers) * 100) : 0
+                  return (
+                    <div key={entry.name} className="flex items-center gap-2.5">
+                      <span className="h-2.5 w-2.5 rounded-full flex-shrink-0" style={{ backgroundColor: entry.color }} />
+                      <span className="text-sm text-white/70 flex-1">{entry.name}</span>
+                      <span className="text-sm font-semibold text-white tabular-nums">{entry.value}</span>
+                      <span className="text-xs text-white/40 tabular-nums w-9 text-right">{pct}%</span>
+                    </div>
+                  )
+                })}
+              </div>
+            </div>
+          )}
+        </ChartCard>
       </div>
     </div>
   )

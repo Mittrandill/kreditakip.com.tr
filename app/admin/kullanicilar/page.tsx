@@ -50,10 +50,13 @@ export default async function UsersManagement() {
     .from("profiles")
     .select("*", { count: "exact", head: true })
 
+  // Truly active = active status AND expiry not passed (unlimited = far-future, null = none)
+  const nowIso = new Date().toISOString()
   const { count: activeSubscriptions } = await supabase
     .from("subscriptions")
     .select("*", { count: "exact", head: true })
     .eq("status", "active")
+    .or(`expires_at.gte.${nowIso},expires_at.is.null`)
 
   const { count: cancelledSubscriptions } = await supabase
     .from("subscriptions")

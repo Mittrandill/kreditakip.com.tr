@@ -8,6 +8,7 @@ import { Badge } from "@/components/ui/badge"
 import {
   Search, User, Mail, ChevronDown, ChevronUp,
   Infinity, Ban, Loader2, CreditCard, TrendingUp,
+  Scan, Save, PencilLine, ShieldAlert, type LucideIcon,
 } from "lucide-react"
 import { toast } from "sonner"
 import { format } from "date-fns"
@@ -87,6 +88,7 @@ interface UserRow {
 interface ExpandedData {
   subscription: any | null
   usage: any[]
+  totalCredits: number
 }
 
 type PlanFilter = "all" | "free" | "pro" | "premium"
@@ -104,8 +106,23 @@ const getDaysRemaining = (expiresAt: string) =>
 const displayName = (u: UserRow) =>
   [u.first_name, u.last_name].filter(Boolean).join(" ") || "İsimsiz Kullanıcı"
 
+// An "active" row whose expiry date has already passed (and isn't an unlimited
+// manual grant) is effectively expired — the cron just hasn't downgraded it yet,
+// or the user hasn't re-fetched their status. Show it as expired, not as Premium.
+const isExpiredByDate = (sub: { status: string; expires_at: string } | null) =>
+  !!sub &&
+  sub.status === "active" &&
+  !!sub.expires_at &&
+  !isUnlimited(sub.expires_at) &&
+  new Date(sub.expires_at) < new Date()
+
+const planLabel = (planType: string) =>
+  planType === "premium" ? "Premium" : planType === "pro" ? "Pro" : "Ücretsiz"
+
 function SubBadge({ sub }: { sub: UserSubscription | null }) {
   if (!sub) return <Badge className="bg-gray-500/20 text-gray-400 border-gray-500/20 text-xs">Ücretsiz</Badge>
+  if (isExpiredByDate(sub))
+    return <Badge className="bg-yellow-500/20 text-yellow-400 border-yellow-500/20 text-xs">{planLabel(sub.plan_type)} · Süresi Doldu</Badge>
   if (sub.status === "active" && sub.plan_type === "premium")
     return <Badge className="bg-emerald-500/20 text-emerald-400 border-emerald-500/20 text-xs">Premium</Badge>
   if (sub.status === "active" && sub.plan_type === "pro")
@@ -115,6 +132,28 @@ function SubBadge({ sub }: { sub: UserSubscription | null }) {
   if (sub.status === "expired")
     return <Badge className="bg-yellow-500/20 text-yellow-400 border-yellow-500/20 text-xs">Süresi Doldu</Badge>
   return <Badge className="bg-gray-500/20 text-gray-400 border-gray-500/20 text-xs">Ücretsiz</Badge>
+}
+
+function UsageStat({
+  icon: Icon,
+  label,
+  value,
+  accent,
+}: {
+  icon: LucideIcon
+  label: string
+  value: number
+  accent: string
+}) {
+  return (
+    <div className="rounded-lg bg-white/[0.03] border border-white/5 p-2.5">
+      <div className="flex items-center gap-1.5">
+        <Icon className={`h-3.5 w-3.5 ${accent}`} />
+        <span className="text-[11px] text-white/50 leading-tight">{label}</span>
+      </div>
+      <p className="mt-1.5 text-lg font-bold text-white tabular-nums">{value.toLocaleString("tr-TR")}</p>
+    </div>
+  )
 }
 
 export function SubscriptionOperations({ users: initialUsers }: { users: UserRow[] }) {
@@ -157,7 +196,7 @@ export function SubscriptionOperations({ users: initialUsers }: { users: UserRow
         const data = await res.json()
         setExpandedData((prev) => ({
           ...prev,
-          [userId]: { subscription: data.subscription, usage: data.usage || [] },
+          [userId]: { subscription: data.subscription, usage: data.usage || [], totalCredits: data.totalCredits || 0 },
         }))
       } catch {
         toast.error("Kullanıcı verileri yüklenemedi")
@@ -172,7 +211,7 @@ export function SubscriptionOperations({ users: initialUsers }: { users: UserRow
     const data = await res.json()
     setExpandedData((prev) => ({
       ...prev,
-      [userId]: { subscription: data.subscription, usage: data.usage || [] },
+      [userId]: { subscription: data.subscription, usage: data.usage || [], totalCredits: data.totalCredits || 0 },
     }))
     return data
   }
@@ -258,6 +297,7 @@ export function SubscriptionOperations({ users: initialUsers }: { users: UserRow
         [user.id]: {
           subscription: { ...currentSub, status: "cancelled" },
           usage: prev[user.id]?.usage || [],
+          totalCredits: prev[user.id]?.totalCredits || 0,
         },
       }))
       setUsers((prev) =>
@@ -340,6 +380,10 @@ export function SubscriptionOperations({ users: initialUsers }: { users: UserRow
           const exUsage = data?.usage || []
           const ocrUsage = exUsage.find((u: any) => u.feature_type === "ocr_analysis")
           const riskUsage = exUsage.find((u: any) => u.feature_type === "risk_analysis")
+          const savedCredits = ocrUsage?.saved_credits_count || 0
+          const totalCredits = data?.totalCredits || 0
+          // Manual records = credits in DB that were not saved via OCR
+          const manualCredits = Math.max(0, totalCredits - savedCredits)
           const pkgId = selectedPackage[user.id] || ""
           const isApplying = applyingFor === user.id
           const isCanceling = cancelingFor === user.id
@@ -368,16 +412,14 @@ export function SubscriptionOperations({ users: initialUsers }: { users: UserRow
                       {displayName(user)}
                     </span>
                     <SubBadge sub={activeSub} />
-                    {activeSub && activeSub.status === "active" && (
+                    {activeSub && activeSub.status === "active" && !isExpiredByDate(activeSub) && (
                       <span className="text-white/40 text-xs">
                         {isUnlimited(activeSub.expires_at) ? (
                           <span className="flex items-center gap-1 text-purple-400">
                             <Infinity className="h-3 w-3" /> Sınırsız
                           </span>
-                        ) : getDaysRemaining(activeSub.expires_at) > 0 ? (
-                          `${getDaysRemaining(activeSub.expires_at)} gün kaldı`
                         ) : (
-                          <span className="text-red-400">Süresi doldu</span>
+                          `${getDaysRemaining(activeSub.expires_at)} gün kaldı`
                         )}
                       </span>
                     )}
@@ -457,40 +499,48 @@ export function SubscriptionOperations({ users: initialUsers }: { users: UserRow
                               )}
                             </div>
                           </div>
-
-                          {/* Usage stats */}
-                          {exUsage.length > 0 && (
-                            <div className="mt-3 pt-3 border-t border-white/10">
-                              <div className="flex items-center gap-1 mb-2">
-                                <TrendingUp className="h-3 w-3 text-white/40" />
-                                <span className="text-white/40 text-xs">Kullanım</span>
-                              </div>
-                              <div className="flex gap-4">
-                                <span className="text-xs text-white/60">
-                                  OCR:{" "}
-                                  <span className="text-white font-medium">
-                                    {ocrUsage?.usage_count || 0}
-                                    <span className="text-white/40">
-                                      /{ocrUsage?.limit_count === -1 ? "∞" : ocrUsage?.limit_count || 0}
-                                    </span>
-                                  </span>
-                                </span>
-                                <span className="text-xs text-white/60">
-                                  Risk:{" "}
-                                  <span className="text-white font-medium">
-                                    {riskUsage?.usage_count || 0}
-                                    <span className="text-white/40">/{riskUsage?.limit_count || 0}</span>
-                                  </span>
-                                </span>
-                              </div>
-                            </div>
-                          )}
                         </div>
                       ) : (
                         <div className="bg-black/20 rounded-lg p-3 border border-white/10 text-center">
                           <p className="text-white/40 text-sm">Aktif abonelik yok</p>
                         </div>
                       )}
+
+                      {/* Usage statistics — always shown, including free users */}
+                      <div className="bg-black/20 rounded-lg p-3 border border-white/10">
+                        <div className="flex items-center gap-1.5 mb-3">
+                          <TrendingUp className="h-3.5 w-3.5 text-white/40" />
+                          <span className="text-white/60 text-xs font-medium uppercase tracking-wide">
+                            Kullanım İstatistikleri
+                          </span>
+                        </div>
+                        <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                          <UsageStat
+                            icon={Scan}
+                            label="OCR Analizi"
+                            value={ocrUsage?.usage_count || 0}
+                            accent="text-blue-400"
+                          />
+                          <UsageStat
+                            icon={Save}
+                            label="Kaydedilen Kredi"
+                            value={savedCredits}
+                            accent="text-emerald-400"
+                          />
+                          <UsageStat
+                            icon={PencilLine}
+                            label="Manuel Kayıt"
+                            value={manualCredits}
+                            accent="text-amber-400"
+                          />
+                          <UsageStat
+                            icon={ShieldAlert}
+                            label="Risk Analizi"
+                            value={riskUsage?.usage_count || 0}
+                            accent="text-rose-400"
+                          />
+                        </div>
+                      </div>
 
                       {/* Package selector */}
                       <div>

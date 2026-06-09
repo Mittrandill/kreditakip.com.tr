@@ -17,10 +17,17 @@ export default async function AdminDashboard() {
     .from("profiles")
     .select("*", { count: "exact", head: true })
 
+  // A subscription is only "truly active" if its status is active AND its expiry
+  // date hasn't passed (unlimited grants use a far-future date, null = no expiry).
+  // This keeps the dashboard consistent with the date-based access cutoff.
+  const nowIso = new Date().toISOString()
+  const notExpiredFilter = `expires_at.gte.${nowIso},expires_at.is.null`
+
   const { count: activeSubscriptions } = await supabase
     .from("subscriptions")
     .select("*", { count: "exact", head: true })
     .eq("status", "active")
+    .or(notExpiredFilter)
 
   // Get invoice statistics
   const { count: totalInvoices } = await supabase
@@ -100,18 +107,21 @@ export default async function AdminDashboard() {
     .select("*", { count: "exact", head: true })
     .eq("status", "active")
     .eq("plan_type", "premium")
+    .or(notExpiredFilter)
 
   const { count: proUsers } = await supabase
     .from("subscriptions")
     .select("*", { count: "exact", head: true })
     .eq("status", "active")
     .eq("plan_type", "pro")
+    .or(notExpiredFilter)
 
   const { count: freeUsers } = await supabase
     .from("subscriptions")
     .select("*", { count: "exact", head: true })
     .eq("status", "active")
     .eq("plan_type", "free")
+    .or(notExpiredFilter)
 
   // Get total credits count
   const { count: totalCreditsCount } = await supabase
