@@ -33,7 +33,7 @@ const NAV: NavGroup[] = [
       { href: "/admin/faturalar", label: "Faturalar", icon: Receipt },
       { href: "/admin/abonelikler", label: "Abonelikler", icon: CreditCard },
       { href: "/admin/abonelik-islemleri", label: "Abonelik İşlemleri", icon: Settings },
-      { href: "/admin/odeme-risk-takip", label: "Risk Takip", icon: ShieldCheck },
+      { href: "/admin/odeme-risk-takip", label: "Ödeme İzleme", icon: ShieldCheck },
       { href: "/admin/loglar", label: "İşlem Logları", icon: Activity },
       { href: "/admin/bildirimler", label: "Bildirimler", icon: Bell },
     ],

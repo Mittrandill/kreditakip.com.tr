@@ -1,341 +1,154 @@
 import { checkAdminAccess } from "@/lib/admin-check"
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
-import {
-  AlertTriangle,
-  TrendingDown,
-  XCircle,
-  AlertCircle,
-  UserX,
-  CreditCard,
-  CheckCircle,
-  DollarSign,
-  Activity
-} from "lucide-react"
 import { createSupabaseAdmin } from "@/lib/supabase-server"
 import { AdminLayoutWrapper } from "@/components/admin-layout-wrapper"
+import { StatCard, SectionTitle } from "@/components/admin/stat-card"
 import { Badge } from "@/components/ui/badge"
+import { DollarSign, CheckCircle, AlertTriangle, TrendingUp, Receipt, Inbox } from "lucide-react"
 
-export default async function PaymentRiskMonitoring() {
+export const revalidate = 0
+
+export default async function PaymentMonitoring() {
   const { session } = await checkAdminAccess()
-
   const supabase = createSupabaseAdmin()
 
-  // Get total payments count
-  const { count: totalPayments } = await supabase
-    .from("paytr_recurring_payments")
-    .select("*", { count: "exact", head: true })
+  // Completed payments → revenue
+  const { data: completed } = await supabase
+    .from("payment_transactions")
+    .select("amount, created_at")
+    .eq("status", "completed")
 
-  // Get successful payments
-  const { count: successfulPayments } = await supabase
-    .from("paytr_recurring_payments")
-    .select("*", { count: "exact", head: true })
-    .eq("payment_status", "completed")
+  const totalRevenue = completed?.reduce((s, t) => s + Number(t.amount), 0) || 0
+  const completedCount = completed?.length || 0
 
-  // Get failed payments
-  const { count: failedPayments } = await supabase
-    .from("paytr_recurring_payments")
-    .select("*", { count: "exact", head: true })
-    .eq("payment_status", "failed")
+  const since30 = new Date()
+  since30.setDate(since30.getDate() - 30)
+  const last30 = completed?.filter((t) => new Date(t.created_at) >= since30) || []
+  const last30Revenue = last30.reduce((s, t) => s + Number(t.amount), 0)
 
-  // Get active saved cards
-  const { count: activeSavedCards } = await supabase
-    .from("paytr_saved_cards")
-    .select("*", { count: "exact", head: true })
-    .eq("is_active", true)
-
-  // Get total revenue from recurring payments
-  const { data: revenueData } = await supabase
-    .from("paytr_recurring_payments")
-    .select("amount")
-    .eq("payment_status", "completed")
-
-  const totalRevenue = revenueData?.reduce((sum, payment) => sum + Number(payment.amount), 0) || 0
-
-  // Calculate chargeback rate (placeholder - will need actual chargeback data)
-  const chargebackCount = 0 // TODO: Implement chargeback tracking
-  const chargebackRate = totalPayments ? (chargebackCount / totalPayments) * 100 : 0
-
-  // Get inactive user payments (users who haven't logged in for 30 days but had payment)
-  const thirtyDaysAgo = new Date()
-  thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30)
-
-  const { data: inactiveUserPayments } = await supabase
-    .from("paytr_recurring_payments")
-    .select(`
-      *,
-      profiles!inner(last_sign_in_at)
-    `)
-    .eq("payment_status", "completed")
-    .lt("profiles.last_sign_in_at", thirtyDaysAgo.toISOString())
-
-  const inactiveUserPaymentCount = inactiveUserPayments?.length || 0
-
-  // Get recent failed payments for monitoring
-  const { data: recentFailedPayments } = await supabase
-    .from("paytr_recurring_payments")
-    .select(`
-      *,
-      profiles(email, first_name, last_name)
-    `)
-    .eq("payment_status", "failed")
+  // Recent payments (with buyer)
+  const { data: recentPayments } = await supabase
+    .from("payment_transactions")
+    .select("id, amount, currency, status, payment_provider, plan_id, created_at, profiles:user_id(first_name,last_name,email)")
     .order("created_at", { ascending: false })
     .limit(10)
 
-  // Calculate success rate
-  const successRate = totalPayments ? ((successfulPayments || 0) / totalPayments) * 100 : 100
+  // Unmatched Shopier orders (need manual attention)
+  const { data: unmatched } = await supabase
+    .from("shopier_unmatched_orders")
+    .select("*")
+    .order("created_at", { ascending: false })
+    .limit(20)
 
-  // Risk level calculation
-  const getRiskLevel = () => {
-    if (chargebackRate > 1.0) return { level: "critical", color: "bg-red-500", text: "Kritik Risk" }
-    if (chargebackRate > 0.5) return { level: "high", color: "bg-orange-500", text: "Yüksek Risk" }
-    if (successRate < 90) return { level: "medium", color: "bg-yellow-500", text: "Orta Risk" }
-    return { level: "low", color: "bg-green-500", text: "Düşük Risk" }
+  const unmatchedOpen = (unmatched || []).filter((o: any) => !o.resolved)
+
+  const reasonLabel: Record<string, string> = {
+    user_not_found: "Kullanıcı yok",
+    user_creation_failed: "Hesap açılamadı",
+    unknown_product: "Bilinmeyen ürün",
+    invalid_signature: "Geçersiz imza",
   }
-
-  const riskLevel = getRiskLevel()
 
   return (
     <AdminLayoutWrapper userEmail={session.user.email || ""}>
-      <div className="space-y-6">
-        {/* Header */}
+      <div className="space-y-8">
         <div>
-          <h1 className="text-3xl font-bold text-white">Ödeme Risk Takip Paneli</h1>
-          <p className="text-white/60 mt-2">
-            PayTR Non3D ödemeleri için risk metrikleri ve güvenlik takibi
-          </p>
+          <p className="text-xs font-semibold uppercase tracking-[0.18em] text-emerald-400/80">Finans</p>
+          <h1 className="mt-2 text-3xl lg:text-4xl font-bold tracking-tight text-white">Ödeme İzleme</h1>
+          <p className="mt-2 text-sm text-white/50">Shopier ödemeleri, gelir ve elle müdahale gereken siparişler.</p>
         </div>
 
-        {/* Risk Level Banner */}
-        <Card className="bg-black/20 border-white/10 backdrop-blur-xl border-2">
-          <CardHeader>
-            <div className="flex items-center justify-between">
-              <div>
-                <CardTitle className="text-2xl text-white">Genel Risk Durumu</CardTitle>
-                <CardDescription className="text-white/60">Sistem genelinde risk değerlendirmesi</CardDescription>
-              </div>
-              <Badge className={`${riskLevel.color} text-white text-lg px-4 py-2`}>
-                {riskLevel.text}
-              </Badge>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          <StatCard label="Toplam Gelir" value={`${totalRevenue.toLocaleString("tr-TR")} ₺`} hint="Tamamlanan ödemeler" icon={DollarSign} accent="emerald" />
+          <StatCard label="Son 30 Gün" value={`${last30Revenue.toLocaleString("tr-TR")} ₺`} hint={`${last30.length} ödeme`} icon={TrendingUp} accent="teal" />
+          <StatCard label="Tamamlanan İşlem" value={completedCount} hint="Başarılı ödeme" icon={CheckCircle} accent="blue" />
+          <StatCard label="Eşleşmeyen Sipariş" value={unmatchedOpen.length} hint="Elle müdahale gerekli" icon={AlertTriangle} accent={unmatchedOpen.length > 0 ? "rose" : "slate"} />
+        </div>
+
+        {/* Unmatched orders — only show if any */}
+        {unmatchedOpen.length > 0 && (
+          <section>
+            <SectionTitle hint="elle çözülmeli">Eşleşmeyen Siparişler</SectionTitle>
+            <div className="overflow-hidden rounded-2xl border border-rose-500/20 bg-rose-500/[0.03]">
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="border-b border-white/[0.07] text-left text-white/50">
+                    <th className="py-3 px-4 font-medium">Sipariş No</th>
+                    <th className="py-3 px-4 font-medium">E-posta</th>
+                    <th className="py-3 px-4 font-medium">Plan</th>
+                    <th className="py-3 px-4 font-medium">Tutar</th>
+                    <th className="py-3 px-4 font-medium">Sebep</th>
+                    <th className="py-3 px-4 font-medium">Tarih</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {unmatchedOpen.map((o: any) => (
+                    <tr key={o.id} className="border-b border-white/[0.04] last:border-0">
+                      <td className="py-3 px-4 font-mono text-white/80">{o.order_id}</td>
+                      <td className="py-3 px-4 text-white/80">{o.buyer_email}</td>
+                      <td className="py-3 px-4 text-white/60">{o.plan_id || "—"}</td>
+                      <td className="py-3 px-4 text-white font-medium">{o.amount ? `${Number(o.amount).toFixed(2)} ₺` : "—"}</td>
+                      <td className="py-3 px-4">
+                        <Badge className="bg-rose-500/15 text-rose-300 border-rose-500/20 text-xs">
+                          {reasonLabel[o.reason] || o.reason || "Bilinmiyor"}
+                        </Badge>
+                      </td>
+                      <td className="py-3 px-4 text-white/50">{new Date(o.created_at).toLocaleDateString("tr-TR")}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
             </div>
-          </CardHeader>
-        </Card>
+          </section>
+        )}
 
-        {/* Key Metrics Grid */}
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-          {/* Chargeback Rate */}
-          <Card className="bg-black/20 border-white/10 backdrop-blur-xl">
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium text-white/80">Chargeback Oranı</CardTitle>
-              <AlertTriangle className={`h-4 w-4 ${chargebackRate > 0.5 ? 'text-red-400' : 'text-green-400'}`} />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold text-white">{chargebackRate.toFixed(2)}%</div>
-              <p className="text-xs text-white/60">
-                {chargebackCount} / {totalPayments || 0} işlem
-              </p>
-              <div className="mt-2">
-                <Badge variant={chargebackRate < 0.5 ? "default" : "destructive"}>
-                  Hedef: &lt; 0.5%
-                </Badge>
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Success Rate */}
-          <Card className="bg-black/20 border-white/10 backdrop-blur-xl">
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium text-white/80">Başarı Oranı</CardTitle>
-              <CheckCircle className={`h-4 w-4 ${successRate > 90 ? 'text-green-400' : 'text-orange-400'}`} />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold text-white">{successRate.toFixed(1)}%</div>
-              <p className="text-xs text-white/60">
-                {successfulPayments || 0} başarılı / {totalPayments || 0} toplam
-              </p>
-              <div className="mt-2">
-                <Badge variant={successRate > 90 ? "default" : "secondary"}>
-                  Hedef: &gt; 90%
-                </Badge>
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Failed Payments */}
-          <Card className="bg-black/20 border-white/10 backdrop-blur-xl">
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium text-white/80">Başarısız Ödemeler</CardTitle>
-              <XCircle className="h-4 w-4 text-red-400" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold text-white">{failedPayments || 0}</div>
-              <p className="text-xs text-white/60">
-                Son 30 gün içinde
-              </p>
-              <div className="mt-2">
-                <Badge variant="destructive">
-                  {totalPayments ? ((failedPayments || 0) / totalPayments * 100).toFixed(1) : 0}% hata oranı
-                </Badge>
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Inactive User Payments */}
-          <Card className="bg-black/20 border-white/10 backdrop-blur-xl">
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium text-white/80">Pasif Kullanıcı Ödemeleri</CardTitle>
-              <UserX className="h-4 w-4 text-orange-400" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold text-white">{inactiveUserPaymentCount}</div>
-              <p className="text-xs text-white/60">
-                30+ gün giriş yapmayan kullanıcılar
-              </p>
-              <div className="mt-2">
-                <Badge variant="secondary">
-                  Dikkat Gerekli
-                </Badge>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-
-        {/* Additional Metrics */}
-        <div className="grid gap-4 md:grid-cols-3">
-          {/* Total Revenue */}
-          <Card className="bg-black/20 border-white/10 backdrop-blur-xl">
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium text-white/80">Toplam Gelir (Recurring)</CardTitle>
-              <DollarSign className="h-4 w-4 text-green-400" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold text-white">{totalRevenue.toFixed(2)} TL</div>
-              <p className="text-xs text-white/60">
-                Otomatik yenileme ödemeleri
-              </p>
-            </CardContent>
-          </Card>
-
-          {/* Active Saved Cards */}
-          <Card className="bg-black/20 border-white/10 backdrop-blur-xl">
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium text-white/80">Kayıtlı Kart Sayısı</CardTitle>
-              <CreditCard className="h-4 w-4 text-blue-400" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold text-white">{activeSavedCards || 0}</div>
-              <p className="text-xs text-white/60">
-                Aktif kayıtlı kartlar
-              </p>
-            </CardContent>
-          </Card>
-
-          {/* Fraud Attempts */}
-          <Card className="bg-black/20 border-white/10 backdrop-blur-xl">
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium text-white/80">Şüpheli İşlem</CardTitle>
-              <AlertCircle className="h-4 w-4 text-purple-400" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold text-white">0</div>
-              <p className="text-xs text-white/60">
-                Fraud tespiti aktif
-              </p>
-              <div className="mt-2">
-                <Badge variant="outline">
-                  TODO: Implement
-                </Badge>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-
-        {/* Recent Failed Payments Table */}
-        <Card className="bg-black/20 border-white/10 backdrop-blur-xl">
-          <CardHeader>
-            <CardTitle className="text-white">Son Başarısız Ödemeler</CardTitle>
-            <CardDescription className="text-white/60">Detaylı inceleme gerektirebilir</CardDescription>
-          </CardHeader>
-          <CardContent>
-            {recentFailedPayments && recentFailedPayments.length > 0 ? (
-              <div className="space-y-4">
-                {recentFailedPayments.map((payment: any) => (
-                  <div key={payment.id} className="flex items-center justify-between border-b border-white/10 pb-4 last:border-0">
-                    <div>
-                      <p className="font-medium text-white">
-                        {payment.profiles?.first_name} {payment.profiles?.last_name}
-                      </p>
-                      <p className="text-sm text-white/60">{payment.profiles?.email}</p>
-                    </div>
-                    <div className="text-right">
-                      <p className="font-medium text-white">{payment.amount} {payment.currency}</p>
-                      <p className="text-sm text-white/60">
-                        {new Date(payment.created_at).toLocaleDateString('tr-TR')}
-                      </p>
-                    </div>
-                    <Badge variant="destructive">Başarısız</Badge>
-                  </div>
-                ))}
-              </div>
+        {/* Recent payments */}
+        <section>
+          <SectionTitle hint="son 10 ödeme">Son Ödemeler</SectionTitle>
+          <div className="overflow-hidden rounded-2xl border border-white/[0.07] bg-white/[0.02]">
+            {recentPayments && recentPayments.length > 0 ? (
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="border-b border-white/[0.07] text-left text-white/50">
+                    <th className="py-3 px-4 font-medium">Kullanıcı</th>
+                    <th className="py-3 px-4 font-medium">Plan</th>
+                    <th className="py-3 px-4 font-medium">Tutar</th>
+                    <th className="py-3 px-4 font-medium">Sağlayıcı</th>
+                    <th className="py-3 px-4 font-medium">Durum</th>
+                    <th className="py-3 px-4 font-medium">Tarih</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {recentPayments.map((p: any) => (
+                    <tr key={p.id} className="border-b border-white/[0.04] last:border-0 hover:bg-white/[0.02]">
+                      <td className="py-3 px-4">
+                        <p className="text-white font-medium">{[p.profiles?.first_name, p.profiles?.last_name].filter(Boolean).join(" ") || "—"}</p>
+                        <p className="text-white/45 text-xs">{p.profiles?.email}</p>
+                      </td>
+                      <td className="py-3 px-4 text-white/60">{p.plan_id || "—"}</td>
+                      <td className="py-3 px-4 text-white font-medium">{Number(p.amount).toFixed(2)} {p.currency || "TRY"}</td>
+                      <td className="py-3 px-4">
+                        <Badge className="bg-emerald-500/15 text-emerald-300 border-emerald-500/20 text-xs capitalize">{p.payment_provider || "—"}</Badge>
+                      </td>
+                      <td className="py-3 px-4">
+                        {p.status === "completed" ? (
+                          <Badge className="bg-emerald-500/15 text-emerald-300 border-emerald-500/20 text-xs">Tamamlandı</Badge>
+                        ) : (
+                          <Badge className="bg-white/10 text-white/60 border-white/10 text-xs capitalize">{p.status}</Badge>
+                        )}
+                      </td>
+                      <td className="py-3 px-4 text-white/50">{new Date(p.created_at).toLocaleDateString("tr-TR")}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
             ) : (
-              <div className="text-center py-8 text-white/60">
-                <CheckCircle className="h-12 w-12 mx-auto mb-4 text-green-400" />
-                <p>Başarısız ödeme bulunmuyor</p>
+              <div className="py-12 text-center text-white/40">
+                <Inbox className="mx-auto mb-3 h-10 w-10 text-white/20" />
+                <p>Henüz ödeme kaydı yok</p>
               </div>
             )}
-          </CardContent>
-        </Card>
-
-        {/* Risk Monitoring Checklist */}
-        <Card className="bg-black/20 border-white/10 backdrop-blur-xl">
-          <CardHeader>
-            <CardTitle className="text-white">Risk İzleme Kontrol Listesi</CardTitle>
-            <CardDescription className="text-white/60">PayTR Non3D güvenlik önlemleri</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-3">
-              <div className="flex items-center gap-3">
-                <CheckCircle className="h-5 w-5 text-green-400" />
-                <span className="text-white">✅ İlk ödeme 3D Secure ile yapılıyor</span>
-              </div>
-              <div className="flex items-center gap-3">
-                <CheckCircle className="h-5 w-5 text-green-400" />
-                <span className="text-white">✅ Kullanıcı onayı açık şekilde alınıyor</span>
-              </div>
-              <div className="flex items-center gap-3">
-                <CheckCircle className="h-5 w-5 text-green-400" />
-                <span className="text-white">✅ 3 gün önceden email bildirimi gönderiliyor</span>
-              </div>
-              <div className="flex items-center gap-3">
-                <CheckCircle className="h-5 w-5 text-green-400" />
-                <span className="text-white">✅ Kart bilgileri PayTR güvenli altyapısında</span>
-              </div>
-              <div className="flex items-center gap-3">
-                <CheckCircle className="h-5 w-5 text-green-400" />
-                <span className="text-white">✅ PCI-DSS uyumlu (sunucuda kart bilgisi yok)</span>
-              </div>
-              <div className="flex items-center gap-3">
-                <Activity className="h-5 w-5 text-blue-400" />
-                <span className="text-white">📊 Chargeback oranı izleniyor</span>
-              </div>
-              <div className="flex items-center gap-3">
-                <Activity className="h-5 w-5 text-blue-400" />
-                <span className="text-white">📊 Başarı oranı takip ediliyor</span>
-              </div>
-              <div className="flex items-center gap-3">
-                <AlertCircle className="h-5 w-5 text-orange-400" />
-                <span className="text-white">🚧 Fraud detection sistemi (TODO)</span>
-              </div>
-              <div className="flex items-center gap-3">
-                <AlertCircle className="h-5 w-5 text-orange-400" />
-                <span className="text-white">🚧 IP adresi logging (TODO)</span>
-              </div>
-              <div className="flex items-center gap-3">
-                <AlertCircle className="h-5 w-5 text-orange-400" />
-                <span className="text-white">🚧 Device fingerprinting (TODO)</span>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
+          </div>
+        </section>
       </div>
     </AdminLayoutWrapper>
   )
