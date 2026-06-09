@@ -1,9 +1,9 @@
 import { checkAdminAccess } from "@/lib/admin-check"
 import { createSupabaseAdmin } from "@/lib/supabase-server"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Activity, Users, AlertCircle } from "lucide-react"
+import { Activity, ShieldCheck, Clock } from "lucide-react"
 import { AdminLayoutWrapper } from "@/components/admin-layout-wrapper"
 import { ActivityLogsTableClient } from "@/components/admin/activity-logs-table-client"
+import { StatCard } from "@/components/admin/stat-card"
 
 export default async function ActivityLogs() {
   const { session } = await checkAdminAccess()
@@ -57,61 +57,17 @@ export default async function ActivityLogs() {
     <AdminLayoutWrapper userEmail={session.user.email || ""}>
       <div className="space-y-8">
         <div>
-          <h1 className="text-4xl font-bold mb-2">Admin İşlem Logları</h1>
-          <p className="text-white/60">
-            Tüm admin işlemlerini görüntüleyin ve takip edin
-          </p>
+          <p className="text-xs font-semibold uppercase tracking-[0.18em] text-emerald-400/80">Güvenlik</p>
+          <h1 className="mt-2 text-3xl lg:text-4xl font-bold tracking-tight text-white">Admin İşlem Logları</h1>
+          <p className="mt-2 text-sm text-white/50">Tüm admin işlemlerini görüntüleyin ve denetleyin.</p>
         </div>
 
-        {/* Statistics */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <Card className="bg-black/20 border-white/10 backdrop-blur-xl">
-            <CardHeader className="flex flex-row items-center justify-between pb-2">
-              <CardTitle className="text-sm font-medium text-white/80">
-                Toplam İşlem
-              </CardTitle>
-              <Activity className="h-4 w-4 text-white/60" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-3xl font-bold text-white">
-                {totalLogs || 0}
-              </div>
-              <p className="text-xs text-white/60 mt-1">Tüm zamanlar</p>
-            </CardContent>
-          </Card>
-
-          <Card className="bg-black/20 border-white/10 backdrop-blur-xl">
-            <CardHeader className="flex flex-row items-center justify-between pb-2">
-              <CardTitle className="text-sm font-medium text-white/80">
-                Son 24 Saat
-              </CardTitle>
-              <AlertCircle className="h-4 w-4 text-white/60" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-3xl font-bold text-white">
-                {recentLogs || 0}
-              </div>
-              <p className="text-xs text-white/60 mt-1">Yeni işlemler</p>
-            </CardContent>
-          </Card>
-
-          <Card className="bg-black/20 border-white/10 backdrop-blur-xl">
-            <CardHeader className="flex flex-row items-center justify-between pb-2">
-              <CardTitle className="text-sm font-medium text-white/80">
-                Aktif Adminler
-              </CardTitle>
-              <Users className="h-4 w-4 text-white/60" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-3xl font-bold text-white">
-                {uniqueAdminCount}
-              </div>
-              <p className="text-xs text-white/60 mt-1">İşlem yapan adminler</p>
-            </CardContent>
-          </Card>
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+          <StatCard label="Toplam İşlem" value={totalLogs || 0} hint="Tüm zamanlar" icon={Activity} accent="emerald" />
+          <StatCard label="Son 24 Saat" value={recentLogs || 0} hint="Yeni işlemler" icon={Clock} accent="amber" />
+          <StatCard label="Aktif Admin" value={uniqueAdminCount} hint="İşlem yapan" icon={ShieldCheck} accent="blue" />
         </div>
 
-        {/* Activity Logs Table with Search and Filters */}
         <ActivityLogsTableClient logs={logs || []} />
       </div>
     </AdminLayoutWrapper>
