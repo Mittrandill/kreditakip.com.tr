@@ -29,6 +29,22 @@ export default async function UsersManagement() {
     console.error("Error fetching users:", usersError)
   }
 
+  // OCR usage per user (analyses + saved credits), independent of plan/status
+  const { data: usageRows } = await supabase
+    .from("subscription_usage")
+    .select("user_id, feature_type, usage_count, saved_credits_count")
+    .eq("feature_type", "ocr_analysis")
+
+  const usageMap = new Map<string, { analyses: number; saved: number }>()
+  usageRows?.forEach((u) => {
+    usageMap.set(u.user_id, { analyses: u.usage_count || 0, saved: u.saved_credits_count || 0 })
+  })
+
+  const usersWithUsage = (users || []).map((u) => ({
+    ...u,
+    ocrUsage: usageMap.get(u.id) || { analyses: 0, saved: 0 },
+  }))
+
   // Get subscription counts
   const { count: totalUsers } = await supabase
     .from("profiles")
@@ -59,7 +75,7 @@ export default async function UsersManagement() {
           <StatCard label="İptal Edilen" value={cancelledSubscriptions || 0} hint="İptal edilen abonelik" icon={Ban} accent="rose" />
         </div>
 
-        <UserTableClient users={users || []} />
+        <UserTableClient users={usersWithUsage} />
       </div>
     </AdminLayoutWrapper>
   )

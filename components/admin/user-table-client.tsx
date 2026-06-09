@@ -116,7 +116,7 @@ export function UserTableClient({ users }: UserTableClientProps) {
   // Export to CSV
   const exportToCSV = () => {
     // Prepare CSV data
-    const headers = ["Ad Soyad", "E-posta", "Telefon", "Abonelik", "Plan", "Kayıt Tarihi"]
+    const headers = ["Ad Soyad", "E-posta", "Telefon", "Abonelik", "Plan", "OCR Analiz", "OCR Kayıt", "Kayıt Tarihi"]
     const rows = filteredUsers.map((user) => {
       const subscriptions = user.subscriptions || []
       const activeSubscription = subscriptions.find((s: any) => s.status === "active")
@@ -147,6 +147,8 @@ export function UserTableClient({ users }: UserTableClientProps) {
         user.phone || "-",
         status,
         plan,
+        user.ocrUsage?.analyses ?? 0,
+        user.ocrUsage?.saved ?? 0,
         new Date(user.created_at).toLocaleDateString("tr-TR"),
       ]
     })
@@ -283,6 +285,9 @@ export function UserTableClient({ users }: UserTableClientProps) {
                   Plan
                 </th>
                 <th className="text-left py-3 px-4 text-white/80 font-semibold">
+                  OCR (Analiz / Kayıt)
+                </th>
+                <th className="text-left py-3 px-4 text-white/80 font-semibold">
                   Kayıt Tarihi
                 </th>
                 <th className="text-left py-3 px-4 text-white/80 font-semibold">
@@ -360,6 +365,16 @@ export function UserTableClient({ users }: UserTableClientProps) {
                           subscription.plan_type
                         : "-"}
                     </td>
+                    <td className="py-4 px-4">
+                      <div className="flex items-center gap-2">
+                        <Badge className="bg-blue-500/15 text-blue-300 border-blue-500/20 tabular-nums">
+                          {user.ocrUsage?.analyses ?? 0} analiz
+                        </Badge>
+                        <Badge className="bg-emerald-500/15 text-emerald-300 border-emerald-500/20 tabular-nums">
+                          {user.ocrUsage?.saved ?? 0} kayıt
+                        </Badge>
+                      </div>
+                    </td>
                     <td className="py-4 px-4 text-white/80">
                       {new Date(user.created_at).toLocaleDateString("tr-TR")}
                     </td>
@@ -376,7 +391,7 @@ export function UserTableClient({ users }: UserTableClientProps) {
               })}
               {paginatedUsers.length === 0 && (
                 <tr>
-                  <td colSpan={7} className="py-8 text-center text-white/60">
+                  <td colSpan={8} className="py-8 text-center text-white/60">
                     {searchQuery || planFilter !== "all" || statusFilter !== "all"
                       ? "Filtreye uygun kullanıcı bulunamadı"
                       : "Henüz kullanıcı bulunmuyor"}
