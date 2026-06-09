@@ -54,7 +54,7 @@ export default function CancellationRefundPolicyPage() {
                   </p>
 
                   <p className="bg-emerald-500/10 border border-emerald-500/30 rounded-lg p-4">
-                    Bu iade politikası, PayTR ödeme sistemimiz ve Türk Tüketici Hakları Yönetmeliği doğrultusunda uygulanmaktadır.
+                    Bu iade politikası, Shopier ödeme sistemimiz ve Türk Tüketici Hakları Yönetmeliği doğrultusunda uygulanmaktadır.
                   </p>
 
                   <p>
@@ -77,7 +77,7 @@ export default function CancellationRefundPolicyPage() {
                   <p><strong>İade süreci şu adımlarla ilerler:</strong></p>
                   <ul className="list-disc pl-6 space-y-2">
                     <li>Kullanıcı iade talebini info@kreditakip.com.tr adresine iletir</li>
-                    <li>Talep ekibimiz tarafından doğrulanır ve PayTR üzerinden iade işlemi başlatılır</li>
+                    <li>Talep ekibimiz tarafından doğrulanır ve Shopier üzerinden iade işlemi başlatılır</li>
                     <li>İade, bankanıza bağlı olarak genellikle 5–10 iş günü içinde hesabınıza yansır</li>
                   </ul>
 
@@ -125,7 +125,7 @@ export default function CancellationRefundPolicyPage() {
                   <ul className="list-disc pl-6 space-y-2">
                     <li>Mevcut abonelik sürenizin sonuna kadar hizmetlerden yararlanmaya devam edersiniz</li>
                     <li>İptal işlemi ileriye dönük geçerlidir; geçmiş dönemlere ilişkin iadeler yapılamamaktadır (14 günlük süre hariç)</li>
-                    <li>PayTR abonelikleri otomatik yenilenmez - süre dolmadan manuel olarak yenilemeniz gerekir</li>
+                    <li>Shopier abonelikleri otomatik yenilenmez - süre dolmadan manuel olarak yenilemeniz gerekir</li>
                   </ul>
                 </div>
               </div>
@@ -195,7 +195,7 @@ export default function CancellationRefundPolicyPage() {
                 Önemli Bilgilendirme
               </h3>
               <p className="text-white/80 leading-relaxed">
-                Bu politika, Kredi Takip'in PayTR ödeme sistemi kullanarak sunduğu hizmetlere ilişkindir.
+                Bu politika, Kredi Takip'in Shopier ödeme sistemi kullanarak sunduğu hizmetlere ilişkindir.
                 Politika değişiklikleri, kullanıcılarımıza e-posta ve uygulama içi bildirimler ile duyurulur.
                 Devam eden abonelikler, değişikliklerden önceki şartlara tabidir. Politikamız KVKK,
                 Türk Tüketici Hakları Yönetmeliği ve ilgili tüm yerel yasalara uygundur.

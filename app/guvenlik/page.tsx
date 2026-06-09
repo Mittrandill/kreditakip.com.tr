@@ -57,7 +57,7 @@ export default function SecurityPage() {
     {
       icon: Award,
       title: "Güvenli Ödeme",
-      description: "PayTR PCI-DSS sertifikalı ödeme altyapısı kullanılır",
+      description: "Shopier PCI-DSS sertifikalı ödeme altyapısı kullanılır",
     },
     {
       icon: CheckCircle,
@@ -245,7 +245,7 @@ export default function SecurityPage() {
                       "Pre-commit hooks ile API anahtarı sızıntı önleme",
                       "Supabase otomatik yedekleme (günlük)",
                       "Webhook idempotency ile çift ücretlendirme koruması",
-                      "PCI-DSS uyumlu ödeme (PayTR checkout form)",
+                      "PCI-DSS uyumlu ödeme (Shopier checkout form)",
                       "TLS 1.3 ve AES-256 ile şifreli veri iletimi ve saklama",
                     ].map((practice, index) => (
                       <div key={index} className="flex items-start gap-3">

@@ -113,18 +113,18 @@ export default function PrivacyPolicyPage() {
                 <h2 className="text-2xl font-bold text-white mb-4">5. Ödeme Bilgileri ve Abonelikler</h2>
                 <div className="text-white/80 leading-relaxed space-y-3 bg-emerald-500/10 border border-emerald-500/30 rounded-lg p-6">
                   <p>
-                    <strong className="text-emerald-200">Ödeme Güvenliği:</strong> Tüm ödemeleriniz PayTR güvencesi altında
+                    <strong className="text-emerald-200">Ödeme Güvenliği:</strong> Tüm ödemeleriniz Shopier güvencesi altında
                     3D Secure doğrulama ile güvenli bir şekilde işlenir. Kredi Takip olarak kredi kartı bilgilerinizi hiçbir şekilde görmüyor veya sunucularımızda saklamıyoruz.
                   </p>
 
                   <p>
-                    <strong>PayTR ile Ödeme İşlemleri:</strong>
+                    <strong>Shopier ile Ödeme İşlemleri:</strong>
                   </p>
                   <ul className="list-disc pl-6 space-y-2">
-                    <li>Kredi kartı bilgileriniz doğrudan ve güvenli bir şekilde PayTR'ye iletilir</li>
+                    <li>Kredi kartı bilgileriniz doğrudan ve güvenli bir şekilde Shopier'ye iletilir</li>
                     <li>Sunucularımızda kredi kartı numarası, CVV veya son kullanma tarihi saklanmaz</li>
                     <li>Her ödeme işlemi 3D Secure doğrulama ile korunur</li>
-                    <li>PayTR, Türkiye'nin güvenilir ödeme altyapısıdır</li>
+                    <li>Shopier, Türkiye'nin güvenilir ödeme altyapısıdır</li>
                     <li>Ödemeleriniz SSL/TLS şifrelemesi ile korunur</li>
                   </ul>
 
@@ -134,14 +134,14 @@ export default function PrivacyPolicyPage() {
                   <ul className="list-disc pl-6 space-y-2">
                     <li>Abonelikleriniz hesap ayarlarınız üzerinden yönetilir</li>
                     <li>Plan değiştirmek veya iptal etmek için abonelik sayfasını kullanabilirsiniz</li>
-                    <li>PayTR abonelikleri otomatik yenilenmez - süre dolmadan manuel olarak yenilemeniz gerekir</li>
+                    <li>Shopier abonelikleri otomatik yenilenmez - süre dolmadan manuel olarak yenilemeniz gerekir</li>
                     <li>Yenileme hatırlatmaları 7, 3 ve 1 gün önce e-posta ile gönderilir</li>
                     <li>Abonelik durumunuz hakkında e-posta bildirimleri alırsınız</li>
                   </ul>
 
                   <p className="text-yellow-200 bg-yellow-500/10 border border-yellow-500/30 rounded p-3">
                     <strong>🔒 Güvenlik Notu:</strong> Tam kart numaranız, CVV kodunuz veya diğer hassas ödeme bilgileriniz
-                    hiçbir zaman sunucularımızda saklanmaz. Her ödeme için kart bilgilerinizi yeniden girmeniz gerekir ve bu bilgiler sadece PayTR'nin güvenli altyapısında işlenir.
+                    hiçbir zaman sunucularımızda saklanmaz. Her ödeme için kart bilgilerinizi yeniden girmeniz gerekir ve bu bilgiler sadece Shopier'nin güvenli altyapısında işlenir.
                   </p>
 
                   <p>
@@ -158,9 +158,9 @@ export default function PrivacyPolicyPage() {
                     <strong>Ödeme Sağlayıcı:</strong>
                   </p>
                   <ul className="list-disc pl-6 space-y-2">
-                    <li>PayTR, resmi ödeme sağlayıcımızdır</li>
-                    <li>PayTR, 3D Secure ile tüm ödeme işlemlerini güvenli şekilde gerçekleştirir</li>
-                    <li>Ödeme iadeleri PayTR üzerinden işleme alınır</li>
+                    <li>Shopier, resmi ödeme sağlayıcımızdır</li>
+                    <li>Shopier, 3D Secure ile tüm ödeme işlemlerini güvenli şekilde gerçekleştirir</li>
+                    <li>Ödeme iadeleri Shopier üzerinden işleme alınır</li>
                     <li>Destek için: <a href="mailto:info@kreditakip.com.tr" className="text-emerald-400 hover:underline">info@kreditakip.com.tr</a></li>
                   </ul>
                 </div>

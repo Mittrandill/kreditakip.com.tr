@@ -180,10 +180,10 @@ export default function TermsOfServicePage() {
                   </p>
 
                   <p>
-                    <strong className="text-emerald-200">PayTR ile Güvenli Ödeme:</strong>
+                    <strong className="text-emerald-200">Shopier ile Güvenli Ödeme:</strong>
                   </p>
                   <ul className="list-disc pl-6 space-y-2">
-                    <li>Tüm ödemeler PayTR güvencesi altında 3D Secure altyapısı üzerinden işlenir</li>
+                    <li>Tüm ödemeler Shopier güvencesi altında 3D Secure altyapısı üzerinden işlenir</li>
                     <li>Kredi kartı bilgileriniz hiçbir zaman sunucularımızda saklanmaz</li>
                     <li>Her ödeme 3D doğrulama ile korunur</li>
                     <li>Ödemeleriniz SSL/TLS şifrelemesi ile korunur</li>
@@ -196,12 +196,12 @@ export default function TermsOfServicePage() {
                     <li>Abonelikleriniz hesap ayarlarınız üzerinden yönetilir</li>
                     <li>Plan değiştirmek veya iptal etmek için abonelik sayfasını kullanabilirsiniz</li>
                     <li>Abonelik durumunuz hakkında otomatik e-posta bildirimleri alırsınız</li>
-                    <li>PayTR abonelikleri otomatik yenilenmez - süre dolmadan manuel olarak yenilemeniz gerekir</li>
+                    <li>Shopier abonelikleri otomatik yenilenmez - süre dolmadan manuel olarak yenilemeniz gerekir</li>
                     <li>Yenileme hatırlatmaları abonelik bitiminden 7, 3 ve 1 gün önce e-posta ile gönderilir</li>
                   </ul>
 
                   <p className="text-blue-200 bg-blue-500/10 border border-blue-500/30 rounded p-3">
-                    <strong>📦 Ödeme Sistemi:</strong> PayTR, resmi ödeme sağlayıcımızdır.
+                    <strong>📦 Ödeme Sistemi:</strong> Shopier, resmi ödeme sağlayıcımızdır.
                     Tüm ödeme işlemleri 3D Secure ile korunur ve güvenli şekilde işlenir.
                   </p>
 
@@ -283,14 +283,14 @@ export default function TermsOfServicePage() {
                     <strong>Biz Kimiz:</strong> Bu web sitesi ve Kredi Takip hizmetleri Kredi Takip tarafından işletilmektedir.
                   </p>
                   <p>
-                    <strong>Ödeme İşlemcisi:</strong> Tüm ödeme işlemleri PayTR tarafından güvenli bir şekilde işlenir.
-                    PayTR, 3D Secure doğrulama ile tüm ödemelerinizi korur.
+                    <strong>Ödeme İşlemcisi:</strong> Tüm ödeme işlemleri Shopier tarafından güvenli bir şekilde işlenir.
+                    Shopier, 3D Secure doğrulama ile tüm ödemelerinizi korur.
                   </p>
                   <div className="bg-emerald-500/10 border border-emerald-500/30 rounded-lg p-4 mt-4">
                     <p className="text-sm">
-                      <strong>Ödeme Onayı:</strong> Satın alma yaparak, PayTR'nin{" "}
+                      <strong>Ödeme Onayı:</strong> Satın alma yaparak, Shopier'in{" "}
                       <a
-                        href="https://www.paytr.com/Kullanim-Sozlesmesi"
+                        href="https://www.shopier.com"
                         target="_blank"
                         rel="noopener noreferrer"
                         className="text-emerald-400 hover:underline"
