@@ -1,10 +1,8 @@
 "use client"
 
 import { useEffect, useState } from "react"
-import Link from "next/link"
-import { LayoutDashboard, FileText, FolderOpen, Users, Receipt, Home } from "lucide-react"
-import { Button } from "@/components/ui/button"
-import { AdminLogoutButton } from "@/components/admin-logout-button"
+import { Toaster } from "sonner"
+import { AdminSidebar } from "@/components/admin/admin-sidebar"
 
 interface AdminClientLayoutWrapperProps {
   children: React.ReactNode
@@ -14,7 +12,6 @@ export function AdminClientLayoutWrapper({ children }: AdminClientLayoutWrapperP
   const [userEmail, setUserEmail] = useState<string>("")
 
   useEffect(() => {
-    // Fetch user session to get email
     const fetchUser = async () => {
       try {
         const response = await fetch("/api/auth/session")
@@ -30,100 +27,15 @@ export function AdminClientLayoutWrapper({ children }: AdminClientLayoutWrapperP
   }, [])
 
   return (
-    <div className="min-h-screen bg-[#151515] text-white">
-      <div className="flex">
-        {/* Sidebar */}
-        <aside className="w-64 min-h-screen bg-black/20 border-r border-white/10 p-6 flex flex-col">
-          <div className="mb-8">
-            <h1 className="text-2xl font-bold text-emerald-400">Admin Panel</h1>
-            <p className="text-sm text-white/60 mt-1">Kredi Takip Yönetimi</p>
-            {userEmail && <p className="text-xs text-white/40 mt-2">{userEmail}</p>}
-          </div>
-
-          <nav className="space-y-2">
-            <Link href="/admin">
-              <Button
-                variant="ghost"
-                className="w-full justify-start text-white/80 hover:text-white hover:bg-white/10"
-              >
-                <LayoutDashboard className="mr-2 h-4 w-4" />
-                Dashboard
-              </Button>
-            </Link>
-
-            <div className="pt-2 mt-2 border-t border-white/10">
-              <p className="text-xs text-white/40 px-3 py-2 font-semibold uppercase tracking-wider">
-                Yönetim
-              </p>
-
-              <Link href="/admin/kullanicilar">
-                <Button
-                  variant="ghost"
-                  className="w-full justify-start text-white/80 hover:text-white hover:bg-white/10"
-                >
-                  <Users className="mr-2 h-4 w-4" />
-                  Kullanıcılar
-                </Button>
-              </Link>
-
-              <Link href="/admin/faturalar">
-                <Button
-                  variant="ghost"
-                  className="w-full justify-start text-white/80 hover:text-white hover:bg-white/10"
-                >
-                  <Receipt className="mr-2 h-4 w-4" />
-                  Faturalar
-                </Button>
-              </Link>
-            </div>
-
-            <div className="pt-2 mt-2 border-t border-white/10">
-              <p className="text-xs text-white/40 px-3 py-2 font-semibold uppercase tracking-wider">
-                İçerik
-              </p>
-
-              <Link href="/admin/blog/posts">
-                <Button
-                  variant="ghost"
-                  className="w-full justify-start text-white/80 hover:text-white hover:bg-white/10"
-                >
-                  <FileText className="mr-2 h-4 w-4" />
-                  Blog Yazıları
-                </Button>
-              </Link>
-
-              <Link href="/admin/blog/categories">
-                <Button
-                  variant="ghost"
-                  className="w-full justify-start text-white/80 hover:text-white hover:bg-white/10"
-                >
-                  <FolderOpen className="mr-2 h-4 w-4" />
-                  Kategoriler
-                </Button>
-              </Link>
-            </div>
-
-            <div className="pt-4 mt-4 border-t border-white/10">
-              <Link href="/">
-                <Button
-                  variant="ghost"
-                  className="w-full justify-start text-white/80 hover:text-white hover:bg-white/10"
-                >
-                  <Home className="mr-2 h-4 w-4" />
-                  Ana Sayfaya Dön
-                </Button>
-              </Link>
-            </div>
-          </nav>
-
-          {/* Logout Button - At bottom */}
-          <div className="mt-auto pt-4 border-t border-white/10">
-            <AdminLogoutButton />
-          </div>
-        </aside>
-
-        {/* Main Content */}
-        <main className="flex-1 p-8">{children}</main>
+    <div className="min-h-screen bg-[#0a0c0b] text-white">
+      <Toaster position="top-right" theme="dark" richColors />
+      <div className="pointer-events-none fixed inset-0 overflow-hidden">
+        <div className="absolute -top-40 -left-20 h-[40rem] w-[40rem] rounded-full bg-emerald-600/[0.07] blur-[120px]" />
+        <div className="absolute top-1/3 right-0 h-[32rem] w-[32rem] rounded-full bg-teal-500/[0.05] blur-[120px]" />
+      </div>
+      <div className="relative flex">
+        <AdminSidebar userEmail={userEmail} />
+        <main className="flex-1 min-w-0 p-6 lg:p-10">{children}</main>
       </div>
     </div>
   )
