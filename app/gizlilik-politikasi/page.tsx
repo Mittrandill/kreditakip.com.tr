@@ -31,7 +31,7 @@ export default function PrivacyPolicyPage() {
               </p>
               <div className="flex items-center justify-center gap-2 mt-6 text-white/60">
                 <Calendar className="w-4 h-4" />
-                <span className="text-sm">Yürürlük Tarihi: 28 Kasım 2025</span>
+                <span className="text-sm">Son Güncelleme: Haziran 2026</span>
               </div>
             </div>
           </div>
@@ -49,7 +49,7 @@ export default function PrivacyPolicyPage() {
                     <strong>Kişisel Bilgiler:</strong> Ad, soyad, e-posta, telefon (gönüllü olarak girilen bilgiler)
                   </p>
                   <p>
-                    <strong>Kredi Dökümanları:</strong> PDF formatındaki kredi ekstreleri
+                    <strong>Kredi Dökümanları:</strong> PDF formatındaki kredi ekstreleri ve belge görselleri. OCR analizi için yüklediğiniz belgeler, yapay zeka sağlayıcısı Google (Gemini) ile paylaşılabilir; bu paylaşım yalnızca açık onayınızla gerçekleşir.
                   </p>
                   <p>
                     <strong>Şifrelenmiş Bankacılık Verileri:</strong> Görülemeyen, çözümlenemeyen biçimde saklanan
@@ -77,15 +77,15 @@ export default function PrivacyPolicyPage() {
                 <div className="text-white/80 leading-relaxed space-y-3">
                   <p>
                     <strong>
-                      Kredi Takip, verilerinizi hiçbir koşulda reklam, analiz veya benzeri ticari amaçlarla üçüncü
-                      kişilerle paylaşmaz.
+                      Kredi Takip, verilerinizi reklam, pazarlama veya ticari amaçlarla üçüncü kişilere satmaz.
                     </strong>
                   </p>
-                  <p>Ancak aşağıdaki durumlarda sınırlı paylaşım yapılabilir:</p>
+                  <p>Ancak aşağıdaki durumlarda sınırlı paylaşım yapılır veya yapılabilir:</p>
+                  <p>• <strong>Yapay Zeka Servisi (Google Gemini):</strong> OCR belge analizi ve finansal sağlık analizi özelliklerini kullandığınızda, yüklediğiniz belgeler ve girdiğiniz finansal veriler, analizi gerçekleştirmek üzere yapay zeka sağlayıcısı Google LLC (Gemini API) ile paylaşılır. Bu paylaşım yalnızca açık onayınızla yapılır; detaylar için bkz. Madde 6.</p>
                   <p>• Yasal zorunluluklar</p>
                   <p>• Mahkeme/BTK/EMNİYET gibi resmi merciler tarafından talep edilmesi halinde</p>
                   <p className="text-sm">
-                    Bu durumda bilgiler yalnızca gerekli olan kısmıyla sınırlı olarak paylaşılır.
+                    Yasal zorunluluk kapsamındaki paylaşımlarda bilgiler yalnızca gerekli olan kısmıyla sınırlı olarak paylaşılır.
                   </p>
                 </div>
               </div>
@@ -166,9 +166,42 @@ export default function PrivacyPolicyPage() {
                 </div>
               </div>
 
-              {/* Section 6: Haklarınız */}
+              {/* Section 6: Yapay Zeka ile Veri İşleme */}
               <div className="mb-8">
-                <h2 className="text-2xl font-bold text-white mb-4">6. Haklarınız</h2>
+                <h2 className="text-2xl font-bold text-white mb-4">6. Yapay Zeka (AI) ile Veri İşleme ve Üçüncü Taraf Paylaşımı</h2>
+                <div className="text-white/80 leading-relaxed space-y-3 bg-blue-500/10 border border-blue-500/30 rounded-lg p-6">
+                  <p>
+                    <strong className="text-blue-200">Hangi özellikler AI kullanır?</strong>
+                  </p>
+                  <ul className="list-disc pl-6 space-y-2">
+                    <li><strong>OCR Belge Analizi:</strong> Yüklediğiniz kredi belgesi/PDF, kredi ödeme planınızı oluşturmak için Google Gemini&apos;ya iletilir. Bu belge; banka adı, kredi tutarı, taksit tarihleri, faiz oranı ve diğer finansal bilgileri içerebilir.</li>
+                    <li><strong>Finansal Sağlık Analizi:</strong> Girdiğiniz gelir, gider, toplam borç ve kredi bilgileri, finansal analiz raporunuzu oluşturmak için Google Gemini&apos;ya iletilir.</li>
+                  </ul>
+
+                  <p className="mt-4">
+                    <strong className="text-blue-200">Kime gönderilir?</strong>
+                  </p>
+                  <p>Veriler, Vercel altyapımız üzerinden <strong>Google LLC — Gemini API</strong>&apos;ye iletilir. Google, bu verileri yalnızca analiz işlemi için kullanır; reklam amaçlı kullanamaz ve API verilerini model eğitimi için kullanmaz.</p>
+
+                  <p className="mt-4">
+                    <strong className="text-blue-200">İzin zorunlu mudur?</strong>
+                  </p>
+                  <p>Evet. Mobil uygulamamızda (iOS/Android) herhangi bir analiz başlatmadan önce açık onayınız istenir. <strong>Onaylamadan hiçbir veri gönderilmez.</strong> Onayınızı daha sonra profil ayarlarınızdan inceleyebilirsiniz.</p>
+
+                  <p className="mt-4">
+                    <strong className="text-blue-200">Web uygulaması</strong>
+                  </p>
+                  <p>Web platformunda AI özelliği şu an aktif değildir; veriler sunucularımızda işlenir.</p>
+
+                  <p className="mt-4 text-sm text-white/60">
+                    Google&apos;ın gizlilik politikası için: <a href="https://policies.google.com/privacy" target="_blank" rel="noopener noreferrer" className="text-blue-400 hover:underline">policies.google.com/privacy</a>
+                  </p>
+                </div>
+              </div>
+
+              {/* Section 7: Haklarınız */}
+              <div className="mb-8">
+                <h2 className="text-2xl font-bold text-white mb-4">7. Haklarınız</h2>
                 <div className="text-white/80 leading-relaxed space-y-3">
                   <p>KVKK kapsamında aşağıdaki haklara sahipsiniz:</p>
                   <p>• Verilerinize erişme hakkı</p>
