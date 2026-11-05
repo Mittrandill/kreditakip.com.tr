@@ -10,7 +10,8 @@ import { notFound } from "next/navigation"
 import ReactMarkdown from "react-markdown"
 import { BlogViewCounter } from "@/components/blog/blog-view-counter"
 
-export const revalidate = 60 // Revalidate every 60 seconds
+// Günde bir yenilenir; admin yazı kaydedince revalidatePath ile hemen güncellenir.
+export const revalidate = 86400
 
 // Yazılar ilk ziyarette üretilip önbelleğe alınır; boş liste bunu etkinleştirir.
 export function generateStaticParams() {

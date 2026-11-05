@@ -3,6 +3,7 @@ import { checkAdminAPI } from "@/lib/admin-check"
 
 export const dynamic = "force-dynamic"
 import { NextRequest, NextResponse } from "next/server"
+import { revalidatePath } from "next/cache"
 
 // GET - List all blog posts (admin only)
 export async function GET(request: NextRequest) {
@@ -163,6 +164,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Failed to create blog post" }, { status: 500 })
     }
 
+    revalidatePath("/blog", "layout")
     return NextResponse.json({ post }, { status: 201 })
   } catch (error) {
     console.error("Error in POST /api/admin/blog/posts:", error)

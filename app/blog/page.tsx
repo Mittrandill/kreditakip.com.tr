@@ -7,7 +7,8 @@ import Image from "next/image"
 import Link from "next/link"
 import { createSupabasePublic } from "@/lib/supabase-server"
 
-export const revalidate = 60 // Revalidate every 60 seconds
+// Günde bir yenilenir; admin yazı kaydedince revalidatePath ile hemen güncellenir.
+export const revalidate = 86400
 
 export default async function BlogPage() {
   const supabase = createSupabasePublic()

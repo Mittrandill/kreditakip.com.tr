@@ -1,6 +1,7 @@
 import { createSupabaseServer } from "@/lib/supabase-server"
 import { checkAdminAPI } from "@/lib/admin-check"
 import { NextRequest, NextResponse } from "next/server"
+import { revalidatePath } from "next/cache"
 
 export const dynamic = "force-dynamic"
 
@@ -102,6 +103,7 @@ export async function PUT(request: NextRequest, { params }: { params: { id: stri
       return NextResponse.json({ error: "Failed to update blog post" }, { status: 500 })
     }
 
+    revalidatePath("/blog", "layout")
     return NextResponse.json({ post })
   } catch (error) {
     console.error("Error in PUT /api/admin/blog/posts/[id]:", error)
@@ -128,6 +130,7 @@ export async function DELETE(request: NextRequest, { params }: { params: { id: s
       return NextResponse.json({ error: "Failed to delete blog post" }, { status: 500 })
     }
 
+    revalidatePath("/blog", "layout")
     return NextResponse.json({ success: true })
   } catch (error) {
     console.error("Error in DELETE /api/admin/blog/posts/[id]:", error)

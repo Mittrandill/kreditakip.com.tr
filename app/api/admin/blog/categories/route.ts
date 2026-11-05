@@ -1,6 +1,7 @@
 import { createSupabaseServer } from "@/lib/supabase-server"
 import { checkAdminAPI } from "@/lib/admin-check"
 import { type NextRequest, NextResponse } from "next/server"
+import { revalidatePath } from "next/cache"
 
 export const dynamic = "force-dynamic"
 
@@ -64,6 +65,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Failed to create blog category" }, { status: 500 })
     }
 
+    revalidatePath("/blog", "layout")
     return NextResponse.json({ category }, { status: 201 })
   } catch (error) {
     console.error("Error in POST /api/admin/blog/categories:", error)

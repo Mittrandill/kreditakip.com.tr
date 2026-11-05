@@ -23,6 +23,8 @@ const nextConfig = {
       { protocol: 'https', hostname: 'i.ibb.co' },
       { protocol: 'https', hostname: 'i.hizliresim.com' },
     ],
+    // Optimize edilen görsel 31 gün önbellekte kalır (varsayılan 60 sn).
+    minimumCacheTTL: 2678400,
     // Configure image formats
     formats: ['image/avif', 'image/webp'],
   },
