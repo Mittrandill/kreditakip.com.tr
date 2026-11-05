@@ -18,6 +18,21 @@ export async function createSupabaseServer() {
   )
 }
 
+// Herkese açık veriler için çerezsiz istemci. cookies() çağırmadığından sayfa
+// önbelleğe alınabilir (createSupabaseServer sayfayı her istekte yeniden üretir).
+export function createSupabasePublic() {
+  return createClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    {
+      auth: {
+        autoRefreshToken: false,
+        persistSession: false,
+      },
+    }
+  )
+}
+
 // Admin client with service role key - bypasses RLS
 export function createSupabaseAdmin() {
   return createClient(

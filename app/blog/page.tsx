@@ -5,12 +5,12 @@ import Header from "@/components/layout/header"
 import Footer from "@/components/footer"
 import Image from "next/image"
 import Link from "next/link"
-import { createSupabaseServer } from "@/lib/supabase-server"
+import { createSupabasePublic } from "@/lib/supabase-server"
 
 export const revalidate = 60 // Revalidate every 60 seconds
 
 export default async function BlogPage() {
-  const supabase = await createSupabaseServer()
+  const supabase = createSupabasePublic()
 
   // Fetch published blog posts with categories
   const { data: blogPosts } = await supabase

@@ -85,13 +85,10 @@ export async function middleware(request: NextRequest) {
 }
 
 export const config = {
-  matcher: [
-    /*
-     * Match all request paths except for the ones starting with:
-     * - _next/static (static files)
-     * - _next/image (image optimization files)
-     * - favicon.ico (favicon file)
-     */
-    "/((?!_next/static|_next/image|favicon.ico).*)",
-  ],
+  /*
+   * Yalnızca oturum gereken yollarda çalışır. Herkese açık sayfalar önbellekten
+   * gelir; burada çalışmak her bot isteğinde boşuna CPU harcıyordu. Bu sayfaların
+   * güvenlik başlıkları next.config.mjs'tedir, oturumu tarayıcı istemcisi yeniler.
+   */
+  matcher: ["/uygulama/:path*", "/admin/:path*", "/api/:path*", "/auth/callback"],
 }

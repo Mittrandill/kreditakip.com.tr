@@ -15,12 +15,13 @@ const nextConfig = {
   images: {
     // Enable Next.js image optimization for better performance
     unoptimized: false,
-    // Allow external image domains
+    // Blog görsellerinin geldiği adresler. Her adrese izin vermek sitenin görsel
+    // kotasını başkalarının kullanmasına açıyordu; yeni kaynak buraya eklenir.
     remotePatterns: [
-      {
-        protocol: 'https',
-        hostname: '**',
-      },
+      { protocol: 'https', hostname: 'oymjjceuiotxfbpwsdym.supabase.co' },
+      { protocol: 'https', hostname: 'images.unsplash.com' },
+      { protocol: 'https', hostname: 'i.ibb.co' },
+      { protocol: 'https', hostname: 'i.hizliresim.com' },
     ],
     // Configure image formats
     formats: ['image/avif', 'image/webp'],
@@ -58,7 +59,13 @@ const nextConfig = {
               "frame-ancestors 'none'",
               "upgrade-insecure-requests"
             ].join('; ')
-          }
+          },
+          { key: 'X-Frame-Options', value: 'SAMEORIGIN' },
+          { key: 'X-Content-Type-Options', value: 'nosniff' },
+          { key: 'X-XSS-Protection', value: '1; mode=block' },
+          { key: 'Referrer-Policy', value: 'strict-origin-when-cross-origin' },
+          { key: 'Permissions-Policy', value: 'camera=(), microphone=(), geolocation=()' },
+          { key: 'Strict-Transport-Security', value: 'max-age=31536000; includeSubDomains' }
         ]
       }
     ]

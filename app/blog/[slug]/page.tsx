@@ -5,11 +5,17 @@ import Header from "@/components/layout/header"
 import Footer from "@/components/footer"
 import Image from "next/image"
 import Link from "next/link"
-import { createSupabaseServer } from "@/lib/supabase-server"
+import { createSupabasePublic } from "@/lib/supabase-server"
 import { notFound } from "next/navigation"
 import ReactMarkdown from "react-markdown"
+import { BlogViewCounter } from "@/components/blog/blog-view-counter"
 
 export const revalidate = 60 // Revalidate every 60 seconds
+
+// Yazılar ilk ziyarette üretilip önbelleğe alınır; boş liste bunu etkinleştirir.
+export function generateStaticParams() {
+  return []
+}
 
 interface PageProps {
   params: {
@@ -18,7 +24,7 @@ interface PageProps {
 }
 
 export default async function BlogPostPage({ params }: PageProps) {
-  const supabase = await createSupabaseServer()
+  const supabase = createSupabasePublic()
 
   // Fetch the blog post
   const { data: post } = await supabase
@@ -55,15 +61,9 @@ export default async function BlogPostPage({ params }: PageProps) {
     .order("published_at", { ascending: false })
     .limit(3)
 
-  // Increment view count (fire and forget)
-  supabase
-    .from("blog_posts")
-    .update({ views: (post.views || 0) + 1 })
-    .eq("id", post.id)
-    .then()
-
   return (
     <div className="min-h-screen w-full bg-[#151515] text-white font-sans">
+      <BlogViewCounter slug={params.slug} />
       <div className="absolute inset-0 -z-0">
         <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[80vw] h-[80vh] bg-emerald-500/20 blur-[150px] rounded-full" />
         <div className="absolute bottom-0 right-1/4 w-[60vw] h-[60vh] bg-teal-500/15 blur-[120px] rounded-full" />
