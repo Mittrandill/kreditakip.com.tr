@@ -17,7 +17,7 @@ export default async function BlogPage() {
   const { data: blogPosts } = await supabase
     .from("blog_posts")
     .select(`
-      *,
+      id, slug, title, excerpt, featured_image, read_time, published_at, created_at,
       category:blog_categories(name)
     `)
     .eq("status", "published")
@@ -30,7 +30,10 @@ export default async function BlogPage() {
     .order("name", { ascending: true })
 
   const categories = ["Tümü", ...(categoriesData?.map(c => c.name) || [])]
-  const posts = blogPosts || []
+  const posts = (blogPosts || []).map(post => ({
+    ...post,
+    category: Array.isArray(post.category) ? post.category[0] : post.category,
+  }))
 
   return (
     <div className="min-h-screen w-full bg-[#151515] text-white font-sans">
@@ -86,7 +89,7 @@ export default async function BlogPage() {
             {/* Featured Post */}
             <section className="py-12 px-4 md:px-8 lg:px-16">
               <div className="container mx-auto">
-                <Link href={`/blog/${posts[0].slug}`}>
+                <Link prefetch={false} href={`/blog/${posts[0].slug}`}>
                   <Card className="bg-black/20 border-white/10 backdrop-blur-xl overflow-hidden hover:border-emerald-500/30 transition-all duration-500 cursor-pointer">
                     <div className="grid lg:grid-cols-2 gap-0">
                       {posts[0].featured_image && (
@@ -145,7 +148,7 @@ export default async function BlogPage() {
                 <div className="container mx-auto">
                   <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
                     {posts.slice(1).map((post) => (
-                      <Link key={post.id} href={`/blog/${post.slug}`}>
+                      <Link key={post.id} prefetch={false} href={`/blog/${post.slug}`}>
                         <Card className="bg-black/20 border-white/10 backdrop-blur-xl overflow-hidden hover:border-emerald-500/30 transition-all duration-500 group cursor-pointer h-full">
                           {post.featured_image && (
                             <div className="relative h-48 overflow-hidden">

@@ -8,7 +8,6 @@ import Link from "next/link"
 import { createSupabasePublic } from "@/lib/supabase-server"
 import { notFound } from "next/navigation"
 import ReactMarkdown from "react-markdown"
-import { BlogViewCounter } from "@/components/blog/blog-view-counter"
 
 // Günde bir yenilenir; admin yazı kaydedince revalidatePath ile hemen güncellenir.
 export const revalidate = 86400
@@ -64,7 +63,6 @@ export default async function BlogPostPage({ params }: PageProps) {
 
   return (
     <div className="min-h-screen w-full bg-[#151515] text-white font-sans">
-      <BlogViewCounter slug={params.slug} />
       <div className="absolute inset-0 -z-0">
         <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[80vw] h-[80vh] bg-emerald-500/20 blur-[150px] rounded-full" />
         <div className="absolute bottom-0 right-1/4 w-[60vw] h-[60vh] bg-teal-500/15 blur-[120px] rounded-full" />
@@ -200,7 +198,7 @@ export default async function BlogPostPage({ params }: PageProps) {
               <h2 className="text-3xl font-bold mb-8">İlgili Yazılar</h2>
               <div className="grid md:grid-cols-3 gap-6">
                 {relatedPosts.map((relatedPost) => (
-                  <Link key={relatedPost.id} href={`/blog/${relatedPost.slug}`}>
+                  <Link key={relatedPost.id} prefetch={false} href={`/blog/${relatedPost.slug}`}>
                     <Card className="bg-black/20 border-white/10 backdrop-blur-xl overflow-hidden hover:border-emerald-500/30 transition-all duration-500 group cursor-pointer h-full">
                       {relatedPost.featured_image && (
                         <div className="relative h-48 overflow-hidden">
